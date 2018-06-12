@@ -43,7 +43,7 @@
 
 
         <div layout="column" ng-if="!vm.model.reusableTemplate">
-            <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
+            <md-subheader class="md-subhead left-aligned">Target Table Options</md-subheader>
             <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
                 <md-radio-group ng-model="vm.model.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()" required="true">
                     <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="30">

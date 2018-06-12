@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 import com.thinkbiganalytics.spark.rest.model.DataSources;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
@@ -154,4 +155,16 @@ public interface SparkShellRestClient {
      */
     @Nonnull
     TransformResponse transform(@Nonnull SparkShellProcess process, @Nonnull TransformRequest request);
+
+
+    /**
+     * Executes a KyloClient Read operation on the specified Spark Shell process
+     *
+     * @param request the transformation request
+     * @param request the kylo catalog read request
+     * @return the transformation status
+     * @throws SparkShellTransformException if the transformation fails
+     */
+    @Nonnull
+    TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request);
 }

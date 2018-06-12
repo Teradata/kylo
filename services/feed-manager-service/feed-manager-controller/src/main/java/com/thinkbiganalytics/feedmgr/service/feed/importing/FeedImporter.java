@@ -80,6 +80,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -328,14 +329,14 @@ public class FeedImporter {
             if (feedToImport.getCategory().getUserProperties() != null) {
                 Map<String, UserProperty>
                     suppliedCategoryProperties =
-                    feedToImport.getCategory().getUserProperties().stream().filter(f -> f.isRequired()).collect(Collectors.toMap(f -> f.getSystemName(), f -> f));
+                    feedToImport.getCategory().getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
                 suppliedUploadCategoryProperties.putAll(suppliedCategoryProperties);
             }
             //set the list back
             feedToImport.getCategory().setUserProperties(new HashSet<>(suppliedUploadCategoryProperties.values()));
             Map<String, UserProperty>
                 requiredCategoryUserProperties =
-                feedManagerCategoryService.getUserProperties().stream().filter(p -> p.isRequired()).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+                feedManagerCategoryService.getUserProperties().stream().filter(p -> Objects.equals(p.isRequired(), Boolean.TRUE)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
 
             //add back in the required if they dont exist of they are blank
             for (String k : requiredCategoryUserProperties.keySet()) {
@@ -359,7 +360,7 @@ public class FeedImporter {
         Set<UserField> feedUserFields = feedManagerFeedService.getUserFields();
         //Add in any additional userfields that may be required by this category
         if (category != null) {
-            Set<UserField> requiredCategoryFeedUserFields = category.getUserFields().stream().filter(f -> f.isRequired()).collect(Collectors.toSet());
+            Set<UserField> requiredCategoryFeedUserFields = category.getUserFields().stream().filter(f -> Objects.equals(f.isRequired(), Boolean.TRUE)).collect(Collectors.toSet());
             if (!requiredCategoryFeedUserFields.isEmpty()) {
                 feedUserFields.addAll(requiredCategoryFeedUserFields);
             }
@@ -369,7 +370,7 @@ public class FeedImporter {
             suppliedUploadFeedProperties =
             feedUserFieldOption.getProperties().stream().map(property -> toUserProperty(property)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
         if (feedToImport.getUserProperties() != null) {
-            Map<String, UserProperty> suppliedFeedProperties = feedToImport.getUserProperties().stream().filter(f -> f.isRequired()).collect(Collectors.toMap(f -> f.getSystemName(), f -> f));
+            Map<String, UserProperty> suppliedFeedProperties = feedToImport.getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
             suppliedUploadFeedProperties.putAll(suppliedFeedProperties);
         }
         //set the list back
@@ -377,7 +378,7 @@ public class FeedImporter {
 
         Map<String, UserProperty>
             requiredFeedUserProperties =
-            UserPropertyTransform.toUserProperties(Collections.emptyMap(), UserPropertyTransform.toUserFieldDescriptors(feedUserFields)).stream().filter(p -> p.isRequired())
+            UserPropertyTransform.toUserProperties(Collections.emptyMap(), UserPropertyTransform.toUserFieldDescriptors(feedUserFields)).stream().filter(p -> Objects.equals(p.isRequired(), Boolean.TRUE))
                 .collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
         if (!requiredFeedUserProperties.isEmpty()) {
             boolean feedValid = true;

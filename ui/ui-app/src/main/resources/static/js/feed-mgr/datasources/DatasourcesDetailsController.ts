@@ -327,9 +327,14 @@ export class DatasourcesDetailsController {
     };
 
     testConnection = () => {
+
+        var model = _.pick(this.editModel, function (value:any, key:any) {
+            return (key !== "owner" && key !== "roleMemberships");
+        });
+
         this.testConnectionResult = {
         };
-        this.datasourcesService.testConnection(this.editModel).then((response: any) => {
+        this.datasourcesService.testConnection(model).then((response: any) => {
             const isConnectionOk = response.message === undefined;
             const msg = isConnectionOk ? "" : response.message;
             this.testConnectionResult = {

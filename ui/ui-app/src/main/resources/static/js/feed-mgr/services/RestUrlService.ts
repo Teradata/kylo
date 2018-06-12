@@ -44,7 +44,9 @@ const moduleName = require('feed-mgr/module-name');
         this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
 
         this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
+        this.UPLOAD_SPARK_SAMPLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/spark/sample-file";
         this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
+        this.LIST_SPARK_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/spark-file-parsers";
 
         this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
 

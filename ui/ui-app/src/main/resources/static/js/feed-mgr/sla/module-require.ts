@@ -1,11 +1,7 @@
-import * as angular from 'angular';
-import "kylo-feedmgr";
-import "kylo-services";
-import "kylo-common";
-import 'feed-mgr/sla/service-level-agreement';
-import ServiceLevelAgreementInitController from "./ServiceLevelAgreementInitController";
-import * as controllers from "./sla-email-templates/SlaEmailTemplatesController";
-import * as controller from "./sla-email-templates/SlaEmailTemplateController";
-import "./service-level-agreements";
-import "./feed-service-level-agreements";
-import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
+import 'angular';
+import './module-name';
+import './service-level-agreement';
+import './ServiceLevelAgreementInitController';
+import './sla-email-templates/SlaEmailTemplateController';
+import './sla-email-templates/SlaEmailTemplatesController';
+import './sla-email-templates/SlaEmailTemplateService';

@@ -24,6 +24,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Annotation that is used to display input form elements
@@ -124,5 +126,8 @@ public @interface PolicyProperty {
      * @return String
      */
     String patternInvalidMessage() default "Invalid Input";
+
+    PropertyLabelValue[] additionalProperties() default {};
+
 }
 

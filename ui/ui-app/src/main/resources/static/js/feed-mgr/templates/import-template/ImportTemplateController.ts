@@ -5,6 +5,7 @@ import * as _ from "underscore";
 import { ImportComponentType } from "../../services/ImportService";
 import { Import } from "../../services/ImportComponentOptionTypes";
 import { Common } from "../../../common/CommonTypes";
+import {StateService} from "@uirouter/angular";
 import { OnInit } from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
@@ -199,7 +200,9 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Flag to see if we should check and use remote input ports.
      * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
      */
-    remoteProcessGroupAware :boolean = false;
+    remoteProcessGroupAware: boolean = false;
+
+    templateParam: any;
 
 
     /**
@@ -219,11 +222,11 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.checkRemoteProcessGroupAware();
     }
 
-    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
+    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
 
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
         , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private registerTemplateService: RegisterTemplateServiceFactory) {
+        , private registerTemplateService: RegisterTemplateServiceFactory, private $state: StateService) {
 
 
 
@@ -233,25 +236,21 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.$scope.$watch(() => {
             return this.templateFile;
         }, (newVal: any, oldValue: any) => {
-            if (newVal != null) {
-                this.fileName = newVal.name;
-                if (this.fileName.toLowerCase().endsWith(".xml")) {
-                    this.uploadType = 'xml';
-                }
-                else {
-                    this.uploadType = 'zip'
-                }
-            }
-            else {
-                this.fileName = null;
-                this.uploadType = null;
-            }
+            if (newVal != null)
+                this.checkFileName(newVal.name);
             //reset them if changed
             if (newVal != oldValue) {
                 this.resetImportOptions();
             }
 
         });
+
+        if (this.$state.params.template) {
+            this.templateParam = this.$state.params.template;
+            this.checkFileName(this.templateParam.fileName);
+            console.log(this.$state.params.template);
+        }
+
         this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
 
         this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
@@ -263,6 +262,22 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
 
 
+    }
+
+    private checkFileName(newFileName: string) {
+        if (newFileName != null) {
+            this.fileName = newFileName;
+            if (this.fileName.toLowerCase().endsWith(".xml")) {
+                this.uploadType = 'xml';
+            }
+            else {
+                this.uploadType = 'zip'
+            }
+        }
+        else {
+            this.fileName = null;
+            this.uploadType = null;
+        }
     }
 
     /**
@@ -287,7 +302,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
             var responseData = response.data;
             this.xmlType = !responseData.zipFile;
 
-            var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : ''
+            var processGroupName = (responseData.templateResults != undefined
+                && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : ''
 
             /**
              * Count or errors after this upload
@@ -433,7 +449,28 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.additionalInputNeeded = false;
         this.startUploadStatus();
 
-        this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+        if (this.templateParam) {
+            params['fileName'] = this.templateParam.fileName;
+            this.importTemplateFromMarketplace(params, successFn, errorFn);
+        } else
+            this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+
+    }
+
+    importTemplateFromMarketplace(params: any, successFn: any, errorFn: any) {
+        console.log(params);
+        this.$http.post("/proxy/v1/marketplace/templates/import", params, {
+            headers: {'Content-Type': 'application/json'}
+        })
+            .then(function (data) {
+                if (successFn) {
+                    successFn(data)
+                }
+            }, function (err) {
+                if (errorFn) {
+                    errorFn(err)
+                }
+            });
     }
 
     /**
@@ -636,7 +673,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
         }
         else {
             this.nifiTemplateImportOption.continueIfExists = false;
-            this.reusableTemplateImportOption.shouldImport = true;
+            this.reusableTemplateImportOption.shouldImport = false;
             this.reusableTemplateImportOption.userAcknowledged = true;
             this.remoteProcessGroupImportOption.shouldImport = false;
             this.remoteProcessGroupImportOption.userAcknowledged = false;
@@ -648,10 +685,10 @@ export class ImportTemplateController implements ng.IController, OnInit {
     /**
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
-   private checkRemoteProcessGroupAware(): void {
-            this.$http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).then((response: angular.IHttpResponse<any>) => {
-                    this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
-            });
+    private checkRemoteProcessGroupAware(): void {
+        this.$http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).then((response: angular.IHttpResponse<any>) => {
+            this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
+        });
     }
 
 

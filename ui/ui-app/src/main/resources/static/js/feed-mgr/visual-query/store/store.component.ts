@@ -107,9 +107,9 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     target: SaveRequest = {};
 
-    static readonly $inject: string[] = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService"];
+    static readonly $inject: string[] = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService", "$mdDialog"];
 
-    constructor(private $http: angular.IHttpService, private DatasourcesService: DatasourcesService, private RestUrlService: any, private VisualQuerySaveService: VisualQuerySaveService) {
+    constructor(private $http: angular.IHttpService, private DatasourcesService: DatasourcesService, private RestUrlService: any, private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: angular.material.IDialogService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
             if (event.id === this.downloadId) {
@@ -282,6 +282,33 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     onFormatChange(): void {
         this.target.options = {};
     }
+
+    /**
+     * Show options info dialog for different data formats for download.
+     */
+    showOptionsInfo () : void {
+        this.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+
+                /**
+                 * Hides this dialog.
+                 */
+                hide() {
+                    this.$mdDialog.hide();
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element(document.body),
+            templateUrl: "js/feed-mgr/visual-query/store/save.options.dialog.html"
+        });
+    };
+
+
 
     /**
      * Saves the results.

@@ -20,7 +20,7 @@ export default class SideNav implements ng.IComponentController {
      */
     menuMap: any = {};
     
-    MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN"}
+    MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN","MKTPLC":"MKTPLC"}
     extensionsMenus: any = {};  
     /**
      * a pointer to the highlighted menu item
@@ -188,6 +188,7 @@ export default class SideNav implements ng.IComponentController {
                     text: this.$filter('translate')('views.main.feeds'), 
                     permission: AccessConstants.UI_STATES.FEEDS.permissions});
         links.push({sref: "categories",type:'link', icon: "folder_special", text: this.$filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
+        // links.push({sref: "explorer", type: "link", icon: "find_in_page", text: "Explorer"});
         links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
         links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
         links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
@@ -347,6 +348,26 @@ export default class SideNav implements ng.IComponentController {
         return menu
     }
 
+    /**
+     * Build the Marketplace Menu
+     * @param allowed
+     */
+    buildMarketplaceMenu(){
+
+        let links: any[] = [];
+        links.push({sref: "marketplace", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.marketplace'), defaultActive: false, permission: AccessConstants.DATASOURCE_ACCESS});
+        this.addExtensionLinks(this.MENU_KEY.MKTPLC, links);
+        let menu = ({type:'toggle',
+            text: this.$filter('translate')('views.main.marketplace'),
+            narrowText:this.$filter('translate')('views.main.marketplace-narrow'),
+            expanded:false,
+            links:links,
+        });
+        menu.links = links;
+        this.menuMap[this.MENU_KEY.MKTPLC] = menu;
+        return menu
+    }
+
     buildSideNavMenu: any =()=> {
         var menu = [];
 
@@ -356,6 +377,8 @@ export default class SideNav implements ng.IComponentController {
         menu.push(this.buildOpsManagerMenu());
         menu.push(this.buildFeedManagerMenu());
         menu.push(this.buildAdminMenu());
+        menu.push(this.buildMarketplaceMenu());
+
         this.buildExtensionsMenu(menu);
         this.buildMenuStateMap(menu);
 

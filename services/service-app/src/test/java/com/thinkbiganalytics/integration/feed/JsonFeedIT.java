@@ -21,31 +21,25 @@ package com.thinkbiganalytics.integration.feed;
  */
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.CharMatcher;
-import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Tag;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
-import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.integration.Diff;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.ExitStatus;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
-import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
-import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -56,11 +50,13 @@ public class JsonFeedIT extends FeedITBase{
     private static final int VALID_RESULTS = 7;
 
     @Test
+    @Ignore //Ignore until missing JsonSerDe issue is fixed in Cloudera sandbox
     public void testJsonDataIngestFeed() throws Exception {
         dataIngestFeedBase();
     }
 
     @Test
+    @Ignore //Ignore until missing JsonSerDe issue is fixed in Cloudera sandbox
     public void testJsonEditFeed() throws Exception {
         editFeed();
     }
@@ -119,7 +115,7 @@ public class JsonFeedIT extends FeedITBase{
         return tags;
     }
 
-    public void assertExecutedJobs(String feedName, String feedId) throws IOException{
+    public void assertExecutedJobs(String feedName, String feedId) {
         LOG.info("Asserting there is 1 completed jobs: json ingest job");
         DefaultExecutedJob[] jobs = getJobs(0,50,null,null);
 

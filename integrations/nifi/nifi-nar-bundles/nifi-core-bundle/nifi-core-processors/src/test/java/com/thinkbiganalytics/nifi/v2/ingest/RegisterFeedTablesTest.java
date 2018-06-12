@@ -175,6 +175,28 @@ public class RegisterFeedTablesTest {
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
+    /**
+     * Verify XML feed table with custom table properties
+     */
+    @Test
+    public void testFeedOverride() throws Exception {
+        // Test with all properties
+        final String ddl = "CREATE TABLE IF NOT EXISTS `movies`.`artists_feed` ( `id` string)";
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, TableType.FEED.toString());
+        runner.setProperty(RegisterFeedTables.FEED_TABLE_OVERRIDE, ddl);
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+
+        final InOrder inOrder = Mockito.inOrder(thriftService.statement);
+        inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");
+        inOrder.verify(thriftService.statement).close();
+        inOrder.verify(thriftService.statement).execute(ddl);
+        inOrder.verify(thriftService.statement).close();
+
+    }
 
     /**
      * Verify registering tables with some pre-existing.

@@ -1,0 +1,16 @@
+<h2 mat-dialog-title class="selection-dialog-header">{{title}}</h2>
+<mat-dialog-content fxFlex>
+  <div *ngIf="showProgress">
+    <mat-spinner [diameter]="30"></mat-spinner>
+  </div>
+  <div>
+    {{message}}
+  </div>
+
+</mat-dialog-content>
+<mat-dialog-actions style="float: right" ng-if="renderActionButtons">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close
+          (click)="onOk()"
+          cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

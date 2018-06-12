@@ -183,6 +183,8 @@ public class NifiRemoteProcessGroupUtil {
         return remoteProcessGroup;
     }
 
+
+
     /**
      * Return remote process groups for a given template
      * Recursively search the template for all child remote process groups
@@ -199,6 +201,10 @@ public class NifiRemoteProcessGroupUtil {
         templateDTO.getSnippet().getProcessGroups().stream().forEach(groupDTO -> groups.addAll(remoteProcessGroups(groupDTO)));
         return groups.stream().map(group -> toRemoteProcessGroup(group)).collect(Collectors.toList());
 
+    }
+
+    public static boolean hasRemoteProcessGroups(TemplateDTO templateDTO){
+        return templateDTO != null && templateDTO.getSnippet() != null && templateDTO.getSnippet().getRemoteProcessGroups() != null && remoteProcessGroupDtos(templateDTO).size() >1;
     }
 
     public static boolean hasRemoteProcessGroups(ProcessGroupDTO groupDTO){

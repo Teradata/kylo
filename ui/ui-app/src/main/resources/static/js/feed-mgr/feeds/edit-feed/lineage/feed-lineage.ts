@@ -171,9 +171,9 @@ export class FeedLineageController implements ng.IComponentController {
     };
 
     events = {
-        onload: this.onLoad,
-        selectNode: this.onSelect,
-        stabilized:this.stabilized
+        onload: this.onLoad.bind(this),
+        selectNode: this.onSelect.bind(this),
+        stabilized:this.stabilized.bind(this)
       //  stabilizationIterationsDone: stabilizationIterationsDone
     };
     
@@ -469,9 +469,9 @@ export class FeedLineageController implements ng.IComponentController {
     
                     }
                     if (feed.usedByFeedIds) {
-                        _.each(feed.usedByFeedIds, (usedByFeedId) => {
+                        _.each(feed.usedByFeedIds, (usedByFeedId:string) => {
                             //get it from the map
-                            var usedByFeed = this.feedLineage.feedMap[this.usedByFeedId];
+                            var usedByFeed = this.feedLineage.feedMap[usedByFeedId];
                             if (this.processedNodes[usedByFeed.id] == undefined) {
                                 this.buildVisJsGraph(usedByFeed);
                             }

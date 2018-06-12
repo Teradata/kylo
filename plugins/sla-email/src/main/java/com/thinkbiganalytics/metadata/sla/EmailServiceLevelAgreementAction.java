@@ -108,6 +108,9 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         map.put("assessmentDescription",ServiceLevelAssessmentAlertUtil.getDescription(assessment,"<br/>"));
         map.put("slaName",assessment.getAgreement().getName());
         map.put("sla",assessment.getAgreement());
+        Map<String,Object>dataMap = ServiceLevelAssessmentAlertUtil.getMetricDataAsMap(assessment);
+        map.putAll(dataMap);
+
         String template = actionConfiguration.getVelocityTemplateId();
          if(StringUtils.isNotBlank(template)) {
              VelocityTemplate defaultTemplate = velocityTemplateProvider.findDefault(ServiceLevelAgreementEmailTemplate.EMAIL_TEMPLATE_TYPE);

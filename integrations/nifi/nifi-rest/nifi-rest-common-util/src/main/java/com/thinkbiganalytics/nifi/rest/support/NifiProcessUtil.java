@@ -99,6 +99,10 @@ public class NifiProcessUtil {
                 }
             }
         }
+        else if(name != null){
+            //find first by name
+            processorDTO = findFirstProcessorsByName(processors,name);
+        }
         return processorDTO;
     }
 

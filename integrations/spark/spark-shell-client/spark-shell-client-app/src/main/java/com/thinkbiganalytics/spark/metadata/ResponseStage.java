@@ -123,6 +123,7 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
     @Override
     public TransformResponse apply(@Nullable final TransformResult result) {
         Preconditions.checkNotNull(result);
+        result.getDataSet().registerTempTable(table);
 
         // Transform data set into rows
         final QueryResultRowTransform rowTransform = new QueryResultRowTransform(result.getDataSet().schema(), table, converterService);
@@ -148,7 +149,7 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
             });
         } else {
             columnSelection = allColumns;
-            rows = Lists.transform(result.getDataSet().collectAsList(), new Function<Row, List<Object>>() {
+            rows = Lists.transform(allRows, new Function<Row, List<Object>>() {
                 @Nullable
                 @Override
                 public List<Object> apply(@Nullable Row row) {

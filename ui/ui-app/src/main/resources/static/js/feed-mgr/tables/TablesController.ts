@@ -189,7 +189,7 @@ export class TablesController {
         this.loading = true;
         var successFn = (response: any) => {
             this.datasource = response;
-            this.cardTitle = this.datasource.name + " " + this.schema + " " + this.$filter('translate')('views.TableController.Tables');
+            this.cardTitle = this.schema;
             this.loading = false;
         };
         var errorFn = (err: any) => {

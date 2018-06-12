@@ -53,5 +53,16 @@ var StringUtils: any = (function() {
     (StringUtils as any).isBlank = function(str: string): boolean {
         return (!str || str.length === 0 || !str.trim());
     };
+
+
+    (StringUtils as any).replaceSpaces = function(str:string,replacement:string) {
+        if (str != undefined) {
+            return str.replace(/ /g, replacement);
+        }
+        else {
+            return '';
+        }
+    }
+
     return StringUtils;
 })();

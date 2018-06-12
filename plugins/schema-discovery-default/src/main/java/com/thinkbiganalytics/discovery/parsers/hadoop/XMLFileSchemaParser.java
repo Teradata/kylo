@@ -21,12 +21,14 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  */
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parsers.csv.CSVFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
+import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,18 +44,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"})
+@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true,mimeTypes = "application/xml", sparkFormat = "xml")
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
 
-    @PolicyProperty(name = "Row Tag", required = true, hint = "Specify root tag to extract from", value = ",")
+    @PolicyProperty(name = "Row Tag", required = true, hint = "Specify root tag to extract from", value = ",",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "rowTag")})
     private String rowTag = "";
 
     @Override
@@ -72,18 +75,20 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
             HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
             String paths = StringUtils.join(hiveParse.columnPaths.values(), ",");
             String serde = String.format("row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (%s) stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' "
-                                  + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'",paths);
+                                         + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'", paths);
 
+            // Set rowTag if it was derived by the SAX parse
+            this.rowTag = hiveParse.getStartTag();
             LOG.debug("XML serde {}", serde);
 
             // Parse using Spark
             try (InputStream fis = new FileInputStream(tempFile)) {
-                schema = (HiveTableSchema) getSparkParserService().doParse(fis, SparkFileSchemaParserService.SparkFileType.XML, target, new XMLCommandBuilder(hiveParse.getStartTag()));
+                schema = (HiveTableSchema) getSparkParserService().doParse(fis, SparkFileType.XML, target, new XMLCommandBuilder(hiveParse.getStartTag()));
             }
 
             schema.setStructured(true);
 
-            LOG.debug("XML Spark parser discoverd {} fields", schema.getFields().size());
+            LOG.debug("XML Spark parser discovered {} fields", schema.getFields().size());
 
             schema.setHiveFormat(serde);
             String xmlStart = hiveParse.startTag + (hiveParse.startTagHasAttributes ? " " : ">");
@@ -94,15 +99,50 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
         } catch (Exception e) {
             LOG.error("Failed to parse XML", e);
             if (e instanceof IOException) {
-                throw (IOException)e;
+                throw (IOException) e;
             } else {
                 throw new IOException("Failed to generate schema for XML", e);
             }
         } finally {
-           if (tempFile != null) tempFile.delete();
+            if (tempFile != null) {
+                tempFile.delete();
+            }
         }
         return schema;
     }
+
+    @Override
+    public SparkFileType getSparkFileType() {
+        return SparkFileType.XML;
+    }
+
+    @Override
+    public SampleFileSparkScript getSparkScript(InputStream is) throws IOException {
+        File tempFile = streamToFile(is);
+        if (StringUtils.isEmpty(rowTag)) {
+            try {
+                HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
+                rowTag = hiveParse.getStartTag();
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+        return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkCommandBuilder());
+    }
+
+    public SampleFileSparkScript getSparkScript(List<String> files){
+
+        return getSparkParserService().getSparkScript(files, getSparkCommandBuilder());
+    }
+
+    @Override
+    public SparkCommandBuilder getSparkCommandBuilder() {
+        XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag());
+        xmlCommandBuilder.setDataframeVariable(dataFrameVariable);
+        xmlCommandBuilder.setLimit(limit);
+        return xmlCommandBuilder;
+    }
+
 
     protected HiveXMLSchemaHandler parseForHive(File xmlFile) throws Exception {
 
@@ -126,7 +166,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     /**
      * Build Spark script for parsing XML
      */
-    static class XMLCommandBuilder implements SparkCommandBuilder {
+    static class XMLCommandBuilder extends AbstractSparkCommandBuilder {
 
         String xmlRowTag;
 
@@ -136,12 +176,25 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
         @Override
         public String build(String pathToFile) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
-            sb.append("import com.databricks.spark.xml._;\n");
+            sb.append("\nimport com.databricks.spark.xml._;\n");
+            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
             sb.append(String.format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
             return sb.toString();
         }
+
+        @Override
+        public String build(List<String> paths) {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("\nimport com.databricks.spark.xml._;\n");
+            sb.append(unionDataFrames(paths,"sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")\n",xmlRowTag));
+
+            return sb.toString();
+        }
+
+
     }
 
     public String getRowTag() {

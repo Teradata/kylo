@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parser;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,4 +77,19 @@ public @interface SchemaParser {
      * Returns a client-side helper for configuring the parser
      */
     String clientHelper() default "";
+
+    /**
+     * Does this schema parser support spark script generation?
+     */
+    boolean usesSpark() default false;
+
+    /**
+     * If there is more than 1 schema parser with the same name you can use this flag to determine which one to use
+     * @return true/false
+     */
+    boolean primary() default  true;
+
+    String[] mimeTypes() default "";
+
+    String sparkFormat() default "";
 }

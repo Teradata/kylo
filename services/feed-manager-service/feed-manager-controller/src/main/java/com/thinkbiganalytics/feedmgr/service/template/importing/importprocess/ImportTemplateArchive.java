@@ -131,6 +131,7 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         //after the templates are created we then connect the templates
         if (!this.importTemplateOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).hasErrorMessages()) {
             if (!importedReusableTemplates.isEmpty()) {
+                templateConnectionUtil.ensureReusableTemplateProcessGroup();
                 connectReusableTemplates();
             } else {
                 importTemplate.setSuccess(true);

@@ -7,7 +7,7 @@
     <i ng-class="{'ui-grid-icon-up-dir': header.sort.direction == 'asc', 'ui-grid-icon-down-dir': header.sort.direction == 'desc', 'ui-grid-icon-blank': header.sort.direction == null}"></i>
   </span>
 </div>
-<span ng-if="domainType && domainType != null" class="kylo-visual-query-table-domain-type">
+<span ng-if="domainType" class="kylo-visual-query-table-domain-type">
   <ng-md-icon icon="{{ domainType.icon }}" ng-style="{'fill': domainType.iconColor}"></ng-md-icon>
   <md-tooltip>{{ domainType.title }}</md-tooltip>
 </span>

@@ -20,7 +20,8 @@ package com.thinkbiganalytics.kylo.nifi.teradata.tdch;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.controllerservice.StandardTdchConnectionServiceTest;
+import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.controllerservice.StandardTdchConnectionService_Set1_Test;
+import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.controllerservice.StandardTdchConnectionService_Set2_Test;
 import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.processor.base.AbstractTdchProcessorTest;
 import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.processor.base.TdchOperationTypeTest;
 import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.processor.base.TdchProcessResultTest;
@@ -36,7 +37,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-                        StandardTdchConnectionServiceTest.class,
+                        StandardTdchConnectionService_Set1_Test.class,
+                        StandardTdchConnectionService_Set2_Test.class,
                         AbstractTdchProcessorTest.class,
                         TdchOperationTypeTest.class,
                         TdchProcessResultTest.class,

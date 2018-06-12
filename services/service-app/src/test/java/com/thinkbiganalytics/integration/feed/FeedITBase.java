@@ -86,7 +86,7 @@ public abstract class FeedITBase extends IntegrationTestBase {
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_FEED_SAMPLE_VERSION + "/";
     protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
-    private static final int FEED_COMPLETION_WAIT_DELAY = 180;
+    private static final int FEED_COMPLETION_WAIT_DELAY = 300;
     private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
     protected static String CATEGORY_NAME = "Functional Tests";
 
@@ -98,6 +98,7 @@ public abstract class FeedITBase extends IntegrationTestBase {
     protected FieldValidationRule email = new FieldValidationRule();
     protected FieldValidationRule lookup = new FieldValidationRule();
     protected FieldValidationRule notNull = new FieldValidationRule();
+    protected FieldStandardizationRule ccMask = new FieldStandardizationRule();
     protected FieldStandardizationRule base64EncodeBinary = new FieldStandardizationRule();
     protected FieldStandardizationRule base64EncodeString = new FieldStandardizationRule();
     protected FieldStandardizationRule base64DecodeBinary = new FieldStandardizationRule();
@@ -255,6 +256,13 @@ public abstract class FeedITBase extends IntegrationTestBase {
         base64EncodeString.setObjectClassType("com.thinkbiganalytics.policy.standardization.Base64Encode");
         base64EncodeString.setObjectShortClassType("Base64Encode");
         base64EncodeString.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "base64Output", "STRING")));
+
+        ccMask.setName("Mask Last Four Digits");
+        ccMask.setDisplayName("Mask Last Four Digits");
+        ccMask.setDescription("Mask Last Four Digits");
+        ccMask.setObjectClassType("com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer");
+        ccMask.setObjectShortClassType("MaskLeavingLastFourDigitStandardizer");
+        ccMask.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "maskLeavingLastFourDigitStandardizer", "STRING")));
 
         notNull.setName("Not Null");
         notNull.setDisplayName("Not Null");

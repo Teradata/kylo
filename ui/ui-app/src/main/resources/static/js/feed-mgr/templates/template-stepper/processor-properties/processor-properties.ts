@@ -187,6 +187,15 @@ export class RegisterProcessorPropertiesController {
         }
     }
 
+        toggleSetAsEmptyString(property:any){
+            if(property.value == ''){
+                property.value = null;
+            }
+            else {
+                property.value = '';
+            }
+        }
+
     customSelectOptionChanged = (property: any) => {
         var str = JSON.stringify(property.selectOptions);
         property.renderOptions['selectOptions'] = str;

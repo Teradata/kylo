@@ -30,6 +30,10 @@ import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
+import com.thinkbiganalytics.kylo.catalog.spark.DataSourceResourceLoader;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
@@ -50,6 +54,7 @@ import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
@@ -62,6 +67,8 @@ import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -70,6 +77,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +86,7 @@ import java.util.concurrent.TimeoutException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
+import javax.ws.rs.core.Response;
 
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
@@ -138,6 +147,13 @@ public class TransformService {
     @Nonnull
     private final JobTrackerService tracker;
 
+
+    /**
+     * Builder for the kylo client reader
+     */
+    @Nonnull
+    private final KyloCatalogClientBuilder kyloCatalogClientBuilder;
+
     /**
      * Cache of transformations
      */
@@ -169,12 +185,13 @@ public class TransformService {
      * @param converterService     data set converter service
      */
     public TransformService(@Nonnull final Class<? extends TransformScript> transformScriptClass, @Nonnull final SparkScriptEngine engine, @Nonnull final SparkContextService sparkContextService,
-                            @Nonnull final JobTrackerService tracker, @Nonnull final DataSetConverterService converterService) {
+                            @Nonnull final JobTrackerService tracker, @Nonnull final DataSetConverterService converterService, @Nonnull KyloCatalogClientBuilder kyloCatalogClientBuilder) {
         this.transformScriptClass = transformScriptClass;
         this.engine = engine;
         this.sparkContextService = sparkContextService;
         this.tracker = tracker;
         this.converterService = converterService;
+        this.kyloCatalogClientBuilder = kyloCatalogClientBuilder;
     }
 
     /**
@@ -218,6 +235,12 @@ public class TransformService {
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
         TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request);
+        updateTransformResponse(response,dataSet);
+        return log.exit(response);
+    }
+
+    private void updateTransformResponse(TransformResponse response, DataSet dataSet) throws ScriptException{
+        final StructType schema = dataSet.schema();
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
@@ -231,8 +254,6 @@ public class TransformService {
             response.setStatus(TransformResponse.Status.PENDING);
             response.setTable(table);
         }
-
-        return log.exit(response);
     }
 
     /**
@@ -420,6 +441,39 @@ public class TransformService {
         return script.toString();
     }
 
+
+    public TransformResponse kyloReaderResponse(KyloCatalogReadRequest request) throws ScriptException{
+       KyloCatalogClient client = kyloCatalogClientBuilder.build();
+       KyloCatalogReader reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
+       Object dataFrame = null;
+       DataSet dataSet = null;
+       if(!request.getPaths().isEmpty()) {
+           if(request.getPaths().size() >1) {
+               dataFrame = reader.load(request.getPaths().toArray(new String[request.getPaths().size()]));
+           }
+           else {
+               dataFrame =  reader.load(request.getPaths().get(0));
+           }
+       }
+       else {
+           dataFrame = reader.load();
+       }
+       if(dataFrame != null){
+         dataSet =  sparkContextService.toDataSet(dataFrame);
+
+           TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request.getPageSpec());
+
+           updateTransformResponse(response,dataSet);
+           return log.exit(response);
+       }
+      else {
+           throw new ScriptException("Cannot read request");
+       }
+
+
+
+    }
+
     /**
      * Caches the specified transformation.
      */
@@ -582,6 +636,19 @@ public class TransformService {
                 result = Suppliers.compose(new ProfileStage(profiler), result);
             }
         }
+        return submitTransformJob(result,pageSpec);
+    }
+
+
+
+    /**
+     * Submits the specified task to be executed and returns the result.
+     */
+    @Nonnull
+    private TransformResponse submitTransformJob(final Supplier<TransformResult> task, @Nonnull final PageSpec pageSpec) throws ScriptException {
+
+        // Prepare script
+        Supplier<TransformResult> result = task;
 
         // Execute script
         final String table = newTableName();
