@@ -37,4 +37,8 @@ export class CatalogService {
     getDataSource(datasourceId: string): Observable<DataSource> {
         return this.http.get<DataSource>("/proxy/v1/catalog/datasource/" + datasourceId);
     }
+
+    createDataSource(datasource: DataSource): Observable<DataSource> {
+        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+    }
 }

@@ -5,6 +5,11 @@ import {FormControl, Validators} from '@angular/forms';
 import {UiOption} from '../api/models/ui-option';
 import {DataSource} from '../api/models/datasource';
 import {DataSourceTemplate} from '../api/models/datasource-template';
+import {CatalogService} from '../api/services/catalog.service';
+import {finalize} from 'rxjs/operators/finalize';
+import {catchError} from 'rxjs/operators/catchError';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 /**
  * Displays selected connector properties.
@@ -17,6 +22,8 @@ import {DataSourceTemplate} from '../api/models/datasource-template';
 export class ConnectorComponent {
 
     static LOADER = "ConnectorComponent.LOADER";
+    private static topOfPageLoader: string = "ConnectorComponent.topOfPageLoader";
+    private static pageLoader: string = "ConnectorComponent.pageLoader";
 
     @Input("connector")
     public connector: Connector;
@@ -24,8 +31,17 @@ export class ConnectorComponent {
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
 
-    constructor(private state: StateService) {
+    constructor(private state: StateService, private catalogService: CatalogService,
+                private snackBarService: MatSnackBar,
+                private loadingService: TdLoadingService) {
         this.titleControl = new FormControl('', Validators.required);
+
+        this.loadingService.create({
+            name: ConnectorComponent.topOfPageLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
     }
 
     public ngOnInit() {
@@ -53,8 +69,25 @@ export class ConnectorComponent {
             });
         }
 
-        const datasourceId = "";
-        this.state.go("catalog.datasource", {datasourceId: datasourceId});
+        this.loadingService.register(ConnectorComponent.topOfPageLoader);
+        // this.loadingService.register(ConnectorComponent.pageLoader);
+        this.catalogService.createDataSource(ds)
+            .pipe(finalize(() => {
+                this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
+                // this.loadingService.resolve(ConnectorComponent.pageLoader);
+            }))
+            .pipe(catchError((err) => {
+                this.showSnackBar(err.message);
+                return [];
+            }))
+            .subscribe((source: DataSource) => {
+                this.state.go("catalog.datasource", {datasourceId: source.id});
+            });
+    }
+
+    showSnackBar(err: string): void {
+        this.snackBarService
+            .open('Failed to save. ' + (err ? err : ""), 'OK', { duration: 5000 });
     }
 
     isInputType(option: UiOption): boolean {
