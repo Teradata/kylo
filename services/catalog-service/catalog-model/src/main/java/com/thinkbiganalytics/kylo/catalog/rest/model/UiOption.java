@@ -40,6 +40,7 @@ public class UiOption {
     private Integer flex;
     private List<UiSelectOption> selections;
     private String value;
+    private String hint;
 
     public UiOption() {}
 
@@ -51,6 +52,15 @@ public class UiOption {
         flex = other.flex;
         selections = (other.selections != null) ? other.selections.stream().map(UiSelectOption::new).collect(Collectors.toList()) : null;
         value = other.value;
+        hint = other.hint;
+    }
+
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 
     public String getValue() {

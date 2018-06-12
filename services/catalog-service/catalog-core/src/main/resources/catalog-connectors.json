@@ -137,6 +137,7 @@
         "label": "Kafka Server",
         "type": "select",
         "value": "localhost:9093",
+        "hint": "Prefer 'Test Server'",
         "selections": [
           {
             "label": "Dev Server",
