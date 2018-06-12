@@ -70,6 +70,11 @@ public class Connector {
     private List<UiOption> options;
 
     /**
+     * Optional identifier for an object which knows how to map Connector UiOptions to Datasource options
+     */
+    private String optionsMapperId;
+
+    /**
      * Properties to apply to all data sets
      */
     @JsonDeserialize(as = DefaultDataSetTemplate.class)
@@ -93,6 +98,15 @@ public class Connector {
         options = (other.options != null) ? other.options.stream().map(UiOption::new).collect(Collectors.toList()) : null;
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
+        optionsMapperId = other.optionsMapperId;
+    }
+
+    public String getOptionsMapperId() {
+        return optionsMapperId;
+    }
+
+    public void setOptionsMapperId(String optionsMapperId) {
+        this.optionsMapperId = optionsMapperId;
     }
 
     public String getColor() {

@@ -1,4 +1,4 @@
-export interface DataSourceTemplate {
+export class DataSourceTemplate {
 
     files?: string[];
 

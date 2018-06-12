@@ -1,9 +1,10 @@
-import {Component, Input, ViewChild} from "@angular/core";
+import {Component, Input} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {Connector} from '../api/models/connector';
-import {TdDynamicFormsComponent} from '@covalent/dynamic-forms';
 import {FormControl, Validators} from '@angular/forms';
 import {UiOption} from '../api/models/ui-option';
+import {DataSource} from '../api/models/datasource';
+import {DataSourceTemplate} from '../api/models/datasource-template';
 
 /**
  * Displays selected connector properties.
@@ -20,11 +21,11 @@ export class ConnectorComponent {
     @Input("connector")
     public connector: Connector;
 
-    @ViewChild(TdDynamicFormsComponent) form: TdDynamicFormsComponent;
-
+    private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
 
     constructor(private state: StateService) {
+        this.titleControl = new FormControl('', Validators.required);
     }
 
     public ngOnInit() {
@@ -34,16 +35,43 @@ export class ConnectorComponent {
      * Creates a new datasource for this Connector
      */
     createDatasource() {
-        const datasourceId = "ruslans-local-file-system"; //post new datasource, get its id
+        const ds = new DataSource();
+        ds.title = this.titleControl.value;
+        ds.connector = this.connector;
+        ds.template = new DataSourceTemplate();
+        ds.template.paths = [];
+        ds.template.options = {};
+        if (this.connector.optionsMapperId === "azure") {
+
+        } else {
+            this.controls.forEach((value: FormControl, key: string) => {
+                if (key === "path") {
+                    ds.template.paths.push(this.controls.get(key).value);
+                } else {
+                    ds.template.options[key] = this.controls.get(key).value;
+                }
+            });
+        }
+
+        const datasourceId = "";
         this.state.go("catalog.datasource", {datasourceId: datasourceId});
     }
 
-    isInputType(option: UiOption) {
+    isInputType(option: UiOption): boolean {
         return option.type === undefined || option.type === '' || option.type === "input" || option.type === "password";
     }
 
-    isSelectType(option: UiOption) {
+    isSelectType(option: UiOption): boolean {
         return option.type === "select";
+    }
+
+    isFormInvalid(): boolean {
+        return this.titleControl.invalid || Array.from(this.controls.values())
+            .map(item => item.invalid)
+            .reduce((prev, current) => {
+                    return prev || current;
+                }, false
+            );
     }
 
     getControl(option: UiOption) {

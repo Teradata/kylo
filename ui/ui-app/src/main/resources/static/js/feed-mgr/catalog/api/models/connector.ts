@@ -20,5 +20,7 @@ export interface Connector {
 
     options?: UiOption[],
 
+    optionsMapperId?: string;
+
     template?: DataSourceTemplate
 }

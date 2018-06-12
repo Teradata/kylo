@@ -17,8 +17,8 @@ export class UiOption {
      */
     label: string;
     /**
-     * Optional type, defaults to "input".
-     * Supported types: "input", "password", "select"
+     * Optional type, defaults to "text".
+     * Supported types: "text", "password", "select"
      */
     type?: string;
     /**

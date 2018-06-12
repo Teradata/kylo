@@ -105,6 +105,7 @@
         "wasb:///"
       ]
     },
+    "optionsMapperId": "azure",
     "options": [
       {
         "key": "path",
@@ -138,6 +139,7 @@
         "type": "select",
         "value": "localhost:9093",
         "hint": "Prefer 'Test Server'",
+        "flex": 50,
         "selections": [
           {
             "label": "Dev Server",
