@@ -23,6 +23,7 @@ package com.thinkbiganalytics.jpa;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.usertype.ParameterizedType;
 import org.hibernate.usertype.UserType;
@@ -67,13 +68,13 @@ public class TruncateStringUserType implements UserType, ParameterizedType {
     }
 
     @Override
-    public Object nullSafeGet(ResultSet resultSet, String[] names, SessionImplementor sessionImplementor, Object o) throws HibernateException, SQLException {
+    public Object nullSafeGet(ResultSet resultSet, String[] names, SharedSessionContractImplementor sessionImplementor, Object o) throws HibernateException, SQLException {
         String val = (String) StandardBasicTypes.STRING.nullSafeGet(resultSet, names[0], sessionImplementor, o);
         return val == null ? null : val.trim();
     }
 
     @Override
-    public void nullSafeSet(PreparedStatement preparedStatement, Object o, int i, SessionImplementor sessionImplementor) throws HibernateException, SQLException {
+    public void nullSafeSet(PreparedStatement preparedStatement, Object o, int i, SharedSessionContractImplementor sessionImplementor) throws HibernateException, SQLException {
         String val = (String) o;
         if (val != null) {
             if (maxLength != null && maxLength > 0 && val.length() > maxLength) {
