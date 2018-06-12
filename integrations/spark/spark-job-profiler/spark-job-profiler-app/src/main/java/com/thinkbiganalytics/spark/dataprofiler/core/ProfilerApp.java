@@ -61,7 +61,6 @@ public class ProfilerApp {
         https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/SparkContext.html#stop()
     */
     @Bean(destroyMethod = "stop")
-    @Scope("prototype")
     public SparkContext sparkContext(final ProfilerConfiguration profilerConfiguration) {
         SparkConf conf = new SparkConf();
         conf = configureEfficientSerialization(conf);
