@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
+import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
 
@@ -110,7 +111,7 @@ export class controller {
         , private $http:any, private $state:any, private accessControlService:AccessControlService, private RestUrlService:any
         , private FeedService:any, private registerTemplateService:RegisterTemplateServiceFactory, private StateService:any
         , private SideNavService:any, private FileUpload:any, private ConfigurationService:any
-        , private EntityAccessControlDialogService:any, private EntityAccessControlService:any, private UiComponentsService:any
+        , private EntityAccessControlDialogService:any, private entityAccessControlService:EntityAccessControlService, private UiComponentsService:any
         , private AngularModuleExtensionService:any, private DatasourcesService:any) {
 
         var SLA_INDEX = 3;

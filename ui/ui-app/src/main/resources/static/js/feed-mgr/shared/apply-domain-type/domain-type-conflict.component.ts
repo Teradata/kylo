@@ -1,6 +1,7 @@
 import * as angular from "angular";
 
 import {DomainType} from "../../services/DomainTypesService.d";
+const moduleName = require('feed-mgr/module-name');
 
 /**
  * Local data for {@link DomainTypeConflictDialog}.
@@ -64,5 +65,5 @@ export class DomainTypeConflictDialog {
     }
 }
 
-angular.module(require("feed-mgr/module-name"))
+angular.module(moduleName)
     .controller("DomainTypeConflictDialog", DomainTypeConflictDialog);

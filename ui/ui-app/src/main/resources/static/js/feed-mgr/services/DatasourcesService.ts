@@ -15,6 +15,7 @@
  */
 import * as angular from 'angular';
 import * as _ from "underscore";
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/module-name');
 
 /**
@@ -58,7 +59,7 @@ const moduleName = require('feed-mgr/module-name');
         constructor(private $http:any, 
                     private $q:any, 
                     private RestUrlService:any, 
-                    private EntityAccessControlService:any) {
+                    private entityAccessControlService:EntityAccessControlService) {
       //  angular.extend(DatasourcesService.prototype, {
             
         }//);
@@ -255,7 +256,7 @@ const moduleName = require('feed-mgr/module-name');
 
             saveRoles= (datasource:any) => {
 
-               return this.EntityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
+               return this.entityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
 
             }
 

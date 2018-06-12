@@ -5,6 +5,7 @@ import AccessControlService from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import StateService from '../../services/StateService';
 import { Transition } from '@uirouter/core';
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/datasources/module-name');
 
 
@@ -91,7 +92,7 @@ export class DatasourcesDetailsController {
      * @param {StateService} StateService the page state service
      */
     constructor(private $scope: IScope, private $mdDialog: angular.material.IDialogService, private $mdToast: angular.material.IToastService, private $q: angular.IQService
-        , private accessControlService: AccessControlService, private datasourcesService: DatasourcesService, private EntityAccessControlService: any
+        , private accessControlService: AccessControlService, private datasourcesService: DatasourcesService, private entityAccessControlService: EntityAccessControlService
         , private stateService: StateService) {
 
         this.model = this.datasourcesService.newJdbcDatasource();
@@ -231,12 +232,12 @@ export class DatasourcesDetailsController {
         var model = angular.copy(this.model);
         model.roleMemberships = this.editModel.roleMemberships;
         model.owner = this.editModel.owner;
-        this.EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+        this.entityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
         // Save the changes
         this.datasourcesService.saveRoles(model)
             .then((r: any) => {
-                this.EntityAccessControlService.mergeRoleAssignments(this.model, this.EntityAccessControlService.entityRoleTypes.DATASOURCE, this.model.roleMemberships);
+                this.entityAccessControlService.mergeRoleAssignments(this.model, EntityAccessControlService.entityRoleTypes.DATASOURCE, this.model.roleMemberships);
             })
             .catch(() => {
                 this.isAccessControlEditable = true;

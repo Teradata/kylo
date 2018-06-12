@@ -3,6 +3,7 @@ import * as _ from "underscore";
 import { moduleName } from "../../module-name";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import AccessControlService from '../../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 
 
 export class TemplateAccessControlController {
@@ -17,7 +18,7 @@ export class TemplateAccessControlController {
     allowEdit: boolean = false;
 
     static readonly $inject = ["$scope", "RegisterTemplateService", "AccessControlService", "EntityAccessControlService"];
-    constructor(private $scope: IScope, private registerTemplateService: RegisterTemplateServiceFactory, private accessControlService: AccessControlService, private EntityAccessControlService: any) {
+    constructor(private $scope: IScope, private registerTemplateService: RegisterTemplateServiceFactory, private accessControlService: AccessControlService, private entityAccessControlService: EntityAccessControlService) {
 
         this.model = this.registerTemplateService.model;
 

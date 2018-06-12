@@ -5,6 +5,7 @@ import { Common } from "../../../../common/CommonTypes";
 import LabelValue = Common.LabelValue;
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import StateService from '../../../../services/StateService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 
 
 export class RegisterCompleteRegistrationController {
@@ -77,7 +78,7 @@ export class RegisterCompleteRegistrationController {
     static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private stateService: StateService, private registerTemplateService: RegisterTemplateServiceFactory, private EntityAccessControlService: any) {
+        , private stateService: StateService, private registerTemplateService: RegisterTemplateServiceFactory, private entityAccessControlService: EntityAccessControlService) {
 
 
         /**
@@ -333,7 +334,7 @@ export class RegisterCompleteRegistrationController {
         var savedTemplate = this.registerTemplateService.getModelForSave();
 
         //prepare access control changes if any
-        this.EntityAccessControlService.updateRoleMembershipsForSave(savedTemplate.roleMemberships);
+        this.entityAccessControlService.updateRoleMembershipsForSave(savedTemplate.roleMemberships);
 
         //get template order
         var order: any = [];
