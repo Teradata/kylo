@@ -17,337 +17,322 @@
  * limitations under the License.
  * #L%
  */
- /**
- * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
- * See the corresponding name references in app.js
- */
+/**
+* ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
+* See the corresponding name references in app.js
+*/
 import * as angular from 'angular';
-import {moduleName} from './module-name';
+import { moduleName } from './module-name';
 
 import "./module"; // ensure module is loaded first
 
-export default class StateService{
+export default class StateService {
     Auth: any;
     FeedManager: any;
     OpsManager: any;
     Search: any;
     Tables: any;
     Categories: any;
-    static $inject=["$state"];
-    constructor (private $state: any){
-        var AuthStates = function(){
-            var data: any = {}
-            /**
-             * Navigates to the Groups page.
-             */
-            data.navigateToGroups = ()=> {
-                $state.go("groups");
-            };
-            /**
-             * Navigates to the Group Details page.
-             *
-             * @param {string} [opt_groupId] the system name of the group
-             */
-            data.navigateToGroupDetails = (opt_groupId: string)=> {
-                var safeGroupId: any = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
-                $state.go("group-details", {groupId: safeGroupId});
-            };
+    static $inject = ["$state"];
+    constructor(private $state: any) {
 
-            /**
-             * Navigates to the Users page.
-             */
-            data.navigateToUsers = ()=> {
-                $state.go("users");
-            };
-
-            /**
-             * Navigates to the User Details page.
-             *
-             * @param {string} [opt_userId] the system name of the user
-             */
-            data.navigateToUserDetails = (opt_userId: string)=> {
-                var safeUserId: any = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
-                $state.go("user-details", {userId: safeUserId});
-            };
-            return data;
-        }
-        var TemplateStates = function () {
-            var data: any = {};
-            data.navigateToRegisterNewTemplate = function () {
-                $state.go('register-new-template');
-            }
-
-            data.navigateToRegisterTemplateComplete = function (message: any, templateModel: any, error: any) {
-                $state.go('register-template-complete', {message: message, templateModel: templateModel, error: error});
-            }
-
-            data.navigateToImportTemplate = function () {
-                $state.go('import-template');
-            }
-
-            data.navigateToRegisterNifiTemplate = function () {
-                $state.go('register-template', {registeredTemplateId: null, nifiTemplateId: null});
-            }
-
-            data.navigateToRegisteredTemplate = function (templateId: any, nifiTemplateId: any) {
-                $state.go('register-template', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
-            }
-            /**
-             * Navigates to the Templates page.
-             */
-            data.navigateToRegisteredTemplates = function () {
-                $state.go("registered-templates");
-            };
-            return data;
-        }
-
-        var FeedStates = function () {
-            var data: any = {};
-            data.navigateToFeedDetails = function (feedId: any, tabIndex: any) {
-                if (tabIndex == null || tabIndex == undefined) {
-                    tabIndex = 0;
-                }
-                $state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
-            }
-
-            data.navigateToEditFeedInStepper = function (feedId: any) {
-                $state.go('edit-feed', {feedId: feedId});
-            }
-
-            data.navigateToDefineFeed = function (templateId: any) {
-                $state.go('define-feed', {templateId: templateId});
-            }
-
-            data.navigateToCloneFeed = function (feedName: any) {
-                $state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
-            }
-
-            data.navigateToDefineFeedComplete = function (feedModel: any, error: any) {
-                $state.go('define-feed-complete', {feedModel: feedModel, error: error});
-            }
-
-            data.navigateToFeeds = function () {
-                $state.go('feeds');
-            }
-
-            data.navigatetoImportFeed = function () {
-                $state.go('import-feed');
-            }
-            return data;
-        }
-
-        var ProfileStates = function () {
-            var data: any = {};
-            data.navigateToProfileSummary = function (feedId: any) {
-                $state.go('feed-details.profile-summary', {feedId: feedId})
-            }
-            data.navigateToProfileValidResults = function (feedId: any, processingdttm: any) {
-                $state.go('feed-details.profile-valid', {feedId: feedId, processingdttm: processingdttm})
-            }
-            data.navigateToProfileInvalidResults = function (feedId: any, processingdttm: any) {
-                $state.go('feed-details.profile-invalid', {feedId: feedId, processingdttm: processingdttm})
-            }
-            data.navigateToProfileStats = function (feedId: any, processingdttm: any) {
-                $state.go('feed-details.profile-stats', {feedId: feedId, processingdttm: processingdttm})
-            }
-            return data;
-
-        }
-
-        var TableStates = function () {
-            var data: any = {};
-            data.navigateToSchemas = function (datasource: any) {
-                $state.go('schemas', {datasource: datasource});
-            };
-            data.navigateToTables = function (datasource: any, schema: any) {
-                $state.go('schemas-schema', {datasource: datasource, schema: schema});
-            };
-            data.navigateToTable = function (datasource: any, schema: any, table: any) {
-                $state.go('schemas-schema-table', {datasource: datasource, schema: schema, tableName: table});
-            };
-            return data;
+        this.Auth = this.AuthStates();
+        this.FeedManager = this.FeedManagerStates;
+        this.OpsManager = this.OpsManagerStates;
+        this.Search = this.SearchStates;
+        this.Tables = this.TableStates;
+        this.Categories = this.CategoryStates;
+    }
+    AuthStates = () => {
+        var data: any = {}
+        /**
+         * Navigates to the Groups page.
+         */
+        data.navigateToGroups = ()=> {
+            this.$state.go("groups");
+        };
+        /**
+         * Navigates to the Group Details page.
+         *
+         * @param {string} [opt_groupId] the system name of the group
+         */
+        data.navigateToGroupDetails = (opt_groupId: string)=> {
+            var safeGroupId: any = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
+            this.$state.go("group-details", {groupId: safeGroupId});
         };
 
-        var SlaStates = function () {
-            var data: any = {};
-            data.navigateToServiceLevelAgreements = function () {
-                $state.go('service-level-agreements');
-            }
-            data.navigateToServiceLevelAgreement = function (slaId: any) {
-                $state.go('service-level-agreements',{slaId:slaId});
-            }
-            data.navigateToNewEmailTemplate = function (templateId: any) {
-                $state.go('sla-email-template',{emailTemplateId:templateId});
-            }
-            data.navigateToEmailTemplates = function () {
-                $state.go('sla-email-templates');
-            }
-            return data;
-        }
-
-        var CategoryStates = function () {
-            var data: any = {};
-            data.navigateToCategoryDetails = function (categoryId: any) {
-                $state.go('category-details', {categoryId: categoryId});
-            }
-
-            data.navigateToCategories = function () {
-                $state.go('categories');
-            }
-            return data;
-        }
-
-        var SearchStates = function () {
-            var data: any = {};
-            data.navigateToSearch = function (resetPaging: any) {
-                if (angular.isUndefined(resetPaging)) {
-                    resetPaging = false;
-                }
-                $state.go('search', {"bcExclude_globalSearchResetPaging":resetPaging});
-            }
-            return data;
-        }
-
-        var DatasourceStates = function() {
-            return {
-                navigateToDatasourceDetails: function(opt_datasourceId: any) {
-                    var safeDatasourceId = angular.isString(opt_datasourceId) ? encodeURIComponent(opt_datasourceId) : null;
-                    $state.go("datasource-details", {datasourceId: safeDatasourceId});
-                },
-
-                navigateToDatasources: function() {
-                    $state.go("datasources");
-                }
-            };
+        /**
+         * Navigates to the Users page.
+         */
+        data.navigateToUsers = ()=> {
+            this.$state.go("users");
         };
 
-        var DomainTypeStates = function () {
-            return {
-                navigateToDomainTypeDetails: function (opt_domainTypeId: any) {
-                    var safeDomainTypeId : any= angular.isString(opt_domainTypeId) ? encodeURIComponent(opt_domainTypeId) : null;
-                    $state.go("domain-type-details", {domainTypeId: safeDomainTypeId});
-                },
+        /**
+         * Navigates to the User Details page.
+         *
+         * @param {string} [opt_userId] the system name of the user
+         */
+        data.navigateToUserDetails = (opt_userId: string)=> {
+            var safeUserId: any = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
+            this.$state.go("user-details", {userId: safeUserId});
+        };
+        return data;
+    }
+    TemplateStates = () => {
+        var data: any = {};
+        data.navigateToRegisterNewTemplate = () => {
+            this.$state.go('register-new-template');
+        }
 
-                navigateToDomainTypes: function () {
-                    $state.go("domain-types");
-                }
+        data.navigateToRegisterTemplateComplete = (message: any, templateModel: any, error: any) => {
+            this.$state.go('register-template-complete', {message: message, templateModel: templateModel, error: error});
+        }
+
+        data.navigateToImportTemplate = () => {
+            this.$state.go('import-template');
+        }
+
+        data.navigateToRegisterNifiTemplate = () => {
+            this.$state.go('register-template', {registeredTemplateId: null, nifiTemplateId: null});
+        }
+
+        data.navigateToRegisteredTemplate = (templateId: any, nifiTemplateId: any) => {
+            this.$state.go('register-template', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
+        }
+        /**
+         * Navigates to the Templates page.
+         */
+        data.navigateToRegisteredTemplates = () => {
+            this.$state.go("registered-templates");
+        };
+        return data;
+    }
+
+    FeedStates = () => {
+        var data: any = {};
+        data.navigateToFeedDetails = (feedId: any, tabIndex: any) => {
+            if (tabIndex == null || tabIndex == undefined) {
+                tabIndex = 0;
+            }
+            this.$state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
+        }
+
+        data.navigateToEditFeedInStepper = (feedId: any) => {
+            this.$state.go('edit-feed', {feedId: feedId});
+        }
+
+        data.navigateToDefineFeed = (templateId: any) => {
+            this.$state.go('define-feed', {templateId: templateId});
+        }
+
+        data.navigateToCloneFeed = (feedName: any) => {
+            this.$state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
+        }
+
+        data.navigateToDefineFeedComplete = (feedModel: any, error: any) => {
+            this.$state.go('define-feed-complete', {feedModel: feedModel, error: error});
+        }
+
+        data.navigateToFeeds = () => {
+            this.$state.go('feeds');
+        }
+
+        data.navigatetoImportFeed = () => {
+            this.$state.go('import-feed');
+        }
+        return data;
+    }
+
+    ProfileStates = () => {
+        var data: any = {};
+        data.navigateToProfileSummary = (feedId: any) => {
+            this.$state.go('feed-details.profile-summary', {feedId: feedId})
+        }
+        data.navigateToProfileValidResults = (feedId: any, processingdttm: any) => {
+            this.$state.go('feed-details.profile-valid', {feedId: feedId, processingdttm: processingdttm})
+        }
+        data.navigateToProfileInvalidResults = (feedId: any, processingdttm: any) => {
+            this.$state.go('feed-details.profile-invalid', {feedId: feedId, processingdttm: processingdttm})
+        }
+        data.navigateToProfileStats = (feedId: any, processingdttm: any) => {
+            this.$state.go('feed-details.profile-stats', {feedId: feedId, processingdttm: processingdttm})
+        }
+        return data;
+
+    }
+
+    TableStates = () => {
+        var data: any = {};
+        data.navigateToSchemas = (datasource: any) => {
+            this.$state.go('schemas', {datasource: datasource});
+        };
+        data.navigateToTables = (datasource: any, schema: any) => {
+            this.$state.go('schemas-schema', {datasource: datasource, schema: schema});
+        };
+        data.navigateToTable = (datasource: any, schema: any, table: any) => {
+            this.$state.go('schemas-schema-table', {datasource: datasource, schema: schema, tableName: table});
+        };
+        return data;
+    };
+
+    SlaStates = () => {
+        var data: any = {};
+        data.navigateToServiceLevelAgreements = () => {
+            this.$state.go('service-level-agreements');
+        }
+        data.navigateToServiceLevelAgreement = (slaId: any) => {
+            this.$state.go('service-level-agreements',{slaId:slaId});
+        }
+        data.navigateToNewEmailTemplate = (templateId: any) => {
+            this.$state.go('sla-email-template',{emailTemplateId:templateId});
+        }
+        data.navigateToEmailTemplates = () => {
+            this.$state.go('sla-email-templates');
+        }
+        return data;
+    }
+
+    CategoryStates = () => {
+        var data: any = {};
+        data.navigateToCategoryDetails = (categoryId: any) => {
+            this.$state.go('category-details', {categoryId: categoryId});
+        }
+
+        data.navigateToCategories = () => {
+            this.$state.go('categories');
+        }
+        return data;
+    }
+
+    SearchStates = () => {
+        var data: any = {};
+        data.navigateToSearch = (resetPaging: any) => {
+            if (angular.isUndefined(resetPaging)) {
+                resetPaging = false;
+            }
+            this.$state.go('search', {"bcExclude_globalSearchResetPaging":resetPaging});
+        }
+        return data;
+    }
+
+    DatasourceStates = () => {
+        return {
+            navigateToDatasourceDetails: (opt_datasourceId: any) => {
+                var safeDatasourceId = angular.isString(opt_datasourceId) ? encodeURIComponent(opt_datasourceId) : null;
+                this.$state.go("datasource-details", {datasourceId: safeDatasourceId});
+            },
+
+            navigateToDatasources: () => {
+                this.$state.go("datasources");
             }
         };
+    };
 
-        var FeedManagerStates = function () {
-            var data: any = {};
-            data.Category = CategoryStates;
-            data.Feed = FeedStates;
-            data.Sla = SlaStates;
-            data.Template = TemplateStates;
-            data.Table = TableStates;
-            data.Profile = ProfileStates;
-            data.Datasource = DatasourceStates;
-            data.DomainType = DomainTypeStates;
-            return data;
+    DomainTypeStates = () => {
+        return {
+            navigateToDomainTypeDetails: (opt_domainTypeId: any) => {
+                var safeDomainTypeId : any= angular.isString(opt_domainTypeId) ? encodeURIComponent(opt_domainTypeId) : null;
+                this.$state.go("domain-type-details", {domainTypeId: safeDomainTypeId});
+            },
+
+            navigateToDomainTypes: () => {
+                this.$state.go("domain-types");
+            }
+        }
+    };
+
+    FeedManagerStates = () => {
+        var data: any = {};
+        data.Category = this.CategoryStates;
+        data.Feed = this.FeedStates;
+        data.Sla = this.SlaStates;
+        data.Template = this.TemplateStates;
+        data.Table = this.TableStates;
+        data.Profile = this.ProfileStates;
+        data.Datasource = this.DatasourceStates;
+        data.DomainType = this.DomainTypeStates;
+        return data;
+    }
+
+    OpsManagerJobStates = () => {
+        var data: any = {};
+        data.navigateToJobDetails = (executionId: any) => {
+            this.$state.go('job-details', {executionId: executionId});
+        }
+        data.navigateToJobs = (tab: any,filter: any) => {
+            this.$state.go('jobs', {tab:tab,filter: filter});
+        }
+        return data;
+    }
+
+    OpsManagerFeedStates = () => {
+        var data: any = {};
+        data.navigateToFeedDetails = (feedName: any) => {
+            this.$state.go('ops-feed-details', {feedName: feedName});
+        }
+        data.navigateToFeedStats = (feedName: any) => {
+            this.$state.go('feed-stats', {feedName: feedName});
+        }
+        return data;
+    }
+
+    OpsManagerServiceStates = () => {
+        var data: any = {};
+        data.navigateToServiceDetails = (serviceName: any) => {
+            this.$state.go('service-details', {serviceName: serviceName});
         }
 
-        var OpsManagerJobStates = function () {
-            var data: any = {};
-            data.navigateToJobDetails = function (executionId: any) {
-                $state.go('job-details', {executionId: executionId});
-            }
-            data.navigateToJobs = function (tab: any,filter: any) {
-                $state.go('jobs', {tab:tab,filter: filter});
-            }
-            return data;
+        data.navigateToServiceComponentDetails = (serviceName: any, componentName: any) => {
+            this.$state.go('service-component-details', {serviceName: serviceName, componentName: componentName});
         }
+        return data;
+    }
 
-        var OpsManagerFeedStates = function () {
-            var data: any = {};
-            data.navigateToFeedDetails = function (feedName: any) {
-                $state.go('ops-feed-details', {feedName: feedName});
-            }
-            data.navigateToFeedStats = function (feedName: any) {
-                $state.go('feed-stats', {feedName: feedName});
-            }
-            return data;
+    AlertStates = () => {
+        var data: any = {};
+        /**
+         * Navigates to the details page for the specified alert.
+         * @param {string} alertId the id of the alert
+         */
+        data.navigateToAlertDetails = (alertId: any) => {
+            this.$state.go("alert-details", {alertId: alertId});
+        };
+        data.navigateToAlerts = (query: any) => {
+            this.$state.go("alerts", {query: query});
+        };
+        return data;
+    }
+
+    SlaAssessmentStates = () => {
+        var data: any = {};
+        data.navigateToServiceLevelAssessments = (filter: any) => {
+            filter = angular.isUndefined(filter) ? '' : filter;
+            this.$state.go('service-level-assessments',{filter:filter});
         }
-
-        var OpsManagerServiceStates = function () {
-            var data: any = {};
-            data.navigateToServiceDetails = function (serviceName: any) {
-                $state.go('service-details', {serviceName: serviceName});
-            }
-
-            data.navigateToServiceComponentDetails = function (serviceName: any, componentName: any) {
-                $state.go('service-component-details', {serviceName: serviceName, componentName: componentName});
-            }
-            return data;
+        data.navigateToServiceLevelAssessment = (assessmentId: any) => {
+            this.$state.go('service-level-assessment',{assessmentId:assessmentId});
         }
+        return data;
+    }
 
-        var AlertStates = function () {
-            var data: any = {};
-            /**
-             * Navigates to the details page for the specified alert.
-             * @param {string} alertId the id of the alert
-             */
-            data.navigateToAlertDetails = function (alertId: any) {
-                $state.go("alert-details", {alertId: alertId});
-            };
-            data.navigateToAlerts = function (query: any) {
-                $state.go("alerts", {query: query});
-            };
-            return data;
+    OpsManagerStates = () => {
+        var data: any = {};
+        data.dashboard = () => {
+            this.$state.go('dashboard');
         }
-
-        var SlaAssessmentStates = function () {
-            var data: any = {};
-            data.navigateToServiceLevelAssessments = function (filter: any) {
-                filter = angular.isUndefined(filter) ? '' : filter;
-                $state.go('service-level-assessments',{filter:filter});
-            }
-            data.navigateToServiceLevelAssessment = function (assessmentId: any) {
-                $state.go('service-level-assessment',{assessmentId:assessmentId});
-            }
-            return data;
-        }
-
-        var OpsManagerStates = function () {
-            var data: any = {};
-            data.dashboard = function () {
-                $state.go('dashboard');
-            }
-            data.Feed = OpsManagerFeedStates;
-            data.Job = OpsManagerJobStates;
-            data.ServiceStatus = OpsManagerServiceStates
-            data.Alert = AlertStates;
-            data.Sla = SlaAssessmentStates;
-            return data;
-        }
-
-        var States: any = ()=> {
-            var data: any = {};
-            data.Auth = AuthStates;
-           // this.Auth = AuthStates;
-            data.Search = SearchStates;
-            data.FeedManager = FeedManagerStates;
-            data.OpsManager = OpsManagerStates;
-            data.Tables = TableStates;
-            data.Categories = CategoryStates;
-            data.go = function (state: any, params: any) {
-                $state.go(state, params);
-            }
-            /**
-             * Navigates to the Home page.
-             */
-            data.navigateToHome = function () {
-                $state.go("home");
-            };
-            return data;
-        }
-        this.Auth = AuthStates;
-        this.FeedManager = FeedManagerStates;
-        this.OpsManager = OpsManagerStates;
-        this.Search = SearchStates;
-        this.Tables = TableStates;
-        this.Categories = CategoryStates;
-        return new States;
-} 
+        data.Feed = this.OpsManagerFeedStates;
+        data.Job = this.OpsManagerJobStates;
+        data.ServiceStatus = this.OpsManagerServiceStates
+        data.Alert = this.AlertStates;
+        data.Sla = this.SlaAssessmentStates;
+        return data;
+    }
+    go = (state: any, params: any) => {
+        this.$state.go(state, params);
+    }
+    navigateToHome = () => {
+        this.$state.go("home");
+    };
 }
-angular.module(moduleName).service('StateService',StateService);
+angular.module(moduleName).service('StateService', StateService);

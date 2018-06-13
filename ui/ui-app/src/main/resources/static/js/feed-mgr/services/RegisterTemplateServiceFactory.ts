@@ -38,6 +38,7 @@ import MetadataProperty = Templates.MetadataProperty;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 import AccessControlService from '../../services/AccessControlService';
 import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
@@ -49,7 +50,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     constructor(private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
         , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any
         , private FeedPropertyService: FeedPropertyService, private accessControlService: AccessControlService
-        , private EntityAccessControlService: any, private $filter: angular.IFilterService) {
+        , private entityAccessControlService: EntityAccessControlService, private $filter: angular.IFilterService) {
         this.init();
 
     }
@@ -716,7 +717,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
         var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>>this.$q.defer();
         var requests = {
-            entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
+            entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
             entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
             functionalAccess: this.accessControlService.getUserAllowedActions()
         }
@@ -1010,7 +1011,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         if (entity == undefined) {
             entity = this.model;
         }
-        return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
+        return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.TEMPLATE);
     }
 }
 

@@ -1,5 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import { FeedService } from '../../../services/FeedService';
+import CategoriesService from '../../../services/CategoriesService';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedGeneralInfoController {
@@ -10,7 +12,7 @@ export class DefineFeedGeneralInfoController {
          */
         defineFeedGeneralForm:any = {};
         templates:Array<any> = [];
-        model:any = this.FeedService.createFeedModel;
+        model:any;
         isValid:boolean = false;
         stepNumber:number;
         stepperController:any = null;
@@ -20,7 +22,6 @@ export class DefineFeedGeneralInfoController {
         categorySearchText:string = '';
         category:any;
 
-        categoriesService:any = this.CategoriesService;
         
         /**
          * are we populating the feed name list for validation
@@ -33,11 +34,11 @@ export class DefineFeedGeneralInfoController {
         feedNameWatch:any;
         templateIdWatch:any;
         
-        searchTextChange = function(text:string) {
+        searchTextChange = (text:string) => {
             //   $log.info('Text changed to ' + text);
         }
         categorySearchTextChanged:any = this.searchTextChange;
-        selectedItemChange = function(item:any) {
+        selectedItemChange = (item:any) => {
             //only allow it if the category is there and the 'createFeed' flag is true
             if(item != null && item != undefined && item.createFeed) {
                 this.model.category.name = item.name;
@@ -72,7 +73,7 @@ export class DefineFeedGeneralInfoController {
         }
         
         categorySelectedItemChange:any = this.selectedItemChange;
-        existingFeedNameKey = function(categoryName:string, feedName:string) {
+        existingFeedNameKey = (categoryName:string, feedName:string) => {
             return categoryName + "." + feedName;
         }
 
@@ -81,10 +82,10 @@ export class DefineFeedGeneralInfoController {
         * updates the {@code existingFeedNames} object with the latest feed names from the server
         * @returns {promise}
         */
-        populateExistingFeedNames = function() {
+        populateExistingFeedNames = () => {
             if(!this.populatingExsitngFeedNames) {
                 this.populatingExsitngFeedNames = true;
-                this.FeedService.getFeedNames().then()
+                this.feedService.getFeedNames().then();
                 return this.$http.get(this.RestUrlService.OPS_MANAGER_FEED_NAMES).then((response:any) => {
                     this.existingFeedNames = {};
                     if (response.data != null && response.data != null) {
@@ -101,7 +102,7 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        _validate = function() {
+        _validate = () => {
             //validate to ensure the name is unique in this category
             if (this.model && this.model.category && this.existingFeedNames[this.existingFeedNameKey(this.model.category.systemName, this.model.systemFeedName)]) {
                 if (this.defineFeedGeneralForm && this.defineFeedGeneralForm['feedName']) {
@@ -115,7 +116,7 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        validateUniqueFeedName = function() {
+        validateUniqueFeedName = () => {
 
             if (this.model && this.model.id && this.model.id.length > 0) {
                 this.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
@@ -131,12 +132,12 @@ export class DefineFeedGeneralInfoController {
 
         }
        
-        validate = function(){
+        validate = () => {
             var valid = this.isNotEmpty(this.model.category.name) && this.isNotEmpty(this.model.feedName) && this.isNotEmpty(this.model.templateId);
             this.isValid = valid;
         }
    
-        setSecurityGroups = function(newVal:any) {
+        setSecurityGroups = (newVal:any) => {
             if(newVal) {
                 var category = this.categoriesService.findCategoryByName(newVal)
                 if(category != null) {
@@ -146,7 +147,7 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        isNotEmpty = function(item:any){
+        isNotEmpty = (item:any) => {
             return item != null && item != undefined && item != '';
         }
         /**
@@ -179,11 +180,16 @@ export class DefineFeedGeneralInfoController {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }
-    static readonly $inject = ["$scope","$log","$http","$mdToast","RestUrlService","FeedService","CategoriesService"];
+    static readonly $inject = ["$scope","$log","$http","$mdToast","RestUrlService",
+    "FeedService","CategoriesService"];
 
-    constructor(private $scope:IScope,private $log:angular.ILogService, private $http:angular.IHttpService,private $mdToast:angular.material.IToastService,private RestUrlService:any, private FeedService:any, private CategoriesService:any) {
+    constructor(private $scope:IScope,private $log:angular.ILogService, private $http:angular.IHttpService,
+        private $mdToast:angular.material.IToastService,private RestUrlService:any, 
+        private feedService:FeedService, private categoriesService:CategoriesService) {
 
         this.populateExistingFeedNames();
+        
+        this.model= this.feedService.createFeedModel;
         
         $scope.$watch(() =>{
             return this.model.id;
@@ -199,7 +205,7 @@ export class DefineFeedGeneralInfoController {
        this.feedNameWatch = $scope.$watch(() => {
             return this.model.feedName;
         },(newVal:any) => {
-           FeedService.getSystemName(newVal).then((response:any) => {
+           this.feedService.getSystemName(newVal).then((response:any) => {
             this.model.systemFeedName = response.data;
                this.model.table.tableSchema.name = this.model.systemFeedName;
                this.validateUniqueFeedName();

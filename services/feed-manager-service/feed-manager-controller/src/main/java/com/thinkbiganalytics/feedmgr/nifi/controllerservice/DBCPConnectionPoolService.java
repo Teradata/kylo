@@ -218,7 +218,21 @@ public class DBCPConnectionPoolService {
         dummyService.setProperties(properties);
 
         if (isMasked(datasource.getPassword())) {
-            datasource.setPassword(null);
+
+            if( StringUtils.isNotBlank(datasource.getId())){
+            //if this is already saved, try to use the saved password
+                Optional.of(this.datasetProvider.resolve(datasource.getId())).map(datasetProvider::getDatasource)
+                    .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                    .filter(JdbcDatasource.class::isInstance)
+                    .map(JdbcDatasource.class::cast).ifPresent((ds) -> {
+                        datasource.setPassword(ds.getPassword());
+                });
+
+            }else {
+                datasource.setPassword(null);
+            }
+
+
         }
 
         final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(dummyService);

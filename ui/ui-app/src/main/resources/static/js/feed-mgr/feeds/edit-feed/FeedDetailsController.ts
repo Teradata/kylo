@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
+import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
 
@@ -110,7 +111,7 @@ export class controller {
         , private $http:any, private $state:any, private accessControlService:AccessControlService, private RestUrlService:any
         , private FeedService:any, private registerTemplateService:any, private StateService:any
         , private SideNavService:any, private FileUpload:any, private ConfigurationService:any
-        , private EntityAccessControlDialogService:any, private EntityAccessControlService:any, private UiComponentsService:any
+        , private EntityAccessControlDialogService:any, private entityAccessControlService:EntityAccessControlService, private UiComponentsService:any
         , private AngularModuleExtensionService:any, private DatasourcesService:any) {
 
         var SLA_INDEX = 3;
@@ -224,7 +225,7 @@ export class controller {
             nifiRunningCheck();
         };
 
-        this.cloneFeed = function(){
+        this.cloneFeed = ()=>{
             StateService.FeedManager().Feed().navigateToCloneFeed(this.model.feedName);
         }
 
@@ -400,18 +401,27 @@ export class controller {
             if (!self.startingFeed && self.allowStart) {
                 self.startingFeed = true;
                 $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response:any) {
+                    let msg = "Feed started";
+                    if(response && response.data && response.data.message) {
+                        msg = response.data.message;
+                    }
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Feed started')
+                            .textContent(msg)
                             .hideDelay(3000)
                     );
                 self.startingFeed = false;
                 }, function (response : any) {
+                    let msg = "The feed could not be started.";
+                    if(response && response.data && response.data.message) {
+                        msg +="<br/><br/>"+response.data.message;
+                    }
+                    console.error("Unable to start the feed ",response);
                     $mdDialog.show(
                         $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title("NiFi Error")
-                        .textContent("The feed could not be started.")
+                        .title("Error starting the feed")
+                        .htmlContent(msg)
                         .ariaLabel("Cannot start feed.")
                         .ok("OK")
                      );
@@ -490,14 +500,14 @@ export class controller {
             self.loadingFeedData = true;
             self.model.loaded = false;
             self.loadMessage = '';
-            var successFn = function(response:any) {
+            var successFn = (response:any) => {
                 if (response.data) {
                     var promises = {
                         feedPromise: mergeTemplateProperties(response.data),
                         processorTemplatesPromise:  UiComponentsService.getProcessorTemplates()
                     };
 
-                    $q.all(promises).then(function(result:any) {
+                    $q.all(promises).then((result:any) => {
 
 
                         //deal with the feed data
@@ -626,7 +636,7 @@ export class controller {
             return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
         };
 
-        this.shouldIndexingOptionsBeEnabled = function() {
+        this.shouldIndexingOptionsBeEnabled = () => {
             return !this.shouldIndexingOptionsBeDisabled();
         };
 

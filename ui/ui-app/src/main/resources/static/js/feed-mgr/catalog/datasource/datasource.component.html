@@ -1,0 +1,15 @@
+<td-layout>
+  <mat-toolbar>
+    {{datasource.title}}
+  </mat-toolbar>
+  <mat-card>
+    <nav mat-tab-nav-bar>
+      <a *ngFor="let tab of tabs" mat-tab-link [uiSref]="tab.sref"
+         uiSrefStatus #ref="uiSrefStatus"
+         [active]="ref.status.active"
+         [disabled]="isDisabled(tab)"
+      >{{tab.label}}</a>
+    </nav>
+    <ui-view></ui-view>
+  </mat-card>
+</td-layout>

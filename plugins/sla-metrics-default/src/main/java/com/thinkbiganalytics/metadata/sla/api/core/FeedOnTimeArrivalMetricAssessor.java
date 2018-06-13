@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 
@@ -78,6 +79,8 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
 
         String feedName = metric.getFeedName();
         DateTime lastFeedTime = feedProvider.getLastActiveTimeStamp(feedName);
+        HashMap<String,String> data = new HashMap<>();
+        data.put("feed",feedName);
 
         Long nowDiff = 0L;
         Period nowDiffPeriod = new Period(nowDiff.longValue());
@@ -86,6 +89,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             nowDiff =   DateTime.now().getMillis() - lastFeedTime.getMillis();
             nowDiffPeriod = new Period(nowDiff.longValue());
         }
+
         Long latePeriodMillis = metric.getLatePeriod().toStandardDuration().getMillis();
         Long duration = CronExpressionUtil.getCronInterval(metric.getExpectedExpression());
         Period acceptedPeriod = new Period(duration + latePeriodMillis);
@@ -95,6 +99,18 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
         LOG.debug("CurrentTime is: {}.  Comparing {} against the lateTime of {} ", DateTime.now(), lastFeedTime, lateTime);
         builder.compareWith(expectedDate, feedName);
+
+        data.put("expectedTime",expectedTime.toString());
+        data.put("expectedTimeMillis",expectedTime.getMillis()+"");
+
+        data.put("lateTime",expectedTime.toString());
+        data.put("lateTimeMillis",expectedTime.getMillis()+"");
+
+        if(lastFeedTime != null ){
+            data.put("lastFeedTime",lastFeedTime.toString());
+            data.put("lastFeedTimeMillis",lastFeedTime.getMillis()+"");
+        }
+        builder.data(data);
 
         if (lastFeedTime == null) {
             LOG.debug("Feed with the specified name {} not found", feedName);

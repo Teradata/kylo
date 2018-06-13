@@ -73,6 +73,7 @@ chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
 pgrepMarkerKyloUi=kylo-ui-pgrep-marker
 pgrepMarkerKyloServices=kylo-services-pgrep-marker
+pgrepMarkerKyloInstallInspector=kylo-install-inspector-pgrep-marker
 rpmLogDir=$LOG_DIRECTORY_LOCATION
 
 echo "    - Install kylo-ui application"
@@ -212,6 +213,9 @@ elif [ "$linux_type" == "update-rc.d" ]; then
 fi
 echo "   - Added service 'kylo-ui'"
 echo "    - Completed kylo-ui install"
+
+
+
 
 echo "    - Install kylo-services application"
 
@@ -368,6 +372,9 @@ echo "   - Added service 'kylo-services'"
 
 echo "    - Completed kylo-services install"
 
+
+echo "    - Install kylo-spark-shell application"
+
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 
@@ -411,6 +418,112 @@ spark-submit --master local --conf spark.driver.userClassPathFirst=true --class 
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
+
+echo "    - Completed kylo-services install"
+
+
+
+
+echo "    - Install kylo-install-inspector application"
+cat << EOF > $INSTALL_HOME/kylo-install-inspector/bin/run-kylo-install-inspector.sh
+#!/bin/bash
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+
+java -cp java -jar ${INSTALL_HOME}/kylo-install-inspector/lib/* --inspections.path=${INSTALL_HOME}/kylo-install-inspector/inspections --pgrep-marker=$pgrepMarkerKyloInstallInspector > ${LOG_DIRECTORY_LOCATION}/kylo-install-inspector/std.out 2>${LOG_DIRECTORY_LOCATION}/kylo-install-inspector/std.err &
+EOF
+chmod +x ${INSTALL_HOME}/kylo-install-inspector/bin/run-kylo-install-inspector.sh
+
+# header of the service file depends on system used
+if [ "$linux_type" == "chkonfig" ]; then
+cat << EOF > /etc/init.d/kylo-install-inspector
+#! /bin/sh
+# chkconfig: - 98 98
+# description: kylo-install-inspector
+# processname: kylo-install-inspector
+EOF
+elif [ "$linux_type" == "update-rc.d" ]; then
+cat << EOF > /etc/init.d/kylo-install-inspector
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          kylo-install-inspector
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:
+# Default-Stop:      0 1 2 3 4 5 6
+# Description:       kylo-install-inspector
+### END INIT INFO
+EOF
+fi
+
+cat << EOF >> /etc/init.d/kylo-install-inspector
+RUN_AS_USER=$INSTALL_USER
+
+start() {
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting kylo-install-inspector ...
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-install-inspector/bin/run-kylo-install-inspector.sh"
+    fi
+}
+
+stop() {
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
+      then
+        echo Stopping kylo-install-inspector ...
+        pkill -f $pgrepMarkerKyloInstallInspector
+      else
+        echo Already stopped.
+    fi
+}
+
+status() {
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
+      then
+          echo Running.  Here are the related processes:
+          pgrep -lf $pgrepMarkerKyloInstallInspector
+      else
+        echo Stopped.
+    fi
+}
+
+case "\$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    status)
+        status
+    ;;
+    restart)
+       echo "Restarting kylo-install-inspector"
+       stop
+       sleep 2
+       start
+       echo "kylo-install-inspector started"
+    ;;
+esac
+exit 0
+EOF
+chmod +x /etc/init.d/kylo-install-inspector
+echo "   - Created kylo-install-inspector script '/etc/init.d/kylo-install-inspector'"
+
+mkdir -p ${rpmLogDir}/kylo-install-inspector/
+echo "   - Created Log folder $rpmLogDir/kylo-install-inspector/"
+
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --add kylo-install-inspector
+    chkconfig kylo-install-inspector off
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d kylo-install-inspector disable
+fi
+echo "   - Added service 'kylo-install-inspector'"
+echo "    - Completed kylo-install-inspector install"
+
 
 {
 echo "    - Create an RPM Removal script at: $INSTALL_HOME/remove-kylo.sh"

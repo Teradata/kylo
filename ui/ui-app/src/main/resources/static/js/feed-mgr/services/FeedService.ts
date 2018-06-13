@@ -3,6 +3,10 @@ import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import AccessControlService from "../../services/AccessControlService";
+import {TableColumnDefinition} from "../model/TableColumnDefinition";
+import {TableFieldPolicy} from "../model/TableFieldPolicy";
+import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
+
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -275,8 +279,8 @@ export class FeedService {
                 this.FeedCreationErrorService.reset();
             }
 
-            getDataTypeDisplay= (columnDef: any) =>{
-                return columnDef.precisionScale != null ? columnDef.derivedDataType + "(" + columnDef.precisionScale + ")" : columnDef.derivedDataType;
+            getDataTypeDisplay(columnDef: TableColumnDefinition) {
+                return columnDef.getDataTypeDisplay();
             }
 
             /**
@@ -286,30 +290,8 @@ export class FeedService {
              * @returns {{name: string, description: string, dataType: string, precisionScale: null, dataTypeDisplay: Function, primaryKey: boolean, nullable: boolean, createdTracker: boolean,
              *     updatedTracker: boolean, sampleValues: Array, selectedSampleValue: string, isValid: Function, _id: *}}
              */
-            newTableFieldDefinition= () => {
-                var newField: any = {
-                    name: '',
-                    description: '',
-                    derivedDataType: 'string',
-                    precisionScale: null,
-                    dataTypeDisplay: '',
-                    primaryKey: false,
-                    nullable: false,
-                    createdTracker: false,
-                    updatedTracker: false,
-                    sampleValues: [],
-                    selectedSampleValue: '',
-                    tags: [],
-                    validationErrors: {
-                        name: {},
-                        precision: {}
-                    },
-                    isValid: function () {
-                        return this.name != '' && this.derivedDataType != '';
-                    },
-                    _id: _.uniqueId()
-                };
-                return newField;
+            newTableFieldDefinition(): TableColumnDefinition {
+                return new TableColumnDefinition();
             }
             /**
              * Returns the object used for creating Data Processing policies on a given field
@@ -318,15 +300,28 @@ export class FeedService {
              * @param fieldName
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
-            newTableFieldPolicy= (fieldName: any): any => {
-                return { name: fieldName || '', partition: null, profile: true, standardization: null, validation: null };
+            newTableFieldPolicy(fieldName: string): TableFieldPolicy {
+                return new TableFieldPolicy(fieldName);
+                // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
             }
             /**
              * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
              */
-            setTableFields= (fields: any[], policies: any[] = null) => {
-                this.createFeedModel.table.tableSchema.fields = fields;
-                this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(field => this.newTableFieldPolicy(field.name));
+            setTableFields(fields: any[], policies: any[] = null) {
+                //ensure the fields are of type TableColumnDefinition
+                let newFields =  _.map(fields,(field) => {
+                    if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                        let columnDef = new TableColumnDefinition();
+                        angular.extend(columnDef,field);
+                        return columnDef;
+                    }
+                    else {
+                        return field;
+                    }
+                })
+                this.createFeedModel.table.tableSchema.fields = newFields;
+                this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : newFields.map(field => this.newTableFieldPolicy(field.name));
+
                 this.createFeedModel.schemaChanged = !this.validateSchemaDidNotChange(this.createFeedModel);
             }
             /**
@@ -491,7 +486,7 @@ export class FeedService {
             copy.nonInputProcessors = null
 
                 //prepare access control changes if any
-                this.EntityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
+                this.entityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
 
             if(copy.cloned){
                 copy.state = null;
@@ -499,8 +494,11 @@ export class FeedService {
             //remove the self.model.originalTableSchema if its there
             delete copy.originalTableSchema;
 
-                if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
-                    // Set feed
+            //delete the fileParser options
+            delete copy.schemaParser;
+
+            if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
+                // Set feed
 
                     var newFields: any[] = [];
                     var newPolicies: any[] = [];
@@ -699,7 +697,7 @@ export class FeedService {
              * @param name
              * @returns {*|{}}
              */
-            getColumnDefinitionByName= (name: any) => {
+            getColumnDefinitionByName(name: string): TableColumnDefinition {
                 return _.find(this.createFeedModel.table.tableSchema.fields, (columnDef: any) => {
                     return columnDef.name == name;
                 });
@@ -916,7 +914,7 @@ export class FeedService {
                 if (entity == undefined) {
                     // entity = this.model; @Greg model is not defined anywhere inside this service what is it?
                 }
-                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.FEED);
+                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
             }
 
             /**
@@ -926,7 +924,7 @@ export class FeedService {
              * @param {FieldPolicy} policy the field policy to be updated
              * @param {DomainType} domainType the domain type be be applies
              */
-            setDomainTypeForField = (field: any, policy: any, domainType: DomainType) => {
+            setDomainTypeForField(field: TableColumnDefinition, policy: TableFieldPolicy, domainType: DomainType) {
                 policy.$currentDomainType = domainType;
                 policy.domainTypeId = domainType.id;
 
@@ -999,7 +997,7 @@ static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "Vis
         private FeedCreationErrorService: any,
         private FeedPropertyService: any,
         private accessControlService: AccessControlService,
-        private EntityAccessControlService: any,
+        private entityAccessControlService: EntityAccessControlService,
         private StateService: any) {
         this.init();
         //return this.data;

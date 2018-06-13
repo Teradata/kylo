@@ -2,8 +2,10 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
 import AccessControlService from '../../services/AccessControlService';
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
+import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
-import {DefaultPaginationDataService} from '../../services/PaginationDataService';
+import { FeedService } from '../services/FeedService';
 const moduleName = require('./module-name');
 export default class FeedsTableController implements ng.IComponentController {
 
@@ -73,10 +75,11 @@ export default class FeedsTableController implements ng.IComponentController {
         private PaginationDataService: DefaultPaginationDataService,
         private TableOptionsService: DefaultTableOptionsService,
         private AddButtonService: any,
-        private FeedService: any,
+        private feedService: FeedService,
         private StateService: any,
-        public $filter: any,
-        private EntityAccessControlService: any){
+        public $filter: angular.IFilterService,
+        private entityAccessControlService: EntityAccessControlService
+    ){
 
         
         $scope.$watch(() => {
@@ -209,11 +212,10 @@ export default class FeedsTableController implements ng.IComponentController {
                 feedName: feed.feedName,
                 category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
                 updateDate: feed.updateDate,
-                allowEditDetails: !entityAccessControlled || this.FeedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
-                allowExport: !entityAccessControlled || this.FeedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
+                allowEditDetails: !entityAccessControlled || this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
+                allowExport: !entityAccessControlled || this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
             })
-        });
-        
+        });        
         return simpleFeedData;
     }
 

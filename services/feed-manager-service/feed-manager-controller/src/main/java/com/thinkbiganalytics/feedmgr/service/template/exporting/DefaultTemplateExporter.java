@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.service.template.exporting;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -28,15 +29,15 @@ import com.thinkbiganalytics.feedmgr.rest.model.TemplateRemoteInputPortConnectio
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
-import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +50,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +78,8 @@ public class DefaultTemplateExporter implements TemplateExporter {
     @Inject
     private TemplateConnectionUtil templateConnectionUtil;
 
+    private Boolean remoteProcessGroupEnabled = null;
+
     /**
      * Check to ensure the user just has the EXPORT_FEEDS functional access permission before exporting
      *
@@ -103,6 +105,29 @@ public class DefaultTemplateExporter implements TemplateExporter {
         return export(templateId);
     }
 
+    private boolean isRemoteProcessGroupsEnabled() {
+        if (remoteProcessGroupEnabled == null) {
+            remoteProcessGroupEnabled = registeredTemplateService.isRemoteProcessGroupsEnabled();
+        }
+        return remoteProcessGroupEnabled;
+    }
+
+    List<ReusableTemplateConnectionInfo> getRemoteProcessGroupConnectionInfo(TemplateDTO templateDTO) {
+        if (templateDTO != null && templateDTO.getSnippet() != null && templateDTO.getSnippet().getRemoteProcessGroups() != null) {
+            return NifiRemoteProcessGroupUtil.remoteProcessGroupDtos(templateDTO).stream().map(rpg -> {
+                ReusableTemplateConnectionInfo connectionInfo = new ReusableTemplateConnectionInfo();
+                String connectedInputPort = rpg.getContents().getInputPorts().stream()
+                    .filter(port -> port.isConnected())
+                    .map(port -> port.getName()).findFirst().orElse(null);
+                connectionInfo.setReusableTemplateInputPortName(connectedInputPort);
+                connectionInfo.setInputPortDisplayName(connectedInputPort);
+                return connectionInfo;
+            }).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     private ExportTemplate export(String templateId) {
         RegisteredTemplate
             template =
@@ -113,29 +138,40 @@ public class DefaultTemplateExporter implements TemplateExporter {
             Set<ReusableTemplateConnectionInfo> outputPortConnectionMetadata = new HashSet<>();
 
             Set<RemoteProcessGroupInputPort> templateRemoteInputPorts = new HashSet<>();
+            List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = null;
 
             if (template.usesReusableTemplate()) {
-                ProcessGroupFlowDTO  reusableTemplateFlow = templateConnectionUtil.getReusableTemplateCategoryProcessGroupFlow();
-                List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
+                reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
+            }
 
-                Map<String,PortDTOWithGroupInfo> reusableTemplatePorts = templateConnectionUtil.getReusableFeedInputPorts(reusableTemplateFlow).stream().collect(Collectors.toMap(port ->port.getName(),port->port));
-                reusableTemplateConnectionInfos.stream().filter(connectionInfo -> StringUtils.isBlank(connectionInfo.getReusableTemplateProcessGroupName())).forEach(connectionInfo ->{
+            List<ReusableTemplateConnectionInfo> remoteProcessGroupConnectionInfo = getRemoteProcessGroupConnectionInfo(template.getNifiTemplate());
+            if (reusableTemplateConnectionInfos != null) {
+                reusableTemplateConnectionInfos.addAll(remoteProcessGroupConnectionInfo);
+            } else {
+                reusableTemplateConnectionInfos = remoteProcessGroupConnectionInfo;
+            }
+
+            if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                ProcessGroupFlowDTO reusableTemplateFlow = templateConnectionUtil.getReusableTemplateCategoryProcessGroupFlow();
+
+                Map<String, PortDTOWithGroupInfo>
+                    reusableTemplatePorts =
+                    templateConnectionUtil.getReusableFeedInputPorts(reusableTemplateFlow).stream().collect(Collectors.toMap(port -> port.getName(), port -> port));
+                reusableTemplateConnectionInfos.stream().filter(connectionInfo -> StringUtils.isBlank(connectionInfo.getReusableTemplateProcessGroupName())).forEach(connectionInfo -> {
                     PortDTOWithGroupInfo port = reusableTemplatePorts.get(connectionInfo.getReusableTemplateInputPortName());
-                    if(port != null){
+                    if (port != null) {
                         connectionInfo.setReusableTemplateProcessGroupName(port.getDestinationProcessGroupName());
                     }
                 });
 
-
                 //Get flow information for the 'reusable_templates' process group in NiFi
-                if(reusableTemplateFlow != null) {
+                if (reusableTemplateFlow != null) {
 
                     gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, outputPortConnectionMetadata, reusableTemplateConnectionInfos, reusableTemplateFlow);
                 }
 
-                //Only gather remote input ports on the reusable templates if we are clustered
-                NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
-                if(clusterSummary.getClustered()) {
+                //Only gather remote input ports on the reusable templates if enabled
+                if (isRemoteProcessGroupsEnabled()) {
                     //for all the reusable templates used gather any that have remote input ports
                     reusableTemplateConnectionInfos.stream().forEach(connectionInfo -> {
                         Set<RemoteProcessGroupInputPort>
@@ -146,7 +182,6 @@ public class DefaultTemplateExporter implements TemplateExporter {
                 }
 
             }
-
 
             String templateXml = null;
             try {
@@ -165,7 +200,7 @@ public class DefaultTemplateExporter implements TemplateExporter {
             }
 
             //create a zip file with the template and xml
-            byte[] zipFile = zip(template, templateXml, connectingReusableTemplates,outputPortConnectionMetadata,templateRemoteInputPorts);
+            byte[] zipFile = zip(template, templateXml, connectingReusableTemplates, outputPortConnectionMetadata, templateRemoteInputPorts);
 
             return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", zipFile);
 
@@ -174,22 +209,23 @@ public class DefaultTemplateExporter implements TemplateExporter {
         }
     }
 
-    public Set<RemoteProcessGroupInputPort> findReusableTemplateRemoteInputPorts(ProcessGroupFlowDTO reusableTemplateFlow,String templateName){
-       Optional<TemplateRemoteInputPortConnections> remoteInputPortConnections = templateConnectionUtil.getRemoteInputPortsForReusableTemplate(reusableTemplateFlow, templateName);
-       if(remoteInputPortConnections.isPresent()) {
-        return   remoteInputPortConnections.get().getExistingRemoteInputPortNames().stream().map(name -> {
-            RemoteProcessGroupInputPort port = new RemoteProcessGroupInputPort(templateName, name);
-            port.setSelected(true);
-            return port;
-        })
-               .collect(Collectors.toSet());
-       }
-       return Collections.emptySet();
+    public Set<RemoteProcessGroupInputPort> findReusableTemplateRemoteInputPorts(ProcessGroupFlowDTO reusableTemplateFlow, String templateName) {
+        Optional<TemplateRemoteInputPortConnections> remoteInputPortConnections = templateConnectionUtil.getRemoteInputPortsForReusableTemplate(reusableTemplateFlow, templateName);
+        if (remoteInputPortConnections.isPresent()) {
+            return remoteInputPortConnections.get().getExistingRemoteInputPortNames().stream().map(name -> {
+                RemoteProcessGroupInputPort port = new RemoteProcessGroupInputPort(templateName, name);
+                port.setSelected(true);
+                return port;
+            })
+                .collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
     }
 
-    private void gatherConnectedReusableTemplates(List<String> connectingReusableTemplates, Set<String> connectedTemplateIds, Set<ReusableTemplateConnectionInfo> connectingOutputPortConnectionMetadata,List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos,
+    private void gatherConnectedReusableTemplates(List<String> connectingReusableTemplates, Set<String> connectedTemplateIds,
+                                                  Set<ReusableTemplateConnectionInfo> connectingOutputPortConnectionMetadata, List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos,
                                                   ProcessGroupFlowDTO reusableTemplateFlow) {
-        for (ReusableTemplateConnectionInfo reusableTemplateConnectionInfo : reusableTemplateConnectionInfos ) {
+        for (ReusableTemplateConnectionInfo reusableTemplateConnectionInfo : reusableTemplateConnectionInfos) {
             String inputName = reusableTemplateConnectionInfo.getReusableTemplateInputPortName();
             //find the process group instance in the 'reusable_templates' group in NiFi for this input port
             Optional<ProcessGroupDTO> processGroupDTO =
@@ -199,20 +235,28 @@ public class DefaultTemplateExporter implements TemplateExporter {
                     .flatMap(connectionDTO -> reusableTemplateFlow.getFlow().getProcessGroups()
                         .stream()
                         .map(processGroupEntity -> processGroupEntity.getComponent())
-                        .filter(groupDTO -> groupDTO.getId().equals(connectionDTO.getDestination().getGroupId()) )).findFirst();
-            if(processGroupDTO.isPresent()){
+                        .filter(groupDTO -> groupDTO.getId().equals(connectionDTO.getDestination().getGroupId()))).findFirst();
+            if (processGroupDTO.isPresent()) {
                 //walk the output ports to find any other connecting templates
                 List<ReusableTemplateConnectionInfo> outputPortConnectionMetadata = new ArrayList<>();
 
-                List<ConnectionDTO> outputPortConnections = reusableTemplateFlow.getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent()).filter(connectionDTO -> connectionDTO.getSource().getGroupId().equals(processGroupDTO.get().getId()) && connectionDTO.getSource().getType().equals(NifiConstants.OUTPUT_PORT)).collect(
-                    Collectors.toList());
-                for(ConnectionDTO outputConnection : outputPortConnections){
+                List<ConnectionDTO>
+                    outputPortConnections =
+                    reusableTemplateFlow.getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent())
+                        .filter(connectionDTO -> connectionDTO.getSource().getGroupId().equals(processGroupDTO.get().getId()) && connectionDTO.getSource().getType().equals(NifiConstants.OUTPUT_PORT))
+                        .collect(
+                            Collectors.toList());
+                for (ConnectionDTO outputConnection : outputPortConnections) {
                     //walk these and get their templates
 
                     //first get the connection metadata info needed
                     //1 find the reusable template input port for this connected template
-                    Optional<ConnectionDTO> inputPortToProcessGroupConnection = reusableTemplateFlow.getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent()).filter(connectionDTO -> connectionDTO.getDestination().getId().equals(outputConnection.getDestination().getId()) && connectionDTO.getSource().getType().equals(NifiConstants.INPUT_PORT)).findFirst();
-                    if(inputPortToProcessGroupConnection.isPresent()){
+                    Optional<ConnectionDTO>
+                        inputPortToProcessGroupConnection =
+                        reusableTemplateFlow.getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent()).filter(
+                            connectionDTO -> connectionDTO.getDestination().getId().equals(outputConnection.getDestination().getId()) && connectionDTO.getSource().getType()
+                                .equals(NifiConstants.INPUT_PORT)).findFirst();
+                    if (inputPortToProcessGroupConnection.isPresent()) {
                         ReusableTemplateConnectionInfo connectionInfo = new ReusableTemplateConnectionInfo();
                         connectionInfo.setFeedOutputPortName(outputConnection.getSource().getName());
                         connectionInfo.setReusableTemplateInputPortName(inputPortToProcessGroupConnection.get().getSource().getName());
@@ -229,21 +273,17 @@ public class DefaultTemplateExporter implements TemplateExporter {
                     }
                     //also add in the process group if it doesnt connect
 
-
                 }
-                if(!outputPortConnectionMetadata.isEmpty()) {
-                    gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, connectingOutputPortConnectionMetadata,outputPortConnectionMetadata, reusableTemplateFlow);
+                if (!outputPortConnectionMetadata.isEmpty()) {
+                    gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, connectingOutputPortConnectionMetadata, outputPortConnectionMetadata, reusableTemplateFlow);
                 }
 
             }
 
-
-
-
             //find the template that has the input port name
             Map<String, String> map = nifiRestClient.getTemplatesAsXmlMatchingInputPortName(inputName, reusableTemplateConnectionInfo.getReusableTemplateProcessGroupName());
             if (map != null && !map.isEmpty()) {
-                  for (Map.Entry<String, String> entry : map.entrySet()) {
+                for (Map.Entry<String, String> entry : map.entrySet()) {
                     String portTemplateId = entry.getKey();
                     if (!connectedTemplateIds.contains(portTemplateId)) {
                         connectedTemplateIds.add(portTemplateId);
@@ -254,7 +294,8 @@ public class DefaultTemplateExporter implements TemplateExporter {
         }
     }
 
-    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls, Set<ReusableTemplateConnectionInfo> outputPortMetadata,Set<RemoteProcessGroupInputPort> reusableTemplateRemoteInputPorts) {
+    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls, Set<ReusableTemplateConnectionInfo> outputPortMetadata,
+                       Set<RemoteProcessGroupInputPort> reusableTemplateRemoteInputPorts) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 
@@ -275,7 +316,7 @@ public class DefaultTemplateExporter implements TemplateExporter {
             zos.write(json.getBytes());
             zos.closeEntry();
 
-            if(outputPortMetadata != null && !outputPortMetadata.isEmpty()) {
+            if (outputPortMetadata != null && !outputPortMetadata.isEmpty()) {
                 entry = new ZipEntry(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE);
                 zos.putNextEntry(entry);
                 json = ObjectMapperSerializer.serialize(outputPortMetadata);
@@ -283,7 +324,7 @@ public class DefaultTemplateExporter implements TemplateExporter {
                 zos.closeEntry();
             }
 
-            if(reusableTemplateRemoteInputPorts != null && !reusableTemplateRemoteInputPorts.isEmpty()) {
+            if (reusableTemplateRemoteInputPorts != null && !reusableTemplateRemoteInputPorts.isEmpty()) {
                 entry = new ZipEntry(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE);
                 zos.putNextEntry(entry);
                 json = ObjectMapperSerializer.serialize(reusableTemplateRemoteInputPorts);

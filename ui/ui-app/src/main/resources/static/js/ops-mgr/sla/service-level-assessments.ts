@@ -93,18 +93,18 @@ constructor(private $scope: angular.IScope,
             private accessControlService: AccessControlService,
             private broadcastService: BroadcastService){
 
-            $scope.$watch(()=> {return this.viewType;}, 
+            $scope.$watch(()=> {return this.viewType;},
                                     (newVal: any)=> {this.onViewTypeChange(newVal);}
                                );
 
-            $scope.$watch(()=> {return this.filter;}, 
+            $scope.$watch(()=> {return this.filter;},
                                     (newVal: any, oldVal: any)=> {
                                                         if (newVal != oldVal) {
                                                             return this.loadAssessments(true).promise;
                                                         }
 
                             });
-        
+
         } // end of constructor
          /**
          * Build the possible Sorting Options
@@ -234,7 +234,7 @@ constructor(private $scope: angular.IScope,
                     filter += 'result=='+tabTitle.toUpperCase();
                 }
                 var params = {start: start, limit: limit, sort: sort, filter:filter};
-                this.$http.get(this.opsManagerRestUrlService.LIST_SLA_ASSESSMENTS_URL, 
+                this.$http.get(this.opsManagerRestUrlService.LIST_SLA_ASSESSMENTS_URL,
                                {timeout: canceler.promise, params: params})
                            .then(successFn, errorFn);
             }
@@ -245,8 +245,8 @@ constructor(private $scope: angular.IScope,
         transformAssessments (tabTitle: any, assessments: any){
             //first clear out the arrays
             this.tabService.clearTabs(this.pageName);
-            angular.forEach(assessments, function(assessment, i) {
-                this.TabService.addContent(this.pageName, tabTitle, assessment);
+            angular.forEach(assessments, (assessment, i) =>{
+                this.tabService.addContent(this.pageName, tabTitle, assessment);
             });
             return assessments;
 
@@ -265,13 +265,7 @@ constructor(private $scope: angular.IScope,
             this.loaded = true;
         }
 
-        clearRefreshTimeout= function(instanceId: any) {
-            var timeoutInstance = this.timeoutMap[instanceId];
-            if (timeoutInstance) {
-                this.$timeout.cancel(timeoutInstance);
-                delete this.timeoutMap[instanceId];
-            }
-        }
+
 
 }
 

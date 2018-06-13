@@ -15,7 +15,7 @@ setVersion() {
   mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$1
   find ui -name package.json -a \! -path '*node_modules*' -exec sed -i '' "s/\"version\": \"[0-9.A-Z-]*\"/\"version\": \"$1\"/" {} \;
   sed -i '' "s/\"\?ver=[0-9.A-Z-]*\"/\"?ver=$1\"/" ui/ui-app/src/main/resources/static/js/systemjs.config.js
-  mvn package -f services/upgrade-service
+  mvn package -DskipTests -am -pl services/upgrade-service
 }
 
 ################

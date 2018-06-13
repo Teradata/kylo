@@ -1,0 +1,6 @@
+{
+  "templateName": "Data Confidence Invalid Records",
+  "description": "Data Confidence Check - Invalid record count percentage",
+  "stream": false,
+  "fileName": "data_confidence_invalid_records.zip"
+}

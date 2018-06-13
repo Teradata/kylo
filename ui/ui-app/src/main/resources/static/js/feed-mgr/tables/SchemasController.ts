@@ -137,7 +137,7 @@ export class SchemasController {
         this.loading = true;
         var successFn = (response: any) => {
             this.datasource = response;
-            this.cardTitle = this.datasource.name + " " + this.$filter('translate')('views.TableController.Schemas');
+            this.cardTitle = this.datasource.name;
             this.loading = false;
         };
         var errorFn = (err: any) => {

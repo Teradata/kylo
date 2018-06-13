@@ -29,6 +29,8 @@
     "views.main.adminTitle": "Admin",
     "views.main.feedManagerTitle": "Feed Manager",
     "views.main.opsManagerTitle": "Operations",
+    "views.main.marketplace": "Marketplace",
+    "views.main.marketplace-narrow": "Mkt",
     "views.main.access-denied": "Access Deined",
     "views.main.got-it": "Got it!",
     "views.main.accessCategories": "Access Categories",
@@ -264,7 +266,7 @@
     "views.feed-activity-template.1Y": "1 Year",
 
     "views.feeds.feed-details.Jobs": "Jobs",
-    "views.feeds.feed-details.FD": "Feed Details",
+    "views.feeds.feed-details.FD": "Job Summary",
     "views.feeds.feed-details.Completed": "COMPLETED",
     "views.feeds.feed-details.Running": "RUNNING",
     "views.feeds.feed-details.Failed": "FAILED",
@@ -721,7 +723,7 @@
     "views.job-details-template.EC": "Exit Code",
 
     "views.about.Version": "Version:",
-    "views.about.Close": "Close:",
+    "views.about.Close": "Close",
 
     "views.feed-stats-charts.Last Minute": "Last Minute",
     "views.feed-stats-charts.Last 3 Minutes": "Last 3 Minutes",
@@ -770,6 +772,9 @@
     "views.feed-stats-charts.Failed Events": "Failed Events",
     "views.feed-stats-charts.Processor": "Processor",
     "views.feed-stats-charts.Errors": "Errors",
+
+    "views.marketplace.templates": "Templates",
+    "views.marketplace.feeds": "Feeds",
 
     "views.feed-details-delete-dialogDelete": "Delete",
     "views.feed-details-delete-dialogDelete2": "All data for this feed will be permanently deleted.",

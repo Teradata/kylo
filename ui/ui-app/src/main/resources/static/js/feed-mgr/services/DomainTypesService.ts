@@ -125,7 +125,7 @@ export class DomainTypesService{
                 private RestUrlService?: any) {
 
       // angular.extend(DomainTypesService.prototype, {
-      
+
       //  });
         //return new DomainTypesService();
     }
@@ -155,11 +155,18 @@ export class DomainTypesService{
                 if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
                     var source = angular.isArray(columnDef.sampleValues) ? columnDef.sampleValues : [columnDef.sampleValues];
                     valueArray = source.filter((value: any)=> {
-                        return angular.isString(value) && value.trim().length > 0;
+                        return value != null && value.toString().trim().length > 0;
                     });
+                    valueArray = valueArray.map((value: any) => {
+                         return value.toString();
+                    });
+
                 } else {
                     valueArray = [];
                 }
+
+                // Will be true if matches 80% of the values if we have a large enough sample size
+                var fuzzyValueMatch = (valueArray.length < 10 ? 1 : .8);
 
                 // Find matching domain type
                 var matchingDomainType = domainTypes.find((domainType: any)=> {
@@ -174,7 +181,8 @@ export class DomainTypesService{
                     // Match sample values
                     var sampleValuesRegexp = getSampleDataRegExp(domainType);
                     if (sampleValuesRegexp !== null && valueArray.length > 0 && match !== false) {
-                        match = valueArray.every(matches.bind(null, sampleValuesRegexp));
+                        var found = valueArray.filter(matches.bind(null, sampleValuesRegexp));
+                        match = (found && (found.length >= (valueArray.length * fuzzyValueMatch)));
                     }
 
                     return (match === true);
@@ -274,5 +282,5 @@ export class DomainTypesService{
         return new DomainTypesService($http , $q, RestUrlService);
   }
   ]);
-  
-  
+
+

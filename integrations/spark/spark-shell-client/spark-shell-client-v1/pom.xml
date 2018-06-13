@@ -7,12 +7,11 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-shell-client</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
     <spark.avro.version>2.0.1</spark.avro.version>
-    <spark.csv.version>1.5.0</spark.csv.version>
   </properties>
 
   <artifactId>kylo-spark-shell-client-v1</artifactId>
@@ -91,6 +90,34 @@
       </exclusions>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-file-metadata-spark-v1</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-ext</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+    <dependency>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-spark-v1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Scala dependencies -->
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -123,8 +150,19 @@
     </dependency>
     <dependency>
       <groupId>com.databricks</groupId>
-      <artifactId>spark-csv_2.10</artifactId>
-      <version>${spark.csv.version}</version>
+      <artifactId>spark-csv_${scala.binary.version}</artifactId>
+      <version>${spark1.csv.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.databricks</groupId>
+      <artifactId>spark-xml_${scala.binary.version}</artifactId>
+      <version>${spark1.xml.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang</groupId>

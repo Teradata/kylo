@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.sql.types.StructField;
@@ -138,10 +139,10 @@ public class StandardDataValidator implements DataValidator, Serializable {
         StructField[] fields = resolveSchema(databaseName, definitionsTableToUse, hiveContext);
         FieldPolicy[] policies = resolvePolicies(fields, policyMap);
 
-        String selectStmt = toSelectFields(policies);
-        String sql = "SELECT " + selectStmt + " FROM " + HiveUtils.quoteIdentifier(databaseName, sourceTableName) + " WHERE processing_dttm = '" + partition + "'";
-        log.info("Executing query {}", sql);
-        DataSet sourceDF = scs.sql(hiveContext, sql);
+        Column[] columns = toSelectColumns(policies);
+        DataSet sourceDF = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, sourceTableName))
+            .select(columns)
+            .filter("processing_dttm = '" + partition + "'");
 
         // Repartition if necessary
         if (numPartitions > 0) {
@@ -241,7 +242,7 @@ public class StandardDataValidator implements DataValidator, Serializable {
         StructType validTableSchema = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, targetTableName)).schema();
         DataSet validDataFrame = getRows(validResultRDD, ModifiedSchema.getValidTableSchema(feedTableSchema.fields(), validTableSchema.fields(), result.getPolicies()), hiveContext);
         validDataFrame = validDataFrame.drop(REJECT_REASON_COL).toDF();
-        //Remove the columns from _valid that dont exist in the validTableName
+        //Remove the columns from _valid that don't exist in the validTableName
 
         writeToTargetTable(validDataFrame, databaseName, targetTableName, hiveContext);
 
@@ -269,6 +270,20 @@ public class StandardDataValidator implements DataValidator, Serializable {
             }
         });
         return scs.toDataSet(hiveContext, rows, schema);
+    }
+    
+    private Column[] toSelectColumns(FieldPolicy[] policies1) {
+        List<Column> columns = new ArrayList<>();
+        log.info("Building select statement for # of policies {}", policies1.length);
+        for (int i = 0; i < policies1.length; i++) {
+            if (policies1[i].getField() != null) {
+                log.info("policy [{}] name {} feedName {}", i, policies1[i].getField(), policies1[i].getFeedField());
+                String feedField = StringUtils.defaultIfEmpty(policies1[i].getFeedField(), policies1[i].getField());
+                columns.add(new Column(feedField).as(policies1[i].getField()));
+            }
+        }
+        columns.add(new Column("processing_dttm"));
+        return columns.toArray(new Column[columns.size()]);
     }
 
     private String toSelectFields(FieldPolicy[] policies1) {

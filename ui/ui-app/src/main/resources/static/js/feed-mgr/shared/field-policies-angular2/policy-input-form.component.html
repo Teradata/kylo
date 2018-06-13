@@ -1,0 +1,153 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+
+<div *ngFor="let group of rule.groups" class="layout-padding-left-right" fxLayout="{{group.layout}}">
+
+  <div *ngFor="let property of group.properties" >
+    <ng-container *ngIf="property.hidden == false" [formGroup]="formGroup">
+
+      <ng-container *ngIf="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed'  || property.type =='velocityTemplate' ">
+      <mat-form-field >
+        <mat-label>{{property.displayName}}</mat-label>
+        <input matInput  name="{{property.formKey}}" [formControlName]="property.formKey" type="number" *ngIf="property.type == 'number'" [(value)]="property.value" [placeholder]="property.placeholder"
+               [pattern]="property.patternRegExp"
+               [required]="property.required"  (change)="onPropertyChanged(property)"/>
+        <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'email'" [(value)]="property.value" [placeholder]="property.placeholder" [pattern]="property.patternRegExp"
+               [required]="property.required"  type="email" (change)="onPropertyChanged(property)"/>
+        <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'emails'" [(value)]="property.value" [placeholder]="property.placeholder" [pattern]="property.patternRegExp"
+               [required]="property.required"  multiple-email-validator (change)="onPropertyChanged(property)" />
+        <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'string' || property.type =='regex'" [(value)]="property.value" [placeholder]="property.placeholder"
+               [pattern]="property.patternRegExp"
+               [required]="property.required"  type="text" (change)="onPropertyChanged(property)"/>
+        <mat-select [(value)]="property.value" *ngIf="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" [required]="property.required"
+                    [formControlName]="property.formKey"
+                    [disabled]="!rule.editable || (property.type == 'currentFeed' && (feed != null || (rule.mode != undefined && rule.mode == 'EDIT')))"
+                    (change)="onPropertyChanged(property)">
+          <mat-option *ngFor="let value of property.selectableValues" value="{{value.value}}">
+            {{value.label}}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+        <mat-hint *ngIf="property.errorMessage">
+          {{property.errorMessage}}
+        </mat-hint>
+        <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required">
+          This field is required
+        </mat-error>
+          <mat-error *ngIf="formGroup.controls[property.formKey].errors?.multipleEmails">
+            Emails are not valid
+          </mat-error>
+      </mat-form-field>
+
+      </ng-container>
+
+      <mat-form-field class="md-block condensed-medium  " *ngIf="property.type == 'cron'">
+        <mat-label>{{property.displayName}}</mat-label>
+        <input matInput required [(value)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" 
+               cron-expression-validator
+               [(value)]-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }" (change)="onPropertyChanged(property)"/>
+
+        <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+        <mat-hint *ngIf="property.errorMessage">
+          {{property.errorMessage}}
+        </mat-hint>
+
+        <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+          This field is required
+        </mat-error>
+        <!--
+        <div *ngIf="!theForm[property.formKey].valid">
+          <div *ngIf="theForm[property.formKey].hasError('cronExpression')">
+            Invalid Cron Expression
+          </div>
+        </div>
+         <cron-expression-preview cron-expression="property.value"
+                                   *ngIf="theForm[property.formKey].$valid"></cron-expression-preview>
+                                   -->
+      </mat-form-field>
+
+      <mat-form-field *ngIf="property.type == 'date' ">
+        <input matInput matInput [matDatepicker]="picker" [formControlName]="property.formKey" name="{{property.formKey}}" [required]="property.required" *ngIf="property.type == 'date' " [(value)]="property.value" [placeholder]="property.placeholder"
+                (change)="onPropertyChanged(property)">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+
+        <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+        <mat-hint *ngIf="property.errorMessage">
+          {{property.errorMessage}}
+        </mat-hint>
+        <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+        This field is required
+      </mat-error>
+
+      </mat-form-field>
+
+      <ng-container *ngIf="property.type == 'regex'">
+      <mat-form-field >
+        <label>Test Sample String</label>
+        <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" [(value)]="property.regexSampleString" [placeholder]="SampleString" [required]="property.required" />
+
+        <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+        <mat-hint *ngIf="property.errorMessage">
+          {{property.errorMessage}}
+        </mat-hint>
+        <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+          This field is required
+        </mat-error>
+
+      </mat-form-field>
+      <div>
+        {{property.regexValid}}
+      </div>
+      </ng-container>
+
+      <ng-container *ngIf="property.type == 'chips' || property.type == 'feedChips'">
+
+        <td-chips [chipAddition]="true"
+                  [chipRemoval]="true"
+                  [items]="property.selectableValues"
+                  [(value)]="editChips.selectedItem"
+                  placeholder="{{property.placeholder}}"
+                  
+                  [inputPosition]="'after'"
+                  (inputChange)="queryChipSearch(property,$event)"
+                  (add)="validateRequiredChips(property)"
+                  (remove)="validateRequiredChips(property)"
+                  requireMatch>
+          <ng-template td-chip let-chip="chip">
+            {{chip.label}}
+          </ng-template>
+          <!--
+           <div *ngIf="property.hint" class="hint">
+            {{property.hint}}
+          </div>
+          <div ng-messages="theForm[property.formKey].$error " *ngIf="property.invalid == true" md-auto-hide="false">
+            <div ng-message="required">This field is required.</div>
+          </div>
+          -->
+        </td-chips>
+
+      </ng-container>
+
+
+    </ng-container>
+  </div>
+  </div>

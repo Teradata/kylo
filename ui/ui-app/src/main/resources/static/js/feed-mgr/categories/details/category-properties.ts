@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 export class CategoryPropertiesController {
@@ -43,7 +44,7 @@ export class CategoryPropertiesController {
      * @param CategoriesService the category service
      */
     constructor(private $scope: IScope, private $mdToast: angular.material.IToastService, private $q: angular.IQService, private accessControlService: AccessControlService
-        , private EntityAccessControlService: any, private CategoriesService: any, private $mdDialog: angular.material.IDialogService) {
+        , private entityAccessControlService: EntityAccessControlService, private CategoriesService: any, private $mdDialog: angular.material.IDialogService) {
 
 
 

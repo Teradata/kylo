@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  */
 
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
+import com.thinkbiganalytics.metadata.MockMetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
@@ -104,6 +105,7 @@ public class FeedFailureMetricAssessorTest {
     public void setUp() {
         initMocks(this);
 
+        when(this.builder.data(any())).thenReturn(this.builder);
         when(this.builder.message(any(String.class))).thenReturn(this.builder);
         when(this.builder.metric(any(Metric.class))).thenReturn(this.builder);
         when(this.builder.result(any(AssessmentResult.class))).thenReturn(this.builder);
@@ -359,6 +361,7 @@ public class FeedFailureMetricAssessorTest {
         MockOpsManagerFeed feed = new MockOpsManagerFeed();
         feed.setName(feedName);
         feed.setStream(isStream);
+
         return feed;
     }
 
@@ -767,7 +770,7 @@ public class FeedFailureMetricAssessorTest {
 
         @Override
         public Long getJobExecutionId() {
-            return null;
+            return 1L;
         }
 
         @Override

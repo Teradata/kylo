@@ -2,6 +2,7 @@ import * as angular from "angular";
 import * as uiGrid from "ui-grid";
 
 import {DomainType} from "../../services/DomainTypesService.d";
+const moduleName = require('feed-mgr/module-name');
 
 /**
  * Local data for {@link ApplyTableDomainTypesDialog}.
@@ -88,7 +89,7 @@ export class ApplyTableDomainTypesDialog {
     }
 
     /**
-     * Close the dialog and reject promise.
+     * Close the dialog and reject promise. 
      */
     cancel() {
         this.$mdDialog.cancel();
@@ -102,5 +103,5 @@ export class ApplyTableDomainTypesDialog {
     }
 }
 
-angular.module(require("feed-mgr/module-name"))
+angular.module(moduleName)
     .controller("ApplyTableDomainTypesDialog", ApplyTableDomainTypesDialog);

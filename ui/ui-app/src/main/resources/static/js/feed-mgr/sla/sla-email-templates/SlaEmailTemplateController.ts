@@ -7,83 +7,97 @@ import StateService from '../../../services/StateService';
 import {Transition} from "@uirouter/core";
 
 export class SlaEmailTemplatesController implements ng.IComponentController {
-    templateId: any;
+
+    /**
+     * The id of the template
+     */
+    templateId: string;
+    /**
+     * allow editing
+     * @type {boolean}
+     */
     allowEdit: boolean = false;
     /**
      * The current template we are editing
      * @type {null}
      */
-    template: any = this.slaEmailTemplateService.template;
+    template: any;
+    /**
+     * Email Address to test with
+     * @type {string}
+     */
     emailAddress: string = '';
+    /**
+     * the template that been queried
+     */
     queriedTemplate: any;
-    isDefault: any = false;
+    /**
+     * is this the default template
+     * @type {boolean}
+     */
+    isDefault: boolean = false;
     /**
      * the list of available sla actions the template(s) can be assigned to
      * @type {Array}
      */
     availableSlaActions: any[] = [];
 
-    templateVariables: any = this.slaEmailTemplateService.getTemplateVariables();
-    $transition$ : Transition;
+    /**
+     * Variables allowed for the template
+     * @type {{item: string; desc: string}[]}
+     */
+    templateVariables: any;
 
+    /**
+     * Any slas using this template
+     * @type {any[]}
+     */
     relatedSlas: any[] = [];
-    static readonly $inject = ['$mdDialog', '$mdToast',
-        '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService'];
-    constructor(
-        private $mdDialog: angular.material.IDialogService,
-        private $mdToast: angular.material.IToastService,
-        private $http: angular.IHttpService,
-        private slaEmailTemplateService: SlaEmailTemplateService,
-        private stateService: StateService,
-        private accessControlService: AccessControlService) {
 
+
+    static readonly $inject = ['$transition$', '$mdDialog', '$mdToast', '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService']
+
+    constructor(private $transition$: any,
+                private $mdDialog: angular.material.IDialogService,
+                private $mdToast: angular.material.IToastService,
+                private $http: angular.IHttpService,
+                private slaEmailTemplateService: SlaEmailTemplateService,
+                private stateService: StateService,
+                private accessControlService: AccessControlService) {
+
+
+    }
+
+    $onInit() {
+        this.ngOnInit();
+    }
+
+    ngOnInit() {
         this.templateId = this.$transition$.params().emailTemplateId;
-        if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
-            this.queriedTemplate = null;
-            this.slaEmailTemplateService.getExistingTemplates().then(() => {
-                this.template = this.slaEmailTemplateService.getTemplate(this.templateId);
-                if (angular.isUndefined(this.template)) {
-                    ///WARN UNABLE TO FNID TEMPLATE
-                    this.showDialog("Unable to find template", "Unable to find the template for " + this.templateId);
-                }
-                else {
-                    this.queriedTemplate = angular.copy(this.template);
-                    this.isDefault = this.queriedTemplate.default;
-                    this.getRelatedSlas();
-                }
-            })
-        }
-        else if ((this.template != null && angular.isDefined(this.template))) {
-            this.queriedTemplate = angular.copy(this.template);
-            this.isDefault = this.queriedTemplate.default;
-        }
-        else {
-            //redirect back to email template list page
-            this.stateService.FeedManager().Sla().navigateToEmailTemplates();
-        }
+        this.template = this.slaEmailTemplateService.template;
+        this.templateVariables = this.slaEmailTemplateService.getTemplateVariables();
+        this.loadTemplate();
         this.getAvailableActionItems();
         this.getRelatedSlas();
-
-        // Fetch the allowed actions
-        accessControlService.getUserAllowedActions()
-            .then((actionSet: any) => {
-                this.allowEdit = accessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
-            });
+        this.applyAccessControls();
     }
 
 
-
-
-    validate = () => {
-        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).then(function (response: any) {
+    /**
+     * Validate and preview
+     */
+    validate() {
+        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).then((response: angular.IHttpResponse<any>) => {
             response.data.sendTest = false;
             this.showTestDialog(response.data);
         });
-
     }
 
-    sendTestEmail = () => {
-        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then(function (response: any) {
+    /**
+     * Test the email
+     */
+    sendTestEmail() {
+        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then((response: angular.IHttpResponse<any>) => {
             response.data.sendTest = true;
             if (response.data.success) {
                 this.$mdToast.show(
@@ -103,8 +117,10 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
         })
     }
 
-
-    saveTemplate = () => {
+    /**
+     * Save the template
+     */
+    saveTemplate() {
         this.showDialog("Saving", "Saving template. Please wait...");
 
         var successFn = (response: any) => {
@@ -129,8 +145,18 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
         this.slaEmailTemplateService.save(this.template).then(successFn, errorFn);
     }
 
+    /**
+     * Go to the SLA agreement
+     * @param {string} slaId
+     */
+    navigateToSla(slaId: string) {
+        this.stateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
+    }
 
-    exampleTemplate = () => {
+    /**
+     * Load the example template
+     */
+    exampleTemplate() {
         this.template.subject = 'SLA Violation for $sla.name';
         this.template.template = '<html>\n<body> \n' +
             '\t<table>\n' +
@@ -162,19 +188,52 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
             '\t</table>\n' +
             '</body>\n</html>';
         '</html>';
-    };
+    }
 
-    getAvailableActionItems = () => {
+    private loadTemplate() {
+        if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
+            this.queriedTemplate = null;
+            this.slaEmailTemplateService.getExistingTemplates().then(() => {
+                this.template = this.slaEmailTemplateService.getTemplate(this.templateId);
+                if (angular.isUndefined(this.template)) {
+                    ///WARN UNABLE TO FNID TEMPLATE
+                    this.showDialog("Unable to find template", "Unable to find the template for " + this.templateId);
+                }
+                else {
+                    this.queriedTemplate = angular.copy(this.template);
+                    this.isDefault = this.queriedTemplate.default;
+                    this.getRelatedSlas();
+                }
+            })
+        }
+        else if ((this.template != null && angular.isDefined(this.template))) {
+            this.queriedTemplate = angular.copy(this.template);
+            this.isDefault = this.queriedTemplate.default;
+        }
+        else {
+            //redirect back to email template list page
+            this.stateService.FeedManager().Sla().navigateToEmailTemplates();
+        }
+    }
+
+
+    private applyAccessControls() {
+        // Fetch the allowed actions
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                this.allowEdit = this.accessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            });
+    }
+
+
+    private getAvailableActionItems() {
         this.slaEmailTemplateService.getAvailableActionItems().then((response: any) => {
             this.availableSlaActions = response;
         });
     }
 
-    navigateToSla = (slaId: any) => {
-        this.stateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
-    }
 
-    getRelatedSlas = () => {
+    private getRelatedSlas() {
         this.relatedSlas = [];
         if (this.template != null && angular.isDefined(this.template) && angular.isDefined(this.template.id)) {
             this.slaEmailTemplateService.getRelatedSlas(this.template.id).then((response: any) => {
@@ -186,7 +245,7 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
         }
     }
 
-    showTestDialog = (resolvedTemplate: any) => {
+    private showTestDialog(resolvedTemplate: any) {
         this.$mdDialog.show({
             template: '<velocity-template-test-controller></velocity-template-test-controller>',
             parent: angular.element(document.body),
@@ -202,9 +261,9 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
             }, () => {
                 //cancelled the dialog
             });
-    };
+    }
 
-    showDialog = (title: any, message: any) => {
+    private showDialog(title: string, message: string) {
         this.$mdDialog.show(
             this.$mdDialog.alert()
                 .parent(angular.element(document.body))
@@ -215,7 +274,7 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
         );
     }
 
-    hideDialog = () => {
+    private hideDialog() {
         this.$mdDialog.hide();
     }
 
@@ -223,14 +282,14 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
 
 
 export class testDialogController implements ng.IComponentController {
-    
+
     static readonly $inject = ["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress"];
 
     constructor(private $scope: IScope,
-        private $sce: angular.ISCEService,
-        private $mdDialog: angular.material.IDialogService,
-        private resolvedTemplate: any,
-        private emailAddress: any) {
+                private $sce: angular.ISCEService,
+                private $mdDialog: angular.material.IDialogService,
+                private resolvedTemplate: any,
+                private emailAddress: any) {
 
         $scope.resolvedTemplateSubject = $sce.trustAsHtml(resolvedTemplate.subject);
         $scope.resolvedTemplateBody = $sce.trustAsHtml(resolvedTemplate.body);
@@ -247,13 +306,13 @@ export class testDialogController implements ng.IComponentController {
     }
 
 
-
     trustAsHtml = (string: any) => {
         return this.$sce.trustAsHtml(string);
     };
 
 
 }
+
 angular.module(moduleName)
     .component('velocityTemplateTestController',
     {

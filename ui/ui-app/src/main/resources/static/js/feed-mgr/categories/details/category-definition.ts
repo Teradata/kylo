@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 export class CategoryDefinitionController {
@@ -67,10 +68,10 @@ export class CategoryDefinitionController {
 
      static readonly $inject = ["$scope", "$mdDialog", "$mdToast", "$q", "$timeout",
                                 "$window", "AccessControlService", "EntityAccessControlService",
-                                 "CategoriesService", "StateService", "FeedSecurityGroups", "FeedService"];   
+                                 "CategoriesService", "StateService", "FeedSecurityGroups", "FeedService"];
 
      constructor(private $scope:IScope, private $mdDialog:angular.material.IDialogService, private $mdToast:angular.material.IToastService, private $q:angular.IQService, private $timeout:angular.ITimeoutService
-        , private $window:angular.IWindowService, private accessControlService:AccessControlService, private EntityAccessControlService:any
+        , private $window:angular.IWindowService, private accessControlService:AccessControlService, private entityAccessControlService:EntityAccessControlService
         , private CategoriesService:any, private StateService:any, private FeedSecurityGroups:any, private FeedService:any) {
 
         this.editModel = angular.copy(CategoriesService.model);
@@ -136,10 +137,10 @@ export class CategoryDefinitionController {
             // console.log("this.hasFeeds() = " + this.hasFeeds());
 
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "Can be customised";
+                return "Can be customized";
             }
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
-                return "Cannot be customised because Category has Feeds";
+                return "Cannot be customized because category has feeds";
             }
             if (!this.isNewCategory() && this.isSystemNameEditable() && this.hasNoFeeds()) {
                 return "System name is now editable";
@@ -148,7 +149,7 @@ export class CategoryDefinitionController {
                 return ""; //invalid state, cannot be both editable and have feeds!
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "Auto generated from Category Name, can be customised";
+                return "Auto generated from category name, can be customized";
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be new and already have feeds

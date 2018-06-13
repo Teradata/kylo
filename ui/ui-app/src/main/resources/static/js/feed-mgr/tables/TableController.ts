@@ -46,7 +46,7 @@ export class TableController {
 
     successFn = (response:any) =>{
         this.tableSchema = response.data;
-        this.cardTitle = this.datasource.name + "." + this.schema + " " + this.$filter('translate')('views.TableController.Tables');
+        this.cardTitle = this.schema;
         this.loading = false;
     };
     errorFn = (err:any) => {

@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -55,35 +57,45 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         builder.metric(metric);
 
         String feedName = metric.getFeedName();
+        HashMap<String,String> data = new HashMap<>();
+        data.put("feed",feedName);
 
         FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLatestJob(feedName);
+        DateTime lastTime = lastFeedJob.getDateTime();
+        data.put("dateTime",lastTime.toString());
+        data.put("dateTimeMillis",lastTime.getMillis()+"");
         LOG.debug("Assessing FeedFailureMetric for '{}'.  The Last Feed Job was: {} ",feedName,lastFeedJob);
         if (!feedFailureService.isEmptyJob(lastFeedJob)) {
-            DateTime lastTime = lastFeedJob.getDateTime();
+
+            if(lastFeedJob.getBatchJobExecutionId() != null) {
+                data.put("jobExecutionId", lastFeedJob.getBatchJobExecutionId().toString());
+            }
 
             //compare with the latest feed time, alerts with same timestamps will not be raised
             builder.compareWith(feedName, lastTime.getMillis());
 
             if (lastFeedJob.isFailure()) {
+                data.put("status","FAILURE");
                 String message = "Feed " + feedName + " has failed on " + lastFeedJob.getDateTime();
                 if(lastFeedJob.getBatchJobExecutionId() != null){
                     message +=". Batch Job ExecutionId: "+lastFeedJob.getBatchJobExecutionId();
                 }
                 LOG.debug(message);
 
-                builder.message(message).result(AssessmentResult.FAILURE);
+                builder.message(message).data(data).result(AssessmentResult.FAILURE);
             } else {
+                data.put("status","SUCCESS");
                 String message ="Feed " + feedName + " has succeeded on " + lastFeedJob.getDateTime();
                 if(lastFeedJob.getBatchJobExecutionId() != null){
                     message +=". Batch Job ExecutionId: "+lastFeedJob.getBatchJobExecutionId();
                 }
                 LOG.debug(message);
 
-                builder.message(message).result(AssessmentResult.SUCCESS);
+                builder.message(message).data(data).result(AssessmentResult.SUCCESS);
             }
         } else {
             LOG.debug("FeedFailureMetric found an no recent jobs for '{}'. Returning SUCCESS ",feedName);
-            builder.message("No Jobs found for feed " + feedName + " since " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
+            builder.data(data).message("No Jobs found for feed " + feedName + " since " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
         }
     }
 

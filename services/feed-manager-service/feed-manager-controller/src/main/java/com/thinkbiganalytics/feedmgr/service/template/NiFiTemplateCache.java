@@ -32,7 +32,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,7 +210,7 @@ public class NiFiTemplateCache {
             if (registeredTemplate != null) {
                 //merge in the saved state of the template
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
-                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                                                                    NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_SKIP_IS_INPUT_FLAG);
             }
             cachedProperties.setProperties(properties);
 
@@ -225,7 +224,7 @@ public class NiFiTemplateCache {
 
 
     public List<NiFiRemoteProcessGroup> getRemoteProcessGroups(TemplateDTO templateDTO) {
-        getTemplateProperties(templateDTO,true,null);
+        getTemplateProperties(templateDTO, true, null);
         String cacheKey = cacheKey(templateDTO, true);
         TemplatePropertiesCache cachedProperties = templatePropertiesCache.getIfPresent(cacheKey);
         return cachedProperties.getRemoteProcessGroups();
@@ -241,7 +240,7 @@ public class NiFiTemplateCache {
                 p.setUserEditable(false);
             });
             NifiPropertyUtil.matchAndSetPropertyByProcessorName(cachedProperties, registeredTemplate.getProperties(),
-                                                                NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                                                                NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
             //also update the non property descriptor cache if present
             String cacheKey = cacheKey(registeredTemplate.getNifiTemplate(), false);
             TemplatePropertiesCache cache = templatePropertiesCache.getIfPresent(cacheKey);
@@ -251,7 +250,7 @@ public class NiFiTemplateCache {
                     p.setUserEditable(false);
                 });
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(cache.getProperties(), registeredTemplate.getProperties(),
-                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                                                                    NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
             }
 
             //    cachedProperties.forEach(p -> p.setSelected(selectedProperties.containsKey(p.getProcessorNameTypeKey())));

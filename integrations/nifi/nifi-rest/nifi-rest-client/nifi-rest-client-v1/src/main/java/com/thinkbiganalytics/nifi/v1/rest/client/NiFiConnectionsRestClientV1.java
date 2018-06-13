@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
@@ -138,7 +137,7 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
     @Nonnull
     public Optional<ConnectionStatusEntity> getConnectionStatus(@Nonnull final String connectionId) {
         try {
-            return Optional.of(client.get(FLOW_PATH + "/connections/"+connectionId+"/status", null, ConnectionStatusEntity.class));
+            return Optional.of(client.get(FLOW_PATH + "/connections/" + connectionId + "/status", null, ConnectionStatusEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
@@ -148,52 +147,33 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
     public Optional<ConnectionDTO> update(@Nonnull ConnectionDTO connectionDTO) {
 
         Optional<ConnectionEntity> current = findEntityById(connectionDTO.getId());
-        if(current.isPresent()) {
+        if (current.isPresent()) {
 
             ConnectionEntity connectionEntity = new ConnectionEntity();
             ConnectionDTO updateDto = new ConnectionDTO();
             connectionEntity.setComponent(updateDto);
             updateDto.setId(connectionDTO.getId());
             updateDto.setSelectedRelationships(connectionDTO.getSelectedRelationships());
-            if(connectionDTO.getSource() != null) {
+            if (connectionDTO.getSource() != null) {
                 updateDto.setSource(new ConnectableDTO());
                 updateDto.getSource().setGroupId(connectionDTO.getSource().getGroupId());
                 updateDto.getSource().setId(connectionDTO.getSource().getId());
                 updateDto.getSource().setType(connectionDTO.getSource().getType());
             }
-            if(connectionDTO.getDestination() != null){
+            if (connectionDTO.getDestination() != null) {
                 updateDto.setDestination(new ConnectableDTO());
                 updateDto.getDestination().setGroupId(connectionDTO.getDestination().getGroupId());
                 updateDto.getDestination().setId(connectionDTO.getDestination().getId());
                 updateDto.getDestination().setType(connectionDTO.getDestination().getType());
             }
-            /*
-
-            connectionEntity.setComponent(connectionDTO);
-            connectionEntity.setId(connectionDTO.getId());
-            connectionEntity.setDestinationId(connectionDTO.getDestination() != null ? connectionDTO.getDestination().getId() : null);
-            connectionEntity.setDestinationGroupId(connectionDTO.getDestination() != null ? connectionDTO.getDestination().getGroupId() : null);
-            connectionEntity.setDestinationType(connectionDTO.getDestination() != null ? connectionDTO.getDestination().getType() : null);
-            connectionEntity.setSourceId(connectionDTO.getSource() != null ? connectionDTO.getSource().getId() : null);
-            connectionEntity.setSourceGroupId(connectionDTO.getSource() != null ? connectionDTO.getSource().getGroupId() : null);
-            connectionEntity.setSourceType(connectionDTO.getSource() != null ? connectionDTO.getSource().getType() : null);
-             */
             final RevisionDTO revision = new RevisionDTO();
             revision.setVersion(current.get().getRevision().getVersion());
             connectionEntity.setRevision(revision);
 
-
-/*
-        final RevisionDTO revision = new RevisionDTO();
-        revision.setVersion(current.getRevision().getVersion());
-        connectionEntity.setRevision(revision);
-  */
-            ObjectMapper m = new ObjectMapper();
-
             try {
-                log.info("Updating ConnectionEntity: {} ",m.writeValueAsString(connectionEntity));
                 return Optional.of(client.put(CONNECTION_PATH + connectionDTO.getId(), connectionEntity, ConnectionEntity.class).getComponent());
             } catch (Exception e) {
+                log.error("Error updating connection entry info for connection: {} {} ", connectionDTO, e.getMessage());
                 return Optional.empty();
             }
         }

@@ -7,6 +7,7 @@ import { FeedService } from '../services/FeedService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import AddButtonService from '../../services/AddButtonService';
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 
 
 export default class ServiceLevelAgreements {
@@ -232,7 +233,7 @@ export default class ServiceLevelAgreements {
         private tableOptionsService: DefaultTableOptionsService,
         private addButtonService: AddButtonService,
         private accessControlService: AccessControlService,
-        private EntityAccessControlService: any){
+        private entityAccessControlService: EntityAccessControlService){
 
          //if the newSLA flag is tripped then show the new SLA form and then reset it
 
@@ -774,7 +775,7 @@ export default class ServiceLevelAgreements {
 
             //Apply the entity access permissions
             var requests = {
-                entityEditAccess: entityAccessControlled == true ? this.feedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
+                entityEditAccess: entityAccessControlled == true ? this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
                 functionalAccess: this.accessControlService.getUserAllowedActions()
             }
             this.$q.all(requests).then((response: any) => {

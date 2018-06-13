@@ -1,6 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import { controller } from "../../main/IndexController";
 import AddButtonService from "../../services/AddButtonService";
 import { TransitionService } from "@uirouter/core";
 

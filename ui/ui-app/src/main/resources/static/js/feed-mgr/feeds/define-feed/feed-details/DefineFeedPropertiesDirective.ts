@@ -103,7 +103,7 @@ export class DefineFeedPropertiesController {
                 (categoryId:any) => {
                     if (categoryId !== null) {
                         FeedService.getUserFields(categoryId)
-                                .then(this.setUserProperties);
+                                .then(() => this.setUserProperties);
                     }
                 }
         );

@@ -2,78 +2,65 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-
-
-    /**
-     * the rule and options need to have been initialized by the PolicyInputFormService grouping
-     *
-     */
-    var directive = function () {
-        return {
-            restrict: "EA",
-            bindToController: {
-                rule: '=',
-                theForm: '=',
-                feed: '=?',
-                mode: '=', //NEW or EDIT
-                onPropertyChange:"&?"
-            },
-            controllerAs: 'vm',
-            scope: {},
-            templateUrl: 'js/feed-mgr/shared/policy-input-form/policy-input-form.html',
-            controller: "PolicyInputFormController",
-            link: function ($scope:any, element:any, attrs:any, controller:any) {
-
-            }
-
-        };
-    }
-
     export class PolicyInputFormController {
 
-    editChips:any;
-    validateRequiredChips:any;
+    editChips:any={};
     theForm:any;
     queryChipSearch:any;
     transformChip:any;
-    onPropertyChanged:any;
     onPropertyChange:any;
     rule:any;
+    feed:any;
+    mode:any;
 
-    constructor(private $scope:any, private $q:any, private PolicyInputFormService:any) {
+    ngOnInit(): void {
+        this.editChips.selectedItem = null;
+        this.editChips.searchText = null;
+        
+        this.queryChipSearch = this.PolicyInputFormService.queryChipSearch;
+        this.transformChip = this.PolicyInputFormService.transformChip;
 
-        var self = this;
-        self.editChips = {};
-        self.editChips.selectedItem = null;
-        self.editChips.searchText = null;
-        self.validateRequiredChips = function (property:any) {
-            return PolicyInputFormService.validateRequiredChips(self.theForm, property);
-        }
-        self.queryChipSearch = PolicyInputFormService.queryChipSearch;
-        self.transformChip = PolicyInputFormService.transformChip;
-
-        self.onPropertyChanged = function(property:any){
-            if(self.onPropertyChange != undefined && angular.isFunction(self.onPropertyChange)){
-                self.onPropertyChange()(property);
-            }
-        }
         //call the onChange if the form initially sets the value
-        if(self.onPropertyChange != undefined && angular.isFunction(self.onPropertyChange)) {
-            _.each(self.rule.properties, function (property:any) {
+        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)) {
+            _.each(this.rule.properties, (property:any) => {
                 if ((property.type == 'select' || property.type =='feedSelect' || property.type == 'currentFeed') && property.value != null) {
-                    self.onPropertyChange()(property);
+                    this.onPropertyChange()(property);
                 }
             });
         }
+    }
 
+    $onInit(): void {
+        this.ngOnInit();
+    }
+
+    static readonly $inject = ["$scope","$q","PolicyInputFormService"];
+    constructor(private $scope:IScope, private $q:angular.IQService, private PolicyInputFormService:any) {
     };
+
+    onPropertyChanged = (property:any) => {
+        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)){
+            this.onPropertyChange()(property);
+        }
+    }
+    validateRequiredChips = (property:any) => {
+        return this.PolicyInputFormService.validateRequiredChips(this.theForm, property);
+    }
 
 
     
 }
 
-
-angular.module(moduleName).controller('PolicyInputFormController', ["$scope","$q","PolicyInputFormService",PolicyInputFormController]);
-
 angular.module(moduleName)
-    .directive('thinkbigPolicyInputForm', directive);
+    .component('thinkbigPolicyInputForm', {
+        controller : PolicyInputFormController,
+        bindings: {
+            rule: '=',
+            theForm: '=',
+            feed: '=?',
+            mode: '=', //NEW or EDIT
+            onPropertyChange:"&?"
+        },
+        controllerAs: 'vm',
+        templateUrl: 'js/feed-mgr/shared/policy-input-form/policy-input-form.html',
+    });

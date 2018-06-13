@@ -1,3 +1,4 @@
+import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 
 import {MatButtonModule} from "@angular/material/button";
@@ -13,13 +14,13 @@ import {MatDialogModule} from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
-import {BrowserModule} from "@angular/platform-browser";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {KyloServicesModule} from "../services/services.module";
 import {AddButtonComponent} from "./add-button/add-button.component";
+import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-selection.component";
 import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout-directive.component";
@@ -37,6 +38,7 @@ import {aboutKyloServiceProvider} from "./angular2";
     declarations: [
         AddButtonComponent,
         NotificationMenuComponent,
+        KyloIconComponent,
         ViewTypeSelectionComponent,
         VerticalSectionLayoutComponent,
         OptionsMenuComponent,
@@ -60,7 +62,7 @@ import {aboutKyloServiceProvider} from "./angular2";
         CardLayoutComponent
     ],
     imports: [
-        BrowserModule,
+        CommonModule,
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
@@ -76,6 +78,9 @@ import {aboutKyloServiceProvider} from "./angular2";
         MatDialogModule,
         FormsModule,
         HttpClientModule
+    ],
+     exports: [
+        KyloIconComponent
     ],
     providers: [aboutKyloServiceProvider]
 })

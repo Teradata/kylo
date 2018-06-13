@@ -17,19 +17,16 @@
   limitations under the License.
   #L%
   -->
-<div >
+<div>
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
     <div layout="row" layout-align="center start" ng-if="!vm.loading">
         <div layout="column" class="layout-max-width">
-            <div style="width:100%" class="" layout="row" layout-align="center start">
+            <div style="width:60%" class="" layout="row" layout-align="center start">
                 <md-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
                     <span style="width:40px;max-width:40px;"></span>
                     <md-input-container class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
                         <input ng-model="vm.searchQuery" placeholder='{{"views.categories.FC" | translate}}'>
                     </md-input-container>
-                    <div style="padding:5px 5px 5px 40px;margin-top:12px;">
-                        <ng-md-icon icon="more_vert" style="fill:#676767"></ng-md-icon>
-                    </div>
                 </md-content>
             </div>
         </div>

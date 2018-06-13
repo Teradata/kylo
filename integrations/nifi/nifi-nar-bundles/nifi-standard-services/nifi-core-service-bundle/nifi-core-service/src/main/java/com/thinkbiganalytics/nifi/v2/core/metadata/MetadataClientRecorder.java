@@ -104,10 +104,15 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FlowFile loadWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String parameterName, String initialValue) throws WaterMarkActiveException {
         long timestamp = recordActiveWaterMark(feedId, waterMarkName);
 
-        String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(initialValue);
-        FlowFile resultFF = addToCurrentWaterMarksAttr(session, ff, waterMarkName, parameterName, timestamp);
-        resultFF = session.putAttribute(resultFF, parameterName, value);
-        return session.putAttribute(resultFF, originalValueParameterName(parameterName), value);
+        try {
+            String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(initialValue);
+            FlowFile resultFF = addToCurrentWaterMarksAttr(session, ff, waterMarkName, parameterName, timestamp);
+            resultFF = session.putAttribute(resultFF, parameterName, value);
+            return session.putAttribute(resultFF, originalValueParameterName(parameterName), value);
+        } catch (Exception e) {
+            cancelActiveWaterMark(feedId, waterMarkName);
+            throw e;
+        }
     }
 
     /* (non-Javadoc)

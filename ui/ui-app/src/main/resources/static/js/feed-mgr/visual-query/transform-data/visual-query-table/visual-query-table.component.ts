@@ -138,13 +138,20 @@ export class VisualQueryTable {
 
         /* Watch on columns indicating model changed */
         $scope_.$watchCollection(() => this.columns, () => {
-
+            // On paging, we only need to refresh rows
+            let rowsOnly : boolean = (this.lastState == this.tableState);
+            this.onColumnsChange();
             this.dataService.state = this.tableState;
             this.dataService.columns_ = this.columns;
-            this.onColumnsChange();
-          //  this.onRowsChange();
-            this.refresh();
-            this.lastState = this.tableState;
+            // Ensure we bootstrap with full refresh() after columns populated
+            if (this.columns.length > 0) {
+                this.lastState = this.tableState;
+            }
+            if (rowsOnly) {
+                this.refreshRows();
+            } else {
+                this.refresh();
+            }
         });
 
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);

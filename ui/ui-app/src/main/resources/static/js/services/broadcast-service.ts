@@ -24,6 +24,9 @@ export default class BroadcastService {
     * @type {{}}
     */
     waitingEvents: any = {};
+
+    subscribers = {};
+
     constructor(private $rootScope: any,
         private $timeout: angular.ITimeoutService) {
 
@@ -51,8 +54,15 @@ export default class BroadcastService {
      */
     subscribe = (scope: any, event: any, callback: any) => {
         const handler: any = this.$rootScope.$on(event, callback);
+        if(this.subscribers[event] == undefined){
+            this.subscribers[event] = 0;
+        }
+        this.subscribers[event] +=1;
         if (scope != null) {
-            scope.$on('$destroy', handler);
+            scope.$on('$destroy', ()=>{
+                handler();
+                this.subscribers[event] -= 1;
+            });
         }
     };
     /**

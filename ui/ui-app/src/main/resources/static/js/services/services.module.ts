@@ -1,5 +1,5 @@
+import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {BrowserModule} from "@angular/platform-browser";
 import {UpgradeModule} from "@angular/upgrade/static";
 
 import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider, 
@@ -8,7 +8,7 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
 
 @NgModule({
     imports: [
-        BrowserModule,
+        CommonModule,
         UpgradeModule
     ],
     providers: [

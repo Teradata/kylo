@@ -272,15 +272,15 @@ public class StandardTdchConnectionService
         String hiveConfPath = context.getProperty(HIVE_CONF_PATH).evaluateAttributeExpressions().getValue();
         getLogger().info("Hive Conf Path set to: " + hiveLibPath);
 
-        tdchLibraryJarsPath = generatePath(hiveLibPath, hiveConfPath, hiveDependencies, COMMA);
+        tdchLibraryJarsPath = generatePath(hiveLibPath, hiveConfPath, hiveDependencies, getTdchLibraryJarsPathDelimiter());
         getLogger().info("TDCH Library Jars Path set to: " + tdchLibraryJarsPath);
 
-        tdchHadoopClassPath = generatePath(hiveLibPath, hiveConfPath, hiveDependencies, COLON);
+        tdchHadoopClassPath = generatePath(hiveLibPath, hiveConfPath, hiveDependencies, getTdchHadoopClassPathDelimiter());
         getLogger().info("TDCH Hadoop Classpath set to: " + tdchHadoopClassPath);
     }
 
     //helper method to generate classpath
-    private String generatePath(String hiveLibPath, String hiveConfPath, Set<String> hiveDependencies, String delimiter) {
+    public String generatePath(String hiveLibPath, String hiveConfPath, Set<String> hiveDependencies, String delimiter) {
         List<String> classpath = new ArrayList<>();
         int depth = 1;
 
@@ -290,7 +290,7 @@ public class StandardTdchConnectionService
 
                 int classPathSizeBefore = classpath.size();
                 paths.forEach(path -> {
-                    getLogger().debug("Classpath generation: Checking for: " + hiveDependency + " gave path: " + path.toString());
+                    //getLogger().debug("Classpath generation: Checking for: " + hiveDependency + " gave path: " + path.toString());
                     classpath.add(path.toString());
                 });
                 int classPathSizeAfter = classpath.size();
@@ -305,6 +305,14 @@ public class StandardTdchConnectionService
         }
         classpath.add(hiveConfPath);
         return StringUtils.join(classpath, delimiter);
+    }
+
+    public String getTdchLibraryJarsPathDelimiter() {
+        return COMMA;
+    }
+
+    public String getTdchHadoopClassPathDelimiter() {
+        return COLON;
     }
 
     /**

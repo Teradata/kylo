@@ -12,4 +12,9 @@ export class SparkConstants {
      * Identifier for the native Hive data source.
      */
     static HIVE_DATASOURCE = "HIVE";
+
+    /**
+     * Identifier for the native Hive data source.
+     */
+    static USER_FILE_DATASOURCE = "FILE";
 }

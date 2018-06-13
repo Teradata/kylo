@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.v2.core.savepoint;
 import org.apache.nifi.controller.ControllerService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface SavepointController extends ControllerService {
@@ -42,6 +43,8 @@ public interface SavepointController extends ControllerService {
      */
     Optional<String> getNextFlowFile(String processorId) throws CacheNotInitializedException;
 
+    List<String> getNextFlowFiles(String processorId) throws CacheNotInitializedException;
+
     /**
      * If the cache needs initializing for a given processor, initialize it and return the next available flow file id
      *
@@ -52,6 +55,8 @@ public interface SavepointController extends ControllerService {
      */
     Optional<String> initializeAndGetNextFlowFile(String processorId, Collection<String> newFlowfiles, Collection<SavepointEntry> savepointEntries);
 
+    List<String> initializeAndGetNextFlowFiles(String processorId, Collection<String> newFlowfiles, Collection<SavepointEntry> savepointEntries);
+
 
     /**
      * Add a flow file for a given processor back to the cache queue
@@ -59,8 +64,9 @@ public interface SavepointController extends ControllerService {
      *
      * @param processorId the processor id
      * @param flowfileId  the flow file to re process
+     * @param top if true put it back to the top of the queue, falss will add it to the bottom
      */
-    void putFlowfileBack(String processorId, String flowfileId);
+    void putFlowfileBack(String processorId, String flowfileId, boolean top);
 
 
 }

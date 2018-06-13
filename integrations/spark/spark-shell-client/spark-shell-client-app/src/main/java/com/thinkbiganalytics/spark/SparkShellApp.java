@@ -27,6 +27,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
@@ -40,6 +41,8 @@ import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -127,7 +130,20 @@ public class SparkShellApp {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainer(final ServerProperties serverProperties, @Qualifier("sparkShellPort") final int serverPort) {
         serverProperties.setPort(serverPort);
-        return new TomcatEmbeddedServletContainerFactory();
+        return new TomcatEmbeddedServletContainerFactory() {
+            @Override
+            protected void customizeConnector(final Connector connector) {
+                super.customizeConnector(connector);
+
+                // KYLO-2237 Bind immediately instead of waiting
+                connector.setProperty("bindOnInit", "true");
+                try {
+                    connector.init();
+                } catch (LifecycleException e) {
+                    throw new IllegalStateException("Failed to start connector: " + e, e);
+                }
+            }
+        };
     }
 
     /**
@@ -347,8 +363,8 @@ public class SparkShellApp {
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
                                              final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem, final DataSetConverterService converterService) {
-        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService);
+                                             final FileSystem fileSystem, final DataSetConverterService converterService, final KyloCatalogClientBuilder kyloCatalogClientBuilder) {
+        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService, kyloCatalogClientBuilder);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setFileSystem(fileSystem);
         service.setProfiler(profiler);

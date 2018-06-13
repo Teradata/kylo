@@ -19,132 +19,107 @@ const ALL_COLUMN_NAME = "(ALL)";
  */
 const CHART_COLOR = "#f08c38";
 
-var ProfileStatsDirective = function () {
-    return {
-        controller: "ProfileStatsController",
-        controllerAs: "vm",
-        restrict: "E",
-        scope: {
-            hideColumns: "=",
-            model: "="
-        },
-        templateUrl: "js/feed-mgr/shared/profile-stats/profile-stats.html"
-    };
-};
 
 export class ProfileStatsController {
 
+    /**
+    * Duration of the chart animations.
+    * @type {number}
+    */
+    chartDuration: number = 500;
+    /**
+    * Names of columns in data.
+    * @type {{columnName: string, metricType: string, metricValue: string}}
+    */
+    columns: {
+        columnName: string,
+        metricType: string,
+        metricValue: string
+    };
+    /**
+    * Column statistics.
+    * @type {Object}
+    */
+    data: any = {};
+    /**
+    * Chart left margin.
+    * @type {number}
+    */
+    multiBarHorizontalChartMarginLeft: number = 80;
+    /**
+    * Chart right margin.
+    * @type {number}
+    */
+    multiBarHorizontalChartMarginRight: number = 50;
+    /**
+    * Promise for the next chart update.
+    * @type {Promise}
+    */
+    nextChartUpdate: any = null;
+    /**
+    * API for the Relative Statistics chart.
+    * @type {Object}
+    */
+    percApi: any = {};
+    percOptions: any;
+    /**
+    * Statistics for the select column.
+    * @type {Object}
+    */
+    selectedRow: any = {};
+    /**
+    * Indicates that only columns with column statistics should be displayed.
+    * @type {boolean}
+    */
+    showOnlyProfiled: boolean = false;
+    /**
+    * Column statistics sorted by column name.
+    * @type {Array.<Object>}
+    */
+    sorted: any[] = [];
+    /**
+    * API for the Summary chart.
+    * @type {Object}
+    */
+    summaryApi: any = {};
+    summaryOptions: any;
+    numericvalues: any;
+    timevalues: any;
+    selectTopdValues: any;
+    totalRows: any;
+    filtered: any;
+    stringvalues: any;
+    topvalues: any;
 
-    chartDuration:any;
-    columns:any;
-    data:any;
-    multiBarHorizontalChartMarginLeft:any;
-    multiBarHorizontalChartMarginRight:any;
-    nextChartUpdate:any;
-    percApi:any;
-    percOptions:any;
-    selectedRow:any;
-    showOnlyProfiled:any;
-    sorted:any;
-    summaryApi:any;
-    summaryOptions:any;
-    onModelChange:any;
-    findStat:any;
-    findNumericStat:any;
-    formatRow:any;
-    getClass:any;
-    hasProfile:any;
-    isProfiled:any;
-    percData:any;
-    selectColumn:any;
-    selectColumnData:any;
-    selectNumericValues:any;
-    numericvalues:any;
-    selectRow:any;
-    selectRowAndUpdateCharts:any;
-    selectStringValues:any;
-    updateCharts:any;
-    selectTimeValues:any;
-    timevalues:any;
-    selectTopValues:any;
-    selectType:any;
-    summaryData:any;
-    totalRows:any;
-    filtered:any;
-    stringvalues:any;
-    topvalues:any;
-    
-    constructor(private $scope:any, private $timeout:any, private HiveService:any) {
-        var self = this;
+    hideColumns: any;
+    model: any;
 
-        /**
-         * Duration of the chart animations.
-         * @type {number}
-         */
-        self.chartDuration = 500;
+    static readonly $inject = ["$scope", "$timeout", "HiveService"];
+    constructor(private $scope: IScope, private $timeout: angular.ITimeoutService, private HiveService: any) {
 
-        /**
-         * Names of columns in data.
-         * @type {{columnName: string, metricType: string, metricValue: string}}
-         */
-        self.columns = {
-            columnName: "columnName",
-            metricType: "metricType",
-            metricValue: "metricValue"
-        };
-
-        /**
-         * Column statistics.
-         * @type {Object}
-         */
-        self.data = {};
-
-        /**
-         * Chart left margin.
-         * @type {number}
-         */
-        self.multiBarHorizontalChartMarginLeft = 80;
-
-        /**
-         * Chart right margin.
-         * @type {number}
-         */
-        self.multiBarHorizontalChartMarginRight = 50;
-
-        /**
-         * Promise for the next chart update.
-         * @type {Promise}
-         */
-        self.nextChartUpdate = null;
-
-        /**
-         * API for the Relative Statistics chart.
-         * @type {Object}
-         */
-        self.percApi = {};
 
         /**
          * Options for the Relative Statistics chart.
          * @type {Object}
          */
-        self.percOptions = {
+        this.percOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
-                color: function () {
+                color: () => {
                     return CHART_COLOR;
                 },
                 height: 200,
                 margin: {
                     top: 0,
-                    right: self.multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
+                    right: this.multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
                     bottom: 0,
-                    left: self.multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                    left: this.multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
                 },
-                duration: self.chartDuration,
-                x: function (d:any) {
+                duration: this.chartDuration,
+                x: (d: any) => {
                     return d.label;
                 },
-                y: function (d:any) {
+                y: (d: any) => {
                     return d.value;
                 },
                 showXAxis: true,
@@ -152,44 +127,24 @@ export class ProfileStatsController {
                 showControls: false,
                 showValues: true,
                 showLegend: false,
-                valueFormat: function (n:any) {
+                valueFormat: (n: any) => {
                     return d3.format(',.1f')(n) + " %";
                 }
             }
         };
-
-        /**
-         * Statistics for the select column.
-         * @type {Object}
-         */
-        self.selectedRow = {};
-
-        /**
-         * Indicates that only columns with column statistics should be displayed.
-         * @type {boolean}
-         */
-        self.showOnlyProfiled = false;
-
-        /**
-         * Column statistics sorted by column name.
-         * @type {Array.<Object>}
-         */
-        self.sorted = [];
-
-        /**
-         * API for the Summary chart.
-         * @type {Object}
-         */
-        self.summaryApi = {};
-
+        this.columns = {
+            columnName: "columnName",
+            metricType: "metricType",
+            metricValue: "metricValue"
+        };
         /**
          * Options for the Summary chart.
          * @type {Object}
          */
-        self.summaryOptions = {
+        this.summaryOptions = {
             chart: {
                 type: 'discreteBarChart',
-                color: function () {
+                color: () => {
                     return CHART_COLOR;
                 },
                 height: 270,
@@ -199,11 +154,11 @@ export class ProfileStatsController {
                     bottom: 25, //otherwise bottom labels are not visible
                     left: 0
                 },
-                duration: self.chartDuration,
-                x: function (d:any) {
+                duration: this.chartDuration,
+                x: (d: any) => {
                     return d.label;
                 },
-                y: function (d:any) {
+                y: (d: any) => {
                     return d.value + (1e-10);
                 },
                 showXAxis: true,
@@ -212,7 +167,7 @@ export class ProfileStatsController {
                 xAxis: {
                     tickPadding: 10
                 },
-                valueFormat: function (d:any) {
+                valueFormat: (d: any) => {
                     return d3.format(',.0f')(d);
                 }
             }
@@ -220,359 +175,366 @@ export class ProfileStatsController {
 
         // Watch for changes to the model
         $scope.$watch(
-            function () {
-                return $scope.model;
+            () => {
+                return this.model;
             },
-            function () {
-                self.onModelChange();
+            () => {
+                this.onModelChange();
             }
         );
 
-        /**
+    };
+    /**
          * Finds the metric value for the specified metric type.
          *
          * @param {Array.<Object>} rows the column statistics
          * @param {string} metricType the metric type
          * @returns {string} the metric value
          */
-        self.findStat = function (rows:any, metricType:any) {
-            var row = _.find(rows, function (row) {
-                return row[self.columns.metricType] === metricType;
-            });
-            return (angular.isDefined(row) && angular.isDefined(row[self.columns.metricValue])) ? row[self.columns.metricValue] : "";
-        };
+    findStat = (rows: any, metricType: any) => {
+        var row = _.find(rows, (row) => {
+            return row[this.columns.metricType] === metricType;
+        });
+        return (angular.isDefined(row) && angular.isDefined(row[this.columns.metricValue])) ? row[this.columns.metricValue] : "";
+    };
 
-        /**
-         * Finds the numeric metric value for the specified metric type.
-         *
-         * @param {Array.<Object>} rows the column statistics
-         * @param {string} metricType the metric type
-         * @returns {number} the metric value
-         */
-        self.findNumericStat = function (rows:any, metricType:any) {
-            var stat = self.findStat(rows, metricType);
-            return stat === "" ? 0 : Number(stat);
-        };
+    /**
+     * Finds the numeric metric value for the specified metric type.
+     *
+     * @param {Array.<Object>} rows the column statistics
+     * @param {string} metricType the metric type
+     * @returns {number} the metric value
+     */
+    findNumericStat = (rows: any, metricType: any) => {
+        var stat = this.findStat(rows, metricType);
+        return stat === "" ? 0 : Number(stat);
+    };
 
-        /**
-         * Formats the specified model row.
-         *
-         * @param {Array} row the model row
-         * @param {Array.<string>} columns the list of column system names
-         * @param {Array.<displayColumns>} displayColumns the list of column display names
-         */
-        self.formatRow = function (row:any, columns:any, displayColumns:any) {
-            // Determine metric type
-            var index = _.indexOf(displayColumns, self.columns.metricType);
-            var metricType = row[columns[index]];
+    /**
+     * Formats the specified model row.
+     *
+     * @param {Array} row the model row
+     * @param {Array.<string>} columns the list of column system names
+     * @param {Array.<displayColumns>} displayColumns the list of column display names
+     */
+    formatRow = (row: any, columns: any, displayColumns: any) => {
+        // Determine metric type
+        var index = _.indexOf(displayColumns, this.columns.metricType);
+        var metricType = row[columns[index]];
 
-            // Modify value of 'Top N Values' metric
-            if (metricType === "TOP_N_VALUES") {
-                index = _.indexOf(displayColumns, self.columns.metricValue);
-                var val = row[columns[index]];
-                if (val) {
-                    var newVal = "";
-                    angular.forEach(val.split("^B"), function (row:any) {
-                        var itemArr = row.split("^A");
-                        if (angular.isArray(itemArr) && itemArr.length === 3) {
-                            newVal += itemArr[0] + "." + itemArr[1] + " (" + itemArr[2] + ") \n";
-                        }
-                    });
-                    row[columns[index]] = newVal;
-                }
-            }
-        };
-
-        /**
-         * Returns the class indicating an active column selection.
-         */
-        self.getClass = function (item:any) {
-            return (item[self.columns.columnName] === self.selectedRow.columnName) ? "md-raised" : "";
-        };
-
-        /**
-         * Indicates if the specified column should be displayed.
-         *
-         * @param {Object} column the column
-         * @returns {boolean} true if the column should be displayed, or false otherwise
-         */
-        self.hasProfile = function (column:any) {
-            return (!self.showOnlyProfiled || column.isProfiled);
-        };
-
-        /**
-         * Indicates if the specified column has profile statistics.
-         *
-         * @param {Object} item the column
-         * @returns {boolean} true if the column has profile statistics, or false otherwise
-         */
-        self.isProfiled = function (item:any) {
-            if (_.isUndefined(item.isProfiled)) {
-                var filtered = _.filter(self.data.rows, function (row) {
-                    return row[self.columns.columnName] === item[self.columns.columnName];
+        // Modify value of 'Top N Values' metric
+        if (metricType === "TOP_N_VALUES") {
+            index = _.indexOf(displayColumns, this.columns.metricValue);
+            var val = row[columns[index]];
+            if (val) {
+                var newVal = "";
+                angular.forEach(val.split("^B"), (row: any) => {
+                    var itemArr = row.split("^A");
+                    if (angular.isArray(itemArr) && itemArr.length === 3) {
+                        newVal += itemArr[0] + "." + itemArr[1] + " (" + itemArr[2] + ") \n";
+                    }
                 });
-
-                // anything profiled will have "COLUMN_DATATYPE"
-                var type = self.findStat(filtered, 'COLUMN_DATATYPE');
-                item.isProfiled = (type !== "");
+                row[columns[index]] = newVal;
             }
-            return item.isProfiled;
-        };
+        }
+    };
 
-        /**
-         * Updates the profile data with changes to the model.
-         */
-        self.onModelChange = function () {
-            // Determine column names
-            if (angular.isArray($scope.model) && $scope.model.length > 0) {
-                if (angular.isDefined($scope.model[0].columnName)) {
-                    self.columns.columnName = "columnName";
-                    self.columns.metricType = "metricType";
-                    self.columns.metricValue = "metricValue";
-                } else {
-                    self.columns.columnName = "columnname";
-                    self.columns.metricType = "metrictype";
-                    self.columns.metricValue = "metricvalue";
-                }
-            }
+    /**
+     * Returns the class indicating an active column selection.
+     */
+    getClass = (item: any) => {
+        return (item[this.columns.columnName] === this.selectedRow.columnName) ? "md-raised" : "";
+    };
 
-            // Process the model
-            var hideColumns = angular.isArray($scope.hideColumns) ? $scope.hideColumns : [];
-            self.data = HiveService.transformResults2({data: $scope.model}, hideColumns, self.formatRow);
+    /**
+     * Indicates if the specified column should be displayed.
+     *
+     * @param {Object} column the column
+     * @returns {boolean} true if the column should be displayed, or false otherwise
+     */
+    hasProfile = (column: any) => {
+        return (!this.showOnlyProfiled || column.isProfiled);
+    };
 
-            // Sort by column name
-            if (angular.isArray(self.data.rows) && self.data.rows.length > 0) {
-                var unique = _.uniq(self.data.rows, _.property(self.columns.columnName));
-                self.sorted = _.sortBy(unique, _.property(self.columns.columnName));
-                if (self.sorted && self.sorted.length > 1) {
-                    //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
-                    self.selectRow(self.sorted[1]);
-                } else if (self.sorted && self.sorted.length > 0) {
-                    //fall back to selecting first column if no other exist
-                    self.selectRow(self.sorted[1]);
-                }
-            }
-
-            // Determine total number of rows
-            var allColumnData = _.filter(self.data.rows, function (row) {
-                return row[self.columns.columnName] === ALL_COLUMN_NAME;
+    /**
+     * Indicates if the specified column has profile statistics.
+     *
+     * @param {Object} item the column
+     * @returns {boolean} true if the column has profile statistics, or false otherwise
+     */
+    isProfiled = (item: any) => {
+        if (_.isUndefined(item.isProfiled)) {
+            var filtered = _.filter(this.data.rows, (row) => {
+                return row[this.columns.columnName] === item[this.columns.columnName];
             });
-            self.totalRows = self.findNumericStat(allColumnData, 'TOTAL_COUNT');
 
-            // Update selected row
-            if (angular.isString(self.selectedRow.columnName)) {
-                var newSelectedRow = _.find(self.sorted, function (row) {
-                    return row[self.columns.columnName] === self.selectedRow.columnName;
-                });
-                self.selectRowAndUpdateCharts(null, newSelectedRow);
-            }
+            // anything profiled will have "COLUMN_DATATYPE"
+            var type = this.findStat(filtered, 'COLUMN_DATATYPE');
+            item.isProfiled = (type !== "");
+        }
+        return item.isProfiled;
+    };
 
-            // Ensure charts are the correct size
-            if (self.nextChartUpdate !== null) {
-                $timeout.cancel(self.nextChartUpdate);
-            }
-
-            self.nextChartUpdate = $timeout(function () {
-                self.updateCharts();
-                self.nextChartUpdate = null;
-            }, self.chartDuration);
-        };
-
-        /**
-         * Gets the data for the Relative Statistics graph.
-         *
-         * @returns {Array.<Object>} the graph data
-         */
-        self.percData = function () {
-            var values = [];
-
-            values.push({label: "Nulls", value: self.findNumericStat(self.filtered, 'PERC_NULL_VALUES')});
-            values.push({label: "Unique", value: self.findNumericStat(self.filtered, 'PERC_UNIQUE_VALUES')});
-            values.push({label: "Duplicates", value: self.findNumericStat(self.filtered, 'PERC_DUPLICATE_VALUES')});
-
-            return [{key: "Stats", values: values}];
-        };
-
-        /**
-         * Sets the selected row.
-         *
-         * @param {Object} row the selected row
-         */
-        self.selectColumn = function (row:any) {
-            self.selectedRow.prevProfile = self.selectedRow.profile;
-            self.selectedRow.columnName = row[self.columns.columnName];
-        };
-
-        /**
-         * Sets the selected column data based on the selected row.
-         */
-        self.selectColumnData = function () {
-            self.filtered = _.filter(self.data.rows, function (row) {
-                return row[self.columns.columnName] === self.selectedRow.columnName;
-            });
-        };
-
-        /**
-         * Sets the values for the Numeric Stats table.
-         */
-        self.selectNumericValues = function () {
-            var values:any = [];
-            self.numericvalues = values;
-
-            if (self.selectedRow.profile === "Numeric") {
-                values.push({"name": "Minimum", "value": self.findNumericStat(self.filtered, 'MIN')});
-                values.push({"name": "Maximum", "value": self.findNumericStat(self.filtered, 'MAX')});
-                values.push({"name": "Mean", "value": self.findNumericStat(self.filtered, 'MEAN')});
-                values.push({"name": "Std Dev", "value": self.findNumericStat(self.filtered, 'STDDEV')});
-                values.push({"name": "Variance", "value": self.findNumericStat(self.filtered, 'VARIANCE')});
-                values.push({"name": "Sum", "value": self.findNumericStat(self.filtered, 'SUM')});
-            }
-
-        };
-
-        /**
-         * Selects the specified row.
-         *
-         * @param {Object} row the row to select
-         */
-        self.selectRow = function (row:any) {
-            self.selectColumn(row);
-            self.selectColumnData();
-            self.selectType();
-            self.selectTopValues();
-            self.selectTimeValues();
-            self.selectStringValues();
-            self.selectNumericValues();
-        };
-
-        /**
-         * Selects the specified row and updates charts.
-         *
-         * @param event
-         * @param {Object} row the row to be selected
-         */
-        self.selectRowAndUpdateCharts = function (event:any, row:any) {
-            //called when user selects the column
-            self.selectRow(row);
-            self.updateCharts();
-        };
-
-        /**
-         * Sets the values for the String Stats table.
-         */
-        self.selectStringValues = function () {
-            var vals:any = [];
-            self.stringvalues = vals;
-            if (self.selectedRow.profile === "String") {
-                vals.push({name: "Longest", value: self.findStat(self.filtered, 'LONGEST_STRING')});
-                vals.push({name: "Shortest", value: self.findStat(self.filtered, 'SHORTEST_STRING')});
-                vals.push({name: "Min (Case Sensitive)", value: self.findStat(self.filtered, 'MIN_STRING_CASE')});
-                vals.push({name: "Max (Case Sensitive)", value: self.findStat(self.filtered, 'MAX_STRING_CASE')});
-                vals.push({name: "Min (Case Insensitive)", value: self.findStat(self.filtered, 'MIN_STRING_ICASE')});
-                vals.push({name: "Max (Case Insensitive)", value: self.findStat(self.filtered, 'MAX_STRING_ICASE')});
-            }
-        };
-
-        /**
-         * Sets the values for the Time Stats table.
-         */
-        self.selectTimeValues = function () {
-            var timeVals:any = [];
-            self.timevalues = timeVals;
-            if (self.selectedRow.profile === "Time") {
-                timeVals.push({name: "Maximum", value: self.findStat(self.filtered, 'MAX_TIMESTAMP')});
-                timeVals.push({name: "Minimum", value: self.findStat(self.filtered, 'MIN_TIMESTAMP')});
-            }
-        };
-
-        /**
-         * Sets the values for the Top Values table.
-         */
-        self.selectTopValues = function () {
-            var topN = self.findStat(self.filtered, 'TOP_N_VALUES');
-            var topVals:any = [];
-            if (_.isUndefined(topN)) {
-                topVals = [];
+    /**
+     * Updates the profile data with changes to the model.
+     */
+    onModelChange = () => {
+        // Determine column names
+        if (angular.isArray(this.model) && this.model.length > 0) {
+            if (angular.isDefined(this.model[0].columnName)) {
+                this.columns.columnName = "columnName";
+                this.columns.metricType = "metricType";
+                this.columns.metricValue = "metricValue";
             } else {
-                var lines = topN.split("\n");
-
-
-
-                topVals = _.map(lines, (line:any) => {
-                    var value = line.substring(line.indexOf(".") + 1, line.indexOf("("));
-                    var count = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
-                    return {value: value, count: count};
-                });
+                this.columns.columnName = "columnname";
+                this.columns.metricType = "metrictype";
+                this.columns.metricValue = "metricvalue";
             }
-            self.topvalues = topVals;
-        };
+        }
 
-        /**
-         * Determines the type of the selected column.
-         */
-        self.selectType = function () {
-            var type = self.findStat(self.filtered, 'COLUMN_DATATYPE');
-            if (_.isUndefined(type)) {
-                type = "UnknownType";
+        // Process the model
+        var hideColumnsVar = angular.isArray(this.hideColumns) ? this.hideColumns : [];
+        this.data = this.HiveService.transformResults2({ data: this.model }, hideColumnsVar, this.formatRow);
+
+        // Sort by column name
+        if (angular.isArray(this.data.rows) && this.data.rows.length > 0) {
+            var unique = _.uniq(this.data.rows, _.property(this.columns.columnName));
+            this.sorted = _.sortBy(unique, _.property(this.columns.columnName));
+            if (this.sorted && this.sorted.length > 1) {
+                //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
+                this.selectRow(this.sorted[1]);
+            } else if (this.sorted && this.sorted.length > 0) {
+                //fall back to selecting first column if no other exist
+                this.selectRow(this.sorted[1]);
             }
-            type = type.substring(0, type.indexOf("Type"));
-            self.selectedRow.type = type;
-            if (type === "String") {
-                self.selectedRow.profile = "String";
-            } else if (type === "Long" || type === "Double" || type === "Float" || type === "Byte" || type === "Integer" || type === "Decimal") {
-                self.selectedRow.profile = "Numeric";
-            } else if (type === "Timestamp" || type === "Date") {
-                self.selectedRow.profile = "Time";
-            } else {
-                self.selectedRow.profile = "Unknown";
-            }
-        };
+        }
 
-        /**
-         * Gets the data for the Summary graph.
-         *
-         * @returns {Array.<Object>} the graph data
-         */
-        self.summaryData = function () {
-            var nulls = self.findNumericStat(self.filtered, 'NULL_COUNT');
-            var empty = self.findNumericStat(self.filtered, 'EMPTY_COUNT');
-            var unique = self.findNumericStat(self.filtered, 'UNIQUE_COUNT');
-            var invalid = self.findNumericStat(self.filtered, 'INVALID_COUNT');
-            var valid = self.totalRows - invalid;
+        // Determine total number of rows
+        var allColumnData = _.filter(this.data.rows, (row) => {
+            return row[this.columns.columnName] === ALL_COLUMN_NAME;
+        });
+        this.totalRows = this.findNumericStat(allColumnData, 'TOTAL_COUNT');
 
-            //display negative values in red
-            var color = CHART_COLOR;
-            if (valid < 0) {
-                color = "red";
-            }
+        // Update selected row
+        if (angular.isString(this.selectedRow.columnName)) {
+            var newSelectedRow = _.find(this.sorted, (row) => {
+                return row[this.columns.columnName] === this.selectedRow.columnName;
+            });
+            this.selectRowAndUpdateCharts(null, newSelectedRow);
+        }
 
-            var values = [];
-            values.push({"label": "Total", "value": self.totalRows});
-            values.push({"label": "Valid", "value": valid, "color": color});
-            values.push({"label": "Invalid", "value": invalid});
+        // Ensure charts are the correct size
+        if (this.nextChartUpdate !== null) {
+            this.$timeout.cancel(this.nextChartUpdate);
+        }
 
-            if (self.selectedRow.columnName !== '(ALL)') {
-                values.push({"label": "Unique", "value": unique});
-                values.push({"label": "Missing", "value": nulls + empty});
-            }
+        this.nextChartUpdate = this.$timeout(() => {
+            this.updateCharts();
+            this.nextChartUpdate = null;
+        }, this.chartDuration);
+    };
 
-            return [{key: "Summary", values: values}];
-        };
+    /**
+     * Gets the data for the Relative Statistics graph.
+     *
+     * @returns {Array.<Object>} the graph data
+     */
+    percData = () => {
+        var values = [];
 
-        /**
-         * Updates the Summary and Relative Statistics charts.
-         */
-        self.updateCharts = function () {
-            if (angular.isDefined(self.summaryApi.update)) {
-                self.summaryApi.update();
-            }
-            if (angular.isDefined(self.percApi.update)) {
-                self.percApi.update();
-            }
-        };
+        values.push({ label: "Nulls", value: this.findNumericStat(this.filtered, 'PERC_NULL_VALUES') });
+        values.push({ label: "Unique", value: this.findNumericStat(this.filtered, 'PERC_UNIQUE_VALUES') });
+        values.push({ label: "Duplicates", value: this.findNumericStat(this.filtered, 'PERC_DUPLICATE_VALUES') });
+
+        return [{ key: "Stats", values: values }];
+    };
+
+    /**
+     * Sets the selected row.
+     *
+     * @param {Object} row the selected row
+     */
+    selectColumn = (row: any) => {
+        this.selectedRow.prevProfile = this.selectedRow.profile;
+        this.selectedRow.columnName = row[this.columns.columnName];
+    };
+
+    /**
+     * Sets the selected column data based on the selected row.
+     */
+    selectColumnData = () => {
+        this.filtered = _.filter(this.data.rows, (row) => {
+            return row[this.columns.columnName] === this.selectedRow.columnName;
+        });
+    };
+
+    /**
+     * Sets the values for the Numeric Stats table.
+     */
+    selectNumericValues = () => {
+        var values: any = [];
+        this.numericvalues = values;
+
+        if (this.selectedRow.profile === "Numeric") {
+            values.push({ "name": "Minimum", "value": this.findNumericStat(this.filtered, 'MIN') });
+            values.push({ "name": "Maximum", "value": this.findNumericStat(this.filtered, 'MAX') });
+            values.push({ "name": "Mean", "value": this.findNumericStat(this.filtered, 'MEAN') });
+            values.push({ "name": "Std Dev", "value": this.findNumericStat(this.filtered, 'STDDEV') });
+            values.push({ "name": "Variance", "value": this.findNumericStat(this.filtered, 'VARIANCE') });
+            values.push({ "name": "Sum", "value": this.findNumericStat(this.filtered, 'SUM') });
+        }
+
+    };
+
+    /**
+     * Selects the specified row.
+     *
+     * @param {Object} row the row to select
+     */
+    selectRow = (row: any) => {
+        this.selectColumn(row);
+        this.selectColumnData();
+        this.selectType();
+        this.selectTopValues();
+        this.selectTimeValues();
+        this.selectStringValues();
+        this.selectNumericValues();
+    };
+
+    /**
+     * Selects the specified row and updates charts.
+     *
+     * @param event
+     * @param {Object} row the row to be selected
+     */
+    selectRowAndUpdateCharts = (event: any, row: any) => {
+        //called when user selects the column
+        this.selectRow(row);
+        this.updateCharts();
+    };
+
+    /**
+     * Sets the values for the String Stats table.
+     */
+    selectStringValues = () => {
+        var vals: any = [];
+        this.stringvalues = vals;
+        if (this.selectedRow.profile === "String") {
+            vals.push({ name: "Longest", value: this.findStat(this.filtered, 'LONGEST_STRING') });
+            vals.push({ name: "Shortest", value: this.findStat(this.filtered, 'SHORTEST_STRING') });
+            vals.push({ name: "Min (Case Sensitive)", value: this.findStat(this.filtered, 'MIN_STRING_CASE') });
+            vals.push({ name: "Max (Case Sensitive)", value: this.findStat(this.filtered, 'MAX_STRING_CASE') });
+            vals.push({ name: "Min (Case Insensitive)", value: this.findStat(this.filtered, 'MIN_STRING_ICASE') });
+            vals.push({ name: "Max (Case Insensitive)", value: this.findStat(this.filtered, 'MAX_STRING_ICASE') });
+        }
+    };
+
+    /**
+     * Sets the values for the Time Stats table.
+     */
+    selectTimeValues = () => {
+        var timeVals: any = [];
+        this.timevalues = timeVals;
+        if (this.selectedRow.profile === "Time") {
+            timeVals.push({ name: "Maximum", value: this.findStat(this.filtered, 'MAX_TIMESTAMP') });
+            timeVals.push({ name: "Minimum", value: this.findStat(this.filtered, 'MIN_TIMESTAMP') });
+        }
+    };
+
+    /**
+     * Sets the values for the Top Values table.
+     */
+    selectTopValues = () => {
+        var topN = this.findStat(this.filtered, 'TOP_N_VALUES');
+        var topVals: any = [];
+        if (_.isUndefined(topN)) {
+            topVals = [];
+        } else {
+            var lines = topN.split("\n");
+
+
+
+            topVals = _.map(lines, (line: any) => {
+                var value = line.substring(line.indexOf(".") + 1, line.indexOf("("));
+                var count = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+                return { value: value, count: count };
+            });
+        }
+        this.topvalues = topVals;
+    };
+
+    /**
+     * Determines the type of the selected column.
+     */
+    selectType = () => {
+        var type = this.findStat(this.filtered, 'COLUMN_DATATYPE');
+        if (_.isUndefined(type)) {
+            type = "UnknownType";
+        }
+        type = type.substring(0, type.indexOf("Type"));
+        this.selectedRow.type = type;
+        if (type === "String") {
+            this.selectedRow.profile = "String";
+        } else if (type === "Long" || type === "Double" || type === "Float" || type === "Byte" || type === "Integer" || type === "Decimal") {
+            this.selectedRow.profile = "Numeric";
+        } else if (type === "Timestamp" || type === "Date") {
+            this.selectedRow.profile = "Time";
+        } else {
+            this.selectedRow.profile = "Unknown";
+        }
+    };
+
+    /**
+     * Gets the data for the Summary graph.
+     *
+     * @returns {Array.<Object>} the graph data
+     */
+    summaryData = () => {
+        var nulls = this.findNumericStat(this.filtered, 'NULL_COUNT');
+        var empty = this.findNumericStat(this.filtered, 'EMPTY_COUNT');
+        var unique = this.findNumericStat(this.filtered, 'UNIQUE_COUNT');
+        var invalid = this.findNumericStat(this.filtered, 'INVALID_COUNT');
+        var valid = this.totalRows - invalid;
+
+        //display negative values in red
+        var color = CHART_COLOR;
+        if (valid < 0) {
+            color = "red";
+        }
+
+        var values = [];
+        values.push({ "label": "Total", "value": this.totalRows });
+        values.push({ "label": "Valid", "value": valid, "color": color });
+        values.push({ "label": "Invalid", "value": invalid });
+
+        if (this.selectedRow.columnName !== '(ALL)') {
+            values.push({ "label": "Unique", "value": unique });
+            values.push({ "label": "Missing", "value": nulls + empty });
+        }
+
+        return [{ key: "Summary", values: values }];
+    };
+
+    /**
+     * Updates the Summary and Relative Statistics charts.
+     */
+    updateCharts = () => {
+        if (angular.isDefined(this.summaryApi.update)) {
+            this.summaryApi.update();
+        }
+        if (angular.isDefined(this.percApi.update)) {
+            this.percApi.update();
+        }
     };
 
 }
 
-angular.module(moduleName).controller("ProfileStatsController", ["$scope", "$timeout", "HiveService", ProfileStatsController]);
-angular.module(moduleName).directive("profileStats", ProfileStatsDirective);
+angular.module(moduleName).component("profileStats", {
+    controller: ProfileStatsController,
+    controllerAs: "vm",
+    templateUrl: "js/feed-mgr/shared/profile-stats/profile-stats.html",
+    bindings: {
+        hideColumns: "=",
+        model: "="
+    }
+});

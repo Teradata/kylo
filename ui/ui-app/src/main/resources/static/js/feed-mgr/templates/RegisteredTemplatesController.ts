@@ -90,6 +90,8 @@ export class RegisteredTemplatesController {
      */
     ngOnInit() {
 
+        this.selectedTableOption = this.selectedTableOption.bind(this);
+
         // Register Add button
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
@@ -152,8 +154,8 @@ export class RegisteredTemplatesController {
      * Build the possible Sorting Options
      * @returns {*[]}
      */
-    loadSortOptions = () => {
-        var options = { 'Template': 'templateName', 'Last Modified': 'updateDate' };
+    loadSortOptions() {
+        var options = {'Name': 'templateName', 'Last modified': 'updateDate'};
         var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'templateName', 'asc');
         this.TableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;

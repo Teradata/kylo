@@ -20,7 +20,9 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-public class DefaultSparkCommandBuilder implements SparkCommandBuilder {
+import java.util.List;
+
+public class DefaultSparkCommandBuilder extends AbstractSparkCommandBuilder {
 
     private String method;
 
@@ -28,8 +30,27 @@ public class DefaultSparkCommandBuilder implements SparkCommandBuilder {
         this.method = method;
     }
 
+    public DefaultSparkCommandBuilder(String dataframeVariable, Integer limit, String method) {
+        super(dataframeVariable, limit);
+        this.method = method;
+    }
+
     @Override
     public String build(String pathToFile) {
-        return String.format("sqlContext.read.%s(\"%s\").limit(10).toDF()", method, pathToFile);
+        StringBuilder sb = new StringBuilder();
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+        sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
+        if(isLimit()) {
+            sb.append(String.format(".limit(%s)", getLimit()));
+        }
+        sb.append(".toDF()");
+        return sb.toString();
     }
+
+    public String build(List<String> paths) {
+
+        return unionDataFrames(paths,"sqlContext.read.%s(\"%s\").toDF()\n",method);
+
+    }
+
 }

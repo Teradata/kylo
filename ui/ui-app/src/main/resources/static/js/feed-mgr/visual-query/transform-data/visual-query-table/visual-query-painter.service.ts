@@ -130,12 +130,13 @@ export class VisualQueryPainterService extends fattable.Painter {
         });
 
         // Hide tooltip on scroll. Skip Angular change detection.
+       /*
         window.addEventListener("scroll", () => {
             if (this.tooltipVisible) {
                 this.hideTooltip();
             }
-        }, true);
-
+        }, {passive:true, capture:true});
+    */
         // Create menu
         this.menuPanel = $mdPanel.create({
             animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
@@ -159,6 +160,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             zIndex: 100
         });
         this.tooltipPanel.attach();
+
     }
 
     /**
@@ -263,16 +265,17 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableHeader|null} header the column header
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
+
         // Update scope in a separate thread
         const $scope: any = angular.element(headerDiv).scope();
 
         if (header != null && $scope.header !== header && header.delegate != undefined) {
+            $scope.header = header;
+            $scope.table = this.delegate;
             $scope.availableCasts = header.delegate.getAvailableCasts();
             $scope.availableDomainTypes = this.domainTypes;
             $scope.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
-            $scope.header = header;
             $scope.header.unsort = this.unsort.bind(this);
-            $scope.table = this.delegate;
         }
     }
 
@@ -296,6 +299,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {HTMLElement} cellDiv the cell <div> element
      */
     setupCell(cellDiv: HTMLElement) {
+
         angular.element(cellDiv)
             .on("contextmenu", () => false)
             .on("mousedown", () => this.setSelected(cellDiv))
@@ -315,6 +319,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {HTMLElement} headerDiv the header <div> element
      */
     setupHeader(headerDiv: HTMLElement) {
+
         // Set style attributes
         headerDiv.style.font = this.headerFont;
         headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
@@ -336,9 +341,10 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param headerDiv
      */
     cleanUpHeader(headerDiv: HTMLElement){
-        var scope = angular.element(headerDiv).scope();
-        if(scope){
-            scope.$destroy();
+        //destroy the old scope if it exists
+        let oldScope = angular.element(headerDiv).isolateScope();
+        if(angular.isDefined(oldScope)){
+            oldScope.$destroy();
         }
     }
 
@@ -356,14 +362,26 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param table
      */
     cleanUp(table:HTMLElement){
+        //remove all header scopes
+        this.headerScopes.forEach((headerScope: IScope) => {
+            headerScope.$destroy();
+        });
+        this.headerScopes = [];
+
         super.cleanUp(table);
         angular.element(table).unbind();
     }
+    private headerScopes : IScope[] = []
 
     private compileHeader(headerDiv: HTMLElement) {
         // Load template
         headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
-        this.$compile(headerDiv)(this.$scope.$new(true));
+
+        let newScope = this.$scope.$new(true)
+        this.headerScopes.push(newScope);
+        this.$compile(headerDiv)(newScope);
+
+
     }
 
     /**

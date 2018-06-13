@@ -17,12 +17,12 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" ng-repeat="property in propertyList" class="feed-property">
-    <div ng-if="property.locked" layout="column" flex="50" class="property-name">
+<div layout="row" ng-repeat="property in vm.propertyList" class="feed-property">
+    <div ng-if="property.locked" layout="column" flex="25" class="property-name">
         <span>{{property.displayName}}</span>
         <span class="hint">{{property.description}}</span>
     </div>
-    <span ng-if="!property.locked" flex="50" class="property-name">{{property.systemName}}</span>
+    <span ng-if="!property.locked" flex="25" class="property-name">{{property.systemName}}</span>
 
     <div flex>
         {{property.value}}

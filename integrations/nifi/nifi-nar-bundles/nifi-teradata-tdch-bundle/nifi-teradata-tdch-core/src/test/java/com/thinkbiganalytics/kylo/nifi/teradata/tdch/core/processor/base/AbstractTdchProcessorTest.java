@@ -54,16 +54,8 @@ public class AbstractTdchProcessorTest {
         //Nothing for now
     }
 
-    @Ignore
     @Test
     public void testControllerServiceConfiguration() throws InitializationException {
-        final String TDCH_JAR_BASE = "src/test/resources/usr/lib/tdch/1.5/lib";
-        final String TDCH_JAR_PATH = TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v1.txt";
-        final String COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR = "src/test/resources/usr/hdp/current_v_2_5/hive-client/conf";
-
-        final String HDP_HIVE_CLIENT_LIB_BASE = "src/test/resources/usr/hdp/current_v_2_5/hive-client/lib";
-        final String HDP_HIVE_CLIENT_LIB_DIR = HDP_HIVE_CLIENT_LIB_BASE + "/all";
-
         final String CONNECTION_SERVICE_ID = "tdch-conn-service";
 
         final TestRunner runner = TestRunners.newTestRunner(TestAbstractTdchProcessor.class);
@@ -92,59 +84,6 @@ public class AbstractTdchProcessorTest {
 
         String hiveLibPath = runner.getControllerService(CONNECTION_SERVICE_ID).getPropertyDescriptor(StandardTdchConnectionService.HIVE_LIB_PATH.getName()).getDefaultValue();
         Assert.assertEquals("/usr/hdp/current/hive-client/lib", hiveLibPath);
-
-        runner.setProperty(tdchConnectionService, StandardTdchConnectionService.PASSWORD, "mypwd");
-        runner.setProperty(tdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_PATH);
-        runner.setProperty(tdchConnectionService, StandardTdchConnectionService.HIVE_CONF_PATH, COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR);
-        runner.setProperty(tdchConnectionService, StandardTdchConnectionService.HIVE_LIB_PATH, HDP_HIVE_CLIENT_LIB_DIR);
-
-        runner.assertValid(tdchConnectionService);
-        runner.enableControllerService(tdchConnectionService);
-
-        log.debug(((StandardTdchConnectionService) runner.getControllerService(CONNECTION_SERVICE_ID)).getTdchJarPath());
-        log.debug(((StandardTdchConnectionService) runner.getControllerService(CONNECTION_SERVICE_ID)).getTdchLibraryJarsPath());
-        log.debug(((StandardTdchConnectionService) runner.getControllerService(CONNECTION_SERVICE_ID)).getTdchHadoopClassPath());
-        runner.assertValid(tdchConnectionService);
-
-        String expectedHdpTdchLibraryJarsPath =
-            HDP_HIVE_CLIENT_LIB_DIR + "/avro-1.7.5.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-2.7.7.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-runtime-3.4.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-runtime-3.4.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/commons-dbcp-1.4.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/commons-pool-1.5.4.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-api-jdo-4.2.1.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-core-4.1.6.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-rdbms-4.1.7.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-cli-1.2.1000.2.5.3.0-37.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-exec-1.2.1000.2.5.3.0-37.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-jdbc-1.2.1000.2.5.3.0-37-standalone.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-metastore-1.2.1000.2.5.3.0-37.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/jdo-api-3.0.1.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/libfb303-0.9.3.test.dummy.jar,"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/libthrift-0.9.3.test.dummy.jar,"
-            + COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR;
-        Assert.assertEquals(expectedHdpTdchLibraryJarsPath, ((StandardTdchConnectionService) runner.getControllerService(CONNECTION_SERVICE_ID)).getTdchLibraryJarsPath());
-
-        String expectedHdpTdchHadoopClassPath =
-            HDP_HIVE_CLIENT_LIB_DIR + "/avro-1.7.5.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-2.7.7.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-runtime-3.4.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/antlr-runtime-3.4.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/commons-dbcp-1.4.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/commons-pool-1.5.4.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-api-jdo-4.2.1.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-core-4.1.6.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/datanucleus-rdbms-4.1.7.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-cli-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-exec-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-jdbc-1.2.1000.2.5.3.0-37-standalone.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/hive-metastore-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/jdo-api-3.0.1.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/libfb303-0.9.3.test.dummy.jar:"
-            + HDP_HIVE_CLIENT_LIB_DIR + "/libthrift-0.9.3.test.dummy.jar:"
-            + COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR;
-        Assert.assertEquals(expectedHdpTdchHadoopClassPath, ((StandardTdchConnectionService) runner.getControllerService(CONNECTION_SERVICE_ID)).getTdchHadoopClassPath());
     }
 
     @Test

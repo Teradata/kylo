@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import {moduleName} from './module-name';
 
 export default class httpInterceptor {
-     constructor($provide: any, 
+     constructor($provide: any,
                  $httpProvider: any) {
         $provide.factory('httpInterceptor', ["$q","$location","$window","$injector","Utils",
                         function($q: any, $location: any, $window: any, $injector: any, Utils: any) {
@@ -116,6 +116,9 @@ export default class httpInterceptor {
                             var rejectionMessage = rejection.data['message'];
                             if (rejectionMessage == undefined || rejectionMessage == '') {
                                 rejectionMessage = 'OtherError';
+                            } else if (rejectionMessage.startsWith("AnalysisException:")) {
+                                // Don't notify for messages from wrangler. These are handled.
+                                return $q.reject(rejection);
                             }
                             NotificationService.errorWithGroupKey("Error", message, rejectionMessage, rejection.data["message"]);
                         }
