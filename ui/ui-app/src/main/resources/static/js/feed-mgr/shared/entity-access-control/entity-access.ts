@@ -11,11 +11,11 @@ export class EntityAccessControlController {
     * @type {boolean}
     */
     enabled: boolean = false;
-    readOnly: boolean = false;
-    theForm: any = {};
-    roleMembershipsProperty: string = "roleMemberships";
+    readOnly: boolean;
+    theForm: any;
+    roleMembershipsProperty: string;
     entityType:string;
-    allowOwnerChange: boolean = true;
+    allowOwnerChange: boolean;
     entity: any;
     entityRoleMemberships: any;
     queryForEntityAccess: any;
@@ -40,8 +40,21 @@ export class EntityAccessControlController {
     constructor(private $q: angular.IQService, private $http: angular.IHttpService, private UserGroupService: any,
         private entityAccessControlService: EntityAccessControlService, private accessControlService: AccessControlService) {
 
+        if(angular.isUndefined(this.readOnly)){
+            this.readOnly = false;
+        }
 
+        if(angular.isUndefined(this.theForm)){
+            this.theForm = {};
+        }
 
+        if(angular.isUndefined(this.roleMembershipsProperty)){
+            this.roleMembershipsProperty = "roleMemberships";
+        }
+
+        if(angular.isUndefined(this.allowOwnerChange)){
+            this.allowOwnerChange = true;
+        }
 
         this.$q.when(accessControlService.checkEntityAccessControlled()).then(() => {
             this.enabled = accessControlService.isEntityAccessControlled();
