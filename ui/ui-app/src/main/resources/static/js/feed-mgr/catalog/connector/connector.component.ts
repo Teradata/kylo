@@ -31,14 +31,8 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
     mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
-        console.log('mapping Azure options');
-        controls.forEach((control: FormControl, key: string) => {
-            if (key === "path") {
-                ds.template.paths.push(control.value);
-            } else {
-                ds.template.options[key] = control.value;
-            }
-        });
+        ds.template.paths.push(controls.get("path").value);
+        ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
     }
 }
 
