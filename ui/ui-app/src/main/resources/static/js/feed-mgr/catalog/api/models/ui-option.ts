@@ -3,6 +3,11 @@ export class SelectOption {
     value: string;
 }
 
+export class UiOptionValidator {
+    type: string;
+    params: any;
+}
+
 /**
  * UI option for user input.
  */
@@ -41,4 +46,6 @@ export class UiOption {
      * Hint to be displayed at the bottom of input field.
      */
     hint?: string;
+
+    validators?: UiOptionValidator[];
 }

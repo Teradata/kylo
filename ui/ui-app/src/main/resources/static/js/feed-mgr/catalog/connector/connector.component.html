@@ -32,14 +32,14 @@
                   *ngIf="isInputType(element)"
                   matInput type="{{element.type}}"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : true}}"
+                  required="{{element.required ? element.required : 'required'}}"
                   autocomplete="new-password"
                   [formControl]="getControl(element)"/>
 
               <mat-select
                   *ngIf="isSelectType(element)"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : true}}"
+                  required="{{element.required ? element.required : 'required'}}"
                   [formControl]="getControl(element)">
                 <ng-template let-option ngFor [ngForOf]="element.selections">
                   <mat-option value="{{option.value}}">{{option.label}}</mat-option>
@@ -48,6 +48,8 @@
 
 
               <mat-error *ngIf="getControl(element).hasError('required')">Required</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url')">Invalid Url</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url-protocol')">Invalid Url Protocol</mat-error>
               <mat-hint *ngIf="element.hint">{{element.hint}}</mat-hint>
             </mat-form-field>
           </ng-template>
@@ -57,7 +59,7 @@
 
     <mat-card-actions>
       <button mat-button mat-raised-button color="accent" class="text-upper"
-              [disabled]="isFormInvalid()"
+              [disabled]="isFormInvalid() || isLoading"
               (click)="createDatasource()">Save</button>
     </mat-card-actions>
   </mat-card>

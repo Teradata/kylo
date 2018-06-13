@@ -41,6 +41,7 @@ public class UiOption {
     private List<UiSelectOption> selections;
     private String value;
     private String hint;
+    private List<UiOptionValidator> validators;
 
     public UiOption() {}
 
@@ -53,6 +54,7 @@ public class UiOption {
         selections = (other.selections != null) ? other.selections.stream().map(UiSelectOption::new).collect(Collectors.toList()) : null;
         value = other.value;
         hint = other.hint;
+        validators = (other.validators != null) ? other.validators.stream().map(UiOptionValidator::new).collect(Collectors.toList()) : null;
     }
 
     public String getHint() {
@@ -117,5 +119,13 @@ public class UiOption {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public List<UiOptionValidator> getValidators() {
+        return validators;
+    }
+
+    public void setValidators(List<UiOptionValidator> validators) {
+        this.validators = validators;
     }
 }

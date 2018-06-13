@@ -17,7 +17,15 @@
       },
       {
         "key": "url",
-        "label": "Url"
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
       },
       {
         "key": "user",
@@ -48,7 +56,15 @@
       },
       {
         "key": "url",
-        "label": "Url"
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
       },
       {
         "key": "user",
@@ -78,14 +94,22 @@
     "options": [
       {
         "key": "path",
-        "label": "Path"
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "s3a:"
+            }
+          }
+        ]
       },
       {
-        "key": "spark.hadoop.fs.s3.awsAccessKeyId",
+        "key": "spark.hadoop.fs.s3a.access.key",
         "label": "Access Key Id"
       },
       {
-        "key": "spark.hadoop.fs.s3.awsSecretAccessKey",
+        "key": "spark.hadoop.fs.s3a.secret.key",
         "type": "password",
         "label": "Secret Access Key"
       }
@@ -105,11 +129,19 @@
         "wasb:///"
       ]
     },
-    "optionsMapperId": "azure",
+    "optionsMapperId": "azureOptionsMapper",
     "options": [
       {
         "key": "path",
-        "label": "Path"
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "wasb:"
+            }
+          }
+        ]
       },
       {
         "key": "account-name",
@@ -184,7 +216,15 @@
     "options": [
       {
         "key": "path",
-        "label": "Path"
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "hdfs:"
+            }
+          }
+        ]
       }
     ]
   },
@@ -211,7 +251,15 @@
       },
       {
         "key": "url",
-        "label": "Url"
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
       },
       {
         "key": "user",
@@ -263,13 +311,21 @@
     ],
     "template": {
       "paths": [
-        "/"
+        "file:/"
       ]
     },
     "options": [
       {
         "key": "path",
-        "label": "Path"
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "file:"
+            }
+          }
+        ]
       }
     ]
   }

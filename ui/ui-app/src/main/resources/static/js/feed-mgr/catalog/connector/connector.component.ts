@@ -1,7 +1,7 @@
 import {Component, Input} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {Connector} from '../api/models/connector';
-import {FormControl, Validators} from '@angular/forms';
+import {AbstractControl, FormControl, ValidatorFn} from '@angular/forms';
 import {UiOption} from '../api/models/ui-option';
 import {DataSource} from '../api/models/datasource';
 import {DataSourceTemplate} from '../api/models/datasource-template';
@@ -10,6 +10,37 @@ import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {ValidationErrors} from '@angular/forms/src/directives/validators';
+
+
+interface UiOptionsMapper {
+    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void;
+}
+
+class DefaultUiOptionsMapper implements UiOptionsMapper {
+    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+        controls.forEach((control: FormControl, key: string) => {
+            if (key === "path") {
+                ds.template.paths.push(control.value);
+            } else {
+                ds.template.options[key] = control.value;
+            }
+        });
+    }
+}
+
+class AzureUiOptionsMapper implements UiOptionsMapper {
+    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+        console.log('mapping Azure options');
+        controls.forEach((control: FormControl, key: string) => {
+            if (key === "path") {
+                ds.template.paths.push(control.value);
+            } else {
+                ds.template.options[key] = control.value;
+            }
+        });
+    }
+}
 
 /**
  * Displays selected connector properties.
@@ -23,18 +54,40 @@ export class ConnectorComponent {
 
     static LOADER = "ConnectorComponent.LOADER";
     private static topOfPageLoader: string = "ConnectorComponent.topOfPageLoader";
-    private static pageLoader: string = "ConnectorComponent.pageLoader";
 
     @Input("connector")
     public connector: Connector;
 
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
+    private isLoading: boolean = false;
+
+    // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
+    private url = (params: any): ValidatorFn => {
+        return (control: AbstractControl): { [key: string]: any } => {
+            if (control.value && control.value.trim().length > 0) {
+                try {
+                    const url: URL = new URL(control.value);
+                    if (url.protocol !== params.protocol) {
+                        return { 'url-protocol': true };
+                    }
+                } catch (e) {
+                    return { 'url': true };
+                }
+            } else {
+                return null;
+            }
+        };
+    };
+
+    // noinspection JSUnusedLocalSymbols - called dynamically when UiOptionsMapper is created
+    private azureOptionsMapper: UiOptionsMapper = new AzureUiOptionsMapper();
+    private defaultOptionsMapper: UiOptionsMapper = new DefaultUiOptionsMapper();
 
     constructor(private state: StateService, private catalogService: CatalogService,
                 private snackBarService: MatSnackBar,
                 private loadingService: TdLoadingService) {
-        this.titleControl = new FormControl('', Validators.required);
+        this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
             name: ConnectorComponent.topOfPageLoader,
@@ -57,24 +110,21 @@ export class ConnectorComponent {
         ds.template = new DataSourceTemplate();
         ds.template.paths = [];
         ds.template.options = {};
-        if (this.connector.optionsMapperId === "azure") {
-
+        const optionsMapper = <UiOptionsMapper>this[this.connector.optionsMapperId || "defaultOptionsMapper"];
+        if (optionsMapper) {
+            optionsMapper.mapOptions(ds, this.controls);
         } else {
-            this.controls.forEach((value: FormControl, key: string) => {
-                if (key === "path") {
-                    ds.template.paths.push(this.controls.get(key).value);
-                } else {
-                    ds.template.options[key] = this.controls.get(key).value;
-                }
-            });
+            this.showSnackBar("Unknown ui options mapper " + this.connector.optionsMapperId
+                + " for connector " + this.connector.title);
+            return;
         }
 
+        this.isLoading = true;
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
-        // this.loadingService.register(ConnectorComponent.pageLoader);
         this.catalogService.createDataSource(ds)
             .pipe(finalize(() => {
+                this.isLoading = false;
                 this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
-                // this.loadingService.resolve(ConnectorComponent.pageLoader);
             }))
             .pipe(catchError((err) => {
                 this.showSnackBar(err.message);
@@ -111,8 +161,15 @@ export class ConnectorComponent {
         let control = this.controls.get(option.key);
         if (!control) {
             const validators = [];
-            if (option.required) {
-                validators.push(Validators.required);
+            if (option.required === undefined || option.required === true) {
+                validators.push(ConnectorComponent.required);
+            }
+            for (let validator of option.validators || []) {
+                if (this[validator.type]) {
+                    validators.push(this[validator.type](validator.params));
+                } else {
+                    console.error('Unknown validator type ' + validator.type);
+                }
             }
             control = new FormControl('', validators);
             if (option.value) {
@@ -122,4 +179,15 @@ export class ConnectorComponent {
         }
         return control;
     }
+
+    /**
+     * Validation function which does not allow only empty space
+     * @param {AbstractControl} control
+     * @returns {ValidationErrors}
+     */
+    private static required(control: AbstractControl): ValidationErrors {
+        return (control.value || '').trim().length === 0 ? { 'required': true } : null;
+    }
+
+
 }
