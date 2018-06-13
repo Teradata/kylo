@@ -170,7 +170,7 @@ angular.module(moduleName).component("thinkbigPropertiesAdmin", {
     controller: PropertiesAdminController,
     controllerAs: "vm",
     require: {
-        ngModel: "ngModel"
+        ngModel: "^?ngModel"
     },
     bindings: {
         model: "=fields",
@@ -183,7 +183,7 @@ angular.module(moduleName).component("thinkbigPropertiesAdminEditor", {
     controller: PropertiesAdminController,
     controllerAs: "vm",
     require: {
-        ngModel: "ngModel"
+        ngModel: "^?ngModel"
     },
     bindings: {
         model: "=fields",
