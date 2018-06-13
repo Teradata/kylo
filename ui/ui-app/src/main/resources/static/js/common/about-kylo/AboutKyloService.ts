@@ -1,6 +1,8 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 
+import "../module";
+
 export default class controller implements ng.IComponentController{
 constructor(private $scope: IScope,
             private $mdDialog: angular.material.IDialogService,
