@@ -123,7 +123,7 @@ export class FeedNIFIController implements ng.IComponentController {
     /**
      * Edit the data
      */
-    onEdit() {
+    onEdit = () => {
         //copy the model
         var inputProcessors = angular.copy(this.FeedService.editFeedModel.inputProcessors);
         var nonInputProcessors = angular.copy(this.FeedService.editFeedModel.nonInputProcessors);
@@ -163,7 +163,7 @@ export class FeedNIFIController implements ng.IComponentController {
     /**
      * Cancel an Edit
      */
-    onCancel() {
+    onCancel = () => {
 
     };
 
@@ -171,7 +171,7 @@ export class FeedNIFIController implements ng.IComponentController {
      * Save the editModel
      * @param ev
      */
-    onSave(ev: angular.IAngularEvent) {
+    onSave = (ev: angular.IAngularEvent) => {
         this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-nifi-properties.Saving'), this.model.feedName);
 
         var copy = angular.copy(this.FeedService.editFeedModel);
@@ -222,7 +222,7 @@ export class FeedNIFIController implements ng.IComponentController {
     };
 
 
-    private updateControllerServiceDisplayName() :void {
+    private updateControllerServiceDisplayName = () => {
         if(this.model != null) {
             _.chain(this.model.inputProcessors.concat(this.model.nonInputProcessors))
                 .pluck("properties")
@@ -235,7 +235,7 @@ export class FeedNIFIController implements ng.IComponentController {
 
     }
 
-    private updateInputProcessor(newVal: any) {
+    private updateInputProcessor = (newVal: any) => {
         angular.forEach(this.editModel.inputProcessors, (processor) => {
             if (processor.processorId == newVal) {
                 //check the type and return the custom form if there is one via a factory
@@ -250,7 +250,7 @@ export class FeedNIFIController implements ng.IComponentController {
         })
     }
 
-    diff(path: any) {
+    diff = (path: any) => {
         return this.FeedService.diffOperation(path);
     }
 }
