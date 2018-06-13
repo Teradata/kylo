@@ -162,8 +162,6 @@
     <spring.version>4.3.17.RELEASE</spring.version>
     <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
     <spring.boot.version>1.5.13.RELEASE</spring.boot.version>
-    <spring.cloud.config.version>1.4.3.RELEASE</spring.cloud.config.version>
-    <spring.cloud.context.version>1.3.3.RELEASE</spring.cloud.context.version>
     <spring.jpa.version>1.11.12.RELEASE</spring.jpa.version>
     <spring.security.version>4.2.6.RELEASE</spring.security.version>
     <!--  <spring.security.version>4.1.1.RELEASE</spring.security.version> -->
@@ -265,6 +263,14 @@
         <groupId>org.modeshape.bom</groupId>
         <artifactId>modeshape-bom-embedded</artifactId>
         <version>${modeshape.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>Edgware.SR3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -548,22 +554,6 @@
         <artifactId>spring-boot-configuration-processor</artifactId>
         <version>${spring.boot.version}</version>
         <optional>true</optional>
-      </dependency>
-
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-context</artifactId>
-        <version>${spring.cloud.context.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-config</artifactId>
-        <version>${spring.cloud.config.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-config-server</artifactId>
-        <version>${spring.cloud.config.version}</version>
       </dependency>
 
       <dependency>
