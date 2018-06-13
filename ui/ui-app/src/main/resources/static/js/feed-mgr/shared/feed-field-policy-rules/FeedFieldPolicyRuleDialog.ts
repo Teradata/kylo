@@ -393,7 +393,7 @@ class FieldPolicyRuleOptionsFactory {
     }
 
     getSparkParserOptions() {
-        return $http.get(RestUrlService.LIST_SPARK_FILE_PARSERS, {cache: true});
+        return this.$http.get(this.RestUrlService.LIST_SPARK_FILE_PARSERS, {cache: true});
     }
     getOptionsForType = (type: any) => {
         if (type == 'standardization-validation') {
@@ -414,7 +414,7 @@ class FieldPolicyRuleOptionsFactory {
             return this.getParserOptions();
         }
         else if (type == 'sparkSchemaParser') {
-            return getSparkParserOptions();
+            return this.getSparkParserOptions();
         }
     }
     getTitleForType = (type: any) => {

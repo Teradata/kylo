@@ -236,7 +236,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             .then((datasources: UserDatasource[]) => {
                 this.availableDatasources = datasources;
                 //add in the File data source
-                self.availableDatasources.push(this.fileDataSource);
+                this.availableDatasources.push(this.fileDataSource);
                 if (this.model.$selectedDatasourceId == null) {
                     this.model.$selectedDatasourceId = datasources[0].id;
                 }
