@@ -516,7 +516,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * used in Feed creation and feed details to render the nifi input fields
      * @param template
      */
-    initializeProperties(template: any, mode: any, feedProperties: Property[]): void {
+    initializeProperties(template: any, mode: any, feedProperties ?: Property[]): void {
         //get the saved properties
 
         /**

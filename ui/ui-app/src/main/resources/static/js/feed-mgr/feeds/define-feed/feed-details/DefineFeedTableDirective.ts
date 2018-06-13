@@ -561,7 +561,8 @@ export class DefineFeedTableController {
         var firstSelection = this.selectedColumn == null;
         this.selectedColumn = selectedColumn;
         // Show an item in dropdown
-        if (this.selectedColumn.selectedSampleValue == null && this.selectedColumn.sampleValues.length > 0) {
+        if (this.selectedColumn.selectedSampleValue == null && this.selectedColumn.sampleValues != undefined
+                             && this.selectedColumn.sampleValues != null && this.selectedColumn.sampleValues.length > 0) {
             this.selectedColumn.selectedSampleValue = this.selectedColumn.sampleValues[0];
         }
         if (firstSelection) {

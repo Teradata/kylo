@@ -19,9 +19,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/edit-feed/feed-details.html',
-                    controller: 'FeedDetailsController',
-                    controllerAs: 'vm'
+                    // templateUrl: 'js/feed-mgr/feeds/edit-feed/feed-details.html',
+                    component: 'feedDetailsController',
+                    // controllerAs: 'vm'
                 }
             },
             resolve: {

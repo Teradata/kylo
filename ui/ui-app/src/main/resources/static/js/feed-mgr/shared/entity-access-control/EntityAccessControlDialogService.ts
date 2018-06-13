@@ -25,9 +25,8 @@ export class EntityAccessControlDialogService {
 
         });
     }
-}
+};
 
-angular.module(moduleName).service('EntityAccessControlDialogService', EntityAccessControlDialogService);
 
 class controller {
 
@@ -122,5 +121,7 @@ class controller {
     }
 };
 
-angular.module(moduleName).controller('EntityAccessControlDialogController',controller);
+angular.module(moduleName).service('EntityAccessControlDialogService', EntityAccessControlDialogService)
+.controller('EntityAccessControlDialogController',controller);
+// angular.module(moduleName).controller('EntityAccessControlDialogController',controller);
 
