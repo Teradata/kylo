@@ -12,7 +12,11 @@ import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
-import {ScriptState} from "../wrangler";
+import {ScriptState, StringUtils} from "../wrangler/index";
+
+import BroadcastService from '../../../services/broadcast-service';
+import {FeedService} from '../../services/FeedService';
+import StepperService from '../../../common/stepper/StepperService';
 
 declare const CodeMirror: any;
 
@@ -197,34 +201,19 @@ export class TransformDataComponent implements OnInit {
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
-                private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
-                StepperService: any, WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
+                private domainTypesService: DomainTypesService, private RestUrlService: any, private SideNavService: any, private uiGridConstants: any, private feedService: FeedService, private broadcastService: BroadcastService,
+                private stepperService: StepperService, private WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
         //Listen for when the next step is active
-        BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
+        this.broadcastService.subscribe($scope, this.stepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
         //Hide the left side nav bar
-        SideNavService.hideSideNav();
+        this.SideNavService.hideSideNav();
 
         // Display prompt on window unload
-        WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
+        this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Get height offset attribute
         this.heightOffset = $element.attr("height-offset");
-
-        // Invalidate when SQL changes
-        const self = this;
-
-        $scope.$watch(
-            function () {
-                return (typeof self.model === "object") ? self.model.sql : null;
-            },
-            function () {
-                if (typeof self.model === "object" && self.sql !== self.model.sql) {
-                    self.isValid = false;
-                    self.sql = null;
-                }
-            }
-        );
 
     }
 
@@ -306,7 +295,7 @@ export class TransformDataComponent implements OnInit {
 
             // Fetch domain types
             this.domainTypesService.findAll()
-                .then(domainTypes => {
+                .then((domainTypes: any) => {
                     this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
                 });
@@ -330,6 +319,20 @@ export class TransformDataComponent implements OnInit {
         } else {
             onLoad();
         }
+
+        // Invalidate when SQL changes
+
+        this.$scope.$watch(
+            () => {
+                return (typeof this.model === "object") ? this.model.sql : null;
+            },
+            () => {
+                if (typeof this.model === "object" && this.sql !== this.model.sql) {
+                    this.isValid = false;
+                    this.sql = null;
+                }
+            }
+        );
     }
 
     /**
@@ -436,14 +439,14 @@ export class TransformDataComponent implements OnInit {
         _editor.on("blur", () => _editor.setSize(585, 25));
 
         //disable users ability to add new lines.  The Formula bar is only 1 line
-        _editor.on("beforeChange", function (instance: any, change: any) {
+        _editor.on("beforeChange", (instance: any, change: any) => {
             let newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
             change.update(change.from, change.to, [newtext]);
             return true;
         });
 
         //hide the scrollbar
-        _editor.on("change", function (instance: any, change: any) {
+        _editor.on("change", (instance: any, change: any) => {
             //$(".CodeMirror-hscrollbar").css('display', 'none');
         });
         //set the flag to be loaded and then call out to update Autocomplete options
@@ -455,45 +458,44 @@ export class TransformDataComponent implements OnInit {
      * Creates a Tern server.
      */
     private createTernServer() {
-        const self = this;
-        this.engine.getTernjsDefinitions().then(function (response: any) {
-            self.engine.setFunctionDefs(response);
+        this.engine.getTernjsDefinitions().then( (response: any) => {
+            this.engine.setFunctionDefs(response);
 
-            self.ternServer = new CodeMirror.TernServer({defs: [response]});
-            self.ternServer.server.addDefs(self.engine.getColumnDefs());
+            this.ternServer = new CodeMirror.TernServer({defs: [response]});
+            this.ternServer.server.addDefs(this.engine.getColumnDefs());
 
-            const _editor = self.codemirrorEditor;
+            const _editor = this.codemirrorEditor;
             _editor.setOption("extraKeys", {
-                "Ctrl-Space": function (cm: any) {
-                    self.ternServer.complete(cm);
+                "Ctrl-Space": (cm: any) => {
+                    this.ternServer.complete(cm);
                 },
-                "Ctrl-I": function (cm: any) {
-                    self.ternServer.showType(cm);
+                "Ctrl-I": (cm: any) => {
+                    this.ternServer.showType(cm);
                 },
-                "Ctrl-O": function (cm: any) {
-                    self.ternServer.showDocs(cm);
+                "Ctrl-O": (cm: any) => {
+                    this.ternServer.showDocs(cm);
                 },
-                "Alt-.": function (cm: any) {
-                    self.ternServer.jumpToDef(cm);
+                "Alt-.": (cm: any) => {
+                    this.ternServer.jumpToDef(cm);
                 },
-                "Alt-,": function (cm: any) {
-                    self.ternServer.jumpBack(cm);
+                "Alt-,": (cm: any) => {
+                    this.ternServer.jumpBack(cm);
                 },
-                "Ctrl-Q": function (cm: any) {
-                    self.ternServer.rename(cm);
+                "Ctrl-Q": (cm: any) => {
+                    this.ternServer.rename(cm);
                 },
-                "Ctrl-.": function (cm: any) {
-                    self.ternServer.selectName(cm);
+                "Ctrl-.": (cm: any) => {
+                    this.ternServer.selectName(cm);
                 },
-                "Tab": function () {
-                    self.selectNextTabStop();
+                "Tab": () => {
+                    this.selectNextTabStop();
                 }
             });
-            _editor.on("blur", function () {
-                self.ternServer.hideDoc();
+            _editor.on("blur", () => {
+                this.ternServer.hideDoc();
             });
-            _editor.on("cursorActivity", self.showHint.bind(self));
-            _editor.on("focus", self.showHint.bind(self));
+            _editor.on("cursorActivity", this.showHint.bind(this));
+            _editor.on("focus", this.showHint.bind(this));
             _editor.focus();
         });
     }
@@ -521,9 +523,9 @@ export class TransformDataComponent implements OnInit {
      * @param {Function} callback the callback function
      */
     getHint(cm: any, callback: any): void {
-        this.ternServer.getHint(cm, function (data: any) {
+        this.ternServer.getHint(cm, (data: any) => {
             // Complete function calls so arg hints can be displayed
-            CodeMirror.on(data, "pick", function (completion: any) {
+            CodeMirror.on(data, "pick", (completion: any) => {
                 if (completion.data.type.substr(0, 3) === "fn(") {
                     let cursor = cm.getCursor();
                     cm.replaceRange("(", cursor, cursor, "complete");
@@ -626,25 +628,24 @@ export class TransformDataComponent implements OnInit {
      * Executes query if state changed, otherwise returns the current state
      */
     queryOrGetState(pageSpec: PageSpec): IPromise<ScriptState<any>> {
-        var self = this;
         const deferred: IDeferred<ScriptState<any>> = this.$q.defer();
         if (pageSpec.equals(this.currentPage)) {
             this.$timeout_(() => {
                 // Fetch the state or join with the existing execution
-                if (self.executionStack.length > 0) {
-                    var promise = self.executionStack[self.executionStack.length - 1];
+                if (this.executionStack.length > 0) {
+                    var promise = this.executionStack[this.executionStack.length - 1];
                     promise.then(() => {
-                        return deferred.resolve(self.engine.getState())
+                        return deferred.resolve(this.engine.getState())
                     });
                 } else {
-                    return deferred.resolve(self.engine.getState());
+                    return deferred.resolve(this.engine.getState());
                 }
 
             }, 10);
         } else {
-            self.query(true, pageSpec).then(() => {
+            this.query(true, pageSpec).then(() => {
                 this.currentPage = pageSpec;
-                return deferred.resolve(self.engine.getState());
+                return deferred.resolve(this.engine.getState());
             }).catch((reason) => {
                 deferred.reject(reason);
             });
@@ -658,11 +659,10 @@ export class TransformDataComponent implements OnInit {
      * @return {Promise} a promise for when the query completes
      */
     query(refresh: boolean = true, pageSpec ?: PageSpec, doValidate: boolean = true, doProfile: boolean = false): IPromise<any> {
-        const self = this;
         const deferred = this.$q.defer();
 
         const promise = deferred.promise;
-        self.executionStack.push(promise);
+        this.executionStack.push(promise);
 
         //flag to indicate query is running
         this.setExecutingQuery(true);
@@ -671,36 +671,35 @@ export class TransformDataComponent implements OnInit {
         // Query Spark shell service
         let didUpdateColumns = false;
 
-        const successCallback = function () {
+        const successCallback = () => {
             //mark the query as finished
-            self.setQueryProgress(100);
-            self.setExecutingQuery(false);
+            this.setQueryProgress(100);
+            this.setExecutingQuery(false);
 
-            self.isValid = true;
+            this.isValid = true;
 
             //store the result for use in the commands
             if (refresh) {
                 // Clear previous filters
-                if (typeof(self.gridApi) !== "undefined") {
-                    self.gridApi.core.clearAllFilters();
+                if (typeof(this.gridApi) !== "undefined") {
+                    this.gridApi.core.clearAllFilters();
                 }
-                self.updateGrid();
+                this.updateGrid();
             }
-
-            self.removeExecution(promise);
+            this.removeExecution(promise);
             deferred.resolve();
         };
-        const errorCallback = function (message: string) {
-            self.setExecutingQuery(false);
-            self.resetAllProgress();
-            self.showError(self.cleanError(message));
+        const errorCallback = (message: string) => {
+            this.setExecutingQuery(false);
+            this.resetAllProgress();
+            this.showError(this.cleanError(message));
 
             // Reset state
-            self.onUndo();
-            self.removeExecution(promise);
+            this.onUndo();
+            this.removeExecution(promise);
             deferred.reject(message);
         };
-        const notifyCallback = function (progress: number) {
+        const notifyCallback = (progress: number) => {
             //self.setQueryProgress(progress * 100);
             /*
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
@@ -709,7 +708,7 @@ export class TransformDataComponent implements OnInit {
             */
         };
 
-        self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
+        this.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
         return promise;
     };
 
@@ -733,17 +732,16 @@ export class TransformDataComponent implements OnInit {
     }
 
     private updateGrid() {
-        const self = this;
 
         //transform the result to the agGrid model
         let columns: WranglerColumn[] = [];
         let fieldPolicies = this.engine.getFieldPolicies();
         let profile = this.engine.getProfile();
 
-        angular.forEach(this.engine.getColumns(), function (col, index) {
-            const delegate = self.engine.createColumnDelegate(col.dataType, self, col);
+        angular.forEach(this.engine.getColumns(), (col, index) => {
+            const delegate = this.engine.createColumnDelegate(col.dataType, this, col);
             const fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
-            const longestValue = _.find(profile, function (row: any) {
+            const longestValue = _.find(profile, (row: any) => {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });
 
@@ -755,7 +753,7 @@ export class TransformDataComponent implements OnInit {
                 filters: delegate.filters,
                 headerTooltip: col.hiveColumnLabel,
                 longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
-                name: self.engine.getColumnName(col)
+                name: this.engine.getColumnName(col)
             });
         });
 
@@ -769,9 +767,9 @@ export class TransformDataComponent implements OnInit {
 
         //mark the flag to indicate Hive is loaded
         // Only apply domain types on initial resultset
-        if (!self.hiveDataLoaded) {
-            self.applyDomainTypes(this.tableColumns, this.tableRows);
-            self.hiveDataLoaded = true;
+        if (!this.hiveDataLoaded) {
+            this.applyDomainTypes(this.tableColumns, this.tableRows);
+            this.hiveDataLoaded = true;
         }
 
         this.updateSortIcon();
@@ -937,20 +935,19 @@ export class TransformDataComponent implements OnInit {
      * @param {boolean} refreshGrid - true to refresh grid
      */
     pushFormula(formula: any, context: any, doQuery: boolean = false, refreshGrid: boolean = true): IPromise<{}> {
-        const self = this;
         const deferred = this.$q.defer();
-        self.currentPage = PageSpec.defaultPage();
-        setTimeout(function () {
-            if (self.pushFormulaToEngine(formula, context)) {
+        this.currentPage = PageSpec.defaultPage();
+        setTimeout( () => {
+            if (this.pushFormulaToEngine(formula, context)) {
                 // Add to function history
-                self.functionHistory.push(context);
+                this.functionHistory.push(context);
 
-                if (doQuery || self.engine.getRows() === null) {
-                    return self.query(refreshGrid, self.currentPage).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                if (doQuery || this.engine.getRows() === null) {
+                    return this.query(refreshGrid, this.currentPage).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
                 }
             }
             // Formula couldn't parse
-            self.resetAllProgress();
+            this.resetAllProgress();
             return deferred.reject();
         }, 10);
 
@@ -964,16 +961,15 @@ export class TransformDataComponent implements OnInit {
      */
     showAnalyzeColumn(fieldName: string): any {
 
-        const self = this;
 
-        self.pushFormulaToEngine(`select(${fieldName})`, {});
-        self.query(false, PageSpec.emptyPage(), true, true).then(function () {
+        this.pushFormulaToEngine(`select(${fieldName})`, {});
+        this.query(false, PageSpec.emptyPage(), true, true).then( () =>{
 
-            let profileStats = self.engine.getProfile();
-            self.engine.pop();
-            const deferred = self.$q.defer();
+                let profileStats = this.engine.getProfile();
+                this.engine.pop();
+                const deferred = this.$q.defer();
 
-            self.$mdDialog.show({
+                this.$mdDialog.show({
 
                 controller: class {
 
@@ -989,20 +985,21 @@ export class TransformDataComponent implements OnInit {
 
                     }
 
-                    /**
-                     * Hides this dialog.
-                     */
-                    hide() {
-                        self.$mdDialog.hide();
+                        /**
+                         * Hides this dialog.
+                         */
+                        hide() {
+                            this.$mdDialog.hide();
+                        }
+                    },
+                    controllerAs: "dialog",
+                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                    locals: {}
                     }
-                },
-                controllerAs: "dialog",
-                templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose: false,
-                fullscreen: false,
-                locals: {}
-            });
+                );
 
         });
 
@@ -1035,7 +1032,7 @@ export class TransformDataComponent implements OnInit {
     /**
      * Called when the user clicks Add on the function bar
      */
-    onAddFunction = function () {
+    onAddFunction = () => {
         this.addFunction(this.currentFormula, {formula: this.currentFormula, icon: "code", name: this.currentFormula});
     };
 
@@ -1117,17 +1114,16 @@ export class TransformDataComponent implements OnInit {
      * Update the feed model when changing from this transform step to a different step
      */
     private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
-        const self = this;
         const thisIndex = parseInt(this.stepIndex);
 
         let localFileChanged = this.isSampleFileChanged();
 
         if (changedSteps.oldStep === thisIndex) {
-            this.saveToFeedModel().then(function () {
+            this.saveToFeedModel().then( () => {
                 // notify those that the data is loaded/updated
-                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+                this.broadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             }, function () {
-                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+                this.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
         } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
             this.ngOnInit();
@@ -1144,7 +1140,7 @@ export class TransformDataComponent implements OnInit {
         // Add unsaved filters
 
         // Check if updates are necessary
-        let feedModel = this.FeedService.createFeedModel;
+        let feedModel = this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
             let result = this.$q.defer();
@@ -1165,14 +1161,14 @@ export class TransformDataComponent implements OnInit {
         let fields = this.engine.getFields();
 
         if (fields !== null) {
-            this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
-            this.FeedService.syncTableFieldPolicyNames();
+            this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
+            this.feedService.syncTableFieldPolicyNames();
             this.engine.save();
             deferred.resolve(true);
         } else {
             this.query().then(() => {
-                this.FeedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
-                this.FeedService.syncTableFieldPolicyNames();
+                this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+                this.feedService.syncTableFieldPolicyNames();
                 this.engine.save();
                 deferred.resolve(true);
             });
@@ -1207,13 +1203,13 @@ export class TransformDataComponent implements OnInit {
                 if (index < fieldPolicies.length) {
                     fieldPolicy = fieldPolicies[index];
                 } else {
-                    fieldPolicy = this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy = this.feedService.newTableFieldPolicy(column.hiveColumnLabel);
                     fieldPolicy.fieldName = column.hiveColumnLabel;
                     fieldPolicy.feedFieldName = column.hiveColumnLabel;
                 }
 
                 if (index === columnIndex) {
-                    this.FeedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
+                    this.feedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
                 }
                 return fieldPolicy;
             });

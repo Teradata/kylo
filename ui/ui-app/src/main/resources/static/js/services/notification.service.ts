@@ -2,6 +2,7 @@ import * as angular from "angular";
 import "rxjs/add/operator/auditTime";
 import {Subject} from "rxjs/Subject";
 import {Subscription} from "rxjs/Subscription";
+import {moduleName} from "./module-name";
 
 import "./module"; // ensure module is loaded first
 
@@ -330,5 +331,5 @@ export class NotificationService {
     }
 }
 
-angular.module(require("services/module-name"))
+angular.module(moduleName)
     .service("NotificationService", NotificationService);

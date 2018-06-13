@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import "fattable";
 
-import {DomainType} from "../../../services/DomainTypesService";
+import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
 
 /**

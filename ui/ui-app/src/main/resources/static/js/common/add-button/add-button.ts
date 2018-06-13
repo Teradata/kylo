@@ -1,56 +1,80 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import AddButtonService from "../../services/AddButtonService";
+import { TransitionService } from "@uirouter/core";
 
-angular.module(moduleName)
-        .directive('addButton', ['$http','$rootScope','$transitions','StateService','AddButtonService','BroadcastService',
- ($http: any,$rootScope: any,$transitions: any,StateService: any, AddButtonService: any,BroadcastService: any)=> {
-        return {
-            restrict: "EA",
-            scope:{},
-            template: '<md-button class="md-fab md-fab-bottom-right kylo-add-button" aria-label="Add" ng-click="onClickAddButton($event)"><ng-md-icon icon="add"></ng-md-icon></md-button>',
-            link: function ($scope: any, element: any, attrs: any) {
-                $scope.currentState = '';
-                $scope.onClickAddButton= function(event: any){
-                    AddButtonService.onClick($scope.currentState);
-                }
+export default class AddButton implements ng.IComponentController {
 
-                function isShowAddButton(){
-                     return AddButtonService.isShowAddButton($scope.currentState);
-                }
-
-                $transitions.onSuccess({},function(transition: any){
-                  var toState = transition.to();
-                  if(toState != undefined) {
-                      var state = toState.name;
-                      if(toState.name == 'home'){
-                          state = 'feeds';
-                      }
-                      $scope.currentState = state;
-                      updateShowState();
-                  }
-                });
-
-                function hideButton() {
-                    element.hide();
-                }
-
-                function showButton() {
-                    element.show();
-                }
-
-                function updateShowState(){
-                     if(isShowAddButton()){
-                        element.show();
-                    }
-                    else {
-                        element.hide();
-                    }
-                }
-
-                BroadcastService.subscribe($scope,AddButtonService.NEW_ADD_BUTTON_EVENT,updateShowState)
-                BroadcastService.subscribe($scope, AddButtonService.HIDE_ADD_BUTTON_EVENT, hideButton)
-                BroadcastService.subscribe($scope, AddButtonService.SHOW_ADD_BUTTON_EVENT, showButton)
-            }
-        };
+    
+    $onInit() {
+        this.ngOnInit();
     }
-]);
+
+    ngOnInit() {
+
+        this.BroadcastService.subscribe(this.$scope, this.addButtonService.NEW_ADD_BUTTON_EVENT,this.updateShowState)
+        this.BroadcastService.subscribe(this.$scope, this.addButtonService.HIDE_ADD_BUTTON_EVENT, this.hideButton)
+        this.BroadcastService.subscribe(this.$scope, this.addButtonService.SHOW_ADD_BUTTON_EVENT, this.showButton)
+
+        this.$transitions.onSuccess({},(transition: any) =>{
+                        var toState = transition.to();
+                        if(toState != undefined) {
+                            var state = toState.name;
+                            if(toState.name == 'home'){
+                                state = 'feeds';
+                            }
+                            this.$scope.currentState = state;
+                            this.updateShowState();
+                        }
+                    });    
+    }
+
+    static readonly $inject = ["$scope","$element", "$http","$rootScope","$transitions",
+                    "StateService","AddButtonService","BroadcastService"];
+
+    constructor(private $scope: IScope,
+                private $element: JQuery,
+                private $http: angular.IHttpService,
+                private $rootScope: IScope,
+                private $transitions: TransitionService,
+                private StateService: any, 
+                private addButtonService: AddButtonService,
+                private BroadcastService: any) {
+                    
+                    this.$scope.currentState = '';
+                    this.$scope.onClickAddButton= (event: any) =>{
+                        this.addButtonService.onClick(this.$scope.currentState);
+                    }
+
+                    
+                }
+
+        isShowAddButton = () => {
+            return this.addButtonService.isShowAddButton(this.$scope.currentState);
+        }
+
+        hideButton = () =>{
+            this.$element.hide();
+        }
+
+        showButton = () =>{
+            this.$element.show();
+        }
+
+        updateShowState = () => {
+            if(this.isShowAddButton()){
+                this.$element.show();
+            }
+            else {
+                this.$element.hide();
+            }
+        }
+
+}
+
+angular.module(moduleName).component('addButton', {
+    controller: AddButton,
+    template: '<md-button class="md-fab md-fab-bottom-right kylo-add-button" aria-label="Add" ng-click="onClickAddButton($event)"><ng-md-icon icon="add"></ng-md-icon></md-button>'
+});
+
+

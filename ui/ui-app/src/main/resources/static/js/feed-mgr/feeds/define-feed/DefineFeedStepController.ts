@@ -1,51 +1,73 @@
-import * as angular from 'angular';
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
-    /**
-     * An individual step in the Define Feed wizard.
-     */
-    var kyloDefineFeedStep = function (StepperService:any) {
-        return {
-            restrict: "E",
-            scope: {
-                step: "=",
-                title: "@"
-            },
-            require: ['^thinkbigStepper'],
-            templateUrl: "js/feed-mgr/feeds/define-feed/define-feed-step.html",
-            transclude: true,
-            link: function link($scope:any, element:any, attrs:any, controller:any, $transclude:any) {
-                $scope.$transclude = $transclude;
-                var stepperController = controller[0];
-                if($scope.step != undefined) {
-                    stepperController.assignStepName($scope.step, $scope.title);
-                }
-                else {
-                    console.error("UNDEFINED STEP!!!",$scope);
-                }
+import {Input, OnInit} from "@angular/core";
+import * as angular from "angular";
+import {IAugmentedJQuery, IOnInit, IPostLink, ITranscludeFunction} from "angular";
 
-            }
-        };
-    };
+import {StepperController} from "../../../common/stepper/stepper";
 
-    /**
-     * Transcludes the HTML contents of a <kylo-define-feed-step/> into the template of kyloDefineFeedStep.
-     */
-    var kyloDefineFeedStepTransclude = function () {
-        return {
-            restrict: "E",
-            link: ($scope:any, $element:any) => {
-                $scope.$transclude((clone:any) => {
-                    $element.empty();
-                    $element.append(clone);
-                });
-            }
-        };
-    };
+/**
+ * An individual step in the Define Feed wizard.
+ */
+export class KyloDefineFeedStep implements IOnInit, OnInit {
 
+    @Input()
+    public step: string;
 
-export class DefineFeedStep {
+    public stepperController: StepperController;
 
+    @Input()
+    public title: string;
 
+    static readonly $inject = ["$scope", "$transclude"];
+
+    constructor($scope: IScope, $transclude: ITranscludeFunction) {
+        $scope.$transclude = $transclude;
+    }
+
+    public $onInit() {
+        this.ngOnInit();
+    }
+
+    public ngOnInit() {
+        if (this.step != undefined) {
+            this.stepperController.assignStepName(this.step, this.title);
+        }
+        else {
+            console.error("UNDEFINED STEP!!!", this);
+        }
+    }
 }
-angular.module(moduleName).directive("kyloDefineFeedStep",['StepperService', kyloDefineFeedStep]);
-angular.module(moduleName).directive("kyloDefineFeedStepTransclude", kyloDefineFeedStepTransclude);
+
+/**
+ * Transcludes the HTML contents of a <kylo-define-feed-step/> into the template of kyloDefineFeedStep.
+ */
+export class KyloDefineFeedStepTransclude implements IPostLink {
+
+    static readonly $inject = ["$scope", "$element"];
+
+    constructor(private $scope: IScope, private $element: IAugmentedJQuery) {
+    }
+
+    $postLink() {
+        (this.$scope.$parent as IScope).$transclude((clone: IAugmentedJQuery) => {
+            this.$element.empty();
+            this.$element.append(clone);
+        });
+    }
+}
+
+angular.module(require('feed-mgr/feeds/define-feed/module-name'))
+    .component("kyloDefineFeedStep", {
+        bindings: {
+            step: "<",
+            title: "@"
+        },
+        controller: KyloDefineFeedStep,
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        templateUrl: "js/feed-mgr/feeds/define-feed/define-feed-step.html",
+        transclude: true
+    })
+    .component("kyloDefineFeedStepTransclude", {
+        controller: KyloDefineFeedStepTransclude
+    });

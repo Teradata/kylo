@@ -24,9 +24,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/catalog.html',
-                    controller:"CatalogController",
-                    controllerAs:"vm"
+                    component:"catalogController",
                 }
             },
             resolve: {
@@ -47,9 +45,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/schemas.html',
-                    controller:"SchemasController",
-                    controllerAs:"vm"
+                    component:"schemasController",
                 }
             },
             resolve: {
@@ -71,9 +67,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/tables.html',
-                    controller:"TablesController",
-                    controllerAs:"vm"
+                    component:"tablesController"
                 }
             },
             resolve: {
@@ -96,9 +90,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/table.html',
-                    controller:"TableController",
-                    controllerAs:"vm"
+                   component : 'tableController'
                 }
             },
             resolve: {

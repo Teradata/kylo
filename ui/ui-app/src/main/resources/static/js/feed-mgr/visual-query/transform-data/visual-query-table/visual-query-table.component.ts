@@ -3,7 +3,7 @@ import "fattable";
 import * as $ from "jquery";
 import * as _ from "underscore";
 
-import {DomainType} from "../../../services/DomainTypesService";
+import {DomainType} from "../../../services/DomainTypesService.d";
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
 import {WranglerTableService} from "../services/wrangler-table.service";

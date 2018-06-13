@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {UpgradeModule} from "@angular/upgrade/static";
 
-import {notificationServiceProvider} from "./angular2";
+import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider} from "./angular2";
 
 @NgModule({
     imports: [
@@ -10,6 +10,8 @@ import {notificationServiceProvider} from "./angular2";
         UpgradeModule
     ],
     providers: [
+        addButtonServiceProvider,
+        broadcastServiceProvider,
         notificationServiceProvider
     ]
 })

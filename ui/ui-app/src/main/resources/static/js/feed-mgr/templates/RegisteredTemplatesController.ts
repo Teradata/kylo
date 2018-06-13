@@ -1,8 +1,11 @@
 import * as angular from 'angular';
-import {moduleName} from "./module-name";
-import {ListTableView} from "../../services/ListTableViewTypes";
+import AccessControlService from "../../services/AccessControlService";
+import { moduleName } from "./module-name";
+import { ListTableView } from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;
 import SortOption = ListTableView.SortOption;
+import StateService from '../../services/StateService';
+import { RegisterTemplateServiceFactory } from '../services/RegisterTemplateServiceFactory';
 
 export class RegisteredTemplatesController {
 
@@ -23,11 +26,11 @@ export class RegisteredTemplatesController {
     /**
      * boolean indicating loading
      */
-    loading: boolean;
+    loading: boolean = true;
     /**
      * the title of the card
      */
-    cardTitle: string;
+    cardTitle: string = "Templates";
     /**
      * The unique page name for the PaginationDataService
      */
@@ -57,43 +60,12 @@ export class RegisteredTemplatesController {
      */
     filter: string;
 
+
     static $inject = ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService"];
 
-    constructor(private $scope: any, private $http: any, private $mdDialog: any, private $q: any
-        , private AccessControlService: any, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
-        , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: any, private RegisterTemplateService: any) {
-
-        this.loading = true;
-        this.cardTitle = 'Templates';
-
-        this.selectedTableOption = this.selectedTableOption.bind(this);
-
-        // Register Add button
-        this.AccessControlService.getUserAllowedActions()
-            .then((actionSet: any) => {
-                if (this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
-                    this.AddButtonService.registerAddButton("registered-templates", () =>{
-                        this.RegisterTemplateService.resetModel();
-                        this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
-                    });
-                }
-            });
-
-
-        this.paginationData = this.PaginationDataService.paginationData(this.pageName);
-
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        this.currentPage = PaginationDataService.currentPage(this.pageName) || 1;
-        this.viewType = PaginationDataService.viewType(this.pageName);
-        this.sortOptions = this.loadSortOptions();
-        this.filter = PaginationDataService.filter(this.pageName);
-    }
-
-    /**
-     * Initialize the controller and properties
-     */
-    ngOnInit() {
-
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $q: angular.IQService
+        , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
+        , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: StateService, private RegisterTemplateService: RegisterTemplateServiceFactory) {
 
         this.$scope.$watch(() => {
             return this.viewType;
@@ -106,30 +78,63 @@ export class RegisteredTemplatesController {
         }, (newVal: any) => {
             this.PaginationDataService.filter(this.pageName, newVal)
         });
+    }
+    /**
+     * When the controller is ready, initialize
+     */
+    $onInit() {
+        this.ngOnInit();
+    }
+    /**
+     * Initialize the controller and properties
+     */
+    ngOnInit() {
+
+        this.selectedTableOption = this.selectedTableOption.bind(this);
+
+        // Register Add button
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                    this.AddButtonService.registerAddButton("registered-templates", () => {
+                        this.RegisterTemplateService.resetModel();
+                        this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
+                    });
+                }
+            });
+
+
+        this.paginationData = this.PaginationDataService.paginationData(this.pageName);
+
+        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+        this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
+        this.viewType = this.PaginationDataService.viewType(this.pageName);
+        this.sortOptions = this.loadSortOptions();
+        this.filter = this.PaginationDataService.filter(this.pageName);
 
 
         this.getRegisteredTemplates();
 
         // Fetch the allowed actions
-        this.AccessControlService.getUserAllowedActions()
+        this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowEdit = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                this.allowExport = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                this.allowEdit = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
+                this.allowExport = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
     }
 
-    onViewTypeChange(viewType: string) {
+    onViewTypeChange = (viewType: string) => {
         this.PaginationDataService.viewType(this.pageName, this.viewType);
     }
 
 
-    onOrderChange(order: string) {
+    onOrderChange = (order: string) => {
         this.PaginationDataService.sort(this.pageName, order);
         this.TableOptionsService.setSortOption(this.pageName, order);
     };
 
-    onPaginationChange(page: number, limit: number) {
+    onPaginationChange = (page: number, limit: number) => {
         this.PaginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
@@ -138,12 +143,12 @@ export class RegisteredTemplatesController {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption(option: SortOption) {
+    selectedTableOption = (option: SortOption)  => {
         var sortString = this.TableOptionsService.toSortString(option);
         this.PaginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
         this.TableOptionsService.setSortOption(this.pageName, sortString);
-    }
+    };
 
     /**
      * Build the possible Sorting Options
@@ -162,11 +167,11 @@ export class RegisteredTemplatesController {
      * @param event
      * @param template
      */
-    templateDetails(event: angular.IAngularEvent, template: any) {
+    templateDetails = (event: angular.IAngularEvent, template: any) =>{
         if (this.allowEdit && template != undefined) {
             this.RegisterTemplateService.resetModel();
 
-            this.$q.when(this.RegisterTemplateService.hasEntityAccess([this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then((hasAccess: boolean) => {
+            this.$q.when(this.RegisterTemplateService.hasEntityAccess([AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then((hasAccess: boolean) => {
                 if (hasAccess) {
                     this.StateService.FeedManager().Template().navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
                 }
@@ -180,14 +185,14 @@ export class RegisteredTemplatesController {
         }
     };
 
-    getRegisteredTemplates(): angular.IPromise<any> {
+    getRegisteredTemplates = (): angular.IPromise<any> =>{
 
         let successFn = (response: angular.IHttpResponse<any>) => {
             this.loading = false;
             if (response.data) {
-                var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+                var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
                 angular.forEach(response.data, (template) => {
-                    template.allowExport = !entityAccessControlled || this.RegisterTemplateService.hasEntityAccess(this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
+                    template.allowExport = !entityAccessControlled || this.RegisterTemplateService.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
                     template.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                 });
             }
@@ -203,17 +208,15 @@ export class RegisteredTemplatesController {
 
     }
 
-    exportTemplate(event: angular.IAngularEvent, template: any) {
+    exportTemplate = (event: angular.IAngularEvent, template: any) => {
         var promise = this.$http.get(this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id);
     }
-
-    /**
-     * When the controller is ready, initialize
-     */
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
 }
 
-angular.module(moduleName).controller('RegisteredTemplatesController', RegisteredTemplatesController);
+angular.module(moduleName).component('registeredTemplatesController', {
+
+    templateUrl: 'js/feed-mgr/templates/registered-templates.html',
+    controller: RegisteredTemplatesController,
+    controllerAs: 'vm'
+
+});

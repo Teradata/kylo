@@ -12,6 +12,13 @@ declare namespace Templates {
         reusableTemplateProcessGroupName?: string;
     }
 
+    export interface TemplateProcessorDatasourceDefinition {
+        processorType: string;
+        processorName: string;
+        processorId: string;
+        datasourceDefinition: TemplateProcessorDatasourceDefinition;
+    }
+
     export interface PropertyAndProcessors {
         properties: Property[];
         processors: Processor[];
@@ -89,6 +96,31 @@ declare namespace Templates {
         codemirror?:boolean;
     }
 
-
+    export interface NiFiRemoteProcessGroup {
+        parentGroupId: string;
+        id: string;
+        targetUri: string;
+        targetUris: string;
+        targetSecure: boolean;
+        name: string;
+        comments: string;
+        communicationsTimeout: string;
+        yieldDuration: string;
+        transportProtocol: string;
+        localNetworkInterface: string;
+        proxyHost: string;
+        proxyPort: number;
+        proxyUser: string;
+        proxyPassword: string;
+        authorizationIssues: string[];
+        validationErrorsstring: string[];
+        transmitting: boolean;
+        inputPortCount: number;
+        outputPortCount: number;
+        activeRemoteInputPortCount: number;
+        inactiveRemoteInputPortCount: number;
+        activeRemoteOutputPortCount: number;
+        inactiveRemoteOutputPortCount: number;
+    }
 
 }

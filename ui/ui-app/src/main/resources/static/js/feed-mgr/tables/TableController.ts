@@ -1,95 +1,98 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "./module-name";
+import { Transition } from '@uirouter/core';
+import { DatasourcesService } from '../services/DatasourcesService';
 
 export class TableController {
 
 
-    tableSchema:any;
-    selectedTabIndex:any;
-    hql:any;
+    tableSchema:any = null;
+    selectedTabIndex:number = 0;
+    hql:string = '';
     schema:any;
     tableName:any;
     datasource:any;
     loading:any;
     datasourceId:any;
     cardTitle:any;
+    $transition$:Transition;
 
-    constructor(private $scope:any,private $transition$:any,private $http:any,private $filter:any
-        ,private RestUrlService:any,private DatasourcesService:any){
+    $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
+        this.schema = this.$transition$.params().schema;
+        this.tableName = this.$transition$.params().tableName;
+        this.datasourceId = this.$transition$.params().datasource;
+    }
 
-        var self = this;
-        this.tableSchema =null;
+    static readonly $inject = ["$scope","$http","$filter","RestUrlService", "DatasourcesService"];
 
-        self.selectedTabIndex = 0;
-        self.hql = '';
-        self.schema = $transition$.params().schema;
-        self.tableName = $transition$.params().tableName;
-        self.datasourceId = $transition$.params().datasource;
+    constructor(private $scope:IScope,private $http:angular.IHttpService,private $filter:angular.IFilterService
+        ,private RestUrlService:any,private datasourcesService:DatasourcesService){
 
-        var init = function(){
-            getTable(self.schema, self.tableName);
-        };
-
-
-        $scope.$watch(function(){
-            return self.selectedTabIndex;
-        },function(newVal:any){
+        $scope.$watch( () => {
+            return this.selectedTabIndex;
+        },(newVal:any) =>{
         });
 
-
-
-        function getTable(schema:any, table:any) {
-            self.loading = true;
-            if (self.datasource.isHive) {
-                getHiveTable(schema, table);
-            } else {
-                getNonHiveTable(schema, table);
-            }
-        }
-
-        var successFn = function (response:any) {
-            self.tableSchema = response.data;
-            self.cardTitle = self.schema;
-            self.loading = false;
-        };
-        var errorFn = function (err:any) {
-            self.loading = false;
-
-        };
-
-        function getNonHiveTable(schema:any, table:any){
-            var params = {schema: schema};
-            var promise = $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + self.datasource.id + "/tables/" + table, {params: params});
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-
-        function getHiveTable(schema:any,table:any){
-            var promise = $http.get(RestUrlService.HIVE_SERVICE_URL+"/schemas/"+schema+"/tables/"+table);
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-
-        function getDatasource(datasourceId:any) {
-            self.loading = true;
-            var successFn = function (response:any) {
-                self.datasource = response;
-                self.loading = false;
-            };
-            var errorFn = function (err:any) {
-                self.loading = false;
-            };
-            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
-        }
-
-        getDatasource(self.datasourceId).then(init);
+        this.getDatasource(this.datasourceId).then(this.init);
+    };
+    
+    init = () =>{
+        this.getTable(this.schema, this.tableName);
     };
 
- 
-    
-    
-    
+    successFn = (response:any) =>{
+        this.tableSchema = response.data;
+        this.cardTitle = this.schema;
+        this.loading = false;
+    };
+    errorFn = (err:any) => {
+        this.loading = false;
+
+    };
+    getTable(schema:any, table:any) {
+        this.loading = true;
+        if (this.datasource.isHive) {
+            this.getHiveTable(schema, table);
+        } else {
+            this.getNonHiveTable(schema, table);
+        }
+    }
+
+    getNonHiveTable(schema:any, table:any){
+        var params = {schema: schema};
+        var promise = this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + this.datasource.id + "/tables/" + table, {params: params});
+        promise.then(this.successFn, this.errorFn);
+        return promise;
+    }
+
+    getHiveTable(schema:any,table:any){
+        var promise = this.$http.get(this.RestUrlService.HIVE_SERVICE_URL+"/schemas/"+schema+"/tables/"+table);
+        promise.then(this.successFn, this.errorFn);
+        return promise;
+    }
+
+    getDatasource(datasourceId:any) {
+        this.loading = true;
+        var successFn =  (response:any) => {
+            this.datasource = response;
+            this.loading = false;
+        };
+        var errorFn = (err:any) => {
+            this.loading = false;
+        };
+        return this.datasourcesService.findById(datasourceId).then(successFn, errorFn);
+    }
 }
 
-angular.module(moduleName).controller('TableController',["$scope","$transition$","$http","$filter","RestUrlService", "DatasourcesService",TableController]);
+angular.module(moduleName).component('tableController',{
+    controllerAs: 'vm',
+    controller :TableController,
+    templateUrl: 'js/feed-mgr/tables/table.html',
+    bindings : {
+        $transition$ : '<'
+    }
+});

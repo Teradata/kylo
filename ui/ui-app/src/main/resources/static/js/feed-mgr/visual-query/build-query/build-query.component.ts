@@ -61,7 +61,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     /**
      * Model for the chart.
      */
-    chartViewModel: any;
+    chartViewModel: any = {};
 
     /**
      * Indicates that there was an error retrieving the list of tables.
@@ -212,18 +212,16 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Initialize state from services.
      */
     private init() {
-        const self = this;
-
         // Get the list of data sources
-        Promise.all([self.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
+        Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
-                self.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
+                this.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
 
-                const supportedDatasources = resultList[0].concat(resultList[1]).filter(self.engine.supportsDataSource);
+                const supportedDatasources = resultList[0].concat(resultList[1]).filter(this.engine.supportsDataSource);
                 if (supportedDatasources.length > 0) {
                     return supportedDatasources;
                 } else {
-                    const supportedNames = (function (supportedNameList) {
+                    const supportedNames = ((supportedNameList) =>{
                         if (supportedNameList.length === 0) {
                             return "";
                         } else if (supportedNameList.length === 1) {
@@ -231,24 +229,24 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                         } else {
                             return `Please create one of the following data sources and try again: ${supportedNameList.join(", ")}`;
                         }
-                    })(self.engine.getSupportedDataSourceNames());
+                    })(this.engine.getSupportedDataSourceNames());
                     throw new Error("No supported data sources were found. " + supportedNames);
                 }
             })
             .then((datasources: UserDatasource[]) => {
-                self.availableDatasources = datasources;
+                this.availableDatasources = datasources;
                 //add in the File data source
-                self.availableDatasources.push(this.fileDataSource);
-                if (self.model.$selectedDatasourceId == null) {
-                    self.model.$selectedDatasourceId = datasources[0].id;
+                this.availableDatasources.push(this.fileDataSource);
+                if (this.model.$selectedDatasourceId == null) {
+                    this.model.$selectedDatasourceId = datasources[0].id;
                 }
-                self.validate();
+                this.validate();
             })
             .catch((err: string) => {
-                self.error = err;
+                this.error = err;
             })
-            .then(function () {
-                self.loadingPage = false;
+            .then(() => {
+                this.loadingPage = false;
             });
     }
 
@@ -257,8 +255,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Initialize the key bindings.
      */
     private initKeyBindings() {
-        const self = this;
-
         //
         // Set to true when the ctrl key is down.
         //
@@ -267,7 +263,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         //
         // Event handler for key-down on the flowchart.
         //
-        this.$document.bind('keydown', function (evt: JQueryKeyEventObject) {
+        this.$document.bind('keydown', (evt: JQueryKeyEventObject) => {
             if (evt.keyCode === CTRL_KEY_CODE) {
                 ctrlDown = true;
                 evt.stopPropagation();
@@ -278,25 +274,25 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         //
         // Event handler for key-up on the flowchart.
         //
-        this.$document.bind('keyup', function (evt: JQueryKeyEventObject) {
+        this.$document.bind('keyup', (evt: JQueryKeyEventObject) => {
             if (evt.keyCode === DELETE_KEY_CODE) {
                 //
                 // Delete key.
                 //
-                self.chartViewModel.deleteSelected();
-                self.validate();
+                this.chartViewModel.deleteSelected();
+                this.validate();
             }
 
             if (evt.keyCode == A_KEY_CODE && ctrlDown) {
                 //
                 // Ctrl + A
                 //
-                self.chartViewModel.selectAll();
+                this.chartViewModel.selectAll();
             }
 
             if (evt.keyCode == ESC_KEY_CODE) {
                 // Escape.
-                self.chartViewModel.deselectAll();
+                this.chartViewModel.deselectAll();
             }
 
             if (evt.keyCode === CTRL_KEY_CODE) {
@@ -312,7 +308,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Initialize the model for the flowchart.
      */
     setupFlowChartModel() {
-        const self = this;
         // Load data model
         let chartDataModel: any;
         if (this.model.chartViewModel != null) {
@@ -322,12 +317,12 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Prepare nodes
-        angular.forEach(chartDataModel.nodes, function (node: any) {
+        angular.forEach(chartDataModel.nodes, (node: any) => {
             // Add utility functions
-            self.prepareNode(node);
+            this.prepareNode(node);
 
             // Determine next node ID
-            self.nextNodeID = Math.max(node.id + 1, self.nextNodeID);
+            this.nextNodeID = Math.max(node.id + 1, this.nextNodeID);
         });
 
         // Create view model
@@ -372,10 +367,9 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * @param table - the table name
      */
     private getTableSchema(schema: string, table: string): Promise<TableSchema> {
-        const self = this;
         return this.engine.getTableSchema(schema, table, this.model.$selectedDatasourceId)
-            .then(function (tableSchema: TableSchema) {
-                self.loadingSchema = false;
+            .then((tableSchema: TableSchema) => {
+                this.loadingSchema = false;
                 return tableSchema;
             });
     }
@@ -386,7 +380,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * TODO enhance to check if there are any tables without connections
      */
     private validate() {
-        const self = this;
         if (this.advancedMode) {
             let sql = this.advancedModeSql();
             this.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
@@ -403,7 +396,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.model.chartViewModel = this.chartViewModel.data;
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => self.nativeDataSourceIds.indexOf(id) < 0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id) < 0);
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -419,13 +412,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             let tableWidth = 250;
 
             //reduce the set to just show those in the top row
-            let tables = _.filter(this.chartViewModel.data.nodes, function (table: any) {
+            let tables = _.filter(this.chartViewModel.data.nodes, (table: any) => {
                 return table.y <= yThreshold;
             });
             //sort by x then y (underscore sort is reverse thinking)
             tables = _.chain(tables).sortBy('y').sortBy('x').value();
             let lastX = coord.x;
-            _.some(tables, function (table: any) {
+            _.some(tables, (table: any) => {
                 //if this table is within the top row
                 //move over to find the next X position on the top row that is open
                 if (table.x < lastX + tableWidth) {
@@ -451,11 +444,10 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Turn on SQL mode.
      */
     toggleAdvancedMode() {
-        let self = this;
         if (this.advancedMode === false) {
-            let goAdvanced = function () {
-                self.advancedMode = true;
-                self.advancedModeText = "Visual Mode";
+            let goAdvanced = () => {
+                this.advancedMode = true;
+                this.advancedModeText = "Visual Mode";
             };
             if (this.chartViewModel.nodes.length > 0) {
                 this.$mdDialog.show(
@@ -513,7 +505,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
          */
         node.nodeAttributes.selectAll = function (): void {
             let selected: any = [];
-            angular.forEach(this.attributes, function (attr: any) {
+            angular.forEach(this.attributes, (attr: any) => {
                 attr.selected = true;
                 selected.push(attr);
             });
@@ -539,7 +531,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
          * Deselects all attributes.
          */
         node.nodeAttributes.deselectAll = function (): void {
-            angular.forEach(this.attributes, function (attr: any) {
+            angular.forEach(this.attributes, (attr: any) => {
                 attr.selected = false;
             });
             this.selected = [];
@@ -551,26 +543,25 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     // Add a new node to the chart.
     //
     onTableClick(table: any) {
-        const self = this;
 
         //get attributes for table
         const datasourceId = this.model.$selectedDatasourceId;
         const nodeName = table.schema + "." + table.tableName;
-        this.getTableSchema(table.schema, table.tableName).then(function (schemaData: any) {
+        this.getTableSchema(table.schema, table.tableName).then((schemaData: any) => {
             //
             // Template for a new node.
             //
-            const coord = self.getNewXYCoord();
+            const coord = this.getNewXYCoord();
 
-            angular.forEach(schemaData.fields, function (attr: any) {
+            angular.forEach(schemaData.fields, (attr: any) => {
                 attr.selected = true;
-                if (self.engine.useNativeDataType) {
+                if (this.engine.useNativeDataType) {
                     attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();
                 }
             });
             const newNodeDataModel: any = {
                 name: nodeName,
-                id: self.nextNodeID++,
+                id: this.nextNodeID++,
                 datasourceId: datasourceId,
                 x: coord.x,
                 y: coord.y,
@@ -596,9 +587,9 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                     }
                 ]
             };
-            self.prepareNode(newNodeDataModel);
-            self.chartViewModel.addNode(newNodeDataModel);
-            self.validate();
+            this.prepareNode(newNodeDataModel);
+            this.chartViewModel.addNode(newNodeDataModel);
+            this.validate();
         });
 
     };
@@ -667,7 +658,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     };
 
     showConnectionDialog(isNew: any, connectionViewModel: any, connectionDataModel: any, source: any, dest: any) {
-        const self = this;
         this.chartViewModel.deselectAll();
         this.$mdDialog.show({
             controller: 'ConnectionDialog',
@@ -682,12 +672,12 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                 dest: dest
             }
         })
-            .then(function (msg: any) {
+            .then( (msg: any) => {
                 if (msg === "delete" || (isNew && msg === "cancel")) {
                     connectionViewModel.select();
-                    self.chartViewModel.deleteSelected();
+                    this.chartViewModel.deleteSelected();
                 }
-                self.validate();
+                this.validate();
             });
     };
 
@@ -779,14 +769,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Search the list of table names.
      */
     onAutocompleteQuerySearch(txt: any) {
-        const self = this;
         const tables = this.engine.searchTableNames(txt, this.model.$selectedDatasourceId);
         if (tables instanceof Promise) {
-            return tables.then(function (tables: any) {
-                self.databaseConnectionError = false;
+            return tables.then( (tables: any) => {
+                this.databaseConnectionError = false;
                 return tables;
-            }, function (): any {
-                self.databaseConnectionError = true;
+            }, () => {
+                this.databaseConnectionError = true;
                 return [];
             });
         } else {
@@ -795,11 +784,11 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     }
 
     onAutocompleteRefreshCache() {
-        const successFn = function() {
+        const successFn = () => {
             let searchText = this.tablesAutocomplete.searchText.trim();
             angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
         };
-        const errorFn = function() {
+        const errorFn = () => {
         };
         this.HiveService.refreshTableCache().then(successFn, errorFn);
     }

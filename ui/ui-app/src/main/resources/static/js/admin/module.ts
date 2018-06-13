@@ -1,13 +1,10 @@
 import * as angular from 'angular';
 import AccessConstants from '../constants/AccessConstants';
-//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
-//const codeMirrorRequire = require('../codemirror-require/module');
 import "../codemirror-require/module";
-import {KyloServicesModule} from "../services/services.module";
-//const moduleName =require("./module-name");
+import "../services/services.module";
 import {moduleName} from "./module-name";
-//export * from "../codemirror-require/module"; 
+import {StateProvider} from "@uirouter/angularjs";
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -16,14 +13,14 @@ class ModuleFactory  {
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]); 
     }
-    configFn($stateProvider:any) {
+    configFn($stateProvider:StateProvider) {
        $stateProvider.state('jcr-query',{
             url:'/admin/jcr-query',
             views: {
                 'content': {
-                    templateUrl: 'js/admin/jcr/jcr-query.html',
-                    controller:"JcrQueryController",
-                    controllerAs:"vm"
+                    //templateUrl: 'js/admin/jcr/jcr-query.html',
+                    component:"jcrQueryController",
+                    //controllerAs:"vm"
                 }
             },
             resolve: {
@@ -41,9 +38,9 @@ class ModuleFactory  {
             url:'/admin/cluster',
             views: {
                 'content': {
-                    templateUrl: 'js/admin/cluster/cluster-test.html',
-                    controller:"ClusterController",
-                    controllerAs:"vm"
+                   // templateUrl: 'js/admin/cluster/cluster-test.html',
+                    component:"clusterController",
+                    //controllerAs:"vm"
                 }
             },
             resolve: {
@@ -58,7 +55,7 @@ class ModuleFactory  {
         })
     }  
 
-    runFn($ocLazyLoad: any){
+    runFn($ocLazyLoad: oc.ILazyLoad){
         $ocLazyLoad.load({
             name: 'kylo', 
             files: ['bower_components/angular-ui-grid/ui-grid.css', 'assets/ui-grid-material.css'],
@@ -69,7 +66,6 @@ class ModuleFactory  {
     lazyLoadController(path:any){
         return lazyLoadUtil.lazyLoadController(path,"admin/module-require");
     }
-
 } 
 const module = new ModuleFactory();
 export default module;

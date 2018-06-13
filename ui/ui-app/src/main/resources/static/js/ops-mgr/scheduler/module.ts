@@ -21,9 +21,9 @@ class ModuleFactory  {
             url:'/scheduler',
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/scheduler/scheduler.html',
-                    controller:"SchedulerController",
-                    controllerAs:"vm"
+                    // templateUrl: 'js/ops-mgr/scheduler/scheduler.html',
+                    component:"schedulerController",
+                    // controllerAs:"vm"
                 }
             },
             resolve: {

@@ -44,9 +44,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
-                    controller: 'DefineFeedCompleteController',
-                    controllerAs: 'vm'
+                    component: 'thinkbigDefineFeedCompleteController',
                 }
             },
             resolve: {

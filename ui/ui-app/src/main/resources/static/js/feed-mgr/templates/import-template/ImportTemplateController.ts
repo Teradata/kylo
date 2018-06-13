@@ -1,18 +1,19 @@
-import {moduleName} from "../module-name";
+import { moduleName } from "../module-name";
 import * as angular from "angular";
 
 import * as _ from "underscore";
-import {ImportComponentType} from "../../services/ImportService";
-import {Import} from "../../services/ImportComponentOptionTypes";
-import {Common} from "../../../common/CommonTypes";
+import { ImportComponentType } from "../../services/ImportService";
+import { Import } from "../../services/ImportComponentOptionTypes";
+import { Common } from "../../../common/CommonTypes";
 import {StateService} from "@uirouter/angular";
-import {OnInit} from "@angular/core";
+import { OnInit } from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
+import { RegisterTemplateServiceFactory } from "../../services/RegisterTemplateServiceFactory";
 
 export class ImportTemplateController implements ng.IController, OnInit {
 
@@ -203,23 +204,12 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
     templateParam: any;
 
-    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
 
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
-        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private RegisterTemplateService: any, private $state: StateService) {
-
-        this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
-
-        this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
-
-        this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
-
-        this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
-
-        this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
-
-
+    /**
+     * When the controller is ready, initialize
+     */
+    $onInit() {
+        this.ngOnInit();
     }
 
     /**
@@ -230,10 +220,19 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.indexImportOptions();
         this.setDefaultImportOptions();
         this.checkRemoteProcessGroupAware();
+    }
+
+    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
+
+    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
+        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
+        , private registerTemplateService: RegisterTemplateServiceFactory, private $state: StateService) {
+
+
+
         /**
          * Watch when the file changes
          */
-        var self = this;
         this.$scope.$watch(() => {
             return this.templateFile;
         }, (newVal: any, oldValue: any) => {
@@ -251,6 +250,18 @@ export class ImportTemplateController implements ng.IController, OnInit {
             this.checkFileName(this.templateParam.fileName);
             console.log(this.$state.params.template);
         }
+
+        this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+
+        this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+
+        this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+
+        this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
+
+        this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
+
+
     }
 
     private checkFileName(newFileName: string) {
@@ -303,7 +314,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
              * Map of errors by type after this upload
              * @type {{FATAL: any[]; WARN: any[]}}
              */
-            let errorMap: any = {"FATAL": [], "WARN": []};
+            let errorMap: any = { "FATAL": [], "WARN": [] };
 
             //reassign the options back from the response data
             let importComponentOptions = responseData.importOptions.importComponentOptions;
@@ -327,13 +338,13 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     //show the user the list and allow them to configure and save it.
 
                     //add button that will make these connections
-                    this.RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then((inputPortsResponse: any) => {
+                    this.registerTemplateService.fetchRegisteredReusableFeedInputPorts().then((inputPortsResponse: any) => {
                         //Update connectionMap and inputPortList
                         this.inputPortList = [];
                         if (inputPortsResponse.data) {
                             angular.forEach(inputPortsResponse.data, (port, i) => {
                                 var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
-                                this.inputPortList.push({label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled});
+                                this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled });
                                 this.connectionMap[port.name] = port;
                             });
                         }
@@ -501,7 +512,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     this.uploadProgress = response.data.percentComplete;
                 }
             }, (err: any) => {
-                //  self.uploadStatusMessages = [];
             });
         }, 500);
     }
@@ -717,19 +727,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.connectionMap = {};
 
     }
-
-
-    /**
-     * When the controller is ready, initialize
-     */
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
-
 }
 
-// angular.module(moduleName).controller('ImportTemplateController', ImportTemplateController);
 angular.module(moduleName).component('importTemplateController', {
     templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
     controller: ImportTemplateController,

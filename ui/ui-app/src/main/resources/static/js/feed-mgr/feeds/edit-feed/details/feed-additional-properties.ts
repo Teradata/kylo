@@ -1,6 +1,8 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
+import AccessControlService from '../../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 var directive = function() {
     return {
@@ -54,7 +56,7 @@ export class FeedAdditionalPropertiesController {
             return {name: chip}
         };
 
-        onEdit = function() {
+        onEdit = ()=> {
             // Determine tags value
             var tags = angular.copy(this.FeedService.editFeedModel.tags);
             if (tags == undefined || tags == null) {
@@ -78,7 +80,7 @@ export class FeedAdditionalPropertiesController {
             // do nothing
         };
 
-        onSave = function(ev:any) {
+        onSave = (ev:any) => {
             //save changes to the model
             this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-additional-properties.Saving'), this.model.feedName);
             var copy = angular.copy(this.FeedService.editFeedModel);
@@ -110,48 +112,39 @@ export class FeedAdditionalPropertiesController {
         };
 
 
-    constructor (private $scope:any,private $q:any, private AccessControlService:any, private EntityAccessControlService:any,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
-        var self = this;
-
+    constructor (private $scope:any,private $q:any, private accessControlService:AccessControlService, private entityAccessControlService:EntityAccessControlService,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
+       // var self = this;
         this.tagChips.selectedItem = null;
         this.tagChips.searchText = null;
-
-
         this.securityGroupChips.selectedItem = null;
         this.securityGroupChips.searchText = null;
-        
-
 
         FeedSecurityGroups.isEnabled().then((isValid:any) => {
-                self.securityGroupsEnabled = isValid;
+                this.securityGroupsEnabled = isValid;
             }
-
         );
-
-        
-
         $scope.$watch(() => {
             return FeedService.editFeedModel;
         }, (newVal:any) => {
             //only update the model if it is not set yet
-            if (self.model == null) {
-                self.model = FeedService.editFeedModel;
+            if (this.model == null) {
+                this.model = FeedService.editFeedModel;
             }
         });
         
-        if (self.versions) {
-            $scope.$watch(function(){
-                return self.FeedService.versionFeedModel;
-            },function(newVal:any) {
-                self.versionFeedModel = self.FeedService.versionFeedModel;
+        if (this.versions) {
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModel;
+            },(newVal:any)=>{
+                this.versionFeedModel = this.FeedService.versionFeedModel;
             });
-            $scope.$watch(function(){
-                return self.FeedService.versionFeedModelDiff;
-            },function(newVal:any) {
-                self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModelDiff;
+            },(newVal:any)=>{
+                this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
 
-                self.userProperties = [];
-                _.each(self.versionFeedModel.userProperties, function(versionedProp) {
+                this.userProperties = [];
+                _.each(this.versionFeedModel.userProperties, (versionedProp) => {
                     let property:any = {};
                     property.versioned = angular.copy(versionedProp);
                     property.op = 'no-op';
@@ -159,9 +152,9 @@ export class FeedAdditionalPropertiesController {
                     property.displayName = property.versioned.displayName;
                     property.description = property.versioned.description;
                     property.current = angular.copy(property.versioned);
-                    self.userProperties.push(property);
+                    this.userProperties.push(property);
                 });
-                _.each(_.values(self.versionFeedModelDiff), function(diff){
+                _.each(_.values(this.versionFeedModelDiff), (diff)=>{
                     if (diff.path.startsWith("/userProperties")) {
                         if (diff.path.startsWith("/userProperties/")) {
                             //individual versioned indexed action
@@ -169,21 +162,21 @@ export class FeedAdditionalPropertiesController {
                             let indexOfSlash = remainder.indexOf("/");
                             let versionedPropIdx = remainder.substring(0, indexOfSlash > 0 ? indexOfSlash : remainder.length);
                             if ("replace" === diff.op) {
-                                let property = self.userProperties[versionedPropIdx];
+                                let property = this.userProperties[versionedPropIdx];
                                 property.op = diff.op;
                                 let replacedPropertyName = remainder.substring(remainder.indexOf("/") + 1, remainder.length);
                                 property.current[replacedPropertyName] = diff.value;
                                 property[replacedPropertyName] = diff.value;
                             } else if ("add" === diff.op) {
                                 if (_.isArray(diff.value)) {
-                                    _.each(diff.value, function(prop){
-                                        self.userProperties.push(self.createProperty(prop, diff.op));
+                                    _.each(diff.value, (prop)=>{
+                                        this.userProperties.push(this.createProperty(prop, diff.op));
                                     });
                                 } else {
-                                    self.userProperties.unshift(self.createProperty(diff.value, diff.op));
+                                    this.userProperties.unshift(this.createProperty(diff.value, diff.op));
                                 }
                             } else if ("remove" === diff.op) {
-                                let property = self.userProperties[versionedPropIdx];
+                                let property = this.userProperties[versionedPropIdx];
                                 property.op = diff.op;
                                 property.current = {};
                             }
@@ -191,14 +184,14 @@ export class FeedAdditionalPropertiesController {
                             //group versioned action, can be either "add" or "remove"
                             if ("add" === diff.op) {
                                 if (_.isArray(diff.value)) {
-                                    _.each(diff.value, function(prop){
-                                        self.userProperties.push(self.createProperty(prop, diff.op));
+                                    _.each(diff.value, (prop)=>{
+                                        this.userProperties.push(this.createProperty(prop, diff.op));
                                     });
                                 } else {
-                                    self.userProperties.push(self.createProperty(diff.value, diff.op));
+                                    this.userProperties.push(this.createProperty(diff.value, diff.op));
                                 }
                             } else if ("remove" === diff.op) {
-                                _.each(self.userProperties, function(prop:any){
+                                _.each(this.userProperties, (prop:any)=>{
                                     prop.op = diff.op;
                                     prop.current = {};
                                 });
@@ -210,8 +203,8 @@ export class FeedAdditionalPropertiesController {
         }
 
         //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
-            self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
+        $q.when(accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
+            this.allowEdit = !this.versions && access && !this.model.view.properties.disabled;
         });
     }
 

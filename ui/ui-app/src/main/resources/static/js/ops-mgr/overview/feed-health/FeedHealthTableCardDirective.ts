@@ -1,6 +1,11 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
+import StateService from "../../../services/StateService";
+import TabService from "../../services/TabService";
+import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
+import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
+import OpsManagerFeedService from "../../services/OpsManagerFeedService";
 
 export default class FeedHealthTableCardController implements ng.IComponentController{
     pageName: any;
@@ -19,38 +24,37 @@ export default class FeedHealthTableCardController implements ng.IComponentContr
     paginationId: any;
     feedHealthInterval: any;
 
-constructor(private $scope: any,
-        private $rootScope: any,
-        private $http: any,
-        private $interval: any,
-        private OpsManagerFeedService: any,
-        private OpsManagerDashboardService: any,
-        private TableOptionsService: any,
-        private PaginationDataService: any,
-        private TabService: any,
-        private StateService: any,
-        private BroadcastService: any
-        ){
-         this.pageName="feed-health";
+static readonly $inject = ["$scope","$rootScope","$http","$interval",
+                            "OpsManagerFeedService","OpsManagerDashboardService",
+                            "TableOptionsService","PaginationDataService","TabService",
+                            "StateService","BroadcastService"];
+
+$onInit() {
+    this.ngOnInit();
+}
+
+ngOnInit() {
+
+    this.pageName="feed-health";
          this.fetchFeedHealthPromise = null;
         //Pagination and view Type (list or table)
-        this.paginationData = PaginationDataService.paginationData(this.pageName);
-        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
+        this.paginationData = this.paginationDataService.paginationData(this.pageName);
+        this.paginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
         /**
          * the view either list, or table
          */
-        this.viewType = PaginationDataService.viewType(this.pageName);
+        this.viewType = this.paginationDataService.viewType(this.pageName);
         //Setup the Tabs
         var tabNames =  ['All','Running','Healthy','Unhealthy','Streaming'];
         /**
          * Create the Tab objects
          */
-        this.tabs = TabService.registerTabs(this.pageName,tabNames, this.paginationData.activeTab);
+        this.tabs = this.tabService.registerTabs(this.pageName,tabNames, this.paginationData.activeTab);
 
         /**
          * Setup the metadata about the tabs
          */
-        this.tabMetadata = TabService.metadata(this.pageName);
+        this.tabMetadata = this.tabService.metadata(this.pageName);
 
         this.sortOptions = this.loadSortOptions();
 
@@ -62,11 +66,11 @@ constructor(private $scope: any,
         /**
          * object {data:{total:##,content:[]}}
          */
-        this.data = TabService.tabPageData(this.pageName);
+        this.data = this.tabService.tabPageData(this.pageName);
         /**
          * filter used for this card
          */
-        this.filter = PaginationDataService.filter(this.pageName)
+        this.filter = this.paginationDataService.filter(this.pageName)
 
         /**
          * Flag to indicate the page successfully loaded for the first time and returned data in the card
@@ -85,7 +89,7 @@ constructor(private $scope: any,
          * @param tab optional tab to designate the pagination across tabs.
          */
         this.paginationId = (tab: any)=> {
-            return PaginationDataService.paginationId(this.pageName, tab.title);
+            return this.paginationDataService.paginationId(this.pageName, tab.title);
         }
 
 
@@ -95,6 +99,23 @@ constructor(private $scope: any,
          */
         this.feedHealthInterval = null;
 
+        this.watchDashboard();
+
+}
+
+constructor(private $scope: IScope,
+        private $rootScope: IScope,
+        private $http: angular.IHttpService,
+        private $interval: angular.IIntervalService,
+        private opsManagerFeedService: OpsManagerFeedService,
+        private OpsManagerDashboardService: any,
+        private tableOptionsService: DefaultTableOptionsService,
+        private paginationDataService: DefaultPaginationDataService,
+        private tabService: TabService,
+        private stateService: StateService,
+        private BroadcastService: any
+        ){
+         
         $scope.$watch(()=>{
                     return this.viewType;
                 },(newVal: any)=> {
@@ -127,33 +148,32 @@ constructor(private $scope: any,
 
         });
 
-        this.init();
         } // end of constructor
   
 
 
         onTabSelected = (tab: any) =>{
             tab.clearContent();
-            this.TabService.selectedTab(this.pageName, tab);
+            this.tabService.selectedTab(this.pageName, tab);
             if(this.loaded || (!this.loaded && !this.OpsManagerDashboardService.isFetchingDashboard())) {
                 return this.loadFeeds(true, true);
             }
         };        
 
         onViewTypeChange = (viewType: any)=> {
-            this.PaginationDataService.viewType(this.pageName, this.viewType);
+            this.paginationDataService.viewType(this.pageName, this.viewType);
         }
 
         onOrderChange = (order: any)=> {
-            this.PaginationDataService.sort(this.pageName, order);
-            this.TableOptionsService.setSortOption(this.pageName,order);
+            this.paginationDataService.sort(this.pageName, order);
+            this.tableOptionsService.setSortOption(this.pageName,order);
             return this.loadFeeds(true,true);
         };
 
         onPaginationChange =  (page: any, limit: any)=> {
             if( this.viewType == 'list') {
                 if (this.loaded) {
-                    var activeTab= this.TabService.getActiveTab(this.pageName);
+                    var activeTab= this.tabService.getActiveTab(this.pageName);
                     activeTab.currentPage = page;
                     return this.loadFeeds(true, true);
                 }
@@ -162,7 +182,7 @@ constructor(private $scope: any,
 
         onTablePaginationChange = (page: any, limit: any)=>{
             if( this.viewType == 'table') {
-                var activeTab= this.TabService.getActiveTab(this.pageName);
+                var activeTab= this.tabService.getActiveTab(this.pageName);
                 if (this.loaded) {
                     activeTab.currentPage = page;
                     return this.loadFeeds(true, true);
@@ -172,10 +192,10 @@ constructor(private $scope: any,
 
         feedDetails = (event: any, feed: any)=>{
             if(feed.stream) {
-                this.StateService.OpsManager().Feed().navigateToFeedStats(feed.feed);
+                this.stateService.OpsManager().Feed().navigateToFeedStats(feed.feed);
             }
             else {
-                this.StateService.OpsManager().Feed().navigateToFeedDetails(feed.feed);
+                this.stateService.OpsManager().Feed().navigateToFeedDetails(feed.feed);
             }
         }
         /**
@@ -183,10 +203,10 @@ constructor(private $scope: any,
          * @param option
          */
         selectedTableOption = (option: any)=> {
-            var sortString = this.TableOptionsService.toSortString(option);
-            this.PaginationDataService.sort(this.pageName,sortString);
-            var updatedOption = this.TableOptionsService.toggleSort(this.pageName,option);
-            this.TableOptionsService.setSortOption(this.pageName,sortString);
+            var sortString = this.tableOptionsService.toSortString(option);
+            this.paginationDataService.sort(this.pageName,sortString);
+            var updatedOption = this.tableOptionsService.toggleSort(this.pageName,option);
+            this.tableOptionsService.setSortOption(this.pageName,sortString);
             return this.loadFeeds(true,true);
         }
 
@@ -197,10 +217,10 @@ constructor(private $scope: any,
          loadSortOptions=function() {
             var options = {'Feed':'feed','Health':'healthText','Status':'displayStatus','Since':'timeSinceEndTime','Last Run Time':'runTime'};
 
-            var sortOptions = this.TableOptionsService.newSortOptions(this.pageName,options,'feed','desc');
-            var currentOption = this.TableOptionsService.getCurrentSort(this.pageName);
+            var sortOptions = this.tableOptionsService.newSortOptions(this.pageName,options,'feed','desc');
+            var currentOption = this.tableOptionsService.getCurrentSort(this.pageName);
             if(currentOption) {
-                this.TableOptionsService.saveSortOption(this.pageName,currentOption)
+                this.tableOptionsService.saveSortOption(this.pageName,currentOption)
             }
             return sortOptions;
         }
@@ -210,7 +230,7 @@ constructor(private $scope: any,
          * @param feeds
          */
          mergeUpdatedFeeds=function(feeds: any) {
-             var activeTab = this.TabService.getActiveTab(this.pageName);
+             var activeTab = this.tabService.getActiveTab(this.pageName);
             var tab = activeTab.title.toLowerCase();
 
             if (tab != 'All') {
@@ -256,9 +276,9 @@ constructor(private $scope: any,
         }
         getFeedHealthQueryParams= function(){
             var limit = this.paginationData.rowsPerPage;
-            var activeTab = this.TabService.getActiveTab(this.pageName);
+            var activeTab = this.tabService.getActiveTab(this.pageName);
             var tab = activeTab.title;
-            var sort = this.PaginationDataService.sort(this.pageName);
+            var sort = this.paginationDataService.sort(this.pageName);
             var start = (limit * activeTab.currentPage) - limit;
             return {limit:limit,fixedFilter:tab,sort:sort,start:start,filter:this.filter};
         }
@@ -286,7 +306,7 @@ constructor(private $scope: any,
               },
               (err: any)=>{
                   this.loaded = true;
-                  var activeTab = this.TabService.getActiveTab(this.pageName);
+                  var activeTab = this.tabService.getActiveTab(this.pageName);
                   activeTab.clearContent();
                   this.showProgress = false;
               });
@@ -297,13 +317,13 @@ constructor(private $scope: any,
 
 
         populateFeedData=function(tab: any){
-            var activeTab = this.TabService.getActiveTab(this.pageName);
+            var activeTab = this.tabService.getActiveTab(this.pageName);
             activeTab.clearContent();
             this.dataArray = this.OpsManagerDashboardService.feedsArray;
             _.each(this.dataArray,function(feed,i) {
                 activeTab.addContent(feed);
             });
-            this.TabService.setTotal(this.pageName, activeTab.title, this.OpsManagerDashboardService.totalFeeds)
+            this.tabService.setTotal(this.pageName, activeTab.title, this.OpsManagerDashboardService.totalFeeds)
             this.loaded = true;
             this.showProgress = false;
         }
@@ -326,7 +346,7 @@ constructor(private $scope: any,
                     this.mergeUpdatedFeeds(updatedFeeds);
                 }
                 else {
-                    var activeTab = this.TabService.getActiveTab(this.pageName);
+                    var activeTab = this.tabService.getActiveTab(this.pageName);
                     var tab = activeTab.title;
                     if(tab.toLowerCase() == 'running') {
                         this.loadFeeds(false);
@@ -349,34 +369,13 @@ constructor(private $scope: any,
             });
         }
 
-
-
-        init=()=> {
-            this.watchDashboard();
-        }
-
 }
 
- angular.module(moduleName)
-.controller('FeedHealthTableCardController',
-                                        ["$scope","$rootScope","$http","$interval",
-                                        "OpsManagerFeedService","OpsManagerDashboardService",
-                                        "TableOptionsService","PaginationDataService","TabService",
-                                        "StateService","BroadcastService",FeedHealthTableCardController]);
-    angular.module(moduleName)
-        .directive('tbaFeedHealthTableCard', [()=> {
-
-        return {
-            restrict: "EA",
-            bindToController: {
-                cardTitle: "@"
-            },
-            controllerAs: 'vm',
-            scope: true,
-            templateUrl: 'js/ops-mgr/overview/feed-health/feed-health-table-card-template.html',
-            controller: "FeedHealthTableCardController",
-            link: function ($scope, element, attrs,ctrl,transclude) {
-
-            }
-        };
-        }]);
+ angular.module(moduleName).component('tbaFeedHealthTableCard',{
+     controller: FeedHealthTableCardController,
+     bindings: {
+        cardTitle: "@"
+     },
+     controllerAs: "vm",
+     templateUrl: "js/ops-mgr/overview/feed-health/feed-health-table-card-template.html"
+ });

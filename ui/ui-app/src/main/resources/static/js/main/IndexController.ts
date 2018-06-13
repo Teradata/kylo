@@ -4,6 +4,15 @@ import {RejectType, Transition, TransitionService} from "@uirouter/core";
 import * as angular from 'angular';
 
 import "app";
+import StateService from  "../services/StateService";
+import AccessControlService from "../services/AccessControlService";
+import AccessConstants from "../constants/AccessConstants";
+import SearchService from "../services/SearchService";
+import SideNavService from "../services/SideNavService";
+
+export interface IMyScope extends ng.IScope {
+    $mdMedia?: any;
+}
 
 /**
  * Identifier for state loader mask of TdLoadingService
@@ -16,7 +25,7 @@ export class IndexController implements angular.IComponentController {
      * Time to wait before initializing the loading dialog
      * @type {number}
      */
-    LOADING_DIALOG_WAIT_TIME:any = 100;
+    LOADING_DIALOG_WAIT_TIME:number = 100;
 
     /**
      * Covalent loading service
@@ -28,33 +37,36 @@ export class IndexController implements angular.IComponentController {
      */
     stateLoaderTimeout: number;
 
+    static readonly $inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia",
+                                "$mdBottomSheet", "$log", "$q", "$element","$rootScope", "$transitions", "$$angularInjector",
+                                "$mdDialog", "StateService", "SearchService", "SideNavService",
+                                "AccessControlService"];
     constructor(
-        private $scope:any,
-        private $http:any,
-        private $location: any,
-        private $timeout: any,
-        private $window: any,
-        private $mdSidenav: any,
-        private $mdMedia: any,
-        private $mdBottomSheet: any,
-        private $log: any,
-        private $q: any,
-        private $element: any,
-        private $rootScope: any,
+        private $scope:IMyScope,
+        private $http:angular.IHttpService,
+        private $location: angular.ILocationService,
+        private $timeout: angular.ITimeoutService,
+        private $window: angular.IWindowService,
+        private $mdSidenav: angular.material.ISidenavService,
+        private $mdMedia: angular.material.IMedia,
+        private $mdBottomSheet: angular.material.IBottomSheetService,
+        private $log: angular.ILogService,
+        private $q: angular.IQService,
+        private $element: JQuery,
+        private $rootScope: any, //angular.IRootScopeService,
         private $transitions: TransitionService,
         private $$angularInjector: Injector,
-        private $mdDialog:any,
-        private StateService:any,
-        private SearchService: any,
-        private SideNavService: any,
-        private AccessControlService:any)
+        private $mdDialog:angular.material.IDialogService,
+        private StateService:StateService,
+        private SearchService: SearchService,
+        private SideNavService: SideNavService,
+        private accessControlService:AccessControlService)
         {
-         this.LOADING_DIALOG_WAIT_TIME= 100;
-
+        // this.LOADING_DIALOG_WAIT_TIME= 100;
          /**
           * Media object to help size the panels on the screen when shrinking/growing the window
           */
-          this.$scope.$mdMedia= this.$mdMedia;
+          $scope.$mdMedia= $mdMedia;
           /**
           * Set the ui-router states to the $rootScope for easy access
           */
@@ -84,10 +96,10 @@ export class IndexController implements angular.IComponentController {
             this.$transitions.onError({}, this.onTransitionError.bind(this));
 
          // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
-                    this.allowSearch = this.AccessControlService
-                                            .hasAction(this.AccessControlService.GLOBAL_SEARCH_ACCESS,
+                    this.allowSearch = accessControlService
+                                            .hasAction(AccessConstants.GLOBAL_SEARCH_ACCESS,
                                                         actionSet.actions);
                 });
 
@@ -204,7 +216,7 @@ export class IndexController implements angular.IComponentController {
             });
         }
 
-               /**
+        /**
          * Show a loading dialog if the load takes longer than xx ms
          */
         loadingTimeout: any = this.$timeout(()=> {
@@ -244,7 +256,7 @@ export class IndexController implements angular.IComponentController {
         this.$rootScope.currentState = transition.to().name;
 
         //hide the loading dialog
-        if (!this.AccessControlService.isFutureState(this.currentState.name)) {
+        if (!this.accessControlService.isFutureState(this.currentState.name)) {
             if (this.loadingTimeout != null) {
                 this.$timeout.cancel(this.loadingTimeout);
                 this.loadingTimeout = null;
@@ -269,8 +281,8 @@ export class IndexController implements angular.IComponentController {
     }
 }
 
-
-
-angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-                                                                 "$rootScope", "$transitions", "$$angularInjector", "$mdDialog", "StateService", "SearchService", "SideNavService",
-                                                                 "AccessControlService", IndexController]);
+  angular.module('kylo').component("indexController", {
+        controller: IndexController,
+        controllerAs: "mc",
+        templateUrl: "js/main/index.component.html"
+    });

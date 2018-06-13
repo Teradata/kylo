@@ -23,9 +23,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/registered-templates.html',
-                    controller:'RegisteredTemplatesController',
-                    controllerAs:'vm'
+                    component : "registeredTemplatesController"
                 }
             },
             resolve: {
@@ -45,9 +43,7 @@ class ModuleFactory  {
             url:'/register-new-template',
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/new-template/register-new-template.html',
-                    controller:'RegisterNewTemplateController',
-                    controllerAs:'vm'
+                    component: "registerNewTemplateController"
                 }
             },
             resolve: {
@@ -69,9 +65,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template.html',
-                    controller:'RegisterTemplateController',
-                    controllerAs:'vm'
+                    component : "registerTemplateController"
                 }
             },
             resolve: {
@@ -91,9 +85,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
-                    controller:'RegisterTemplateCompleteController',
-                    controllerAs:'vm'
+                    component : "registerTemplateCompleteController"
                 }
             },
             data: {
@@ -109,7 +101,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    component:'importTemplateController'
+                    component : 'importTemplateController'
                 }
             },
             resolve: {

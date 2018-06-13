@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import { Transition } from "@uirouter/core";
 
 export class controller implements ng.IComponentController {
 
@@ -29,9 +30,9 @@ export class controller implements ng.IComponentController {
     agreementNotFound: boolean = false;
 
 
-    static readonly $inject = ['$transition$', '$http', 'OpsManagerRestUrlService', 'StateService']
+    static readonly $inject = ['$transition$', '$http', 'OpsManagerRestUrlService', 'StateService'];
 
-    constructor(private $transition$: any,
+    constructor(private $transition$: Transition,
                 private $http: angular.IHttpService,
                 private opsManagerRestUrlService: any,
                 private stateService: any) {
@@ -92,6 +93,12 @@ export class controller implements ng.IComponentController {
 
 }
 
-angular.module(moduleName)
-    .controller('ServiceLevelAssessmentController', controller);
+angular.module(moduleName).component("serviceLevelAssessmentController", {
+    controller: controller,
+    bindings: {
+        $transition$: "<"
+    },
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/sla/assessment.html"
+});
 
