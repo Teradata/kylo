@@ -131,7 +131,7 @@ export class CategoryDefinitionController {
          *  new 1,  editable 1, !feeds 0 - not auto generated, editable
          *  new 1,  editable 1,  feeds 1 - invalid state (cannot be editable with feeds)
          */
-        getSystemNameDescription() {
+        getSystemNameDescription = () => {
             // console.log("this.isNewCategory() = " + this.isNewCategory());
             // console.log("this.isSystemNameEditable() = " + this.isSystemNameEditable());
             // console.log("this.hasFeeds() = " + this.hasFeeds());
@@ -163,23 +163,23 @@ export class CategoryDefinitionController {
             return "";
         };
 
-        isNewCategory() {
+        isNewCategory = () => {
             return this.editModel.id == undefined;
         };
 
-        isSystemNameEditable() {
+        isSystemNameEditable = () => {
             return this.systemNameEditable;
         };
 
-        hasFeeds() {
+        hasFeeds = () => {
             return !this.hasNoFeeds();
         };
 
-        hasNoFeeds() {
+        hasNoFeeds = () => {
             return (!angular.isArray(this.model.relatedFeedSummaries) || this.model.relatedFeedSummaries.length === 0);
         };
 
-        allowEditSystemName() {
+        allowEditSystemName = () => {
             this.systemNameEditable = true;
             this.$timeout(()=> {
                 var systemNameInput = this.$window.document.getElementById("systemName");
@@ -189,7 +189,7 @@ export class CategoryDefinitionController {
             });
         };
 
-        splitSecurityGroups() {
+        splitSecurityGroups = () => {
             if (this.model.securityGroups) {
                 return _.map(this.model.securityGroups, (securityGroup:any) =>{
                     return securityGroup.name
@@ -201,14 +201,14 @@ export class CategoryDefinitionController {
          * Indicates if the category can be deleted.
          * @return {boolean} {@code true} if the category can be deleted, or {@code false} otherwise
          */
-        canDelete() {
+        canDelete = () => {
             return this.allowDelete && (angular.isString(this.model.id) && this.hasNoFeeds());
         };
 
         /**
          * Returns to the category list page if creating a new category.
          */
-        onCancel() {
+        onCancel = () => {
             this.systemNameEditable = false;
             if (!angular.isString(this.model.id)) {
                 this.StateService.FeedManager().Category().navigateToCategories();
@@ -218,7 +218,7 @@ export class CategoryDefinitionController {
         /**
          * Deletes this category.
          */
-        onDelete() {
+        onDelete = () => {
             var name = this.editModel.name;
             this.CategoriesService.delete(this.editModel).then( () => {
                 this.systemNameEditable = false;
@@ -245,14 +245,14 @@ export class CategoryDefinitionController {
         /**
          * Switches to "edit" mode.
          */
-        onEdit() {
+        onEdit = () => {
             this.editModel = angular.copy(this.model);
         };
 
         /**
          * Check for duplicate display and system names.
          */
-        validateDisplayAndSystemName() {
+        validateDisplayAndSystemName = () => {
             var displayNameExists = false;
             var systemNameExists = false;
             var newDisplayName = this.editModel.name;
@@ -291,7 +291,7 @@ export class CategoryDefinitionController {
         /**
          * Check for duplicate display and system names.
          */
-        validateDisplayName() {
+        validateDisplayName = () => {
             var nameExists = false;
             var newName = this.editModel.name;
 
@@ -320,7 +320,7 @@ export class CategoryDefinitionController {
         /**
          * Check for duplicate display and system names.
          */
-        validateSystemName() {
+        validateSystemName = () => {
             var nameExists = false;
             var newName = this.editModel.systemName;
 
@@ -347,7 +347,7 @@ export class CategoryDefinitionController {
         /**
          * Saves the category definition.
          */
-        onSave() {
+        onSave = () => {
             var model = angular.copy(this.CategoriesService.model);
             model.name = this.editModel.name;
             model.systemName = this.editModel.systemName;
@@ -383,7 +383,7 @@ export class CategoryDefinitionController {
         /**
          * Shows the icon picker dialog.
          */
-        showIconPicker() {
+        showIconPicker = () => {
             var self = this;
             this.$mdDialog.show({
                 controller: 'IconPickerDialog',
@@ -403,11 +403,11 @@ export class CategoryDefinitionController {
                 });
         };
 
-        getIconColorStyle(iconColor:any) {
+        getIconColorStyle = (iconColor:any) => {
             return  {'fill': iconColor};
         };
 
-        checkAccessPermissions() {
+        checkAccessPermissions = () => {
             //Apply the entity access permissions
             this.$q.when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then((access:any) =>{
                 this.allowEdit = access;

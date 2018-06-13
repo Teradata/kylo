@@ -71,14 +71,14 @@ export class CategoryFeedPropertiesController {
     /**
          * Switches to "edit" mode.
          */
-        onEdit() {
+        onEdit = () => {
             this.editModel = angular.copy(this.model);
         };
 
         /**
          * Saves the category properties.
          */
-        onSave() {
+        onSave = () => {
             var model = angular.copy(this.CategoriesService.model);
             model.id = this.model.id;
             model.userFields = this.editModel.userFields;

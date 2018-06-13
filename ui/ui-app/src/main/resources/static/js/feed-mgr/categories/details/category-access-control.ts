@@ -84,13 +84,13 @@ export class CategoryAccessControlController {
     /**
          * Switches to "edit" mode.
          */
-    onEdit() {
+    onEdit = () => {
         this.editModel = angular.copy(this.model);
     };
     /**
          * Saves the category .
          */
-    onSave() {
+    onSave = () => {
         var model = angular.copy(this.CategoriesService.model);
         model.roleMemberships = this.editModel.roleMemberships;
         model.feedRoleMemberships = this.editModel.feedRoleMemberships;
