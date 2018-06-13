@@ -6,8 +6,6 @@ import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
 const moduleName = require('./module-name');
 const feedManager = require('kylo-feedmgr');
 
-import {FeedCommonModule} from  "./feeds.module";
-
 class ModuleFactory  {
 
     module: ng.IModule;

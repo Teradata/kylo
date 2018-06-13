@@ -21,7 +21,7 @@
     <div >
         <div layout="row" layout-align="start stretch" class="layout-align-start-stretch layout-row">
             <mat-icon class="ng-md-icon" style="color:#009933;margin-left: -9px;" *ngIf="showVerticalCheck == true">check</mat-icon>
-            <span class="md-subhead layout-padding-left"  >{{$ctrl.sectionTitle}}</span>
+            <span class="md-subhead layout-padding-left"  >{{sectionTitle}}</span>
             <span class="flex"></span>
             <button class="icon-btn md-icon-button md-primary md-button md-kylo-theme md-ink-ripple" (click)="edit($event)" *ngIf="allowEdit ==true && !editable">
                 <mat-icon>edit</mat-icon>
