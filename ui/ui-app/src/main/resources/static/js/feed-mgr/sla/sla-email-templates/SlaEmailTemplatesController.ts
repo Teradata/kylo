@@ -144,6 +144,6 @@ export class controller implements ng.IComponentController{
  .service('SlaEmailTemplateService',["$http","$q","$mdToast","$mdDialog","RestUrlService",SlaEmailTemplateService])
  .controller('SlaEmailTemplatesController', 
                                         ["$scope","$http","$mdDialog","$q","$transition$",
-                                        "AccessControlService","PaginationDataService",
-                                        "TableOptionsService","AddButtonService","StateService",
+                                        "AccessControlService","DefaultPaginationDataService",
+                                        "DefaultTableOptionsService","AddButtonService","StateService",
                                         "SlaEmailTemplateService",controller]);

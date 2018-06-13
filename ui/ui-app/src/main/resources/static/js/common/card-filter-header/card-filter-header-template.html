@@ -1,19 +1,21 @@
- <div style="white-space: nowrap;margin-top:10px;" class="card-title">{{$cardFilterHeader.cardTitle | translate}}</div>
-        <span flex="5"></span>
- <div ng-if="$cardFilterHeader.customFilterTemplate != ''" >
-   <ng-include src="$cardFilterHeader.customFilterTemplate" onload="ctl = $cardFilterHeader.cardController"></ng-include>
- </div>
- <span flex="5" ng-if="$cardFilterHeader.customFilterTemplate != ''"></span>
-        <md-input-container flex style="margin-top:0px;margin-bottom:0px;" ng-if="$cardFilterHeader.renderFilter">
-            <label>{{"views.card-filter-header-template.Filter" | translate}}</label>
-            <input ng-model="$cardFilterHeader.filterModel" ng-model-options="$cardFilterHeader.filterModelOptions"/>
-        </md-input-container>
- <div layout="row" layout-align="space-between center"  ng-if="$cardFilterHeader.renderFilter">
-   <md-button aria-label="Filter Help" class="md-icon-button filter-help-button" ng-click="$cardFilterHeader.showFilterHelpPanel($event)" ng-if="$cardFilterHeader.renderHelp">
-     <ng-md-icon md-icon icon="help" size="15" style="fill:grey;"></ng-md-icon>
-   </md-button>
-   <tba-view-type-selection view-type="$cardFilterHeader.viewType" style="margin-left:10px;"></tba-view-type-selection>
-   <tba-options-menu sort-options="$cardFilterHeader.sortOptions" show-pagination="false" menu-key="{{$cardFilterHeader.pageName}}" selected-option="$cardFilterHeader.selectedOption"
-                     opened-menu="$cardFilterHeader.menuOpen" additional-options="$cardFilterHeader.additionalOptions" selected-additional-option="$cardFilterHeader.selectedAdditionalOption"
-                     show-view-type="false" menu-icon="more_vert"></tba-options-menu>
+<div style="white-space: nowrap;margin-top:10px;" class="card-title">{{cardTitle | translate}}</div>
+<span class="flex-5"></span>
+<div *ngIf="customFilterTemplate != ''" >
+  <div ng-include="customFilterTemplate" onload="ctl = cardController"></div>
 </div>
+<span class="flex-5" *ngIf="customFilterTemplate != ''"></span>
+
+<div class="md-input-container flex md-kylo-theme" style="margin-top:0px;margin-bottom:0px;" *ngIf="renderFilter">
+  <label>{{"views.card-filter-header-template.Filter" | translate}}</label>
+  <input [(ngModel)]="filterModel" [ngModelOptions]="filterModelOptions" (change)="changeFilter(filterModel)" class="ng-pristine ng-untouched ng-valid md-input ng-empty"/>
+</div>
+<div layout="row" layout-align="space-between center" class="layout-align-space-between-center layout-row" *ngIf="renderFilter">
+  <button md-butto aria-label="Filter Help" class="md-icon-button filter-help-button" (click)="showFilterHelpPanel($event)" *ngIf="renderHelp">
+  <mat-icon md-icon size="15" style="color:grey;">help</mat-icon>
+  </button>
+  <tba-view-type-selection [viewType]="viewType" (viewTypeChange)="onViewTypeChange($event)" style="margin-left:10px;"></tba-view-type-selection>
+  <tba-options-menu [sortOptions]="sortOptions" showPagination="false" [menuKey]="pageName" [selectedOption]="selectedOption"
+                [openedMenu]="menuOpen" [additionalOptions]="additionalOptions" [selectedAdditionalOption]="selectedAdditionalOption"
+                showViewType="false" menuIcon="more_vert"></tba-options-menu>
+</div>
+ 

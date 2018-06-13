@@ -2,6 +2,8 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
 import AccessControlService from '../../services/AccessControlService';
+import { DefaultTableOptionsService } from '../../services/TableOptionsService';
+import {DefaultPaginationDataService} from '../../services/PaginationDataService';
 const moduleName = require('./module-name');
 export default class FeedsTableController implements ng.IComponentController {
 
@@ -21,36 +23,62 @@ export default class FeedsTableController implements ng.IComponentController {
     filter:  any = null;
     
 
+    $onInit() {
+        this.ngOnInit();
+    }
 
+    ngOnInit() {
+
+        // Register Add button
+        this.accessControlService.getUserAllowedActions()
+        .then((actionSet:any) => {
+            if (this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                this.AddButtonService.registerAddButton("feeds", () => {
+                    this.FeedService.resetFeed();
+                    this.StateService.FeedManager().Feed().navigateToDefineFeed()
+                });
+            }
+        });
+        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+
+        this.filter = this.PaginationDataService.filter(this.pageName);
+        this.cardTitle = this.$filter('translate')('views.main.feeds-title');
+
+        // Fetch the allowed actions
+        this.accessControlService.getUserAllowedActions()
+        .then((actionSet:any) => {
+            this.allowExport = this.accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
+        });
+
+        //rebind this controller to the onOrderChange function
+        //https://github.com/daniel-nagy/md-data-table/issues/616
+        this.onOrderChange = this.onOrderChange.bind(this);
+
+        this.selectedTableOption = this.selectedTableOption.bind(this);
+
+        this.onDataTablePaginationChange = this.onDataTablePaginationChange.bind(this);
+
+    }
+
+    static readonly $inject = ["$scope","$http","AccessControlService","RestUrlService",
+                                "DefaultPaginationDataService","DefaultTableOptionsService",
+                                "AddButtonService","FeedService","StateService", 
+                                "$filter", "EntityAccessControlService"];
 
     constructor(
-        private $scope: angular.IScope,
-        private $http: any,
+        private $scope: IScope,
+        private $http: angular.IHttpService,
         private accessControlService: AccessControlService,
         private RestUrlService:any,
-        private PaginationDataService: any,
-        private TableOptionsService: any,
+        private PaginationDataService: DefaultPaginationDataService,
+        private TableOptionsService: DefaultTableOptionsService,
         private AddButtonService: any,
         private FeedService: any,
         private StateService: any,
         public $filter: any,
-        private EntityAccessControlService: any,
-    ){
+        private EntityAccessControlService: any){
 
-        // Register Add button
-        accessControlService.getUserAllowedActions()
-        .then((actionSet:any) => {
-            if (accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
-                AddButtonService.registerAddButton("feeds", () => {
-                    FeedService.resetFeed();
-                    StateService.FeedManager().Feed().navigateToDefineFeed()
-                });
-            }
-        });
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-
-        this.filter = PaginationDataService.filter(this.pageName);
-        this.cardTitle = $filter('translate')('views.main.feeds-title');
+        
         $scope.$watch(() => {
             return this.viewType;
         }, (newVal) => {
@@ -66,25 +94,10 @@ export default class FeedsTableController implements ng.IComponentController {
             }
         })
 
-
-        // Fetch the allowed actions
-        accessControlService.getUserAllowedActions()
-        .then((actionSet:any) => {
-            this.allowExport = accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
-        });
-
-        //rebind this controller to the onOrderChange function
-        //https://github.com/daniel-nagy/md-data-table/issues/616
-        this.onOrderChange = this.onOrderChange.bind(this);
-
-        this.selectedTableOption = this.selectedTableOption.bind(this);
-
-        this.onDataTablePaginationChange = this.onDataTablePaginationChange.bind(this)
-
     }
 
-    onViewTypeChange(viewType:any) {
-        this.PaginationDataService.viewType(this.pageName, this.viewType);
+    onViewTypeChange = (viewType:any) => {
+        this.PaginationDataService.viewType(this.pageName, viewType);
     }
 
     onOrderChange(order:any) {
@@ -115,8 +128,6 @@ export default class FeedsTableController implements ng.IComponentController {
         }
 
     };
-
-
 
     /**
      * Called when a user Clicks on a table Option
@@ -210,14 +221,10 @@ export default class FeedsTableController implements ng.IComponentController {
 
 }
 
-
-
-
-
-    angular.module(moduleName)
-        .controller('FeedsTableController',
-            ["$scope","$http","AccessControlService","RestUrlService","PaginationDataService",
-            "TableOptionsService","AddButtonService","FeedService","StateService", '$filter', "EntityAccessControlService", 
-            FeedsTableController]);
+angular.module(moduleName).component('feedsTableController', {
+    controller: FeedsTableController,
+    controllerAs: "vm",
+    templateUrl: "js/feed-mgr/feeds/feeds-table.html"
+});
 
 

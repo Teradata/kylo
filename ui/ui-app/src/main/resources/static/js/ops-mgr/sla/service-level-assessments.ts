@@ -34,7 +34,7 @@ tabNames : string[] = ['All', 'Failure', 'Warning','Success'];
 sortOptions: any; 
 allowAdmin: boolean;
 
-static readonly $inject = ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerRestUrlService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService"];
+static readonly $inject = ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerRestUrlService","DefaultTableOptionsService","DefaultPaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService"];
 
 $onInit() {
     this.ngOnInit();

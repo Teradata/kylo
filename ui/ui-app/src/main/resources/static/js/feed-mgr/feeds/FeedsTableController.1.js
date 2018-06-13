@@ -194,8 +194,8 @@ define(['angular','feed-mgr/feeds/module-name', 'pascalprecht.translate'], funct
 
     angular.module(moduleName)
         .controller('FeedsTableController',
-            ["$scope","$http","AccessControlService","RestUrlService","PaginationDataService",
-            "TableOptionsService","AddButtonService","FeedService","StateService", 
+            ["$scope","$http","AccessControlService","RestUrlService","DefaultPaginationDataService",
+            "DefaultTableOptionsService","AddButtonService","FeedService","StateService", 
             "EntityAccessControlService", "$filter", controller]);
 
 });

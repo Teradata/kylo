@@ -61,7 +61,7 @@ export class RegisteredTemplatesController {
     filter: string;
 
 
-    static $inject = ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService"];
+    static $inject = ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "DefaultPaginationDataService", "DefaultTableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $q: angular.IQService
         , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService

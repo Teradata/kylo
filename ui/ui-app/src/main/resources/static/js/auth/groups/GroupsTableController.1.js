@@ -157,5 +157,5 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
                 });
     }
 
-    angular.module(moduleName).controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
+    angular.module(moduleName).controller("GroupsTableController", ["$scope","AddButtonService","DefaultPaginationDataService","StateService","DefaultTableOptionsService","UserService",GroupsTableController]);
 });

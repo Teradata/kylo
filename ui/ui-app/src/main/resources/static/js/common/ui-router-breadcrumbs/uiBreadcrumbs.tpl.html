@@ -1,9 +1,10 @@
-<div ng-if="$ctrl.lastBreadcrumbs.length == 2" layout-align="center" style="white-space: nowrap">
-  <md-button class="icon-btn" ng-click="$ctrl.navigate( $ctrl.lastBreadcrumbs[0])">
-    <ng-md-icon md-icon icon="keyboard_arrow_left"></ng-md-icon>
-  </md-button>
-  <span>  {{ $ctrl.lastBreadcrumbs[0].displayName | translate}}</span>
-</div>
-<div ng-if="$ctrl.lastBreadcrumbs.length == 1" style="white-space: nowrap">
-  {{ $ctrl.lastBreadcrumbs[0].displayName | translate}}
-</div>
+<div *ngIf="lastBreadcrumbs.length == 2" layout-align="center" style="white-space: nowrap">
+    <button class="md-button icon-btn" (click)="navigate( lastBreadcrumbs[0])">
+      <mat-icon md-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <span>  {{ lastBreadcrumbs[0].displayName}}</span>
+  </div>
+  <div *ngIf="lastBreadcrumbs.length == 1" style="white-space: nowrap">
+    {{ lastBreadcrumbs[0].displayName}}
+  </div>
+  

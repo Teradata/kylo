@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 import StateService from '../../services/StateService';
-import { DefaultPaginationDataService } from '../../services/PaginationDataService';
+import {DefaultPaginationDataService} from '../../services/PaginationDataService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import AddButtonService from '../../services/AddButtonService';
@@ -81,8 +81,8 @@ export class DatasourcesListController {
 
 
     static readonly $inject = ["$scope", "AccessControlService", "AddButtonService",
-        "DatasourcesService", "PaginationDataService", "StateService",
-        "TableOptionsService"]
+        "DatasourcesService", "DefaultPaginationDataService", "StateService",
+        "DefaultTableOptionsService"]
     /**
      * Displays a list of data sources.
      *

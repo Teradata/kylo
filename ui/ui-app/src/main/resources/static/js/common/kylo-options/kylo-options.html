@@ -1,19 +1,20 @@
-<md-menu >
-  <md-button aria-label="Options" class="md-icon-button" ng-click="$ctrl.openMenu($mdOpenMenu, $event)">
-    <ng-md-icon icon="{{$ctrl.menuIcon}}"></ng-md-icon>
-  </md-button>
-  <md-menu-content width="3">
-    <md-menu-item>
-      <header> <ng-md-icon icon="account_circle"></ng-md-icon>{{$ctrl.username}}</header>
-    </md-menu-item>
-    <md-menu-item>
-      <md-button ng-click="$ctrl.logout()">{{"views.kylo-options.Logout" | translate}}</md-button>
-    </md-menu-item>
-    <md-menu-divider></md-menu-divider>
-    <md-menu-item layout="column">
-      <md-button ng-click="$ctrl.aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
+<button aria-label="Options" class="md-icon-button md-button md-kylo-theme md-ink-ripple" [matMenuTriggerFor]="menu" (click)="openMenu($mdOpenMenu, $event)">
+    <mat-icon class="ng-md-icon">{{menuIcon}}</mat-icon>
+  </button>
+  <mat-menu class="md-menu-content width-3" style="width:192px" #menu>
+    <div class="md-menu-item">
+      <header> 
+        <mat-icon class="ng-md-icon" style="float:left">account_circle</mat-icon>
+        <span style="vertical-align: middle">{{username}}</span>
+      </header>
+    </div>
+    <div class="md-menu-item">
+      <button class="md-button md-kylo-theme md-ink-ripple" (click)="logout()">{{"views.kylo-options.Logout" | translate}}</button>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="md-menu-item">
+      <button class="md-button md-kylo-theme md-ink-ripple" (click)="aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
         <span style="float:left;">{{"views.kylo-options.AK" | translate}}</span>
-      </md-button>
-    </md-menu-item>
-  </md-menu-content>
-</md-menu>
+      </button>
+    </div>
+  </mat-menu>

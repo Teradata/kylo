@@ -47,7 +47,7 @@ export class TablesController {
     }
 
     static readonly $inject = ["$scope", "$http", "$q", "$filter", "RestUrlService",
-        "PaginationDataService", "TableOptionsService", "AddButtonService", "FeedService",
+        "DefaultPaginationDataService", "DefaultTableOptionsService", "AddButtonService", "FeedService",
         "StateService", "Utils", "DatasourcesService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $q: angular.IQService, private $filter: angular.IFilterService, private RestUrlService: any

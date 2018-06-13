@@ -1,6 +1,6 @@
 <form name="$ctrl.form">
-  <vertical-section-layout section-title="Patterns" on-save-edit="$ctrl.onSave()" on-edit="$ctrl.onEdit()" on-cancel-edit="$ctrl.onCancel()" editable="$ctrl.isEditable" is-valid="$ctrl.form.$valid"
-                           allow-edit="$ctrl.allowEdit">
+  <vertical-section-layout section-title="Patterns" [on-save-edit]="$ctrl.onSave" [on-edit]="$ctrl.onEdit" [on-cancel-edit]="$ctrl.onCancel" [editable]="$ctrl.isEditable" [is-valid]="$ctrl.form.$valid"
+                           [allow-edit]="$ctrl.allowEdit">
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Column Name</span>

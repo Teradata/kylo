@@ -24,6 +24,8 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
 
+import "./module"; // ensure module is loaded first
+
 export default class StateService{
     Auth: any;
     FeedManager: any;

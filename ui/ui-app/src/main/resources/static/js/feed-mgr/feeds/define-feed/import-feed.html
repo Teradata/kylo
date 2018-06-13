@@ -74,8 +74,8 @@
         </div>
 
         <div layout="column" layout-align="start" style="padding-top:15px;"
-             class="layout-padding-indent">
-          <upload-file upload-file-model="vm.feedFile"></upload-file>
+             class="layout-padding-indent layout-align-start-stretch layout-column">
+          <upload-file [(upload-file-model)]="vm.feedFile"></upload-file>
           <ng-form name="vm.importFeedForm">
             <div layout="row">
               <div layout="column" flex>

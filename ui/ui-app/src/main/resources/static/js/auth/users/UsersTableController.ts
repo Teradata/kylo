@@ -150,9 +150,9 @@ export default class UsersTableController implements ng.IComponentController {
     };
     static readonly $inject = ["$scope",
                                 "AddButtonService",
-                                "PaginationDataService",
+                                "DefaultPaginationDataService",
                                 "StateService",
-                                "TableOptionsService",
+                                "DefaultTableOptionsService",
                                 "UserService"];
     constructor (
         private $scope:angular.IScope,

@@ -25,7 +25,7 @@ export default class BroadcastService {
     */
     waitingEvents: any = {};
     constructor(private $rootScope: any,
-        private $timeout: any) {
+        private $timeout: angular.ITimeoutService) {
 
     }
     /**

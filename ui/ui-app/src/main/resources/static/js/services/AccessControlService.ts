@@ -6,6 +6,8 @@ import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import UserGroupService from "./UserGroupService";
 
+import "./module"; // ensure module is loaded first
+
 export default class AccessControlService extends AccessConstants {
  /**
  * Interacts with the Access Control REST API.

@@ -5,8 +5,10 @@ import {Common} from "../common/CommonTypes";
 import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
-import {DefaultImportService} from "../feed-mgr/services/ImportService";
+
 import {moduleName} from './module-name';
+import "./module"; // ensure module is loaded first
+
 
 export enum ViewType {
     TABLE,
@@ -204,4 +206,4 @@ export class DefaultPaginationDataService implements PaginationDataService{
     }
 }
 
-angular.module(moduleName).service('PaginationDataService', DefaultPaginationDataService);
+angular.module(moduleName).service('DefaultPaginationDataService', DefaultPaginationDataService);

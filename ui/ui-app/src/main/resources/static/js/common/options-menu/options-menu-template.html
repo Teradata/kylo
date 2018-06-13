@@ -1,43 +1,51 @@
-<md-menu >
-    <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px" ng-click="$ctrl.openMenu($mdOpenMenu, $event)">
-        <ng-md-icon icon="{{$ctrl.menuIcon}}"></ng-md-icon>
-    </md-button>
-    <md-menu-content width="3" >
-        <md-menu-item ng-if="$ctrl.showPagination" >
-            <md-input-container>
+<button md-button aria-label="Options" class="md-icon-button md-button md-kylo-theme md-ink-ripple" style="margin-top:-10px" [matMenuTriggerFor]="menu" (click)="openMenu($mdOpenMenu, $event)">
+    <mat-icon>{{menuIcon}}</mat-icon>
+</button>
+<mat-menu class="options-menu md-menu-content width-3 md-kylo-theme" #menu style="min-width: 192px">
+        <div class="md-menu-item" *ngIf="showPagination == true" >
+            <div md-input-container>
                 <label>{{"views.all-page.Rows_per_page" | translate}}</label>
-                <md-select class="" ng-model="$ctrl.paginationData.rowsPerPage" >
-                    <md-option ng-repeat="x in $ctrl.paginationData.rowsPerPageOptions" value="{{x}}">
-                        {{x}}
-                    </md-option>
-                </md-select>
-            </md-input-container >
-        </md-menu-item>
-        <md-menu-item  class="md-menu-item-header" ng-if="$ctrl.showViewType == true">
+                <mat-select class="" [(ngModel)]="paginationData.rowsPerPage">
+                    <mat-option *ngFor="let x of paginationData.rowsPerPageOptions" [value]="x">
+                        {{ x }}
+                    </mat-option>
+                </mat-select>
+            </div>
+        </div>
+        <div class="md-menu-item md-menu-item-header" *ngIf="showViewType == true">
             <span md-menu-align-target  class="md-subheader md-menu-item-header">View Options</span>
-        </md-menu-item>
-        <md-menu-item layout="column" ng-if="$ctrl.showViewType == true">
-            <md-button ng-click="$ctrl.selectOption($ctrl.viewType)" md-prevent-menu-close="md-prevent-menu-close">
-                <span style="float:left;">{{$ctrl.viewType.label}}</span>
-                <span style="float:right;"><ng-md-icon icon="{{$ctrl.viewType.icon}}"></ng-md-icon></span>
-            </md-button>
-        </md-menu-item>
-        <md-menu-item class="md-menu-item-header">
+        </div>
+        <div class="md-menu-item" layout="column" *ngIf="showViewType == true">
+            <button class="md-button md-kylo-theme md-ink-ripple" (click)="selectOption(viewType)" md-prevent-menu-close="md-prevent-menu-close">
+                <span style="float:left;">{{viewType.label}}</span>
+                <span style="float:right;">
+                    <mat-icon class="ng-md-icon">{{viewType.icon}}</mat-icon>
+                </span>
+            </button>
+        </div>
+        <div class="md-menu-item md-menu-item-header">
             <span md-menu-align-target  class="md-subheader md-menu-item-header"> {{"views.options-menu-template.SO" | translate}}</span>
-         </md-menu-item>
-        <md-menu-item ng-repeat="item in $ctrl.sortOptions" layout="column">
-            <md-button ng-click="$ctrl.selectOption(item)" md-prevent-menu-close="md-prevent-menu-close">
+        </div>
+        <div *ngFor="let item of sortOptions" layout="column" class="md-menu-item layout-column">
+            <button class="md-button md-kylo-theme md-ink-ripple" (click)="selectOption(item)" md-prevent-menu-close="md-prevent-menu-close">
                 <span style="float:left;">{{item.label}}</span>
-                <span  ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
-            </md-button>
-        </md-menu-item>
-        <md-menu-divider ng-if="$ctrl.additionalOptions && $ctrl.additionalOptions.length >0"></md-menu-divider>
-        <md-menu-item ng-if="$ctrl.additionalOptions && $ctrl.additionalOptions.length >0" ng-repeat="item in $ctrl.additionalOptions" ng-class="{'md-menu-item-header': item.header}">
-            <span md-menu-align-target class="md-subheader md-menu-item-header" ng-if="item.header">{{item.label}}</span>
-            <md-button ng-click="$ctrl.selectAdditionalOption(item)" md-prevent-menu-close="md-prevent-menu-close" ng-if="!item.header" ng-disabled="item.disabled">
-                <span style="float:left;">{{item.label}}</span>
-                <span ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
-            </md-button>
-        </md-menu-item>
-    </md-menu-content>
-</md-menu>
+                <span  *ngIf="item.icon && item.icon != ''" style="float:right;">
+                    <mat-icon class="ng-md-icon">{{item.icon}}</mat-icon>
+                </span>
+            </button>
+        </div>
+        <mat-divider *ngIf="additionalOptions && additionalOptions.length > 0"></mat-divider>
+        <div class="md-menu-item" *ngIf="additionalOptions && additionalOptions.length > 0">
+            <div *ngFor="let item of additionalOptions" [class]="{'md-menu-item-header': item.header}">
+                <span md-menu-align-target class="md-subheader md-menu-item-header" *ngIf="item.header">{{item.label}}</span>
+                <button class="md-button md-kylo-theme md-ink-ripple" (click)="selectAdditionalOption(item)" md-prevent-menu-close="md-prevent-menu-close" *ngIf="!item.header" [disabled]="item.disabled">
+                    <span style="float:left;">{{item.label}}</span>
+                    <span *ngIf="item.icon && item.icon != ''" style="float:right;">
+                        <mat-icon class="ng-md-icon">
+                            {{item.icon}}
+                        </mat-icon>
+                    </span>
+                </button>
+            </div>
+        </div>
+</mat-menu>

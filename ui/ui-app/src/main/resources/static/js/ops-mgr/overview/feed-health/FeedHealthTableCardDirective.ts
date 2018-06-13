@@ -26,7 +26,7 @@ export default class FeedHealthTableCardController implements ng.IComponentContr
 
 static readonly $inject = ["$scope","$rootScope","$http","$interval",
                             "OpsManagerFeedService","OpsManagerDashboardService",
-                            "TableOptionsService","PaginationDataService","TabService",
+                            "DefaultTableOptionsService","DefaultPaginationDataService","TabService",
                             "StateService","BroadcastService"];
 
 $onInit() {

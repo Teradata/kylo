@@ -225,7 +225,7 @@ export default class FeedServiceLevelAgreements {
    
     static readonly $inject = ["$scope", "$mdDialog", "$mdToast", "$http", "$rootScope", "$q",
     "StateService", "FeedService", "SlaService", "PolicyInputFormService",
-    "PaginationDataService", "TableOptionsService", "AddButtonService",
+    "DefaultPaginationDataService", "DefaultTableOptionsService", "AddButtonService",
     "AccessControlService", "EntityAccessControlService"];
     constructor(private $scope: IScope,
         private $mdDialog: angular.material.IDialogService,

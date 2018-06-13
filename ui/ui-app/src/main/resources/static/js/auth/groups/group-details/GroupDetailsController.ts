@@ -111,7 +111,7 @@ export default class GroupDetailsController implements ng.IComponentController {
          * @param user the user
          * @returns {string} the display name
          */
-        getUserName(user: any) {
+        getUserName = (user: any) => {
                 return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
             };
 
@@ -120,14 +120,14 @@ export default class GroupDetailsController implements ng.IComponentController {
          *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
-        canDelete() {
+        canDelete = () => {
             return (this.model.systemName !== null);
         };       
 
         /**
          * Cancels the current edit operation. If a new user is being created then redirects to the users page.
          */
-        onCancel() {
+        onCancel = () => {
             if (this.model.systemName === null) {
                 this.StateService.Auth().navigateToGroups();
             }
@@ -136,7 +136,7 @@ export default class GroupDetailsController implements ng.IComponentController {
         /**
          * Deletes the current user.
          */
-        onDelete() {
+        onDelete = () => {
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
              this.UserService.deleteGroup(this.$transition$.params().groupId)
                     .then(() => {
@@ -161,13 +161,13 @@ export default class GroupDetailsController implements ng.IComponentController {
         /**
         //  * Creates a copy of the user model for editing.
          */
-        onEdit() {
+        onEdit = () => {
             this.editModel = angular.copy(this.model);
         };
          /**
              * Creates a copy of the permissions for editing.
              */
-        onEditPermissions() {
+        onEditPermissions = () => {
            this.editActions = angular.copy(this.actions);
         };
 
@@ -213,7 +213,7 @@ export default class GroupDetailsController implements ng.IComponentController {
     /**
          * Saves the current group.
          */
-    onSave() { 
+    onSave = () => { 
         var model = angular.copy(this.editModel);
         this.UserService.saveGroup(model)
                 .then(() => {
@@ -224,7 +224,7 @@ export default class GroupDetailsController implements ng.IComponentController {
      /**
      * Saves the current permissions.
      */
-    onSavePermissions() {
+    onSavePermissions = () => {
             var actions = angular.copy(this.editActions);
             this.accessControlService.setAllowedActions(null, null, this.model.systemName, actions)
                     .then((actionSet: any) =>{
@@ -237,7 +237,7 @@ export default class GroupDetailsController implements ng.IComponentController {
      *
      * @param user the user
      */
-    onUserClick = function(user: any) {
+    onUserClick = (user: any) => {
         this.StateService.Auth().navigateToUserDetails(user.systemName);
     };
 }

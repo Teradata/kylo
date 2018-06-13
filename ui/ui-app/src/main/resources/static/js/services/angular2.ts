@@ -6,6 +6,10 @@ import "./module-require";
 import AddButtonService from "./AddButtonService";
 import BroadcastService from "./broadcast-service";
 import {NotificationService} from "./notification.service";
+import {DefaultPaginationDataService} from "./PaginationDataService";
+import {DefaultTableOptionsService} from "./TableOptionsService";
+import AccessControlService from "./AccessControlService";
+import StateService from "./StateService";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -24,3 +28,28 @@ export const notificationServiceProvider: FactoryProvider = {
     useFactory: (i: angular.auto.IInjectorService) => i.get("NotificationService"),
     deps: ["$injector"]
 };
+
+export const paginationServiceProvider: FactoryProvider = {
+    provide: DefaultPaginationDataService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("DefaultPaginationDataService"),
+    deps: ["$injector"]
+};
+
+export const tableOptionsServiceProvider: FactoryProvider = {
+    provide: DefaultTableOptionsService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("DefaultTableOptionsService"),
+    deps: ["$injector"]
+};
+
+export const accessControlServiceProvider: FactoryProvider = {
+    provide: AccessControlService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("AccessControlService"),
+    deps: ["$injector"]
+};
+
+export const stateServiceProvider: FactoryProvider = {
+    provide: StateService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("StateService"),
+    deps: ["$injector"]
+};
+

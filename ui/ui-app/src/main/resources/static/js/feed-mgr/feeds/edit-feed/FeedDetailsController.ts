@@ -108,7 +108,7 @@ export class controller {
      */
     constructor (private $scope:any, private $q:any, private $transition$:any, private $mdDialog:any, private $mdToast:any
         , private $http:any, private $state:any, private accessControlService:AccessControlService, private RestUrlService:any
-        , private FeedService:any, private registerTemplateService:RegisterTemplateServiceFactory, private StateService:any
+        , private FeedService:any, private registerTemplateService:any, private StateService:any
         , private SideNavService:any, private FileUpload:any, private ConfigurationService:any
         , private EntityAccessControlDialogService:any, private EntityAccessControlService:any, private UiComponentsService:any
         , private AngularModuleExtensionService:any, private DatasourcesService:any) {
@@ -524,8 +524,8 @@ export class controller {
                                     self.selectedTabIndex = tabIndex;
                                 }
 
-                                this.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
-                                self.model.inputProcessors = this.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
+                                self.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
+                                self.model.inputProcessors = self.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
                                 //sort them by name
                                 self.model.inputProcessors = _.sortBy(self.model.inputProcessors,'name')
 
@@ -538,7 +538,7 @@ export class controller {
                                         return self.model.inputProcessorType == processor.type;
                                     });
                                 }
-                                self.model.nonInputProcessors = this.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
+                                self.model.nonInputProcessors = self.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
                                 self.updateMenuOptions();
                                 self.loadingFeedData = false;
                                 self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
@@ -568,15 +568,8 @@ export class controller {
                                     self.allowStart = response.entityStartAccess && allowStart;
                                 });
                             }
-
-
-
-
-
-
-
-
-                    },function(err:any){
+                    
+                        },function(err:any){
                         //handle err
                         self.loadingFeedData = false;
                     });

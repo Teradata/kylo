@@ -1,0 +1,53 @@
+.md-menu-item>* {
+    width: 100%;
+    margin: auto 0;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+.md-menu-content {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    padding: 8px 0;
+    max-height: 304px;
+    overflow-y: auto;
+}
+.md-menu-content.md-kylo-theme {
+    background-color: rgb(255,255,255);
+}
+.ng-md-icon {
+    margin: auto;
+    background-repeat: no-repeat no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+    fill: currentColor;
+    height: 24px;
+    width: 24px;
+}
+.md-menu-item .md-button {
+    text-align: left;
+    display: inline-block;
+    border-radius: 0;
+    margin: auto 0;
+    font-size: 15px;
+    text-transform: none;
+    font-weight: 400;
+    height: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+}
+.md-menu-item {
+    min-height: 48px;
+    height: 48px;
+    align-content: center;
+}
+@media (min-width: 960px) {
+    .md-menu-content[width="3"], .mat-menu-panel {
+        min-width: 192px;
+    }
+}

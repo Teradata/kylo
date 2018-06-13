@@ -695,8 +695,8 @@ angular.module(moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef
 angular.module(moduleName)
 .controller("JobsCardController", 
             ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast",
-             "$mdPanel","OpsManagerJobService","TableOptionsService",
-             "PaginationDataService","StateService","IconService","TabService",
+             "$mdPanel","OpsManagerJobService","DefaultTableOptionsService",
+             "DefaultPaginationDataService","StateService","IconService","TabService",
              "AccessControlService","BroadcastService","OpsManagerRestUrlService",JobsCardController]);
 angular.module(moduleName).directive('tbaJobs', [
     ()=>

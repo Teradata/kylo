@@ -1,4 +1,4 @@
-<vertical-section-layout section-title="Data Transformation" allow-edit="vm.allowEdit" editable="vm.editableSection" is-valid="false">
+<vertical-section-layout section-title="Data Transformation" [allow-edit]="vm.allowEdit" [editable]="vm.editableSection" is-valid="false">
   <readonly-section>
     <div layout="column">
       <div layout="row" class="feed-property versions-{{vm.diff('/dataTransformation/sql')}}">

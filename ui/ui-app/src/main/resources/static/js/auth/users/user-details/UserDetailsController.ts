@@ -120,7 +120,7 @@ export default class UserDetailsController implements ng.IComponentController {
          *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
-        canDelete() {
+        canDelete = () => {
             return (this.model.systemName !== null);
         };       
                 /**
@@ -129,7 +129,7 @@ export default class UserDetailsController implements ng.IComponentController {
          * @param group the group
          * @returns {string} the group title substring
          */
-        findGroupSearchText (group:any) {
+        findGroupSearchText = (group:any) => {
             var safeQuery = this.groupSearchText.toLocaleUpperCase();
             if (angular.isString(this.groupMap[group].title)) {
                 var titleIndex = this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
@@ -159,14 +159,14 @@ export default class UserDetailsController implements ng.IComponentController {
          *
          * @returns {Array.<string>} the group titles for this user
          */
-        getGroupTitles() {
+        getGroupTitles = () => {
             return _.map(this.model.groups, this.getGroupTitle);
         };
 
         /**
          * Cancels the current edit operation. If a new user is being created then redirects to the users page.
          */
-        onCancel() {
+        onCancel = () => {
             if (this.model.systemName === null) {
                 this.StateService.Auth().navigateToUsers();
             }
@@ -175,7 +175,7 @@ export default class UserDetailsController implements ng.IComponentController {
         /**
          * Deletes the current user.
          */
-        onDelete() {
+        onDelete = () => {
             var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
             this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
                     .then(() => {
@@ -200,14 +200,14 @@ export default class UserDetailsController implements ng.IComponentController {
         /**
         //  * Creates a copy of the user model for editing.
          */
-        onEdit() {
+        onEdit = () => {
             this.editModel = angular.copy(this.model);
         };
 
         /**
          * Loads the user details.
          */
-        onLoad () {
+        onLoad = () => {
             // Get the list of groups
             this.UserService.getGroups()
                     .then((groups:any) => {
@@ -253,7 +253,7 @@ export default class UserDetailsController implements ng.IComponentController {
         /**
          * Saves the current user.
          */
-        onSave() {
+        onSave = () => {
             var model = angular.copy(this.editModel);
             this.UserService.saveUser(model)
                     .then(() => {
@@ -267,7 +267,7 @@ export default class UserDetailsController implements ng.IComponentController {
          * @param {string} query the query string
          * @returns {Array.<string>} the list of matching groups
          */
-        queryGroups (query:any) {
+        queryGroups = (query:any) => {
             var safeQuery = query.toLocaleUpperCase();
             return this.groupList
                     // Filter groups that are already selected

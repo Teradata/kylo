@@ -19,7 +19,7 @@ export class controller implements ng.IComponentController{
          filter: any;
          sortOptions: any;
         
-         static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","TableOptionsService","PaginationDataService","StateService"];
+         static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","DefaultTableOptionsService","DefaultPaginationDataService","StateService"];
 
         $onInit() {
             this.ngOnInit();

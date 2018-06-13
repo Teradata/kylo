@@ -19,38 +19,41 @@
   -->
 <div layout="column" class="layout-padding-left" style="padding-top:10px;" >
     <div >
-        <div layout="row" layout-align="start stretch">
-            <ng-md-icon icon="check" style="fill:#009933;margin-left: -9px;" ng-if="$ctrl.showVerticalCheck == true"></ng-md-icon>
+        <div layout="row" layout-align="start stretch" class="layout-align-start-stretch layout-row">
+            <mat-icon class="ng-md-icon" style="color:#009933;margin-left: -9px;" *ngIf="showVerticalCheck == true">check</mat-icon>
             <span class="md-subhead layout-padding-left"  >{{sectionTitle}}</span>
-            <span flex></span>
-            <md-button class="icon-btn md-icon-button md-primary" ng-click="$ctrl.edit($event)" ng-if="$ctrl.allowEdit ==true && !$ctrl.editable">
-                <ng-md-icon icon="edit"></ng-md-icon>
-            </md-button>
-            <md-button class="icon-btn md-icon-button" ng-click="$ctrl.cancel($event)" ng-if="$ctrl.allowEdit ==true && $ctrl.editable">
-                <ng-md-icon icon="cancel" style="fill:grey;"></ng-md-icon>
-            </md-button>
+            <span class="flex"></span>
+            <button class="icon-btn md-icon-button md-primary md-button md-kylo-theme md-ink-ripple" (click)="edit($event)" *ngIf="allowEdit ==true && !editable">
+                <mat-icon>edit</mat-icon>
+            </button>
+            <button md-button class="icon-btn md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)" *ngIf="allowEdit ==true && editable">
+                <mat-icon class="ng-md-icon" style="color:grey;">cancel</mat-icon>
+            </button>
         </div>
 
         <div class="vertical-step-border">
-            <div ng-if="!$ctrl.editable" class="md-padding">
-            <div ng-transclude="readonly" >
-                REadonly SEction
+            <div *ngIf="!editable" class="md-padding">
 
+                <ng-content select="readonly-section"></ng-content>
+                <!-- <div ng-transclude="readonly" >
+                    REadonly SEction
+
+                </div> -->
             </div>
-            </div>
-            <div ng-if="$ctrl.editable == true" class="md-padding">
-            <form name="{{$ctrl.formName}}">
-                <div ng-transclude="editable" >
+            <div *ngIf="editable == true" class="md-padding">
+            <form name="{{formName}}">
+                <ng-content select="editable-section"></ng-content>
+                <!-- <div ng-transclude="editable" >
                     Editable SEction
 
-                </div>
-                <div layout="row" layout-align="end center">
-                    <md-button ng-click="$ctrl.delete($event)" ng-disabled="$ctrl.allowDelete == false" ng-if="$ctrl.onDelete !== undefined && $ctrl.isDeleteVisible == true">{{"views.vertical-section-layout-template.Delete" | translate}}</md-button>
-                    <span flex></span>
-                    <md-button ng-click="$ctrl.cancel($event)">{{"views.vertical-section-layout-template.Cancel" | translate}}</md-button>
-                    <md-button class="md-primary md-raised" ng-click="$ctrl.save($event)"
-                               ng-disabled="$ctrl.isValid == false || ($ctrl.theForm != undefined && $ctrl.theForm.$invalid != undefined && $ctrl.theForm.$invalid == true)">{{"views.vertical-section-layout-template.Save" | translate}}
-                    </md-button>
+                </div> -->
+                <div layout="row" layout-align="end center" class="layout-align-end-center layout-row">
+                    <button class="md-button md-kylo-theme md-ink-ripple" (click)="delete($event)" [disabled]="allowDelete == false" *ngIf="onDelete !== undefined && isDeleteVisible == true">{{"views.vertical-section-layout-template.Delete" | translate}}</button>
+                    <span class="flex"></span>
+                    <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)">{{"views.vertical-section-layout-template.Cancel"  | translate}}</button>
+                    <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="save($event)"
+                               [disabled]="isValid == false || (theForm != undefined && theForm.$invalid != undefined && theForm.$invalid == true)">{{"views.vertical-section-layout-template.Save"  | translate}}
+                    </button>
                 </div>
                 </form>
             </div>

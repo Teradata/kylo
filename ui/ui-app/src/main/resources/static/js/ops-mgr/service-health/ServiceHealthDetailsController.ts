@@ -26,7 +26,7 @@ service: any;
 
 $transition$: Transition;
 
-static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","TableOptionsService","PaginationDataService","StateService"];
+static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","DefaultTableOptionsService","DefaultPaginationDataService","StateService"];
 
 $onInit() {
     this.ngOnInit();

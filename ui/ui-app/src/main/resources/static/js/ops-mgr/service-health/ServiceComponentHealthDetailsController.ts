@@ -26,7 +26,7 @@ export class controller implements ng.IComponentController{
         service: any;
         
         $transition$: Transition;
-        static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","TableOptionsService","PaginationDataService"];
+        static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","DefaultTableOptionsService","DefaultPaginationDataService"];
         
         $onInit() {
             this.ngOnInit();

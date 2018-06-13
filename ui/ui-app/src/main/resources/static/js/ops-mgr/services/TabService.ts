@@ -146,4 +146,4 @@ export default class TabService{
         }
 }
 
-  angular.module(moduleName).service('TabService',['PaginationDataService',TabService]);
+  angular.module(moduleName).service('TabService',['DefaultPaginationDataService',TabService]);

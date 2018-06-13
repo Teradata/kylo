@@ -19,8 +19,8 @@
   -->
 <card-layout flex header-css="filter-header">
   <header-section>
-    <tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+    <tba-card-filter-header flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
+                  [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
     </tba-card-filter-header>
   </header-section>
   <body-section>

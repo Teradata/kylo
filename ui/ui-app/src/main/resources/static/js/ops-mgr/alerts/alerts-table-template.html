@@ -19,18 +19,14 @@
   -->
 <card-layout header-css="filter-header">
     <header-section>
-        <tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-            additional-options="vm.additionalMenuOptions"
-            on-selected-additional-option="vm.selectedAdditionalMenuOption"
-            on-selected-option="vm.selectedTableOption"
-            card-controller="vm"
-            custom-filter-template="js/ops-mgr/alerts/alert-type-filter-select.html"
-            filter-model="vm.filter"
-            filter-model-options="{debounce:1000}">
+        <tba-card-filter-header flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
+            [additional-options]="vm.additionalMenuOptions" [on-selected-additional-option]="vm.selectedAdditionalMenuOption"
+            [on-selected-option]="vm.selectedTableOption" card-controller="vm" [custom-filter-template]="js/ops-mgr/alerts/alert-type-filter-select.html"
+            [(filter-model)]="vm.filter" filter-model-options="{debounce:1000}">
         </tba-card-filter-header>
 
     </header-section>
-    <body-section transclude-to="body">
+    <body-section>
         <md-tabs flex md-selected="vm.tabMetadata.selectedIndex" md-align-tabs="top" layout-fill md-dynamic-height>
 
             <md-tab ng-repeat="tab in vm.tabs" ng-disabled="tab.disabled" md-on-select="vm.onTabSelected(tab)" flex>

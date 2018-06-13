@@ -169,7 +169,7 @@ export class controller implements ng.IComponentController{
 
   angular.module(moduleName)
   .controller('FeedActivityController', ["$scope","$http","$interval","$timeout","$q","Utils",
-  "OpsManagerFeedService","TableOptionsService","PaginationDataService","StateService",
+  "OpsManagerFeedService","DefaultTableOptionsService","DefaultPaginationDataService","StateService",
   "ChartJobStatusService","BroadcastService","$filter",controller]);
 
     angular.module(moduleName)

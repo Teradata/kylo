@@ -54,7 +54,7 @@ export class AlertsTableController implements ng.IComponentController{
     deferred: any;
     promise: any;
 
-static readonly $inject = ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService",
+static readonly $inject = ["$scope","$http","$q","DefaultTableOptionsService","DefaultPaginationDataService","StateService",
     "TabService","OpsManagerRestUrlService"];
     ngOnInit(){
         this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'alerts';

@@ -2,7 +2,9 @@ import {NgModule} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
 import {UpgradeModule} from "@angular/upgrade/static";
 
-import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider} from "./angular2";
+import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider, 
+        paginationServiceProvider, tableOptionsServiceProvider, accessControlServiceProvider,
+        stateServiceProvider} from "./angular2";
 
 @NgModule({
     imports: [
@@ -12,7 +14,11 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
     providers: [
         addButtonServiceProvider,
         broadcastServiceProvider,
-        notificationServiceProvider
+        notificationServiceProvider,
+        paginationServiceProvider,
+        tableOptionsServiceProvider,
+        accessControlServiceProvider,
+        stateServiceProvider
     ]
 })
 export class KyloServicesModule {

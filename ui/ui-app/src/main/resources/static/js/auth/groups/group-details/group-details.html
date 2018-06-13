@@ -29,8 +29,8 @@
         </header-section>
         <body-section>
             <form name="groupForm">
-                <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                                         editable="vm.isEditable" is-valid="vm.isValid" allow-edit="vm.allowAdmin">
+                <vertical-section-layout section-title="Details" [on-delete]="vm.onDelete" [allow-delete]="vm.canDelete" [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel"
+                                         [editable]="vm.isEditable" [is-valid]="vm.isValid" [allow-edit]="vm.allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Group Name</span>
@@ -83,8 +83,8 @@
                     </editable-section>
                 </vertical-section-layout>
             </form>
-            <vertical-section-layout section-title="Permissions" on-save-edit="vm.onSavePermissions()" on-edit="vm.onEditPermissions()" editable="vm.isPermissionsEditable"
-                                     allow-edit="!vm.loading && vm.model.systemName !== null && vm.allowAdmin" ng-if="vm.groupId">
+            <vertical-section-layout section-title="Permissions" [on-save-edit]="vm.onSavePermissions" [on-edit]="vm.onEditPermissions" [editable]="vm.isPermissionsEditable"
+                                     [allow-edit]="!vm.loading && vm.model.systemName !== null && vm.allowAdmin" ng-if="vm.groupId">
                 <readonly-section>
                     <thinkbig-permissions-table allowed="vm.actions" read-only="true"></thinkbig-permissions-table>
                 </readonly-section>
@@ -92,7 +92,7 @@
                     <thinkbig-permissions-table allowed="vm.editActions"></thinkbig-permissions-table>
                 </editable-section>
             </vertical-section-layout>
-            <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Users" ng-if="vm.allowUsers" ng-if="vm.groupId">
+            <vertical-section-layout [allow-edit]="false" [show-vertical-check]="true" section-title="Related Users" ng-if="vm.allowUsers" ng-if="vm.groupId">
                 <readonly-section>
                     <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="!vm.loading && vm.model.systemName !== null && vm.model.memberCount > 0">
                         <md-list-item>

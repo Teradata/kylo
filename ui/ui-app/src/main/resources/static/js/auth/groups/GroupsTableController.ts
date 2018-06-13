@@ -57,6 +57,7 @@ export default class GroupsTableController implements ng.IComponentController {
      * @type {any}
      */
     viewType:any = this.PaginationDataService.viewType(PAGE_NAME);
+
     getPaginatedData () {
         var paginationData = this.PaginationDataService.paginationData(PAGE_NAME);
         this.PaginationDataService.setRowsPerPageOptions(PAGE_NAME, ['5', '10', '20', '50']);
@@ -123,7 +124,7 @@ export default class GroupsTableController implements ng.IComponentController {
         this.StateService.Auth().navigateToGroupDetails(group.systemName);
     };
     //$inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
-    static readonly $inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
+    static readonly $inject = ["$scope","AddButtonService","DefaultPaginationDataService","StateService","DefaultTableOptionsService","UserService"];
     /**
      * Displays a list of groups in a table.
      *

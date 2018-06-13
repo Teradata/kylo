@@ -17,8 +17,8 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title='{{"views.feed-data-policies.TS&DP" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
-                         editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDataPoliciesForm">
+<vertical-section-layout section-title='{{"views.feed-data-policies.TS&DP" | translate}}' [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancelEdit" [allow-edit]="vm.allowEdit"
+                         [editable]="vm.editableSection" keep-editable-after-save="true" [the-form]="vm.editFeedDataPoliciesForm">
 
   <readonly-section>
 

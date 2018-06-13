@@ -43,7 +43,7 @@ export class SchemasController {
     }
 
     static readonly $inject = ["$scope", "$http", "$q", "$filter", "RestUrlService",
-        "PaginationDataService", "TableOptionsService", "AddButtonService",
+        "DefaultPaginationDataService", "DefaultTableOptionsService", "AddButtonService",
         "FeedService", "StateService", "DatasourcesService"];
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $q: angular.IQService, private $filter: angular.IFilterService, private RestUrlService: any
         , private paginationDataService: DefaultPaginationDataService, private tableOptionsService: DefaultTableOptionsService, private addButtonService: AddButtonService

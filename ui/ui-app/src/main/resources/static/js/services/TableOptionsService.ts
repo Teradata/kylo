@@ -7,9 +7,11 @@ import SortOption = ListTableView.SortOption;
 import {Sort} from "@angular/material/sort";
 import {moduleName} from './module-name';
 
+import "./module"; // ensure module is loaded first
+
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
     sortOptions:Common.Map<SortOption[]> = {};
-    static $inject = ["PaginationDataService"]
+    static $inject = ["DefaultPaginationDataService"]
     constructor(private PaginationDataService:ListTableView.PaginationDataService) {}
    
     newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string):SortOption[]{
@@ -159,4 +161,4 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         return returnedSortOption;
     }
 }
-angular.module(moduleName).service('TableOptionsService', DefaultTableOptionsService);
+angular.module(moduleName).service('DefaultTableOptionsService', DefaultTableOptionsService);

@@ -17,8 +17,8 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title='{{"views.feed-additional-properties.Properties" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()" allow-edit="vm.allowEdit"
-                         editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid">
+<vertical-section-layout section-title='{{"views.feed-additional-properties.Properties" | translate}}' [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel" [allow-edit]="vm.allowEdit"
+                         [editable]="vm.editableSection" keep-editable-after-save="true" [is-valid]="vm.isValid">
 
     <readonly-section>
         <div layout="column">

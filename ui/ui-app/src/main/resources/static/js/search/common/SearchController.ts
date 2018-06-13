@@ -42,7 +42,7 @@ categoryForIndex = (indexName: any)=> {
     return null;
 };
 
-static readonly $inject = ["$scope","$sce","$http","$mdToast","$mdDialog","SearchService","Utils","CategoriesService","StateService", "FeedService","PaginationDataService","DatasourcesService"];
+static readonly $inject = ["$scope","$sce","$http","$mdToast","$mdDialog","SearchService","Utils","CategoriesService","StateService", "FeedService","DefaultPaginationDataService","DatasourcesService"];
 constructor(private $scope: angular.IScope, 
             private $sce: angular.ISCEService,
             private $http: angular.IHttpService,

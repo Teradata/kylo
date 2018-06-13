@@ -9,8 +9,8 @@
       </div>
     </header-section>
     <body-section>
-      <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="!vm.isNew()" on-save-edit="vm.onDetailsSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                               editable="vm.isDetailsEditable" is-valid="vm.datasourceDetailsForm.$valid" allow-edit="vm.allowEdit">
+      <vertical-section-layout section-title="Details" [on-delete]="vm.onDelete" [allow-delete]="!vm.isNew" [on-save-edit]="vm.onDetailsSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel"
+                               [editable]="vm.isDetailsEditable" [is-valid]="vm.datasourceDetailsForm.$valid" [allow-edit]="vm.allowEdit">
         <readonly-section>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Name</span>
@@ -113,7 +113,7 @@
       </vertical-section-layout>
 
       <ng-form name="vm.datasourceAccessControlForm" ng-if="vm.allowChangePermissions && !vm.isNew()">
-        <vertical-section-layout section-title="Access Control" on-save-edit="vm.onAccessControlSave()" on-edit="vm.onEdit()" editable="vm.isAccessControlEditable" is-valid="vm.isValid">
+        <vertical-section-layout section-title="Access Control" [on-save-edit]="vm.onAccessControlSave" [on-edit]="vm.onEdit" [editable]="vm.isAccessControlEditable" [is-valid]="vm.isValid">
           <readonly-section>
             <entity-access-control entity="vm.model" entity-type="datasource" the-form="vm.datasourceAccessControlForm" read-only="true"></entity-access-control>
           </readonly-section>
