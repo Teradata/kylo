@@ -184,7 +184,7 @@ export default class StateService {
         data.navigateToServiceLevelAgreement = (slaId: any) => {
             this.$state.go('service-level-agreements',{slaId:slaId});
         }
-        data.navigateToNewEmailTemplate = (templateId: any) => {
+        data.navigateToNewEmailTemplate = (templateId ?: any) => {
             this.$state.go('sla-email-template',{emailTemplateId:templateId});
         }
         data.navigateToEmailTemplates = () => {

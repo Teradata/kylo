@@ -49,7 +49,7 @@ export default class SlaEmailTemplateService {
     };
     getAvailableActionItems = () => {
         var def = this.$q.defer();
-        if (this.data.availableActions.length == 0) {
+        if (this.data.availableActions == undefined || this.data.availableActions == null || this.data.availableActions.length == 0) {
             this.$http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any) => {
                 if (response.data) {
                     this.data.availableActions = response.data;
@@ -122,7 +122,8 @@ export default class SlaEmailTemplateService {
         );
     }
     newTemplateModel = () => {
-        return { name: '', subject: '', template: '' };
+        this.template = { name: '', subject: '', template: '' };
+        return this.template;
     }
 }
 angular.module(moduleName).service('SlaEmailTemplateService', SlaEmailTemplateService);

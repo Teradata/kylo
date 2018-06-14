@@ -6,7 +6,7 @@ import AccessControlService from '../../../services/AccessControlService';
 import StateService from '../../../services/StateService';
 import {Transition} from "@uirouter/core";
 
-export class SlaEmailTemplatesController implements ng.IComponentController {
+export class SlaEmailTemplateController implements ng.IComponentController {
 
     /**
      * The id of the template
@@ -54,11 +54,10 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
      */
     relatedSlas: any[] = [];
 
+    $transition$ : Transition;
+    static readonly $inject = [ '$mdDialog', '$mdToast', '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService']
 
-    static readonly $inject = ['$transition$', '$mdDialog', '$mdToast', '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService']
-
-    constructor(private $transition$: any,
-                private $mdDialog: angular.material.IDialogService,
+    constructor(private $mdDialog: angular.material.IDialogService,
                 private $mdToast: angular.material.IToastService,
                 private $http: angular.IHttpService,
                 private slaEmailTemplateService: SlaEmailTemplateService,
@@ -247,14 +246,15 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
 
     private showTestDialog(resolvedTemplate: any) {
         this.$mdDialog.show({
-            template: '<velocity-template-test-controller></velocity-template-test-controller>',
+            templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
+            controller: "testDialogController",
             parent: angular.element(document.body),
             clickOutsideToClose: true,
             fullscreen: true,
-            // locals: {
-            //     resolvedTemplate: resolvedTemplate,
-            //     emailAddress: this.emailAddress
-            // }
+            locals: {
+                resolvedTemplate: resolvedTemplate,
+                emailAddress: this.emailAddress
+            }
         })
             .then((answer: any) => {
                 //do something with result
@@ -283,9 +283,8 @@ export class SlaEmailTemplatesController implements ng.IComponentController {
 
 export class testDialogController implements ng.IComponentController {
 
-    static readonly $inject = ["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress"];
 
-    constructor(private $scope: IScope,
+    constructor(private $scope: any,
                 private $sce: angular.ISCEService,
                 private $mdDialog: angular.material.IDialogService,
                 private resolvedTemplate: any,
@@ -314,17 +313,13 @@ export class testDialogController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-    .component('velocityTemplateTestController',
-    {
-        controller : testDialogController,
-        templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html'
-    }
+    .controller('velocityTemplateTestController',["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress",testDialogController]
 );
 
 angular.module(moduleName)
     .component('slaEmailTemplateController', {
-        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
-        controller: SlaEmailTemplatesController,
+        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-template.html',
+        controller: SlaEmailTemplateController,
         controllerAs: "vm",
         bindings :  {
             $transition$ : '<'
