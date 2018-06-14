@@ -30,6 +30,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
         super(http,transformResponeTableBuilder)
     }
 
+
     /**
      *
      * Previews data abd populates the previewDataSet object
@@ -38,9 +39,15 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
      */
     preview(previewDataSet: PreviewDataSet, previewRequest: PreviewDataSetRequest):Observable<PreviewDataSet>{
 
+
+
+
         if (!previewDataSet.hasPreview()) {
             //Show Progress Bar
             previewDataSet.loading = true;
+
+            let previewDataSetSource = new Subject<PreviewDataSet>()
+            let previewedDataSet$ = previewDataSetSource.asObservable();
 
             this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: TransformResponse) => {
                 let preview = this.transformResponeTableBuilder.buildTable(data);
@@ -48,13 +55,14 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSet.clearPreviewError()
                 previewDataSet.schema = preview.columns;
                 previewDataSet.preview =preview;
-                this.previewDataSetSource.next(previewDataSet)
+
+                previewDataSetSource.next(previewDataSet)
             }, error1 => {
                 previewDataSet.finishedLoading()
                 previewDataSet.previewError("Error previewing the data " + error1);
-                this.previewDataSetSource.error(previewDataSet)
+                previewDataSetSource.error(previewDataSet)
             })
-            return this.previewedDataSet$;
+            return previewedDataSet$;
         }
         else {
             return Observable.of(previewDataSet);

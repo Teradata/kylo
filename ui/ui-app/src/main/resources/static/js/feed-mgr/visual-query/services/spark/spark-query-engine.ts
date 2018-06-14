@@ -198,7 +198,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         if (start === 0) {
 
-            if (angular.isDefined(this.sampleFile) && this.sampleFile != null) {
+
+            if (this.hasSampleFile()) {
                 //we are working with a file.. add the spark code to use it
                 //extract options out from a variable to do the parsing
                 sparkScript += this.sampleFile.script;
@@ -409,6 +410,10 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         if (this.datasources_ !== null) {
             body["datasources"] = this.datasources_.filter(datasource => datasource.id !== SparkConstants.HIVE_DATASOURCE);
+        }
+        //add in the datasets
+        if(this.datasets !== null){
+            body["catalogDatasets"] = this.datasets;
         }
 
         // Create the response handlers

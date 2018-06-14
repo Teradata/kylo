@@ -3,9 +3,11 @@ import * as angular from "angular";
 import * as _ from "underscore";
 
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {TableSchema} from "../../model/table-schema";
+import {TableSchema} from "../wrangler";
 import {UserDatasource} from "../../model/user-datasource";
 import {QueryEngine} from "../wrangler/query-engine";
+import {SchemaField} from "../wrangler";
+import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const flowchart: any;
 
@@ -304,6 +306,32 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         });
     }
 
+    addPreviewDataSets(){
+        if(this.model.datasets && this.model.datasets.length >0){
+            this.model.datasets.forEach((dataset :SparkDataSet)=> {
+                let tableSchema :any = {};
+                tableSchema.schemaName = dataset.id;
+                tableSchema.name = dataset.id;
+                tableSchema.fields = dataset.schema.map(tableColumn => {
+                    let field :any= {};
+                    field.name = tableColumn.name;
+                    field.description = null;
+                    field.nativeDataType = tableColumn.dataType;
+                    field.derivedDataType = tableColumn.dataType;
+                    field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
+                    return field;
+                });
+                let nodeName = tableSchema.name;
+
+                this.addDataSetToCanvas(dataset.dataSource.id,nodeName,tableSchema, dataset);
+
+            });
+
+
+
+        }
+    }
+
     /**
      * Initialize the model for the flowchart.
      */
@@ -547,52 +575,60 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         //get attributes for table
         const datasourceId = this.model.$selectedDatasourceId;
         const nodeName = table.schema + "." + table.tableName;
-        this.getTableSchema(table.schema, table.tableName).then((schemaData: any) => {
-            //
-            // Template for a new node.
-            //
-            const coord = this.getNewXYCoord();
-
-            angular.forEach(schemaData.fields, (attr: any) => {
-                attr.selected = true;
-                if (this.engine.useNativeDataType) {
-                    attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();
-                }
-            });
-            const newNodeDataModel: any = {
-                name: nodeName,
-                id: this.nextNodeID++,
-                datasourceId: datasourceId,
-                x: coord.x,
-                y: coord.y,
-                nodeAttributes: {
-                    attributes: schemaData.fields,
-                    reference: [table.schema, table.tableName],
-                    selected: []
-                },
-                connectors: {
-                    top: {},
-                    bottom: {},
-                    left: {},
-                    right: {}
-                },
-                inputConnectors: [
-                    {
-                        name: ""
-                    }
-                ],
-                outputConnectors: [
-                    {
-                        name: ""
-                    }
-                ]
-            };
-            this.prepareNode(newNodeDataModel);
-            this.chartViewModel.addNode(newNodeDataModel);
-            this.validate();
+        this.getTableSchema(table.schema, table.tableName).then((schemaData: TableSchema) => {
+            let nodeName = schemaData.schemaName + "." + schemaData.name;
+            this.addDataSetToCanvas(datasourceId, nodeName,schemaData)
         });
 
     };
+
+
+    private addDataSetToCanvas(datasourceId:string,nodeName:string,tableSchema:TableSchema, dataset?:SparkDataSet){
+        //
+        // Template for a new node.
+        //
+
+        const coord = this.getNewXYCoord();
+
+        angular.forEach(tableSchema.fields,  (field: SchemaField) =>{
+            field.selected = true;
+            if (this.engine.useNativeDataType) {
+                field.dataTypeWithPrecisionAndScale = field.nativeDataType.toLowerCase();
+            }
+        });
+        const newNodeDataModel: any = {
+            name: nodeName,
+            id: this.nextNodeID++,
+            datasourceId: datasourceId,
+            dataset:dataset,
+            x: coord.x,
+            y: coord.y,
+            nodeAttributes: {
+                attributes: tableSchema.fields,
+                reference: [tableSchema.schemaName, tableSchema.name],
+                selected: []
+            },
+            connectors: {
+                top: {},
+                bottom: {},
+                left: {},
+                right: {}
+            },
+            inputConnectors: [
+                {
+                    name: ""
+                }
+            ],
+            outputConnectors: [
+                {
+                    name: ""
+                }
+            ]
+        };
+        this.prepareNode(newNodeDataModel);
+        this.chartViewModel.addNode(newNodeDataModel);
+        this.validate();
+    }
 
     /**
      * Parses the tables on the canvas and returns a SQL string, along with populating the self.selectedColumnsAndTables array of objects.
@@ -734,6 +770,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
 
             // Setup the flowchart Model
             this.setupFlowChartModel();
+
+            this.addPreviewDataSets();
 
             // Validate when the page loads
             this.validate();

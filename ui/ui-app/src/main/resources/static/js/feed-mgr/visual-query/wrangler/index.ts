@@ -111,6 +111,11 @@ export class SchemaField {
      * Tags assigned to this column.
      */
     tags?: any[];
+
+    /**
+     * used for the wrangler if the column is selected or now in the Build query screen
+     */
+    selected?:boolean;
 }
 
 

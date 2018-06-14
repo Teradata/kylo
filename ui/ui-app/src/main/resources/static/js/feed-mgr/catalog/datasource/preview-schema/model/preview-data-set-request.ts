@@ -32,6 +32,8 @@ export class PreviewDataSetRequest {
      */
     schemaParser?:SchemaParser;
 
+    displayKey ?:string;
+
     constructor(){
         this.pageSpec = new PageSpec();
         this.pageSpec.firstRow =0;

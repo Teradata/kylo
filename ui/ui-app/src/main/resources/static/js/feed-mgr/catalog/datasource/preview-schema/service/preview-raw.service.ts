@@ -36,6 +36,9 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
 
             let sparkScript = "var df = sqlContext.read.format(\"text\").load(\""+firstFile+"\")";
 
+            let previewDataSetSource = new Subject<PreviewDataSet>()
+            let previewedDataSet$ = previewDataSetSource.asObservable();
+
 
             let sparkScriptWithLimit = this.limitSparkScript(sparkScript);
             this.transform(sparkScriptWithLimit).subscribe((data: TransformResponse) => {
@@ -43,13 +46,13 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
                 previewDataSet.raw = preview;
                 previewDataSet.clearRawError();
                 previewDataSet.finishedLoading()
-                this.previewDataSetSource.next(previewDataSet)
+                previewDataSetSource.next(previewDataSet)
             }, error1 => {
                 previewDataSet.finishedLoading()
                 previewDataSet.rawError("Error previewing the raw data " + error1)
-                this.previewDataSetSource.error(previewDataSet)
+                previewDataSetSource.error(previewDataSet)
             });
-            return this.previewedDataSet$;
+            return previewedDataSet$;
         }
         else {
             return Observable.of(previewDataSet);

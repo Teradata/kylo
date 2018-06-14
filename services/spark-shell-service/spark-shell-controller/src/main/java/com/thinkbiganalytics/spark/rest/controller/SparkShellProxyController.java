@@ -20,17 +20,15 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
-import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
-import com.thinkbiganalytics.rest.model.LabelValue;
-import com.thinkbiganalytics.spark.rest.model.DataSourceObjectPreviewRequest;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
+import com.thinkbiganalytics.spark.rest.model.PreviewDataSetRequest;
 import com.thinkbiganalytics.kylo.spark.file.metadata.FileMetadataScalaScriptGenerator;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -44,7 +42,6 @@ import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.ModifiedTransformResponse;
-import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
@@ -57,8 +54,6 @@ import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellSaveException;
 import com.thinkbiganalytics.spark.shell.SparkShellTransformException;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -67,12 +62,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,7 +76,6 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -143,6 +136,9 @@ public class SparkShellProxyController {
      */
     @Inject
     private DatasourceProvider datasourceProvider;
+
+    @Inject
+   private DataSourceProvider kyloCatalogDataSourceProvider;
 
     /**
      * The {@code Datasource} transformer
@@ -341,6 +337,9 @@ public class SparkShellProxyController {
 
         // Add data source details
         addDatasourceDetails(request);
+
+        //Add Catalog details
+        addCatalogDataSets(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
@@ -545,7 +544,6 @@ public class SparkShellProxyController {
     }
 
 
-
     @POST
     @Path("/preview")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -556,60 +554,11 @@ public class SparkShellProxyController {
                       @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
                   })
-    public Response preview(DataSourceObjectPreviewRequest previewRequest){
+    public Response preview(PreviewDataSetRequest previewRequest){
         //todo pull from request
         int previewLimit = 20;
 
-        DataSource dataSource = previewRequest.getDataSource();
-        Connector connector = dataSource.getConnector();
-        //merge template
-        DataSetTemplate dataSetTemplate = DataSourceUtil.mergeTemplates(dataSource);
-        Map<String,String> options =dataSetTemplate.getOptions();
-        if(options == null){
-            options = new HashMap<>();
-        }
-        List<String> jars =dataSetTemplate.getJars();
-        String previewPath = previewRequest.getPreviewPath();
-        List<String> paths = null;
-        if(StringUtils.isNotBlank(previewPath)){
-            paths = Lists.newArrayList(previewPath);
-        }
-        List<String> files = dataSetTemplate.getFiles();
-        String format = dataSetTemplate.getFormat();
-        if(previewRequest.getSchemaParser() != null){
-            SchemaParserDescriptor schemaParser = previewRequest.getSchemaParser();
-            Map<String,String>  sparkOptions =  schemaParser.getProperties().stream()
-                .collect(Collectors.toMap(p->
-                    p.getAdditionalProperties()
-                        .stream()
-                        .filter(labelValue -> "spark.option".equalsIgnoreCase(labelValue.getLabel()))
-                        .map(labelValue -> labelValue.getValue()
-                        ).findFirst().orElse("")
-                ,p->p.getValue()));
-            //remove any options that produced an empty key
-            sparkOptions.remove("");
-            //supplied options by the schema parse take precedence over the template options
-            options.putAll(sparkOptions);
-            format = schemaParser.getSparkFormat();
-        }
-        //add in additional preview options
-        if(previewRequest.getProperties() != null && !previewRequest.getProperties().isEmpty()){
-            options.putAll(previewRequest.getProperties());
-        }
-
-
-
-        KyloCatalogReadRequest request = new KyloCatalogReadRequest();
-        request.setFiles(files);
-        request.setJars(jars);
-        request.setFormat(format);
-        request.setOptions(options);
-        request.setPaths(paths);
-        PageSpec pageSpec = previewRequest.getPageSpec();
-        if(pageSpec == null){
-            pageSpec = new PageSpec();
-        }
-        request.setPageSpec(pageSpec);
+        KyloCatalogReadRequest request = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
 
 
         //String script = KyloCatalogScalaScriptUtil.asScalaScript(request)
@@ -667,6 +616,29 @@ public class SparkShellProxyController {
         // Resolve datasource details
         final List<Datasource> datasources = resolveDatasources(request.getDatasources());
         request.setDatasources(datasources);
+    }
+
+    private void addCatalogDataSets(@Nonnull final TransformRequest request) {
+        if(request.getCatalogDatasets() != null  || request.getCatalogDatasets().isEmpty()){
+            return;
+        }
+
+     request.getCatalogDatasets().stream().forEach((dataSet) -> {
+           DataSource catalogDataSource = metadata.read(() -> {
+                Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(dataSet.getDataSource().getId());
+                if(optionalDataSource.isPresent()){
+                    return optionalDataSource.get();
+                }else {
+                    throw new BadRequestException("No Catalog datasource exists with the given ID: " + dataSet.getId());
+                }
+            });
+          dataSet.setDataSource(catalogDataSource);
+          DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
+          dataSet.getDataSource().setTemplate(template);
+        });
+
+        //pass on the updated DataSet with the dataSource.template populated to the request
+
     }
 
     /**

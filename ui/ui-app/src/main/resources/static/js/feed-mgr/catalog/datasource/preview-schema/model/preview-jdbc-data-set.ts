@@ -1,4 +1,4 @@
-import {PreviewDataSet} from "./preview-data-set";
+import {PreviewDataSet, SparkDataSet} from "./preview-data-set";
 import {PreviewDataSetRequest} from "./preview-data-set-request";
 
 /**
@@ -38,5 +38,13 @@ export class PreviewJdbcDataSet extends PreviewDataSet {
         super.applyPreviewRequestProperties(previewRequest);
         previewRequest.properties = {};
         previewRequest.properties.dbtable = previewRequest.previewItem;
+    }
+
+    public toSparkDataSet(): SparkDataSet {
+        let sparkDataSet = super.toSparkDataSet();
+        let path = this.getPreviewItemPath();
+        sparkDataSet.options['dbtable'] = path;
+        sparkDataSet.format = "jdbc"
+        return sparkDataSet;
     }
 }

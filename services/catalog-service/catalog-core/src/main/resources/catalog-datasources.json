@@ -30,7 +30,7 @@
     },
     "template": {
       "paths": [
-        "file::///opt/kylo"
+        "file:///opt/kylo"
       ]
     }
   },
@@ -64,6 +64,19 @@
     "template": {
       "options": {
         "kafka.bootstrap.servers": "localhost:9093"
+      }
+    }
+  },
+  {
+    "title": "Kylo MySQL",
+    "connector": {
+      "id": "mysql"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:mysql://localhost:3306/kylo",
+        "user": "root",
+        "password": ""
       }
     }
   },

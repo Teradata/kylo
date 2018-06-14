@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,8 +95,21 @@ public class Connector {
         dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         icon = other.icon;
         id = other.id;
-        tabs = (other.tabs != null) ? other.tabs.stream().map(ConnectorTab::new).collect(Collectors.toList()) : null;
-        options = (other.options != null) ? other.options.stream().map(UiOption::new).collect(Collectors.toList()) : null;
+        if(other.tabs != null){
+            List<ConnectorTab> tabs = new ArrayList<>();
+            for(ConnectorTab tab: other.tabs){
+                tabs.add(new ConnectorTab(tab));
+            }
+            this.tabs = tabs;
+        }
+        if(other.options != null){
+            List<UiOption> options = new ArrayList<>();
+            for(UiOption o: other.options){
+                options.add(new UiOption(o));
+            }
+            this.options = options;
+        }
+
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
         optionsMapperId = other.optionsMapperId;

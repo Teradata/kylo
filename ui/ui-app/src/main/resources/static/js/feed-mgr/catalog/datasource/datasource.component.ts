@@ -1,12 +1,14 @@
 import * as angular from "angular";
 
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 
 import {ConnectorTab} from "../api/models/connector-tab";
 import {DataSource} from '../api/models/datasource';
 import {SelectionService} from '../api/services/selection.service';
 import {Node} from '../api/models/node'
+import {PreviewDatasetCollectionService} from "../api/services/preview-dataset-collection.service";
+import {PreviewDataSet} from "./preview-schema/model/preview-data-set";
 
 /**
  * Displays tabs for configuring a data set (or connection).
@@ -30,7 +32,29 @@ export class DatasourceComponent implements OnInit {
      */
     tabs: ConnectorTab[] = [];
 
-    constructor(private state: StateService, private stateRegistry: StateRegistry, private selectionService: SelectionService) {
+    /**
+     * Shared service with the Visual Query to store the datasets
+     * Shared with Angular 1 component
+     */
+    previewDatasetCollectionService : PreviewDatasetCollectionService
+
+    /**
+     * the total number of items in the collection
+     * @type {number}
+     */
+    private dataSetCollectionSize: number = 0;
+
+    /**
+     * Note:$$angularInjector is used here for previewDatasetCollectionService since its shared with the Angular 1 Wrangler
+     * @param {StateService} state
+     * @param {StateRegistry} stateRegistry
+     * @param {SelectionService} selectionService
+     * @param {SelectionService} selectionService
+     * @param {Injector} $$angularInjector
+     */
+    constructor(private state: StateService, private stateRegistry: StateRegistry, private selectionService: SelectionService,  private $$angularInjector: Injector) {
+        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
+        this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
     }
 
     public ngOnInit() {
@@ -61,4 +85,22 @@ export class DatasourceComponent implements OnInit {
         }
         return disabled;
     }
+
+    /**
+     * Listener for changes from the collection service
+     * @param {PreviewDataSet[]} dataSets
+     */
+    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
+        this.dataSetCollectionSize = dataSets.length;
+    }
+
+    /**
+     * Go to the visual query populating with the selected datasets
+     * TODO go to a Feed Stepper thats modified to fit any-to-any
+     */
+    wrangleDataSets(){
+        this.state.go("visual-query");
+
+    }
+
 }

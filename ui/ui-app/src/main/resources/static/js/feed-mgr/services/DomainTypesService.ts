@@ -92,7 +92,7 @@ export interface DomainType {
          */
     function getFieldNameRegExp(domainType: any){
             if (angular.isUndefined(domainType.$fieldNameRegexp)) {
-                domainType.$fieldNameRegexp = this.getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
+                domainType.$fieldNameRegexp = getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
             }
             return domainType.$fieldNameRegexp;
         }
@@ -102,7 +102,7 @@ export interface DomainType {
          */
     function getSampleDataRegExp(domainType: any){
             if (angular.isUndefined(domainType.$regexp)) {
-                domainType.$regexp = this.getRegExp(domainType.regexPattern, domainType.regexFlags);
+                domainType.$regexp = getRegExp(domainType.regexPattern, domainType.regexFlags);
             }
             return domainType.$regexp;
         }

@@ -273,6 +273,28 @@
     ]
   },
   {
+    "title": "Mysql",
+    "color": "orange-700",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "template": {
+      "format": "jdbc",
+      "jars": [
+        "file:/opt/nifi/mysql/mariadb-java-client-1.5.7.jar"
+      ],
+      "options": {
+        "driver": "org.mariadb.jdbc.Driver",
+        "url": "jdbc:mysql://localhost:3306/kylo",
+        "user": "username",
+        "password": "password"
+      }
+    }
+  },
+  {
     "title": "Google Cloud Storage",
     "icon": "google",
     "tabs": [

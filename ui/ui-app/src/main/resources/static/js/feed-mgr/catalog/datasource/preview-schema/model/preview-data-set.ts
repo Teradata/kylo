@@ -4,8 +4,24 @@ import {DataSource} from "../../../api/models/datasource";
 import {SchemaParser} from "../../../../model/field-policy";
 import {PreviewDataSetRequest} from "./preview-data-set-request"
 import {TableViewModel, TableColumn} from "./table-view-model";
+import {Common} from "../../../../../common/CommonTypes";
 
+/**
+ * DataSet used by the Data Wrangler
+ */
+export class SparkDataSet {
+    public dataSource: DataSource;
+    public id: string
+    public format: string;
+    public options: Common.Map<string>;
+    public paths: string[];
+    public schema:TableColumn[];
 
+    constructor(){
+
+    }
+
+}
 /**
  * Core Dataset used for previewing
  * There are other concrete types of data sets used for specialize options
@@ -61,6 +77,11 @@ export class PreviewDataSet {
      */
     public type:string = 'PreviewDataSet';
 
+    /**
+     * is this dataset in the preview-dataset-collection.service?
+     */
+    public collected?:boolean;
+
 
     /**
      * Apply options to the preview request for this dataset
@@ -69,6 +90,20 @@ export class PreviewDataSet {
     public applyPreviewRequestProperties(previewRequest: PreviewDataSetRequest){
         previewRequest.previewItem = this.getPreviewItemPath()
         previewRequest.properties = {}
+    }
+
+    /**
+     * Create a SparkDataSet object from the Preview
+     * This is used with the Data Wrangler/VisualQuery
+     * @return {SparkDataSet}
+     */
+    public toSparkDataSet(): SparkDataSet {
+        let sparkDataSet = new SparkDataSet();
+        sparkDataSet.id = this.displayKey;
+        sparkDataSet.dataSource = this.dataSource;
+        sparkDataSet.options = {};
+        sparkDataSet.schema = this.schema;
+        return sparkDataSet;
     }
 
 

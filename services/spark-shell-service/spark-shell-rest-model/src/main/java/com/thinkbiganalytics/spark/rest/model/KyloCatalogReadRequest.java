@@ -127,4 +127,8 @@ public class KyloCatalogReadRequest {
     public void setLimit(Integer limit) {
         this.limit = limit;
     }
+
+    public boolean hasPaths(){
+        return !getPaths().isEmpty();
+    }
 }

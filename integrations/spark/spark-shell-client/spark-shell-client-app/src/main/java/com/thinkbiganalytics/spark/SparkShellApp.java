@@ -39,6 +39,7 @@ import com.thinkbiganalytics.spark.service.JobTrackerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
 import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.catalina.LifecycleException;
@@ -91,7 +92,7 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-@ComponentScan("com.thinkbiganalytics.spark")
+@ComponentScan({"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"})
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {SecurityCoreConfig.class, VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
@@ -363,12 +364,14 @@ public class SparkShellApp {
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
                                              final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem, final DataSetConverterService converterService, final KyloCatalogClientBuilder kyloCatalogClientBuilder) {
+                                             final FileSystem fileSystem, final DataSetConverterService converterService, final KyloCatalogClientBuilder kyloCatalogClientBuilder, final
+                                             CatalogDataSetProviderFactory catalogDataSetProviderFactory) {
         final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService, kyloCatalogClientBuilder);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
         service.setValidator(validator);
+        service.setCatalogDataSetProviderFactory(catalogDataSetProviderFactory);
         return service;
     }
 

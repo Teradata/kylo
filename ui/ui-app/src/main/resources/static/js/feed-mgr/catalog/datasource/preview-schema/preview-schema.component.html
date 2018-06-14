@@ -15,6 +15,7 @@
           <span></span>
           <td-notification-count color="accent" [notifications]="dataset.items.length">
           </td-notification-count>
+          <mat-icon color="accent" *ngIf="dataset.collected">check</mat-icon>
 
         </mat-list-item>
           <mat-divider [inset]="true"></mat-divider>
@@ -76,6 +77,10 @@
             </mat-tab>
 
             <mat-tab label="Save">
+              <button mat-raised-button  mat-button *ngIf="!selectedDataSet.collected"  (click)="addToCollection(selectedDataSet)">Add To Collection</button>
+              <button mat-raised-button  mat-button *ngIf="selectedDataSet.collected" (click)="removeFromCollection(selectedDataSet)">Remove From Collection</button>
+
+
 
             </mat-tab>
 

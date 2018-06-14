@@ -10,13 +10,7 @@ import {HttpClient} from "@angular/common/http";
 
 export abstract class AbstractSchemaTransformService {
 
-    /**
-     * Array of the selected file paths that have been detected
-     */
-    protected result:TransformResponse;
 
-    protected previewDataSetSource = new Subject<PreviewDataSet>()
-    protected previewedDataSet$ = this.previewDataSetSource.asObservable();
 
     constructor(protected http: HttpClient, protected transformResponeTableBuilder:TransformResponseTableBuilder) {
 
@@ -31,7 +25,7 @@ export abstract class AbstractSchemaTransformService {
 
             let formatDetected = (data: TransformResponse):void => {
                 console.log('FORMAT DETECTED ', data,);
-                this.result = data;
+               // this.result = data;
                 observer.next(data);
             }
 

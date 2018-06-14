@@ -1,4 +1,4 @@
-
+import {Common} from "../../common/CommonTypes";
 
 
 export interface FieldPolicySelectableValue{
@@ -25,6 +25,7 @@ export interface FieldPolicyProperty{
     hidden:boolean;
     pattern:string;
     patternInvalidMessage:string;
+    additionalProperties?:Common.LabelValue[]
 
 }
 
@@ -72,5 +73,6 @@ export interface SchemaParser extends FieldPolicy{
     usesSpark:string;
     primary:boolean;
     mimeTypes: string[];
+    sparkFormat:string;
 
 }

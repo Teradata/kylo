@@ -51,10 +51,22 @@ public class UiOption {
         required = other.required;
         label = other.label;
         flex = other.flex;
-        selections = (other.selections != null) ? other.selections.stream().map(UiSelectOption::new).collect(Collectors.toList()) : null;
+        if(other.selections != null){
+            List<UiSelectOption> selections = new ArrayList<>();
+            for(UiSelectOption o: other.selections){
+                selections.add(new UiSelectOption(o));
+            }
+            this.selections = selections;
+        }
         value = other.value;
         hint = other.hint;
-        validators = (other.validators != null) ? other.validators.stream().map(UiOptionValidator::new).collect(Collectors.toList()) : null;
+        if(other.validators != null){
+            List<UiOptionValidator> validators = new ArrayList<>();
+            for(UiOptionValidator o: other.validators){
+                validators.add(new UiOptionValidator(o));
+            }
+            this.validators = validators;
+        }
     }
 
     public String getHint() {

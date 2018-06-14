@@ -260,6 +260,10 @@ export class TransformDataComponent implements OnInit {
             let domainTypesLoaded = false;
             this.sampleFormulas = this.engine.sampleFormulas;
 
+            if(this.model.datasets){
+                this.engine.setDatasets(this.model.datasets)
+            }
+
             if (angular.isArray(this.model.states) && this.model.states.length > 0) {
                 this.engine.setQuery(source, this.model.$datasources);
                 this.engine.setState(this.model.states);

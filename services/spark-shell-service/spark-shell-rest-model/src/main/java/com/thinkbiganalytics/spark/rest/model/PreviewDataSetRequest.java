@@ -23,16 +23,45 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
 import java.util.Map;
 
-public class DataSourceObjectPreviewRequest {
+public class PreviewDataSetRequest {
 
     DataSource dataSource;
+    /**
+     * Internal key identifying this dataset
+     */
+    private String displayKey;
+    /**
+     * The item being previewed
+     * this could be a path, or a table name
+     */
     String previewItem;
+    /**
+     * the path of the item
+     */
     String previewPath;
+    /**
+     * Additional propeties that will be added to the spark call
+     */
     private Map<String,String> properties;
+    /**
+     * A schema parser to be used.  this is optional
+     */
     private SchemaParserDescriptor schemaParser;
+    /**
+     * A page spec for limiting
+     *
+     */
     private PageSpec pageSpec;
 
-    public DataSourceObjectPreviewRequest() {
+    public PreviewDataSetRequest() {
+    }
+
+    public String getDisplayKey() {
+        return displayKey;
+    }
+
+    public void setDisplayKey(String displayKey) {
+        this.displayKey = displayKey;
     }
 
     public DataSource getDataSource() {

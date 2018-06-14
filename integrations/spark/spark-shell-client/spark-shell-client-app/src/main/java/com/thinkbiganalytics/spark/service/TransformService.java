@@ -61,6 +61,8 @@ import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
@@ -110,6 +112,10 @@ public class TransformService {
      */
     @Nullable
     private DatasourceProviderFactory datasourceProviderFactory;
+
+
+    @Nullable
+    private CatalogDataSetProviderFactory catalogDataSetProviderFactory;
 
     /**
      * Script execution engine
@@ -212,6 +218,16 @@ public class TransformService {
      */
     public void setDatasourceProviderFactory(@Nullable final DatasourceProviderFactory datasourceProviderFactory) {
         this.datasourceProviderFactory = datasourceProviderFactory;
+    }
+
+
+    @Nullable
+    public CatalogDataSetProviderFactory getCatalogDataSetProviderFactory() {
+        return catalogDataSetProviderFactory;
+    }
+
+    public void setCatalogDataSetProviderFactory(@Nullable CatalogDataSetProviderFactory catalogDataSetProviderFactory) {
+        this.catalogDataSetProviderFactory = catalogDataSetProviderFactory;
     }
 
     /**
@@ -437,7 +453,6 @@ public class TransformService {
 
         script.append("}\n");
         script.append("new Transform(sqlContext, sparkContextService).run()\n");
-
         return script.toString();
     }
 
@@ -512,6 +527,17 @@ public class TransformService {
             if (datasourceProviderFactory != null) {
                 final DatasourceProvider datasourceProvider = datasourceProviderFactory.getDatasourceProvider(request.getDatasources());
                 bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", datasourceProvider));
+            } else {
+                throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
+            }
+        }
+
+        if(request.getCatalogDatasets() != null && !request.getCatalogDatasets().isEmpty()) {
+
+            if (catalogDataSetProviderFactory != null) {
+                log.info("Creating new Shell task with {} data sets ",request.getCatalogDatasets().size());
+                final CatalogDataSetProvider catalogDataSetProvider = catalogDataSetProviderFactory.getDataSetProvider(request.getCatalogDatasets());
+                bindings.add(new NamedParamClass("catalogDataSetProvider", CatalogDataSetProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", catalogDataSetProvider));
             } else {
                 throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
             }

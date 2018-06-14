@@ -20,9 +20,11 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.rest.model.PreviewDataSetRequest;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -42,30 +44,68 @@ public class KyloCatalogScalaScriptUtil {
         return options != null && !options.isEmpty() ? options.entrySet().stream().map(entrySet -> "\"" + entrySet.getKey() + "\",\"" + StringEscapeUtils.escapeJava(entrySet.getValue()) + "\"").collect(Collectors.joining(")." + var + "(", "." + var + "(", ")")) : "";
     }
 
-
-    public static String asScalaScript(KyloCatalogReadRequest request){
-
-        int previewLimit = request.getPageSpec() != null ? request.getPageSpec().getNumRows() : 20;
-        String format = request.getFormat();
+    public static String startingScript(){
 
         StringBuilder sb = new StringBuilder();
         sb.append("import org.apache.spark.sql._\n");
         sb.append(" import com.thinkbiganalytics.kylo.catalog._\n");
         sb.append(" var builder = KyloCatalog.builder(sqlContext)\n");
-        sb.append("var client = builder.build()\n");
-
-        String addFiles = asOptions(request.getFiles(),"addFile");
-        String addJars = asOptions(request.getJars(),"addJar");
-        String addOptions = asOptions(request.getOptions(),"option");
-        String path = request.getPaths() != null && !request.getPaths().isEmpty() ? request.getPaths().get(0) : "";
-
-        sb.append(String.format(" var reader = client.read%s.format(\"%s\")%s%s\n",addOptions,format,addFiles,addJars));
-        sb.append("var df = reader.load().limit("+previewLimit+")\n");
-        sb.append("df");
+        sb.append("var kyloClient = builder.build()\n");
+        return sb.toString();
+    }
 
 
-        String script = sb.toString();
-        return script;
+
+    public static String asScalaScript(PreviewDataSetRequest request, String dataFrameVar, boolean prependStartingScript, boolean appendTrailingDataFrameVar){
+       KyloCatalogReadRequest kyloCatalogReadRequest = KyloCatalogReaderUtil.toKyloCatalogRequest(request);
+       return asScalaScript(kyloCatalogReadRequest,dataFrameVar,prependStartingScript,appendTrailingDataFrameVar);
+    }
+
+private static StringBuilder appendNotNull(StringBuilder sb, String str){
+        if(StringUtils.isNotBlank(str)){
+            sb.append(str);
+        }
+        return sb;
+}
+    public static String asScalaScript(KyloCatalogReadRequest request,String dataFrameVar, boolean prependStartingScript, boolean appendTrailingDataFrameVar){
+
+        Integer previewLimit = request.getPageSpec() != null ? request.getPageSpec().getNumRows() : null;
+        String format = request.getFormat();
+        String addFiles = request.getFiles().isEmpty()?null :asOptions(request.getFiles(),"addFile");
+        String addJars = request.getJars().isEmpty()? null : asOptions(request.getJars(),"addJar");
+        String addOptions = request.getOptions().isEmpty()? null : asOptions(request.getOptions(),"option");
+        String limit = previewLimit != null ? String.format(".limit(%s)",previewLimit):"";
+
+        StringBuilder script = new StringBuilder();
+
+        if(prependStartingScript){
+            String start = startingScript();
+            script.append(start);
+        }
+
+        if(StringUtils.isNotBlank(dataFrameVar)) {
+            script.append("var " + dataFrameVar + " = ");
+        }
+          script.append("kyloClient.read()");
+          script.append(String.format(".format(\"%s\")",format));
+          appendNotNull(script,addOptions);
+          appendNotNull(script,addFiles);
+          appendNotNull(script,addJars);
+            if(request.hasPaths()){
+                script.append(String.format(".load(%s)\n",StringUtils.join(request.getPaths(),"\",\"")));
+            }
+            else {
+                script.append(".load()");
+            }
+            script.append(limit);
+
+
+        if(appendTrailingDataFrameVar){
+            script.append(dataFrameVar);
+        }
+
+
+       return script.toString();
 
     }
 
