@@ -40,6 +40,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
+import org.springframework.security.authentication.jaas.JaasAuthenticationCallbackHandler;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
 
 import java.util.ArrayList;
@@ -70,11 +71,14 @@ public class JaasAuthConfig {
 
     public static final int DEFAULT_GRANTER_ORDER = Integer.MAX_VALUE - 100;
 
+    private static final JaasAuthenticationCallbackHandler[] CALLBACK_HANDLERS 
+        = new JaasAuthenticationCallbackHandler[] { new JaasAuthenticationNameCallbackHandler(), new JaasAuthenticationPasswordCallbackHandler() };
 
     @Bean(name = UI_AUTH_PROVIDER)
     public AbstractJaasAuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                        List<AuthorityGranter> authorityGranters) {
         DefaultJaasAuthenticationProvider provider = new DefaultKyloJaasAuthenticationProvider();
+        provider.setCallbackHandlers(CALLBACK_HANDLERS);
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_UI);
@@ -85,6 +89,7 @@ public class JaasAuthConfig {
     public AbstractJaasAuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                              List<AuthorityGranter> authorityGranters) {
         DefaultJaasAuthenticationProvider provider = new DefaultKyloJaasAuthenticationProvider();
+        provider.setCallbackHandlers(CALLBACK_HANDLERS);
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_SERVICES);
@@ -95,6 +100,7 @@ public class JaasAuthConfig {
     public AbstractJaasAuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                             List<AuthorityGranter> authorityGranters) {
         UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
+        provider.setCallbackHandlers(CALLBACK_HANDLERS);
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_UI_TOKEN);
@@ -105,6 +111,7 @@ public class JaasAuthConfig {
     public AbstractJaasAuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                                   List<AuthorityGranter> authorityGranters) {
         UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
+        provider.setCallbackHandlers(CALLBACK_HANDLERS);
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_SERVICES_TOKEN);
