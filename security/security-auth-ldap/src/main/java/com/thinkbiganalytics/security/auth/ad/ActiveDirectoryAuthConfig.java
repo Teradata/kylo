@@ -28,6 +28,7 @@ import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -118,7 +119,7 @@ public class ActiveDirectoryAuthConfig {
         private String searchFilter = null;
         private boolean enableGroups = false;
         private String serviceUser = null;
-        private String servicePassword = null;
+        private char[] servicePassword = null;
         private UserDetailsContextMapper mapper;
 
         public void setEnableGroups(boolean groupsEnabled) {
@@ -142,7 +143,7 @@ public class ActiveDirectoryAuthConfig {
         }
         
         public void setServicePassword(String servicePassword) {
-            this.servicePassword = servicePassword;
+            this.servicePassword = StringUtils.isNotEmpty(servicePassword) ? servicePassword.toCharArray() : null ;
         }
 
         @Override
