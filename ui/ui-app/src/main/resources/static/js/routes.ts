@@ -730,9 +730,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
         $stateProvider.state({
-            name: 'marketplace.**',
-            url: '/marketplace',
-            loadChildren: 'marketplace/templates/templates.module#MarketplaceTemplatesModule'
+            name: 'repository.**',
+            url: '/repository',
+            loadChildren: 'repository/repository.module#RepositoryModule'
         });
     }
 

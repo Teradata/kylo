@@ -451,15 +451,15 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
         if (this.templateParam) {
             params['fileName'] = this.templateParam.fileName;
-            this.importTemplateFromMarketplace(params, successFn, errorFn);
+            this.importTemplateFromRepository(params, successFn, errorFn);
         } else
             this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
 
     }
 
-    importTemplateFromMarketplace(params: any, successFn: any, errorFn: any) {
+    importTemplateFromRepository(params: any, successFn: any, errorFn: any) {
         console.log(params);
-        this.$http.post("/proxy/v1/marketplace/templates/import", params, {
+        this.$http.post("/proxy/v1/repository/templates/import", params, {
             headers: {'Content-Type': 'application/json'}
         })
             .then(function (data) {

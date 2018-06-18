@@ -1,15 +1,14 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "../../module-name";
+import {moduleName} from "../../module-name";
 import AccessControlService from '../../../../services/AccessControlService';
-import { StateService } from '@uirouter/core';
-import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import {StateService} from '@uirouter/core';
+import {RegisterTemplateServiceFactory} from '../../../services/RegisterTemplateServiceFactory';
 import BroadcastService from '../../../../services/broadcast-service';
-import { UiComponentsService } from '../../../services/UiComponentsService';
+import {UiComponentsService} from '../../../services/UiComponentsService';
 
 
 export class RegisterSelectTemplateController {
-
 
 
     templates: any = [];
@@ -22,30 +21,30 @@ export class RegisterSelectTemplateController {
     nifiTemplateId: any;
     isValid: any;
     /**
-    * Error message to be displayed if {@code isValid} is false
-    * @type {null}
-    */
+     * Error message to be displayed if {@code isValid} is false
+     * @type {null}
+     */
     errorMessage: any = null;
     /**
-    * Indicates if admin operations are allowed.
-    * @type {boolean}
-    */
+     * Indicates if admin operations are allowed.
+     * @type {boolean}
+     */
     allowAdmin: any = false;
     /**
-    * Indicates if edit operations are allowed.
-    * @type {boolean}
-    */
+     * Indicates if edit operations are allowed.
+     * @type {boolean}
+     */
     allowEdit: any = false;
     /**
-    * Flag to indicate the template is loading
-    * Used for PRogress
-    * @type {boolean}
-    */
+     * Flag to indicate the template is loading
+     * Used for PRogress
+     * @type {boolean}
+     */
     loadingTemplate: boolean = false;
     /**
-    * Flag to indicate the select template list is loading
-    * @type {boolean}
-    */
+     * Flag to indicate the select template list is loading
+     * @type {boolean}
+     */
     fetchingTemplateList: boolean = false;
     templateTableOptions: any;
     allowAccessControl: any;
@@ -54,6 +53,7 @@ export class RegisterSelectTemplateController {
 
     static readonly $inject = ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "$state", "RestUrlService", "RegisterTemplateService", "StateService",
         "AccessControlService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "BroadcastService"];
+
     constructor(private $scope: any, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $mdToast: angular.material.IToastService, private $timeout: angular.ITimeoutService
         , private $q: angular.IQService, private $state: StateService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory, private StateService: any
         , private accessControlService: AccessControlService, private EntityAccesControlService: any, private uiComponentsService: UiComponentsService
@@ -74,7 +74,7 @@ export class RegisterSelectTemplateController {
          * The possible options to choose how this template should be displayed in the Feed Stepper
          * @type {Array.<TemplateTableOption>}
          */
-        this.templateTableOptions = [{ type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table' }];
+        this.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
         this.uiComponentsService.getTemplateTableOptions()
             .then((templateTableOptions: any) => {
                 Array.prototype.push.apply(this.templateTableOptions, templateTableOptions);
@@ -103,6 +103,7 @@ export class RegisterSelectTemplateController {
                 this.allowExport = accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
     };
+
     // setup the Stepper types
     initTemplateTableOptions = () => {
         if (this.model.templateTableOption == null) {
@@ -212,7 +213,6 @@ export class RegisterSelectTemplateController {
             }, (response: any) => {
                 this.deleteTemplateError(response.data.message)
             });
-
         }
     }
 
@@ -222,7 +222,7 @@ export class RegisterSelectTemplateController {
     confirmDeleteTemplate = () => {
         var $dialogScope = this.$scope.$new();
         $dialogScope.dialog = this.$mdDialog;
-        $dialogScope.vm = self;
+        $dialogScope.vm = this;
 
         this.$mdDialog.show({
             escapeToClose: false,
@@ -232,6 +232,58 @@ export class RegisterSelectTemplateController {
             templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html"
         });
     };
+
+    /**
+     * Displays a confirmation dialog for publishing the feed.
+     */
+    confirmPublishTemplate = () => {
+        var $dialogScope = this.$scope.$new();
+        $dialogScope.dialog = this.$mdDialog;
+        $dialogScope.vm = this;
+
+        this.$mdDialog.show({
+            escapeToClose: false,
+            fullscreen: true,
+            parent: angular.element(document.body),
+            scope: $dialogScope,
+            templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-publish-dialog.html"
+        });
+    };
+
+
+    publishTemplate = (overwriteParam: boolean) => {
+        if (this.model.id) {
+
+            this.$http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).then((response: any) => {
+                this.$mdToast.show(
+                    this.$mdToast.simple()
+                        .textContent('Successfully published template to repository.')
+                        .hideDelay(3000)
+                );
+                this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+            }, (response: any) => {
+                this.publishTemplateError(response.data.message)
+            });
+
+        }
+    }
+
+    publishTemplateError = (errorMsg: any) => {
+        // Display error message
+        var msg = "<p>Template could not be published.</p><p>";
+        msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
+        msg += "</p>";
+
+        this.$mdDialog.hide();
+        this.$mdDialog.show(
+            this.$mdDialog.alert()
+                .ariaLabel("Error publishing the template to repository")
+                .clickOutsideToClose(true)
+                .htmlContent(msg)
+                .ok("Got it!")
+                .parent(document.body)
+                .title("Error publishing the template to repository"));
+    }
 
     /**
      * Called when the user changes the radio buttons
@@ -285,7 +337,7 @@ export class RegisterSelectTemplateController {
     templateNavigationLink = (link: any) => {
         var templateId = this.registeredTemplateId;
         var templateName = this.model.templateName;
-        this.$state.go(link.sref, { templateId: templateId, templateName: templateName, model: this.model });
+        this.$state.go(link.sref, {templateId: templateId, templateName: templateName, model: this.model});
     }
 
     /**
@@ -330,11 +382,12 @@ export class RegisterSelectTemplateController {
     }
 
 
-    $onInit(){
+    $onInit() {
         this.ngOnInit();
     }
-    ngOnInit(){
-        this.stepNumber = parseInt(this.stepIndex)+1;
+
+    ngOnInit() {
+        this.stepNumber = parseInt(this.stepIndex) + 1;
         if (this.isLoading()) {
             this.stepperController.showProgress = true;
         }
@@ -355,3 +408,4 @@ angular.module(moduleName).component('thinkbigRegisterSelectTemplate', {
         stepperController: "^thinkbigStepper"
     }
 });
+

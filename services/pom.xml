@@ -31,7 +31,7 @@
     <module>metadata-service</module>
     <module>upgrade-service</module>
     <module>catalog-service</module>
-    <module>marketplace-service</module>
+    <module>repository-service</module>
   </modules>
 
   <build>

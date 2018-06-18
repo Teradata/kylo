@@ -228,7 +228,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-marketplace-rest-controller</artifactId>
+      <artifactId>kylo-repository-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -202,7 +202,8 @@ public class DefaultTemplateExporter implements TemplateExporter {
             //create a zip file with the template and xml
             byte[] zipFile = zip(template, templateXml, connectingReusableTemplates, outputPortConnectionMetadata, templateRemoteInputPorts);
 
-            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", zipFile);
+            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", template.getTemplateName(), template.getDescription(), template.isStream(),
+                                      zipFile);
 
         } else {
             throw new UnsupportedOperationException("Unable to find Template for " + templateId);
