@@ -1,0 +1,351 @@
+{
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "_shards": {
+      "$id": "/properties/_shards",
+      "type": "object",
+      "properties": {
+        "failed": {
+          "$id": "/properties/_shards/properties/failed",
+          "type": "integer",
+          "title": "The Failed Schema ",
+          "default": 0,
+          "examples": [
+            0
+          ]
+        },
+        "successful": {
+          "$id": "/properties/_shards/properties/successful",
+          "type": "integer",
+          "title": "The Successful Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        },
+        "total": {
+          "$id": "/properties/_shards/properties/total",
+          "type": "integer",
+          "title": "The Total Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        }
+      }
+    },
+    "hits": {
+      "$id": "/properties/hits",
+      "type": "object",
+      "properties": {
+        "hits": {
+          "$id": "/properties/hits/properties/hits",
+          "type": "array",
+          "items": {
+            "$id": "/properties/hits/properties/hits/items",
+            "type": "object",
+            "properties": {
+              "_id": {
+                "$id": "/properties/hits/properties/hits/items/properties/_id",
+                "type": "string",
+                "title": "The _id Schema ",
+                "default": "",
+                "examples": [
+                  "659a7b3f-9281-4f74-9e5d-1e40ae109bbc"
+                ]
+              },
+              "_index": {
+                "$id": "/properties/hits/properties/hits/items/properties/_index",
+                "type": "string",
+                "title": "The _index Schema ",
+                "default": "",
+                "examples": [
+                  "kylo-feeds-default"
+                ]
+              },
+              "_score": {
+                "$id": "/properties/hits/properties/hits/items/properties/_score",
+                "type": "integer",
+                "title": "The _score Schema ",
+                "default": 0,
+                "examples": [
+                  1
+                ]
+              },
+              "_source": {
+                "$id": "/properties/hits/properties/hits/items/properties/_source",
+                "type": "object",
+                "properties": {
+                  "jcr:description": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/jcr:description",
+                    "type": "string",
+                    "title": "The Jcr:description Schema ",
+                    "default": "",
+                    "examples": [
+                      "Sample feed for property search - Integration Test"
+                    ]
+                  },
+                  "jcr:title": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/jcr:title",
+                    "type": "string",
+                    "title": "The Jcr:title Schema ",
+                    "default": "",
+                    "examples": [
+                      "Sample-Feed-For-Property-Search"
+                    ]
+                  },
+                  "length_jcr:description": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_jcr:description",
+                    "type": "integer",
+                    "title": "The Length_jcr:description Schema ",
+                    "default": 0,
+                    "examples": [
+                      50
+                    ]
+                  },
+                  "length_jcr:title": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_jcr:title",
+                    "type": "integer",
+                    "title": "The Length_jcr:title Schema ",
+                    "default": 0,
+                    "examples": [
+                      31
+                    ]
+                  },
+                  "length_tba:allowIndexing": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_tba:allowIndexing",
+                    "type": "integer",
+                    "title": "The Length_tba:allowindexing Schema ",
+                    "default": 0,
+                    "examples": [
+                      1
+                    ]
+                  },
+                  "length_tba:systemName": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_tba:systemName",
+                    "type": "integer",
+                    "title": "The Length_tba:systemname Schema ",
+                    "default": 0,
+                    "examples": [
+                      31
+                    ]
+                  },
+                  "length_tba:tags": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_tba:tags",
+                    "type": "integer",
+                    "title": "The Length_tba:tags Schema ",
+                    "default": 0,
+                    "examples": [
+                      31
+                    ]
+                  },
+                  "length_usr:properties": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/length_usr:properties",
+                    "type": "integer",
+                    "title": "The Length_usr:properties Schema ",
+                    "default": 0,
+                    "examples": [
+                      80
+                    ]
+                  },
+                  "lowercase_jcr:description": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_jcr:description",
+                    "type": "string",
+                    "title": "The Lowercase_jcr:description Schema ",
+                    "default": "",
+                    "examples": [
+                      "sample feed for property search - integration test"
+                    ]
+                  },
+                  "lowercase_jcr:title": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_jcr:title",
+                    "type": "string",
+                    "title": "The Lowercase_jcr:title Schema ",
+                    "default": "",
+                    "examples": [
+                      "sample-feed-for-property-search"
+                    ]
+                  },
+                  "lowercase_tba:allowIndexing": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_tba:allowIndexing",
+                    "type": "string",
+                    "title": "The Lowercase_tba:allowindexing Schema ",
+                    "default": "",
+                    "examples": [
+                      "y"
+                    ]
+                  },
+                  "lowercase_tba:systemName": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_tba:systemName",
+                    "type": "string",
+                    "title": "The Lowercase_tba:systemname Schema ",
+                    "default": "",
+                    "examples": [
+                      "sample_feed_for_property_search"
+                    ]
+                  },
+                  "lowercase_tba:tags": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_tba:tags",
+                    "type": "string",
+                    "title": "The Lowercase_tba:tags Schema ",
+                    "default": "",
+                    "examples": [
+                      "search global search properties"
+                    ]
+                  },
+                  "lowercase_usr:properties": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/lowercase_usr:properties",
+                    "type": "string",
+                    "title": "The Lowercase_usr:properties Schema ",
+                    "default": "",
+                    "examples": [
+                      "pk10a common=aa1000x\tpv20b utility=bb2000y s99\tor30 organization=corporate z5000"
+                    ]
+                  },
+                  "tba:allowIndexing": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/tba:allowIndexing",
+                    "type": "string",
+                    "title": "The Tba:allowindexing Schema ",
+                    "default": "",
+                    "examples": [
+                      "Y"
+                    ]
+                  },
+                  "tba:systemName": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/tba:systemName",
+                    "type": "string",
+                    "title": "The Tba:systemname Schema ",
+                    "default": "",
+                    "examples": [
+                      "sample_feed_for_property_search"
+                    ]
+                  },
+                  "tba:tags": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/tba:tags",
+                    "type": "string",
+                    "title": "The Tba:tags Schema ",
+                    "default": "",
+                    "examples": [
+                      "search global search properties"
+                    ]
+                  },
+                  "uppercase_jcr:description": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_jcr:description",
+                    "type": "string",
+                    "title": "The Uppercase_jcr:description Schema ",
+                    "default": "",
+                    "examples": [
+                      "SAMPLE FEED FOR PROPERTY SEARCH - INTEGRATION TEST"
+                    ]
+                  },
+                  "uppercase_jcr:title": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_jcr:title",
+                    "type": "string",
+                    "title": "The Uppercase_jcr:title Schema ",
+                    "default": "",
+                    "examples": [
+                      "SAMPLE-FEED-FOR-PROPERTY-SEARCH"
+                    ]
+                  },
+                  "uppercase_tba:allowIndexing": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_tba:allowIndexing",
+                    "type": "string",
+                    "title": "The Uppercase_tba:allowindexing Schema ",
+                    "default": "",
+                    "examples": [
+                      "Y"
+                    ]
+                  },
+                  "uppercase_tba:systemName": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_tba:systemName",
+                    "type": "string",
+                    "title": "The Uppercase_tba:systemname Schema ",
+                    "default": "",
+                    "examples": [
+                      "SAMPLE_FEED_FOR_PROPERTY_SEARCH"
+                    ]
+                  },
+                  "uppercase_tba:tags": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_tba:tags",
+                    "type": "string",
+                    "title": "The Uppercase_tba:tags Schema ",
+                    "default": "",
+                    "examples": [
+                      "SEARCH GLOBAL SEARCH PROPERTIES"
+                    ]
+                  },
+                  "uppercase_usr:properties": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/uppercase_usr:properties",
+                    "type": "string",
+                    "title": "The Uppercase_usr:properties Schema ",
+                    "default": "",
+                    "examples": [
+                      "PK10A COMMON=AA1000X\tPV20B UTILITY=BB2000Y S99\tOR30 ORGANIZATION=CORPORATE Z5000"
+                    ]
+                  },
+                  "usr:properties": {
+                    "$id": "/properties/hits/properties/hits/items/properties/_source/properties/usr:properties",
+                    "type": "string",
+                    "title": "The Usr:properties Schema ",
+                    "default": "",
+                    "examples": [
+                      "pk10A common=Aa1000x\tpv20B utility=Bb2000y S99\tor30 organization=Corporate Z5000"
+                    ]
+                  }
+                }
+              },
+              "_type": {
+                "$id": "/properties/hits/properties/hits/items/properties/_type",
+                "type": "string",
+                "title": "The _type Schema ",
+                "default": "",
+                "examples": [
+                  "default"
+                ]
+              }
+            }
+          }
+        },
+        "max_score": {
+          "$id": "/properties/hits/properties/max_score",
+          "type": "integer",
+          "title": "The Max_score Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        },
+        "total": {
+          "$id": "/properties/hits/properties/total",
+          "type": "integer",
+          "title": "The Total Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        }
+      }
+    },
+    "timed_out": {
+      "$id": "/properties/timed_out",
+      "type": "boolean",
+      "title": "The Timed_out Schema ",
+      "default": false,
+      "examples": [
+        false
+      ]
+    },
+    "took": {
+      "$id": "/properties/took",
+      "type": "integer",
+      "title": "The Took Schema ",
+      "default": 0,
+      "examples": [
+        1
+      ]
+    }
+  }
+}

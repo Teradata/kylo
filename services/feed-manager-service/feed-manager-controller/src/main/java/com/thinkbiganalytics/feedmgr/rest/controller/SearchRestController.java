@@ -47,10 +47,12 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - Search", produces = "application/json")
-@Path("/v1/feedmgr/search")
+@Path(SearchRestController.BASE)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Search", description = "global search"))
 public class SearchRestController {
+
+    public static final String BASE = "/v1/feedmgr/search";
 
     /**
      * Ensures the user has the correct permissions.

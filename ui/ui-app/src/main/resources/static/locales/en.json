@@ -669,6 +669,7 @@
     "view.search.Title": "Title",
     "view.search.System name (Kylo)": "System name (Kylo)",
     "view.search.Description": "Description",
+    "view.search.User properties": "User properties",
 
     "views.job-details.JE": "Job Execution",
     "views.job-details-template.ED": "Exit Description",

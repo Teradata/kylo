@@ -9,9 +9,9 @@ package com.thinkbiganalytics.search;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,7 @@ import java.util.Map;
 // would be good to integrate this class with configuration for es transport client (avoid code repetition)
 public class ElasticSearchRestModeShapeConfigurationService implements RepositoryIndexConfiguration {
 
-    private ElasticSearchRestClientConfiguration restClientConfig;
+    private final ElasticSearchRestClientConfiguration restClientConfig;
     private static final String ELASTIC_SEARCH = "elasticsearch";
 
     public ElasticSearchRestModeShapeConfigurationService(ElasticSearchRestClientConfiguration config) {
@@ -52,6 +52,7 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
         final String EMPTY_CONFIG = "{}";
         final String KYLO_CATEGORIES = "kylo-categories";
         final String KYLO_FEEDS = "kylo-feeds";
+        final String KYLO_INTERNAL_FD1 = "kylo-internal-fd1";
         final String INDEXES = "indexes";
         final String INDEX_PROVIDERS = "indexProviders";
 
@@ -67,8 +68,10 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
 
         EditableDocument categoriesIndexDocument = indexesDocument.getOrCreateDocument(KYLO_CATEGORIES);
         EditableDocument feedsIndexDocument = indexesDocument.getOrCreateDocument(KYLO_FEEDS);
+        EditableDocument feeds2IndexDocument = indexesDocument.getOrCreateDocument(KYLO_INTERNAL_FD1);
         categoriesIndexDocument.putAll(getCategoriesIndexConfiguration());
-        feedsIndexDocument.putAll(getFeedsIndexConfiguration());
+        feedsIndexDocument.putAll(getFeedSummaryIndexConfiguration());
+        feeds2IndexDocument.putAll(getFeedDetailsIndexConfiguration());
 
         EditableDocument indexProvidersDocument = editor.getOrCreateDocument(INDEX_PROVIDERS);
         EditableDocument elasticSearchIndexProviderDocument = indexProvidersDocument.getOrCreateDocument(ELASTIC_SEARCH);
@@ -81,7 +84,7 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
     private Map<String, Object> getCategoriesIndexConfiguration() {
         final String TEXT = "text";
         final String TBA_CATEGORY = "tba:category";
-        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:systemName (STRING), tba:allowIndexing (STRING)";
+        final String COLUMNS = "jcr:lastModified (STRING)";
 
         Map<String, Object> categoriesIndexConfigurationMap = new HashMap<>();
         categoriesIndexConfigurationMap.put("kind", TEXT);
@@ -92,10 +95,10 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
         return categoriesIndexConfigurationMap;
     }
 
-    private Map<String, Object> getFeedsIndexConfiguration() {
+    private Map<String, Object> getFeedSummaryIndexConfiguration() {
         final String TEXT = "text";
         final String TBA_FEED_SUMMARY = "tba:feedSummary";
-        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:tags (STRING), tba:category(STRING), tba:systemName (STRING), tba:allowIndexing (STRING)";
+        final String COLUMNS = "jcr:lastModified (STRING)";
 
         Map<String, Object> feedsIndexConfigurationMap = new HashMap<>();
         feedsIndexConfigurationMap.put("kind", TEXT);
@@ -104,6 +107,20 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
         feedsIndexConfigurationMap.put("nodeType", TBA_FEED_SUMMARY);
         feedsIndexConfigurationMap.put("columns", COLUMNS);
         return feedsIndexConfigurationMap;
+    }
+
+    private Map<String, Object> getFeedDetailsIndexConfiguration() {
+        final String TEXT = "text";
+        final String TBA_FEED = "tba:feedDetails";
+        final String COLUMNS = "jcr:lastModified (STRING)";
+
+        Map<String, Object> feeds2IndexConfigurationMap = new HashMap<>();
+        feeds2IndexConfigurationMap.put("kind", TEXT);
+        feeds2IndexConfigurationMap.put("provider", ELASTIC_SEARCH);
+        feeds2IndexConfigurationMap.put("synchronous", false);
+        feeds2IndexConfigurationMap.put("nodeType", TBA_FEED);
+        feeds2IndexConfigurationMap.put("columns", COLUMNS);
+        return feeds2IndexConfigurationMap;
     }
 
     private Map<String, Object> getElasticSearchIndexProviderConfiguration() {

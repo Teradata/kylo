@@ -80,6 +80,12 @@ public class ElasticSearchService implements Search {
     }
 
     @Override
+    public int deleteAll(@Nonnull String indexName, @Nonnull String typeName) {
+        log.warn("deleteAll() method not implemented for ElasticSearchService");
+        return -1;
+    }
+
+    @Override
     public void commit(@Nonnull final String indexName) {
         buildTransportClient();
         client.admin().indices().prepareRefresh(indexName).execute()
