@@ -2,7 +2,7 @@
 
 DRY_RUN=1
 VERBOSE=1
-MODULES=("@angular/animations" "@angular/cdk" "@angular/common" "@angular/compiler" "@angular/core" "@angular/forms" "@angular/http" "@angular/material" "@angular/platform-browser" "@angular/platform-browser-dynamic" "@angular/router" "@angular/upgrade" "@covalent/core" "@uirouter/angular" "@uirouter/angular-hybrid" "@uirouter/angularjs" "@uirouter/core" "@uirouter/rx" "rxjs" "systemjs" "tslib" "zone.js")
+MODULES=("@angular/animations" "@angular/cdk" "@angular/common" "@angular/compiler" "@angular/core" "@angular/forms" "@angular/http" "@angular/material" "@angular/platform-browser" "@angular/platform-browser-dynamic" "@angular/router" "@angular/upgrade" "@covalent/core" "@ngx-translate/core" "@ngx-translate/http-loader" "@uirouter/angular" "@uirouter/angular-hybrid" "@uirouter/angularjs" "@uirouter/core" "@uirouter/rx" "rxjs" "systemjs" "tslib" "zone.js")
 
 for module in ${MODULES[@]}; do
     echo "Synching ${module}..."
@@ -53,7 +53,7 @@ for module in ${MODULES[@]}; do
 
     # Copy files
     mkdir -p "${dst}"
-    
+
     if [[ "${module}" == "systemjs" ]]; then
         cp "${src}system.js" "${dst}system.js"
     elif [[ "${module}" == "tslib" ]]; then
