@@ -27,15 +27,28 @@ import com.thinkbiganalytics.kylo.catalog.credential.spi.DataSourceCredentialPro
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+
+import java.io.IOException;
+
+import javax.inject.Named;
 
 /**
  *
  */
 @Configuration
 public class SimpleDataSourceCredentialConfig {
+    
+    @Bean
+    public Resource simpleCredentialConfigResource() {
+        return new ClassPathResource("credential-config-simple.json");
+    }
 
     @Bean
-    public DataSourceCredentialProvider simpleDataSourceCredentialProvider() {
-        return new SimpleDataSourceCredentialProvider();
+    public DataSourceCredentialProvider simpleDataSourceCredentialProvider(@Named("simpleCredentialConfigResource") Resource configResource) throws IOException {
+        SimpleDataSourceCredentialProvider provider = new SimpleDataSourceCredentialProvider();
+        provider.loadCredentials(configResource);
+        return provider;
     }
 }
