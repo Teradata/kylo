@@ -26,6 +26,7 @@ import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter;
 import com.thinkbiganalytics.kylo.catalog.spark.KyloCatalogClientBuilderV2;
 import com.thinkbiganalytics.kylo.catalog.spark.sources.HiveDataSetProviderV2;
+import com.thinkbiganalytics.kylo.catalog.spark.sources.JdbcDataSetProviderV2;
 import com.thinkbiganalytics.kylo.catalog.spark.sources.SparkDataSetProviderV2;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
@@ -121,7 +122,7 @@ public class KyloCatalog {
      */
     private static synchronized void loadDefaultDataSetProviders() {
         if (defaultDataSetProviders == null) {
-            defaultDataSetProviders = Arrays.asList(new HiveDataSetProviderV2(), new SparkDataSetProviderV2());
+            defaultDataSetProviders = Arrays.asList(new HiveDataSetProviderV2(), new JdbcDataSetProviderV2(), new SparkDataSetProviderV2());
         }
     }
 

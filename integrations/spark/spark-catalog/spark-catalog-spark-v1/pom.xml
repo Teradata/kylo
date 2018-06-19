@@ -22,20 +22,26 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-spark-catalog-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-spark-shell-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-catalog-core</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -49,19 +55,15 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
         <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <tarLongFileMode>posix</tarLongFileMode>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
         </configuration>
         <executions>
           <execution>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
-            <phase>package</phase>
           </execution>
         </executions>
       </plugin>
