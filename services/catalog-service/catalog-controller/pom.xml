@@ -39,11 +39,6 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-security-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-test</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
