@@ -17,6 +17,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
+import {TranslateModule} from "@ngx-translate/core";
 
 import {KyloServicesModule} from "../services/services.module";
 import {AddButtonComponent} from "./add-button/add-button.component";
@@ -31,7 +32,6 @@ import {UploadFileComponent} from "./file-upload/file-upload.component";
 import {CardFilterHeaderComponent} from "./card-filter-header/card-filter-header.component";
 import {CardLayoutComponent} from "./card-layout/card-layout.component";
 
-import {TranslatePipe} from "./translate.pipe";
 import {aboutKyloServiceProvider} from "./angular2";
 
 @NgModule({
@@ -46,7 +46,6 @@ import {aboutKyloServiceProvider} from "./angular2";
         KyloOptionsComponent,
         CardFilterHeaderComponent,
         UploadFileComponent,
-        TranslatePipe,
         CardLayoutComponent
     ],
     entryComponents: [
@@ -77,7 +76,8 @@ import {aboutKyloServiceProvider} from "./angular2";
         MatGridListModule,
         MatDialogModule,
         FormsModule,
-        HttpClientModule
+        HttpClientModule,
+        TranslateModule
     ],
      exports: [
         KyloIconComponent

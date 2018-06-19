@@ -135,6 +135,8 @@ System.config({
         '@covalent/dynamic-forms': 'npm:@covalent/dynamic-forms/bundles/covalent-dynamic-forms.umd',
         '@kylo/wrangler': 'feed-mgr/visual-query/wrangler/index',
         '@kylo/wrangler/api': 'feed-mgr/visual-query/wrangler/api/index',
+        '@ngx-translate/core': 'npm:@ngx-translate/core/bundles/core.umd.min',
+        '@ngx-translate/http-loader': 'npm:@ngx-translate/http-loader/bundles/http-loader.umd',
         '@uirouter/angular': 'npm:@uirouter/angular/_bundles/ui-router-ng2',
         '@uirouter/angular-hybrid': 'npm:@uirouter/angular-hybrid/_bundles/ui-router-angular-hybrid',
         '@uirouter/angularjs': 'npm:@uirouter/angularjs/release/angular-ui-router',

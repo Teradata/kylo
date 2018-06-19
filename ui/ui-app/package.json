@@ -34,6 +34,8 @@
     "@angular/upgrade": "~5.1",
     "@covalent/core": "^1.0.0",
     "@covalent/dynamic-forms": "^1.0.0",
+    "@ngx-translate/core": "^9.1.1",
+    "@ngx-translate/http-loader": "^2.0.1",
     "@uirouter/angular-hybrid": "3.1.8",
     "angular": "1.6.7",
     "angular-translate": "^2.17.0",
