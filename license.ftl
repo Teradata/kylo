@@ -116,6 +116,8 @@
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "javax.transaction">
   <@javaxTransactionLicense/>
+<#elseif project.groupId == "javax.ws.rs" && project.artifactId == "jsr311-api">
+  <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "net.jcip">
   <@apache2License/>
 <#elseif project.groupId?starts_with("org.apache.")>
