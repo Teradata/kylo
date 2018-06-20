@@ -62,7 +62,7 @@ public class RepositoryController {
     @GET
     @Path("templates")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("List all templates available in repository.")
+    @ApiOperation("Lists all templates available in repository.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
     public List<RepositoryItemMetadata> listTemplates() throws Exception {
         return repositoryService.listTemplates();
@@ -83,12 +83,25 @@ public class RepositoryController {
     @GET
     @Path("templates/publish/{templateId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Publish template to repository.")
+    @ApiOperation("Publishes template to repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response publishTemplate(@NotNull @PathParam("templateId") String templateId, @NotNull @QueryParam("overwrite") boolean overwrite) throws Exception {
 
         RepositoryItemMetadata metadata = repositoryService.publishTemplate(templateId, overwrite);
         return Response.ok(metadata).build();
+    }
+
+    @GET
+    @Path("templates/download/{fileName}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @ApiOperation("Downloads Template zip file from repository.")
+    @ApiResponse(code = 200, message = "Successfully published template to repository.")
+    public Response downloadTemplate(@NotNull @PathParam("fileName") String fileName) throws Exception {
+
+        byte[] fileData = repositoryService.downloadTemplate(fileName);
+        return Response.ok(fileData, MediaType.APPLICATION_OCTET_STREAM)
+            .header("Content-Disposition", "attachments; filename=\"" + fileName + "\"") //optional
+            .build();
     }
 
 }

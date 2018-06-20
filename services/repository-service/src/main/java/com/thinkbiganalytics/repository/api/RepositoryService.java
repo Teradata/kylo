@@ -31,4 +31,6 @@ public interface RepositoryService {
     ImportTemplate importTemplates(String fileName, String uploadKey, String importComponentOptions) throws Exception;
 
     RepositoryItemMetadata publishTemplate(String templateId, boolean overwrite) throws Exception;
+
+    byte[] downloadTemplate(String fileName) throws Exception;
 }

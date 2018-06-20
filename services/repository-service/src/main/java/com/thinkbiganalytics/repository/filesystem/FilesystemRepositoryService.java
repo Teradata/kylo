@@ -169,6 +169,24 @@ public class FilesystemRepositoryService implements RepositoryService {
         return metadata;
     }
 
+    @Override
+    public byte[] downloadTemplate(String fileName) throws Exception {
+        validateTemplateDirs();
+
+        Optional<Path> opt = templateDirs
+            .stream()
+            .map(dir -> Paths.get(dir + "/" + fileName))
+            .filter(p -> Files.exists(p))
+            .findFirst();
+
+        if (!opt.isPresent()) {
+            throw new RuntimeException("File not found for download: " + fileName);
+        }
+        log.info("Begin template download {}", fileName);
+
+        return ImportUtil.streamToByteArray(new FileInputStream(opt.get().toFile()));
+    }
+
     private RepositoryItemMetadata jsonToMetadata(Path path) {
         try {
             String s = new String(Files.readAllBytes(path));

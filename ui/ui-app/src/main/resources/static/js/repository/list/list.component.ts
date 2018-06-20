@@ -4,10 +4,10 @@ import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {IPageChangeEvent} from "@covalent/core/paging";
 import {StateService} from "@uirouter/angular";
-import AccessControlService from "../../services/AccessControlService";
+import {MatTableDataSource} from "@angular/material/table";
 
 /**
- * Displays available datasources
+ * List templates from repository ready for installation.
  */
 @Component({
     selector: "list-templates",
@@ -17,12 +17,16 @@ export class ListTemplatesComponent implements OnInit {
 
     static readonly LOADER = "ListTemplatesComponent.LOADER";
 
+    downloadUrl: string = "/proxy/v1/repository/templates";
+
     constructor(private templateService: TemplateService,
                 private dataTableService: TdDataTableService,
                 private state: StateService) {
     }
 
     selectedTemplate: string;
+
+    dataSource = new MatTableDataSource<TemplateMetadata>(this.filteredTemplates);
 
     /**
      * List of available templates
@@ -47,6 +51,18 @@ export class ListTemplatesComponent implements OnInit {
         this.templateService.importTemplate(this.selectedTemplate)
             .subscribe(data => console.log(data),
                 error => console.error(error));
+    }
+
+    /*
+     * download template from repository.
+     */
+    downloadTemplate(template: TemplateMetadata) {
+        this.templateService.downloadTemplate(template.fileName).subscribe(blob => {
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = template.fileName;
+            link.click();
+        });
     }
 
     /**

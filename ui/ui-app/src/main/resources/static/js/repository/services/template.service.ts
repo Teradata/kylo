@@ -33,6 +33,11 @@ export class TemplateService {
 
     }
 
+    downloadTemplate(fileName: string): Observable<Object> {
+        console.log("service downloadTemplate", fileName);
+        return this.http.get("/proxy/v1/repository/templates/download/"+fileName, {responseType: "blob"});
+    }
+
     private handleError(error: HttpErrorResponse) {
         if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.

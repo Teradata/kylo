@@ -22,6 +22,9 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {CovalentPagingModule} from "@covalent/core/paging";
 import {MatSelectModule} from "@angular/material/select";
 import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatTableModule} from "@angular/material/table";
+import {CdkTableModule} from "@angular/cdk/table";
 
 @NgModule({
     declarations: [
@@ -46,6 +49,9 @@ import {FormsModule} from "@angular/forms";
         MatToolbarModule,
         MatCheckboxModule,
         MatSelectModule,
+        MatButtonModule,
+        MatTableModule,
+        CdkTableModule,
         UIRouterModule.forChild({states: repositoryStates})
     ],
     providers:[
