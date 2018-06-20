@@ -4,7 +4,6 @@ import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {IPageChangeEvent} from "@covalent/core/paging";
 import {StateService} from "@uirouter/angular";
-import {MatTableDataSource} from "@angular/material/table";
 
 /**
  * List templates from repository ready for installation.
@@ -25,8 +24,6 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     selectedTemplate: string;
-
-    dataSource = new MatTableDataSource<TemplateMetadata>(this.filteredTemplates);
 
     /**
      * List of available templates
