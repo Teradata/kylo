@@ -38,7 +38,7 @@
                         <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="registered-templates"  current-page="vm.currentPage" >
                             <div layout="row" layout-fill>
                               <div flex="40" layout="column" class="item-column md-list-item-text " ng-class="{'disabled':template.state == 'DISABLED'}"
-                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
+                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateInfo($event,template)">
                                              <span class="item-title" title="{{template.templateName}}">
                                               {{template.templateName}}
                                            </span>

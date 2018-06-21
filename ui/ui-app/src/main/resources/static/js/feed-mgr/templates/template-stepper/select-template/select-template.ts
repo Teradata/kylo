@@ -233,23 +233,6 @@ export class RegisterSelectTemplateController {
         });
     };
 
-    /**
-     * Displays a confirmation dialog for publishing the feed.
-     */
-    confirmPublishTemplate = () => {
-        var $dialogScope = this.$scope.$new();
-        $dialogScope.dialog = this.$mdDialog;
-        $dialogScope.vm = this;
-
-        this.$mdDialog.show({
-            escapeToClose: false,
-            fullscreen: true,
-            parent: angular.element(document.body),
-            scope: $dialogScope,
-            templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-publish-dialog.html"
-        });
-    };
-
 
     publishTemplate = (overwriteParam: boolean) => {
         if (this.model.id) {

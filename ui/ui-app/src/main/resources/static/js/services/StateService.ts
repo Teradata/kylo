@@ -98,6 +98,10 @@ export default class StateService {
         data.navigateToRegisteredTemplate = (templateId: any, nifiTemplateId: any) => {
             this.$state.go('register-template', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
         }
+
+        data.navigateToTemplateInfo = (templateId: any, nifiTemplateId: any) => {
+            this.$state.go('template-info', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
+        }
         /**
          * Navigates to the Templates page.
          */

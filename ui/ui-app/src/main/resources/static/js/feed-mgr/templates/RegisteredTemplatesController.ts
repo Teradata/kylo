@@ -185,6 +185,10 @@ export class RegisteredTemplatesController {
         }
     };
 
+    templateInfo = (event: angular.IAngularEvent, template: any) =>{
+        this.StateService.FeedManager().Template().navigateToTemplateInfo(template.id, template.nifiTemplateId);
+    }
+
     getRegisteredTemplates = (): angular.IPromise<any> =>{
 
         let successFn = (response: angular.IHttpResponse<any>) => {

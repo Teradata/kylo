@@ -19,10 +19,9 @@ export const repositoryStates: Ng2StateDeclaration[] = [
             breadcrumbRoot: true,
             displayName: "Repository"
         }
-    }
-    /*,
+    },
     {
-        name: "template.info",
+        name: "template-info",
         url: "/template-info",
         params: {
             registeredTemplateId: null,
@@ -35,8 +34,7 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Repository"
+            displayName: "Template Info"
         }
     }
-    */
 ];

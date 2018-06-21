@@ -25,11 +25,18 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatTableModule} from "@angular/material/table";
 import {CdkTableModule} from "@angular/cdk/table";
+import {TemplateInfoComponent} from "./template-info/template-info.component";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {TemplatePublishDialog} from "./dialog/template-publish-dialog";
 
 @NgModule({
     declarations: [
         ListTemplatesComponent,
-        RepositoryComponent
+        RepositoryComponent,
+        TemplateInfoComponent,
+        TemplatePublishDialog
     ],
     imports: [
         FormsModule,
@@ -51,12 +58,16 @@ import {CdkTableModule} from "@angular/cdk/table";
         MatSelectModule,
         MatButtonModule,
         MatTableModule,
+        MatProgressSpinnerModule,
         CdkTableModule,
+        MatMenuModule,
+        MatProgressBarModule,
         UIRouterModule.forChild({states: repositoryStates})
     ],
     providers:[
         TemplateService
-    ]
+    ],
+    entryComponents: [TemplatePublishDialog]
 })
 export class RepositoryModule {
 }

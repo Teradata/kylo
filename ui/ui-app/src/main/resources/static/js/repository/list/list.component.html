@@ -16,6 +16,10 @@
                 {{item.description}}
               </div>
             </div>
+            <button mat-button disabled *ngIf="item.installed" color="primary">
+              <ng-md-icon icon="done" size="20" style="fill:green"></ng-md-icon>
+              Imported
+            </button>
             <button mat-button *ngIf="!item.installed" color="primary" (click)="toggleImportTemplate(item)">
               <ng-md-icon icon="file_upload" size="20" style="fill:#F08C38"></ng-md-icon>
               Import
