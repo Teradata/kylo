@@ -1,5 +1,6 @@
 import {Component, Directive, ElementRef, Injector, Input} from "@angular/core";
 import {UpgradeComponent} from "@angular/upgrade/static";
+import * as angular from 'angular';
 
 
 /**
