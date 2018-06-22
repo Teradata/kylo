@@ -673,7 +673,7 @@ public class TdchExportHiveToTeradataTest {
 
         MockFlowFile failedFlowFile = failedFlowFiles.get(0);
         Assert.assertEquals(expectedCommand, failedFlowFile.getAttribute("tdch.export.hive.to.teradata.command"));
-        Assert.assertEquals("127", failedFlowFile.getAttribute("tdch.export.hive.to.teradata.kylo.result.code"));
+        Assert.assertNotEquals("0", failedFlowFile.getAttribute("tdch.export.hive.to.teradata.kylo.result.code"));
         Assert.assertEquals("-1", failedFlowFile.getAttribute("tdch.export.hive.to.teradata.input.record.count"));
         Assert.assertEquals("-1", failedFlowFile.getAttribute("tdch.export.hive.to.teradata.output.record.count"));
         Assert.assertEquals("-1", failedFlowFile.getAttribute("tdch.export.hive.to.teradata.tdch.exit.code"));
