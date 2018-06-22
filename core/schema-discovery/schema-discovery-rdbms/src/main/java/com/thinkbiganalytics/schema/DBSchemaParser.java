@@ -362,7 +362,21 @@ public class DBSchemaParser implements JdbcSchemaParser {
                     final String tableName = result.getString(3);
                     if (table.equalsIgnoreCase(tableName) && (queryCatalog != null || schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
                         final DefaultTableSchema tableSchema = new DefaultTableSchema();
-                        tableSchema.setFields(listColumns(conn, schema, tableName));
+                        tableSchema.setFields(listColumns(conn, cat, schema, tableName, true));
+                        tableSchema.setName(tableName);
+                        tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
+                        return tableSchema;
+                    }
+                }
+            }
+            try (final ResultSet result = getTables(conn, (queryCatalog == null) ? schema : null, "%".equals(querySchema) ? schema : "%", table)) {
+                while (result != null && result.next()) {
+                    final String cat = result.getString(1);
+                    final String schem = result.getString(2);
+                    final String tableName = result.getString(3);
+                    if (table.equalsIgnoreCase(tableName) && (queryCatalog != null || schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
+                        final DefaultTableSchema tableSchema = new DefaultTableSchema();
+                        tableSchema.setFields(listColumns(conn, cat, schema, tableName, false));
                         tableSchema.setName(tableName);
                         tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
                         return tableSchema;
@@ -407,30 +421,30 @@ public class DBSchemaParser implements JdbcSchemaParser {
     }
 
     @Nonnull
-    private List<Field> listColumns(@Nonnull Connection conn, @Nullable String schema, @Nonnull String tableName) throws SQLException {
+    private List<Field> listColumns(@Nonnull Connection conn, @Nullable String catalog, @Nullable String schema, @Nonnull String tableName, boolean schemaIsCat) throws SQLException {
         List<Field> fields;
         Set<String> pkSet = listPrimaryKeys(conn, schema, tableName);
-        try (ResultSet columns = conn.getMetaData().getColumns(null, schema, tableName, null)) {
-            fields = columnsResultSetToField(columns, pkSet, schema);
+        try (ResultSet columns = conn.getMetaData().getColumns(catalog, schema, tableName, null)) {
+            fields = columnsResultSetToField(columns, pkSet, schema, schemaIsCat);
         }
         if (fields.isEmpty()) {
             //if empty try the schema as the catalog (for MySQL db)
             try (ResultSet columns = conn.getMetaData().getColumns(schema, null, tableName, null)) {
-                fields = columnsResultSetToField(columns, pkSet, schema);
+                fields = columnsResultSetToField(columns, pkSet, schema, schemaIsCat);
             }
         }
         return fields;
     }
 
     @Nonnull
-    private List<Field> columnsResultSetToField(@Nullable ResultSet columns, @Nonnull Set<String> pkSet, @Nullable String schema) throws SQLException {
+    private List<Field> columnsResultSetToField(@Nullable ResultSet columns, @Nonnull Set<String> pkSet, @Nullable String schema, boolean schemaIsCat) throws SQLException {
         List<Field> fields = new ArrayList<>();
         if (columns != null) {
             while (columns.next()) {
                 String cat = columns.getString(CATALOG_COLUMN);
                 if (StringUtils.isNotBlank(cat) && StringUtils.isNotBlank(schema)) {
                     //this db supports Catalogs.  Ensure the cat matches the supplied schema
-                    if (!schema.equalsIgnoreCase(cat)) {
+                    if (schemaIsCat && !schema.equalsIgnoreCase(cat)) {
                         continue;
                     }
                 }
