@@ -146,6 +146,14 @@
       <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <version>1.19.4</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
 </project>
