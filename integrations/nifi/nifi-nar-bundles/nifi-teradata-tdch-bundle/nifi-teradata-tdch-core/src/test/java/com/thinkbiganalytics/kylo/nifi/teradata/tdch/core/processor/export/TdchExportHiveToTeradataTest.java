@@ -32,6 +32,7 @@ import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -649,6 +650,7 @@ public class TdchExportHiveToTeradataTest {
 
 
     @Test
+    @Ignore
     public void testFullExport() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(TdchExportHiveToTeradata.class);
         TdchConnectionService tdchConnectionService = new DummyTdchConnectionService();
