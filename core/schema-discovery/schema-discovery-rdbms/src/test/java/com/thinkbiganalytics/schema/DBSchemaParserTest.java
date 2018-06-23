@@ -72,7 +72,7 @@ public class DBSchemaParserTest {
         Mockito.when(columnsResultSet.getInt("DATA_TYPE")).thenReturn(-5, 12);
         Mockito.when(columnsResultSet.getString("REMARKS")).thenReturn("primary key", "string column");
         Mockito.when(columnsResultSet.getString("IS_NULLABLE")).thenReturn("NO", "YES");
-        Mockito.when(dbMetaData.getColumns(null, "mydb", "mytable", null)).thenReturn(columnsResultSet);
+        Mockito.when(dbMetaData.getColumns("mydb", null, "mytable", null)).thenReturn(columnsResultSet);
 
         // Test describing table
         final DBSchemaParser parser = new DBSchemaParser(dataSource, new KerberosTicketConfiguration());

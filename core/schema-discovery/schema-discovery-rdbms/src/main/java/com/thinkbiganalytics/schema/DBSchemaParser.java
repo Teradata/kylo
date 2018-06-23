@@ -362,7 +362,7 @@ public class DBSchemaParser implements JdbcSchemaParser {
                     final String tableName = result.getString(3);
                     if (table.equalsIgnoreCase(tableName) && (queryCatalog != null || schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
                         final DefaultTableSchema tableSchema = new DefaultTableSchema();
-                        tableSchema.setFields(listColumns(conn, cat, schema, tableName, true));
+                        tableSchema.setFields(listColumns(conn, cat, schem, tableName, true));
                         tableSchema.setName(tableName);
                         tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
                         return tableSchema;
@@ -376,7 +376,7 @@ public class DBSchemaParser implements JdbcSchemaParser {
                     final String tableName = result.getString(3);
                     if (table.equalsIgnoreCase(tableName) && (queryCatalog != null || schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
                         final DefaultTableSchema tableSchema = new DefaultTableSchema();
-                        tableSchema.setFields(listColumns(conn, cat, schema, tableName, false));
+                        tableSchema.setFields(listColumns(conn, cat, schem, tableName, false));
                         tableSchema.setName(tableName);
                         tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
                         return tableSchema;
@@ -423,7 +423,7 @@ public class DBSchemaParser implements JdbcSchemaParser {
     @Nonnull
     private List<Field> listColumns(@Nonnull Connection conn, @Nullable String catalog, @Nullable String schema, @Nonnull String tableName, boolean schemaIsCat) throws SQLException {
         List<Field> fields;
-        Set<String> pkSet = listPrimaryKeys(conn, schema, tableName);
+        Set<String> pkSet = listPrimaryKeys(conn, (schema != null) ? schema : catalog, tableName);
         try (ResultSet columns = conn.getMetaData().getColumns(catalog, schema, tableName, null)) {
             fields = columnsResultSetToField(columns, pkSet, schema, schemaIsCat);
         }
