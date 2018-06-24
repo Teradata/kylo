@@ -1,0 +1,70 @@
+-p field1|type1|formula(column1),field2|type2|formula(column2) -c column1|type1|comment|1|1|0 -s source.table -t target.table -v 123 -m dedupe_merge
+                        
+-p ${metadata.table.partitionSpecs} -c ${metadata.table.fieldStructure} -s merge_old.user_data_sync_old_valid -t merge_old.user_data_sync_old -v ${feedts} -m ${metadata.table.targetMergeStrategy}
+  
+  
+                        
+-p 'registration_dttm_month|int|month(registration_dttm),registration_dttm_year|int|year(registration_dttm)' 
+-c 'registration_dttm|timestamp||0|1|0|registration_dttm,id|int||1|0|0|id,first_name|string||0|0|0|first_name,last_name|string||0|0|0|last_name,email|string||0|0|0|email,gender|string||0|0|0|gender,ip_address|string||0|0|0|,cc|double||0|0|0|,country|string||0|0|0|,birthdate|string||0|0|0|,salary|double||0|0|0|,title|string||0|0|0|,comments|double||0|0|0|' 
+-s merge_old.user_data_sync_old_valid 
+-t merge_old.user_data_sync_old 
+-v 1523132652811 
+-m SYNC
+
+
+
+spark-submit \                                                                                                 
+--class com.thinkbiganalytics.spark.multiexec.MultiSparkExecApp \
+--conf spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=9996 \
+--master local \
+/opt/nifi/data/lib/app/kylo-spark-merge-table-spark-v1-0.9.1-SNAPSHOT-jar-with-dependencies.jar \
+-p "registration_dttm_month|int|month(registration_dttm),registration_dttm_year|int|year(registration_dttm)" \
+-c "registration_dttm|timestamp||0|1|0|registration_dttm,id|int||1|0|0|id,first_name|string||0|0|0|first_name,last_name|string||0|0|0|last_name,email|string||0|0|0|email,gender|string||0|0|0|gender,ip_address|string||0|0|0|,cc|double||0|0|0|,country|string||0|0|0|,birthdate|string||0|0|0|,salary|double||0|0|0|,title|string||0|0|0|,comments|double||0|0|0|" \
+-s merge_old.user_data_sync_old_valid \
+-t merge_old.user_data_sync_old \
+-v 1523204178525 \
+-m SYNC
+
+
+-p "registration_dttm_month|int|month(registration_dttm)
+registration_dttm_year|int|year(registration_dttm)" -c "registration_dttm|timestamp||0|1|0|registration_dttm
+id|int||1|0|0|id
+first_name|string||0|0|0|first_name
+last_name|string||0|0|0|last_name
+email|string||0|0|0|email
+gender|string||0|0|0|gender" -s spark_merge.user_ingest_sparksync_valid -t spark_merge.user_ingest_sparksync -v 1523315530084 -m SYNC
+
+
+-p,"${metadata.table.partitionSpecs}",-c,"${metadata.table.fieldStructure}",-s,${category}.${feed}_valid,-t,${category}.${feed},-v,${feedts},-m,${metadata.table.targetMergeStrategy}
+
+
+
+
+
+spark-submit --class com.thinkbiganalytics.spark.multiexec.MultiSparkExecApp --master local --conf 'spark.driver.extraJavaOptions=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=9996' /opt/nifi/data/lib/app/kylo-spark-merge-table-spark-v1-0.9.1-SNAPSHOT-jar-with-dependencies.jar -p 'registration_dttm_month|int|month(registration_dttm),registration_dttm_year|int|year(registration_dttm)' -c 'registration_dttm|timestamp||0|1|0|registration_dttm,id|int||1|0|0|id,first_name|string||0|0|0|first_name,last_name|string||0|0|0|last_name,email|string||0|0|0|email,gender|string||0|0|0|gender,ip_address|string||0|0|0|,cc|double||0|0|0|,country|string||0|0|0|,birthdate|string||0|0|0|,salary|double||0|0|0|,title|string||0|0|0|,comments|double||0|0|0|' -s merge_old.user_data_sync_old_valid -t merge_old.user_data_sync_old -v 1523132652811 -m SYNC
+ 
+
+insert overwrite table `spark_merge`.`user_ingest_sparksync` 
+partition (`registration_dttm_month`,`registration_dttm_year`) 
+select `registration_dttm`,`id`,`first_name`,`last_name`,`email`,`gender`,`processing_dttm`,`registration_dttm_month`,`registration_dttm_year` 
+from (  
+    select a.`registration_dttm`,a.`id`,a.`first_name`,a.`last_name`,a.`email`,a.`gender`,a.`processing_dttm`,month(a.registration_dttm) `registration_dttm_month`,year(a.registration_dttm) `registration_dttm_year`  
+    from `spark_merge`.`user_ingest_sparksync_valid` a  
+    where   a.processing_dttm = "1523334273295" 
+    union all   
+    select a.`registration_dttm`,a.`id`,a.`first_name`,a.`last_name`,a.`email`,a.`gender`,a.`processing_dttm`,month(a.registration_dttm) `registration_dttm_month`,year(a.registration_dttm) `registration_dttm_year`  
+    from `spark_merge`.`user_ingest_sparksync` a 
+    left outer join (
+        select `registration_dttm`,`id`,`first_name`,`last_name`,`email`,`gender`,`processing_dttm`,month(registration_dttm) `registration_dttm_month`,year(registration_dttm) `registration_dttm_year` 
+        from `spark_merge`.`user_ingest_sparksync_valid` 
+        where processing_dttm = "1523334273295") b   
+    on (`a`.`id` = `b`.`id`)  
+    where   (b.`id` is null)
+    ) t
+
+
+
+ 
+ 
+ 
+ 

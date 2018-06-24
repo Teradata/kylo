@@ -2,6 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as moment from "moment";
 import * as _ from 'underscore';
+import "../module";
 
 export default class AlertsService{
     feedFailureAlerts: any = {};

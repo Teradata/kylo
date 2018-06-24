@@ -2,13 +2,16 @@ import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
+import AccessControlService from '../../services/AccessControlService';
+import HttpService from "../../services/HttpService";
+import Utils from "../../services/Utils";
 
 export class controller implements ng.IComponentController {
     /**
      * Time to query for the jobs
      * @type {number}
      */
-    refreshInterval: any = 3000;
+    refreshInterval: number = 3000;
 
     /**
      * A map of the jobKey to job
@@ -71,6 +74,8 @@ export class controller implements ng.IComponentController {
      * @type {boolean}
      */
     allowAdmin: boolean = false;
+    
+    static readonly $inject =["$scope","$interval","$timeout","$http","$location", "HttpService","Utils","AccessControlService"];
 
     constructor(private $scope: any,
                 private $interval: angular.IIntervalService,
@@ -185,7 +190,7 @@ export class controller implements ng.IComponentController {
 
         if (metadata.runningSince) {
             this.schedulerDetails['startTime'] = moment(metadata.runningSince).format('MM/DD/YYYY hh:mm:ss a');
-            this.schedulerDetails["upTime"] = this.Utils.dateDifference(metadata.runningSince, new Date().getTime());
+            this.schedulerDetails["upTime"] =  this.Utils.dateDifference(metadata.runningSince,new Date().getTime());
         }
         else {
             this.schedulerDetails['startTime'] = "N/A";
@@ -429,7 +434,8 @@ export class controller implements ng.IComponentController {
 
 }
 
-
-angular.module(moduleName).controller('SchedulerController',
-    ["$scope", "$interval", "$timeout", "$http", "$location",
-        "HttpService", "Utils", "AccessControlService", controller]);
+angular.module(moduleName).component("schedulerController", {
+    controller: controller,
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/scheduler/scheduler.html"
+});

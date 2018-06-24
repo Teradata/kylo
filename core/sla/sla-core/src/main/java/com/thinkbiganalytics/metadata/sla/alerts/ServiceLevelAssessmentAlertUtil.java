@@ -24,6 +24,12 @@ import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  */
 public class ServiceLevelAssessmentAlertUtil {
@@ -58,6 +64,40 @@ public class ServiceLevelAssessmentAlertUtil {
         descrBldr.append("\nAssessed on ").append(slaAssmt.getTime());
 
         return descrBldr.toString();
+    }
+
+    public static List<Serializable> getMetricData(ServiceLevelAssessment slaAssmt){
+        List<Serializable> dataList = new ArrayList<>();
+        if (slaAssmt.getObligationAssessments() != null) {
+            for (ObligationAssessment obAssmnt : slaAssmt.getObligationAssessments()) {
+                if (obAssmnt.getMetricAssessments() != null) {
+                    for (MetricAssessment metricAssmnt : obAssmnt.getMetricAssessments()) {
+                        Serializable data = metricAssmnt.getData();
+                        if(data != null){
+                            dataList.add(data);
+                        }
+                    }
+                }
+            }
+        }
+        return dataList;
+    }
+
+    public static Map<String,Object> getMetricDataAsMap(ServiceLevelAssessment slaAssmt){
+       Map<String,Object> dataMap = new HashMap<>();
+        if (slaAssmt.getObligationAssessments() != null) {
+            for (ObligationAssessment obAssmnt : slaAssmt.getObligationAssessments()) {
+                if (obAssmnt.getMetricAssessments() != null) {
+                    for (MetricAssessment metricAssmnt : obAssmnt.getMetricAssessments()) {
+                        Serializable data = metricAssmnt.getData();
+                        if(data != null && data instanceof Map){
+                         dataMap.putAll((Map)data);
+                        }
+                    }
+                }
+            }
+        }
+        return dataMap;
     }
 
 }

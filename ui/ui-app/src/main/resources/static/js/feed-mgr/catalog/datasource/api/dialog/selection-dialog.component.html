@@ -1,0 +1,37 @@
+<h2 mat-dialog-title class="selection-dialog-header">Selected Items</h2>
+<span class="hint">A list of items selected on all paths</span>
+<mat-dialog-content fxFlex>
+  <td-data-table
+      #selectionTable
+      [data]="filteredFiles"
+      [columns]="columns"
+      [sortable]="false"
+      [sortBy]="sortBy"
+      [sortOrder]="sortOrder"
+      (sortChange)="sort($event)">
+    <ng-template tdDataTableTemplate="path" let-row="row">
+      <span title="{{row.path}}">{{row.path}}</span>
+    </ng-template>
+    <ng-template tdDataTableTemplate="remove" let-row="row">
+      <span class="remove-row-button" title="Remove" (click)="removeItem(row)">&times;</span>
+    </ng-template>
+  </td-data-table>
+  <div class="md-padding" *ngIf="!selectionTable.hasData" layout="row" layout-align="center center">
+    <h3>No results to display.</h3>
+  </div>
+  <td-paging-bar #selectionPagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+    <span hide-xs>Rows per page:</span>
+    <mat-select [style.width.px]="50" [(value)]="pageSize">
+      <mat-option *ngFor="let size of [10, 25, 50]" [value]="size">
+        {{size}}
+      </mat-option>
+    </mat-select>
+    {{selectionPagingBar.range}} <span hide-xs>of {{selectionPagingBar.total}}</span>
+  </td-paging-bar>
+</mat-dialog-content>
+<mat-dialog-actions style="float: right">
+  <button mat-button mat-dialog-close class="text-upper">Cancel</button>
+  <button mat-button mat-dialog-close class="text-upper"
+          color="accent" (click)="onOk()"
+          cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

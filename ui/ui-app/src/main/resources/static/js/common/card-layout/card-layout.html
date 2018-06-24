@@ -1,7 +1,7 @@
-<section class="md-whiteframe-z1 {{::cardCss}}">
-  <div  ng-transclude="header1" ng-class="{'card-toolbar':cardToolbar}" class="{{::headerCss}}" >
+<section class="md-whiteframe-z1 {{::vm.cardCss}}">
+  <div  ng-transclude="header1" ng-class="{'card-toolbar':vm.cardToolbar}" class="{{::vm.headerCss}}" >
   </div>
-  <md-content  ng-transclude="body1" class="card-layout-body {{::bodyCss}}" >
+  <md-content  ng-transclude="body1" class="card-layout-body {{::vm.bodyCss}}" >
 
   </md-content>
 

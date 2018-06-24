@@ -32,7 +32,7 @@
           md-icon icon="warning" class="layout-margin-right-5"
           size="10"
           style="width: 10px; height: 10px"></ng-md-icon>
-      <div>{{vm.errorMessage(columnDef)}}</div>
+      <div>{{columnDef.validate()}}</div>
     </div>
     <md-tooltip
         class="tooltip-multi-line"
@@ -52,13 +52,13 @@
 <div flex="25" class="md-list-item-text " style="padding-left:5px;">
   <div layout="row">
     <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-      <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
+      <md-select style="max-width:225px;text-overflow:ellipsis;overflow:hidden" ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
                  ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef, $index)">
-        <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+        <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by dataType" value="{{dataType}}" aria-label="{{dataType}}">
           {{dataType}}
         </md-option>
       </md-select>
-      <div ng-messages="vm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
+      <div ng-messages="vm.tableForm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
         <div ng-message="required">Data type is required</div>
       </div>
     </md-input-container>

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# This file is required if there is no npm installed globally, e.g.
+# for running npm installed by frontend-maven-plugin during maven build.
+# One could use this for UI development without installing npm globally, e.g. to start development server run from current directory:
+# ./npm start
+
+PATH="$PWD/node/":$PATH
+node "node/node_modules/npm/bin/npm-cli.js" "$@"

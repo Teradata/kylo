@@ -20,8 +20,10 @@
 <div >
 
   <card-layout header-css="filter-header" class="centered">
-    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                    on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
+    <header-section>
+      <tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+        on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
+      </tba-card-filter-header>
     </header-section>
 
     <body-section>
@@ -63,12 +65,14 @@
                                    </span>
                 <span class="column-title column-title-bottom">{{"feeds.feed-table.type" | translate}}</span>
               </div>
+              <!--
               <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
                 <md-button href="{{feed.exportUrl}}" layout-align="center" ng-disabled="!feed.allowExport">
                   <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
                   <span style="padding-left:10px;">{{"feeds.feed-table.export" | translate}}</span>
                 </md-button>
               </div>
+              -->
             </div>
             <md-divider ng-if="!$last"></md-divider>
           </md-list-item>

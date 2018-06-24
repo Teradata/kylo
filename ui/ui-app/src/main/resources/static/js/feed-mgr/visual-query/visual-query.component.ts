@@ -2,6 +2,7 @@ import * as angular from "angular";
 
 import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {QueryEngine} from "./wrangler/query-engine";
+import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
 
 const moduleName = require("./module-name");
 
@@ -23,13 +24,14 @@ angular.module(moduleName).component('visualQuery', {
          */
         engine: QueryEngine<any>;
 
-        static readonly $inject = ["$scope", "SideNavService", "StateService"];
+        static readonly $inject = ["$scope", "SideNavService", "StateService","PreviewDatasetCollectionService"];
 
         /**
          * Constructs a {@code VisualQueryComponent}.
          */
-        constructor($scope: angular.IScope, private SideNavService: any, private StateService: any) {
+        constructor($scope: angular.IScope, private SideNavService: any, private StateService: any, private previewDataSetCollectionService : PreviewDatasetCollectionService) {
             // Manage the sidebar navigation
+            console.log("PreviewDatasetCollectionService",this.previewDataSetCollectionService.datasets)
             SideNavService.hideSideNav();
             $scope.$on("$destroy", this.ngOnDestroy.bind(this));
         }
@@ -50,6 +52,9 @@ angular.module(moduleName).component('visualQuery', {
 
         ngOnInit(): void {
             this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
+            let collection = this.previewDataSetCollectionService.getSparkDataSets();
+            this.dataModel.model.datasets = collection;
+            console.log('collection',collection)
         }
 
         $onInit(): void {

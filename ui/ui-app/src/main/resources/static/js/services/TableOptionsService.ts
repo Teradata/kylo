@@ -5,27 +5,19 @@ import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
 import {Sort} from "@angular/material/sort";
-
-const moduleName = require('services/module-name');
+import {moduleName} from './module-name';
 
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
-
-
     sortOptions:Common.Map<SortOption[]> = {};
-
     static $inject = ["PaginationDataService"]
-
-    constructor(private PaginationDataService:ListTableView.PaginationDataService) {
-
-    }
+    constructor(private PaginationDataService:ListTableView.PaginationDataService) {}
    
-    newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string) :SortOption[]{
-
+    newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string):SortOption[]{
         var sortOptions = Object.keys(labelValueMap).map((mapKey:string) => {
             var value = labelValueMap[mapKey];
-            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort'}
+            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort',default:'asc'}
             if (defaultValue && value == defaultValue) {
-                sortOption['default'] = defaultValue;
+                sortOption['default'] = defaultDirection || 'asc';
                 sortOption['direction'] = defaultDirection || 'asc';
                 sortOption['reverse'] = sortOption['direction'] == 'asc' ? false : true;
                 sortOption['icon'] = sortOption['direction'] == 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
@@ -36,7 +28,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         return sortOptions;
     }
 
-    newOption(label:string, type:string, isHeader:boolean, disabled:boolean, icon:string):TableOption {
+    newOption(label:string, type:string, isHeader:boolean, disabled:boolean, icon?:string):TableOption {
         if (isHeader == undefined) {
             isHeader = false;
         }
@@ -151,7 +143,6 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
     }
 
     getCurrentSort(key:string):SortOption {
-
         var sortOptions = this.sortOptions[key];
         var returnedSortOption = null;
         if (sortOptions) {
@@ -167,8 +158,5 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         }
         return returnedSortOption;
     }
-    
-    
 }
-
 angular.module(moduleName).service('TableOptionsService', DefaultTableOptionsService);

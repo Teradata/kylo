@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,6 +57,25 @@ public class SavepointProcessorCache implements DistributedCacheListener<String,
     }
 
 
+    public List<String> getNextFlowFiles(String processorId) throws CacheNotInitializedException {
+
+        List<String> nextFlowFiles = new LinkedList<>();
+        if (!isInitialized(processorId)) {
+            log.info("Cache is not initialized for {} ", processorId);
+            throw new CacheNotInitializedException("Savepoint cache for processor: " + processorId + " has not been initialized");
+        }
+        Optional<String> flowfile = Optional.empty();
+        LinkedBlockingDeque<String> queue = (LinkedBlockingDeque<String>)processorFlowfileCache.get(processorId);
+        if (queue != null && !queue.isEmpty()) {
+           int i = queue.drainTo(nextFlowFiles);
+            log.info("Removing {} from queue for processor {} ", i,processorId);
+        }
+        //mark the processor as being accessed
+        markInitialized(processorId);
+
+        return nextFlowFiles;
+    }
+
     public Optional<String> getNextFlowFile(String processorId) throws CacheNotInitializedException {
 
         if (!isInitialized(processorId)) {
@@ -75,17 +96,11 @@ public class SavepointProcessorCache implements DistributedCacheListener<String,
     }
 
     public void putFlowfile(String processorId, String flowFileId) {
-        if (!processorFlowfileCache.containsKey(processorId)) {
-            processorFlowfileCache.put(processorId, new LinkedBlockingDeque<>());
-        }
-        processorFlowfileCache.get(processorId).add(flowFileId);
+        processorFlowfileCache.computeIfAbsent(processorId,(key)-> new LinkedBlockingDeque<String>()).add(flowFileId);
     }
 
     public void putFlowfileBack(String processorId, String flowFileId) {
-        if (!processorFlowfileCache.containsKey(processorId)) {
-            processorFlowfileCache.put(processorId, new LinkedBlockingDeque<>());
-        }
-        processorFlowfileCache.get(processorId).addFirst(flowFileId);
+        processorFlowfileCache.computeIfAbsent(processorId,(key)-> new LinkedBlockingDeque<String>()).addFirst(flowFileId);
     }
 
     public void putSavepoint(SavepointEntry entry) {
@@ -102,8 +117,8 @@ public class SavepointProcessorCache implements DistributedCacheListener<String,
                     if (processorFlowfileCache.containsKey(processorId)) {
                         //TODO this might not be needed as the get should remove the flowfile from the queue
                         // waitingFlowfiles.add(flowFileId);
-                        log.info("WAITING flow file.  Removing from cache - processor: {} , ff: {} ", processorId, flowFileId);
-                        boolean removed = processorFlowfileCache.get(processorId).remove(flowFileId);
+                      //  log.info("WAITING flow file.  Removing from cache - processor: {} , ff: {} ", processorId, flowFileId);
+                      //  boolean removed = processorFlowfileCache.get(processorId).remove(flowFileId);
 
                     }
                 }

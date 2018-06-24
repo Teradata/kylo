@@ -1,27 +1,17 @@
 import * as angular from 'angular';
-//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
-import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
+import "../kylo-utils/LazyLoadUtil";
 const CodeMirror = require('../../bower_components/codemirror/lib/codemirror');
-//import * as CodeMirror from "../../bower_components/codemirror/lib/codemirror";
 import "../../bower_components/angular-ui-codemirror/ui-codemirror";
-//const ui_code_mirror = require('../../bower_components/angular-ui-codemirror/ui-codemirror');
-//const moduleName =require("./module-name");
 import {moduleName} from "./module-name";
 
-/*declare global {
-    interface Window { CodeMirror: any; }
-}
-*/
 class ModuleFactory  {
     module: ng.IModule;
-   // codeMirror: CodeMirror;
     constructor () {
        (<any>window).CodeMirror = CodeMirror;
-       // Window.CodeMirror = CodeMirror;
         this.module = angular.module(moduleName,[]); 
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]); 
     }
-    runFn($ocLazyLoad: any){
+    runFn($ocLazyLoad: oc.ILazyLoad){
          $ocLazyLoad.load({name:'kylo',files:[
                                              'bower_components/codemirror/lib/codemirror.css',
                                              'bower_components/codemirror/addon/hint/show-hint.css',

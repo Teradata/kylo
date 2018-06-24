@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.Queues;
@@ -54,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -253,38 +253,39 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     /**
      * Try to get JobExecution for the given event.
      * This will lock on the events JobFlowFileId when looking for the jobExecution
+     *
      * @param event the event to process
      * @return the JobExeuction related to this Event
-     * @throws InterruptedException
      */
-    private BatchJobExecution findOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) throws InterruptedException{
+    private BatchJobExecution findOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) throws InterruptedException {
         BatchJobExecution jobExecution = null;
-        Lock lock = ProvenanceEventJobExecutionLockManager.getLock(event.getJobFlowFileId());
+        ProvenanceEventJobExecutionLockManager.JobLock lock = ProvenanceEventJobExecutionLockManager.getLock(event.getJobFlowFileId());
         String key = event.getJobFlowFileId() + "-" + event.getFlowFileUuid() + "-" + event.getEventId();
         findJobExecutionAttempts.putIfAbsent(key, new AtomicInteger(0));
         try {
-            if (lock.tryLock(2L, TimeUnit.SECONDS)) {
+            if (lock.getLock().tryLock(2L, TimeUnit.SECONDS)) {
                 try {
-                     jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event,feed),
-                                                                           MetadataAccess.SERVICE);
+                    jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, feed),
+                                                         MetadataAccess.SERVICE);
                 } finally {
                     findJobExecutionAttempts.remove(key);
-                    ProvenanceEventJobExecutionLockManager.releaseLock(event.getJobFlowFileId());
+                    ProvenanceEventJobExecutionLockManager.releaseLock(lock);
                 }
             } else {
                 int retries = findJobExecutionAttempts.get(key).incrementAndGet();
-                log.warn("unable to acquire lock for {} while looking for JobExecution.  Retry attempt: {} ",event.getJobFlowFileId(),retries);
+                log.warn("unable to acquire lock for {} while looking for JobExecution.  Retry attempt: {} ", event.getJobFlowFileId(), retries);
                 //try three times before giving up
+                Uninterruptibles.sleepUninterruptibly(200, TimeUnit.MILLISECONDS);
                 if (retries < 3) {
                     findOrCreateJobExecution(event, feed);
                 } else {
                     //give up
                     findJobExecutionAttempts.remove(key);
-                    log.error("Unable to acquire the Lock to get/create the JobExecution for this event {}. This event will not be processed",event);
+                    log.error("Unable to acquire the Lock to get/create the JobExecution for this event {}. This event will not be processed", event);
                 }
             }
-        }catch (InterruptedException e) {
-          throw e;
+        } catch (InterruptedException e) {
+            throw e;
         }
         return jobExecution;
 

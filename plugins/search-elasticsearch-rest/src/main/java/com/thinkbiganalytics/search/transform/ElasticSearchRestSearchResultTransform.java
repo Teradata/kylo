@@ -9,9 +9,9 @@ package com.thinkbiganalytics.search.transform;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.search.transform;
  * #L%
  */
 
+import com.thinkbiganalytics.modeshape.index.elasticsearch.KyloEsClient;
 import com.thinkbiganalytics.search.api.SearchIndex;
 import com.thinkbiganalytics.search.rest.model.CategoryMetadataSearchResultData;
 import com.thinkbiganalytics.search.rest.model.FeedMetadataSearchResultData;
@@ -35,6 +36,7 @@ import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchHit;
 import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchResponse;
 
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +56,7 @@ public class ElasticSearchRestSearchResultTransform {
     private Long unknownTypeResultCount = 0L;
     private static final String EMPTY_STRING = "";
     private static final String RAW_DATA_KEY = "raw";
+    private static final String USR_PROPERTIES_DELIMITER_FOR_REST_MODEL = "<br />";
 
 
     public SearchResult transformRestResult(String query, int size, int start, ElasticSearchRestSearchResponse restSearchResponse) {
@@ -203,12 +206,14 @@ public class ElasticSearchRestSearchResultTransform {
         final String JCR_DESCRIPTION = "jcr:description";
         final String TBA_CATEGORY = "tba:category";
         final String TBA_TAGS = "tba:tags";
+        final String USR_PROPERTIES = "usr:properties";
 
         final String TBA_SYSTEM_NAME_NEW_DESCRIPTION = "System name (Kylo)";
         final String JCR_TITLE_NEW_DESCRIPTION = "Title";
         final String JCR_DESCRIPTION_NEW_DESCRIPTION = "Description";
         final String TBA_CATEGORY_NEW_DESCRIPTION = "Category";
         final String TBA_TAGS_NEW_DESCRIPTION = "Tags";
+        final String USR_PROPERTIES_NEW_DESCRIPTION = "User properties";
 
         final String SPACE_STRING = " ";
 
@@ -246,6 +251,12 @@ public class ElasticSearchRestSearchResultTransform {
             );
         }
 
+        if (!elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(USR_PROPERTIES, EMPTY_STRING).equals(EMPTY_STRING)) {
+            feedMetadataSearchResultData.setUserProperties(
+                elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(USR_PROPERTIES, EMPTY_STRING).toString()
+            );
+        }
+
         for (Pair highlightPair : elasticSearchRestSearchHit.getHighlights()) {
             String key = highlightPair.getKey();
             Boolean includeHighlight = false;
@@ -271,11 +282,18 @@ public class ElasticSearchRestSearchResultTransform {
                     key = TBA_SYSTEM_NAME_NEW_DESCRIPTION;
                     includeHighlight = true;
                     break;
+                case USR_PROPERTIES:
+                    key = USR_PROPERTIES_NEW_DESCRIPTION;
+                    includeHighlight = true;
                 default:
                     break;
             }
             if (includeHighlight) {
-                highlightsList.add(new Pair(key, highlightPair.getValue()));
+                if (key.equals(USR_PROPERTIES_NEW_DESCRIPTION)) {
+                    highlightsList.add(new Pair(key, StringUtils.replace(highlightPair.getValue().toString(), KyloEsClient.USR_PROPERTIES_DELIMITER, USR_PROPERTIES_DELIMITER_FOR_REST_MODEL)));
+                } else {
+                    highlightsList.add(new Pair(key, highlightPair.getValue()));
+                }
             }
         }
 
@@ -293,10 +311,12 @@ public class ElasticSearchRestSearchResultTransform {
         final String TBA_SYSTEM_NAME = "tba:systemName";
         final String JCR_TITLE = "jcr:title";
         final String JCR_DESCRIPTION = "jcr:description";
+        final String USR_PROPERTIES = "usr:properties";
 
         final String TBA_SYSTEM_NAME_NEW_DESCRIPTION = "System name (Kylo)";
         final String JCR_TITLE_NEW_DESCRIPTION = "Title";
         final String JCR_DESCRIPTION_NEW_DESCRIPTION = "Description";
+        final String USR_PROPERTIES_NEW_DESCRIPTION = "User properties";
 
         CategoryMetadataSearchResultData categoryMetadataSearchResultData = new CategoryMetadataSearchResultData();
         List<Pair> highlightsList = new ArrayList<>();
@@ -319,6 +339,12 @@ public class ElasticSearchRestSearchResultTransform {
             );
         }
 
+        if (!elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(USR_PROPERTIES, EMPTY_STRING).equals(EMPTY_STRING)) {
+            categoryMetadataSearchResultData.setUserProperties(
+                elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(USR_PROPERTIES, EMPTY_STRING).toString()
+            );
+        }
+
         for (Pair highlightPair : elasticSearchRestSearchHit.getHighlights()) {
             String key = highlightPair.getKey();
             Boolean includeHighlight = false;
@@ -336,11 +362,18 @@ public class ElasticSearchRestSearchResultTransform {
                     key = TBA_SYSTEM_NAME_NEW_DESCRIPTION;
                     includeHighlight = true;
                     break;
+                case USR_PROPERTIES:
+                    key = USR_PROPERTIES_NEW_DESCRIPTION;
+                    includeHighlight = true;
                 default:
                     break;
             }
             if (includeHighlight) {
-                highlightsList.add(new Pair(key, highlightPair.getValue()));
+                if (key.equals(USR_PROPERTIES_NEW_DESCRIPTION)) {
+                    highlightsList.add(new Pair(key, StringUtils.replace(highlightPair.getValue().toString(), KyloEsClient.USR_PROPERTIES_DELIMITER, USR_PROPERTIES_DELIMITER_FOR_REST_MODEL)));
+                } else {
+                    highlightsList.add(new Pair(key, highlightPair.getValue()));
+                }
             }
         }
 

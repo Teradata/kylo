@@ -138,6 +138,7 @@ public class DefaultVelocityService implements VelocityService {
 
     private String parseVelocityTemplate(Map<String, Object> properties, Optional<Template> template) {
         VelocityContext context = new VelocityContext();
+        context.put("StringUtils", org.apache.commons.lang3.StringUtils.class);
         if (properties != null) {
             properties.entrySet().stream().forEach(e -> {
                 context.put(e.getKey(), e.getValue());

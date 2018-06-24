@@ -1,6 +1,7 @@
 import {ProfileOutputRow} from "./profile-output-row";
 import {QueryResultColumn} from "./query-result-column";
 import {TransformValidationResult} from "./transform-validation-result";
+import {ColumnSort} from "./column-sort";
 
 /**
  * Maintains the state of a Spark script for a single transformation.
@@ -56,4 +57,11 @@ export interface ScriptState<T> {
      * Actual number of columns analyzed by server
      */
     actualCols: number;
+
+    /**
+     * Identifier for this state
+     */
+    tableState: number;
+
+    sort:ColumnSort;
 }

@@ -75,7 +75,7 @@ public class OperationalMetadataServiceSpringConfiguration {
         return new ProvenanceEventFeedUtil();
     }
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     @Profile("!kyloUpgrade")
     public RetryProvenanceEventWithDelay retryProvenanceEventWithDelay() {
             return new RetryProvenanceEventWithDelay();

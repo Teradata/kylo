@@ -1,4 +1,5 @@
 import 'angular';
+import "./services/AlertsService";
 import "./services/AlertsServiceV2";
 import "./services/EventService";
 import "./services/OpsManagerFeedService";

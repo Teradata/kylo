@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 9/14/17.
@@ -86,7 +87,22 @@ public class TemplateInstance {
         }
     }
 
-    public ControllerServiceDTO findMatchingControllerServoce(String serviceId) {
+    public boolean isDeletedRootService(String serviceId){
+        return deletedServicesToMatchingRootService.containsKey(serviceId);
+    }
+
+    /**
+     * Find the map of original CS to New Root Level CS for all those CS that were created for this template instance
+     * @return Map of original CS to newly created root level cs
+     */
+    public Map<ControllerServiceDTO, ControllerServiceDTO> getCreatedScopeToRootMap() {
+        if(scopeToRootMap == null){
+            scopeToRootMap  = new HashMap<>();
+        }
+        return scopeToRootMap.entrySet().stream().filter(e -> !isDeletedRootService(e.getKey().getId())).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+    }
+
+    public ControllerServiceDTO findMatchingControllerService(String serviceId) {
         return deletedServicesToMatchingRootService.get(serviceId);
     }
 }

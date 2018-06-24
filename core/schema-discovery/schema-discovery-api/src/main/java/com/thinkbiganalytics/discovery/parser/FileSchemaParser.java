@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parser;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,12 +25,13 @@ import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
  * Parses a file to determine its structure and format.
  */
-public interface FileSchemaParser {
+public interface FileSchemaParser extends Serializable {
 
     /**
      * Parse the provided file and builds a schema with data types that fit the target
@@ -41,5 +42,6 @@ public interface FileSchemaParser {
      * @return a derived schema for the source
      */
     Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException;
+
 
 }

@@ -20,6 +20,9 @@ package com.thinkbiganalytics.spark.rest;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.spark.DataSourceResourceLoader;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
@@ -87,6 +90,19 @@ public class SparkShellTransformController extends AbstractTransformController {
         // Execute request
         try {
             TransformResponse response = this.transformService.execute(request);
+            return Response.ok(response).build();
+        } catch (final ScriptException e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+
+    @POST
+    @Path("/kylo-catalog")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response kyloCatalogTransform(KyloCatalogReadRequest request){
+        try {
+            TransformResponse response = this.transformService.kyloReaderResponse(request);
             return Response.ok(response).build();
         } catch (final ScriptException e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e);

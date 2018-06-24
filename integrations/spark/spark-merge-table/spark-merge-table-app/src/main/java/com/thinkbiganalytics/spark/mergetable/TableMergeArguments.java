@@ -187,6 +187,7 @@ public class TableMergeArguments implements TableMergeConfig, Serializable {
         public List<String> split(String value) {
             List<String> values = new ArrayList<>();
             String cleaned = value.replaceAll("\\s+", ",");
+            cleaned = cleaned.replaceAll("\\\\n", ",");
             cleaned = cleaned.replaceAll(",+", ",");
             String[] tokens = cleaned.split(",");
             

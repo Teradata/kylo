@@ -46,6 +46,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,17 +56,26 @@ import javax.annotation.Nonnull;
 @Configuration
 public class ProfilerApp {
 
+    /*
+        https://spark.apache.org/docs/1.6.0/api/java/org/apache/spark/SparkContext.html#stop()
+        https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/SparkContext.html#stop()
+    */
+    @Bean(destroyMethod = "stop")
+    public SparkContext sparkContext(final ProfilerConfiguration profilerConfiguration) {
+        SparkConf conf = new SparkConf();
+        conf = configureEfficientSerialization(conf);
+
+        return SparkContext.getOrCreate(conf);
+    }
+
     @Bean
     public ProfilerConfiguration profilerConfiguration() {
         return new ProfilerConfiguration();
     }
 
     @Bean
-    public SQLContext sqlContext(final ProfilerConfiguration profilerConfiguration) {
-        SparkConf conf = new SparkConf();
-        conf = configureEfficientSerialization(conf);
-
-        HiveContext hiveContext = new HiveContext(new SparkContext(conf));
+    public SQLContext sqlContext(final ProfilerConfiguration profilerConfiguration, final SparkContext sparkContext) {
+        HiveContext hiveContext = new HiveContext(sparkContext);
         hiveContext.setConf("spark.sql.dialect", profilerConfiguration.getSqlDialect());
         return hiveContext;
     }

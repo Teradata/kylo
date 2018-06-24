@@ -99,6 +99,10 @@ public class NifiProcessUtil {
                 }
             }
         }
+        else if(name != null){
+            //find first by name
+            processorDTO = findFirstProcessorsByName(processors,name);
+        }
         return processorDTO;
     }
 
@@ -357,7 +361,7 @@ public class NifiProcessUtil {
      */
     @Nullable
     public static ProcessGroupDTO findFirstProcessGroupByName(@Nonnull final Collection<ProcessGroupDTO> processGroups, @Nonnull final String name) {
-        return processGroups.stream().filter(processGroup -> processGroup.getName().equalsIgnoreCase(name)).findAny().orElse(null);
+        return processGroups.stream().filter(processGroup -> processGroup != null && name != null && name.equalsIgnoreCase(processGroup.getName())).findAny().orElse(null);
     }
 
     /**

@@ -44,7 +44,9 @@ const moduleName = require('feed-mgr/module-name');
         this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
 
         this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
+        this.UPLOAD_SPARK_SAMPLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/spark/sample-file";
         this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
+        this.LIST_SPARK_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/spark-file-parsers";
 
         this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
 
@@ -112,6 +114,8 @@ const moduleName = require('feed-mgr/module-name');
         this.DELETE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
             return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
         }
+
+        this.REMOTE_PROCESS_GROUP_AWARE = self.TEMPLATES_BASE_URL+"/remote-process-group/status";
 
         this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
 

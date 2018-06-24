@@ -19,102 +19,118 @@
   -->
 <div layout="row" layout-align="center start">
 
-    <card-layout body-css="md-padding" style="max-width:980px;width:980px;" flex="initial">
+  <card-layout body-css="md-padding" style="max-width:980px;width:980px;" flex="initial">
 
-        <header-section>
-        <div layout="row" layout-align="space-between-center" flex>
-            <div class="card-title" flex>Select Template</div><h2 class="card-sub-header">1 of 5</h2>
-        </div>
-    </header-section >
+    <header-section>
+      <div layout="row" layout-align="space-between-center" flex>
+        <div class="card-title" flex>Select Template</div>
+        <h2 class="card-sub-header">1 of 5</h2>
+      </div>
+    </header-section>
 
     <body-section>
-        <md-input-container>
-            <label>Template</label>
-            <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
-                <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">
-                    {{template.name}}
-                </md-option>
-            </md-select>
+      <md-input-container>
+        <label>Template</label>
+        <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
+          <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">
+            {{template.name}}
+          </md-option>
+        </md-select>
+      </md-input-container>
+      <div ng-if="vm.errorMessage != null && !vm.isValid" layout="row">
+        <ng-md-icon icon="error" size="20" class="error"></ng-md-icon>
+        <div flex class="error layout-padding">{{vm.errorMessage}}</div>
+      </div>
+
+
+      <div layout="column" ng-if="!vm.model.reusableTemplate">
+        <md-subheader class="md-subhead left-aligned">Target Table Options</md-subheader>
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
+          <md-radio-group ng-model="vm.model.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()" required="true">
+            <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="30">
+              {{tableOption.displayName}}
+              <div class="hint">{{tableOption.description}}</div>
+            </md-radio-button>
+          </md-radio-group>
         </md-input-container>
-        <div ng-if="vm.errorMessage != null && !vm.isValid" layout="row">
-            <ng-md-icon icon="error" size="20" class="error"></ng-md-icon>
-            <div flex class="error layout-padding" >{{vm.errorMessage}}</div>
-        </div>
+      </div>
 
-
-        <div layout="column" ng-if="!vm.model.reusableTemplate">
-            <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
-            <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
-                <md-radio-group ng-model="vm.model.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()" required="true">
-                    <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="30">
-                        {{tableOption.displayName}}
-                        <div class="hint">{{tableOption.description}}</div>
-                    </md-radio-button>
-                </md-radio-group>
-            </md-input-container>
-        </div>
-
-        <br/><br/><br/>
-        <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+      <br/><br/><br/>
+      <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </body-section>
 
-</card-layout>
+  </card-layout>
 
-    <card-layout offsetleftfromprevious top="8" card-css="layout-fill" body-css="md-padding"
-                 style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-        <header-section>
-            <div class="card-title">Template</div>
-            <div layout="column" class="layout-padding-top-bottom">
+  <card-layout offsetleftfromprevious top="8" card-css="layout-fill" body-css="md-padding"
+               style="max-width:250px;width:250px;min-width:250px;" flex="initial">
+    <header-section>
+      <div class="card-title">
+        Template
+        <md-menu style="float: right; margin-top: -10px;">
+          <md-button aria-label="Options" class="md-icon-button" ng-click="$mdMenu.open($event)">
+            <ng-md-icon icon="more_vert"></ng-md-icon>
+          </md-button>
+          <md-menu-content width="3">
+            <div ng-if="!vm.model.loading">
+              <div ng-if="vm.allowAdmin">
+                <md-menu-item ng-if="vm.model.state == 'ENABLED'">
+                  <md-button ng-disabled="vm.disabling" ng-click="vm.disableTemplate()">
+                    Disable
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-if="vm.model.state == 'DISABLED'">
+                  <md-button ng-disabled="vm.enabling" ng-click="vm.enableTemplate()">
+                    Enable
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-if="vm.model.state == 'DISABLED' && vm.model.feedsCount ==0">
+                  <md-button ng-click="vm.confirmDeleteTemplate()">
+                    Delete
+                  </md-button>
+                </md-menu-item>
+              </div>
+              <div ng-if="vm.allowExport && vm.model.id != null">
+                <md-menu-item>
+                  <md-button style="text-align:left" ng-if="vm.registeredTemplateId != null" ng-repeat="item in vm.templateNavigationLinks" ng-click="vm.templateNavigationLink(item)"
+                             class="md-primary md-link">{{item.linkText}}
+                  </md-button>
+                  <md-button href="{{vm.model.exportUrl}}">Export</md-button>
+                </md-menu-item>
+              </div>
+            </div>
+          </md-menu-content>
+        </md-menu>
+      </div>
+      <div layout="column" class="layout-padding-top-bottom">
             <span class="item-title" ng-if="!vm.model.loading">
                  <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs ng-style="{'fill':vm.model.icon.color}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
                  </ng-md-icon>
                 {{vm.model.templateName}}</span>
-            </div>
-        </header-section>
+      </div>
+    </header-section>
 
-        <body-section>
-            <div layout="column" class="layout-padding-top" ng-if="vm.model.loading">
-                Loading Template ...
-            </div>
-            <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
-                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableTemplate()" class="border-btn">
-                    DISABLE TEMPLATE
-                </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableTemplate()" class="border-btn">
-                    ENABLE TEMPLATE
-                </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin && vm.model.feedsCount ==0" ng-click="vm.confirmDeleteTemplate()" class="border-btn-warn">
-                    DELETE TEMPLATE
-                </md-button>
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
-                <div layout="column" class="layout-padding-top-bottom" >
+    <body-section>
+      <div layout="column" class="layout-padding-top" ng-if="vm.model.loading">
+        Loading Template ...
+      </div>
+      <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
+        <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+        <div layout="column" class="layout-padding-top-bottom">
                 <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state != 'ENABLED'}">
                     <ng-md-icon icon="{{vm.model.stateIcon}}" size="20" ng-if="vm.model.state != 'NOT REGISTERED'"></ng-md-icon> {{vm.model.state}}</span>
-                    <span class="hint">State</span>
-                </div>
+          <span class="hint">State</span>
+        </div>
 
-                <div layout="column" class="layout-padding-top-bottom">
-                    <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
-                                             <span class="hint">
-                                             Last Updated
-                                           </span>
-                </div>
-                <div layout="column" class="layout-padding-top-bottom">
-                    <span>  {{vm.model.feedsCount}}</span>
-                    <span class="hint">Feeds</span>
-                </div>
-
-                <div layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport && vm.model.id != null">
-                    <md-button style="text-align:left" ng-if="vm.registeredTemplateId != null" ng-repeat="item in vm.templateNavigationLinks" ng-click="vm.templateNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
-                    <md-button href="{{vm.model.exportUrl}}">
-                        <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
-                        <span style="padding-left:10px;">Export</span>
-                    </md-button>
-                </div>
-            </div>
-
-        </body-section>
-
-    </card-layout>
+        <div layout="column" class="layout-padding-top-bottom">
+          <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+          <span class="hint">Last Updated</span>
+        </div>
+        <div layout="column" class="layout-padding-top-bottom">
+          <span>  {{vm.model.feedsCount}}</span>
+          <span class="hint">Feeds</span>
+        </div>
+      </div>
+    </body-section>
+  </card-layout>
 
 </div>

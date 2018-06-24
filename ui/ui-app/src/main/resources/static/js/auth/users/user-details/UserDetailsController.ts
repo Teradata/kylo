@@ -1,28 +1,28 @@
 import * as angular from 'angular';
-// import moduleName from '../../../auth/module-name';
 import * as _ from 'underscore';
-
-import {UserService} from "../../services/UserService";
-//const moduleName = require('auth/module-name');
-
 import {moduleName} from "../../module-name";
+import UserService from "../../services/UserService";
+import StateService from  "../../../services/StateService";
+import AccessControlService from "../../../services/AccessControlService";
+import AccessConstants from "../../../constants/AccessConstants";
+import "../../module";
+import "../../module-require";
+import {Transition} from "@uirouter/core";
 
 export default class UserDetailsController implements ng.IComponentController {
-
+    $transition$: Transition;
     ngOnInit(){
-        
     }
-
+    static readonly $inject = ["$scope","$mdDialog","$mdToast",//"$transition$",
+                                "AccessControlService","UserService","StateService"];
     constructor(
         private $scope:angular.IScope,
         private $mdDialog:angular.material.IDialogService,
         private $mdToast:angular.material.IToastService,
-        private $transition$: any,
-        private AccessControlService:any,
-        private UserService:any,
-        private StateService:any,
-        
-
+        //private $transition$: any,
+        private accessControlService:AccessControlService,
+        private UserService:UserService,
+        private StateService:StateService,
     ){
         $scope.$watch(
             () => {return this.$error},
@@ -220,9 +220,9 @@ export default class UserDetailsController implements ng.IComponentController {
                     });
 
             // Load allowed permissions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                     .then((actionSet:any) => {
-                        this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.USERS_ADMIN, actionSet.actions);
+                        this.allowAdmin = this.accessControlService.hasAction(AccessConstants.USERS_ADMIN, actionSet.actions);
                     });
 
             // Load the user details
@@ -299,5 +299,12 @@ export default class UserDetailsController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-.controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
-
+  .component("userDetailsController", { 
+        bindings: {
+            $transition$: '<'
+        },
+        controller: UserDetailsController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/users/user-details/user-details.html"
+    });    
+//.controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);

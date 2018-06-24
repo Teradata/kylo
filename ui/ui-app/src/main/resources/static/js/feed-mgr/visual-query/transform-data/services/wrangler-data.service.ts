@@ -1,7 +1,9 @@
 import * as angular from "angular";
+import * as _ from "underscore";
 
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
-
+import {PageSpec} from "../../wrangler/query-engine";
+import {ScriptState} from "../../wrangler";
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
@@ -9,16 +11,6 @@ const PAGE_ROWS = 64;
 const PAGE_COLS = 1000;
 
 export class WranglerDataService {
-
-    /**
-     * The columns in this table with filters applied.
-     */
-    columns_: object[];
-
-    /**
-     * The data rows in this table with filters and sorting applied.
-     */
-    rows_: any[][];
 
     /**
      * The sort direction.
@@ -30,39 +22,27 @@ export class WranglerDataService {
      */
     sortIndex_: (number | null) = null;
 
-    /**
-     * Validation results for the current data.
-     */
-    validationResults: TransformValidationResult[][];
-
     asyncQuery: any;
 
-    loading: boolean = false;
+    columns_ : any[];
 
-    deferred: any;
+    isLoading: boolean;
 
-    promise: any;
 
+    /**
+     * Table state (function index) for
+     */
     state: number;
 
-    fetchTimeoutPromise: any = null;
-
-
-    constructor(private $rootscope: any, private $q: angular.IQService, private $timeout: angular.ITimeoutService) {
+    constructor(private $rootscope: any, private $q: angular.IQService) {
 
     }
-
-    fetchTimeout = <T>(callback: (...args: any[]) => T, interval: number) => {
-        if (this.fetchTimeoutPromise != null) {
-            this.$timeout.cancel(this.fetchTimeoutPromise);
-        }
-        this.fetchTimeoutPromise = this.$timeout(callback, interval);
-    };
 
     cellPageName(i: number, j: number): string {
         var I = (i / PAGE_ROWS) | 0;
         var J = (j / PAGE_COLS) | 0;
-        return JSON.stringify({"state": this.state, "coords": [I, J]});
+        var name =  JSON.stringify({"state": this.state, "coords": [I, J]});
+        return name;
     }
 
     headerPageName(j: number): string {
@@ -72,23 +52,31 @@ export class WranglerDataService {
 
     fetchCellPage(pageName: string, cb: any): void {
 
-        this.fetchTimeout(() => {
+        var asyncFn = _.debounce(() => {
             var coordsObj = JSON.parse(pageName);
             var I = coordsObj.coords[0];
             var J = coordsObj.coords[1];
             var self = this;
 
-            this.asyncQuery(true, {
-                firstRow: I * PAGE_ROWS,
+            let firstRow = I * PAGE_ROWS;
+            let firstCol = J * PAGE_COLS;
+
+            this.asyncQuery(new PageSpec( {
+                firstRow: firstRow,
                 numRows: PAGE_ROWS,
-                firstCol: J * PAGE_COLS,
-                numCols: PAGE_COLS * 2
-            }).then(() => {
-                cb(function (i: number, j: number) {
-                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS)
+                firstCol: firstCol,
+                numCols: PAGE_COLS
+            })).then((result: ScriptState<any>) => {
+                this.state = result.tableState;
+                var rows = result.rows;
+                var validationResults = result.validationResults;
+                cb((i: number, j: number) =>  {
+                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, validationResults)
                 });
             });
-        }, 100);
+        },10);
+        asyncFn();
+
     }
 
     /**
@@ -98,19 +86,22 @@ export class WranglerDataService {
      * @param {number} j the column number
      * @returns {VisualQueryTableCell|null} the cell object
      */
-    getCell(i: number, j: number): any {
+    getCell(i: number, j: number, rows: object[][], validationResults : TransformValidationResult[][]): any {
         const column: any = this.columns_[j];
-        if (column != undefined && i >= 0 && i < this.rows_.length) {
-            const originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
-            const validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
-                ? this.validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
+        if (column != undefined && i >= 0 && rows && i < rows.length) {
+
+            const validation = (validationResults != null && i < validationResults.length && validationResults[i] != null)
+                ? validationResults[i].filter(result => {
+                    return (result.field === column.displayName);
+                })
                 : null;
+
             return {
                 column: j,
                 field: column.name,
                 row: i,
                 validation: (validation !== null && validation.length > 0) ? validation : null,
-                value: this.rows_[i][j]
+                value: rows[i][j]
             };
         } else {
             return null;
@@ -125,7 +116,7 @@ export class WranglerDataService {
      */
     getHeader(j: number): object {
 
-        if (j >= 0 && j < this.columns_.length) {
+        if (j >= 0 && this.columns_ && j < this.columns_.length) {
             return angular.extend(this.columns_[j], {
                 field: (this.columns_[j] as any).name,
                 index: j,
@@ -140,6 +131,6 @@ export class WranglerDataService {
 
 }
 
-angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q", "$timeout", WranglerDataService]);
+angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q",  WranglerDataService]);
 
 

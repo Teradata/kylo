@@ -1,78 +1,104 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 
-angular.module(moduleName).directive("tbaCardFilterHeader", ()=> {
-    return {
-            scope: {},
-            bindToController: {
-                cardTitle: '=',
-                viewType: '=',
-                filterModel: '=',
-                filterModelOptions: '=?',
-                sortOptions: '=',
-                pageName: '@',
-                onSelectedOption: '&',
-                additionalOptions: '=?',
-                onSelectedAdditionalOption: "&?",
-                onMenuOpen: '&?',
-                onShowFilterHelp: '&?',
-                renderFilter:'=?',
-                cardController:'=?',
-                customFilterTemplate:'@?'
-            },
-            controllerAs: '$cardFilterHeader',
-            templateUrl: 'js/common/card-filter-header/card-filter-header-template.html',
-            compile: function () {
-                return function postCompile(scope: any, element: any, attr: any) {
-                    element.parents('.md-toolbar-tools:first').addClass('card-filter-header')
-                };
-            },
-            link: function ($scope: any, $element: any, $attributes: any, ctrl: any, transcludeFn: any) {
-            },
-            controller: ['$scope', '$element', 'TableOptionsService',function ($scope: any, $element: any, TableOptionsService: any) {
-                var self = this;
-                self.filterModelOptions = self.filterModelOptions || {};
+export default class CardFilterHeader {
 
-                self.renderFilter = angular.isUndefined(self.renderFilter) ? true : self.renderFilter;
+    cardTitle: any;
+    viewType: any;
+    filterModel: any;
+    filterModelOptions: any;
+    sortOptions: any;
+    pageName: any;
+    onSelectedOption: any;
+    additionalOptions: any;
+    onSelectedAdditionalOption: any;
+    onMenuOpen: any;
+    onShowFilterHelp: any;
+    renderFilter: any;
+    cardController: any;
+    customFilterTemplate: any;
+    renderHelp:any;
 
-                self.renderHelp = angular.isDefined(self.onShowFilterHelp);
+    $postLink() {
+        this.$element.parents('.md-toolbar-tools:first').addClass('card-filter-header');
+    }
 
-                self.customFilterTemplate = angular.isUndefined(self.customFilterTemplate) ? '' : self.customFilterTemplate;
+    $onInit() {
+        this.ngOnInit();
+    }
 
-                /**
-                 * Called when a user Clicks on a table Option
-                 * @param option
-                 */
-                this.selectedOption = function (option: any) {
-                    if (option.type == 'sort') {
-                        var currentSort = TableOptionsService.toggleSort(self.pageName, option);
-                        if (self.onSelectedOption) {
-                            self.onSelectedOption()(option);
-                        }
-                    }
-                }
+    ngOnInit() {
 
-                this.selectedAdditionalOption = function (option: any) {
-                    if (self.onSelectedAdditionalOption) {
-                        self.onSelectedAdditionalOption()(option);
-                    }
-                }
+        this.filterModelOptions = this.filterModelOptions || {};
+        this.renderFilter = angular.isUndefined(this.renderFilter) ? true : this.renderFilter;
+        this.renderHelp = angular.isDefined(this.onShowFilterHelp);
+        this.customFilterTemplate = angular.isUndefined(this.customFilterTemplate) ? '' : this.customFilterTemplate;
+    
+    }
 
-                this.showFilterHelpPanel = function (ev: any) {
-                    if (self.onShowFilterHelp) {
-                        self.onShowFilterHelp()(ev);
-                    }
-                }
+    static readonly $inject = ["$element","TableOptionsService"];
 
-                /**
-                 *
-                 * @param options {sortOptions:self.sortOptions,additionalOptions:self.additionalOptions}
-                 */
-                this.menuOpen = function (options: any) {
-                    if (self.onMenuOpen) {
-                        self.onMenuOpen()(options);
-                    }
-                }
-            }]
-        };
-    });
+    constructor(private $element: JQuery, 
+                private TableOptionsService: DefaultTableOptionsService) {}
+
+    /**
+     * Called when a user Clicks on a table Option
+     * @param option
+     */
+    selectedOption = (option: any) => {
+        if (option.type == 'sort') {
+            var currentSort = this.TableOptionsService.toggleSort(this.pageName, option);
+            if (this.onSelectedOption) {
+                this.onSelectedOption()(option);
+            }
+        }
+    }
+
+    selectedAdditionalOption = (option: any) => {
+        if (this.onSelectedAdditionalOption) {
+            this.onSelectedAdditionalOption()(option);
+        }
+    }
+
+    showFilterHelpPanel = (ev: any) => {
+        if (this.onShowFilterHelp) {
+            this.onShowFilterHelp()(ev);
+        }
+    }
+
+    /**
+     *
+     * @param options {sortOptions:this.sortOptions,additionalOptions:this.additionalOptions}
+     */
+    menuOpen = (options: any) => {
+        if (this.onMenuOpen) {
+            this.onMenuOpen()(options);
+        }
+    }
+
+}
+
+
+angular.module(moduleName).component("tbaCardFilterHeader",{
+    controller: CardFilterHeader,
+    bindings: {
+        cardTitle: '=',
+        viewType: '=',
+        filterModel: '=',
+        filterModelOptions: '=?',
+        sortOptions: '=',
+        pageName: '@',
+        onSelectedOption: '&',
+        additionalOptions: '=?',
+        onSelectedAdditionalOption: "&?",
+        onMenuOpen: '&?',
+        onShowFilterHelp: '&?',
+        renderFilter:'=?',
+        cardController:'=?',
+        customFilterTemplate:'@?'
+    },
+    controllerAs: '$cardFilterHeader',
+    templateUrl: 'js/common/card-filter-header/card-filter-header-template.html'
+    
+});

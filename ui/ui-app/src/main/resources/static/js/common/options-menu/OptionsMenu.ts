@@ -1,114 +1,139 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 
-angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 'PaginationDataService', 
-    ($mdDialog, $timeout, PaginationDataService) =>{
-        return {
-            restrict: "E",
-            scope: {
-                sortOptions: "=",
-                selectedOption: "&",
-                openedMenu: "&",
-                menuIcon: "@",
-                menuKey: "@",
-                tabs: '=',
-                rowsPerPageOptions: "=",
-                showViewType: '=',
-                showPagination: '=',
-                additionalOptions: '=?',
-                selectedAdditionalOption: "&?"
-            },
-            templateUrl: 'js/common/options-menu/options-menu-template.html',
-            link: function ($scope: any) {
-                if ($scope.showViewType) {
-                    $scope.viewType = {label: 'List View', icon: 'list', value: 'list', type: 'viewType'};
-                }
+export default class OptionsMenu {
 
-                $scope.getPaginationId = function (tab: any) {
-                    return PaginationDataService.paginationId($scope.menuKey, tab.title);
-                };
+    sortOptions: any;
+    selectedOption: any;
+    openedMenu: any;
+    menuIcon: any;
+    menuKey: any;
+    tabs: any;
+    rowsPerPageOptions: any;
+    showViewType: any;
+    showPagination: any;
+    additionalOptions: any;
+    selectedAdditionalOption: any;
+    originatorEv: any;
+    rowsPerPage: any;
+    paginationData: any;
+    viewType: any;
+    currentPage: any;
+    paginationId: any;
 
-                $scope.getCurrentPage = function (tab: any) {
-                    return PaginationDataService.currentPage($scope.menuKey, tab.title);
-                };
+    $onInit() {
+        this.ngOnInit();
+    }
 
-                function setViewTypeOption(toggle: any) {
-                    $scope.viewType.value = PaginationDataService.viewType($scope.menuKey);
+    ngOnInit() {
 
-                    if (toggle === true) {
-                        $scope.viewType.value = $scope.viewType.value === 'list' ? 'table' : 'list';
-                    }
-                    if ($scope.viewType.value === 'list') {
-                        $scope.viewType.label = 'List View';
-                        $scope.viewType.icon = 'list';
-                    }
-                    else {
-                        $scope.viewType.label = 'Table View';
-                        $scope.viewType.icon = 'grid_on';
-                    }
-                }
+        if (this.showViewType) {
+            this.viewType = {label: 'List View', icon: 'list', value: 'list', type: 'viewType'};
+        }
 
-                if ($scope.showViewType) {
-                    //toggle the view Type so its opposite the current view type
-                    setViewTypeOption(true);
-                }
+        if (this.showViewType) {
+            //toggle the view Type so its opposite the current view type
+            this.setViewTypeOption(true);
+        }
 
-                $scope.rowsPerPage = 5;
-                $scope.paginationData = PaginationDataService.paginationData($scope.menuKey);
-                var originatorEv;
-                $scope.openMenu = function ($mdOpenMenu: any, ev: any) {
+        this.rowsPerPage = 5;
+        this.paginationData = this.PaginationDataService.paginationData(this.menuKey);
+    }
 
-                    originatorEv = ev;
-                    if (angular.isFunction($scope.openedMenu)) {
-                        var openedMenuFn = $scope.openedMenu();
-                        if (angular.isFunction(openedMenuFn)) {
-                            openedMenuFn({sortOptions: $scope.sortOptions, additionalOptions: $scope.additionalOptions});
-                        }
-                    }
-                    if ($scope.showPagination) {
-                        var tabData = PaginationDataService.getActiveTabData($scope.menuKey);
-                        $scope.currentPage = tabData.currentPage;
-                        $scope.paginationId = tabData.paginationId;
-                    }
-                    $mdOpenMenu(ev);
-                };
+    static readonly $inject = ["PaginationDataService"];
 
-                /**
-                 * Selected an additional option
-                 * @param item
-                 */
-                $scope.selectAdditionalOption = function (item: any) {
-                    if ($scope.selectedAdditionalOption) {
-                        originatorEv = null;
-                        $scope.selectedAdditionalOption()(item);
-                    }
-                };
+    constructor(private PaginationDataService: DefaultPaginationDataService) {
+    }
 
-                /**
-                 * Selected a Sort Option
-                 * @param item
-                 */
-                $scope.selectOption = function (item: any) {
+    getPaginationId(tab: any) {
+        return this.PaginationDataService.paginationId(this.menuKey, tab.title);
+    };
 
-                    var itemCopy = {};
-                    angular.extend(itemCopy, item);
-                    if (item.type === 'viewType') {
-                        PaginationDataService.toggleViewType($scope.menuKey);
-                        setViewTypeOption(true);
-                    }
+    getCurrentPage(tab: any) {
+        return this.PaginationDataService.currentPage(this.menuKey, tab.title);
+    };
 
-                    if ($scope.selectedOption) {
-                        $scope.selectedOption()(itemCopy);
-                    }
+    openMenu($mdOpenMenu: any, ev: any) {
 
-                    originatorEv = null;
-                };
-
-                $scope.$on('$destroy', function () {
-
-                });
-
+        this.originatorEv = ev;
+        if (angular.isFunction(this.openedMenu)) {
+            let openedMenuFn = this.openedMenu();
+            if (angular.isFunction(openedMenuFn)) {
+                openedMenuFn({sortOptions: this.sortOptions, additionalOptions: this.additionalOptions});
             }
         }
+        if (this.showPagination) {
+            let tabData = this.PaginationDataService.getActiveTabData(this.menuKey);
+            this.currentPage = tabData.currentPage;
+            this.paginationId = tabData.paginationId;
+        }
+        $mdOpenMenu(ev);
+    };
+
+    /**
+     * Selected an additional option
+     * @param item
+     */
+    selectAdditionalOption(item: any) {
+        if (this.selectedAdditionalOption) {
+            this.originatorEv = null;
+            this.selectedAdditionalOption()(item);
+        }
+    };
+
+    /**
+     * Selected a Sort Option
+     * @param item
+     */
+    selectOption(item: any) {
+
+        let itemCopy = {};
+        angular.extend(itemCopy, item);
+        if (item.type === 'viewType') {
+            this.PaginationDataService.toggleViewType(this.menuKey);
+            this.setViewTypeOption(true);
+        }
+
+        if (this.selectedOption) {
+            this.selectedOption()(itemCopy);
+        }
+
+        this.originatorEv = null;
+    };
+
+    setViewTypeOption(toggle: any) {
+
+        this.viewType.value = this.PaginationDataService.viewType(this.menuKey);
+
+        if (toggle === true) {
+            this.viewType.value = this.viewType.value === 'list' ? 'table' : 'list';
+        }
+        if (this.viewType.value === 'list') {
+            this.viewType.label = 'List View';
+            this.viewType.icon = 'list';
+        }
+        else {
+            this.viewType.label = 'Table View';
+            this.viewType.icon = 'grid_on';
+        }
     }
-  ]);
+}
+
+angular.module(moduleName).component('tbaOptionsMenu', {
+    controller: OptionsMenu,
+    bindings: {
+        sortOptions: "=",
+        selectedOption: "&",
+        openedMenu: "&",
+        menuIcon: "@",
+        menuKey: "@",
+        tabs: '=',
+        rowsPerPageOptions: "=",
+        showViewType: '=',
+        showPagination: '=',
+        additionalOptions: '=?',
+        selectedAdditionalOption: "&?"
+    },
+    templateUrl: 'js/common/options-menu/options-menu-template.html'
+});

@@ -1,10 +1,29 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
+import { Transition } from '@uirouter/core';
 
 export default class ServiceLevelAgreementInitController  implements ng.IComponentController{
-    slaId: any = this.$transition$.params().slaId;
-    constructor(private $transition$: any){
-        }
+    
+    $transition$: Transition;
+    slaId: any;
+
+    ngOnInit(){
+        this.slaId = this.$transition$.params().slaId    
+    }
+    $onInit() {
+            this.ngOnInit();
+    }    
+    constructor(){
+    
+    }
+
 }
 
-angular.module(moduleName).controller('ServiceLevelAgreementInitController',['$transition$',ServiceLevelAgreementInitController]);
+angular.module(moduleName).component('serviceLevelAgreementInitComponent',{
+    bindings: {
+        $transition$: '<'
+    },
+    controller: ServiceLevelAgreementInitController,
+    controllerAs: "vm",
+    templateUrl: "js/feed-mgr/sla/service-level-agreements-view.html"
+});

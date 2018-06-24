@@ -17,9 +17,9 @@
   limitations under the License.
   #L%
   -->
-<span ng-if="nextDates.length >0" class="hint"> {{"views.cron-expression-preview.CP" | translate}} </span>
+<span ng-if="$ctrl.nextDates.length >0" class="hint"> {{"views.cron-expression-preview.CP" | translate}} </span>
 <ul class="cron-expresison-preview">
-    <li ng-repeat="nextDate in nextDates" >
+    <li ng-repeat="nextDate in $ctrl.nextDates" >
         {{nextDate}}
     </li>
 </ul>

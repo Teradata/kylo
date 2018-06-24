@@ -312,26 +312,30 @@ export class ColumnDelegate implements IColumnDelegate {
         self.$mdDialog.show({
             clickOutsideToClose: true,
             controller: class {
-                columns : any[] = cols;
-                crossColumn : string = "";
+                columns: any[] = cols;
+                crossColumn: string = "";
                 static readonly $inject = ["$mdDialog"];
+
                 constructor(private $mdDialog: angular.material.IDialogService) {
                 }
-                valid() : boolean {
+
+                valid(): boolean {
                     return (this.crossColumn != "");
                 }
+
                 cancel() {
                     this.$mdDialog.hide();
                 }
+
                 apply() {
                     this.$mdDialog.hide();
-                    let crossColumnTemp = (this.crossColumn == fieldName ? this.crossColumn+"_0" : this.crossColumn);
+                    let crossColumnTemp = (this.crossColumn == fieldName ? this.crossColumn + "_0" : this.crossColumn);
                     let clean2 = self.createCleanFieldFormula(this.crossColumn, crossColumnTemp);
-                    const  cleanFormula = `select(${fieldName}, ${clean2})`;
+                    const cleanFormula = `select(${fieldName}, ${clean2})`;
                     let chainedOp: ChainedOperation = new ChainedOperation(2);
                     let crossColumnName = this.crossColumn;
                     self.controller.setChainedQuery(chainedOp);
-                    self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${fieldName} and ${this.crossColumn}`}, true, false).then(function() {
+                    self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${fieldName} and ${this.crossColumn}`}, true, false).then(function () {
                         chainedOp.nextStep();
                         const formula = `crosstab("${fieldName}","${crossColumnTemp}")`
                         self.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${fieldName} and ${crossColumnName}`});
@@ -389,16 +393,21 @@ export class ColumnDelegate implements IColumnDelegate {
      * Generates a script to move the column B directly to the right of column A
      * @returns {string}
      */
-    generateMoveScript(fieldNameA: string, fieldNameB: string, columnSource: any): string {
+    generateMoveScript(fieldNameA: string, fieldNameB: string | string[], columnSource: any, keepFieldNameA: boolean = true): string {
         var self = this;
         let cols: string[] = [];
         let sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
         angular.forEach(sourceColumns, col => {
             let colName: string = self.getColumnFieldName(col);
             if (colName == fieldNameA) {
-                cols.push(colName);
-                cols.push(fieldNameB);
-            } else if (colName != fieldNameB) {
+                if (keepFieldNameA) cols.push(colName);
+                if (_.isArray(fieldNameB)) {
+                    cols = cols.concat(fieldNameB);
+                }
+                else {
+                    cols.push(fieldNameB);
+                }
+            } else if ((_.isArray(fieldNameB) && !_.contains(fieldNameB, colName)) || (_.isString(fieldNameB) && colName != fieldNameB)) {
                 cols.push(colName);
             }
         });
@@ -425,7 +434,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = self.getColumnFieldName(column);
         let count = 0;
 
-        // Sample a row and determine how many elements
+        // Sample rows determine how many array elements
         if (grid.rows != null && grid.rows.length > 0) {
             let idx: number = 0;
             angular.forEach(grid.columns, (col, key) => {
@@ -435,26 +444,13 @@ export class ColumnDelegate implements IColumnDelegate {
                 count = (row[idx] != null && row[idx].length > count ? row[idx].length : count)
             });
         }
-
-        let chainedOp: ChainedOperation = new ChainedOperation(count * 2);
-        self.controller.setChainedQuery(chainedOp);
-
-        (async function loop() {
-            for (let i: number = count; i > 0; i--) {
-                let newFieldName = fieldName + "_" + i;
-                let formula = `getItem(${fieldName}, ${i - 1}).as("${newFieldName}")`;
-
-                await self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array item  " + i}, true, false);
-                chainedOp.nextStep();
-
-                let cols = self.controller.engine.getCols();
-                const moveFormula = self.generateMoveScript(fieldName, newFieldName, cols);
-
-                let doRefresh: boolean = (i == 1);
-                await self.controller.pushFormula(moveFormula, {formula: formula, icon: "functions", name: "Move column " + newFieldName}, true, doRefresh);
-                chainedOp.nextStep();
-            }
-        })();
+        var columns = []
+        for (let i = 0; i < count; i++) {
+            let newFieldName = fieldName + "_" + i;
+            columns.push(`getItem(${fieldName}, ${i}).as("${newFieldName}")`);
+        }
+        var formula = self.generateMoveScript(fieldName, columns, grid, false);
+        self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
 
 
@@ -469,7 +465,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = self.getColumnFieldName(column);
         const newFieldName = fieldName + "_indexed";
         const formula = `StringIndexer().setInputCol("${fieldName}").setOutputCol("${newFieldName}").run(select(${fieldName}))`;
-        const moveFormula = self.generateMoveScript(fieldName, newFieldName, grid);
+        const moveFormula = self.generateMoveScript(fieldName, [newFieldName], grid);
 
         // Two part conversion
         let chainedOp: ChainedOperation = new ChainedOperation(2);
@@ -610,6 +606,112 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Parse a struct field into its top-level fields
+     * @param column
+     * @returns {string[]} list of fields
+     */
+    structToFields(column: any): string[] {
+
+        let fields: string = column.dataType;
+        fields = fields.substr(7, fields.length - 2);
+        let level = 0;
+        let cleaned = [];
+        for (let i = 0; i < fields.length; i++) {
+            switch (fields.charAt(i)) {
+                case '<':
+                    level++;
+                    break;
+                case '>':
+                    level--;
+                    break;
+                default:
+                    if (level == 0) {
+                        cleaned.push(fields.charAt(i));
+                    }
+            }
+        }
+        let cleanedString = cleaned.join("");
+        let fieldArray: string[] = cleanedString.split(",");
+        return fieldArray.map((v: string) => {
+            return v.split(":")[0].toLowerCase();
+        });
+    }
+
+    /**
+     * Guaranteed to return a unique column name that conforms to the field naming requirements
+     * @param {Array<string>} columns
+     * @param {string} columnFieldName
+     * @param {number} idx
+     * @returns {string}
+     */
+    uniqueName(columns: Array<string>, columnFieldName: string, idx: number = -1): string {
+
+        if (columns == null || columns.length == 0) {
+            return columnFieldName;
+        }
+        let alias = columnFieldName.replace(/^(_)|[^a-zA-Z0-9_]+/g, "");
+        if (idx >= 0) {
+            alias += "_"+idx;
+        }
+        if (columns.indexOf(alias.toLowerCase()) > -1) {
+            return this.uniqueName(columns, columnFieldName, idx+1);
+        }
+        return alias;
+    }
+
+    /**
+     * Flattens a struct column into multiple fields (one-level)
+     * @param self
+     * @param column
+     * @param grid
+     */
+    flattenStructColumn(self: any, column: any, grid: any) {
+
+        const fieldName = self.getColumnFieldName(column);
+
+        let structFields = self.structToFields(column);
+        let existingCols = self.toColumnArray(grid.columns);
+
+        let formula: string;
+
+        // Generate fields with unique names
+        let existingColsLower = existingCols.map((field: string) => {
+            return field.toLowerCase();
+        });
+        let fieldParts = structFields.map((field: string) => {
+            let alias = self.uniqueName(existingColsLower, field);
+            existingColsLower.push(alias.toLowerCase());
+            return (`getField(${fieldName},"${field}").as("${alias}")`);
+        });
+
+        // Insert new fields into the field list
+        let idxOfCurrentColumn = existingCols.indexOf(fieldName);
+        let formulaFields: string[] = []
+        if (idxOfCurrentColumn == 0) {
+            formulaFields.push(fieldParts);
+            formulaFields.push(existingCols.slice(idxOfCurrentColumn + 1));
+        } else if (idxOfCurrentColumn == existingCols.length - 1) {
+            formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
+            formulaFields.push(fieldParts);
+        } else {
+            formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
+            formulaFields.push(fieldParts);
+            formulaFields.push(existingCols.slice(idxOfCurrentColumn + 1));
+        }
+        if (formulaFields[formulaFields.length - 1].length == 0) {
+            formulaFields.pop();
+        }
+        let fieldString = formulaFields.join(",");
+        formula = `select(${fieldString})`;
+
+        self.controller.addFunction(formula, {
+            formula: formula, icon: "functions",
+            name: "Flatten " + fieldName
+        });
+
+    }
+
+    /**
      * Generates a temporary fieldname
      * @returns {string} the fieldName
      */
@@ -633,7 +735,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractNumeric(self: any, column: any, grid: any) {
         const fieldName = self.getColumnFieldName(column);
-        let script = `regexp_replace(${fieldName}, "[^0-9\\\\.]+","").as('${fieldName}')`;
+        let script = `regexp_replace(${fieldName}, "[^0-9\-\\\\.]+","").as('${fieldName}')`;
 
         const formula = self.toFormula(script, column, grid);
         self.controller.addFunction(formula, {
@@ -764,8 +866,10 @@ export class ColumnDelegate implements IColumnDelegate {
      * Sets the domain type for the specified column.
      */
     setDomainType(column: any, domainTypeId: string) {
+        const fieldName = this.getColumnFieldName(column);
         this.controller.setDomainType(column.index, domainTypeId);
-        this.controller.query(true, null, true, false);
+        const formula = `withColumn("${fieldName}", ${fieldName})`
+        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'})
     }
 
     /**
@@ -780,6 +884,7 @@ export class ColumnDelegate implements IColumnDelegate {
         grid.refresh();
     }
 
+
     /**
      * Splits the specified column on the specified value.
      *
@@ -791,7 +896,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const displayName = this.getColumnDisplayName(column);
         const fieldName = this.getColumnFieldName(column);
         const pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
-        const formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.singleQuote(displayName) + "\")", column, grid);
+        const formula = this.toFormula(`split(when(isnull(${fieldName}),"").otherwise(${fieldName}), '${pattern}').as("${displayName}")`, column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value});
     }
 
@@ -830,7 +935,7 @@ export class ColumnDelegate implements IColumnDelegate {
             ok: "OK",
             cancel: "Cancel"
         });
-        self.$mdDialog.show(prompt).then(function (value : string) {
+        self.$mdDialog.show(prompt).then(function (value: string) {
             let fieldName = self.getColumnFieldName(column);
             let script = `when((${fieldName} == "" || isnull(${fieldName}) ),"${value}").otherwise(${fieldName}).as("${fieldName}")`;
             const formula = self.toFormula(script, column, grid);
@@ -881,15 +986,36 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Validates the specified filter.
      *
+     * @param {Object} the column to apply the filter to
      * @param {Object} filter the filter to be validated
      * @param {VisualQueryTable} table the visual query table
      */
-    validateFilter(filter: any, table: any) {
+    validateFilter(header: any, filter: any, table: any) {
         if (filter.term == "") {
             filter.term = null;
         } else {
             delete filter.regex;
         }
+    }
+
+    /**
+     * Apply a list of filters to a given column(header)
+     * @param header
+     * @param {any[]} filters
+     * @param table
+     */
+    applyFilters(header: any, filters: any[], table: any) {
+        table.onRowsChange();
+        table.refreshRows();
+    }
+
+    /**
+     * Apply a list single filter to a given column(header)
+     * @param header
+     * @param filter
+     * @param table
+     */
+    applyFilter(header: any, filter: any, table: any) {
         table.onRowsChange();
         table.refreshRows();
     }
@@ -1028,8 +1154,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax}
             );
         } else if (dataCategory === DataCategory.ARRAY) {
-            transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'},
-                {description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array'},
+            transforms.push({icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
+                {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'},
                 {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems}
             );
         }
@@ -1050,6 +1176,9 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Second of', icon: 'access_time', name: 'Second', operation: 'second'},
                 {description: 'Week of year for', icon: 'today', name: 'Week of Year', operation: 'weekofyear'},
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
+        }
+        else if (dataCategory == DataCategory.STRUCT) {
+            transforms.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operation: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
             transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'});

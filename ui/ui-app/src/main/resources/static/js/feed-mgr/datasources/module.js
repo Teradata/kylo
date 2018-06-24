@@ -11,9 +11,7 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
             params: {},
             views: {
                 "content": {
-                    templateUrl: "js/feed-mgr/datasources/list.html",
-                    controller: "DatasourcesListController",
-                    controllerAs: "vm"
+                    component : "datasourcesListController"
                 }
             },
             resolve: {
@@ -33,9 +31,7 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
             },
             views: {
                 "content": {
-                    templateUrl: "js/feed-mgr/datasources/details.html",
-                    controller: "DatasourcesDetailsController",
-                    controllerAs: "vm"
+                    component : 'datasourcesDetailsController'
                 }
             },
             resolve: {

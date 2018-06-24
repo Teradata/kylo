@@ -9,7 +9,7 @@
       </md-tab>
       <md-tab ng-disabled="vm.steps[1].disabled">
         <md-tab-body>
-          <thinkbig-visual-query-transform engine="vm.coreDataModel.engine" height-offset="64" model="vm.coreDataModel.model" step-index="1" ng-if="vm.selectedStepIndex == 1">
+          <thinkbig-visual-query-transform engine="vm.coreDataModel.engine" height-offset="64" model="vm.coreDataModel.model" step-index="1" ng-if="vm.selectedStepIndex == 1 || vm.isStepVisited(1)">
           </thinkbig-visual-query-transform>
         </md-tab-body>
       </md-tab>

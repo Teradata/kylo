@@ -1,0 +1,17 @@
+@import '../../../../../../assets/theme';
+
+.selection-dialog-header {
+  margin-bottom: 0;
+}
+
+.remove-row-button {
+  font-size: 28px;
+  color: gray;
+  cursor: pointer;
+  margin-left: -15px;
+}
+
+.remove-row-button:hover {
+  color: mat-color($warn);
+  font-size: 28px;
+}

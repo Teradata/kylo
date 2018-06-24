@@ -5,6 +5,7 @@ import * as _ from 'underscore';
 import OpsManagerJobService from "../services/OpsManagerJobService";
 import IconService from "../services/IconStatusService";
 import TabService from "../services/TabService";
+import AccessControlService from "../../services/AccessControlService";
 
 export class JobsCardController implements ng.IComponentController{
     allowAdmin: boolean;
@@ -52,7 +53,7 @@ export class JobsCardController implements ng.IComponentController{
                 private StateService: any,
                 private IconService: any,
                 private TabService: any,
-                private AccessControlService: any,
+                private accessControlService: AccessControlService,
                 private BroadcastService: any,
                 private OpsManagerRestUrlService:any){
          /**
@@ -154,9 +155,9 @@ export class JobsCardController implements ng.IComponentController{
         });
 
         // Fetch allowed permissions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
-                    this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                    this.allowAdmin = accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });
 
         if(this.tab != ''){

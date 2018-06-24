@@ -1,10 +1,10 @@
 import * as angular from 'angular';
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
+import AccessControlService from "../../services/AccessControlService";
 
 export class JcrQueryController implements ng.IComponentController{
-   // sql: string;
-    sql= "";
+    sql: string = "";
     ngOnInit(){
            this.sql = 'SELECT fs.[jcr:title], fd.[tba:state], c.[tba:systemName] \n'
                        + 'FROM [tba:feed] as e \n'
@@ -14,19 +14,20 @@ export class JcrQueryController implements ng.IComponentController{
                        + 'JOIN [tba:category] as c on ISCHILDNODE(cd,c)';
             this.getIndexes();
         }
-constructor(private $scope: any,
-            private $http: any, 
-            private $mdDialog: any,
-            private $mdToast: any,
-            private AccessControlService:any)
+    static readonly $inject = ["$scope", "$http","$mdDialog", "$mdToast","AccessControlService"];
+    constructor(private $scope: angular.IScope,
+            private $http: angular.IHttpService, 
+            private $mdDialog: angular.material.IDialogService,
+            private $mdToast: angular.material.IToastService,
+            private AccessControlService:AccessControlService)
             {
                this.ngOnInit();
              }
 
         loading: boolean = false;
-        errorMessage: any = null;
+        errorMessage: string = null;
         queryTime: any = null;
-        indexesErrorMessage: any = "";
+        indexesErrorMessage: string = "";
         codemirrorOptions: any = {
                         lineWrapping: true,
                         indentWithTabs: true,
@@ -141,7 +142,7 @@ constructor(private $scope: any,
            this.sql= this.previousQuery;
         }
 
-        showDialog(title: any,message: any){
+        showDialog(title: string,message: string){
             this.$mdDialog.show(
                 this.$mdDialog.alert()
                     .parent(angular.element(document.body))
@@ -156,11 +157,8 @@ constructor(private $scope: any,
             this.$mdDialog.hide();
         }
 
-        reindex (){
+        reindex(){
                 this.showDialog("Reindexing", "Reindexing. Please wait...");
-
-
-
                 var successFn = (response: any)=> {
                     this.hideDialog();
                     if (response.data) {
@@ -210,7 +208,6 @@ constructor(private $scope: any,
                 else {
                     this.errorMessage = 'Error performing query ';
                 }
-
             };
             var promise = this.$http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}});
             promise.then(successFn, errorFn);
@@ -232,15 +229,12 @@ constructor(private $scope: any,
 
 
         transformResults(result: any) {
-
-            var data: any = {};
-            var rows: any = [];
-            var columns: any = [];
+           var data: any = {};
+           var rows: any = [];
+           var columns: any = [];
            this.queryTime = result.queryTime;
            this.explainPlan = result.explainPlan;
-
-
-            angular.forEach(result.columns,(col,i)=>{
+           angular.forEach(result.columns,(col,i)=>{
                         columns.push({
                             displayName: col.name,
                             headerTooltip: col.name,
@@ -265,7 +259,12 @@ constructor(private $scope: any,
             this.resultSize = data.rows.length;
             return data;
         };
-
 }
 
- angular.module(moduleName).controller("JcrQueryController", ["$scope", "$http","$mdDialog", "$mdToast","AccessControlService",JcrQueryController]);
+ angular.module(moduleName)
+ .component("jcrQueryController", {
+        controller: JcrQueryController,
+        controllerAs: "vm",
+        templateUrl: "js/admin/jcr/jcr-query.html"
+    });
+ //.controller("JcrQueryController", [JcrQueryController]);

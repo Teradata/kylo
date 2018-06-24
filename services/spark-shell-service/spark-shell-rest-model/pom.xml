@@ -11,7 +11,7 @@
   <parent>
     <artifactId>kylo-spark-shell-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -56,6 +56,17 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-field-policy-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-file-metadata-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-catalog-model</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

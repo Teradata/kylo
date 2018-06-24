@@ -1,77 +1,76 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {Transition} from "@uirouter/core";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
 export default class DefineFeedCompleteController {
 
-    model:any;
-    error:any;
-    isValid:any;
-    onAddServiceLevelAgreement:any;
-    onViewDetails:any;
-    onViewFeedsList:any;
-    gotIt:any;
+    model: any;
+    error: any;
+    isValid: any;
+    $transition$: Transition;
 
+    static readonly $inject = ["$scope","$q","$http","$mdToast","RestUrlService","FeedService","StateService"];
 
-    constructor(private $scope:any, private $q:any, private $http:any, private $mdToast:any,private $transition$:any, private RestUrlService:any, private FeedService:any, private StateService:any) {
-        var self = this;
-       // self.model = $transition$.params().feedModel;
-       // self.error = $transition$.params().error;
-        self.model = $transition$.params().feedModel;
-        self.error = $transition$.params().error;
+    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private RestUrlService: any, private FeedService: any, private StateService: any) {
+        
+        this.model = this.$transition$.params().feedModel;
+        this.error = this.$transition$.params().error;
 
-        self.isValid = self.error == null;
-
-        /**
+        this.isValid = this.error == null;
+             
+    };
+ 
+    /**
          * Gets the feed id from the FeedService
          * @returns {*}
-         */
-        function getFeedId() {
-            var feedId = self.model != null ? self.model.id : null;
-            if (feedId == null && FeedService.createFeedModel != null) {
-                feedId = FeedService.createFeedModel.id;
-            }
-            if (feedId == null && FeedService.editFeedModel != null) {
-                feedId = FeedService.editFeedModel.id;
-            }
-            return feedId;
+    */
+    getFeedId() {
+        var feedId = this.model != null ? this.model.id : null;
+        if (feedId == null && this.FeedService.createFeedModel != null) {
+            feedId = this.FeedService.createFeedModel.id;
         }
+        if (feedId == null && this.FeedService.editFeedModel != null) {
+            feedId = this.FeedService.editFeedModel.id;
+        }
+        return feedId;
+    }
+    /**
+        * Navigate to the Feed Details first tab
+    */
+    onViewDetails() {
+        var feedId = this.getFeedId();
+        this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 0);
+    }
+    gotIt() {
+        this.onViewFeedsList();
+    }
 
-        /**
-         * Navigate to the Feed Details SLA tab
-         */
-        this.onAddServiceLevelAgreement = function () {
-            //navigate to Feed Details and move to the 3 tab (SLA)
-            var feedId = getFeedId();
-            StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
-        }
-        this.onViewDetails = function () {
-            StateService.FeedManager().Sla().navigateToServiceLevelAgreements();
-        }
-
-        /**
-         * Navigate to the Feed Details first tab
-         */
-        this.onViewDetails = function () {
-            var feedId = getFeedId();
-            StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 0);
-        }
-
-        /**
+    /**
          * Navigate to the Feed List page
          */
-        this.onViewFeedsList = function () {
-            FeedService.resetFeed();
-            StateService.FeedManager().Feed().navigateToFeeds();
-        }
+    onViewFeedsList() {
+        this.FeedService.resetFeed();
+        this.StateService.FeedManager().Feed().navigateToFeeds();
+    }
 
-        this.gotIt = function () {
-            self.onViewFeedsList();
-        }
-
-    };    
+    /**
+         * Navigate to the Feed Details SLA tab
+    */
+    onAddServiceLevelAgreement() {
+        //navigate to Feed Details and move to the 3 tab (SLA)
+        var feedId = this.getFeedId();
+        this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
+    }
 }
 
-angular.module(moduleName).controller('DefineFeedCompleteController', ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService",DefineFeedCompleteController]);
-
+angular.module(moduleName)
+    .component('thinkbigDefineFeedCompleteController', {
+        bindings: {
+            $transition$: '<'
+        },
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
+        controllerAs: 'vm',
+        controller: DefineFeedCompleteController,
+    });

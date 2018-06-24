@@ -13,9 +13,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/categories/categories.html',
-                    controller:'CategoriesController',
-                    controllerAs:'vm'
+                    component: "categoriesController"
                 }
             },
             resolve: {
@@ -34,9 +32,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/categories/category-details.html',
-                    controller: 'CategoryDetailsController',
-                    controllerAs: 'vm'
+                    component: "categoryDetailsController"
                 }
             },
             resolve: {

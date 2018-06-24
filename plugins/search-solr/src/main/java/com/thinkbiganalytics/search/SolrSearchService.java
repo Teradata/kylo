@@ -105,6 +105,12 @@ public class SolrSearchService implements Search {
         return transformResult(query, size, start, solrResponse);
     }
 
+    @Override
+    public int deleteAll(@Nonnull String indexName, @Nonnull String typeName) {
+        log.warn("deleteAll() method not implemented for SolrSearchService");
+        return -1;
+    }
+
     private void buildRestClient() {
         if (this.client == null) {
             String urlString = "http://" + clientConfig.getHost() + ":" + clientConfig.getPort() + "/solr/";

@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark.shell;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
@@ -68,6 +69,12 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
      * Path to the transform endpoint.
      */
     private static final String TRANSFORM_PATH = "/api/v1/spark/shell/transform";
+
+
+    /**
+     * Path to make a Kylo Catalog transformation
+     */
+    private static final String KYLO_CATALOG_TRANSFORM_PATH = "/api/v1/spark/shell/transform/kylo-catalog";
 
     /**
      * Map of Spark Shell processes to Jersey REST clients
@@ -164,6 +171,16 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     public TransformResponse transform(@Nonnull final SparkShellProcess process, @Nonnull final TransformRequest request) {
         try {
             return getClient(process).post(TRANSFORM_PATH, request, TransformResponse.class);
+        } catch (final InternalServerErrorException e) {
+            throw propagateTransform(e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request) {
+        try {
+            return getClient(process).post(KYLO_CATALOG_TRANSFORM_PATH, request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
             throw propagateTransform(e);
         }

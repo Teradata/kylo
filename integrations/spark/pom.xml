@@ -2,17 +2,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-spark</artifactId>
-  <packaging>pom</packaging>
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-integrations</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
+
+  <artifactId>kylo-spark</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Kylo Spark Parent</name>
 
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <spark1.xml.version>0.3.5</spark1.xml.version>
+    <spark2.xml.version>0.4.1</spark2.xml.version>
+    <spark1.csv.version>1.5.0</spark1.csv.version>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 
@@ -20,10 +26,14 @@
     <module>spark-interpreter</module>
     <module>spark-job-profiler</module>
     <module>spark-shell-client</module>
+    <module>spark-file-metadata</module>
     <module>spark-validate-cleanse</module>
     <module>spark-merge-table</module>
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
+    <module>spark-catalog</module>
+    <module>spark-ingest</module>
+    <module>spark-multi-exec</module>
   </modules>
 
 </project>

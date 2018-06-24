@@ -1,146 +1,158 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "./module-name";
+import { moduleName } from "./module-name";
+import { Transition } from '@uirouter/core';
+import StateService from '../../services/StateService';
+import { FeedService } from '../services/FeedService';
+import AddButtonService from '../../services/AddButtonService';
+import { DefaultTableOptionsService } from '../../services/TableOptionsService';
+import { DatasourcesService } from '../services/DatasourcesService';
+import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 
 
 export class SchemasController {
 
-    schemas:any;
-    loading:any;
-    datasource:any;
-    cardTitle:any;
-    pageName:any;
-    filterInternal:any;
-    paginationData:any;
-    paginationId:any;
-    currentPage:any;
-    viewType:any;
-    sortOptions:any;
-    filter:any;
-    onViewTypeChange:any;
-    onOrderChange:any;
-    onPaginationChange:any;
-    selectedTableOption:any;
-    onClickSchema:any;
-    datasourceId:any;
-    constructor(private $scope:any,private $http:any,private $q:any,private $transition$:any,private $filter:any,private RestUrlService:any
-        , private PaginationDataService:any,private TableOptionsService:any, private AddButtonService:any
-        , private FeedService:any,private StateService:any,private DatasourcesService:any){
+    schemas: any[] = [];
+    loading: boolean = true;
+    datasource: any;
+    cardTitle: any;
+    pageName: string = 'Schemas';
+    filterInternal: boolean = true;
+    paginationData: any;
+    paginationId: any;
+    currentPage: any;
+    viewType: any;
+    sortOptions: any;
+    filter: any;
+    datasourceId: any;
+    $transition$: Transition;
 
-        var self = this;
-        this.schemas = [];
-        this.loading = true;
-        self.datasourceId = $transition$.params().datasource;
-        this.pageName = 'Schemas';
-        self.filterInternal = true;
+    $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
+        this.datasourceId = this.$transition$.params().datasource;
+        this.paginationData = this.paginationDataService.paginationData(this.pageName);
+        this.paginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+        this.currentPage = this.paginationDataService.currentPage(this.pageName) || 1;
+        this.viewType = this.paginationDataService.viewType(this.pageName);
+        this.sortOptions = this.loadSortOptions();
 
-        this.paginationData = PaginationDataService.paginationData(this.pageName);
-        this.paginationId = 'schemas';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
-        this.viewType = PaginationDataService.viewType(this.pageName);
-        this.sortOptions = loadSortOptions();
+        this.filter = this.paginationDataService.filter(this.pageName);
 
-        this.filter = PaginationDataService.filter(self.pageName);
+    }
 
-        $scope.$watch(function() {
-            return self.viewType;
-        }, function(newVal:any) {
-            self.onViewTypeChange(newVal);
+    static readonly $inject = ["$scope", "$http", "$q", "$filter", "RestUrlService",
+        "PaginationDataService", "TableOptionsService", "AddButtonService",
+        "FeedService", "StateService", "DatasourcesService"];
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $q: angular.IQService, private $filter: angular.IFilterService, private RestUrlService: any
+        , private paginationDataService: DefaultPaginationDataService, private tableOptionsService: DefaultTableOptionsService, private addButtonService: AddButtonService
+        , private feedService: FeedService, private stateService: any, private datasourcesService: DatasourcesService) {
+
+        
+        $scope.$watch(() => {
+            return this.viewType;
+        }, (newVal: any) => {
+            this.onViewTypeChange(newVal);
         });
 
-        $scope.$watch(function () {
-            return self.filter;
-        }, function (newVal:any) {
-            PaginationDataService.filter(self.pageName, newVal)
+        $scope.$watch(() => {
+            return this.filter;
+        }, (newVal: any) => {
+            this.paginationDataService.filter(this.pageName, newVal)
         });
 
-        this.onViewTypeChange = function(viewType:any) {
-            PaginationDataService.viewType(this.pageName, self.viewType);
-        };
-
-        this.onOrderChange = function(order:any) {
-            PaginationDataService.sort(self.pageName, order);
-            TableOptionsService.setSortOption(self.pageName, order);
-            getSchemas();
-        };
-
-        this.onPaginationChange = function(page:any, limit:any) {
-            PaginationDataService.currentPage(self.pageName, null, page);
-            self.currentPage = page;
-        };
-
-        /**
-         * Called when a user Clicks on a table Option
-         * @param option
-         */
-        this.selectedTableOption = function(option:any) {
-            var sortString = TableOptionsService.toSortString(option);
-            var savedSort = PaginationDataService.sort(self.pageName, sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
-            TableOptionsService.setSortOption(self.pageName, sortString);
-        };
-
-        /**
-         * Build the possible Sorting Options
-         * @returns {*[]}
-         */
-        function loadSortOptions() {
-            var options = {'Schema': 'schema'};
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'schema', 'asc');
-            TableOptionsService.initializeSortOption(self.pageName);
-            return sortOptions;
-        }
-
-        function getSchemas() {
-            self.loading = true;
-            var successFn = function (response:any) {
-                self.schemas = response.data;
-                self.loading = false;
-            };
-            var errorFn = function (err:any) {
-                self.loading = false;
-            };
-
-            var limit = PaginationDataService.rowsPerPage(self.pageName);
-            var start = limit == 'All' ? 0 : (limit * self.currentPage) - limit;
-            var sort = self.paginationData.sort;
-            var filter = self.paginationData.filter;
-            var params = {start: start, limit: limit, sort: sort, filter: filter};
-
-            var promise;
-            if (self.datasource.isHive) {
-                promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas", {params: params});
-            } else {
-                promise = $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + self.datasource.id + "/schemas", {params: params});
-            }
-
-            promise.then(successFn,errorFn);
-            return promise;
-        }
-
-        self.onClickSchema = function(schema:any){
-            StateService.FeedManager().Table().navigateToTables(self.datasource.id, schema);
-        };
-
-        function getDatasource(datasourceId:any) {
-            self.loading = true;
-            var successFn = function (response:any) {
-                self.datasource = response;
-                self.cardTitle = self.datasource.name + " " + $filter('translate')('views.TableController.Schemas');
-                self.loading = false;
-            };
-            var errorFn = function (err:any) {
-                self.loading = false;
-            };
-            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
-        }
-
-
-        getDatasource(self.datasourceId).then(getSchemas);
-
+        this.getDatasource(this.datasourceId).then(this.getSchemas);
     };
-   
+
+    onViewTypeChange = (viewType: any) => {
+        this.paginationDataService.viewType(this.pageName, this.viewType);
+    };
+
+    onOrderChange = (order: any) => {
+        this.paginationDataService.sort(this.pageName, order);
+        this.tableOptionsService.setSortOption(this.pageName, order);
+        this.getSchemas();
+    };
+
+    onPaginationChange = (page: any, limit: any) => {
+        this.paginationDataService.currentPage(this.pageName, null, page);
+        this.currentPage = page;
+    };
+
+    /**
+     * Called when a user Clicks on a table Option
+     * @param option
+     */
+    selectedTableOption = (option: any) => {
+        var sortString = this.tableOptionsService.toSortString(option);
+        var savedSort = this.paginationDataService.sort(this.pageName, sortString);
+        var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
+        this.tableOptionsService.setSortOption(this.pageName, sortString);
+    };
+
+    /**
+     * Build the possible Sorting Options
+     * @returns {*[]}
+     */
+    loadSortOptions() {
+        var options = { 'Schema': 'schema' };
+        var sortOptions = this.tableOptionsService.newSortOptions(this.pageName, options, 'schema', 'asc');
+        this.tableOptionsService.initializeSortOption(this.pageName);
+        return sortOptions;
+    }
+
+    getSchemas() {
+        this.loading = true;
+        var successFn = (response: any) => {
+            this.schemas = response.data;
+            this.loading = false;
+        };
+        var errorFn = (err: any) => {
+            this.loading = false;
+        };
+
+        var limit = this.paginationDataService.rowsPerPage(this.pageName);
+        var start = limit == 'All' ? 0 : (limit * this.currentPage) - limit;
+        var sort = this.paginationData.sort;
+        var filter = this.paginationData.filter;
+        var params = { start: start, limit: limit, sort: sort, filter: filter };
+
+        var promise;
+        if (this.datasource.isHive) {
+            promise = this.$http.get(this.RestUrlService.HIVE_SERVICE_URL + "/schemas", { params: params });
+        } else {
+            promise = this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + this.datasource.id + "/schemas", { params: params });
+        }
+
+        promise.then(successFn, errorFn);
+        return promise;
+    }
+
+    onClickSchema = (schema: any) => {
+        this.stateService.FeedManager().Table().navigateToTables(this.datasource.id, schema);
+    };
+
+    getDatasource(datasourceId: any) {
+        this.loading = true;
+        var successFn = (response: any) => {
+            this.datasource = response;
+            this.cardTitle = this.datasource.name;
+            this.loading = false;
+        };
+        var errorFn = (err: any) => {
+            this.loading = false;
+        };
+        return this.datasourcesService.findById(this.datasourceId).then(successFn, errorFn);
+    }
+
 }
-angular.module(moduleName).controller('SchemasController',["$scope","$http","$q","$transition$","$filter","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","DatasourcesService",SchemasController]);
+angular.module(moduleName).component('schemasController', {
+    templateUrl: 'js/feed-mgr/tables/schemas.html',
+    controller: SchemasController,
+    controllerAs: "vm",
+    bindings : {
+        $transition$: '<'
+    }
+});
 

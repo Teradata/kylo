@@ -1,249 +1,223 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../../module-name";
+import { moduleName } from "../../module-name";
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import { UiComponentsService } from '../../../services/UiComponentsService';
+import { FeedService } from '../../../services/FeedService';
 
-
-
-    var directive = function () {
-        return {
-            restrict: "EA",
-            bindToController: {
-                stepIndex: '@',
-                cardTitle:'@',
-                processorPropertiesFieldName:'@'
-            },
-            scope: {},
-            controllerAs: 'vm',
-            templateUrl: 'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html',
-            controller: "RegisterProcessorPropertiesController",
-            link: function ($scope:any, element:any, attrs:any, controller:any) {
-
-            }
-
-        };
-    }
 export class RegisterProcessorPropertiesController {
 
-    model:any;
-    isValid:any;
-    availableExpressionProperties:any;
-    expressionProperties:any;
-    stepNumber:any;
-    stepIndex:any;
-    propertiesThatNeedAttention:any;
-    showOnlySelected:any;
-    filterString:any;
-    propertyRenderTypes:any;
-    processors:any;
-    visiblePropertyCount:any;
-    allProperties:any;
-    processorPropertiesFieldName:any;
-    selectedProperties:any;
-    onShowOnlySelected:any;
-    changedPropertyInput:any;
-    keydownPropertyInput:any;
-    onRenderTypeChange:any;
-    customSelectOptionChanged:any;
-    initializeRenderTypes:any;
-    searchExpressionProperties:any;
-    getExpressionPropertyTextRaw:any;
-    inputProcessorSelectionInvalid:any;
-    minProcessorItems:any;
-    scrollToProcessor:any;
-    topIndex:any;
-    propertiesForm:any;
-    
-    constructor(private $scope:any, private $element:any,private $http:any,private $q:any,private $mdToast:any
-        ,private $location:any,private $window:any,private RestUrlService:any, private RegisterTemplateService:any
-        ,private FeedService:any, private UiComponentsService:any) {
-
-        var self = this;
-        this.model = RegisterTemplateService.model;
-        this.isValid = true;
-
-        /**
+    model: any;
+    isValid: boolean = true;
+    /**
          * List of available expression properties.
          * @type {Object[]}
          */
-        self.availableExpressionProperties = RegisterTemplateService.propertyList;
-
-        /**
+    availableExpressionProperties: any;
+    /**
          * Expression properties for auto-complete.
          * @type {Object[]}
          */
-        self.expressionProperties =  self.availableExpressionProperties;
+    expressionProperties: any;
+    stepNumber: any;
+    stepIndex: any;
+    propertiesThatNeedAttention: boolean = false;
+    showOnlySelected: boolean = false;
+    filterString: any = null;
+    propertyRenderTypes: any[] = [];
+    processors: any[] = [];
+    visiblePropertyCount: number = 0;
+    allProperties: any[] = [];
+    processorPropertiesFieldName: any;
+    selectedProperties: any;
+    topIndex: any;
+    propertiesForm: any;
 
-        //BroadcastService.subscribe($scope,StepperService.ACTIVE_STEP_EVENT,onActiveStep)
-
+    ngOnInit() {
         //Filter attrs
-        this.stepNumber = parseInt(this.stepIndex)+1
-        this.propertiesThatNeedAttention = false;
-        this.showOnlySelected = false;
-        this.filterString = null;
+        this.stepNumber = parseInt(this.stepIndex) + 1
+    }
+    $onInit() {
+        this.ngOnInit();
+    }
 
-        self.propertyRenderTypes = [];
-        self.processors = [];
-        self.visiblePropertyCount = 0;
+    static readonly $inject = ["$scope", "$element", "$http", "$q", "$mdToast",
+        "$location", "$window", "RestUrlService", "RegisterTemplateService",
+        "FeedService", "UiComponentsService"];
 
+    constructor(private $scope: IScope, private $element: any, private $http: angular.IHttpService, private $q: angular.IQService, private $mdToast: angular.material.IToastService
+        , private $location: angular.ILocationService, private $window: angular.IWindowService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory
+        , private feedService: FeedService, private uiComponentsService: UiComponentsService) {
 
-        self.allProperties = [];
-
-
-
-        function transformPropertiesToArray() {
-            var propertiesKey = self.processorPropertiesFieldName+"Properties";
-            var processorsKey = self.processorPropertiesFieldName+"Processors";
-            self.allProperties = _.filter(self.model[propertiesKey],function(prop:any){return prop.hidden == undefined || prop.hidden == false});
-
-            // Find controller services
-            _.chain(self.allProperties).filter(function(property:any) {
-                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-                })
-                .each(FeedService.findControllerServicesForProperty);
+        this.model = registerTemplateService.model;
 
 
-            self.processors = self.model[processorsKey];
-            if(self.showOnlySelected){
-                showSelected();
-            }
-        }
-
-        function showSelected() {
-            var selectedProperties:any = [];
-            angular.forEach(self.allProperties,function(property:any) {
-                if(property.selected) {
-                    selectedProperties.push(property);
-                }
-            });
-
-            //sort them by processor name and property key
-            var propertiesAndProcessors = RegisterTemplateService.sortPropertiesForDisplay(selectedProperties);
-            self.allProperties = propertiesAndProcessors.properties;
-            self.processors = propertiesAndProcessors.processors;
-        }
-
-        this.onShowOnlySelected = function(){
-            transformPropertiesToArray();
-        }
-
-        this.changedPropertyInput = function(property:any) {
-            property.changed = true;
-        }
-
-        this.keydownPropertyInput = function(property:any) {
-            if( ! property.changed && property.sensitive ) {
-                property.value = "";
-            }
-        }
-
-        this.onRenderTypeChange = function(property:any){
-            if(property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
-                if(property.selectOptions == undefined){
-                    property.selectOptions = [];
-                }
-                property.renderOptions['selectCustom'] = 'true';
-            }
-            else {
-                property.renderOptions['selectCustom'] ='false';
-                property.selectOptions = undefined;
-                if(property.renderType =='password'){
-                    property.sensitive = true;
-                }
-            }
-        }
-
-        this.customSelectOptionChanged = function(property:any){
-            var str = JSON.stringify(property.selectOptions);
-            property.renderOptions['selectOptions'] = str;
-
-        }
+        this.availableExpressionProperties = registerTemplateService.propertyList;
 
 
-        function initializeRenderTypes() {
-            angular.forEach(RegisterTemplateService.codemirrorTypes,function(label:any,type:any){
-                self.propertyRenderTypes.push({type:type,label:label,codemirror:true});
-            });
-        }
+        this.expressionProperties = this.availableExpressionProperties;
 
-        $scope.$watch(function() {
-            return RegisterTemplateService.codemirrorTypes;
-        },function(newVal:any) {
-            initializeRenderTypes();
+        $scope.$watch(() => {
+            return this.registerTemplateService.codemirrorTypes;
+        }, (newVal: any) => {
+            this.initializeRenderTypes();
         })
 
-
-
-
-
-      $scope.$watchCollection(function(){
-          return self.model[self.processorPropertiesFieldName]
-      }, function(){
-          transformPropertiesToArray();
-        //  self.processors = filterProcessors(self.propertiesThatNeedAttention, self.showOnlySelected);
-        //  countVisibleProperties();
-      })
-
-       // $anchorScroll.yOffset = 200;
-         this.searchExpressionProperties = function(term:any) {
-            self.expressionProperties = self.availableExpressionProperties.filter(function (property:any) {
-                return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
-            });
-            return $q.when(self.expressionProperties);
-        };
-
-        this.getExpressionPropertyTextRaw = function(item:any) {
-          return '${'+item.key+'}';
-        };
-
-        this.inputProcessorSelectionInvalid = function() {
-          var selectedList =  _.filter(self.model.inputProcessors,function(processor:any){
-                return processor.selected;
-            });
-            if(selectedList == null || selectedList.length == 0){
-                self.isValid = false;
-                return true;
-            }
-            else {
-                self.isValid = true;
-                return false;
-            }
-
-        }
-
-        this.minProcessorItems = function(){
-            var windowHeight = angular.element($window).height();
-            var newHeight = windowHeight - 450;
-            var processorHeight = 48;
-            var minItems = Math.round(newHeight/processorHeight);
-            return minItems;
-        }
-
-
-        this.scrollToProcessor = function(processor:any){
-            var topIndex = processor.topIndex;
-            self.topIndex = topIndex;
-        }
-
+        $scope.$watchCollection(() => {
+            return this.model[this.processorPropertiesFieldName]
+        }, () => {
+            this.transformPropertiesToArray();
+            //  this.processors = filterProcessors(this.propertiesThatNeedAttention, this.showOnlySelected);
+            //  countVisibleProperties();
+        })
         // Update expression properties when table option changes
-        $scope.$watch(function () {
-            return self.model.templateTableOption;
-        }, function () {
-            if (self.model.templateTableOption !== "NO_TABLE" && angular.isArray(RegisterTemplateService.propertyList)) {
-                UiComponentsService.getTemplateTableOptionMetadataProperties(self.model.templateTableOption)
-                    .then(function (tableOptionMetadataProperties:any) {
-                        self.availableExpressionProperties = RegisterTemplateService.propertyList.concat(tableOptionMetadataProperties);
+        $scope.$watch(() => {
+            return this.model.templateTableOption;
+        }, () => {
+            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplateService.propertyList)) {
+                this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
+                    .then((tableOptionMetadataProperties: any) => {
+                        this.availableExpressionProperties = this.registerTemplateService.propertyList.concat(tableOptionMetadataProperties);
                     });
             } else {
-                self.availableExpressionProperties = RegisterTemplateService.propertyList;
+                this.availableExpressionProperties = this.registerTemplateService.propertyList;
             }
         });
     };
 
+    // $anchorScroll.yOffset = 200;
+    searchExpressionProperties = (term: any) => {
+        this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
+            return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
+        });
+        return this.$q.when(this.expressionProperties);
+    };
 
-    
+    getExpressionPropertyTextRaw = (item: any) => {
+        return '${' + item.key + '}';
+    };
+
+    inputProcessorSelectionInvalid = () => {
+        var selectedList = _.filter(this.model.inputProcessors, (processor: any) => {
+            return processor.selected;
+        });
+        if (selectedList == null || selectedList.length == 0) {
+            this.isValid = false;
+            return true;
+        }
+        else {
+            this.isValid = true;
+            return false;
+        }
+
+    }
+
+    minProcessorItems = () => {
+        var windowHeight = angular.element(this.$window).height();
+        var newHeight = windowHeight - 450;
+        var processorHeight = 48;
+        var minItems = Math.round(newHeight / processorHeight);
+        return minItems;
+    }
+
+
+    scrollToProcessor = (processor: any) => {
+        var topIndex = processor.topIndex;
+        this.topIndex = topIndex;
+    }
+    transformPropertiesToArray = () => {
+        var propertiesKey = this.processorPropertiesFieldName + "Properties";
+        var processorsKey = this.processorPropertiesFieldName + "Processors";
+        this.allProperties = _.filter(this.model[propertiesKey], (prop: any) => { return prop.hidden == undefined || prop.hidden == false });
+
+        // Find controller services
+        _.chain(this.allProperties).filter((property: any) => {
+            return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+        })
+            .each(this.feedService.findControllerServicesForProperty);
+
+
+        this.processors = this.model[processorsKey];
+        if (this.showOnlySelected) {
+            this.showSelected();
+        }
+    }
+
+    showSelected = () => {
+        var selectedProperties: any = [];
+        angular.forEach(this.allProperties, (property: any) => {
+            if (property.selected) {
+                selectedProperties.push(property);
+            }
+        });
+
+        //sort them by processor name and property key
+        var propertiesAndProcessors = this.registerTemplateService.sortPropertiesForDisplay(selectedProperties);
+        this.allProperties = propertiesAndProcessors.properties;
+        this.processors = propertiesAndProcessors.processors;
+    }
+
+    onShowOnlySelected = () => {
+        this.transformPropertiesToArray();
+    }
+
+    changedPropertyInput = (property: any) => {
+        property.changed = true;
+    }
+
+    keydownPropertyInput = (property: any) => {
+        if (!property.changed && property.sensitive) {
+            property.value = "";
+        }
+    }
+
+    onRenderTypeChange = (property: any) => {
+        if (property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
+            if (property.selectOptions == undefined) {
+                property.selectOptions = [];
+            }
+            property.renderOptions['selectCustom'] = 'true';
+        }
+        else {
+            property.renderOptions['selectCustom'] = 'false';
+            property.selectOptions = undefined;
+            if (property.renderType == 'password') {
+                property.sensitive = true;
+            }
+        }
+    }
+
+        toggleSetAsEmptyString(property:any){
+            if(property.value == ''){
+                property.value = null;
+            }
+            else {
+                property.value = '';
+            }
+        }
+
+    customSelectOptionChanged = (property: any) => {
+        var str = JSON.stringify(property.selectOptions);
+        property.renderOptions['selectOptions'] = str;
+
+    }
+
+
+    initializeRenderTypes = () => {
+        angular.forEach(this.registerTemplateService.codemirrorTypes, (label: any, type: any) => {
+            this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
+        });
+    }
+
 }
-
-angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope","$element","$http","$q","$mdToast","$location","$window","RestUrlService","RegisterTemplateService","FeedService","UiComponentsService",RegisterProcessorPropertiesController]);
-
 angular.module(moduleName)
-    .directive('thinkbigRegisterProcessorProperties', directive);
+    .component('thinkbigRegisterProcessorProperties', {
+        bindings: {
+            stepIndex: '@',
+            cardTitle: '@',
+            processorPropertiesFieldName: '@'
+        },
+        controllerAs: 'vm',
+        templateUrl: 'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html',
+        controller: RegisterProcessorPropertiesController,
+    });

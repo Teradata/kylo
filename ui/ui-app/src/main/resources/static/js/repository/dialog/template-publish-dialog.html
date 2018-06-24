@@ -1,0 +1,40 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div>
+  <span *ngIf="!success && !error">
+    <span class="card-title">Publish '{{data.templateName}}' to Resource Repository</span><br><br>
+    <div>Overwrite template if it already exists?</div><br><br>
+  </span>
+  <span *ngIf="success">
+    <ng-md-icon icon="check_circle" size="20" style="fill:green"></ng-md-icon>
+    <span class="card-title">Successfully published '{{data.templateName}}' to repository.</span>
+  </span>
+  <span *ngIf="error">
+    <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
+    <span class="card-title">Error publishing '{{data.templateName}}' to repository. Please try again later.</span>
+  </span>
+</div>
+<div style="float: right;"><br><br>
+  <span *ngIf="!success && !error">
+    <button mat-button class="warn center" (click)="publishTemplate(true)" aria-label="Publish">Yes</button>
+    <button mat-button class="primary center" (click)="publishTemplate(false)" aria-label="No">No</button>
+  </span>
+  <button mat-button class="center" aria-label="Cancel" (click)="close()">{{(success || error )? 'Close': 'Cancel'}}</button>
+</div>

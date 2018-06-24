@@ -8,6 +8,8 @@ import {SparkConstants} from "./spark-constants";
 /** Name of the DatasourceProvider variable */
 const DATASOURCE_PROVIDER = "datasourceProvider";
 
+const DATASET_PROVIDER = "catalogDataSetProvider";
+
 /**
  * Handles transformations from a visual query model to Spark.
  */
@@ -31,8 +33,10 @@ export class SparkQueryParser extends QueryParser {
     protected fromSql(sql: string, datasources: UserDatasource[]): string {
         if (datasources != null && datasources.length !== 1) {
             throw new Error("Not valid datasources: " + datasources);
+        } else if( datasources != null && datasources.length >0 && datasources[0].id === SparkConstants.USER_FILE_DATASOURCE) {
+            return "";
         } else if (datasources == null || datasources.length === 0 || datasources[0].id === SparkConstants.HIVE_DATASOURCE) {
-            return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
+                return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
         } else {
             let subquery = "(" + sql + ") AS KYLO_SPARK_QUERY";
             return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = " + DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(subquery) + "\", \""
@@ -74,13 +78,20 @@ export class SparkQueryParser extends QueryParser {
         // Build table script
         let script = "";
 
+        //add in the imports for kylo catalog
+
+
         _.keys(tablesByAlias).sort().forEach(function (alias) {
             let table = tablesByAlias[alias];
 
             script += "val " + alias + " = ";
-            if (typeof table.datasourceId === "string" && table.datasourceId !== SparkConstants.HIVE_DATASOURCE) {
-                script += DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\", \"" + table.datasourceId
-                    + "\", sqlContext)";
+            if (typeof table.datasourceId === "string" && table.datasourceId !== SparkConstants.HIVE_DATASOURCE ) {
+                if(table.dataset != undefined) {
+                    script += DATASET_PROVIDER +".read(\""+table.dataset.id+"\")";
+                }else {
+                    script += DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\", \"" + table.datasourceId
+                        + "\", sqlContext)";
+                }
             } else {
                 script += "sqlContext.table(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\")"
             }
@@ -98,7 +109,7 @@ export class SparkQueryParser extends QueryParser {
             script += target.val.fields[0] + ".col(\"" + StringUtils.escapeScala(target.val.fields[1]) + "\")";
             if (target.name !== null || target.description !== null) {
                 script += ".as(\"" + StringUtils.escapeScala((target.name !== null) ? target.name : target.val.fields[1]) + "\"";
-                if (target.description !== null) {
+                if (target.description !== null && target.description != undefined) {
                     script += ", new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", \"" + StringUtils.escapeScala(target.description) + "\").build()";
                 }
                 script += ")"

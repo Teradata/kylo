@@ -19,14 +19,12 @@ class ModuleFactory  {
 
     configFn($stateProvider: any){
        $stateProvider.state(AccessConstants.UI_STATES.CATALOG.state,{
-            url:'/catalog',
+            url:'/tables',
             params: {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/catalog.html',
-                    controller:"CatalogController",
-                    controllerAs:"vm"
+                    component:"catalogController",
                 }
             },
             resolve: {
@@ -41,15 +39,13 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.SCHEMAS.state,{
-            url:'/catalog/{datasource}/schemas',
+            url:'/tables/{datasource}/schemas',
             params: {
                 datasource: null
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/schemas.html',
-                    controller:"SchemasController",
-                    controllerAs:"vm"
+                    component:"schemasController",
                 }
             },
             resolve: {
@@ -64,16 +60,14 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
-            url:'/catalog/{datasource}/schemas/{schema}',
+            url:'/tables/{datasource}/schemas/{schema}',
             params: {
                 datasource: null,
                 schema: null
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/tables.html',
-                    controller:"TablesController",
-                    controllerAs:"vm"
+                    component:"tablesController"
                 }
             },
             resolve: {
@@ -88,7 +82,7 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
-            url:'/catalog/{datasource}/schemas/{schema}/{tableName}',
+            url:'/tables/{datasource}/schemas/{schema}/{tableName}',
             params: {
                 datasource: null,
                 schema: null,
@@ -96,9 +90,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/tables/table.html',
-                    controller:"TableController",
-                    controllerAs:"vm"
+                   component : 'tableController'
                 }
             },
             resolve: {

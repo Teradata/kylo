@@ -84,9 +84,6 @@ thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
   border-right: 1px solid #e6e6e6;
 }
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
-  background-color: whitesmoke;
-}
-thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
   background-color: rgba(0, 0, 0, 0.01);
 }
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
@@ -201,4 +198,13 @@ thinkbig-visual-query-transform md-menu-content.md-kylo-theme md-menu-item {
 thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
   background-color: transparent !important;
   opacity: 1;
+}
+
+/**
+  Override toolbar buttons
+   */
+.visual-query-column-menu .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
 }

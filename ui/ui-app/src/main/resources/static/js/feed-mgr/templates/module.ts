@@ -5,7 +5,6 @@ import AccessConstants from '../../constants/AccessConstants';
 import "@uirouter/angularjs";
 import "kylo-feedmgr";
 import "kylo-common";
-import {KyloServicesModule} from "../../services/services.module";
 import "ment-io";
 import "jquery";
 import "angular-drag-and-drop-lists";
@@ -15,7 +14,7 @@ class ModuleFactory  {
     constructor () {
         this.module = angular.module(moduleName,[]); 
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
-        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);      
+        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
     }
     configFn($stateProvider:any) {
       $stateProvider.state('registered-templates',{
@@ -24,9 +23,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/registered-templates.html',
-                    controller:'RegisteredTemplatesController',
-                    controllerAs:'vm'
+                    component : "registeredTemplatesController"
                 }
             },
             resolve: {
@@ -46,9 +43,7 @@ class ModuleFactory  {
             url:'/register-new-template',
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/new-template/register-new-template.html',
-                    controller:'RegisterNewTemplateController',
-                    controllerAs:'vm'
+                    component: "registerNewTemplateController"
                 }
             },
             resolve: {
@@ -70,9 +65,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template.html',
-                    controller:'RegisterTemplateController',
-                    controllerAs:'vm'
+                    component : "registerTemplateController"
                 }
             },
             resolve: {
@@ -92,9 +85,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
-                    controller:'RegisterTemplateCompleteController',
-                    controllerAs:'vm'
+                    component : "registerTemplateCompleteController"
                 }
             },
             data: {
@@ -102,26 +93,6 @@ class ModuleFactory  {
                 displayName: 'Register Template',
                 module:moduleName,
                 permissions:AccessConstants.TEMPLATES_EDIT
-            }
-        }).state('import-template',{
-            url:'/import-template',
-            params: {
-            },
-            views: {
-                'content': {
-                    templateUrl:  'js/feed-mgr/templates/import-template/import-template.html',
-                    controller:'ImportTemplateController',
-                    controllerAs:'vm'
-                }
-            },
-            resolve: {
-                loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/import-template/ImportTemplateController'])
-            },
-            data:{
-                breadcrumbRoot:false,
-                displayName:'Template Manager',
-                module:moduleName,
-                permissions:AccessConstants.TEMPLATES_IMPORT
             }
         });
     }  

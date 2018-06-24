@@ -26,6 +26,24 @@ export interface ColumnController {
      */
     pushFormula(formula: any, context: any, doQuery?: boolean, refreshGrid?:boolean): IPromise<{}>;
 
+    /**
+     * Adds the column filter to the grid
+     * @param filter
+     * @param column
+     */
+    addColumnFilter(filter: any, column: any, query ?: boolean) :IPromise<{}>;
+
+    /**
+     *
+     * @param {string} direction
+     * @param column
+     * @param {boolean} query
+     * @return {angular.IPromise<any>}
+     */
+    addColumnSort(direction:string,column:any,query?:boolean) : IPromise<{}>;
+
+
+
     showAnalyzeColumn(fieldName: string) : any;
 
     /**

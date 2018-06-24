@@ -102,4 +102,8 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
     public List<OutputRow> getStatistics() {
         return this.outputRows;
     }
+
+    public static void main(String[] args) {
+
+    }
 }

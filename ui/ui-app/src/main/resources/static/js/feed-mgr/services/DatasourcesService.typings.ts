@@ -1,4 +1,4 @@
-import {TableSchema} from "../model/table-schema";
+import {TableSchema} from "../visual-query/wrangler/index";
 
 export declare namespace DatasourcesServiceStatic {
 

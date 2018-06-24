@@ -135,6 +135,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     private Boolean clustered = null;
 
+    private Boolean remoteProcessGroupEnabled = null;
+
 
     private Optional<TemplateRemoteInputPortConnections> existingRemoteProcessInputPortInformation;
 
@@ -233,6 +235,13 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         return clustered != null ? clustered : false;
     }
 
+    private boolean isRemoteProcessGroupsEnabled(){
+        if(remoteProcessGroupEnabled == null){
+            remoteProcessGroupEnabled = registeredTemplateService.isRemoteProcessGroupsEnabled();
+        }
+        return remoteProcessGroupEnabled;
+    }
+
     /**
      * Validates the user has supplied some input ports to be created as remote ports
      *
@@ -245,7 +254,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         //2) add these as 'selected' to the list
         //3) if some of those dont appear in the new list add as warning (these will be removed)
         boolean valid = true;
-        if (!isClustered()) {
+        if (!isRemoteProcessGroupsEnabled()) {
             return true;
         }
         return validateRemoteInputPorts(importTemplate.getTemplateResults().getProcessGroupEntity().getContents().getInputPorts());
@@ -260,6 +269,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     public boolean importTemplate() {
         boolean validReusableTemplate = importIntoNiFiAndCreateInstance();
+        templateConnectionUtil.ensureReusableTemplateProcessGroup();
 
         //Check and set the Remote PRocess group settings.
         //use this later to determine if we need to create NiFi Flow input ports connected to this template
@@ -468,7 +478,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         importStatusMessage.update("Connected and validated components for " + importTemplate.getTemplateName(), valid);
 
         //create any remote process group ports and connect them on the main NiFi canvas
-        if (isClustered()) {
+        if (isRemoteProcessGroupsEnabled()) {
             ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
             if (remoteProcessGroupOption.isUserAcknowledged() && remoteProcessGroupOption.isShouldImport()) {
                 if (remoteProcessGroupOption.getRemoteProcessGroupInputPortsForTemplate(importTemplate.getTemplateName()).stream().anyMatch(inputPort -> inputPort.isSelected())) {

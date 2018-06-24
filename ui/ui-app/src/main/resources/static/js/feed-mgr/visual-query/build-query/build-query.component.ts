@@ -3,9 +3,11 @@ import * as angular from "angular";
 import * as _ from "underscore";
 
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {TableSchema} from "../../model/table-schema";
+import {TableSchema} from "../wrangler";
 import {UserDatasource} from "../../model/user-datasource";
 import {QueryEngine} from "../wrangler/query-engine";
+import {SchemaField} from "../wrangler";
+import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const flowchart: any;
 
@@ -61,7 +63,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     /**
      * Model for the chart.
      */
-    chartViewModel: any;
+    chartViewModel: any = {};
 
     /**
      * Indicates that there was an error retrieving the list of tables.
@@ -135,7 +137,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     /**
      * Controller for parent stepper component.
      */
-    stepperController: object;
+    stepperController: any;
 
     /**
      * Autocomplete for the table selector.
@@ -155,11 +157,15 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     private nativeDataSourceIds: string[] = [];
 
+    private fileDataSource : UserDatasource = {id:"FILE",name:"Local File", description:"Local File",type:"File"}
+
+    static readonly $inject = ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "$timeout","Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
+        "DatasourcesService"]
     /**
      * Constructs a {@code BuildQueryComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
-                private $document: angular.IDocumentService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
+                private $document: angular.IDocumentService, private $timeout: angular.ITimeoutService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
                 private VisualQueryService: any, private FeedService: any, private DatasourcesService: any) {
         // Setup initializers
         this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
@@ -208,18 +214,16 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Initialize state from services.
      */
     private init() {
-        const self = this;
-
         // Get the list of data sources
-        Promise.all([self.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
+        Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
-                self.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
+                this.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
 
-                const supportedDatasources = resultList[0].concat(resultList[1]).filter(self.engine.supportsDataSource);
+                const supportedDatasources = resultList[0].concat(resultList[1]).filter(this.engine.supportsDataSource);
                 if (supportedDatasources.length > 0) {
                     return supportedDatasources;
                 } else {
-                    const supportedNames = (function (supportedNameList) {
+                    const supportedNames = ((supportedNameList) =>{
                         if (supportedNameList.length === 0) {
                             return "";
                         } else if (supportedNameList.length === 1) {
@@ -227,31 +231,32 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                         } else {
                             return `Please create one of the following data sources and try again: ${supportedNameList.join(", ")}`;
                         }
-                    })(self.engine.getSupportedDataSourceNames());
+                    })(this.engine.getSupportedDataSourceNames());
                     throw new Error("No supported data sources were found. " + supportedNames);
                 }
             })
             .then((datasources: UserDatasource[]) => {
-                self.availableDatasources = datasources;
-                if (self.model.$selectedDatasourceId == null) {
-                    self.model.$selectedDatasourceId = datasources[0].id;
+                this.availableDatasources = datasources;
+                //add in the File data source
+                this.availableDatasources.push(this.fileDataSource);
+                if (this.model.$selectedDatasourceId == null) {
+                    this.model.$selectedDatasourceId = datasources[0].id;
                 }
-                self.validate();
+                this.validate();
             })
             .catch((err: string) => {
-                self.error = err;
+                this.error = err;
             })
-            .then(function () {
-                self.loadingPage = false;
+            .then(() => {
+                this.loadingPage = false;
             });
     }
+
 
     /**
      * Initialize the key bindings.
      */
     private initKeyBindings() {
-        const self = this;
-
         //
         // Set to true when the ctrl key is down.
         //
@@ -260,7 +265,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         //
         // Event handler for key-down on the flowchart.
         //
-        this.$document.bind('keydown', function (evt: JQueryKeyEventObject) {
+        this.$document.bind('keydown', (evt: JQueryKeyEventObject) => {
             if (evt.keyCode === CTRL_KEY_CODE) {
                 ctrlDown = true;
                 evt.stopPropagation();
@@ -271,25 +276,25 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         //
         // Event handler for key-up on the flowchart.
         //
-        this.$document.bind('keyup', function (evt: JQueryKeyEventObject) {
+        this.$document.bind('keyup', (evt: JQueryKeyEventObject) => {
             if (evt.keyCode === DELETE_KEY_CODE) {
                 //
                 // Delete key.
                 //
-                self.chartViewModel.deleteSelected();
-                self.validate();
+                this.chartViewModel.deleteSelected();
+                this.validate();
             }
 
             if (evt.keyCode == A_KEY_CODE && ctrlDown) {
                 //
                 // Ctrl + A
                 //
-                self.chartViewModel.selectAll();
+                this.chartViewModel.selectAll();
             }
 
             if (evt.keyCode == ESC_KEY_CODE) {
                 // Escape.
-                self.chartViewModel.deselectAll();
+                this.chartViewModel.deselectAll();
             }
 
             if (evt.keyCode === CTRL_KEY_CODE) {
@@ -301,11 +306,36 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         });
     }
 
+    addPreviewDataSets(){
+        if(this.model.datasets && this.model.datasets.length >0){
+            this.model.datasets.forEach((dataset :SparkDataSet)=> {
+                let tableSchema :any = {};
+                tableSchema.schemaName = dataset.id;
+                tableSchema.name = dataset.id;
+                tableSchema.fields = dataset.schema.map(tableColumn => {
+                    let field :any= {};
+                    field.name = tableColumn.name;
+                    field.description = null;
+                    field.nativeDataType = tableColumn.dataType;
+                    field.derivedDataType = tableColumn.dataType;
+                    field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
+                    return field;
+                });
+                let nodeName = tableSchema.name;
+
+                this.addDataSetToCanvas(dataset.dataSource.id,nodeName,tableSchema, dataset);
+
+            });
+
+
+
+        }
+    }
+
     /**
      * Initialize the model for the flowchart.
      */
     setupFlowChartModel() {
-        const self = this;
         // Load data model
         let chartDataModel: any;
         if (this.model.chartViewModel != null) {
@@ -315,17 +345,48 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Prepare nodes
-        angular.forEach(chartDataModel.nodes, function (node: any) {
+        angular.forEach(chartDataModel.nodes, (node: any) => {
             // Add utility functions
-            self.prepareNode(node);
+            this.prepareNode(node);
 
             // Determine next node ID
-            self.nextNodeID = Math.max(node.id + 1, self.nextNodeID);
+            this.nextNodeID = Math.max(node.id + 1, this.nextNodeID);
         });
 
         // Create view model
         this.chartViewModel = new flowchart.ChartViewModel(chartDataModel, this.onCreateConnectionCallback.bind(this), this.onEditConnectionCallback.bind(this),
             this.onDeleteSelectedCallback.bind(this));
+    }
+
+    onDatasourceChange(){
+        this.tablesAutocomplete.searchText = '';
+
+        if(this.model.$selectedDatasourceId == 'FILE'){
+            //warn if the user has other items
+            if(this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length >0) ){
+                //WARN if you upload a file you will lose your other data
+                this.$mdDialog.show(
+                    this.$mdDialog.confirm()
+                        .parent($("body"))
+                        .clickOutsideToClose(true)
+                        .title("Upload a local file")
+                        .textContent("If you switch and upload a local file you will lose your other data sources. Are you sure you want to continue?")
+                        .ariaLabel("Upload local file or stay in visual editor?")
+                        .ok("Continue")
+                        .cancel("Cancel"))
+                        .then(() => {
+                            this.chartViewModel.nodes= [];
+                            this.model.chartViewModel = null;
+                        },() => {
+                            this.model.$selectedDatasourceId = this.availableDatasources[0].id;
+                        });
+
+            }
+        }
+        else {
+            this.model.sampleFile = null;
+            this.engine.setSampleFile(null);
+        }
     }
 
     /**
@@ -334,10 +395,9 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * @param table - the table name
      */
     private getTableSchema(schema: string, table: string): Promise<TableSchema> {
-        const self = this;
         return this.engine.getTableSchema(schema, table, this.model.$selectedDatasourceId)
-            .then(function (tableSchema: TableSchema) {
-                self.loadingSchema = false;
+            .then((tableSchema: TableSchema) => {
+                this.loadingSchema = false;
                 return tableSchema;
             });
     }
@@ -348,7 +408,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * TODO enhance to check if there are any tables without connections
      */
     private validate() {
-        const self = this;
         if (this.advancedMode) {
             let sql = this.advancedModeSql();
             this.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
@@ -357,13 +416,15 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.model.chartViewModel = null;
             this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
+        } else if (this.model.$selectedDatasourceId =='FILE'){
+          this.isValid = angular.isDefined(this.model.sampleFile);
         } else if (this.chartViewModel.nodes != null) {
             this.isValid = (this.chartViewModel.nodes.length > 0);
 
             this.model.chartViewModel = this.chartViewModel.data;
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => self.nativeDataSourceIds.indexOf(id) < 0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id) < 0);
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -379,13 +440,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             let tableWidth = 250;
 
             //reduce the set to just show those in the top row
-            let tables = _.filter(this.chartViewModel.data.nodes, function (table: any) {
+            let tables = _.filter(this.chartViewModel.data.nodes, (table: any) => {
                 return table.y <= yThreshold;
             });
             //sort by x then y (underscore sort is reverse thinking)
             tables = _.chain(tables).sortBy('y').sortBy('x').value();
             let lastX = coord.x;
-            _.some(tables, function (table: any) {
+            _.some(tables, (table: any) => {
                 //if this table is within the top row
                 //move over to find the next X position on the top row that is open
                 if (table.x < lastX + tableWidth) {
@@ -411,11 +472,10 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Turn on SQL mode.
      */
     toggleAdvancedMode() {
-        let self = this;
         if (this.advancedMode === false) {
-            let goAdvanced = function () {
-                self.advancedMode = true;
-                self.advancedModeText = "Visual Mode";
+            let goAdvanced = () => {
+                this.advancedMode = true;
+                this.advancedModeText = "Visual Mode";
             };
             if (this.chartViewModel.nodes.length > 0) {
                 this.$mdDialog.show(
@@ -473,7 +533,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
          */
         node.nodeAttributes.selectAll = function (): void {
             let selected: any = [];
-            angular.forEach(this.attributes, function (attr: any) {
+            angular.forEach(this.attributes, (attr: any) => {
                 attr.selected = true;
                 selected.push(attr);
             });
@@ -499,7 +559,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
          * Deselects all attributes.
          */
         node.nodeAttributes.deselectAll = function (): void {
-            angular.forEach(this.attributes, function (attr: any) {
+            angular.forEach(this.attributes, (attr: any) => {
                 attr.selected = false;
             });
             this.selected = [];
@@ -511,57 +571,64 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     // Add a new node to the chart.
     //
     onTableClick(table: any) {
-        const self = this;
 
         //get attributes for table
         const datasourceId = this.model.$selectedDatasourceId;
         const nodeName = table.schema + "." + table.tableName;
-        this.getTableSchema(table.schema, table.tableName).then(function (schemaData: any) {
-            //
-            // Template for a new node.
-            //
-            const coord = self.getNewXYCoord();
-
-            angular.forEach(schemaData.fields, function (attr: any) {
-                attr.selected = true;
-                if (self.engine.useNativeDataType) {
-                    attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();
-                }
-            });
-            const newNodeDataModel: any = {
-                name: nodeName,
-                id: self.nextNodeID++,
-                datasourceId: datasourceId,
-                x: coord.x,
-                y: coord.y,
-                nodeAttributes: {
-                    attributes: schemaData.fields,
-                    reference: [table.schema, table.tableName],
-                    selected: []
-                },
-                connectors: {
-                    top: {},
-                    bottom: {},
-                    left: {},
-                    right: {}
-                },
-                inputConnectors: [
-                    {
-                        name: ""
-                    }
-                ],
-                outputConnectors: [
-                    {
-                        name: ""
-                    }
-                ]
-            };
-            self.prepareNode(newNodeDataModel);
-            self.chartViewModel.addNode(newNodeDataModel);
-            self.validate();
+        this.getTableSchema(table.schema, table.tableName).then((schemaData: TableSchema) => {
+            let nodeName = schemaData.schemaName + "." + schemaData.name;
+            this.addDataSetToCanvas(datasourceId, nodeName,schemaData)
         });
 
     };
+
+
+    private addDataSetToCanvas(datasourceId:string,nodeName:string,tableSchema:TableSchema, dataset?:SparkDataSet){
+        //
+        // Template for a new node.
+        //
+
+        const coord = this.getNewXYCoord();
+
+        angular.forEach(tableSchema.fields,  (field: SchemaField) =>{
+            field.selected = true;
+            if (this.engine.useNativeDataType) {
+                field.dataTypeWithPrecisionAndScale = field.nativeDataType.toLowerCase();
+            }
+        });
+        const newNodeDataModel: any = {
+            name: nodeName,
+            id: this.nextNodeID++,
+            datasourceId: datasourceId,
+            dataset:dataset,
+            x: coord.x,
+            y: coord.y,
+            nodeAttributes: {
+                attributes: tableSchema.fields,
+                reference: [tableSchema.schemaName, tableSchema.name],
+                selected: []
+            },
+            connectors: {
+                top: {},
+                bottom: {},
+                left: {},
+                right: {}
+            },
+            inputConnectors: [
+                {
+                    name: ""
+                }
+            ],
+            outputConnectors: [
+                {
+                    name: ""
+                }
+            ]
+        };
+        this.prepareNode(newNodeDataModel);
+        this.chartViewModel.addNode(newNodeDataModel);
+        this.validate();
+    }
 
     /**
      * Parses the tables on the canvas and returns a SQL string, along with populating the self.selectedColumnsAndTables array of objects.
@@ -627,7 +694,6 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     };
 
     showConnectionDialog(isNew: any, connectionViewModel: any, connectionDataModel: any, source: any, dest: any) {
-        const self = this;
         this.chartViewModel.deselectAll();
         this.$mdDialog.show({
             controller: 'ConnectionDialog',
@@ -642,14 +708,26 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                 dest: dest
             }
         })
-            .then(function (msg: any) {
+            .then( (msg: any) => {
                 if (msg === "delete" || (isNew && msg === "cancel")) {
                     connectionViewModel.select();
-                    self.chartViewModel.deleteSelected();
+                    this.chartViewModel.deleteSelected();
                 }
-                self.validate();
+                this.validate();
             });
     };
+
+    /**
+     * callback after a user selects a file from the local file system
+     */
+    onFileUploaded(){
+        let step = this.stepperController.getStep(this.stepIndex)
+        if(step) {
+            this.$timeout(() => {
+                this.stepperController.selectedStepIndex = step.nextActiveStepIndex;
+            },10)
+        }
+    }
 
     // -----------------
     // Angular Callbacks
@@ -677,7 +755,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Allow for SQL editing
-        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null) {
+        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null && (angular.isUndefined(this.model.sampleFile) || this.model.sampleFile == null)) {
             this.advancedMode = true;
             this.advancedModeText = "Visual Mode";
         } else {
@@ -692,6 +770,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
 
             // Setup the flowchart Model
             this.setupFlowChartModel();
+
+            this.addPreviewDataSets();
 
             // Validate when the page loads
             this.validate();
@@ -727,14 +807,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * Search the list of table names.
      */
     onAutocompleteQuerySearch(txt: any) {
-        const self = this;
         const tables = this.engine.searchTableNames(txt, this.model.$selectedDatasourceId);
         if (tables instanceof Promise) {
-            return tables.then(function (tables: any) {
-                self.databaseConnectionError = false;
+            return tables.then( (tables: any) => {
+                this.databaseConnectionError = false;
                 return tables;
-            }, function (): any {
-                self.databaseConnectionError = true;
+            }, () => {
+                this.databaseConnectionError = true;
                 return [];
             });
         } else {
@@ -743,11 +822,11 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     }
 
     onAutocompleteRefreshCache() {
-        const successFn = function() {
+        const successFn = () => {
             let searchText = this.tablesAutocomplete.searchText.trim();
             angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
         };
-        const errorFn = function() {
+        const errorFn = () => {
         };
         this.HiveService.refreshTableCache().then(successFn, errorFn);
     }
@@ -760,8 +839,7 @@ angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
         model: "=",
         stepIndex: "@"
     },
-    controller: ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
-        "DatasourcesService", QueryBuilderComponent],
+    controller: QueryBuilderComponent,
     controllerAs: "$bq",
     require: {
         stepperController: "^thinkbigStepper"

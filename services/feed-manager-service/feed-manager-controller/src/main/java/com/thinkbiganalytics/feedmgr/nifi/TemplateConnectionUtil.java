@@ -87,6 +87,9 @@ public class TemplateConnectionUtil {
         return niFiObjectCache.getRootProcessGroup();
     }
 
+    public void ensureReusableTemplateProcessGroup(){
+        niFiObjectCache.ensureReusableTemplateProcessGroup();
+    }
 
     @Nullable
     public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
@@ -363,6 +366,9 @@ public class TemplateConnectionUtil {
 
 
     public Optional<TemplateRemoteInputPortConnections> getRemoteInputPortsForReusableTemplate(ProcessGroupDTO reusableTemplateProcessGroup, String templateName){
+        if(reusableTemplateProcessGroup == null || reusableTemplateProcessGroup.getContents() == null){
+            reusableTemplateProcessGroup = getReusableTemplateCategoryProcessGroup(true);
+        }
         String
             templateGroupId =
             reusableTemplateProcessGroup.getContents().getProcessGroups().stream().filter(g -> g.getName().equalsIgnoreCase(templateName)).map(g -> g.getId())

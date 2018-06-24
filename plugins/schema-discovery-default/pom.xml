@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-plugins</artifactId>
     <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -89,11 +89,6 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.databricks</groupId>
-      <artifactId>spark-xml_2.11</artifactId>
-      <version>0.4.1</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

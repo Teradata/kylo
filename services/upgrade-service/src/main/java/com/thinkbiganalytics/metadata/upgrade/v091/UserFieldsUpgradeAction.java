@@ -34,12 +34,14 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.upgrade.v083.HiveColumnsUpgradeAction;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 
@@ -49,6 +51,7 @@ import org.springframework.stereotype.Component;
  */
 @Component("UserFieldsUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
+@Order(HiveColumnsUpgradeAction.UPGRADE_ORDER - 1) // Run before HiveColumnsUpgradeAction when upgrading to v0.8.3
 public class UserFieldsUpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UserFieldsUpgradeAction.class);
@@ -64,26 +67,34 @@ public class UserFieldsUpgradeAction implements UpgradeState {
     
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        return version.matches("0.9", "1", "");
+        return version.matches("0.8", "3", "") || version.matches("0.9", "1", "");
     }
 
     @Override
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Refactoring user field management: {}", targetVersion);
         
-        initializeGlobalFields();
+        if (targetVersion.matches("0.8", "3", "")) {
+            // When upgrading to v0.8.3 this must be initialized in order not to
+            // break HiveColumnsUpgradeAction. 
+            initializeGlobalFields();
+        }
         
-        this.extensibleTypeProvider.getTypes().forEach(type -> {
-            String typeName = type.getName();
+        if (targetVersion.matches("0.9", "1", "")) {
+            initializeGlobalFields();
             
-            if (typeName.equals(ExtensionsConstants.USER_CATEGORY)) {
-                upgradeGlobalCategoryFields(type);
-            } else if (typeName.equals(ExtensionsConstants.USER_FEED)) {
-                upgradeGlobalFeedFields(type);
-            } else if (typeName.startsWith(ExtensionsConstants.USER_CATEGORY)) {
-                upgradeCategoryFeedFields(type);
-            }
-        });
+            this.extensibleTypeProvider.getTypes().forEach(type -> {
+                String typeName = type.getName();
+                
+                if (typeName.equals(ExtensionsConstants.USER_CATEGORY)) {
+                    upgradeGlobalCategoryFields(type);
+                } else if (typeName.equals(ExtensionsConstants.USER_FEED)) {
+                    upgradeGlobalFeedFields(type);
+                } else if (typeName.startsWith(ExtensionsConstants.USER_CATEGORY)) {
+                    upgradeCategoryFeedFields(type);
+                }
+            });
+        }
     }
 
     private void initializeGlobalFields() {

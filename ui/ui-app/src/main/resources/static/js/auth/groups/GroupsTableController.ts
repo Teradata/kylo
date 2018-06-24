@@ -1,51 +1,62 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-
-import {UserService} from "../services/UserService";
 import {moduleName} from "../module-name";
-
+import UserService from "../services/UserService";
+import AddButtonService from  "../../services/AddButtonService";
+import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
+import StateService from  "../../services/StateService";
+import {DefaultTableOptionsService} from  "../../services/TableOptionsService";
+import "../module";
+import "../module-require";
+/**
+ * Identifier for this page.
+ * @type {string}
+ */
 const PAGE_NAME:string = "groups";
-//const moduleName = require('auth/module-name');
 
 export default class GroupsTableController implements ng.IComponentController {
-  /**
+    /**
      * Page title.
      * @type {string}
      */
     cardTitle:string = "Groups";
-
     /**
      * Index of the current page.
      * @type {number}
      */
-    currentPage:any = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
-
+    currentPage:number = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
     /**
      * Helper for table filtering.
      * @type {*}
      */
     filter:any = this.PaginationDataService.filter(PAGE_NAME);
-     /**
+    /**
      * Indicates that the table data is being loaded.
      * @type {boolean}
      */
     loading:boolean = true;
-
     /**
      * Identifier for this page.
      * @type {string}
      */
-    pageName = PAGE_NAME;
-
-
+    pageName:string = PAGE_NAME;
     /**
      * Helper for table pagination.
      * @type {*}
      */
-    paginationData  = this.getPaginatedData();
-    sortOptions     = this.getSortOptions();
-   // selectedTableOption = this.getSelectedTableOption(this.$scope);
-  
+    paginationData = this.getPaginatedData();
+    sortOptions    = this.getSortOptions();
+    /**
+     * List of groups.
+     * @type {Array.<GroupPrincipal>}
+     */
+    groups:any[] = [];
+    // options:any = this.TableOptionsService.currentOption;
+    /**
+     * Type of view for the table
+     * @type {any}
+     */
+    viewType:any = this.PaginationDataService.viewType(PAGE_NAME);
     getPaginatedData () {
         var paginationData = this.PaginationDataService.paginationData(PAGE_NAME);
         this.PaginationDataService.setRowsPerPageOptions(PAGE_NAME, ['5', '10', '20', '50']);
@@ -54,8 +65,7 @@ export default class GroupsTableController implements ng.IComponentController {
     getSortOptions() {
        var fields = { "Title": "title", "Description": "description", "Members": "memberCount" };
        var sortOptions = this.TableOptionsService.newSortOptions(PAGE_NAME, fields, "title", "asc");  
-        var currentOption = this.TableOptionsService.getCurrentSort(PAGE_NAME);
-        
+       var currentOption = this.TableOptionsService.getCurrentSort(PAGE_NAME);
         if (currentOption) {
             this.TableOptionsService.saveSortOption(PAGE_NAME, currentOption)
         }
@@ -63,57 +73,32 @@ export default class GroupsTableController implements ng.IComponentController {
     }
     /**
      * Updates the order of the table.
-     *
      * @param option the sort order
      */
     selectedTableOption =(option: any)=> {
-  // getSelectedTableOption(option: any) {
-        /*  this.TableOptionsService.toSortString(option)
-                .then((sortString: any)=> {
-                    this.PaginationDataService.sort(this.pageName, sortString);
-                    this.TableOptionsService.toggleSort(this.pageName, option);
-                    this.TableOptionsService.setSortOption(this.pageName, sortString);
-                });*/
         var sortString = this.TableOptionsService.toSortString(option);
-      // alert(this.options);
         this.PaginationDataService.sort(this.pageName, sortString);
         this.TableOptionsService.toggleSort(this.pageName, option);
         this.TableOptionsService.setSortOption(this.pageName, sortString);
     };
-      /**
-     * List of groups.
-     * @type {Array.<GroupPrincipal>}
-     */
-    groups:any = [];
-
-   // options:any = this.TableOptionsService.currentOption;
     /**
-     * Type of view for the table.
-     * @type {any}
-     */
-    viewType:any = this.PaginationDataService.viewType(PAGE_NAME);
-     /**
      * Gets the display name of the specified group. Defaults to the system name if the display name is blank.
-     *
      * @param group the group
      * @returns {string} the display name
      */
     getDisplayName(group:any) {
         return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
     };
-
      /**
      * Updates the order of the table.
-     *
      * @param order the sort order
      */
     onOrderChange=(order:any)=> {
         this.PaginationDataService.sort(this.pageName, order);
         this.TableOptionsService.setSortOption(this.pageName, order);
     };
- /**
+    /**
      * Updates the pagination of the table.
-     *
      * @param page the page number
      */
     onPaginationChange =(page:any)=> {
@@ -121,14 +106,11 @@ export default class GroupsTableController implements ng.IComponentController {
         this.currentPage = page;
     };
 
-  
-
     /**
-         * Gets the title of the specified group. Defaults to the system name if the title is blank.
-         *
-         * @param group the group
-         * @returns {string} the title
-         */
+     * Gets the title of the specified group. Defaults to the system name if the title is blank.
+     * @param group the group
+     * @returns {string} the title
+     */
     getTitle = function(group: any) {
             return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
         };
@@ -137,39 +119,51 @@ export default class GroupsTableController implements ng.IComponentController {
      *
      * @param user the user
      */
-    groupDetails (group:any) {
+    groupDetails=(group:any)=>{
         this.StateService.Auth().navigateToGroupDetails(group.systemName);
     };
-    
+    //$inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
+    static readonly $inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
+    /**
+     * Displays a list of groups in a table.
+     *
+     * @constructor
+     * @param $scope the application model
+     * @param AddButtonService the Add button service
+     * @param PaginationDataService the table pagination service
+     * @param StateService the page state service
+     * @param TableOptionsService the table options service
+     * @param UserService the user service
+     */
         constructor (
         private $scope:angular.IScope,
-        private AddButtonService:any,
-        private PaginationDataService:any,
-        private StateService:any,
-        private TableOptionsService:any,
-        private UserService:any
+        private AddButtonService:AddButtonService,
+        private PaginationDataService:DefaultPaginationDataService,
+        private StateService:StateService,
+        private TableOptionsService:DefaultTableOptionsService,
+        private UserService:UserService
     ) {
-
         // Notify pagination service of changes to view type
-        this.$scope.$watch(() => {
+        this.$scope.$watch(() => { //$onChanges()
             return this.viewType;
         }, (viewType) => {
-            this.PaginationDataService.viewType(PAGE_NAME, viewType);
+            PaginationDataService.viewType(PAGE_NAME, viewType);
         });
-
         // Register Add button
-        this.AddButtonService.registerAddButton('groups', () => {
-            this.StateService.Auth().navigateToGroupDetails();
+        AddButtonService.registerAddButton('groups', () => {
+            StateService.Auth().navigateToGroupDetails();
         });
-
         // Get the list of users and groups
-        this.UserService.getGroups().then((groups:any) => {
+        UserService.getGroups().then((groups:any) => {
              this.groups = groups;
              this.loading = false;
         });
-             
     }
 }
 angular.module(moduleName)
-    .controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
-
+.component("groupsTableController", {
+        controller: GroupsTableController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/groups/groups-table.html"
+    });
+//.controller("GroupsTableController", GroupsTableController]);
