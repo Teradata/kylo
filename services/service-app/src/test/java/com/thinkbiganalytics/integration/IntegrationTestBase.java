@@ -65,6 +65,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
@@ -773,6 +774,22 @@ public class IntegrationTestBase {
         return response;
     }
 
+    protected Response getFeedById(String feedId) {
+        String url = String.format("/%s", feedId);
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(url);
+        return response;
+    }
+
+    protected Response getCategoryById(String categoryId) {
+        String url = String.format("/by-id/%s", categoryId);
+        Response response = given(FeedCategoryRestController.BASE)
+            .when()
+            .get(url);
+        return response;
+    }
+
     protected void deleteCategory(String id) {
         LOG.info("Deleting category {}", id);
 
@@ -785,14 +802,31 @@ public class IntegrationTestBase {
     }
 
     protected FeedCategory createCategory(String name) {
+        return createCategory(name, "this category was created by functional test", true, null);
+    }
+
+    protected FeedCategory createCategory(String name, String description) {
+        return createCategory(name, description, true, null);
+    }
+
+    protected FeedCategory createCategory(String name, String description, boolean allowIndexing) {
+        return createCategory(name, description, allowIndexing, null);
+    }
+
+    protected FeedCategory createCategory(String name, String description, boolean allowIndexing, Set<UserProperty> userProperties) {
         LOG.info("Creating category {}", name);
 
         FeedCategory category = new FeedCategory();
         category.setName(name);
         category.setSystemName(SystemNamingService.generateSystemName(name));
-        category.setDescription("this category was created by functional test");
+        category.setDescription(description);
         category.setIcon("account_balance");
         category.setIconColor("#FF8A65");
+        category.setAllowIndexing(allowIndexing);
+
+        if (userProperties!=null) {
+            category.setUserProperties(userProperties);
+        }
 
         RestAssured.defaultParser = Parser.JSON;
 
@@ -808,6 +842,18 @@ public class IntegrationTestBase {
         return response.as(FeedCategory.class);
     }
 
+    protected FeedCategory createCategory(FeedCategory feedCategory) {
+        LOG.info("Creating category {}", feedCategory.getName());
+
+        Response response = given(FeedCategoryRestController.BASE)
+            .body(feedCategory)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(FeedCategory.class);
+    }
 
     protected ImportFeed importFeed(String feedPath) {
         LOG.info("Importing feed {}", feedPath);

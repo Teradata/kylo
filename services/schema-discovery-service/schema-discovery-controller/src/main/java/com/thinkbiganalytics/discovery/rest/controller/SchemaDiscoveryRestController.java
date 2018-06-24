@@ -127,6 +127,48 @@ public class SchemaDiscoveryRestController {
         return Response.ok(sampleFileSparkScript).build();
     }
 
+    /**
+     * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
+     *
+     * @param parserDescriptor  metadata about how the file should be parsed
+     * @param dataFrameVariable the name of the dataframe variable in the generate spark code
+     * @param limit             a number indicating how many rows the script should limit the output
+     * @param fileInputStream   the file
+     * @param fileMetaData      metadata about the file
+     * @return an object including the name of the file on disk and the generated spark script
+     */
+    @POST
+    @Path("/spark/files-list")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Determines the schema of the provided file.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the spark script that parses the sample file.", response = Schema.class),
+                      @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
+                  })
+    public Response sparkScriptForFilesList(SparkFilesScript sparkFilesScript) throws Exception {
+
+        SampleFileSparkScript sampleFileSparkScript = null;
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        try {
+            SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(sparkFilesScript.getParserDescriptor(), SchemaParserDescriptor.class);
+            FileSchemaParser p = transformer.fromUiModel(descriptor);
+            SparkFileSchemaParser sparkFileSchemaParser = (SparkFileSchemaParser) p;
+            sparkFileSchemaParser.setDataFrameVariable(sparkFilesScript.getDataFrameVariable());
+            sparkFileSchemaParser.setLimit(-1);
+            sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(sparkFilesScript.getFiles());
+        }  catch (PolicyTransformException e) {
+            log.warn("Failed to convert parser", e);
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
+        }
+
+        if (sampleFileSparkScript == null) {
+            log.warn("Failed to convert parser");
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"));
+        }
+        return Response.ok(sampleFileSparkScript).build();
+    }
+
     @POST
     @Path("/hive/sample-file")
     @Consumes(MediaType.MULTIPART_FORM_DATA)

@@ -4,108 +4,111 @@ const moduleName = require('feed-mgr/module-name');
 
 
 
-var directive = function (FieldPolicyRuleOptionsFactory:any, PolicyInputFormService:any) {
-    return {
-        restrict: "EA",
-        scope: {
+class InlineFieldPolicyFormController {
+
+    ngModel: any;
+    policyParameter: any;
+    selectLabel: any;
+    defaultValue: any;
+    options: any[] = [];
+    ruleMode: string = 'NEW';
+    showAdvancedOptions: boolean = false;
+    expandAdvancedOptions: boolean = false;
+    policyForm: any;
+    loadingPolicies : boolean = true;
+    field: any;
+    ruleType:any = null;
+    skipChangeHandler = false;
+
+    ngOnInit(): void {
+        this.field = this.ngModel;
+        this.FieldPolicyRuleOptionsFactory.getOptionsForType(this.policyParameter).then((response: any) => {
+            var currentFeedValue = null;
+            var results = [];
+            if (response.data) {
+                results = _.sortBy(response.data, (r) => {
+                    return r.name;
+                });
+            }
+            this.options = this.PolicyInputFormService.groupPolicyOptions(results, currentFeedValue);
+            this.ruleTypesAvailable();
+
+            if (this.defaultValue && (angular.isUndefined(this.field) || this.field == null)) {
+                var defaultOption = this.options.filter((v: any) => { return (v.name == this.defaultValue); })
+                if (defaultOption.length > 0) {
+                    this.ruleType = this.field = defaultOption[0];
+                    this.onRuleTypeChange();
+                }
+            }
+            else if(angular.isDefined(this.field)){
+                this.skipChangeHandler = true;
+                this.ruleType = this.field
+                //    PolicyInputFormService.updatePropertyIndex(rule);
+                this.showAdvancedOptions = (this.field.properties && this.field.properties.length > 0);
+
+            }
+            this.loadingPolicies = false;
+        });
+    }
+
+    $onInit(): void {
+        this.ngOnInit();
+    }
+
+    static readonly $inject = ["FieldPolicyRuleOptionsFactory", "PolicyInputFormService"];
+    constructor(private FieldPolicyRuleOptionsFactory: any, private PolicyInputFormService: any) {
+
+    }
+    validateForm = () => {
+        var validForm = this.PolicyInputFormService.validateForm(this.policyForm, this.field.properties, false);
+        return validForm;
+    }
+    onRuleTypeChange =  () => {
+        this.expandAdvancedOptions = false;
+        this.showAdvancedOptions = false;
+        if (this.ruleType != null) {
+            if( !this.skipChangeHandler) {
+                var rule = angular.copy(this.ruleType);
+                rule.groups = this.PolicyInputFormService.groupProperties(rule);
+                this.PolicyInputFormService.updatePropertyIndex(rule);
+                //make all rules editable
+                rule.editable = true;
+                this.ngModel = this.field = rule;
+
+            }
+            this.showAdvancedOptions = (this.ruleType.properties && this.ruleType.properties.length > 0);
+            this.skipChangeHandler = false;
+        }
+        else {
+            this.field = null;
+        }
+    }
+    toggleAdvancedOptions = () => {
+        this.expandAdvancedOptions = !this.expandAdvancedOptions;
+    }
+    findRuleType(ruleName: any) {
+        return _.find(this.options, (opt: any) => {
+            return opt.name == ruleName;
+        });
+    }
+    ruleTypesAvailable() {
+        if (this.field != null) {
+            this.ruleType = this.findRuleType(this.field.name);
+        }
+    }
+}
+
+angular.module(moduleName)
+    .component('inlineFieldPolicyForm', {
+        controller: InlineFieldPolicyFormController,
+        controllerAs : 'vm',
+        templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/inline-field-policy-form.html',
+        bindings: {
             ngModel: '=',
             policyParameter: '@',
             selectLabel: '@',
             defaultValue: '@'
-        },
-        templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/inline-field-policy-form.html',
-        link: function ($scope:any, element:any, attrs:any) {
-            $scope.options = [];
-            $scope.field = $scope.ngModel;
-            $scope.ruleMode = 'NEW'
-            $scope.showAdvancedOptions = false;
-            $scope.expandAdvancedOptions = false;
-            $scope.policyForm = {};
-            $scope.loadingPolicies = true;
-            $scope.options = [];
-            $scope.ruleType = null;
-            $scope.skipChangeHandler = false;
-
-            FieldPolicyRuleOptionsFactory.getOptionsForType($scope.policyParameter).then(function (response:any) {
-                var currentFeedValue = null;
-                var results = [];
-                if (response.data) {
-                    results = _.sortBy(response.data, function (r) {
-                        return r.name;
-                    });
-                }
-                $scope.options = PolicyInputFormService.groupPolicyOptions(results, currentFeedValue);
-                ruleTypesAvailable();
-
-
-                if ($scope.defaultValue && (angular.isUndefined($scope.field) || $scope.field == null)) {
-                    var defaultOption = $scope.options.filter(function (v:any) { return (v.name == $scope.defaultValue); })
-                    if (defaultOption.length > 0) {
-                        $scope.ruleType = $scope.field = defaultOption[0];
-                        $scope.onRuleTypeChange();
-                    }
-                }
-                else if(angular.isDefined($scope.field)){
-                    $scope.skipChangeHandler = true;
-                    $scope.ruleType = $scope.field
-                //    PolicyInputFormService.updatePropertyIndex(rule);
-                    $scope.showAdvancedOptions = ($scope.field.properties && $scope.field.properties.length > 0);
-
-                }
-
-                //$scope.ngModel = $scope.field = rule;
-                $scope.loadingPolicies = false;
-            });
-
-            function findRuleType(ruleName:any) {
-                return _.find($scope.options, function (opt:any) {
-                    return opt.name == ruleName;
-                });
-            }
-
-            function ruleTypesAvailable() {
-                if ($scope.field != null) {
-                    $scope.ruleType = findRuleType($scope.field.name);
-                }
-            }
-
-            $scope.toggleAdvancedOptions = function() {
-                $scope.expandAdvancedOptions = !$scope.expandAdvancedOptions;
-            }
-
-
-            $scope.onRuleTypeChange = function () {
-                $scope.expandAdvancedOptions = false;
-                $scope.showAdvancedOptions = false;
-                if ($scope.ruleType != null) {
-                    if( !$scope.skipChangeHandler) {
-                        var rule = angular.copy($scope.ruleType);
-                        rule.groups = PolicyInputFormService.groupProperties(rule);
-                        PolicyInputFormService.updatePropertyIndex(rule);
-                        //make all rules editable
-                        rule.editable = true;
-                        $scope.ngModel = $scope.field = rule;
-
-                    }
-                    $scope.showAdvancedOptions = ($scope.ruleType.properties && $scope.ruleType.properties.length > 0);
-                    $scope.skipChangeHandler = false;
-                }
-                else {
-                    $scope.field = null;
-                }
-            }
-
-            function validateForm() {
-                var validForm = PolicyInputFormService.validateForm($scope.policyForm, $scope.field.properties, false);
-                return validForm;
-            }
-
         }
-    }
-
-}
-
-angular.module(moduleName)
-    .directive('inlineFieldPolicyForm',["FieldPolicyRuleOptionsFactory", "PolicyInputFormService", directive]);
+    });
 
 

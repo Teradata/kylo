@@ -23,7 +23,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 
-@SchemaParser(name = "ORC", description = "Supports ORC formatted files.", tags = {"ORC"}, usesSpark = true)
+@SchemaParser(name = "ORC", description = "Supports ORC formatted files.", tags = {"ORC"}, usesSpark = true,mimeTypes = "application/orc", sparkFormat = "orc")
 public class OrcFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override

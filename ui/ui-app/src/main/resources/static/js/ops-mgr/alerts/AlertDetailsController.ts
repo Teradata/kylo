@@ -2,9 +2,11 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import AccessControlService from "../../services/AccessControlService";
+import AccessConstants from '../../constants/AccessConstants';
+import {Transition} from "@uirouter/core";
 
-   /**
-     * Manages the Alert Details page.
+   /** Manages the Alert Details page.
      * @constructor
      * @param $scope the Angular scope
      * @param $http the HTTP service
@@ -13,52 +15,37 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
      * @param OpsManagerRestUrlService the REST URL service
      */
 export class AlertDetailsDirectiveController implements ng.IComponentController{
-    allowAdmin: any;
-    alertData: any;
+    allowAdmin: boolean = false; //Indicates that admin operations are allowed. {boolean}
+    alertData: any; //The alert details. {Object}
     alertId: any;
-    constructor(private $scope: any,
-                private $http: any,
-                private $mdDialog: any,
-                private AccessControlService: any,
-                private OpsManagerRestUrlService: any){// $scope, $http, $mdDialog, AccessControlService, OpsManagerRestUrlService
-    /**
-     * Indicates that admin operations are allowed.
-     * @type {boolean}
-     */
-    this.allowAdmin = false;
-
-    /**
-     * The alert details.
-     * @type {Object}
-     */
-    this.alertData = {};    
-         // Fetch alert details
-        this.loadAlert(this.alertId);
-
-        // Fetch allowed permissions
-        AccessControlService.getUserAllowedActions()
-                .then((actionSet: any) =>{
-                    this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
-                }); 
-    
+    static readonly $inject=["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService"];
+    ngOnInit(){
+            this.loadAlert(this.alertId); // Fetch alert details
+            this.accessControlService.getUserAllowedActions() // Fetch allowed permissions
+                        .then((actionSet: any) =>{
+                            this.allowAdmin = this.accessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
+                        });
+    }
+    constructor(private $scope: angular.IScope,
+                private $http: angular.IHttpService,
+                private $mdDialog: angular.material.IDialogService ,
+                private accessControlService: AccessControlService,
+                private OpsManagerRestUrlService: OpsManagerRestUrlService){
+                this.ngOnInit();
     }// end of constructor
-     
          /**
          * Gets the class for the specified state.
          * @param {string} state the name of the state
          * @returns {string} class name
          */
-        getStateClass =(state: any)=> {
+        getStateClass =(state: string)=> {
             switch (state) {
                 case "UNHANDLED":
                     return "error";
-
                 case "IN_PROGRESS":
                     return "warn";
-
                 case "HANDLED":
                     return "success";
-
                 default:
                     return "unknown";
             }
@@ -69,7 +56,7 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
          * @param {string} state the name of the state
          * @returns {string} icon name
          */
-        getStateIcon = (state: any)=> {
+        getStateIcon = (state: string)=> {
             switch (state) {
                 case "CREATED":
                 case "UNHANDLED":
@@ -91,7 +78,7 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
          * @param {string} state the name of the state
          * @returns {string} display text
          */
-        getStateText = (state: any)=> {
+        getStateText = (state: string)=> {
             if (state === "IN_PROGRESS") {
                 return "IN PROGRESS";
             } else {
@@ -99,28 +86,23 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
             }
         };
 
-        /**
-         * Hides this alert on the list page.
-         */
+        //Hides this alert on the list page.
         hideAlert = ()=> {
             this.alertData.cleared = true;
             this.$http.post(this.OpsManagerRestUrlService.ALERT_DETAILS_URL(this.alertData.id), {state: this.alertData.state, clear: true});
         };
 
-        /**
-         * Shows the alert removing the 'cleared' flag
-         */
+        //Shows the alert removing the 'cleared' flag
         showAlert = ()=> {
             this.alertData.cleared = false;
             this.$http.post(this.OpsManagerRestUrlService.ALERT_DETAILS_URL(this.alertData.id), {state: this.alertData.state, clear: false, unclear:true});
         };
 
 
-        /**
-         * Loads the data for the specified alert.
+        /** Loads the data for the specified alert.
          * @param {string} alertId the id of the alert
          */
-        loadAlert = (alertId: any)=> {
+        loadAlert = (alertId: string)=> {
             if(alertId) {
                 this.$http.get(this.OpsManagerRestUrlService.ALERT_DETAILS_URL(alertId))
                     .then( (response: any)=> {
@@ -206,51 +188,52 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
         };
       
 }
-
+export interface IMyScope extends ng.IScope {
+  saving?: boolean;
+  state?: string;
+  closeDialog?: any;
+  saveDialog?: any;
+  description?: any;
+}
  /**
      * Manages the Update Alert dialog.
      * @constructor
      * @param $scope the Angular scope
-     * @param $http the HTTP service
+     * @param $http 
      * @param $mdDialog the dialog service
      * @param OpsManagerRestUrlService the REST URL service
      * @param alert the alert to update
      */
-
 export class EventDialogController implements ng.IComponentController{
-    constructor(private $scope: any,
-                private $http: any,
-                private $mdDialog: any,
-                private OpsManagerRestUrlService: any,
-                private alert: any){
-        /**
-         * Indicates that this update is currently being saved.
-         * @type {boolean}
-         */
-        $scope.saving = false;
-        /**
-         * The new state for the alert.
-         * @type {string}
-         */
-        $scope.state = (alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS";
+    static readonly $inject=["$scope","$http","$mdDialog","OpsManagerRestUrlService","alert"];
+    constructor(private $scope: IMyScope, //the Angular scope
+                private $http: angular.IHttpService,  //the HTTP service
+                private $mdDialog: angular.material.IDialogService, //the dialog service
+                private OpsManagerRestUrlService: OpsManagerRestUrlService, //the REST URL service
+                private alert: any //the alert to update
+                ){
+        this.ngOnInit();
+    }
+    ngOnInit(){
+        this.$scope.saving = false; //Indicates that this update is currently being saved  {boolean}
+        this.$scope.state = (this.alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
         /**
          * Closes this dialog and discards any changes.
          */
-        $scope.closeDialog = ()=> {
-            $mdDialog.hide(false);
+        this.$scope.closeDialog = ()=> {
+           this.$mdDialog.hide(false);
         };
         /**
          * Saves this update and closes this dialog.
          */
-        $scope.saveDialog = ()=> {
-            $scope.saving = true;
-
-            var event = {state: $scope.state, description: $scope.description, clear: false};
-            $http.post(OpsManagerRestUrlService.ALERT_DETAILS_URL(alert.id), event)
+        this.$scope.saveDialog = ()=> {
+            this.$scope.saving = true;
+            var event = {state: this.$scope.state, description: this.$scope.description, clear: false};
+            this.$http.post(this.OpsManagerRestUrlService.ALERT_DETAILS_URL(this.alert.id), event)
                 .then(()=> {
-                    $mdDialog.hide(true);
+                    this.$mdDialog.hide(true);
                 }, () =>{
-                    $scope.saving = false;
+                    this.$scope.saving = false;
                 });
         };
     }
@@ -258,30 +241,42 @@ export class EventDialogController implements ng.IComponentController{
 
 export class AlertDetailsController implements ng.IComponentController{
     alertId: any;
-    constructor(private $transition$: any){
-        this.alertId = $transition$.params().alertId;
+    $transition$: Transition;
+    constructor(){
+        this.ngOnInit();
+    }
+    ngOnInit(){
+        this.alertId = this.$transition$.params().alertId;
     }
 }
 
-
-angular.module(moduleName).controller("AlertDetailsController",["$transition$",AlertDetailsController]);
-angular.module(moduleName).controller("AlertDetailsDirectiveController", ["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService",AlertDetailsDirectiveController]);
+angular.module(moduleName).component("alertDetailsController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: AlertDetailsController,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/alerts/alert-details.html"
+    });
+angular.module(moduleName).component("alertDetailsDirectiveController", { 
+        controller: AlertDetailsDirectiveController,
+    });
 angular.module(moduleName).directive("tbaAlertDetails",
-                    [
-                        ()=> {
-                        return {
-                                restrict: "EA",
-                                bindToController: {
-                                    cardTitle: "@",
-                                    alertId:"="
-                                },
-                                controllerAs: "vm",
-                                scope: true,
-                                templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
-                                controller: "AlertDetailsDirectiveController"
-                            };
-                        }
-                    ]);
-angular.module(moduleName)
-.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
-.controller("EventDialogController", ["$scope","$http","$mdDialog","OpsManagerRestUrlService","alert",EventDialogController]);
+        [
+            ()=> {
+            return {
+                    restrict: "EA",
+                    bindToController: {
+                        cardTitle: "@",
+                        alertId:"="
+                    },
+                    controllerAs: "vm",
+                    scope: true,
+                    templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
+                    controller: AlertDetailsDirectiveController
+                };
+            }
+        ]);
+angular.module(moduleName).component("eventDialogController", { 
+        controller: EventDialogController
+    });

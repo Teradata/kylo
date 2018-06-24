@@ -1,0 +1,6 @@
+{
+  "templateName": "Sample Spark App with Provenance",
+  "description": "Sample Spark application that uses the provenance api to add additional provenance events",
+  "fileName": "sample_spark_app_with_provenance.zip",
+  "stream": false
+}

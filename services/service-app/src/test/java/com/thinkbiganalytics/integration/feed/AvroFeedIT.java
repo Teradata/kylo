@@ -22,7 +22,6 @@ package com.thinkbiganalytics.integration.feed;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.CharMatcher;
-import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Tag;
@@ -34,7 +33,6 @@ import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.ExitStatus;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
-import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -44,7 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AvroFeedIT extends FeedITBase {

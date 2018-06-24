@@ -21,8 +21,9 @@
 
   <card-layout header-css="filter-header" class="centered" style="max-width:980px;width:980px;">
 
-        <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
-
+        <header-section>
+            <tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+            </tba-card-filter-header>
         </header-section>
 
 
@@ -37,7 +38,7 @@
                         <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="registered-templates"  current-page="vm.currentPage" >
                             <div layout="row" layout-fill>
                               <div flex="40" layout="column" class="item-column md-list-item-text " ng-class="{'disabled':template.state == 'DISABLED'}"
-                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
+                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateInfo($event,template)">
                                              <span class="item-title" title="{{template.templateName}}">
                                               {{template.templateName}}
                                            </span>

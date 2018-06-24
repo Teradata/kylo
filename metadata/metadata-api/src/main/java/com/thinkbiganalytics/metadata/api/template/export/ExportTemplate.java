@@ -25,11 +25,17 @@ package com.thinkbiganalytics.metadata.api.template.export;
 public class ExportTemplate {
 
     private String fileName;
+    private String templateName;
+    private String description;
+    private boolean stream;
     private byte[] file;
 
-    public ExportTemplate(String fileName, byte[] file) {
+    public ExportTemplate(String fileName, String templateName, String description, boolean stream, byte[] zipFile) {
+        this.templateName = templateName;
+        this.description = description;
+        this.stream = stream;
         this.fileName = fileName;
-        this.file = file;
+        this.file = zipFile;
     }
 
     public String getFileName() {
@@ -38,5 +44,17 @@ public class ExportTemplate {
 
     public byte[] getFile() {
         return file;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isStream() {
+        return stream;
     }
 }

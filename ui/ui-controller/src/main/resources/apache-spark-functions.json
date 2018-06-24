@@ -3539,7 +3539,7 @@
   "isNotNull": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "True if the column is NOT null.",
-    "!spark": "%c.isNotNull()",
+    "!spark": "%c.isNotNull",
     "!sparkType": "column"
   },
   "lessThan": {

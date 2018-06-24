@@ -21,9 +21,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/search/common/search.html',
-                    controller: "SearchController",
-                    controllerAs: "vm"
+                   // templateUrl: 'js/search/common/search.html',
+                    component: "searchController",
+                    //controllerAs: "vm"
                 }
             },
             resolve: {

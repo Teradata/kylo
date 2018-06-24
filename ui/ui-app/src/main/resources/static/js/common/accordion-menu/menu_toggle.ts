@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
+import AccessControlService from "../../services/AccessControlService";
 
  angular.module(moduleName)
         .run(['$templateCache', ($templateCache: any)=> {
@@ -19,7 +20,7 @@ import * as _ from "underscore";
             + ' </div>'
             + '</div>');
         }])
-        .directive('menuToggle', ['$timeout','AccessControlService', ($timeout: any,AccessControlService: any)=> {
+        .directive('menuToggle', ['$timeout','AccessControlService', ($timeout: any,accessControlService: AccessControlService)=> {
             return {
                 scope: {
                     section: '='
@@ -54,7 +55,7 @@ import * as _ from "underscore";
                     })
 
                     var checkPermissions = ()=>{
-                        AccessControlService.doesUserHavePermission(getTogglePermissions()).then((allowed: any)=>{
+                        accessControlService.doesUserHavePermission(getTogglePermissions()).then((allowed: any)=>{
                             //if not allowed, remove the links;
                             if(!allowed){
                                 scope.section.links = [];

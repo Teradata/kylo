@@ -1,0 +1,163 @@
+[
+  {
+    "title": "Gregs Amazon S3",
+    "connector": {
+      "id": "amazon-s3"
+    },
+    "template": {
+      "options": {
+        "spark.hadoop.fs.s3n.awsAccessKeyId": "",
+        "spark.hadoop.fs.s3n.awsSecretAccessKey": ""
+      }
+    }
+  },
+  {
+    "title": "Ruslans Amazon S3",
+    "connector": {
+      "id": "amazon-s3"
+    },
+    "template": {
+      "options": {
+        "spark.hadoop.fs.s3n.awsAccessKeyId": "",
+        "spark.hadoop.fs.s3n.awsSecretAccessKey": ""
+      }
+    }
+  },
+  {
+    "title": "Virtualbox File System",
+    "connector": {
+      "id": "local-file-system"
+    },
+    "template": {
+      "paths": [
+        "file:///opt/kylo"
+      ]
+    }
+  },
+  {
+    "title": "Ruslans Local File System",
+    "connector": {
+      "id": "local-file-system"
+    },
+    "template": {
+      "paths": [
+        "/Users"
+      ]
+    }
+  },
+  {
+    "title": "Localhost:9092",
+    "connector": {
+      "id": "kafka"
+    },
+    "template": {
+      "options": {
+        "kafka.bootstrap.servers": "localhost:9092"
+      }
+    }
+  },
+  {
+    "title": "Localhost:9093",
+    "connector": {
+      "id": "kafka"
+    },
+    "template": {
+      "options": {
+        "kafka.bootstrap.servers": "localhost:9093"
+      }
+    }
+  },
+  {
+    "title": "Kylo MySQL",
+    "connector": {
+      "id": "mysql"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:mysql://localhost:3306/kylo",
+        "user": "root",
+        "password": ""
+      }
+    }
+  },
+  {
+    "title": "Ruslans HDFS home",
+    "connector": {
+      "id": "hdfs"
+    },
+    "template": {
+      "paths": [
+        "hdfs://"
+      ]
+    }
+  },
+  {
+    "title": "Spark logs",
+    "connector": {
+      "id": "hdfs"
+    },
+    "template": {
+      "paths": [
+        "hdfs://users/spark/logs"
+      ]
+    }
+  },
+  {
+    "title": "Teradata Database 1",
+    "connector": {
+      "id": "teradata"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:teradata://1.2.3.4/database1",
+        "user": "user-id",
+        "password": ""
+      }
+    }
+  },
+  {
+    "title": "Teradata Database 2",
+    "connector": {
+      "id": "teradata"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:teradata://1.2.3.4/database2",
+        "user": "user-id",
+        "password": ""
+      }
+    }
+  },
+  {
+    "title": "Greg's google storage",
+    "connector": {
+      "id": "google-cloud-storage"
+    },
+    "template": {
+      "options": {
+        "spark.hadoop.google.cloud.auth.service.account.email": "drive@user-id.iam.gserviceaccount.com",
+        "spark.hadoop.google.cloud.auth.service.account.keyfile": "/opt/nifi/mysql/private-key.p12"
+      },
+      "paths": [
+        "gcs://some/path"
+      ]
+    }
+  },
+  {
+    "title": "Hive",
+    "connector": {
+      "id": "hive"
+    }
+  },
+  {
+    "title": "Local Files",
+    "connector": {
+      "id": "file-upload"
+    },
+    "template": {
+      "paths": [
+        "file:/tmp/kylo-upload"
+      ]
+    }
+  }
+]

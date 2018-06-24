@@ -5,26 +5,20 @@ import "pascalprecht.translate";
 
 
 export default class controller implements ng.IComponentController {
-    chartApi: any;
-    dataLoaded: any;
-    feedSummaryData: any;
-    chartData: any[];
-    dataMap: any;
+    chartApi: any = {};
+    dataLoaded: boolean = false;
+    feedSummaryData: any = null;
+    chartData: any[] = [];
+    dataMap: any = {'Healthy':{count:0, color:'#009933'},'Unhealthy':{count:0,color:'#FF0000'}};
     chartOptions: any;
-    constructor(private $scope: any,
-                private $element: any,
-                private $http: any,
-                private $interval: any,
-                private $timeout: any,
-                private OpsManagerFeedService: any,
-                private OpsManagerDashboardService: any,
-                private BroadcastService: any,
-                private $filter: any){
-       this.chartApi = {};
-        this.dataLoaded = false;
-        this.feedSummaryData = null;
-        this.chartData = [];
-        this.dataMap = {'Healthy':{count:0, color:'#009933'},'Unhealthy':{count:0,color:'#FF0000'}};
+
+    static readonly $inject = ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService","$filter"];
+
+    $onInit() {
+        this.ngOnInit();
+    }
+
+    ngOnInit() {
 
         this.chartOptions = {
             chart: {
@@ -61,9 +55,20 @@ export default class controller implements ng.IComponentController {
             }
         };
 
-            this.init();
-            $scope.$on('$destroy',  ()=> {
-            });
+        this.initializePieChart();
+        this.watchDashboard();
+
+    }
+    constructor(private $scope: IScope,
+                private $element: JQuery,
+                private $http: any,
+                private $interval: angular.IIntervalService,
+                private $timeout: angular.ITimeoutService,
+                private OpsManagerFeedService: any,
+                private OpsManagerDashboardService: any,
+                private BroadcastService: any,
+                private $filter: any){
+       
         }// end of constructor
 
         initializePieChart=()=> {
@@ -79,13 +84,8 @@ export default class controller implements ng.IComponentController {
             this.OpsManagerDashboardService.selectFeedHealthTab('Unhealthy');
         }
 
-        init=()=>{
-            this.initializePieChart();
-            this.watchDashboard();
-        }
-
-
     watchDashboard=()=> {
+
             this.BroadcastService.subscribe(this.$scope,
                                             this.OpsManagerDashboardService.DASHBOARD_UPDATED,
                                             (dashboard: any)=>{
@@ -121,24 +121,12 @@ export default class controller implements ng.IComponentController {
 
 }
 
-angular.module(moduleName)
-   .controller('FeedStatusIndicatorController', ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService","$filter",controller]);
-
-
-    angular.module(moduleName)
-        .directive('tbaFeedStatusIndicator', [()=> {
-        
-        return {
-            restrict: "EA",
-            scope:true,
-            controllerAs:'vm',
-            bindToController: {
-                panelTitle: "@"
-            },
-            templateUrl: 'js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html',
-            controller: "FeedStatusIndicatorController",
-            link: function ($scope: any, element: any, attrs: any) {
-
-            }
-        }
-        }]);
+angular.module(moduleName).component('tbaFeedStatusIndicator',
+{
+    controller: controller,
+    bindings: {
+        panelTitle: "@"
+    },
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html"
+});

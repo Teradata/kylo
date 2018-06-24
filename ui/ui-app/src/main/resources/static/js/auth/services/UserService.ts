@@ -5,7 +5,7 @@ import {Headers, RequestOptions, Response} from '@angular/http';
 import {moduleName} from "../module-name";
 
 //@Injectable()
-export class UserService {
+export default class UserService {
     headers: Headers;
     options: RequestOptions;
 
@@ -101,7 +101,7 @@ export class UserService {
      * @param groupId the system name of the group
      * @returns {Array.<UserPrincipal>} the users
      */
-    getUsersByGroup(groupId: any): any[] {
+    getUsersByGroup(groupId: any): any {
         return this.UserGroupService.getUsersByGroup(groupId);
     }
 

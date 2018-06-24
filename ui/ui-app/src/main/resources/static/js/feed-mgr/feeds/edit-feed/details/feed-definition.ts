@@ -1,5 +1,7 @@
 import * as angular from 'angular';
 import 'pascalprecht.translate';
+import AccessControlService from '../../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
 
@@ -39,7 +41,7 @@ export class FeedDefinitionController implements ng.IComponentController
         editModel:any = {};
 
 
-    constructor(private $scope:any, private $q:any, private AccessControlService:any,private EntityAccessControlService:any, private FeedService:any, private $filter:any){
+    constructor(private $scope:any, private $q:any, private accessControlService:AccessControlService,private entityAccessControlService:EntityAccessControlService, private FeedService:any, private $filter:any){
 
  
         $scope.$watch(()=>{
@@ -66,7 +68,7 @@ export class FeedDefinitionController implements ng.IComponentController
 
 
     //Apply the entity access permissions
-    $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,this.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
+    $q.when(accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
         this.allowEdit = !this.versions && access && !this.model.view.generalInfo.disabled;
     });
 

@@ -1,19 +1,38 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 
-angular.module(moduleName).directive("cardLayout",  ($compile: any)=>
-     {
-        return {
-            scope: {headerCss: "@", bodyCss: "@", cardCss: '@',cardToolbar: "=?"},
-            transclude: {
-                'header1': '?headerSection',
-                'body1': '?bodySection'
-            },
-            templateUrl: 'js/common/card-layout/card-layout.html',
-            link: function (scope: any, iElem: any, iAttrs: any, ctrl: any, transcludeFn: any) {
-                if(angular.isUndefined(scope.cardToolbar)){
-                    scope.cardToolbar = true;
-                }
-            }
-        };
-    });
+export default class CardLayout implements ng.IComponentController {
+
+    headerCss: any;
+    bodyCss: any; 
+    cardCss: any;
+    cardToolbar: any;
+
+    $onInit() {
+        this.ngOnInit();
+    }
+
+    ngOnInit() {
+
+        if(angular.isUndefined(this.cardToolbar)){
+            this.cardToolbar = true;
+        }
+    }
+    
+}
+
+angular.module(moduleName).component('cardLayout', {
+    controller: CardLayout,
+    bindings: {
+        headerCss: "@", 
+        bodyCss: "@", 
+        cardCss: '@',
+        cardToolbar: "=?"
+    },
+    transclude: {
+        'header1': '?headerSection',
+        'body1': '?bodySection'
+    },
+    controllerAs: "vm",
+    templateUrl: 'js/common/card-layout/card-layout.html'
+});

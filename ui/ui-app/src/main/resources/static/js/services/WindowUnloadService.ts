@@ -1,5 +1,6 @@
 import {TransitionService} from "@uirouter/core/lib";
 import * as angular from "angular";
+import {moduleName} from "./module-name";
 
 export class WindowUnloadService {
 
@@ -58,4 +59,4 @@ export class WindowUnloadService {
     }
 }
 
-angular.module(require("services/module-name")).service("WindowUnloadService", WindowUnloadService);
+angular.module(moduleName).service("WindowUnloadService", WindowUnloadService);

@@ -18,6 +18,7 @@
  * #L%
  */
 
+import { PipeTransform } from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../common/CommonTypes";
@@ -26,33 +27,7 @@ import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 
-
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
-
-var directive = function () {
-    return {
-        restrict: "EA",
-        bindToController: {
-            canRemoveFields: "<?",
-            stepIndex: '@',
-            tableLocked: "<?",
-            dataTypeLocked: "<?typeLocked"
-        },
-        scope: {},
-        require: ['thinkbigDefineFeedTable', '^thinkbigStepper'],
-        controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table.html',
-        controller: "DefineFeedTableController",
-        link: function ($scope: any, element: any, attrs: any, controllers: any) {
-            var thisController = controllers[0];
-            var stepperController = controllers[1];
-            thisController.stepperController = stepperController;
-            thisController.totalSteps = stepperController.totalSteps;
-        }
-
-    };
-};
-
 
 export interface TableCreateMethod {
     name: string;
@@ -944,14 +919,13 @@ export class DefineFeedTableController {
 
 }
 
-angular.module(moduleName).controller('DefineFeedTableController', DefineFeedTableController);
+class FilterPartitionFormulaPipe implements PipeTransform{
+    constructor(private FeedService:any){
 
-angular.module(moduleName).directive('thinkbigDefineFeedTable', directive);
-
-angular.module(moduleName).filter("filterPartitionFormula", ["FeedService", function (feedService: any) {
-    return function (formulas: any, partition: any) {
+    }
+    transform(formulas:any, partition:any){
         // Find column definition
-        var columnDef = (partition && partition.sourceField) ? feedService.getColumnDefinitionByName(partition.sourceField) : null;
+        var columnDef = (partition && partition.sourceField) ? this.FeedService.getColumnDefinitionByName(partition.sourceField) : null;
         if (columnDef == null) {
             return formulas;
         }
@@ -962,5 +936,26 @@ angular.module(moduleName).filter("filterPartitionFormula", ["FeedService", func
         } else {
             return formulas;
         }
-    };
+    }
+}
+
+angular.module(moduleName).filter("filterPartitionFormula", ["FeedService", (FeedService:any) => {
+    const pipe = new FilterPartitionFormulaPipe(FeedService);
+    return pipe.transform.bind(pipe);
 }]);
+
+angular.module(moduleName).
+    component("thinkbigDefineFeedTable", {
+        bindings: {
+            canRemoveFields: "<?",
+            stepIndex: '@',
+            tableLocked: "<?",
+            dataTypeLocked: "<?typeLocked"
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedTableController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table.html',
+    });

@@ -12,6 +12,7 @@ import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaFie
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
+import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 
 export class PageSpec {
     firstRow : number;
@@ -96,6 +97,8 @@ export abstract class QueryEngine<T> implements WranglerEngine {
 
     protected sampleFile: SampleFile;
 
+    protected datasets:SparkDataSet[];
+
     /**
      * List of states.
      */
@@ -148,6 +151,21 @@ export abstract class QueryEngine<T> implements WranglerEngine {
 
     setSampleFile(file:SampleFile){
         this.sampleFile = file;
+    }
+    hasSampleFile(): boolean {
+        return angular.isDefined(this.sampleFile) && this.sampleFile != null;
+    }
+
+    setDatasets(datasets:SparkDataSet[]){
+        this.datasets = datasets;
+    }
+
+    getDatasets(){
+        return this.datasets;
+    }
+
+    hasDatasets(){
+        return this.datasets && this.datasets.length >0;
     }
 
     /**

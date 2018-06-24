@@ -9,47 +9,52 @@ import 'kylo-services';
 import './main/IndexController';
 import './main/HomeController';
 import './main/AccessDeniedController';
+import AccessControlService from './services/AccessControlService';
+
 'use strict';
-class Route{
-   // app: ng.IModule;
-    constructor () {
-      //  this.app = app;
-        /*this.*/app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider",this.configFn.bind(this)]);
-        /*this.*/app.run(['$rootScope', '$state', '$location', "$transitions","$timeout","$q", "$uiRouter","AccessControlService","AngularModuleExtensionService",
-                this.runFn.bind(this)]);
+
+class Route {
+    // app: ng.IModule;
+    constructor() {
+        //  this.app = app;
+        /*this.*/
+        app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", this.configFn.bind(this)]);
+        /*this.*/
+        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService",
+            this.runFn.bind(this)]);
     }
 
 //var app = angular.module("", ["ngRoute"]);
-configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any){
+    configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any) {
         $ocLazyLoadProvider.config({
             modules: ['kylo', 'kylo.common', 'kylo.services', 'kylo.feedmgr', 'kylo.feedmgr.templates', 'kylo.opsmgr'],
             asyncLoader: require,
             debug: false
         });
 
-        function onOtherwise(AngularModuleExtensionService: any, $state: any,url: any){
+        function onOtherwise(AngularModuleExtensionService: any, $state: any, url: any) {
             var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
-            if(stateData.valid) {
-                $state.go(stateData.state,stateData.params);
+            if (stateData.valid) {
+                $state.go(stateData.state, stateData.params);
             }
             else {
                 $state.go('home')
             }
         }
 
-        $urlRouterProvider.otherwise(($injector: any, $location: any)=>{
+        $urlRouterProvider.otherwise(($injector: any, $location: any) => {
             var $state = $injector.get('$state');
             var svc = $injector.get('AngularModuleExtensionService');
             var url = $location.url();
-            if(svc != null) {
+            if (svc != null) {
                 if (svc.isInitialized()) {
-                    onOtherwise(svc,$state,url)
+                    onOtherwise(svc, $state, url)
                     return true;
                 }
                 else {
-                    $injector.invoke( ($window: any, $state: any,AngularModuleExtensionService: any)=>{
-                        AngularModuleExtensionService.registerModules().then(()=> {
-                            onOtherwise(AngularModuleExtensionService,$state,url)
+                    $injector.invoke(($window: any, $state: any, AngularModuleExtensionService: any) => {
+                        AngularModuleExtensionService.registerModules().then(() => {
+                            onOtherwise(AngularModuleExtensionService, $state, url)
                             return true;
                         });
                     });
@@ -59,7 +64,6 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             else {
                 $location.url("/home")
             }
-
         });
 
         $stateProvider
@@ -67,13 +71,13 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                 url: '/home',
                 views: {
                     "content": {
-                        templateUrl: "js/main/home.html",
-                        controller: 'HomeController',
-                        controllerAs: 'vm'
+                        //templateUrl: "js/main/home.html",
+                        component: 'homeController',
+                        // controllerAs: 'vm'
                     }
                 },
                 resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
-                    loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any)=> {
+                    loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                         // you can lazy load files for an existing module
                         return $ocLazyLoad.load('main/HomeController');
                     }]
@@ -84,28 +88,27 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'feeds.**',
             url: '/feeds',
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/module').
-                                    then(function success(args: any) {
-                                //upon success go back to the state
-                                $stateProvider.stateService.go('feeds')
-                                return args;
-                            }, function error(err: any) {
-                                console.log("Error loading feeds ", err);
-                                return err;
+            lazyLoad: (transition: any) => {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/module').then(function success(args: any) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('feeds')
+                    return args;
+                }, function error(err: any) {
+                    console.log("Error loading feeds ", err);
+                    return err;
                 });
             }
         }).state({
             name: 'define-feed.**',
             url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
-                templateId:null,
-                templateName:null,
-                feedDescriptor:null,
-                bcExclude_cloning:null,
-                bcExclude_cloneFeedName:null
+                templateId: null,
+                templateName: null,
+                feedDescriptor: null,
+                bcExclude_cloning: null,
+                bcExclude_cloneFeedName: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('define-feed', transition.params())
@@ -122,7 +125,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                 feedId: null,
                 tabIndex: 0
             },
-            lazyLoad: (transition: any, state: any)=>{
+            lazyLoad: (transition: any, state: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/edit-feed/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('feed-details', transition.params())
@@ -138,7 +141,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 feedId: null
             },
-            lazyLoad: (transition: any, state: any)=> {
+            lazyLoad: (transition: any, state: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/edit-feed/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('edit-feed', transition.params())
@@ -153,7 +156,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'categories.**',
             url: '/categories',
-            lazyLoad: (transition: any) =>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('categories')
@@ -168,7 +171,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 categoryId: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('category-details', transition.params())
@@ -182,7 +185,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
 
         $stateProvider.state('registered-templates.**', {
             url: '/registered-templates',
-            lazyLoad: (transition: any) =>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('registered-templates')
@@ -196,7 +199,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
 
         $stateProvider.state('register-template.**', {
             url: '/register-template',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('register-template')
@@ -214,10 +217,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 slaId: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-agreements',transition.params())
+                    $stateProvider.stateService.go('service-level-agreements', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading service-level-agreements ", err);
@@ -227,75 +230,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
         $stateProvider.state({
-            name: 'catalog.**',
-            url: '/catalog',
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('catalog');
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading catalog data sources ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas.**',
-            url: '/catalog/{datasource}/schemas',
-            params: {
-                datasource: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas', transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading schemas ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas-schema.**',
-            url: '/catalog/{datasource}/schemas/{schema}',
-            params: {
-                datasource: null,
-                schema: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas-schema', transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading tables ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas-schema-table.**',
-            url: '/catalog/{datasource}/schemas/{schema}/{tableName}',
-            params: {
-                datasource: null,
-                schema: null,
-                tableName: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas-schema-table', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading table ", err);
-                    return err;
-                });
-            }
-        });
-
-        $stateProvider.state({
             name: 'users.**',
             url: '/users',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('users')
@@ -311,7 +248,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'groups.**',
             url: '/groups',
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('groups')
@@ -328,10 +265,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 bcExclude_globalSearchResetPaging: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('search/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('search',transition.params())
+                    $stateProvider.stateService.go('search', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading search ", err);
@@ -343,7 +280,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'business-metadata.**',
             url: '/business-metadata',
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/business-metadata/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('business-metadata')
@@ -369,7 +306,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'dashboard.**',
             url: '/dashboard',
-            lazyLoad: (transition: any) =>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/overview/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('dashboard')
@@ -387,7 +324,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 feedName: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('ops-feed-details', transition.params())
@@ -405,7 +342,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 feedName: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('feed-stats', transition.params())
@@ -423,7 +360,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 executionId: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/details/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('job-details', transition.params())
@@ -440,9 +377,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             url: '/jobs',
             params: {
                 filter: null,
-                tab:null
+                tab: null
             },
-            lazyLoad:(transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('jobs', transition.params())
@@ -457,7 +394,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'service-health.**',
             url: '/service-health',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('service-health', transition.params())
@@ -473,7 +410,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 serviceName: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('service-details', transition.params())
@@ -490,7 +427,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                 serviceName: null,
                 componentName: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('service-component-details', transition.params())
@@ -505,7 +442,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'scheduler.**',
             url: '/scheduler',
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/scheduler/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('scheduler', transition.params())
@@ -520,7 +457,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'alerts.**',
             url: '/alerts',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('alerts', transition.params())
@@ -536,7 +473,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 alertId: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('alert-details', transition.params())
@@ -551,7 +488,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'charts.**',
             url: '/charts',
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/charts/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('charts', transition.params())
@@ -564,11 +501,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
 
-
         $stateProvider.state({
             name: "datasources.**",
             url: "/datasources",
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go("datasources", transition.params());
@@ -581,7 +517,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         }).state({
             name: "datasource-details.**",
             url: "/datasource-details",
-            lazyLoad: (transition: any) =>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go("datasource-details", transition.params());
@@ -596,7 +532,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: "domain-types.**",
             url: "/domain-types",
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get("$ocLazyLoad")
                     .load("feed-mgr/domain-types/module")
                     .then(function (args: any) {
@@ -610,7 +546,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         }).state({
             name: "domain-type-details.**",
             url: "/domain-type-details/{domainTypeId}",
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get("$ocLazyLoad")
                     .load("feed-mgr/domain-types/module")
                     .then(function (args: any) {
@@ -629,10 +565,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 assessmentId: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessment',transition.params())
+                    $stateProvider.stateService.go('service-level-assessment', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading service-level-assessment ", err);
@@ -648,10 +584,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 filter: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessments',transition.params())
+                    $stateProvider.stateService.go('service-level-assessments', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading service-level-assessments ", err);
@@ -663,10 +599,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
 
         $stateProvider.state('jcr-query.**', {
             url: '/admin/jcr-query',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('jcr-query',transition.params())
+                    $stateProvider.stateService.go('jcr-query', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading admin jcr ", err);
@@ -677,16 +613,16 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
 
         $stateProvider.state('sla-email-templates.**', {
             url: '/sla-email-templates',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module')
-                        .then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('sla-email-templates',transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading sla email templates ", err);
-                    return err;
-                });
+                    .then(function success(args: any) {
+                        //upon success go back to the state
+                        $stateProvider.stateService.go('sla-email-templates', transition.params())
+                        return args;
+                    }, function error(err: any) {
+                        console.log("Error loading sla email templates ", err);
+                        return err;
+                    });
             }
         });
 
@@ -696,10 +632,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 emailTemplateId: null
             },
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('sla-email-template',transition.params())
+                    $stateProvider.stateService.go('sla-email-template', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading sla email template ", err);
@@ -711,10 +647,10 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
 
         $stateProvider.state('cluster.**', {
             url: '/admin/cluster',
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('cluster',transition.params())
+                    $stateProvider.stateService.go('cluster', transition.params())
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading admin cluster ", err);
@@ -726,7 +662,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'projects.**',
             url: '/projects',
-            lazyLoad: (transition: any)=> {
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('projects')
@@ -741,7 +677,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             params: {
                 projectId: null
             },
-            lazyLoad: (transition: any)=>{
+            lazyLoad: (transition: any) => {
                 transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('project-details', transition.params())
@@ -754,84 +690,125 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
         $stateProvider.state({
-           name:'access-denied',
-           url:'/access-denied',
-           params:{attemptedState:null},
-           views: {
-               "content": {
-                   templateUrl: "js/main/access-denied.html",
-                   controller:'AccessDeniedController',
-                   controllerAs:'vm'
-               }
-           },
-           resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
-               loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any)=>{
-                   // you can lazy load files for an existing module
-                   return $ocLazyLoad.load('main/AccessDeniedController');
-               }]
-           }
+            name: 'access-denied',
+            url: '/access-denied',
+            params: {attemptedState: null},
+            views: {
+                "content": {
+                    // templateUrl: "js/main/access-denied.html",
+                    component: 'acessDeniedController',
+                    //controllerAs:'vm'
+                }
+            },
+            resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    // you can lazy load files for an existing module
+                    return $ocLazyLoad.load('main/AccessDeniedController');
+                }]
+            }
         });
+
+        $stateProvider.state({
+            name: 'catalog.**',
+            url: '/catalog',
+            loadChildren: 'feed-mgr/catalog/catalog.module#CatalogModule'
+        });
+
+        $stateProvider.state({
+            name: 'repository.**',
+            url: '/repository',
+            loadChildren: 'repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'template-info.**',
+            url: '/template-info',
+            loadChildren: 'repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'import-template.**',
+            url: '/importTemplate',
+            loadChildren: 'repository/repository.module#RepositoryModule'
+        });
+
+        // $stateProvider.state('import-template.**', {
+        //     url: '/import-template',
+        //     lazyLoad: (transition: any) => {
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('import-template', transition.params())
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading import-template ", err);
+        //             return err;
+        //         });
+        //     },
+        //     params: {
+        //         "template": null
+        //     }
+        // })
     }
 
-runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: any, $q: any,
-                    $uiRouter: any, AccessControlService: any,AngularModuleExtensionService: any) {
-             //initialize the access control
-             AccessControlService.init();
+    runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
+          $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any) {
+        //initialize the access control
+        accessControlService.init();
 
-             $rootScope.$state = $state;
-             $rootScope.$location = $location;
+        $rootScope.$state = $state;
+        $rootScope.$location = $location;
 
-             $rootScope.typeOf = (value: any)=> {
-                 return typeof value;
-             };
+        $rootScope.typeOf = (value: any) => {
+            return typeof value;
+        };
 
-             var onStartOfTransition =  (trans: any) => {
-                 
-                 if (!AccessControlService.isFutureState(trans.to().name)) {
-                     //if we havent initialized the user yet, init and defer the transition
-                     if (!AccessControlService.initialized) {
-                         var defer = $q.defer();
-                         $q.when(AccessControlService.init(), ()=> {
-                             //if not allowed, go to access-denied
-                             if (!AccessControlService.hasAccess(trans)) {
-                                 if (trans.to().name != 'access-denied') {
-                                     defer.resolve($state.target("access-denied", {attemptedState: trans.to()}));
-                                 }
-                             }
-                             else {
-                                 defer.resolve($state.target(trans.to().name, trans.params()));
-                             }
-                         });
-                         return defer.promise;
-                     }
-                     else {
-                         if (!AccessControlService.hasAccess(trans)) {
-                             if (trans.to().name != 'access-denied') {
-                                 return $state.target("access-denied", {attemptedState: trans.to()});
-                             }
-                         }
-                     }
-                 }
-             }
+        var onStartOfTransition = (trans: any) => {
 
-             /**
-              * Add a listener to the start of every transition to do Access control on the page
-              * and redirect if not authorized
-              */
-             $transitions.onStart({}, (trans: any)=> {
-                 if (AngularModuleExtensionService.isInitialized()) {
-                     return onStartOfTransition(trans);
-                 }
-                 else {
-                     var defer = $q.defer();
-                     $q.when(AngularModuleExtensionService.registerModules(),()=> {
-                         defer.resolve(onStartOfTransition(trans));
-                     });
-                     return defer.promise;
-                 }
+            if (!accessControlService.isFutureState(trans.to().name)) {
+                //if we havent initialized the user yet, init and defer the transition
+                if (!accessControlService.initialized) {
+                    var defer = $q.defer();
+                    $q.when(accessControlService.init(), () => {
+                        //if not allowed, go to access-denied
+                        if (!accessControlService.hasAccess(trans)) {
+                            if (trans.to().name != 'access-denied') {
+                                defer.resolve($state.target("access-denied", {attemptedState: trans.to()}));
+                            }
+                        }
+                        else {
+                            defer.resolve($state.target(trans.to().name, trans.params()));
+                        }
+                    });
+                    return defer.promise;
+                }
+                else {
+                    if (!accessControlService.hasAccess(trans)) {
+                        if (trans.to().name != 'access-denied') {
+                            return $state.target("access-denied", {attemptedState: trans.to()});
+                        }
+                    }
+                }
+            }
+        }
 
-             });
-         }
+        /**
+         * Add a listener to the start of every transition to do Access control on the page
+         * and redirect if not authorized
+         */
+        $transitions.onStart({}, (trans: any) => {
+            if (AngularModuleExtensionService.isInitialized()) {
+                return onStartOfTransition(trans);
+            }
+            else {
+                var defer = $q.defer();
+                $q.when(AngularModuleExtensionService.registerModules(), () => {
+                    defer.resolve(onStartOfTransition(trans));
+                });
+                return defer.promise;
+            }
+
+        });
+    }
 }
 
 const routes = new Route();

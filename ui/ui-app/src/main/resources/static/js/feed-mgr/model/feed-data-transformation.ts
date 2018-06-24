@@ -1,4 +1,4 @@
-
+import {PreviewDataSet, SparkDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 
 export interface SampleFile{
@@ -85,4 +85,7 @@ export interface FeedDataTransformation {
      * @type {boolean}
      */
     sampleFileChanged?: boolean;
+
+
+    datasets:SparkDataSet[];
 }

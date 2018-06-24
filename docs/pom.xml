@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.1.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-docs</artifactId>
   <packaging>pom</packaging>
@@ -53,7 +53,7 @@
   <build>
     <plugins>
 
-      <plugin>
+      <!--plugin>
         <groupId>de.saumya.mojo</groupId>
         <artifactId>gem-maven-plugin</artifactId>
         <version>1.1.5</version>
@@ -64,7 +64,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin-->
       <!--<plugin>-->
       <!--<groupId>de.saumya.mojo</groupId>-->
       <!--<artifactId>gem-maven-plugin</artifactId>-->

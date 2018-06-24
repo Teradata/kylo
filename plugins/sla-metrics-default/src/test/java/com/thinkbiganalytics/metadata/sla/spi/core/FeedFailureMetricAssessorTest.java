@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  */
 
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
+import com.thinkbiganalytics.metadata.MockMetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;

@@ -1,9 +1,12 @@
 import * as angular from 'angular';
-import {moduleName} from '../module-name';
+import { moduleName } from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
+import AccessControlService from '../../../services/AccessControlService';
+import StateService from '../../../services/StateService';
+import {Transition} from "@uirouter/core";
 
-export class controller implements ng.IComponentController {
+export class SlaEmailTemplatesController implements ng.IComponentController {
 
     /**
      * The id of the template
@@ -58,9 +61,9 @@ export class controller implements ng.IComponentController {
                 private $mdDialog: angular.material.IDialogService,
                 private $mdToast: angular.material.IToastService,
                 private $http: angular.IHttpService,
-                private slaEmailTemplateService: any,
-                private stateService: any,
-                private accessControlService: any) {
+                private slaEmailTemplateService: SlaEmailTemplateService,
+                private stateService: StateService,
+                private accessControlService: AccessControlService) {
 
 
     }
@@ -218,7 +221,7 @@ export class controller implements ng.IComponentController {
         // Fetch the allowed actions
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowEdit = this.accessControlService.hasAction(this.accessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+                this.allowEdit = this.accessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
     }
 
@@ -244,15 +247,14 @@ export class controller implements ng.IComponentController {
 
     private showTestDialog(resolvedTemplate: any) {
         this.$mdDialog.show({
-            controller: 'VelocityTemplateTestController',
-            templateUrl: 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
+            template: '<velocity-template-test-controller></velocity-template-test-controller>',
             parent: angular.element(document.body),
             clickOutsideToClose: true,
             fullscreen: true,
-            locals: {
-                resolvedTemplate: resolvedTemplate,
-                emailAddress: this.emailAddress
-            }
+            // locals: {
+            //     resolvedTemplate: resolvedTemplate,
+            //     emailAddress: this.emailAddress
+            // }
         })
             .then((answer: any) => {
                 //do something with result
@@ -280,9 +282,12 @@ export class controller implements ng.IComponentController {
 
 
 export class testDialogController implements ng.IComponentController {
-    constructor(private $scope: any,
-                private $sce: any,
-                private $mdDialog: any,
+
+    static readonly $inject = ["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress"];
+
+    constructor(private $scope: IScope,
+                private $sce: angular.ISCEService,
+                private $mdDialog: angular.material.IDialogService,
                 private resolvedTemplate: any,
                 private emailAddress: any) {
 
@@ -309,6 +314,19 @@ export class testDialogController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-    .controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
+    .component('velocityTemplateTestController',
+    {
+        controller : testDialogController,
+        templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html'
+    }
+);
+
 angular.module(moduleName)
-    .controller('SlaEmailTemplateController', controller);
+    .component('slaEmailTemplateController', {
+        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
+        controller: SlaEmailTemplatesController,
+        controllerAs: "vm",
+        bindings :  {
+            $transition$ : '<'
+        }
+    });

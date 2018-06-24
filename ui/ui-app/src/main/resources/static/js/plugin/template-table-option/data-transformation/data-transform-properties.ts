@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import {Input} from '@angular/core';
+import AccessControlService from '../../../services/AccessControlService';
 
 export class DataTransformPropertiesController implements ng.IComponentController {
 
@@ -31,7 +32,7 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
 
     static readonly $inject = ["$scope", "$q", "AccessControlService", "FeedService", "StateService", "VisualQueryService"];
 
-    constructor(private $scope: any, private $q: any, private AccessControlService: any, private FeedService: any, private StateService: any, private VisualQueryService: any) {
+    constructor(private $scope: any, private $q: any, private accessControlService: AccessControlService, private FeedService: any, private StateService: any, private VisualQueryService: any) {
         // Watch for model changes
         this.$scope.$watch(() => {
                 return FeedService.editFeedModel;
@@ -53,7 +54,7 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
         }
 
         //Apply the entity access permissions
-        this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
+        this.$q.when(this.accessControlService.hasPermission(AccessControlService.FEEDS_EDIT, this.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
             .then((access: any) => {
                 this.allowEdit = !this.versions && access;
             });

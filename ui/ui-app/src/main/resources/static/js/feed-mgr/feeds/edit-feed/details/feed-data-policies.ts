@@ -4,6 +4,9 @@ import * as _ from 'underscore';
 import {FeedServiceTypes} from "../../../services/FeedServiceTypes";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
+import {CheckAll} from "../../shared/checkAll";
+import AccessControlService from '../../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -27,72 +30,6 @@ let directiveConfig = function () {
 
     };
 };
-
-
-export class CheckAll {
-    isIndeterminate: boolean = false;
-    totalChecked: number = 0;
-     editModel: any;
-
-    constructor( private fieldName: string, private isChecked: boolean) {
-
-    }
-
-    setup(editModel:any) {
-        this.editModel = editModel;
-        this.totalChecked = 0;
-        _.each(this.editModel.fieldPolicies, (field) => {
-            if (field["profile"]) {
-                this.totalChecked++;
-            }
-        });
-        this.markChecked();
-    }
-
-    clicked(checked: boolean) {
-        if (checked) {
-            this.totalChecked++;
-        }
-        else {
-            this.totalChecked--;
-        }
-    }
-
-    markChecked() {
-        if (angular.isDefined(this.editModel) && this.totalChecked == this.editModel.fieldPolicies.length) {
-            this.isChecked = true;
-            this.isIndeterminate = false;
-        }
-        else if (this.totalChecked > 0) {
-            this.isChecked = false;
-            this.isIndeterminate = true;
-        }
-        else if (this.totalChecked == 0) {
-            this.isChecked = false;
-            this.isIndeterminate = false;
-        }
-    }
-
-    toggleAll() {
-        var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-        if(angular.isDefined(this.editModel) ) {
-            _.each(this.editModel.fieldPolicies, (field) => {
-                field[this.fieldName] = checked;
-            });
-            if (checked) {
-                this.totalChecked = this.editModel.fieldPolicies.length;
-            }
-            else {
-                this.totalChecked = 0;
-            }
-        }
-        else {
-            this.totalChecked = 0;
-        }
-        this.markChecked();
-    }
-
-}
 
 export class Controller implements ng.IComponentController {
 
@@ -186,7 +123,7 @@ export class Controller implements ng.IComponentController {
     static $inject = ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
         "FeedFieldPolicyRuleService", "DomainTypesService", "$filter"];
 
-    constructor(private $scope: any, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $compile: angular.ICompileService, private $sce: angular.ISCEService, private AccessControlService: any, private EntityAccessControlService: any, private FeedService: any, private StateService: any, private FeedFieldPolicyRuleService: any,
+    constructor(private $scope: any, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $compile: angular.ICompileService, private $sce: angular.ISCEService, private accessControlService: AccessControlService, private entityAccessControlService: EntityAccessControlService, private FeedService: any, private StateService: any, private FeedFieldPolicyRuleService: any,
                 DomainTypesService: DomainTypesService, private $filter: angular.IFilterService) {
 
         this.versions = $scope.versions;
@@ -246,7 +183,7 @@ export class Controller implements ng.IComponentController {
         }
 
         //Apply the entity access permissions
-        this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access: any) => {
+        this.$q.when(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, this.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any)=> {
             this.allowEdit = !this.versions && access && !this.model.view.dataPolicies.disabled
         });
 

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.search;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -71,7 +71,7 @@ public class ElasticSearchRestService implements Search {
     private static final String VERSION_TWO = "2";
     private static final String QUERY = "query";
 
-    private ElasticSearchRestClientConfiguration restClientConfig;
+    private final ElasticSearchRestClientConfiguration restClientConfig;
 
     public ElasticSearchRestService(ElasticSearchRestClientConfiguration config) {
         this.restClientConfig = config;
@@ -100,8 +100,7 @@ public class ElasticSearchRestService implements Search {
                     new HashMap<>(),
                     getDataDeleteRequestBodyDslEsV2(schema, table)
                 );
-            }
-            else {
+            } else {
                 log.debug("Elasticsearch v5 or above");
                 restClient.performRequest(
                     POST_METHOD,
@@ -112,7 +111,7 @@ public class ElasticSearchRestService implements Search {
             }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
-            log.error("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}",indexName, typeName, responseException);
+            log.error("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, responseException);
         } catch (ClientProtocolException clientProtocolException) {
             log.error("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id, clientProtocolException);
         } catch (IOException ioException) {
@@ -122,7 +121,7 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public void commit(@Nonnull String indexName) {
-        try (RestClient restClient = buildRestClient()){
+        try (RestClient restClient = buildRestClient()) {
             restClient.performRequest(
                 POST_METHOD,
                 getIndexRefreshEndPoint(indexName)
@@ -139,7 +138,7 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields) {
-        try (RestClient restClient = buildRestClient()){
+        try (RestClient restClient = buildRestClient()) {
             JSONObject jsonContent = new JSONObject(fields);
             HttpEntity httpEntity = new NStringEntity(jsonContent.toString(), ContentType.APPLICATION_JSON);
             restClient.performRequest(
@@ -177,6 +176,15 @@ public class ElasticSearchRestService implements Search {
         return "/" + dataIndexName + "/" + dataIndexType + "/_query";
     }
 
+    private String getAllDocumentsDeleteEndPoint(String indexName, String typeName) {
+        return getDataDeleteEndPoint(indexName, typeName) + "?conflicts=proceed";
+    }
+
+    private String getAllDocumentsDeleteEndPointEsV2(String indexName, String typeName) {
+        return getDataDeleteEndPointEsV2(indexName, typeName);
+    }
+
+
     @Override
     public SearchResult search(String query, int size, int start) {
         buildRestClient();
@@ -191,6 +199,84 @@ public class ElasticSearchRestService implements Search {
 
     }
 
+    @Override
+    public int deleteAll(@Nonnull String indexName, @Nonnull String typeName) {
+
+        try (RestClient restClient = buildRestClient()) {
+
+            if ((restClientConfig.getEsversion() != null) && (restClientConfig.getEsversion().equals(VERSION_TWO))) {
+                log.info("Elasticsearch v2");
+                Response response = restClient.performRequest(
+                    DELETE_METHOD,
+                    getAllDocumentsDeleteEndPointEsV2(indexName, typeName),
+                    new HashMap<>(),
+                    getAllDocumentsDeleteRequestBodyDslV2());
+
+                if (response != null) {
+                    try {
+                        String entityString = EntityUtils.toString(response.getEntity());
+                        JSONObject entityStringJsonObject = new JSONObject(entityString);
+                        JSONObject indicesJsonObject = entityStringJsonObject.getJSONObject("_indices");
+                        JSONObject allJsonObject = indicesJsonObject.getJSONObject("_all");
+                        return (Integer) allJsonObject.get("deleted");
+                    } catch (JSONException e) {
+                        log.warn("Unable to get number of documents deleted. [{}]", e);
+                    }
+                } else {
+                    log.warn("Unable to identify number of documents deleted since null response received");
+                }
+            } else {
+                log.info("Elasticsearch v5 or above");
+                Response response = restClient.performRequest(
+                    POST_METHOD,
+                    getAllDocumentsDeleteEndPoint(indexName, typeName),
+                    new HashMap<>(),
+                    getAllDocumentsDeleteRequestBodyDsl()
+                );
+
+                if (response != null) {
+                    try {
+                        String entityString = EntityUtils.toString(response.getEntity());
+                        JSONObject entityStringJsonObject = new JSONObject(entityString);
+                        return (Integer) entityStringJsonObject.get("deleted");
+                    } catch (JSONException e) {
+                        log.warn("Unable to get number of documents deleted. [{}]", e);
+                    }
+                } else {
+                    log.warn("Unable to identify number of documents deleted since null response received");
+                }
+            }
+            log.info("Deleted all-documents for index={}, type={}", indexName, typeName);
+        } catch (ResponseException responseException) {
+            log.error("Index all-documents deletion encountered issues in Elasticsearch for index={}, type={} [{}]", indexName, typeName, responseException);
+        } catch (ClientProtocolException clientProtocolException) {
+            log.error("Http protocol error for delete all-documents for index={}, type={} [{}]", indexName, typeName, clientProtocolException);
+        } catch (IOException ioException) {
+            log.error("IO Error in rest client [{}]", ioException);
+        }
+
+        return 0;
+    }
+
+    private HttpEntity getAllDocumentsDeleteRequestBodyDsl() {
+        String jsonBodyString = new JSONObject().toString();
+        try {
+            JSONObject emptyObject = new JSONObject();
+
+            JSONObject matchAllObject = new JSONObject()
+                .put("match_all", emptyObject);
+
+            JSONObject queryObject = new JSONObject()
+                .put("query", matchAllObject);
+
+            jsonBodyString = queryObject.toString();
+
+        } catch (JSONException jsonException) {
+            log.warn("Could not construct all-documents deletion request body query dsl", jsonException);
+        }
+        return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
+    }
+
     private SearchResult transformRestResult(String query, int size, int start, ElasticSearchRestSearchResponse restSearchResponse) {
         ElasticSearchRestSearchResultTransform elasticSearchRestSearchResultTransform = new ElasticSearchRestSearchResultTransform();
         return elasticSearchRestSearchResultTransform.transformRestResult(query, size, start, restSearchResponse);
@@ -198,9 +284,9 @@ public class ElasticSearchRestService implements Search {
 
     private RestClient buildRestClient() {
         return RestClient.builder(
-                new HttpHost(restClientConfig.getHost(),
-                             restClientConfig.getPort(),
-                             HTTP_PROTOCOL)).build();
+            new HttpHost(restClientConfig.getHost(),
+                         restClientConfig.getPort(),
+                         HTTP_PROTOCOL)).build();
     }
 
     private ElasticSearchRestSearchResponse executeRestSearch(String query, int size, int start) {
@@ -442,6 +528,10 @@ public class ElasticSearchRestService implements Search {
 
     private HttpEntity getDataDeleteRequestBodyDslEsV2(@Nonnull String schema, @Nonnull String table) {
         return getDataDeleteRequestBodyDsl(schema, table);
+    }
+
+    private HttpEntity getAllDocumentsDeleteRequestBodyDslV2() {
+        return getAllDocumentsDeleteRequestBodyDsl();
     }
 
     private String rewriteQuery(String query) {

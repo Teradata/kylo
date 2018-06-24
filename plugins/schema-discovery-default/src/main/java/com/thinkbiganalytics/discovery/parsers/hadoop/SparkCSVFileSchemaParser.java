@@ -24,8 +24,12 @@ import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PropertyLabelValue;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,23 +44,23 @@ import java.util.Map;
  *      Spark compiled with Scala 2.10
  *        --packages com.databricks:spark-csv_2.10:1.5.0
  */
-@SchemaParser(name = "CSV", allowSkipHeader = true, description = "Supports CSV formatted files.", tags = {"CSV"}, usesSpark = true, primary = false)
+@SchemaParser(name = "CSV", allowSkipHeader = true, description = "Supports CSV formatted files.", tags = {"CSV"}, usesSpark = true, primary = false, mimeTypes = "text/csv", sparkFormat = "csv")
 public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    selectableValues = {"true", "false"})
+                    selectableValues = {"true", "false"}, additionalProperties = {@PropertyLabelValue(label = "spark.option", value = "inferSchema")})
     private boolean autoDetect = true;
 
-    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true", "false"})
+    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true", "false"},additionalProperties = {@PropertyLabelValue(label = "spark.option", value = "header")})
     private boolean headerRow = true;
 
-    @PolicyProperty(name = "Delimiter Char", hint = "Character separating fields", value = ",")
+    @PolicyProperty(name = "Delimiter Char", hint = "Character separating fields", value = ",",additionalProperties = {@PropertyLabelValue(label = "spark.option", value = "delimiter")})
     private String separatorChar = ",";
 
-    @PolicyProperty(name = "Quote Char", hint = "Character enclosing a quoted string", value = "\"")
+    @PolicyProperty(name = "Quote Char", hint = "Character enclosing a quoted string", value = "\"",additionalProperties = {@PropertyLabelValue(label = "spark.option", value = "quote")})
     private String quoteChar = "\"";
 
-    @PolicyProperty(name = "Escape Char", hint = "Escape character", value = "\\")
+    @PolicyProperty(name = "Escape Char", hint = "Escape character", value = "\\",additionalProperties = {@PropertyLabelValue(label = "spark.option", value = "escape")})
     private String escapeChar = "\\";
 
 
@@ -84,7 +88,7 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
         @Override
         public String build(String pathToFile) {
             StringBuilder sb = new StringBuilder();
-            appendDataFrameVariable(sb);
+            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
             sb.append("sqlContext.read.format(\"csv\")");
             addOptions(sb);
             sb.append(String.format(".load(\"%s\")", pathToFile));
@@ -92,6 +96,13 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
                 sb.append(String.format(".limit(%s)", limit));
             }
             return sb.toString();
+        }
+
+
+        @Override
+        public String build(List<String> paths) {
+            String path = StringUtils.join(paths,",");
+            return build(path);
         }
 
         private void addOptions(StringBuilder sb){

@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedController implements ng.IComponentController {
@@ -60,17 +61,15 @@ export class DefineFeedController implements ng.IComponentController {
          * @type {boolean}
          */
         cloning:boolean = false;
-        
-        
-        
+            
         /**
          * After the stepper is initialized this will get called to setup access control
          * @param stepper
          */
         onStepperInitialized = (function(stepper:any) {
-            var accessChecks = {entityAccess: this.AccessControlService.checkEntityAccessControlled(), securityGroups: this.FeedSecurityGroups.isEnabled()};
+            var accessChecks = {entityAccess: this.accessControlService.checkEntityAccessControlled(), securityGroups: this.FeedSecurityGroups.isEnabled()};
             this.$q.all(accessChecks).then( (response:any) => {
-                var entityAccess = this.AccessControlService.isEntityAccessControlled();
+                var entityAccess = this.accessControlService.isEntityAccessControlled();
                 var securityGroupsAccess = response.securityGroups;
                 //disable the access control step
                 if (!entityAccess && !securityGroupsAccess) {
@@ -247,9 +246,9 @@ export class DefineFeedController implements ng.IComponentController {
                 this.showCloningDialog(cloneFeedName);
             }
             // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then( (actionSet:any) => {
-                    this.allowImport = this.AccessControlService.hasAction(this.AccessControlService.FEEDS_IMPORT, actionSet.actions);
+                    this.allowImport = this.accessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
                 });
 
         }
@@ -283,7 +282,7 @@ export class DefineFeedController implements ng.IComponentController {
 
 
     constructor (private $scope:any, private $http:any, private $mdDialog:any, private $q:any, private $transition$:any
-        , private AccessControlService:any, private FeedService:any, private FeedSecurityGroups:any, private RestUrlService:any, private StateService:any
+        , private accessControlService:AccessControlService, private FeedService:any, private FeedSecurityGroups:any, private RestUrlService:any, private StateService:any
         , private UiComponentsService:any) {
 
         var self = this;

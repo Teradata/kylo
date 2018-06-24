@@ -1,0 +1,36 @@
+<div tdFileDrop (fileDrop)="upload($event)" multiple>
+  <div *ngIf="files.length == 0" class="drop-zone-empty" fxLayout="column">
+    <ng-md-icon icon="fa-file" size="64" class="tc-accent"></ng-md-icon>
+    <ng-md-icon icon="fa-folder" size="64" class="tc-primary"></ng-md-icon>
+    <p>Drag and drop here<br>OR</p>
+    <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">Add file</button>
+  </div>
+
+  <div *ngIf="files.length > 0" class="drop-zone-list">
+    <mat-list>
+      <ng-template ngFor let-item let-last="last" [ngForOf]="files">
+        <mat-list-item>
+          <ng-md-icon matListIcon [icon]="item.listIcon" [ngClass]="item.listIconClass"></ng-md-icon>
+          <h3 matLine>{{item.name}}</h3>
+          <mat-progress-bar *ngIf="item.status == 0" matLine mode="determinate" [value]="item.progress * 100"></mat-progress-bar>
+          <span *ngIf="item.error" matLine class="mat-hint mat-warn">{{item.error}}</span>
+          <span *ngIf="item.size" class="mat-hint file-size">{{item.size | fileSize}}</span>
+          <button mat-icon-button (click)="cancelFile(item)">
+            <ng-md-icon [icon]="item.buttonIcon"></ng-md-icon>
+          </button>
+        </mat-list-item>
+        <mat-divider *ngIf="!last"></mat-divider>
+      </ng-template>
+    </mat-list>
+  </div>
+</div>
+
+<input #fileInput id="fileInput" tdFileSelect type="file" multiple style="display: none" (fileSelect)="upload($event)">
+
+<ng-container *ngIf="files.length > 0">
+  <mat-divider></mat-divider>
+  <mat-card-actions>
+    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()">Add more files</button>
+    <button *ngIf="isReady" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview">Continue</button>
+  </mat-card-actions>
+</ng-container>

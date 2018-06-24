@@ -1,5 +1,6 @@
 import "feed-mgr/module";
 import {UnderscoreStatic} from "underscore";
+import {PreviewDataSet, SparkDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
@@ -541,6 +542,9 @@ angular.extend(SqlBuilder.prototype, {
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
+        if(node.dataset){
+            rangeVar.dataset = node.dataset;
+        }
         return rangeVar;
     },
 
@@ -915,6 +919,11 @@ export interface RangeVar {
      * The datasource id
      */
     datasourceId?: string;
+
+    /**
+     * the dataset used on this node
+     */
+    dataset?:SparkDataSet;
 }
 
 /**

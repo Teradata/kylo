@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-provenance</artifactId>
-    <version>0.9.1.1-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-nifi-provenance-model</artifactId>
-      <version>0.9.1.1-SNAPSHOT</version>
+      <version>0.9.2-SNAPSHOT</version>
     </dependency>
 
 

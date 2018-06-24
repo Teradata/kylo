@@ -10,7 +10,6 @@ import Processor = Templates.Processor;
 
 
 export interface RegisteredTemplateService {
-    newModel(): void;
 
     resetModel(): void;
 

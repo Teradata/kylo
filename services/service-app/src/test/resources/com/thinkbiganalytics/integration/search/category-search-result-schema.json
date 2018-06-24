@@ -1,0 +1,383 @@
+{
+  "$id": "http://example.com/example.json",
+  "type": "object",
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "_id": {
+      "$id": "/properties/_id",
+      "type": "string",
+      "title": "The _id Schema ",
+      "default": "",
+      "examples": [
+        "ff80bc37505d6470574c67-982d-411d-8195-10fb0552254c"
+      ]
+    },
+    "_index": {
+      "$id": "/properties/_index",
+      "type": "string",
+      "title": "The _index Schema ",
+      "default": "",
+      "examples": [
+        "kylo-categories-default"
+      ]
+    },
+    "_source": {
+      "$id": "/properties/_source",
+      "type": "object",
+      "properties": {
+        "jcr:created": {
+          "$id": "/properties/_source/properties/jcr:created",
+          "type": "string",
+          "title": "The Jcr:created Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28T14:25:48.036-08:00"
+          ]
+        },
+        "jcr:createdBy": {
+          "$id": "/properties/_source/properties/jcr:createdBy",
+          "type": "string",
+          "title": "The Jcr:createdby Schema ",
+          "default": "",
+          "examples": [
+            "dladmin"
+          ]
+        },
+        "jcr:description": {
+          "$id": "/properties/_source/properties/jcr:description",
+          "type": "string",
+          "title": "The Jcr:description Schema ",
+          "default": "",
+          "examples": [
+            "Kylo Category Created By Search Properties ES Integration Test - 02/28/2018 14:25:45"
+          ]
+        },
+        "jcr:lastModified": {
+          "$id": "/properties/_source/properties/jcr:lastModified",
+          "type": "string",
+          "title": "The Jcr:lastmodified Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28T14:25:48.036-08:00"
+          ]
+        },
+        "jcr:lastModifiedBy": {
+          "$id": "/properties/_source/properties/jcr:lastModifiedBy",
+          "type": "string",
+          "title": "The Jcr:lastmodifiedby Schema ",
+          "default": "",
+          "examples": [
+            "dladmin"
+          ]
+        },
+        "jcr:title": {
+          "$id": "/properties/_source/properties/jcr:title",
+          "type": "string",
+          "title": "The Jcr:title Schema ",
+          "default": "",
+          "examples": [
+            "Cat Search Prop ES IT"
+          ]
+        },
+        "length_jcr:created": {
+          "$id": "/properties/_source/properties/length_jcr:created",
+          "type": "integer",
+          "title": "The Length_jcr:created Schema ",
+          "default": 0,
+          "examples": [
+            29
+          ]
+        },
+        "length_jcr:createdBy": {
+          "$id": "/properties/_source/properties/length_jcr:createdBy",
+          "type": "integer",
+          "title": "The Length_jcr:createdby Schema ",
+          "default": 0,
+          "examples": [
+            7
+          ]
+        },
+        "length_jcr:description": {
+          "$id": "/properties/_source/properties/length_jcr:description",
+          "type": "integer",
+          "title": "The Length_jcr:description Schema ",
+          "default": 0,
+          "examples": [
+            84
+          ]
+        },
+        "length_jcr:lastModified": {
+          "$id": "/properties/_source/properties/length_jcr:lastModified",
+          "type": "integer",
+          "title": "The Length_jcr:lastmodified Schema ",
+          "default": 0,
+          "examples": [
+            29
+          ]
+        },
+        "length_jcr:lastModifiedBy": {
+          "$id": "/properties/_source/properties/length_jcr:lastModifiedBy",
+          "type": "integer",
+          "title": "The Length_jcr:lastmodifiedby Schema ",
+          "default": 0,
+          "examples": [
+            7
+          ]
+        },
+        "length_jcr:title": {
+          "$id": "/properties/_source/properties/length_jcr:title",
+          "type": "integer",
+          "title": "The Length_jcr:title Schema ",
+          "default": 0,
+          "examples": [
+            21
+          ]
+        },
+        "length_tba:allowIndexing": {
+          "$id": "/properties/_source/properties/length_tba:allowIndexing",
+          "type": "integer",
+          "title": "The Length_tba:allowindexing Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        },
+        "length_tba:systemName": {
+          "$id": "/properties/_source/properties/length_tba:systemName",
+          "type": "integer",
+          "title": "The Length_tba:systemname Schema ",
+          "default": 0,
+          "examples": [
+            21
+          ]
+        },
+        "length_usr:properties": {
+          "$id": "/properties/_source/properties/length_usr:properties",
+          "type": "integer",
+          "title": "The Length_usr:properties Schema ",
+          "default": 0,
+          "examples": [
+            43
+          ]
+        },
+        "lowercase_jcr:created": {
+          "$id": "/properties/_source/properties/lowercase_jcr:created",
+          "type": "string",
+          "title": "The Lowercase_jcr:created Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28t14:25:48.036-08:00"
+          ]
+        },
+        "lowercase_jcr:createdBy": {
+          "$id": "/properties/_source/properties/lowercase_jcr:createdBy",
+          "type": "string",
+          "title": "The Lowercase_jcr:createdby Schema ",
+          "default": "",
+          "examples": [
+            "dladmin"
+          ]
+        },
+        "lowercase_jcr:description": {
+          "$id": "/properties/_source/properties/lowercase_jcr:description",
+          "type": "string",
+          "title": "The Lowercase_jcr:description Schema ",
+          "default": "",
+          "examples": [
+            "kylo category created by search properties es integration test - 02/28/2018 14:25:45"
+          ]
+        },
+        "lowercase_jcr:lastModified": {
+          "$id": "/properties/_source/properties/lowercase_jcr:lastModified",
+          "type": "string",
+          "title": "The Lowercase_jcr:lastmodified Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28t14:25:48.036-08:00"
+          ]
+        },
+        "lowercase_jcr:lastModifiedBy": {
+          "$id": "/properties/_source/properties/lowercase_jcr:lastModifiedBy",
+          "type": "string",
+          "title": "The Lowercase_jcr:lastmodifiedby Schema ",
+          "default": "",
+          "examples": [
+            "dladmin"
+          ]
+        },
+        "lowercase_jcr:title": {
+          "$id": "/properties/_source/properties/lowercase_jcr:title",
+          "type": "string",
+          "title": "The Lowercase_jcr:title Schema ",
+          "default": "",
+          "examples": [
+            "cat search prop es it"
+          ]
+        },
+        "lowercase_tba:allowIndexing": {
+          "$id": "/properties/_source/properties/lowercase_tba:allowIndexing",
+          "type": "string",
+          "title": "The Lowercase_tba:allowindexing Schema ",
+          "default": "",
+          "examples": [
+            "y"
+          ]
+        },
+        "lowercase_tba:systemName": {
+          "$id": "/properties/_source/properties/lowercase_tba:systemName",
+          "type": "string",
+          "title": "The Lowercase_tba:systemname Schema ",
+          "default": "",
+          "examples": [
+            "cat_search_prop_es_it"
+          ]
+        },
+        "lowercase_usr:properties": {
+          "$id": "/properties/_source/properties/lowercase_usr:properties",
+          "type": "string",
+          "title": "The Lowercase_usr:properties Schema ",
+          "default": "",
+          "examples": [
+            "test type=t100 ad92\trun mode=auto i56 daily"
+          ]
+        },
+        "tba:allowIndexing": {
+          "$id": "/properties/_source/properties/tba:allowIndexing",
+          "type": "string",
+          "title": "The Tba:allowindexing Schema ",
+          "default": "",
+          "examples": [
+            "Y"
+          ]
+        },
+        "tba:systemName": {
+          "$id": "/properties/_source/properties/tba:systemName",
+          "type": "string",
+          "title": "The Tba:systemname Schema ",
+          "default": "",
+          "examples": [
+            "cat_search_prop_es_it"
+          ]
+        },
+        "uppercase_jcr:created": {
+          "$id": "/properties/_source/properties/uppercase_jcr:created",
+          "type": "string",
+          "title": "The Uppercase_jcr:created Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28T14:25:48.036-08:00"
+          ]
+        },
+        "uppercase_jcr:createdBy": {
+          "$id": "/properties/_source/properties/uppercase_jcr:createdBy",
+          "type": "string",
+          "title": "The Uppercase_jcr:createdby Schema ",
+          "default": "",
+          "examples": [
+            "DLADMIN"
+          ]
+        },
+        "uppercase_jcr:description": {
+          "$id": "/properties/_source/properties/uppercase_jcr:description",
+          "type": "string",
+          "title": "The Uppercase_jcr:description Schema ",
+          "default": "",
+          "examples": [
+            "KYLO CATEGORY CREATED BY SEARCH PROPERTIES ES INTEGRATION TEST - 02/28/2018 14:25:45"
+          ]
+        },
+        "uppercase_jcr:lastModified": {
+          "$id": "/properties/_source/properties/uppercase_jcr:lastModified",
+          "type": "string",
+          "title": "The Uppercase_jcr:lastmodified Schema ",
+          "default": "",
+          "examples": [
+            "2018-02-28T14:25:48.036-08:00"
+          ]
+        },
+        "uppercase_jcr:lastModifiedBy": {
+          "$id": "/properties/_source/properties/uppercase_jcr:lastModifiedBy",
+          "type": "string",
+          "title": "The Uppercase_jcr:lastmodifiedby Schema ",
+          "default": "",
+          "examples": [
+            "DLADMIN"
+          ]
+        },
+        "uppercase_jcr:title": {
+          "$id": "/properties/_source/properties/uppercase_jcr:title",
+          "type": "string",
+          "title": "The Uppercase_jcr:title Schema ",
+          "default": "",
+          "examples": [
+            "CAT SEARCH PROP ES IT"
+          ]
+        },
+        "uppercase_tba:allowIndexing": {
+          "$id": "/properties/_source/properties/uppercase_tba:allowIndexing",
+          "type": "string",
+          "title": "The Uppercase_tba:allowindexing Schema ",
+          "default": "",
+          "examples": [
+            "Y"
+          ]
+        },
+        "uppercase_tba:systemName": {
+          "$id": "/properties/_source/properties/uppercase_tba:systemName",
+          "type": "string",
+          "title": "The Uppercase_tba:systemname Schema ",
+          "default": "",
+          "examples": [
+            "CAT_SEARCH_PROP_ES_IT"
+          ]
+        },
+        "uppercase_usr:properties": {
+          "$id": "/properties/_source/properties/uppercase_usr:properties",
+          "type": "string",
+          "title": "The Uppercase_usr:properties Schema ",
+          "default": "",
+          "examples": [
+            "TEST TYPE=T100 AD92\tRUN MODE=AUTO I56 DAILY"
+          ]
+        },
+        "usr:properties": {
+          "$id": "/properties/_source/properties/usr:properties",
+          "type": "string",
+          "title": "The Usr:properties Schema ",
+          "default": "",
+          "examples": [
+            "test type=T100 ad92\trun mode=AUTO i56 daily"
+          ]
+        }
+      }
+    },
+    "_type": {
+      "$id": "/properties/_type",
+      "type": "string",
+      "title": "The _type Schema ",
+      "default": "",
+      "examples": [
+        "default"
+      ]
+    },
+    "_version": {
+      "$id": "/properties/_version",
+      "type": "integer",
+      "title": "The _version Schema ",
+      "default": 0,
+      "examples": [
+        8
+      ]
+    },
+    "found": {
+      "$id": "/properties/found",
+      "type": "boolean",
+      "title": "The Found Schema ",
+      "default": false,
+      "examples": [
+        true
+      ]
+    }
+  }
+}

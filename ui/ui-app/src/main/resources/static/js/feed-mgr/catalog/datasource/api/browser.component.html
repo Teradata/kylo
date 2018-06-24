@@ -1,0 +1,90 @@
+<div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
+  <div *ngIf="!searchBox.searchVisible" class="push-left-sm">
+    <ol class="mat-title">
+      <li>
+        <div>
+          <span *ngFor="let node of pathNodes; last as isLast; first as isFirst;">
+            <a  *ngIf="isFirst" matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
+              <ng-md-icon icon="home" style="vertical-align: sub;"></ng-md-icon> Home
+            </a>
+            <a *ngIf="!isFirst" matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
+              {{node.name}}
+            </a>
+            <span *ngIf="!isLast"> / </span>
+          </span>
+        </div>
+        <div *ngIf="selectedTotal() > 0" class="selected-items" >
+          {{selectedHere()}} item(s) selected here,
+          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{selectedTotal()}} in total</a>
+        </div>
+      </li>
+    </ol>
+  </div>
+  <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Search here" (searchDebounce)="search($event)" fxFlex></td-search-box>
+</div>
+<mat-divider></mat-divider>
+
+<div *tdLoading="'BrowserComponent.tableLoader'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+
+  <table td-data-table
+         #dataTable>
+  <thead>
+  <tr td-data-table-column-row>
+    <th td-data-table-column
+        [name]=""
+        [sortable]="false"
+        [numeric]="false"
+        [width]="50"
+        [active]="false">
+      <mat-checkbox [(ngModel)]="selectAll"
+                    [disabled]="isSelectAllDisabled()" (change)="onToggleAll()"></mat-checkbox>
+    </th>
+    <th td-data-table-column *ngFor="let column of columns"
+        [name]="column.name"
+        [sortable]="column.sortable"
+        [sortOrder]="sortOrder"
+        [numeric]="column.numeric"
+        (sortChange)="sort($event)"
+        [width]="column.width"
+        [active]="sortBy === column.name">
+      {{column.label}}
+    </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr td-data-table-row *ngFor="let file of filteredFiles;" [ngClass]="file.canBeParent() ? 'cursor-pointer' : ''">
+    <td td-data-table-cell>
+      <mat-checkbox [checked]="isChildSelected(file.name)"
+                    [disabled]="isSelectChildDisabled(file.name)"
+                    (change)="onToggleChild($event, file)"></mat-checkbox>
+      <td-notification-count *ngIf="numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="numberOfSelectedDescendants(file.name)"
+                             [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
+    </td>
+    <td td-data-table-cell *ngFor="let column of columns" (click)="rowClick(file)"
+        [numeric]="column.numeric" [width]="column.width">
+
+      <div class="cell-content">
+        <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
+        <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
+      </div>
+    </td>
+  </tr>
+  </tbody>
+  </table>
+
+  <div class="md-padding" *ngIf="filteredFiles.length === 0" layout="row" layout-align="center center">
+    <h3>No results to display.</h3>
+    <span *ngIf="errorMsg !== undefined" class="md-warn-text">An error occurred: {{errorMsg}}</span>
+  </div>
+
+</div>
+
+<td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+  <span hide-xs>Rows per page:</span>
+  <mat-select [style.width.px]="50" [(value)]="pageSize">
+    <mat-option *ngFor="let size of [50, 100, 200, 500]" [value]="size">
+      {{size}}
+    </mat-option>
+  </mat-select>
+  {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+</td-paging-bar>

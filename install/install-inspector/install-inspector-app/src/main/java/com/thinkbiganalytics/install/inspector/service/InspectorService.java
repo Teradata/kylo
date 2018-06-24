@@ -112,7 +112,7 @@ public class InspectorService {
         AppRunner runner = new AppRunner(installPath.getUri(), inspectionsPath, installPath.isDevMode().toString(), projectVersion);
         Future<Configuration> futureResult = execService.submit(runner);
         try {
-            return futureResult.get(2, TimeUnit.MINUTES);
+            return futureResult.get(5, TimeUnit.MINUTES);
         } catch (InterruptedException | ExecutionException e) {
             throw new IllegalStateException("An error occurred", e);
         } catch (TimeoutException e) {

@@ -8,6 +8,8 @@ import {SparkConstants} from "./spark-constants";
 /** Name of the DatasourceProvider variable */
 const DATASOURCE_PROVIDER = "datasourceProvider";
 
+const DATASET_PROVIDER = "catalogDataSetProvider";
+
 /**
  * Handles transformations from a visual query model to Spark.
  */
@@ -76,13 +78,20 @@ export class SparkQueryParser extends QueryParser {
         // Build table script
         let script = "";
 
+        //add in the imports for kylo catalog
+
+
         _.keys(tablesByAlias).sort().forEach(function (alias) {
             let table = tablesByAlias[alias];
 
             script += "val " + alias + " = ";
-            if (typeof table.datasourceId === "string" && table.datasourceId !== SparkConstants.HIVE_DATASOURCE) {
-                script += DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\", \"" + table.datasourceId
-                    + "\", sqlContext)";
+            if (typeof table.datasourceId === "string" && table.datasourceId !== SparkConstants.HIVE_DATASOURCE ) {
+                if(table.dataset != undefined) {
+                    script += DATASET_PROVIDER +".read(\""+table.dataset.id+"\")";
+                }else {
+                    script += DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\", \"" + table.datasourceId
+                        + "\", sqlContext)";
+                }
             } else {
                 script += "sqlContext.table(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\")"
             }
@@ -100,7 +109,7 @@ export class SparkQueryParser extends QueryParser {
             script += target.val.fields[0] + ".col(\"" + StringUtils.escapeScala(target.val.fields[1]) + "\")";
             if (target.name !== null || target.description !== null) {
                 script += ".as(\"" + StringUtils.escapeScala((target.name !== null) ? target.name : target.val.fields[1]) + "\"";
-                if (target.description !== null) {
+                if (target.description !== null && target.description != undefined) {
                     script += ", new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", \"" + StringUtils.escapeScala(target.description) + "\").build()";
                 }
                 script += ")"

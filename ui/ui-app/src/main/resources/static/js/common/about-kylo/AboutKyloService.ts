@@ -2,9 +2,9 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 export default class controller implements ng.IComponentController{
-constructor(private $scope: any,
-            private $mdDialog: any,
-            private $http: any){
+constructor(private $scope: IScope,
+            private $mdDialog: angular.material.IDialogService,
+            private $http: angular.IHttpService){
             $http({
                     method: "GET",
                     url: "/proxy/v1/about/version"
@@ -31,8 +31,7 @@ export class AboutKyloService{
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 escapeToClose: true,
-                fullscreen: false,
-                locals: {}
+                fullscreen: false
             }).then((msg: any)=>{
                 //callback (success)
             }, function () {

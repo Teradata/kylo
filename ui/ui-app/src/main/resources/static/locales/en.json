@@ -29,6 +29,8 @@
     "views.main.adminTitle": "Admin",
     "views.main.feedManagerTitle": "Feed Manager",
     "views.main.opsManagerTitle": "Operations",
+    "views.main.repository": "Repository",
+    "views.main.repository-narrow": "Repo",
     "views.main.access-denied": "Access Deined",
     "views.main.got-it": "Got it!",
     "views.main.accessCategories": "Access Categories",
@@ -667,6 +669,7 @@
     "view.search.Title": "Title",
     "view.search.System name (Kylo)": "System name (Kylo)",
     "view.search.Description": "Description",
+    "view.search.User properties": "User properties",
 
     "views.job-details.JE": "Job Execution",
     "views.job-details-template.ED": "Exit Description",
@@ -770,6 +773,9 @@
     "views.feed-stats-charts.Failed Events": "Failed Events",
     "views.feed-stats-charts.Processor": "Processor",
     "views.feed-stats-charts.Errors": "Errors",
+
+    "views.repository.templates": "Templates",
+    "views.repository.feeds": "Feeds",
 
     "views.feed-details-delete-dialogDelete": "Delete",
     "views.feed-details-delete-dialogDelete2": "All data for this feed will be permanently deleted.",

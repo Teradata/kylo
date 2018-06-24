@@ -1,21 +1,19 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 
-angular.module(moduleName).directive("tbaViewTypeSelection",
-  [ () => {
-          return {
-            restrict: 'E',
-            templateUrl: 'js/common/view-type-selection/view-type-selection-template.html',
-            scope: {
-                viewType: '='
-            },
-            link: function ($scope: any, elem: any, attr: any) {
+export default class ViewTypeSelection {
 
-                $scope.viewTypeChanged = function (viewType: any) {
-                    $scope.viewType = viewType;
-                }
+    viewType: any;
 
-            }
-        }
-  }
-  ]);
+    viewTypeChanged(viewType: any) {
+        this.viewType = viewType;
+    }
+}
+
+angular.module(moduleName).component("tbaViewTypeSelection",{
+    controller: ViewTypeSelection,
+    bindings: {
+        viewType: '='
+    },
+    templateUrl: 'js/common/view-type-selection/view-type-selection-template.html'
+});

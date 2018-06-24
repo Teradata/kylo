@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
-//const moduleName = require('../module-name');
+import AccessControlService from "../../services/AccessControlService";
 
 export class ClusterController implements ng.IComponentController{
         simpleMessage: any;
@@ -13,15 +13,16 @@ export class ClusterController implements ng.IComponentController{
 
         members: any[] = [];
         isClustered: boolean = false;
-
-   constructor(private $scope: any,
-                private $http: any, 
-                private $mdDialog: any,
-                private $mdToast: any,
-                private $interval: any,
-                private AccessControlService:any){
-                    this.ngOnInit();
-                 }
+        static readonly $inject = ["$scope", "$http","$mdDialog", "$mdToast","$interval","AccessControlService"];
+        constructor(private $scope: angular.IScope,
+                    private $http: angular.IHttpService, 
+                    private $mdDialog: angular.material.IDialogService,
+                    private $mdToast: angular.material.IToastService,
+                    private $interval: angular.IIntervalService,
+                    private AccessControlService:AccessControlService)
+                    {
+                        this.ngOnInit();
+                    }
 
        sendMessage(){
             var simpleMessage = this.simpleMessage;
@@ -61,7 +62,7 @@ export class ClusterController implements ng.IComponentController{
             });
         }
 
-        getMembers = ()=> {
+        getMembers(){
             this.$http.get("/proxy/v1/admin/cluster/members").then((response: any)=>{
                 if(response.data){
                    this.members = response.data;
@@ -87,13 +88,16 @@ export class ClusterController implements ng.IComponentController{
             },2000);
         }
 
-    ngOnInit(){
-            this.startMessageChecker();
-            this.setIsClustered();
-            this.getMembers();
-        }
-
- 
+        ngOnInit(){
+                this.startMessageChecker();
+                this.setIsClustered();
+                this.getMembers();
+            }
 }
 
-  angular.module(moduleName).controller("ClusterController", ["$scope", "$http","$mdDialog", "$mdToast","$interval","AccessControlService",ClusterController]);
+  angular.module(moduleName).component("clusterController", {
+        controller: ClusterController,
+        controllerAs: "vm",
+        templateUrl: "js/admin/cluster/cluster-test.html"
+    });
+  //...controller("ClusterController", [ClusterController]);
