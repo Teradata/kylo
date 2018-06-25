@@ -1,19 +1,19 @@
-import {moduleName} from "../module-name";
+import { moduleName } from "../module-name";
 import * as angular from "angular";
 
 import * as _ from "underscore";
-import {ImportComponentType} from "../../services/ImportService";
-import {Import} from "../../services/ImportComponentOptionTypes";
-import {Common} from "../../../common/CommonTypes";
+import { ImportComponentType } from "../../services/ImportService";
+import { Import } from "../../services/ImportComponentOptionTypes";
+import { Common } from "../../../common/CommonTypes";
 import {StateService} from "@uirouter/angular";
-import {OnInit} from "@angular/core";
-import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
+import { OnInit } from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
+import { RegisterTemplateServiceFactory } from "../../services/RegisterTemplateServiceFactory";
 
 export class ImportTemplateController implements ng.IController, OnInit {
 
@@ -216,6 +216,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Initialize the controller and properties
      */
     ngOnInit() {
+
         this.indexImportOptions();
         this.setDefaultImportOptions();
         this.checkRemoteProcessGroupAware();
@@ -226,6 +227,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
         , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
         , private registerTemplateService: RegisterTemplateServiceFactory, private $state: StateService) {
+
+
 
         /**
          * Watch when the file changes
@@ -245,6 +248,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
             this.checkFileName(this.templateParam.fileName);
+            console.log(this.$state.params.template);
         }
 
         this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
@@ -727,13 +731,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
 angular.module(moduleName).component('importTemplateController', {
     templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
-    controller: ImportTemplateController,
-    controllerAs: 'vm'
-})
-    //Redefined the component with different name to be used in Angular
-//This component uses embedded template instead of templateUrl, else Angular complains
-    .component('importTemplateControllerEmbedded', {
-    template: "<import-template-controller></import-template-controller>",
     controller: ImportTemplateController,
     controllerAs: 'vm'
 });
