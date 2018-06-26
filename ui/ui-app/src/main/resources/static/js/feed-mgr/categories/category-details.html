@@ -18,21 +18,21 @@
   #L%
   -->
 <div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingCategory"></md-progress-linear>
-    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loadingCategory">
-        <header-section>
+    <mat-progress-bar md-mode="indeterminate" *ngIf="loadingCategory"></mat-progress-bar>
+    <mat-card body-css="md-padding" class="centered" *ngIf="!loadingCategory">
+        <mat-card-title>
             <div layout="row" layout-align="center start">
                 <div class="card-title">{{"views.category-details.CD" | translate}}</div>
                 <span flex></span>
-                <ng-md-icon icon="{{vm.model.icon}}" ng-style="vm.getIconColorStyle(vm.model.iconColor)" style="padding-right:16px;" size="30"></ng-md-icon>
+                <ng-md-icon icon="{{model.icon}}" [ngStyle]="getIconColorStyle(model.iconColor)" style="padding-right:16px;" size="30"></ng-md-icon>
             </div>
-        </header-section>
-        <body-section>
+        </mat-card-title>
+        <mat-card-content>
             <thinkbig-category-definition></thinkbig-category-definition>
-            <thinkbig-category-properties ng-if="vm.model.id != null"></thinkbig-category-properties>
-            <thinkbig-category-feed-properties ng-if="vm.model.id != null"></thinkbig-category-feed-properties>
-            <thinkbig-category-access-control ng-if="vm.model.id != null && vm.showAccessControl"></thinkbig-category-access-control>
-            <thinkbig-category-feeds ng-if="vm.model.id != null"></thinkbig-category-feeds>
-        </body-section>
-    </card-layout>
+            <thinkbig-category-properties *ngIf="model.id != null"></thinkbig-category-properties>
+            <thinkbig-category-feed-properties *ngIf="model.id != null"></thinkbig-category-feed-properties>
+            <thinkbig-category-access-control *ngIf="model.id != null && showAccessControl"></thinkbig-category-access-control>
+            <thinkbig-category-feeds *ngIf="model.id != null"></thinkbig-category-feeds>
+        </mat-card-content>
+    </mat-card>
 </div>

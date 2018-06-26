@@ -1,40 +1,40 @@
-<vertical-section-layout allow-edit="false" show-vertical-check="true" section-title='{{"views.category-feeds.RF" | translate}}'>
+<vertical-section-layout [allowEdit]="false" [showVerticalCheck]="true" sectionTitle='{{"views.category-feeds.RF" | translate}}'>
     <readonly-section>
-        <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.relatedFeedSummaries != null && vm.model.relatedFeedSummaries.length > 0">
-            <md-list-item>
+        <mat-list layout-fill class="list-item-table list-condensed" id="policy-list" *ngIf="model.relatedFeedSummaries != null && model.relatedFeedSummaries.length > 0">
+            <mat-list-item>
                 <div layout="row" layout-fill>
-                    <div flex="50" class="md-list-item-text hint">
+                    <div flex="50" class="mat-list-item-text hint">
                         {{"views.category-feeds.Name" | translate}}
                     </div>
-                    <div flex="10" class="md-list-item-text hint">
+                    <div flex="10" class="mat-list-item-text hint">
                         {{"views.category-feeds.Active" | translate}}
                     </div>
-                    <div flex="40" class="md-list-item-text hint">
+                    <div flex="40" class="mat-list-item-text hint">
                         {{"views.category-feeds.LM" | translate}}
                     </div>
                 </div>
-            </md-list-item>
-            <md-list-item ng-repeat="feed in vm.model.relatedFeedSummaries" >
-                <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
-                    <div flex="50" class="md-list-item-text">
-                        <md-input-container class="md-block" flex-gt-sm>
+            </mat-list-item>
+            <mat-list-item *ngFor="let feed of model.relatedFeedSummaries" >
+                <div layout="row" class="hover" layout-fill (click)="onFeedClick(feed)">
+                    <div flex="50" class="mat-list-item-text">
+                        <div md-input-container class="md-block" flex-gt-sm>
                             <div>{{feed.feedName}}</div>
-                        </md-input-container>
+                        </div>
                     </div>
-                    <div flex="10" class="md-list-item-text ">
-                        <ng-md-icon icon="check"></ng-md-icon>
+                    <div flex="10" class="mat-list-item-text ">
+                        <mat-icon>check</mat-icon>
                     </div>
-                    <div flex="40" class="md-list-item-text ">
+                    <div flex="40" class="mat-list-item-text ">
                         {{feed.updateDate | date : 'MM/dd/yyyy hh:mm:ss'}}
                     </div>
                 </div>
-            </md-list-item>
-        </md-list>
-        <div ng-if="vm.model.loadingRelatedFeeds">
+            </mat-list-item>
+        </mat-list>
+        <div *ngIf="model.loadingRelatedFeeds">
             {{"views.category-feeds.Loading" | translate}}<br/>
-            <md-progress-circular md-mode="indeterminate"  md-diameter="25px"></md-progress-circular>
+            <mat-spinner mode="indeterminate" [diameter]="25"></mat-spinner>
         </div>
-        <div ng-if="!vm.model.loadingRelatedFeeds && (vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length === 0)">
+        <div *ngIf="!model.loadingRelatedFeeds && (model.relatedFeedSummaries == null || model.relatedFeedSummaries.length === 0)">
             {{"views.category-feeds.Tanfawtc" | translate}}
         </div>
     </readonly-section>

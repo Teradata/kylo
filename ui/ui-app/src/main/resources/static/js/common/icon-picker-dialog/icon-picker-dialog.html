@@ -1,66 +1,64 @@
-<md-dialog aria-label="Category"  ng-cloak >
+<div mat-dialog aria-label="Category">
     <form>
         <div  class="md-toolbar-tools">
-                <span> {{"views.icon-picker-dialog.If" | translate}} {{iconModel.name}}</span>
+            <span> {{"views.icon-picker-dialog.If" | translate}} {{iconModel.name}}</span>
         </div>
-        <md-dialog-content layout="column" flex layout-fill  layout-padding style="min-width:700px;min-height:400px;height:400px;max-height:400px;">
-            <div layout="row" flex layout-fill>
-                <div layout="column"  style="width:250px;">
-                    <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">{{"views.icon-picker-dialog.Syi" | translate}}</span>
-                    <div  ng-if="loadingIcons"  layout-fill layout="row" layout-align="center center">
-                        <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <mat-dialog-content layout="column" layout-fill layout-padding flex style="min-width:700px;min-height:400px;height:400px;max-height:400px;">
+            <div flex layout-fill layout="row">
+                <div layout="column" style="width:250px;" class="layout-column">
+                    <span class="md-subhead" style="text-align:center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syi" | translate}}</span>
+                    <div  *ngIf="loadingIcons" class="layout-fill" layout="row" layout-align="center center">
+                        <div class="md-progress-circular" md-mode="indeterminate" md-diameter="60">
+                        </div>
                     </div>
 
                     <div style="overflow-y:auto;overflow-x:hidden">
-                    <md-grid-list
-                            md-cols="3"
-                            md-row-height="1:1"
-                            md-gutter="16px" >
-                        <md-grid-tile ng-repeat="tile in iconTiles"
-                                      md-rowspan="1"
-                                      md-colspan="1"
-                                      ng-click="selectIcon(tile)"
-                                style=" outline: none;cursor:pointer;">
-                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;padding-right:30px;padding-bottom:30px;"></ng-md-icon>
-                        </md-grid-tile>
-                    </md-grid-list>
+                        <mat-grid-list cols="3" rowHeight="1:1" gutterSize="16px" >
+                            <mat-grid-tile *ngFor="let tile of iconTiles"
+                                            rowspan="1"
+                                            colspan="1"
+                                            (click)="selectIcon(tile)"
+                                            class="ng-scope ng-isolate-scope"
+                                            style=" outline: none;cursor:pointer;">
+                                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;padding-right:30px;padding-bottom:30px;"></ng-md-icon>
+                            </mat-grid-tile>
+                        </mat-grid-list>
                     </div>
                 </div>
-                <div layout="column"  style="width:250px;padding-left:20px;">
+                <div flex layout="column" style="width:250px;padding-left:20px;">
                     <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syc" | translate}}</span>
-                    <div ng-if="loadingColors" layout-fill layout="row" layout-align="center center">
-                        <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+                    <div *ngIf="loadingColors" class="layout-fill layout-row" layout="row" layout-align="center center">
+                        <div class="md-progress-circular" md-mode="indeterminate" md-diameter="60">
+
+                        </div>
                     </div>
 
                     <div style="overflow-y:hidden">
-                    <md-grid-list
-                            md-cols="3"
-                            md-row-height="1:1"
-                            md-gutter="16px">
-                        <md-grid-tile ng-repeat="tile in colorTiles"
-                                      md-rowspan="1"
-                                      md-colspan="1"
-                                      ng-click="selectColor(tile)"
-                                      ng-style="getBackgroundStyle(tile)"
-                                      style="outline: none;cursor:pointer;">
-                        </md-grid-tile>
-                    </md-grid-list>
+                        <mat-grid-list cols="3" columns="3" rowHeight="1:1" gutterSize="16px">
+                            <mat-grid-tile *ngFor="let tile of colorTiles"
+                                            rowspan="1"
+                                            colspan="1"
+                                            (click)="selectColor(tile)"
+                                            [ngStyle]="getBackgroundStyle(tile)"
+                                            style="outline: none;cursor:pointer;">
+                            </mat-grid-tile>
+                        </mat-grid-list>
                     </div>
                 </div>
-                <div layout="column" flex >
+                <div layout="column" flex>
                     <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Yi" | translate}}</span>
-                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" ng-style="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
+                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" [ngStyle]="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
                 </div>
             </div>
-        </md-dialog-content>
-        <md-dialog-actions layout="row">
-            <md-button ng-click="cancel()">
+        </mat-dialog-content>
+        <div class="md-dialog-actions" layout="row">
+            <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel()">
                 {{"views.icon-picker-dialog.Cancel" | translate}}
-            </md-button>
+            </button>
             <span flex></span>
-            <md-button class="md-primary md-raised" ng-click="save()">
+            <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="save()">
                 {{"views.icon-picker-dialog.Save" | translate}}
-            </md-button>
-        </md-dialog-actions>
+            </button>
+        </div>
     </form>
-</md-dialog>
+</div>

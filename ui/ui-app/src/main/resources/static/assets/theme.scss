@@ -23,16 +23,16 @@ $toolbar-typography: mat-typography-config(
 
 // Include material icons
 //$mat-font-url: '../js/vendor/material-icons/';
-//@include covalent-material-icons();
+@include covalent-material-icons();
 
 // Include covalent utility classes
 @include covalent-utilities();
 
 // Include flex layout classes
-//@include covalent-layout();
+@include covalent-layout();
 
 // Include covalent typography classes
-//@include covalent-typography();
+@include covalent-typography();
 
 // Include covalent color classes
 @include covalent-colors();

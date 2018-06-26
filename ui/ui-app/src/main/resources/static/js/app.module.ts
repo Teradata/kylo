@@ -13,6 +13,7 @@ import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
 import {KyloServicesModule} from "./services/services.module";
+import {CategoryModule} from "./feed-mgr/categories/category.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -36,6 +37,7 @@ const translateConfig: TranslateModuleConfig = {
         KyloCommonModule,
         KyloServicesModule,
         TranslateModule.forRoot(translateConfig),
+        CategoryModule,
         UIRouterModule,
         UIRouterUpgradeModule,
         UpgradeModule

@@ -62,24 +62,24 @@ export class VerticalSectionLayoutComponent {
 
     }
 
-    edit(ev: any) {
+    edit = (ev: any) => {
         this.editable = true;
         this.onEdit(ev);
     }
 
-    cancel(ev: any) {
+    cancel = (ev: any) => {
         this.onCancelEdit(ev);
         this.editable = false;
     }
 
-    save(ev: any) {
+    save = (ev: any) => {
         this.onSaveEdit(ev);
         if (!this.keepEditableAfterSave) {
             this.editable = false;
         }
     }
 
-    delete(ev: any) {
+    delete = (ev: any) => {
         if (this.onDelete) {
             this.onDelete(ev);
         }

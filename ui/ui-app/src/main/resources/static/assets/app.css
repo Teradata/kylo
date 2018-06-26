@@ -1334,6 +1334,19 @@ md-input-container.global-search .md-input {
   padding: 20px 30px;
 }
 
+.partial-screen-dialog .mat-dialog-container {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.partial-screen-dialog .mat-dialog-content {
+  margin: 0;
+  padding: 0;
+  max-height: 83vh;
+  overflow: hidden;
+}
+
 
 .versions-add {
   background-color: lightgreen;

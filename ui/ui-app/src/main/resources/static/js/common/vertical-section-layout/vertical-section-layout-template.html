@@ -19,7 +19,7 @@
   -->
 <div layout="column" class="layout-padding-left" style="padding-top:10px;" >
     <div >
-        <div layout="row" layout-align="start stretch" class="layout-align-start-stretch layout-row">
+        <div layout="row" layout-align="start stretch">
             <mat-icon class="ng-md-icon" style="color:#009933;margin-left: -9px;" *ngIf="showVerticalCheck == true">check</mat-icon>
             <span class="md-subhead layout-padding-left"  >{{sectionTitle}}</span>
             <span class="flex"></span>
@@ -35,19 +35,13 @@
             <div *ngIf="!editable" class="md-padding">
 
                 <ng-content select="readonly-section"></ng-content>
-                <!-- <div ng-transclude="readonly" >
-                    REadonly SEction
-
-                </div> -->
+            
             </div>
             <div *ngIf="editable == true" class="md-padding">
             <form name="{{formName}}">
                 <ng-content select="editable-section"></ng-content>
-                <!-- <div ng-transclude="editable" >
-                    Editable SEction
-
-                </div> -->
-                <div layout="row" layout-align="end center" class="layout-align-end-center layout-row">
+                
+                <div layout="row" layout-align="end center">
                     <button class="md-button md-kylo-theme md-ink-ripple" (click)="delete($event)" [disabled]="allowDelete == false" *ngIf="onDelete !== undefined && isDeleteVisible == true">{{"views.vertical-section-layout-template.Delete" | translate}}</button>
                     <span class="flex"></span>
                     <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)">{{"views.vertical-section-layout-template.Cancel"  | translate}}</button>

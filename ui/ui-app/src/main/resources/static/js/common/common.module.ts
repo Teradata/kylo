@@ -32,7 +32,11 @@ import {UploadFileComponent} from "./file-upload/file-upload.component";
 import {CardFilterHeaderComponent} from "./card-filter-header/card-filter-header.component";
 import {CardLayoutComponent} from "./card-layout/card-layout.component";
 
-import {aboutKyloServiceProvider} from "./angular2";
+import AboutKyloDialogController from "./about-kylo/AboutKyloService";
+import {IconPickerDialog} from "./icon-picker-dialog/icon-picker-dialog.component";
+
+import {AboutKyloService} from "./about-kylo/AboutKyloService";
+import { RestUrlService } from "../feed-mgr/services/RestUrlService";
 
 @NgModule({
     declarations: [
@@ -46,7 +50,9 @@ import {aboutKyloServiceProvider} from "./angular2";
         KyloOptionsComponent,
         CardFilterHeaderComponent,
         UploadFileComponent,
-        CardLayoutComponent
+        CardLayoutComponent,
+        IconPickerDialog,
+        AboutKyloDialogController,
     ],
     entryComponents: [
         AddButtonComponent,
@@ -58,7 +64,9 @@ import {aboutKyloServiceProvider} from "./angular2";
         KyloOptionsComponent,
         CardFilterHeaderComponent,
         UploadFileComponent,
-        CardLayoutComponent
+        CardLayoutComponent,
+        AboutKyloDialogController,
+        IconPickerDialog
     ],
     imports: [
         CommonModule,
@@ -80,9 +88,10 @@ import {aboutKyloServiceProvider} from "./angular2";
         TranslateModule
     ],
      exports: [
-        KyloIconComponent
+        KyloIconComponent,
+        VerticalSectionLayoutComponent,
+        CardFilterHeaderComponent
     ],
-    providers: [aboutKyloServiceProvider]
+    providers: [AboutKyloService, RestUrlService]
 })
-export class KyloCommonModule {
-}
+export class KyloCommonModule {}

@@ -17,11 +17,11 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout [allow-edit]="vm.allowEdit && !vm.isNew" section-title='{{"views.category-feed-properties" | translate}}' [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [editable]="vm.isEditable" [is-valid]="vm.isValid">
+<vertical-section-layout [allowEdit]="allowEdit && !isNew" sectionTitle='{{"views.category-feed-properties" | translate}}' [onSaveEdit]="onSave" [onEdit]="onEdit" [editable]="isEditable" [isValid]="isValid">
     <readonly-section>
-        <thinkbig-properties-admin fields="vm.model.userFields"></thinkbig-properties-admin>
+        <thinkbig-properties-admin [fields]="model.userFields"></thinkbig-properties-admin>
     </readonly-section>
     <editable-section>
-        <thinkbig-properties-admin-editor fields="vm.editModel.userFields" is-valid="vm.isValid"></thinkbig-properties-admin-editor>
+        <thinkbig-properties-admin-editor [fields]="editModel.userFields" [isValid]="isValid"></thinkbig-properties-admin-editor>
     </editable-section>
 </vertical-section-layout>

@@ -150,35 +150,40 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             }
         })
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'categories.**',
-            url: '/categories',
-            lazyLoad: (transition: any) =>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('categories')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading categories ", err);
-                    return err;
-                });
-            }
-        }).state('category-details.**', {
-            url: '/category-details/{categoryId}',
-            params: {
-                categoryId: null
-            },
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('category-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading categories ", err);
-                    return err;
-                });
-            }
-        });
+            url: '/categories', 
+            loadChildren: 'feed-mgr/categories/categories.module#CategoryModule' 
+        }); 
+        // $stateProvider.state({
+        //     name: 'categories.**',
+        //     url: '/categories',
+        //     lazyLoad: (transition: any) =>{
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('categories')
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading categories ", err);
+        //             return err;
+        //         });
+        //     }
+        // }).state('category-details.**', {
+        //     url: '/category-details/{categoryId}',
+        //     params: {
+        //         categoryId: null
+        //     },
+        //     lazyLoad: (transition: any)=> {
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('category-details', transition.params())
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading categories ", err);
+        //             return err;
+        //         });
+        //     }
+        // });
 
         $stateProvider.state('registered-templates.**', {
             url: '/registered-templates',

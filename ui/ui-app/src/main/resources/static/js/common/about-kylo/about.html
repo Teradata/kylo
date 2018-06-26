@@ -1,8 +1,9 @@
 <!--
   About Kylo popup page
 -->
-<md-dialog aria-label="About Kylo" flex="35">
-  <md-dialog-content>
+
+<div mat-dialog aria-label="About Kylo" class="_md md-kylo-theme md-transition-in">
+  <mat-dialog-content>
     <p style="text-align:center;"><img src="/assets/images/kylo-logo-orange.png" style="width:300px;"/></p>
     <p style="text-align:center;"><b>{{"views.about.Version" | translate}}</b> {{version}}</p>
 
@@ -11,7 +12,7 @@
               <br><br>
               For enterprise support options, please visit <a href="https://www.thinkbiganalytics.com/kylo/" target="_blank">Think Big</a>.
               <br><br>
-              <textarea flex layout-fill class="scrollabletextbox" name="apache-licence" readonly="true" rows="7" style="text-align:justify; color: black; background-color: #F6DDCC; padding:10px;">
+              <textarea class="scrollabletextbox layout-fill flex" name="apache-licence" readonly="true" rows="7" style="text-align:justify; color: black; background-color: #F6DDCC; padding:10px;">
 Copyright 2017 Teradata Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
@@ -22,8 +23,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
           </textarea>
             </p>
 
-  </md-dialog-content>
-  <md-dialog-actions>
-    <md-button ng-click="cancel();" class="md-primary">{{"views.about.Close" | translate}}</md-button>
-  </md-dialog-actions>
-</md-dialog>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button (click)="cancel()" class="md-primary md-button md-kylo-theme md-ink-ripple">{{"views.about.Close" | translate}}</button>
+  </mat-dialog-actions>
+</div>

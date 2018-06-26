@@ -17,111 +17,107 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title='{{"views.category-definition.CD" | translate}}' [on-delete]="vm.onDelete" [allow-delete]="vm.canDelete" [is-delete-visible]="vm.model.id != null" [on-save-edit]="vm.onSave"
-                         [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel" [editable]="vm.isEditable" [allow-edit]="vm.allowEdit" [the-form]="vm.categoryForm" [is-valid]="vm.isValid">
+<vertical-section-layout sectionTitle='{{"views.category-definition.CD" | translate}}' [onDelete]="onDelete" [allowDelete]="canDelete" [isDeleteVisible]="model.id != null" [onSaveEdit]="onSave"
+  [onEdit]="onEdit" [onCancelEdit]="onCancel" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm" [isValid]="isValid">
   <readonly-section>
     <div layout="row" class="layout-padding-top-bottom" flex>
       <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>
 
-      <div flex="25"> {{vm.model.name}}</div>
+      <div flex="25"> {{model.name}}</div>
     </div>
     <div layout="row" class="layout-padding-top-bottom" flex>
       <span flex="25" class="property-name">{{"views.main.system-name" | translate}}</span>
-      <div flex="25">{{vm.model.systemName}}</div>
+      <div flex="25">{{model.systemName}}</div>
     </div>
     <div layout="row" class="layout-padding-top-bottom">
       <span flex="25" class="property-name">{{"views.category-definition.Description" | translate}}</span>
       <div flex>
-        {{vm.model.description}}
+        {{model.description}}
       </div>
     </div>
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
+    <div layout="row" class="layout-padding-top-bottom" *ngIf="securityGroupsEnabled == true">
       <span flex="25" class="property-name">{{"views.category-definition.HSG" | translate}}</span>
 
       <div flex>
-        {{vm.splitSecurityGroups()}}
+        {{splitSecurityGroups()}}
       </div>
     </div>
     <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
       <span flex="25" class="property-name">{{"views.category-definition.Icon" | translate}}</span>
 
       <div layout="column">
-        <ng-md-icon icon="{{vm.model.icon}}" ng-style="vm.getIconColorStyle(vm.model.iconColor)" style="margin:inherit" size="45"></ng-md-icon>
+          <ng-md-icon icon="{{model.icon}}" [ngStyle]="getIconColorStyle(model.iconColor)" style="margin:inherit" size="45"></ng-md-icon>
       </div>
     </div>
   </readonly-section>
   <editable-section>
-    <ng-form name="vm.categoryForm">
+    <form name="categoryForm">
       <div layout="row" flex="100">
-        <md-input-container class="md-block" flex="40">
-          <label>{{"views.category-definition.Name" | translate}}</label>
-          <input name="categoryName" ng-model="vm.editModel.name" required/>
-
-          <div ng-messages="vm.categoryForm.categoryName.$error" md-auto-hide="false">
-            <div ng-message="required">{{"views.category-definition.Acnir" | translate}}</div>
-            <div ng-message="duplicateName">{{"views.category-definition.Tiaecwtn" | translate}}</div>
-            <div ng-message="reservedCategoryName">{{"views.category-definition.TcirPcac" | translate}}</div>
-          </div>
-        </md-input-container>
+        <mat-form-field class="md-block" flex="40">
+          <input matInput #categoryDefinition="ngModel" name="categoryName" [(ngModel)]="editModel.name" placeholder='{{"views.category-definition.Name" | translate}}' required/>
+          <mat-hint align="start">
+              <span [hidden]="!categoryDefinition.errors?.required || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.Acnir" | translate}}</span>
+              <span [hidden]="!categoryDefinition.errors?.duplicateName || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.Tiaecwtn" | translate}}</span>
+              <span [hidden]="!categoryDefinition.errors?.reservedCategoryName || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.TcirPcac" | translate}}</span>
+          </mat-hint>
+        </mat-form-field>
         <div flex="10"></div>
-        <md-input-container flex="40">
-          <label>{{"views.category-definition.SN" | translate}}</label>
-
-          <input id="systemName" name="systemName" ng-readonly="!vm.isSystemNameEditable() || vm.hasFeeds()" ng-model="vm.editModel.systemName" required/>
-
+        <mat-form-field flex="40">
+          <input matInput id="systemName" name="systemName" readonly="!isSystemNameEditable() || hasFeeds()" [(ngModel)]="editModel.systemName" placeholder='{{"views.category-definition.SN" | translate}}' required/>
           <div class="hint">
-            <span>{{vm.getSystemNameDescription()}}</span>
+            <span>{{getSystemNameDescription()}}</span>
             <br>
-            <a href="" ng-if="!vm.isSystemNameEditable() && vm.hasNoFeeds()" ng-click="vm.allowEditSystemName()">Let me change system name</a>
+            <a href="" *ngIf="!isSystemNameEditable() && hasNoFeeds()" (click)="allowEditSystemName()">Let me change system name</a>
           </div>
-          <div ng-messages="vm.categoryForm.systemName.$error" md-auto-hide="false">
-            <div ng-message="required">A category system name is required.</div>
-            <div ng-message="invalidName">Invalid, must not contain other than alpha-numeric and underscores.</div>
-            <div ng-message="duplicateSystemName">There is an existing category with that system name.</div>
-            <div ng-message="reservedCategoryName">That category is reserved. Please choose another category.</div>
-          </div>
-        </md-input-container>
+          <mat-hint align="start">
+              <span [hidden]="!categoryDefinition.errors?.required || categoryDefinition.pristine" class="tc-red-600">A category system name is required.</span>
+              <span [hidden]="!categoryDefinition.errors?.invalidName || categoryDefinition.pristine" class="tc-red-600">Invalid, must not contain other than alpha-numeric and underscores.</span>
+              <span [hidden]="!categoryDefinition.errors?.duplicateSystemName || categoryDefinition.pristine" class="tc-red-600">There is an existing category with that system name.</span>
+              <span [hidden]="!categoryDefinition.errors?.reservedCategoryName || categoryDefinition.pristine" >That category is reserved. Please choose another category.</span>
+          </mat-hint>
+        </mat-form-field>
 
       </div>
 
-      <md-input-container class="md-block">
-        <label>{{"views.category-definition.Description2" | translate}}</label>
-        <textarea ng-model="vm.editModel.description"></textarea>
-      </md-input-container>
+      <mat-form-field class="md-block">
+        <textarea matInput name="categoryDefinition" [(ngModel)]="editModel.description" placeholder='{{"views.category-definition.Description2" | translate}}'></textarea>
+      </mat-form-field>
 
-      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.securityGroupsEnabled == true">
+      <mat-form-field class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" *ngIf="securityGroupsEnabled == true">
         <label class="label-small md-container-ignore">{{"views.category-definition.HSG2" | translate}}</label>
-        <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
-                  md-transform-chip="vm.transformChip($chip)"
+        <mat-chip [(ngModel)]="editModel.securityGroups" md-autocomplete-snap
+                  md-transform-chip="transformChip($chip)"
                   md-require-match="true" class="layout-padding-top-bottom">
-          <md-autocomplete
+          <mat-autocomplete
               md-min-length="0"
-              md-selected-item="vm.securityGroupChips.selectedItem"
-              md-search-text="vm.securityGroupChips.searchText"
-              md-items="item in vm.categorySecurityGroups.querySearch(vm.securityGroupChips.searchText)"
+              md-selected-item="securityGroupChips.selectedItem"
+              md-search-text="securityGroupChips.searchText"
+              md-items="item in categorySecurityGroups.querySearch(securityGroupChips.searchText)"
               md-item-text="item.name"
               md-no-cache="true"
               placeholder='{{"views.category-definition.AaHSG" | translate}}'>
-            <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
-          </md-autocomplete>
-          <md-chip-template>
+            <span md-highlight-text="securityGroupChips.searchText">{{item.name}}</span>
+          </mat-autocomplete>
+          <!-- <md-chip-template>
                             <span>
                               <strong>{{$chip.name}}</strong>
                             </span>
-          </md-chip-template>
-        </md-chips>
-      </md-input-container>
+          </md-chip-template> -->
+        </mat-chip>
+      </mat-form-field>
 
       <div layout="column">
         <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
           <span class="md-input-label" style="font-size: 11px;" flex="25">{{"views.category-definition.Icon2" | translate}} </span>
-          <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit;" ng-style="vm.getIconColorStyle(vm.editModel.iconColor)"></ng-md-icon>
-          <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">{{"views.category-definition.CI" | translate}}</md-button>
+          <ng-md-icon icon="{{editModel.icon}}" size="45" style="margin:inherit;" [ngStyle]="getIconColorStyle(editModel.iconColor)"></ng-md-icon>
+          <mat-button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="showIconPicker()" style="margin-left:35px;">
+            {{"views.category-definition.CI" | translate}}
+          </mat-button>
         </div>
       </div>
 
-      <thinkbig-property-list-editor properties="vm.editModel.userProperties" is-valid="vm.isValid" ng-if="vm.model.id == null"></thinkbig-property-list-editor>
-    </ng-form>
+      <thinkbig-property-list-editor properties="editModel.userProperties" is-valid="isValid" *ngIf="model.id == null"></thinkbig-property-list-editor>
+    </form>
   </editable-section>
 </vertical-section-layout>
 
