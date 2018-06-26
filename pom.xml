@@ -178,7 +178,6 @@
     <amazon.sqs.java.messaging.lib.version>1.0.0</amazon.sqs.java.messaging.lib.version>
 
     <!-- Plugin Versions -->
-    <plugin.surefire.version>2.19.1</plugin.surefire.version>
     <plugin.license.version>1.12</plugin.license.version>
     <liquibase.version>3.5.3</liquibase.version>
     <!--<liquibase.version>3.3.5</liquibase.version>-->
@@ -1138,7 +1137,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${plugin.surefire.version}</version>
+          <version>${maven.surefire.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
