@@ -17,5 +17,6 @@
   <modules>
     <module>catalog-credential-api</module>
     <module>catalog-credential-core</module>
+    <module>catalog-credential-client</module>
   </modules>
 </project>

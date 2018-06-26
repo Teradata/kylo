@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /*-
  * #%L
  * kylo-catalog-model
@@ -56,6 +58,8 @@ public class DataSource {
      * Display name of this connector
      */
     private String title;
+    
+    private DataSourceCredentials credentials;
 
     public DataSource() {
     }
@@ -65,6 +69,7 @@ public class DataSource {
         id = other.id;
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
+        credentials = (other.credentials != null) ? new DataSourceCredentials(other.credentials) : null;
     }
 
     public Connector getConnector() {
@@ -97,6 +102,19 @@ public class DataSource {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public DataSourceCredentials getCredentials() {
+        return credentials;
+    }
+    
+    public void setCredentials(DataSourceCredentials credentials) {
+        this.credentials = credentials;
+    }
+    
+    @JsonIgnore
+    public boolean hasCredentials() {
+        return this.credentials != null && this.credentials.getProperties() != null && ! this.credentials.getProperties().isEmpty();
     }
 
     @Override

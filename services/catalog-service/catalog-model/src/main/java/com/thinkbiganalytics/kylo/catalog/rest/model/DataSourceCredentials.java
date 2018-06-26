@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
- * Connection details to a source of data sets.
+ * Credential properties that may be injected into a data source.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -39,19 +39,40 @@ import javax.annotation.Nonnull;
 public class DataSourceCredentials {
 
     private boolean encrypted;
-    private Map<String, String> credentials;
+    private Map<String, String> properties;
 
     public DataSourceCredentials() {
-        this.credentials = new HashMap<>();
+        this.properties = new HashMap<>();
     }
 
     public DataSourceCredentials(@Nonnull final Map<String, String> creds, final boolean encrypted) {
         this.encrypted = encrypted;
-        this.credentials = new HashMap<>(creds);
+        this.properties = new HashMap<>(creds);
+    }
+    
+    public DataSourceCredentials(@Nonnull final DataSourceCredentials other) {
+        this.encrypted = other.encrypted;
+        this.properties = new HashMap<>(other.properties);
+    }
+    
+    public boolean isEncrypted() {
+        return encrypted;
+    }
+
+    public void setEncrypted(boolean encrypted) {
+        this.encrypted = encrypted;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> credentials) {
+        this.properties = credentials;
     }
 
     @Override
     public String toString() {
-        return "DataSourceCredentials{encrypted=" + this.encrypted + ", creds=" + this.credentials + '}';
+        return "DataSourceCredentials{encrypted=" + this.encrypted + ", creds=" + this.properties + '}';
     }
 }
