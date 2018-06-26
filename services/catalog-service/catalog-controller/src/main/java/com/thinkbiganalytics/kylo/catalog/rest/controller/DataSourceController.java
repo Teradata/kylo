@@ -27,6 +27,7 @@ import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSourceCredentials;
 import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -65,6 +66,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,6 +83,7 @@ public class DataSourceController extends AbstractCatalogController {
     private static final XLogger log = XLoggerFactory.getXLogger(DataSourceController.class);
 
     public static final String BASE = "/v1/catalog/datasource";
+    public enum CredentialMode { EMBED, ATTACH };
 
     @Inject
     private DataSourceProvider dataSourceProvider;
@@ -129,13 +132,30 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("{id}")
-    public Response getDataSource(@PathParam("id") final String dataSourceId, @QueryParam("filter") @DefaultValue("false") final boolean withCredentials) {
+    public Response getDataSource(@PathParam("id") final String dataSourceId, 
+                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode,  // TODO Change default to be "attach"
+                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(dataSourceId);
+        CredentialMode mode;
+        
+        try {
+            mode = CredentialMode.valueOf(credentialMode.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Response.status(log.exit(Status.BAD_REQUEST)).entity("Invalid value for the \"credential\" parameter: " + credentialMode).build();
+        }
+        
+        final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
         DataSource dataSource = findDataSource(dataSourceId);
         
-        if (withCredentials) {
-            final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
-            dataSource = this.credentialManager.applyCredentials(dataSource, principals);
+        switch (mode) {
+            case EMBED:
+                dataSource = this.credentialManager.applyCredentials(dataSource, principals);
+                break;
+            case ATTACH:
+                Map<String, String> credProps = this.credentialManager.getCredentials(dataSource, encryptCredentials, principals);
+                DataSourceCredentials creds = new DataSourceCredentials(credProps, encryptCredentials);
+                dataSource = this.credentialManager.applyPlaceholders(dataSource, principals);
+                dataSource.setCredentials(creds);
         }
         
         return Response.ok(log.exit(dataSource)).build();
@@ -260,15 +280,15 @@ public class DataSourceController extends AbstractCatalogController {
     public Response listCredentials(@PathParam("id") final String dataSourceId, 
                                     @QueryParam("encrypted") @DefaultValue("true") final boolean encrypted) {
         log.entry(dataSourceId, encrypted);
-        
-        // List tables
-        final DataSource dataSource = findDataSource(dataSourceId);
-        final Map<String, String> credentials;
+        log.debug("List tables for catalog:{} encrypted:{}", encrypted);
         
         try {
-            log.debug("List tables for catalog:{} encrypted:{}", encrypted);
-            Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
-            credentials = this.credentialManager.getCredentials(dataSource, encrypted, principals);
+            final DataSource dataSource = findDataSource(dataSourceId);
+            final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
+            final Map<String, String> credProps = this.credentialManager.getCredentials(dataSource, encrypted, principals);
+            DataSourceCredentials credentials = new DataSourceCredentials(credProps, encrypted);
+            
+            return Response.ok(log.exit(credentials)).build();
         } catch (final Exception e) {
             log.error("Failed to retrieve credentials for datasource [{}] encrypted={}: " + e, dataSourceId, encrypted, e);
             
@@ -279,8 +299,6 @@ public class DataSourceController extends AbstractCatalogController {
                             .buildError();
             throw new InternalServerErrorException(Response.serverError().entity(status).build());
         }
-        
-        return Response.ok(log.exit(credentials)).build();
     }
 
     /**
