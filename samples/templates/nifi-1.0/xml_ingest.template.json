@@ -1,6 +1,6 @@
 {
   "templateName": "XML Ingest",
-  "description": "Ingest XML into Hive",
-  "fileName": "xml_ingext.template.zip",
+  "description": "Ingest XML or other filetypes with optional transformation into Hive",
+  "fileName": "xml_ingest.template.zip",
   "stream": false
 }
