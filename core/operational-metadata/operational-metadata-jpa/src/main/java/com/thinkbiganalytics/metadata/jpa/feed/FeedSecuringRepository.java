@@ -45,7 +45,7 @@ public class FeedSecuringRepository extends AugmentableQueryRepositoryImpl {
         this.setAugmentor(new FeedSecuringQueryAugmentor());
     }
 
-    public List<JpaOpsManagerFeed> findByName(String name) {
+    public JpaOpsManagerFeed findByName(String name) {
         LOG.debug("FeedSecuringRepository.findByName");
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -58,7 +58,6 @@ public class FeedSecuringRepository extends AugmentableQueryRepositoryImpl {
         Specification<JpaOpsManagerFeed> secured = augmentor.augment(spec, JpaOpsManagerFeed.class, entityInformation);
         query.where(builder.and(nameIsEqualToParam, secured.toPredicate(root, query, builder)));
 
-        return entityManager.createQuery(query).getResultList();
+        return entityManager.createQuery(query).getSingleResult();
     }
-
 }
