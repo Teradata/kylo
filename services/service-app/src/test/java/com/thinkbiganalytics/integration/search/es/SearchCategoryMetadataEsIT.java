@@ -245,7 +245,26 @@ public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase impl
 
         SearchResult searchResult = response.as(SearchResult.class);
         verifyCommonPortionOfSearchResultOnCategory(searchResult, new HashSet<>(Collections.singletonList("User properties")));
-        Assert.assertEquals("test type=T100 <font style='font-weight:bold'>ad92</font><br />run mode=AUTO i56 daily",
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "run mode</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "AUTO i56 daily</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "test type</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "T100 <font style='font-weight:bold'>ad92</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
+        Assert.assertEquals(expected,
                             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
@@ -269,8 +288,27 @@ public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase impl
 
         SearchResult searchResult = response.as(SearchResult.class);
         verifyCommonPortionOfSearchResultOnCategory(searchResult, new HashSet<>(Collections.singletonList("User properties")));
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>run</font> <font style='font-weight:bold'>mode</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>AUTO</font> <font style='font-weight:bold'>i56</font> <font style='font-weight:bold'>daily</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "test type</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "T100 ad92</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
         Assert.assertEquals(
-            "test type=T100 ad92<br /><font style='font-weight:bold'>run</font> <font style='font-weight:bold'>mode</font>=<font style='font-weight:bold'>AUTO</font> <font style='font-weight:bold'>i56</font> <font style='font-weight:bold'>daily</font>",
+            expected,
             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
@@ -283,7 +321,26 @@ public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase impl
 
         SearchResult searchResult = response.as(SearchResult.class);
         verifyCommonPortionOfSearchResultOnCategory(searchResult, new HashSet<>(Collections.singletonList("User properties")));
-        Assert.assertEquals("test type=T100 ad92<br /><font style='font-weight:bold'>run</font> <font style='font-weight:bold'>mode</font>=<font style='font-weight:bold'>AUTO</font> i56 daily",
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>run</font> <font style='font-weight:bold'>mode</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>AUTO</font> i56 daily</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "test type</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "T100 ad92</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
+        Assert.assertEquals(expected,
                             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
@@ -382,7 +439,26 @@ public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase impl
 
         SearchResult searchResult = searchResponse.as(SearchResult.class);
         verifyCommonPortionOfSearchResultOnCategory(searchResult, new HashSet<>(Collections.singletonList("User properties")));
-        Assert.assertEquals("test type=T100 <font style='font-weight:bold'>ad92</font><br />run mode=AUTO i56 daily",
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "run mode</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "AUTO i56 daily</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "test type</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "T100 <font style='font-weight:bold'>ad92</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
+        Assert.assertEquals(expected,
                             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 

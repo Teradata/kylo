@@ -224,7 +224,32 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
                             ((FeedMetadataSearchResultData) searchResult.getSearchResults().get(0)).getUserProperties());
         Assert.assertEquals(1, searchResult.getSearchResults().get(0).getHighlights().size());
         Assert.assertEquals("User properties", searchResult.getSearchResults().get(0).getHighlights().get(0).getKey());
-        Assert.assertEquals("pk10A common=Aa1000x<br />pv20B utility=<font style='font-weight:bold'>Bb2000y</font> S99<br />or30 organization=Corporate Z5000",
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pk10A common</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Aa1000x</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pv20B utility</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>Bb2000y</font> S99</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "or30 organization</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Corporate Z5000</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
+        Assert.assertEquals(expected,
                             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
@@ -248,8 +273,33 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
         Assert.assertEquals("1", searchResult.getTotalHits().toString());
 
         Assert.assertEquals("User properties", searchResult.getSearchResults().get(0).getHighlights().get(0).getKey());
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pk10A common</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Aa1000x</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>or30</font> <font style='font-weight:bold'>organization</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>Corporate</font> <font style='font-weight:bold'>Z5000</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pv20B utility</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Bb2000y S99</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
         Assert.assertEquals(
-            "pk10A common=Aa1000x<br />pv20B utility=Bb2000y S99<br /><font style='font-weight:bold'>or30</font> <font style='font-weight:bold'>organization</font>=<font style='font-weight:bold'>Corporate</font> <font style='font-weight:bold'>Z5000</font>",
+            expected,
             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
@@ -263,8 +313,33 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
         Assert.assertEquals("1", searchResult.getTotalHits().toString());
 
         Assert.assertEquals("User properties", searchResult.getSearchResults().get(0).getHighlights().get(0).getKey());
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pk10A common</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Aa1000x</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>or30</font> <font style='font-weight:bold'>organization</font></td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>Corporate</font> Z5000</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pv20B utility</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Bb2000y S99</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
         Assert.assertEquals(
-            "pk10A common=Aa1000x<br />pv20B utility=Bb2000y S99<br /><font style='font-weight:bold'>or30</font> <font style='font-weight:bold'>organization</font>=<font style='font-weight:bold'>Corporate</font> Z5000",
+            expected,
             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
 
     }
@@ -430,7 +505,32 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
                             ((FeedMetadataSearchResultData) searchResult.getSearchResults().get(0)).getUserProperties());
         Assert.assertEquals(1, searchResult.getSearchResults().get(0).getHighlights().size());
         Assert.assertEquals("User properties", searchResult.getSearchResults().get(0).getHighlights().get(0).getKey());
-        Assert.assertEquals("pk10A common=Aa1000x<br />pv20B utility=<font style='font-weight:bold'>Bb2000y</font> S99<br />or30 organization=Corporate Z5000",
+
+        String expected = "<table style='border:1px solid black; border-collapse: collapse;'>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>name</font></td>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'><font style='font-style:italic'>value</font></td>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pk10A common</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Aa1000x</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "pv20B utility</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<font style='font-weight:bold'>Bb2000y</font> S99</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "<tr>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "or30 organization</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "<td style='border:1px solid black;padding: 3px;'>\n"
+                          + "Corporate Z5000</td style='border:1px solid black;padding: 3px;'>\n"
+                          + "</tr>\n"
+                          + "</table>";
+        Assert.assertEquals(expected,
                             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
     }
 
