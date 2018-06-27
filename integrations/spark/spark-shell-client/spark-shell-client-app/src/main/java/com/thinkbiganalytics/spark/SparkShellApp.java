@@ -69,6 +69,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
@@ -91,9 +92,10 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-@ComponentScan({"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"})
+@ComponentScan(basePackages = {"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"},
+               excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
-@SpringBootApplication(exclude = {SecurityCoreConfig.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
+@SpringBootApplication(exclude = {WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
 
     /**
@@ -139,9 +141,15 @@ public class SparkShellApp {
                 connector.setProperty("bindOnInit", "true");
                 try {
                     connector.init();
-                } catch (LifecycleException e) {
+                } catch (final LifecycleException e) {
                     throw new IllegalStateException("Failed to start connector: " + e, e);
                 }
+            }
+
+            @Override
+            protected boolean shouldRegisterJspServlet() {
+                // Skip JSP as it conflicts with Hadoop dependencies
+                return false;
             }
         };
     }
