@@ -81,6 +81,19 @@
     }
   },
   {
+    "title": "Oracle",
+    "connector": {
+      "id": "oracle"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:oracle:thin:@my.oracle.server.domain.com:1521:DBName",
+        "user": "scott",
+        "password": "tiger"
+      }
+    }
+  },
+  {
     "title": "Ruslans HDFS home",
     "connector": {
       "id": "hdfs"

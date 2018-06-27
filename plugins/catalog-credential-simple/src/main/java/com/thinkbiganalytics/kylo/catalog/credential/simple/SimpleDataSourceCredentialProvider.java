@@ -43,10 +43,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -98,9 +100,12 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
                     
                     try {
                         Properties credProps = getCredentialProperties(creds, principals);
+                        Properties optionProps = getOptionProperties(creds, principals);
+                        Properties placeholderProps = getPlaceholderProperties(creds, principals);
                         DataSetTemplate template = newDs.getTemplate();
                         
-                        applyPlaceholders(newDs, credProps);
+                        applyOptions(newDs, optionProps);
+                        applyPlaceholders(newDs, placeholderProps);
                         template.getOptions().entrySet().forEach(entry -> entry.setValue(placeholderHelper.replacePlaceholders(entry.getValue(), credProps)));
                         
                         return newDs;
@@ -120,10 +125,11 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
         return getCredentials(ds)
                 .map(creds -> {
                     DataSource newDs = new DataSource(ds);
-                    Map<String, String> options = newDs.getTemplate().getOptions();
-                    Properties credProps = getCredentialProperties(creds, principals);
+                    Properties optionProps = getOptionProperties(creds, principals);
+                    Properties placeholderProps = getPlaceholderProperties(creds, principals);
                     
-                    applyPlaceholders(newDs, credProps);
+                    applyOptions(newDs, optionProps);
+                    applyPlaceholders(newDs, placeholderProps);
                     return newDs;
                 })
                 .orElse(ds);
@@ -151,13 +157,29 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
     }
     
     private Properties getCredentialProperties(Credentials creds, Set<Principal> principals) {
-        Properties credProps = creds.asProperties(principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst(), 
-                                                  principals.stream().filter(GroupPrincipal.class::isInstance).collect(Collectors.toList()));
-        return credProps;
+        return creds.asProperties(principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst(), 
+                                  principals.stream().filter(GroupPrincipal.class::isInstance).collect(Collectors.toList()),
+                                  CredentialEntry::isCredential);
     }
     
-    private void applyPlaceholders(DataSource ds, Properties credProps) {
-        forEachProperty(credProps, (name, value) -> {
+    private Properties getOptionProperties(Credentials creds, Set<Principal> principals) {
+        return creds.asProperties(principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst(), 
+                                  principals.stream().filter(GroupPrincipal.class::isInstance).collect(Collectors.toList()),
+                                  e -> ! e.isCredential() && ! e.isPlaceholder());
+    }
+    
+    private Properties getPlaceholderProperties(Credentials creds, Set<Principal> principals) {
+        return creds.asProperties(principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst(), 
+                                  principals.stream().filter(GroupPrincipal.class::isInstance).collect(Collectors.toList()),
+                                  CredentialEntry::isPlaceholder);
+    }
+    
+    private void applyOptions(DataSource ds, Properties props) {
+        forEachProperty(props, (name, value) -> ds.getTemplate().getOptions().put(name, value));
+    }
+    
+    private void applyPlaceholders(DataSource ds, Properties props) {
+        forEachProperty(props, (name, value) -> {
             String placeholder = asPlaceholder(name);
             ds.getTemplate().getOptions().put(name, placeholder);
         });
@@ -174,40 +196,90 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
     public static void main(String... args) {
         Map<String, Credentials> connectorCreds = new LinkedHashMap<>();
         Credentials mySqlCreds = new Credentials();
-        mySqlCreds.addUserCredential("dladmin", "user", "root");
-        mySqlCreds.addUserCredential("dladmin", "password", "thinkbig");
-        mySqlCreds.addGroupCredential("admin", "user", "root");
-        mySqlCreds.addGroupCredential("admin", "password", "thinkbig");
-        mySqlCreds.addGroupCredential("analysts", "user", "root");
-        mySqlCreds.addGroupCredential("analysts", "password", "thinkbig");
-        mySqlCreds.addDefaultCredential("user", "root");
-        mySqlCreds.addDefaultCredential("password", "thinkbig");
+        mySqlCreds.addUserCredential("dladmin", "user", "root", true, true);
+        mySqlCreds.addUserCredential("dladmin", "password", "thinkbig", true, true);
+        mySqlCreds.addGroupCredential("admin", "user", "root", true, true);
+        mySqlCreds.addGroupCredential("admin", "password", "thinkbig", true, true);
+        mySqlCreds.addGroupCredential("analysts", "user", "root", true, true);
+        mySqlCreds.addGroupCredential("analysts", "password", "thinkbig", true, true);
+        mySqlCreds.addDefaultCredential("user", "root", true, true);
+        mySqlCreds.addDefaultCredential("password", "thinkbig", true, true);
         connectorCreds.put("mysql", mySqlCreds);
+        
+        Credentials oracleCreds = new Credentials();
+        oracleCreds.addUserCredential("dladmin", "user", "root", false, true);
+        oracleCreds.addUserCredential("dladmin", "password", "thinkbig", false, true);
+        oracleCreds.addGroupCredential("analysts", "user", "analyst", false, true);
+        oracleCreds.addGroupCredential("analysts", "password", "secret", false, true);
+        oracleCreds.addDefaultCredential("url", "jdbc:oracle:thin:${user}/${password}@my.oracle.server.domain.com:1521:DBName", false, false);
+        connectorCreds.put("oracle", oracleCreds);
+
         
         String json = ObjectMapperSerializer.serialize(connectorCreds);
         System.out.println(json);
     }
 
     
+    public static class CredentialEntry {
+        private String value;
+        private boolean placeholder = true;
+        private boolean credential = true;
+        
+        public CredentialEntry() {
+        }
+        
+        public CredentialEntry(String name, String value, boolean placeholder, boolean credential) {
+            super();
+            this.value = value;
+            this.placeholder = placeholder;
+            this.credential = credential;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public boolean isPlaceholder() {
+            return placeholder;
+        }
+
+        public void setPlaceholder(boolean placeholder) {
+            this.placeholder = placeholder;
+        }
+
+        public boolean isCredential() {
+            return credential;
+        }
+
+        public void setCredential(boolean credential) {
+            this.credential = credential;
+        }
+    }
+    
     public static class Credentials {
         // connector -> principal -> cred name -> value
-        private Map<String, Properties> userCredentials;
-        private Map<String, Properties> groupCredentials;
-        private Properties defaultCredentials;
+        private Map<String, Map<String, CredentialEntry>> userCredentials;
+        private Map<String, Map<String, CredentialEntry>> groupCredentials;
+        private Map<String, CredentialEntry> defaultCredentials;
         
         public Credentials() {
             this.userCredentials = new LinkedHashMap<>();
             this.groupCredentials = new LinkedHashMap<>();
-            this.defaultCredentials = new Properties();
+            this.defaultCredentials = new LinkedHashMap<>();
         }
         
         /**
          * Creates a chain of properties in precedence order starting with the user credentials (highest), followed
          * by any group credentials in precedence of left to right in the list, and finally the default credentials.
+         * The entries are filtered by the supplied predicate before being added to the properties.
          */
-        public Properties asProperties(Optional<Principal> user, List<Principal> groups) {
+        public Properties asProperties(Optional<Principal> user, List<Principal> groups, Predicate<CredentialEntry> filter) {
             // The default credentials will be the tail of the chain
-            Properties defaults = this.defaultCredentials;
+            Properties defaults = asProperties(this.defaultCredentials, null, filter);
             
             // Credential precedence in supplied group order; i.e 1st group creds have precedence over the rest of the groups.
             // Iterate through groups in reverse order so that the latter groups serve as defaults to the earlier ones.
@@ -215,62 +287,68 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
                 .mapToObj(idx -> groups.get(groups.size() - idx - 1))
                 .map(Principal::getName)
                 .filter(this.groupCredentials::containsKey)
-                .reduce(defaults, (creds, name) -> { 
-                    Properties accum = new Properties(creds);
-                    accum.putAll(this.groupCredentials.get(name));
-                    return accum;
-                }, (p1, p2) -> {
-                    p1.putAll(p2);
-                    return p1;
-                });
+                .reduce(defaults, 
+                        (lowerProps, name) -> asProperties(this.groupCredentials.get(name), lowerProps, filter),
+                        (p1, p2) -> {
+                            p1.putAll(p2);
+                            return p1;
+                        });
             
             // User credentials have highest precedence.
             return user
                 .map(Principal::getName)
                 .filter(this.userCredentials::containsKey)
                 .map(this.userCredentials::get)
-                .map(userCreds -> { 
-                    Properties newProps = new Properties(groupCreds);
-                    newProps.putAll(userCreds);
-                    return newProps;
-                })
+                .map(userCreds -> asProperties(userCreds, groupCreds, filter))
                 .orElse(groupCreds);
         }
+        
+        private Properties asProperties(Map<String, CredentialEntry> credEntries, Properties defaults, Predicate<CredentialEntry> filter) {
+            Map<String, String> map = credEntries.entrySet().stream()
+                            .filter(e -> filter.test(e.getValue()))
+                            .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getValue()));
+            Properties props = new Properties(defaults);
+            props.putAll(map);
+            return props;
+        }
 
-        public Map<String, Properties> getUserCredentials() {
+        public Map<String, Map<String, CredentialEntry>> getUserCredentials() {
             return userCredentials;
         }
 
-        public void setUserCredentials(Map<String, Properties> userCredentials) {
+        public void setUserCredentials(Map<String, Map<String, CredentialEntry>> userCredentials) {
             this.userCredentials.putAll(userCredentials);
         }
 
-        public Map<String, Properties> getGroupCredentials() {
+        public Map<String, Map<String, CredentialEntry>> getGroupCredentials() {
             return groupCredentials;
         }
 
-        public void setGroupCredentials(Map<String, Properties> groupCredentials) {
+        public void setGroupCredentials(Map<String, Map<String, CredentialEntry>> groupCredentials) {
             this.groupCredentials.putAll(groupCredentials);
         }
 
-        public Properties getDefaultCredentials() {
+        public Map<String, CredentialEntry> getDefaultCredentials() {
             return defaultCredentials;
         }
 
-        public void setDefaultCredentials(Map<String, String> defaultCredentials) {
+        public void setDefaultCredentials(Map<String, CredentialEntry> defaultCredentials) {
             this.defaultCredentials.putAll(defaultCredentials);
         }
         
-        public void addUserCredential(String user, String name, String cred) {
-            this.userCredentials.computeIfAbsent(user, k -> new Properties()).put(name, cred);
+        public void addUserCredential(String user, String name, String value, boolean placeholder, boolean credential) {
+            CredentialEntry entry = new CredentialEntry(name, value, placeholder, credential);
+            this.userCredentials.computeIfAbsent(user, k -> new LinkedHashMap<>()).put(name, entry);
         }
         
-        public void addGroupCredential(String group, String name, String cred) {
-            this.groupCredentials.computeIfAbsent(group, k -> new Properties()).put(name, cred);
+        public void addGroupCredential(String group, String name, String value, boolean placeholder, boolean credential) {
+            CredentialEntry entry = new CredentialEntry(name, value, placeholder, credential);
+            this.groupCredentials.computeIfAbsent(group, k -> new LinkedHashMap<>()).put(name, entry);
         }
         
-        public void addDefaultCredential(String name, String cred) {
-            this.defaultCredentials.put(name, cred);
+        public void addDefaultCredential(String name, String value, boolean option, boolean credential) {
+            CredentialEntry entry = new CredentialEntry(name, value, option, credential);
+            this.defaultCredentials.put(name, entry);
         }
     }
 }

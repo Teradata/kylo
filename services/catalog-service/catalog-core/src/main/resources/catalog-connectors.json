@@ -288,9 +288,27 @@
       ],
       "options": {
         "driver": "org.mariadb.jdbc.Driver",
-        "url": "jdbc:mysql://localhost:3306/kylo",
-        "user": "username",
-        "password": "password"
+        "url": "jdbc:mysql://localhost:3306/kylo"
+      }
+    }
+  },
+  {
+    "title": "Oracle",
+    "color": "orange-700",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "template": {
+      "format": "jdbc",
+      "jars": [
+        "file:/opt/nifi/oracle/ojdbc6.jar"
+      ],
+      "options": {
+        "driver": "oracle.jdbc.driver.OracleDriver",
+        "url": "jdbc:oracle:thin:@my.oracle.server.domain.com:1521:defaultDB"
       }
     }
   },
