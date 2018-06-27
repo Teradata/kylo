@@ -39,6 +39,7 @@ import javax.sql.DataSource;
  */
 public enum DatabaseType {
     // For the preview pattern: {0}=columns, {1}=schema, {2}=table, {3}=limit
+    IMPALA("Impala", "jdbc:impala:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     HIVE("Hive", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     DERBY("Apache Derby", "jdbc:derby:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     DB2("DB2", "jdbc:db2", "select 1 from sysibm.sysdummy1", "SELECT {0} FROM {1}.{2} FETCH FIRST {3} ROWS ONLY"),
