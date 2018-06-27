@@ -56,8 +56,10 @@ import java.util.stream.IntStream;
 public class SimpleDataSourceCredentialProvider implements DataSourceCredentialProvider {
 
     private static final TypeReference<Map<String, Credentials>> CRED_MAP_TYPE = new TypeReference<Map<String, Credentials>>() { };
+    private static final String PLACEHOLDER_PREFIX = "${";
+    private static final String PLACEHOLDER_POSTFIX = "}";
     
-    private final PropertyPlaceholderHelper placeholderHelper = new PropertyPlaceholderHelper("${", "}", null, false);
+    private final PropertyPlaceholderHelper placeholderHelper = new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_POSTFIX, null, false);
     
     /** Map of connector credentials */
     private Map<String, Credentials> credentials = new HashMap<>();
@@ -96,7 +98,9 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
                     
                     try {
                         Properties credProps = getCredentialProperties(creds, principals);
-                        DataSetTemplate template = newDs.getConnector().getTemplate();
+                        DataSetTemplate template = newDs.getTemplate();
+                        
+                        applyPlaceholders(newDs, credProps);
                         template.getOptions().entrySet().forEach(entry -> entry.setValue(placeholderHelper.replacePlaceholders(entry.getValue(), credProps)));
                         
                         return newDs;
@@ -119,7 +123,7 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
                     Map<String, String> options = newDs.getTemplate().getOptions();
                     Properties credProps = getCredentialProperties(creds, principals);
                     
-                    forEachProperty(credProps, (name, value) -> options.put(name, value));
+                    applyPlaceholders(newDs, credProps);
                     return newDs;
                 })
                 .orElse(ds);
@@ -151,9 +155,20 @@ public class SimpleDataSourceCredentialProvider implements DataSourceCredentialP
                                                   principals.stream().filter(GroupPrincipal.class::isInstance).collect(Collectors.toList()));
         return credProps;
     }
+    
+    private void applyPlaceholders(DataSource ds, Properties credProps) {
+        forEachProperty(credProps, (name, value) -> {
+            String placeholder = asPlaceholder(name);
+            ds.getTemplate().getOptions().put(name, placeholder);
+        });
+    }
 
     private void forEachProperty(Properties props, BiConsumer<String, String> consumer) {
         props.stringPropertyNames().forEach(name -> consumer.accept(name, props.getProperty(name)));
+    }
+
+    private String asPlaceholder(String name) {
+        return PLACEHOLDER_PREFIX + name + PLACEHOLDER_POSTFIX;
     }
 
     public static void main(String... args) {

@@ -83,7 +83,8 @@ public class DataSourceController extends AbstractCatalogController {
     private static final XLogger log = XLoggerFactory.getXLogger(DataSourceController.class);
 
     public static final String BASE = "/v1/catalog/datasource";
-    public enum CredentialMode { EMBED, ATTACH };
+    
+    public enum CredentialMode { NONE, EMBED, ATTACH };
 
     @Inject
     private DataSourceProvider dataSourceProvider;
@@ -133,7 +134,7 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     @Path("{id}")
     public Response getDataSource(@PathParam("id") final String dataSourceId, 
-                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode,  // TODO Change default to be "attach"
+                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode,  // TODO Change default to be "none"
                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(dataSourceId);
         CredentialMode mode;
@@ -148,6 +149,9 @@ public class DataSourceController extends AbstractCatalogController {
         DataSource dataSource = findDataSource(dataSourceId);
         
         switch (mode) {
+            case NONE:
+                dataSource = this.credentialManager.applyPlaceholders(dataSource, principals);
+                break;
             case EMBED:
                 dataSource = this.credentialManager.applyCredentials(dataSource, principals);
                 break;
@@ -278,7 +282,7 @@ public class DataSourceController extends AbstractCatalogController {
         @ApiResponse(code = 500, message = "Failed to list credentials", response = RestResponseStatus.class)
     })
     public Response listCredentials(@PathParam("id") final String dataSourceId, 
-                                    @QueryParam("encrypted") @DefaultValue("true") final boolean encrypted) {
+                                    @QueryParam("encrypt") @DefaultValue("true") final boolean encrypted) {
         log.entry(dataSourceId, encrypted);
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
         
