@@ -435,9 +435,13 @@ public class TemplateConnectionUtil {
         Set<PortDTOWithGroupInfo> ports = new HashSet<>();
         String reusableProcessGroupId = this.getReusableTemplateProcessGroupId();
         if (reusableProcessGroupId != null) {
-            ProcessGroupFlowDTO processGroup = restClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
-            if (processGroup != null) {
-                ports.addAll(getReusableFeedInputPorts(processGroup));
+            try {
+                ProcessGroupFlowDTO processGroup = restClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
+                if (processGroup != null) {
+                    ports.addAll(getReusableFeedInputPorts(processGroup));
+                }
+            } catch (final NifiComponentNotFoundException e) {
+                log.debug("Reusable template process group not found: {}", reusableProcessGroupId, e);
             }
         }
         return ports;
