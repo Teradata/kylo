@@ -534,8 +534,8 @@ export class controller {
                                     self.selectedTabIndex = tabIndex;
                                 }
 
-                                this.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
-                                self.model.inputProcessors = this.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
+                                self.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
+                                self.model.inputProcessors = self.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
                                 //sort them by name
                                 self.model.inputProcessors = _.sortBy(self.model.inputProcessors,'name')
 
@@ -548,7 +548,7 @@ export class controller {
                                         return self.model.inputProcessorType == processor.type;
                                     });
                                 }
-                                self.model.nonInputProcessors = this.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
+                                self.model.nonInputProcessors = self.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
                                 self.updateMenuOptions();
                                 self.loadingFeedData = false;
                                 self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
