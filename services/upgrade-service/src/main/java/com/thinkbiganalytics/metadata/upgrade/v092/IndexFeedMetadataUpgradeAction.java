@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 
 /**
  * Deletes all indexed feed metadata, so that it can be re-indexed with updated IDs
@@ -43,7 +42,7 @@ public class IndexFeedMetadataUpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(IndexFeedMetadataUpgradeAction.class);
 
-    @Inject
+    @Autowired (required = false)
     private Search searchClient;
 
     @Autowired
@@ -58,14 +57,18 @@ public class IndexFeedMetadataUpgradeAction implements UpgradeState {
     public void upgradeTo(KyloVersion startingVersion) {
         log.info("****************** Start: Index Feed Metadata Upgrade Action ****************");
 
-        String[] activeProfiles = this.environment.getActiveProfiles();
-        for (String activeProfile : activeProfiles) {
-            if (activeProfile.equals("search-esr")) {
-                int deletedDocumentCountIndexDefault = searchClient.deleteAll("kylo-feeds-default", "default");
-                log.info("Total feed metadata documents deleted (index: default): {}", deletedDocumentCountIndexDefault);
-                int deletedDocumentCountIndexMetadata = searchClient.deleteAll("kylo-feeds-metadata", "default");
-                log.info("Total feed metadata documents deleted (index: metadata): {}", deletedDocumentCountIndexMetadata);
+        if (searchClient != null) {
+            String[] activeProfiles = this.environment.getActiveProfiles();
+            for (String activeProfile : activeProfiles) {
+                if (activeProfile.equals("search-esr")) {
+                    int deletedDocumentCountIndexDefault = searchClient.deleteAll("kylo-feeds-default", "default");
+                    log.info("Total feed metadata documents deleted (index: default): {}", deletedDocumentCountIndexDefault);
+                    int deletedDocumentCountIndexMetadata = searchClient.deleteAll("kylo-feeds-metadata", "default");
+                    log.info("Total feed metadata documents deleted (index: metadata): {}", deletedDocumentCountIndexMetadata);
+                }
             }
+        } else {
+            log.info("Skipping since no search plugin is available");
         }
         log.info("****************** End: Index Feed Metadata Upgrade Action ****************");
     }
