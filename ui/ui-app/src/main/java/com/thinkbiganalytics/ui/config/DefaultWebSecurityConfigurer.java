@@ -104,7 +104,9 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
 
         http
             .csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .enableSessionUrlRewriting(true)
                 .and()
             .authorizeRequests()
                 .antMatchers("/login", "/login/**", "/login**").permitAll()
