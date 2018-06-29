@@ -277,6 +277,6 @@ angular.module(moduleName).directive("tbaAlertDetails",
                 };
             }
         ]);
-angular.module(moduleName).component("eventDialogController", { 
+angular.module(moduleName).component("EventDialogController", {
         controller: EventDialogController
     });
