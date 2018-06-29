@@ -496,7 +496,7 @@ public class SparkShellProcessBuilder {
                 .map(file -> file.filter(File::exists).map(File::getPath).orElse(null))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Unable to find the Kylo Spark Shell Client app. Either set it explicitly or use the KYLO_SERVICES_HOME environment variable."));
+                .orElseThrow(() -> new IllegalStateException("Unable to find the Kylo Spark Shell Client app. Either set it explicitly or use the KYLO_SERVICES_HOME environment variable. The resource name is: " + resourceName));
         }
         return appResource;
     }
