@@ -640,7 +640,7 @@ export class FeedService {
             this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
                 var deferred = this.$q.defer();
-                var successFn = function (response: any) {
+                var successFn = (response: any) => {
                     var invalidCount = 0;
                     if (response.data && response.data.success) {
                         //update the feed versionId and internal id upon save
