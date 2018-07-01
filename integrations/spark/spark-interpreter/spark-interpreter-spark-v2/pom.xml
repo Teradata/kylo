@@ -39,6 +39,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-spark-v2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.databricks</groupId>
       <artifactId>spark-xml_${scala.binary.version}</artifactId>
       <version>${spark2.xml.version}</version>
