@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
