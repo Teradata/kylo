@@ -112,7 +112,6 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
             });
             sequence.add((proc) -> {
                 delay(2000);
-                proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
                 proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });

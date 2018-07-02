@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,10 +76,12 @@ public class AbstractNiFiProcessorsRestClientTest {
             Mockito.when(client.findById("parent", processorDTO.getId())).thenReturn(Optional.of(processorDTO));
             ProcessorDTO wakeupDto = client.wakeUp(processorDTO);
 
-            //Ensure the dto after wakeup matches the starting dto
-            Assert.assertEquals(wakeupDto.getConfig().getSchedulingStrategy(), processorDTO.getConfig().getSchedulingStrategy());
-            Assert.assertEquals(wakeupDto.getConfig().getSchedulingPeriod(), processorDTO.getConfig().getSchedulingPeriod());
-            Assert.assertEquals(wakeupDto.getState(), processorDTO.getState());
+            if (wakeupDto.getConfig() != null) {
+                //Ensure the dto after wakeup matches the starting dto
+                Assert.assertEquals(wakeupDto.getConfig().getSchedulingStrategy(), processorDTO.getConfig().getSchedulingStrategy());
+                Assert.assertEquals(wakeupDto.getConfig().getSchedulingPeriod(), processorDTO.getConfig().getSchedulingPeriod());
+                Assert.assertEquals(wakeupDto.getState(), processorDTO.getState());
+            }
         });
     }
 }
