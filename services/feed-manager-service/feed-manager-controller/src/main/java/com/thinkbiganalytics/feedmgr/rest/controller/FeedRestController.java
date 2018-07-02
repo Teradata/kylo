@@ -410,7 +410,7 @@ public class FeedRestController {
             String feedSystemName = systemName.substring(dotIdx + 1);
             FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
             if(feed != null) {
-                return new Pair(systemName, feed.getFeedName());
+                return new Pair(systemName, feed.getCategoryAndFeedDisplayName());
             }
             else {
                 return nullPair;
