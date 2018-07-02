@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spring;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -85,7 +87,16 @@ public class FileResourceService {
         try {
             Resource[] resources = loadResources(pattern);
             if (resources != null) {
-                return Lists.newArrayList(resources).stream().map(resource -> resourceAsString(resource)).filter(Objects::nonNull).collect(Collectors.toList());
+                List<String> list = new ArrayList<>();
+                for(Resource resource : Lists.newArrayList(resources)) {
+                    if(resource != null) {
+                       String resourceString = resourceAsString(resource);
+                       if(StringUtils.isNotBlank(resourceString)){
+                           list.add(resourceString);
+                       }
+                    }
+                }
+                return list;
             }
         } catch (Exception e) {
             log.error("unable to load resources matching the pattern {} ", pattern, e);
@@ -98,14 +109,14 @@ public class FileResourceService {
         try {
             Resource[] resources = loadResources(pattern);
             if (resources != null) {
-                Lists.newArrayList(resources).stream().forEach(resource -> {
+                for(Resource resource : Lists.newArrayList(resources)) {
                     try {
                         callback.execute(resource);
                     }
                     catch (Exception e){
                         log.error("Unable to load resource ",resource.getFilename(),e);
                     }
-                });
+                }
             }
         } catch (Exception e) {
             log.error("unable to load resources matching the pattern {} ", pattern, e);

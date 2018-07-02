@@ -21,6 +21,22 @@ $toolbar-typography: mat-typography-config(
 // Include the core styles for Covalent
 @include covalent-core();
 
+// Include material icons
+//$mat-font-url: '../js/vendor/material-icons/';
+//@include covalent-material-icons();
+
+// Include covalent utility classes
+@include covalent-utilities();
+
+// Include flex layout classes
+//@include covalent-layout();
+
+// Include covalent typography classes
+//@include covalent-typography();
+
+// Include covalent color classes
+@include covalent-colors();
+
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue.
@@ -115,4 +131,24 @@ mat-nav-list {
       color: mat-color($accent);
     }
   }
+}
+
+// Background and text colors
+.bgc-primary {
+  background-color: mat-color($primary);
+}
+.bgc-accent {
+  background-color: mat-color($accent);
+}
+.bgc-warn {
+  background-color: mat-color($warn);
+}
+.tc-primary {
+  color: mat-color($primary);
+}
+.tc-accent {
+  color: mat-color($accent);
+}
+.tc-warn {
+  color: mat-color($warn);
 }

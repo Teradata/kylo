@@ -4,46 +4,46 @@
  * attribute, however Chrome handles high contrast differently.
  */
 /* Theme for the ripple elements.*/
-/** The mixins below are shared between mat-menu and mat-select */
-/**
- * This mixin adds the correct panel transform styles based
- * on the direction that the menu panel opens.
- */
 /* stylelint-disable material/no-prefixes */
 /* stylelint-enable */
-/**
- * This mixin contains shared option styles between the select and
- * autocomplete components.
- */
+thinkbig-visual-query-transform {
+  /** Tooltip */
+  /**
+    Override toolbar buttons
+     */
+  /*
+  Override spacing for context menu
+   */
+}
 thinkbig-visual-query-transform md-sidenav.md-locked-open:not(.collapsed) {
   max-width: 257px;
   min-width: 257px;
-  width: 257px; }
-
+  width: 257px;
+}
 thinkbig-visual-query-transform md-toolbar.md-kylo-theme:not(.md-menu-toolbar) {
   background-color: #f5f5f5;
   box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.87);
   padding: 0 16px;
   width: 100%;
-  z-index: 1; }
-
+  z-index: 1;
+}
 thinkbig-visual-query-transform .formula-editor {
   font-size: 14px;
-  letter-spacing: normal; }
-
+  letter-spacing: normal;
+}
 thinkbig-visual-query-transform .visual-query-function-history md-list-item > md-icon:first-child {
-  margin-right: 16px; }
-
+  margin-right: 16px;
+}
 thinkbig-visual-query-transform .visual-query-function-history md-list-item > p {
   /*margin-right: 40px;*/
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap; }
-
+  white-space: nowrap;
+}
 thinkbig-visual-query-transform .visual-query-function-history md-list-item > button.md-button.md-secondary-container.md-icon-button {
-  margin-right: -22px; }
-
+  margin-right: -22px;
+}
 thinkbig-visual-query-transform .visual-query-sample-menu {
   background-color: white;
   border: 1px solid grey;
@@ -53,151 +53,158 @@ thinkbig-visual-query-transform .visual-query-sample-menu {
   position: absolute;
   top: 0;
   transition: all linear 0.2s;
-  z-index: 9999; }
-
+  z-index: 9999;
+}
 thinkbig-visual-query-transform .visual-query-sample-menu.ng-hide {
-  opacity: 0; }
-
+  opacity: 0;
+}
 thinkbig-visual-query-transform thinkbig-step-buttons {
   padding-bottom: 0;
   padding-left: inherit;
   padding-right: 0;
-  padding-top: 0; }
-
+  padding-top: 0;
+}
 thinkbig-visual-query-transform visual-query-table {
   position: absolute;
-  top: 0; }
-  thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-    padding: 0 28px;
-    text-overflow: ellipsis;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    vertical-align: middle;
-    white-space: nowrap; }
-    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
-      background-color: #ffcdd2; }
-    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
-      background-color: #f5f5f5; }
-    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.selected {
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      user-select: text; }
-  thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
-    color: rgba(0, 0, 0, 0.54);
-    letter-spacing: .02em;
-    white-space: nowrap; }
-  thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
-    padding-left: 24px;
-    padding-right: 0; }
-  thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div {
-    letter-spacing: .01em; }
-  thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-domain-type {
-    line-height: inherit;
-    position: absolute;
-    right: 46px;
-    top: 1px; }
-  thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-menu-content {
-    max-height: 352px; }
-
-/* Column headers */
-.ui-grid-header-cell-label {
-  color: grey;
+  top: 0;
+  /* Column headers */
+  /* Column menu button */
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
+  padding: 0 5px 0 0;
+  text-overflow: ellipsis;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 13px;
+  border-bottom: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
+  background-color: #ffcdd2 !important;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
+  background-color: #f5f5f5;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.selected {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container {
+  border-bottom: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.54);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-right: 1px solid lightgray;
+  display: flex;
+  justify-content: space-between;
+  background: white;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
+  padding-left: 24px;
+  padding-right: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+  padding-left: 5px;
+  padding-right: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-separator {
+  cursor: col-resize;
+  display: block;
+  padding-left: 0;
+  width: 1px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-value {
+  padding-top: 10px;
+  display: block;
+  padding-left: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div {
+  letter-spacing: 0.01em;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div.first-column {
+  letter-spacing: 0.01em;
+  padding-left: 24px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-label {
+  color: steelblue;
   margin-right: 1em;
   overflow: hidden;
-  text-overflow: ellipsis; }
-
-.ui-grid-header-cell-title {
-  color: black; }
-
-/* Column menu button */
-.ui-grid-column-menu-button {
-  padding: 0; }
-
-.ui-grid-column-menu-button > .md-button.md-icon-button {
+  text-overflow: ellipsis;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-title {
+  color: black;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button {
+  padding: 0;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button > .md-button.md-icon-button {
   height: inherit;
   line-height: inherit;
-  padding: 0 6px; }
-
-.ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  padding: 0 6px;
+  font-size: 13px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button .ui-grid-icon-angle-down {
   display: inline-block;
   height: 23px;
-  margin: auto; }
-
-/* Column sub-menus */
-md-menu-item > .md-menu {
-  height: 100%;
-  padding: 0;
-  width: 173px; }
-
-md-menu-item > .md-menu > .md-button {
-  border-radius: 0;
-  margin: auto 0;
-  font-size: 15px;
-  text-transform: none;
-  font-weight: 400;
-  text-align: left;
-  text-align: start;
-  height: 100%;
-  padding-left: 16px;
-  padding-right: 16px;
-  display: inline-block;
-  -webkit-align-items: baseline;
-  -ms-flex-align: baseline;
-  align-items: baseline;
-  -webkit-align-content: flex-start;
-  -ms-flex-line-pack: start;
-  align-content: flex-start;
-  width: 100%; }
-
-md-menu-item > .md-menu > .md-button:after {
-  display: block;
-  content: '\25BC';
+  margin: auto;
+}
+thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-domain-type {
+  line-height: inherit;
   position: absolute;
-  top: 7px;
-  speak: none;
-  -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
-  transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
-  right: 28px; }
-
-md-menu-item > .md-menu > .md-button md-icon {
-  margin: auto 16px auto 0; }
-
-md-menu-item > .md-menu > .md-button span {
-  margin-top: auto;
-  margin-bottom: auto; }
-
-/** Column menu item buttons */
-.visual-query-column-menu {
-  max-height: 352px; }
-  .visual-query-column-menu .material-icons {
-    font-size: 20px;
-    vertical-align: sub; }
-    .visual-query-column-menu .material-icons.custom-icon {
-      font-weight: bold;
-      text-align: right;
-      vertical-align: super; }
-
-/** Column menu text inputs */
-md-menu-item > div > md-input-container {
-  margin: 0; }
-
-/** Menu */
-.md-panel.visual-query-menu {
-  transform-origin: right top 0; }
-
-/** Tooltip */
-.md-tooltip.visual-query-tooltip {
+  right: 46px;
+  top: 1px;
+}
+thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-menu-content {
+  max-height: 352px;
+}
+thinkbig-visual-query-transform .md-tooltip.visual-query-tooltip {
   height: auto;
   overflow: visible;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none; }
-  .md-tooltip.visual-query-tooltip ul {
-    color: #ffcdd2;
-    margin: 0;
-    padding-left: 20px; }
+  user-select: none;
+}
+thinkbig-visual-query-transform .md-tooltip.visual-query-tooltip ul {
+  color: #ffcdd2;
+  margin: 0;
+  padding-left: 20px;
+}
+thinkbig-visual-query-transform .md-kylo-powerui .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}
+thinkbig-visual-query-transform md-menu-content.md-kylo-theme md-menu-item {
+  font-size: 14px;
+  height: 36px;
+}
+thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
+  background-color: transparent !important;
+  opacity: 1;
+}
+
+/**
+  Override toolbar buttons
+   */
+.visual-query-column-menu .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}

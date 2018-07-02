@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.rest.support;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,12 +27,14 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.NifiPropertyGroup;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import javax.annotation.Nullable;
  * Uitlity to extract properties and property info from NiFi
  */
 public class NifiPropertyUtil {
+
 
     /**
      * map the incoming list of properties to a key,value map
@@ -109,6 +112,9 @@ public class NifiPropertyUtil {
                 }
                 properties.addAll(propertyList);
             }
+            List<NifiProperty> remoteProcessGroupProperties = NifiRemoteProcessGroupUtil.remoteProcessGroupProperties(dto);
+            properties.addAll(remoteProcessGroupProperties);
+
         }
         return properties;
     }
@@ -122,13 +128,8 @@ public class NifiPropertyUtil {
      * @return the first property matching the processorName nad propertyName
      */
     public static NifiProperty getProperty(final String processorName, final String propertyName, List<NifiProperty> properties) {
-        NifiProperty property = Iterables.tryFind(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.getProcessorName().equalsIgnoreCase(processorName) && property.getKey().equalsIgnoreCase(propertyName);
-            }
-        }).orNull();
-        return property;
+        return properties.stream().filter(property -> property.getProcessorName().equalsIgnoreCase(processorName) && property.getKey().equalsIgnoreCase(propertyName))
+            .findFirst().orElse(null);
     }
 
     /**
@@ -207,9 +208,15 @@ public class NifiPropertyUtil {
                     properties.addAll(NifiPropertyUtil.getProperties(groupDTO, propertyDescriptorTransform));
                 }
             }
+            if (processGroupDTO.getContents().getRemoteProcessGroups() != null && !processGroupDTO.getContents().getRemoteProcessGroups().isEmpty()) {
+                for (RemoteProcessGroupDTO remoteProcessGroupDTO : processGroupDTO.getContents().getRemoteProcessGroups()) {
+                    properties.addAll(NifiRemoteProcessGroupUtil.remoteProcessGroupProperties(remoteProcessGroupDTO));
+                }
+            }
         }
         return properties;
     }
+
 
     /**
      * Return a map of processGroupId to a map of that groups processors and its respective propeties
@@ -217,17 +224,17 @@ public class NifiPropertyUtil {
      * @param properties the properties to inspect
      * @return a map with the key being the processGroupId and the value being a map of properties with its key being the processorId
      */
-    public static Map<String, Map<String, List<NifiProperty>>> groupPropertiesByProcessGroupAndProcessor(List<NifiProperty> properties) {
-        Map<String, Map<String, List<NifiProperty>>> processGroupProperties = new HashMap();
+    public static Map<String, Map<String, NifiPropertyGroup>> groupPropertiesByProcessGroupAndProcessor(List<NifiProperty> properties) {
+        Map<String, Map<String, NifiPropertyGroup>> processGroupProperties = new HashMap();
         for (NifiProperty property : properties) {
             String processGroup = property.getProcessGroupId();
             String processorId = property.getProcessorId();
 
             if (!processGroupProperties.containsKey(processGroup)) {
-                processGroupProperties.put(processGroup, new HashMap<String, List<NifiProperty>>());
+                processGroupProperties.put(processGroup, new HashMap<String, NifiPropertyGroup>());
             }
             if (!processGroupProperties.get(processGroup).containsKey(processorId)) {
-                processGroupProperties.get(processGroup).put(processorId, new ArrayList<NifiProperty>());
+                processGroupProperties.get(processGroup).put(processorId, new NifiPropertyGroup(processorId));
             }
 
             processGroupProperties.get(processGroup).get(processorId).add(property);
@@ -237,13 +244,14 @@ public class NifiPropertyUtil {
 
     /**
      * Groups the properties by their {@see NifiProperty#getIdKey}
+     *
      * @param properties the properties to inspect
      * @return a map with the property idKey (the processgroup+processorId+propertyKey, property)
      */
-    public static Map<String,NifiProperty> groupPropertiesByIdKey(List<NifiProperty> properties) {
+    public static Map<String, NifiProperty> groupPropertiesByIdKey(List<NifiProperty> properties) {
         Map<String, NifiProperty> map = new HashMap();
-        if(properties != null){
-            map = properties.stream().collect(Collectors.toMap(p -> p.getIdKey(), p-> p));
+        if (properties != null) {
+            map = properties.stream().collect(Collectors.toMap(p -> p.getIdKey(), p -> p));
         }
         return map;
     }
@@ -256,12 +264,8 @@ public class NifiPropertyUtil {
      * @return the list of properties for the processorId
      */
     public static List<NifiProperty> getPropertiesForProcessor(List<NifiProperty> properties, final String processorId) {
-        return Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.getProcessorId().equalsIgnoreCase(processorId);
-            }
-        }));
+        return properties.stream().filter(property -> property.getProcessorId().equalsIgnoreCase(processorId))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -288,10 +292,12 @@ public class NifiPropertyUtil {
         final Map<String, NifiProperty> propertyByName = new HashMap<>(destinationProperties.size());
         final Map<String, String> groupIdByName = new HashMap<>(destinationProperties.size());
         final Map<String, String> processorIdByName = new HashMap<>(destinationProperties.size());
+        final Map<String, NifiProperty> propertyByProcessorNameType = new HashMap<>(destinationProperties.size());
 
         for (final NifiProperty property : destinationProperties) {
             propertyById.put(property.getIdKey(), property);
             propertyByName.put(property.getNameKey(), property);
+            propertyByProcessorNameType.put(property.getProcessorNameTypeKey(), property);
             groupIdByName.put(property.getProcessGroupName(), property.getProcessGroupId());
             processorIdByName.put(property.getProcessorName(), property.getProcessorId());
         }
@@ -311,6 +317,10 @@ public class NifiPropertyUtil {
             NifiProperty destinationProperty = propertyById.get(sourceProperty.getIdKey());
             if (destinationProperty == null) {
                 destinationProperty = propertyByName.get(sourceProperty.getNameKey());
+            }
+
+            if (destinationProperty == null && sourceProperty.isRemoteProcessGroupProperty()) {
+                destinationProperty = propertyByProcessorNameType.get(sourceProperty.getProcessorNameTypeKey());
             }
 
             if (destinationProperty != null) {
@@ -349,27 +359,6 @@ public class NifiPropertyUtil {
         return true;
     }
 
-    /**
-     * find all properties whoes internal {@link NifiProperty#getIdKey()} matches that of the template properties
-     *
-     * @param templateProperties the properties that are part of the template
-     * @param nifiProperties     the properties to inspect and match
-     * @param updateMode         a mode indicating what should be inspected and updated
-     * @return a list of properties matching the templateProperties and the nifiProperties based upon their {@link NifiProperty#getIdKey()}
-     */
-    public static List<NifiProperty> matchAndSetPropertyByIdKey(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
-        List<NifiProperty> matchedProperties = new ArrayList<>();
-
-        if (nifiProperties != null && !nifiProperties.isEmpty()) {
-            for (NifiProperty nifiProperty : nifiProperties) {
-                NifiProperty matched = matchPropertyByIdKey(templateProperties, nifiProperty, updateMode);
-                if (matched != null) {
-                    matchedProperties.add(matched);
-                }
-            }
-        }
-        return matchedProperties;
-    }
 
     /**
      * Find all properties that have the same name and property key
@@ -379,7 +368,7 @@ public class NifiPropertyUtil {
      * @param updateMode         a mode indicating what should be inspected and updated
      * @return a list of matched properties
      */
-    public static List<NifiProperty> matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
+    public static List<NifiProperty> matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PropertyUpdateMode updateMode) {
         List<NifiProperty> matchedProperties = new ArrayList<>();
         if (nifiProperties != null && !nifiProperties.isEmpty()) {
             for (NifiProperty nifiProperty : nifiProperties) {
@@ -393,7 +382,6 @@ public class NifiPropertyUtil {
     }
 
 
-
     /**
      * Return the first property matching a given property key that is part of a processor with the supplied processorType
      *
@@ -403,16 +391,8 @@ public class NifiPropertyUtil {
      * @return the first property matching a given property key that is part of a processor with the supplied processorType
      */
     public static NifiProperty findPropertyByProcessorType(Collection<NifiProperty> properties, final String processorType, final String propertyKey) {
-        List<NifiProperty> matchingProperties = Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.getKey().equalsIgnoreCase(propertyKey) && property.getProcessorType().equalsIgnoreCase(processorType);
-            }
-        }));
-        if (matchingProperties != null && !matchingProperties.isEmpty()) {
-            return matchingProperties.get(0);
-        }
-        return null;
+        return properties.stream().filter(property -> property.getKey().equalsIgnoreCase(propertyKey) && property.getProcessorType().equalsIgnoreCase(processorType))
+            .findFirst().orElse(null);
     }
 
     /**
@@ -436,52 +416,78 @@ public class NifiPropertyUtil {
         return null;
     }
 
-    /**
-     * update a given property with the values from the nifiProperty
-     *
-     * @param propertyToUpdate a property to update
-     * @param nifiProperty     a property with values that will be set to the 'propertyToUpdate'
-     */
-    private static void updateProperty(NifiProperty propertyToUpdate, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
-        propertyToUpdate.setValue(nifiProperty.getValue());
-        if(!PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode)){
-            //if its Not updating for editing a Feed then attempt to set the render type properties.
-            //otherwise the 'propertyToUpdate' will be the registeredTemplate  property and should not be updated from the feed values as the template should drive how the feed is rendered.
-            propertyToUpdate.setInputProperty(nifiProperty.isInputProperty());
-            propertyToUpdate.setUserEditable(nifiProperty.isUserEditable());
-            propertyToUpdate.setSelected(nifiProperty.isSelected());
-            propertyToUpdate.setRenderType(nifiProperty.getRenderType());
-            propertyToUpdate.setSensitive(nifiProperty.isSensitive());
-            propertyToUpdate.setRequired(nifiProperty.isRequired());
-            if(nifiProperty.getPropertyDescriptor() != null) {
-                propertyToUpdate.setPropertyDescriptor(nifiProperty.getPropertyDescriptor());
+
+    public static class NiFiPropertyUpdater {
+
+        private static void updateCore(NifiProperty propertyToUpdate, NifiProperty property) {
+
+            propertyToUpdate.setValue(property.getValue());
+            propertyToUpdate.setUserEditable(property.isUserEditable());
+            propertyToUpdate.setSelected(property.isSelected());
+            propertyToUpdate.setRenderType(property.getRenderType());
+            propertyToUpdate.setSensitive(property.isSensitive());
+            propertyToUpdate.setRequired(property.isRequired());
+            if (property.getPropertyDescriptor() != null) {
+                propertyToUpdate.setPropertyDescriptor(property.getPropertyDescriptor());
             }
-            if (nifiProperty.getRenderOptions() != null) {
-                propertyToUpdate.setRenderOptions(nifiProperty.getRenderOptions());
+            if (property.getRenderOptions() != null) {
+                propertyToUpdate.setRenderOptions(property.getRenderOptions());
             }
         }
 
+        /**
+         * Update's the <code>propertyToUpdate</code> setting only {@link NifiProperty#setValue(String)} the with values from the <code>property</code>
+         *
+         * @param propertyToUpdate the property to update.  This will be updated using the <code>property</code>
+         * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
+         */
+        private static void updateValueOnly(NifiProperty propertyToUpdate, NifiProperty property) {
+            propertyToUpdate.setValue(property.getValue());
+        }
+
+
+        /**
+         * Update's the <code>propertyToUpdate</code> with values from the <code>property</code> skipping those if they ${metadata} as values
+         * The <code>propertyToUpdate</code> {@link NifiProperty#isInputProperty()} will remain untouched.
+         *
+         * @param propertyToUpdate the property to update.  This will be updated using the <code>property</code>
+         * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
+         */
+        public static void updateSkipMetadataExpressionProperties(NifiProperty propertyToUpdate, NifiProperty property) {
+            if (propertyToUpdate.getValue() == null || (propertyToUpdate.getValue() != null && (
+                (!propertyToUpdate.getValue().contains("${metadata.")) || (propertyToUpdate.getValue()
+                                                                               .contains("${metadata.") && property.getValue() != null && property.getValue()
+                                                                               .contains("${metadata."))))) {
+                update(propertyToUpdate, property);
+            }
+        }
+
+
+        /**
+         * Update's the <code>propertyToUpdate</code> with values from the <code>property</code> skipping the {@link NifiProperty#isInputProperty()}
+         * The <code>propertyToUpdate</code> {@link NifiProperty#isInputProperty()} will remain untouched.
+         *
+         * @param propertyToUpdate the property to update.  This will be updated using the <code>property</code>
+         * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
+         */
+        public static void updateSkipInput(NifiProperty propertyToUpdate, NifiProperty property) {
+            updateCore(propertyToUpdate, property);
+        }
+
+        /**
+         * Update's the <code>propertyToUpdate</code> with values from the <code>property</code>
+         *
+         * @param propertyToUpdate the property to update.  This will be updated using the <code>property</code>
+         * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
+         */
+        public static void update(NifiProperty propertyToUpdate, NifiProperty property) {
+            updateCore(propertyToUpdate, property);
+            propertyToUpdate.setInputProperty(property.isInputProperty());
+
+
+        }
     }
 
-    /**
-     * Return the first property matching the supplied nifiProperty {@link NifiProperty#getIdKey()}
-     *
-     * @param properties   a collection of properties to inspect
-     * @param nifiProperty a property to check against
-     * @return the first property to match the supplied nifiProperty {@link NifiProperty#getIdKey()}
-     */
-    public static NifiProperty findPropertyByIdKey(Collection<NifiProperty> properties, final NifiProperty nifiProperty) {
-        List<NifiProperty> matchingProperties = Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.matchesIdKey(nifiProperty);
-            }
-        }));
-        if (matchingProperties != null && !matchingProperties.isEmpty()) {
-            return matchingProperties.get(0);
-        }
-        return null;
-    }
 
     /**
      * Return a list of all the input properties ( properties that are part of processors that dont have an incoming connections)
@@ -490,13 +496,12 @@ public class NifiPropertyUtil {
      * @return a list of all the input properties ( properties that are part of processors that dont have an incoming connections)
      */
     public static List<NifiProperty> findInputProperties(Collection<NifiProperty> properties) {
-        return Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.isInputProperty();
-            }
-        }));
-
+        if (properties != null) {
+            return properties.stream().filter(property -> property.isInputProperty())
+                .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -507,13 +512,12 @@ public class NifiPropertyUtil {
      * @return a list of all the input properties ( properties that are part of processors that dont have an incoming connections) that match the supplied processorType
      */
     public static List<NifiProperty> findInputPropertyMatchingType(Collection<NifiProperty> properties, final String processorType) {
-
-        return Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.isInputProperty() && property.getProcessorType().equalsIgnoreCase(processorType);
-            }
-        }));
+        if (properties != null) {
+            return properties.stream().filter(property -> property.isInputProperty() && property.getProcessorType().equalsIgnoreCase(processorType))
+                .collect(Collectors.toList());
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -525,12 +529,8 @@ public class NifiPropertyUtil {
      */
     public static NifiProperty findFirstPropertyMatchingKey(Collection<NifiProperty> properties, final String propertyKey) {
         if (properties != null) {
-            return Iterables.tryFind(properties, new Predicate<NifiProperty>() {
-                @Override
-                public boolean apply(NifiProperty property) {
-                    return property.getKey().equalsIgnoreCase(propertyKey);
-                }
-            }).orNull();
+            return properties.stream().filter(property -> property.getKey().equalsIgnoreCase(propertyKey))
+                .findFirst().orElse(null);
         } else {
             return null;
         }
@@ -555,33 +555,10 @@ public class NifiPropertyUtil {
      * @return a matching property
      */
     public static NifiProperty findPropertyByProcessorName(Collection<NifiProperty> properties, final NifiProperty nifiProperty) {
-        List<NifiProperty> matchingProperties = Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return property.getKey().equalsIgnoreCase(nifiProperty.getKey()) && property.getProcessorName().equalsIgnoreCase(nifiProperty.getProcessorName());
-            }
-        }));
-        if (matchingProperties != null && !matchingProperties.isEmpty()) {
-            return matchingProperties.get(0);
-        }
-        return null;
+        return properties.stream().filter(property -> property.getKey().equalsIgnoreCase(nifiProperty.getKey()) && property.getProcessorName().equalsIgnoreCase(nifiProperty.getProcessorName()))
+            .findFirst().orElse(null);
     }
 
-    /**
-     * update the templateProperties with those that match the nifiProperty using the {@link NifiProperty#getIdKey()} to make the match
-     *
-     * @param templateProperties the properties to update
-     * @param nifiProperty       the property to check
-     * @param updateMode         a mode to update
-     * @return the property, or updated property if matched
-     */
-    private static NifiProperty matchPropertyByIdKey(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
-        NifiProperty matchingProperty = findPropertyByIdKey(templateProperties, nifiProperty);
-        if (matchingProperty != null) {
-            updateMatchingProperty(matchingProperty, nifiProperty, updateMode);
-        }
-        return matchingProperty;
-    }
 
     /**
      * update the templateProperties with those that match the nifiProperty using the {@link NifiProperty#getProcessorName()}  to make the match
@@ -591,40 +568,37 @@ public class NifiPropertyUtil {
      * @param updateMode         a mode to update
      * @return the property, or updated property if matched
      */
-    private static NifiProperty matchPropertyByProcessorName(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
+    private static NifiProperty matchPropertyByProcessorName(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PropertyUpdateMode updateMode) {
         NifiProperty matchingProperty = findPropertyByProcessorName(templateProperties, nifiProperty);
         if (matchingProperty != null) {
-            //
-            if(PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode)){
-                //copy the property
-                NifiProperty copy = new NifiProperty(matchingProperty);
-                templateProperties.remove(matchingProperty);
-                templateProperties.add(copy);
-                matchingProperty = copy;
+            if (updateMode.performUpdate()) {
+                switch (updateMode) {
+                    case UPDATE_NON_EXPRESSION_PROPERTIES:
+                        NiFiPropertyUpdater.updateSkipMetadataExpressionProperties(matchingProperty, nifiProperty);
+                        break;
+                    case UPDATE_ALL_PROPERTIES:
+                        NiFiPropertyUpdater.update(matchingProperty, nifiProperty);
+                        break;
+                    case UPDATE_ALL_SKIP_IS_INPUT_FLAG:
+                        NiFiPropertyUpdater.updateSkipInput(matchingProperty, nifiProperty);
+                        break;
+                    case FEED_DETAILS_MATCH_TEMPLATE:
+                        //copy the property
+                        NifiProperty copy = new NifiProperty(matchingProperty);
+                        templateProperties.remove(matchingProperty);
+                        templateProperties.add(copy);
+                        matchingProperty = copy;
+                        NiFiPropertyUpdater.updateValueOnly(matchingProperty, nifiProperty);
+                        break;
+                    default:
+                        //no op
+                        break;
+                }
             }
-            updateMatchingProperty(matchingProperty, nifiProperty, updateMode);
         }
         return matchingProperty;
     }
 
-    /**
-     * Perform the update of the matching property, setting the property values to that of the supplied 'nifiProperty'
-     *
-     * @param matchingProperty a property to updated
-     * @param nifiProperty     the property to use to update the matchingProperty
-     * @param updateMode       a mode to update
-     */
-    public static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
-        if (updateMode.performUpdate()) {
-            if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode) || (
-                PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES.equals(updateMode) && (
-                    (!matchingProperty.getValue().contains("${metadata.")) || (matchingProperty.getValue()
-                                                                                   .contains("${metadata.") && nifiProperty.getValue() != null && nifiProperty.getValue()
-                                                                                   .contains("${metadata."))))))) {
-                updateProperty(matchingProperty, nifiProperty, updateMode);
-            }
-        }
-    }
 
     /**
      * Check to see if a collection of properties contains properties of a supplied processorType
@@ -637,18 +611,13 @@ public class NifiPropertyUtil {
         if (StringUtils.isBlank(processorType)) {
             return false;
         }
-        return Iterables.tryFind(properties, new Predicate<NifiProperty>() {
-            @Override
-            public boolean apply(NifiProperty property) {
-                return processorType.equalsIgnoreCase(property.getProcessorType());
-            }
-        }).orNull() != null;
+        return properties.stream().anyMatch(property -> processorType.equalsIgnoreCase(property.getProcessorType()));
     }
 
     /**
      * various modes used for updating properties
      */
-    public static enum PROPERTY_MATCH_AND_UPDATE_MODE {
+    public static enum PropertyUpdateMode {
         /**
          * this mode will not update any properties
          */
@@ -661,11 +630,14 @@ public class NifiPropertyUtil {
          * this mode will skip over any properties with the ${metadata. prefix in the value string of the property
          */
         UPDATE_NON_EXPRESSION_PROPERTIES,
-
         /**
          * update the template properties with the Feed properties
          */
-        FEED_DETAILS_MATCH_TEMPLATE;
+        FEED_DETAILS_MATCH_TEMPLATE,
+        /**
+         * Update all properties.  When updating it will not update the isInputProperty flag
+         */
+        UPDATE_ALL_SKIP_IS_INPUT_FLAG;
 
         /**
          * @return true if the update should happen, false if not

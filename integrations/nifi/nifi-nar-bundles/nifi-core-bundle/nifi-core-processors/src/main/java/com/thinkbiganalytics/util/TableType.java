@@ -34,35 +34,32 @@ Specifications for managed Hive tables
  */
 public enum TableType {
 
-    FEED("feed", true, false, true, false, true),
+    FEED("feed", true, true, true, false, true),
     VALID("valid", true, true, false, false, false),
     INVALID("invalid", true, true, true, true, false),
     MASTER("", false, true, false, false, false, true),
     PROFILE("profile", true, true, true, false, false);
 
-    //private String tableLocation;
-    //private String partitionLocation;
     private String tableSuffix;
-    private boolean useTargetStorageSpec;
+    private boolean useTblProperties;
     private boolean strings;
     private boolean feedPartition;
     private boolean addReasonCode;
     private boolean external;
     private boolean appendProcessingDttmField;
 
-    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode, boolean external, boolean appendProcessingDttmField) {
+    TableType(String suffix, boolean feedPartition, boolean useTblProperties, boolean strings, boolean addReasonCode, boolean external, boolean appendProcessingDttmField) {
         this.tableSuffix = suffix;
         this.feedPartition = feedPartition;
-        this.useTargetStorageSpec = useTargetStorageSpec;
+        this.useTblProperties = useTblProperties;
         this.strings = strings;
         this.addReasonCode = addReasonCode;
         this.external = external;
         this.appendProcessingDttmField = appendProcessingDttmField;
     }
 
-
-    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode, boolean external) {
-        this(suffix, feedPartition, useTargetStorageSpec, strings, addReasonCode, external, false);
+    TableType(String suffix, boolean feedPartition, boolean useTblProperties, boolean strings, boolean addReasonCode, boolean external) {
+        this(suffix, feedPartition, useTblProperties, strings, addReasonCode, external, false);
     }
 
     public String deriveTablename(String entity) {
@@ -95,7 +92,8 @@ public enum TableType {
         // Hack for now. Need a better way to identify if this is text file (no schema enforced or schema enforced)
         if (allStrings && feedFormatOptions != null) {
             String urawFormatOptions = feedFormatOptions.toUpperCase();
-            if (urawFormatOptions.contains(" PARQUET") || urawFormatOptions.contains(" ORC") || urawFormatOptions.contains(" AVRO") || urawFormatOptions.contains("JSON")) {
+            if (urawFormatOptions.contains(" PARQUET") || urawFormatOptions.contains(" ORC") || urawFormatOptions.contains(" AVRO") || urawFormatOptions.contains("JSON") || urawFormatOptions
+                .contains(".XMLSERDE")) {
                 // Structured file so we will use native
                 allStrings = false;
             }
@@ -131,24 +129,8 @@ public enum TableType {
         return sb.toString();
     }
 
-    /**
-     * Derive the STORED AS clause for the table
-     *
-     * @param rawSpecification    the clause for the raw specification
-     * @param targetSpecification the target specification
-     */
-    public String deriveFormatSpecification(String rawSpecification, String targetSpecification) {
-        StringBuffer sb = new StringBuffer();
-        if (isUseTargetStorageSpec()) {
-            sb.append(targetSpecification);
-        } else {
-            sb.append(rawSpecification);
-        }
-        return sb.toString();
-    }
-
-    public boolean isUseTargetStorageSpec() {
-        return useTargetStorageSpec;
+    public boolean isUseTblProperties() {
+        return useTblProperties;
     }
 
     public boolean isFeedPartition() {
@@ -178,9 +160,9 @@ public enum TableType {
     }
 
 
-    public String deriveTableProperties(String targetTableProperties) {
-        if (isUseTargetStorageSpec()) {
-            return targetTableProperties;
+    public String deriveTableProperties(String tableProperties) {
+        if (isUseTblProperties()) {
+            return tableProperties;
         }
         return "";
     }

@@ -1,5 +1,6 @@
 import * as angular from "angular";
 
+import {moduleName} from "../../module-name";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
 
@@ -55,7 +56,7 @@ export class DomainTypeMetadataDetailsComponent extends AbstractSectionComponent
     }
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .component("domainTypeMetadataDetails", {
         bindings: {
             allowEdit: "<",

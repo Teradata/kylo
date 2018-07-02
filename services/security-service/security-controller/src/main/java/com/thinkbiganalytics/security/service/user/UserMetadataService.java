@@ -23,8 +23,11 @@ package com.thinkbiganalytics.security.service.user;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.rest.model.UserGroup;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.rest.model.User;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +54,9 @@ public class UserMetadataService implements UserService {
      */
     @Inject
     private UserProvider userProvider;
+    
+    @Inject
+    private AllowedEntityActionsProvider actionsProvider;
 
     /**
      * Access controller for permission checks
@@ -60,13 +66,28 @@ public class UserMetadataService implements UserService {
 
     @Override
     public boolean deleteGroup(@Nonnull final String groupId) {
-        return metadataAccess.commit(() -> {
+        Optional<GroupPrincipal> principal = metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
 
-            userProvider.findGroupByName(groupId)
-                .ifPresent(userProvider::deleteGroup);
-            return true;
+            return userProvider.findGroupByName(groupId)
+                .map(group -> {
+                    GroupPrincipal princ = group.getPrincial();
+                    userProvider.deleteGroup(group);
+                    return princ;
+                });
         });
+
+        // Disable all privileges for the deleted group.  This currently must be run as the 
+        // privileged service principal to allow access control changes on all service actions.
+        if (principal.isPresent()) {
+            return metadataAccess.commit(() -> {
+                actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+                    .ifPresent(allowed -> allowed.disableAll(principal.get()));
+                return true;
+            }, MetadataAccess.SERVICE);
+        } else {
+            return false;
+        }
     }
 
     @Override

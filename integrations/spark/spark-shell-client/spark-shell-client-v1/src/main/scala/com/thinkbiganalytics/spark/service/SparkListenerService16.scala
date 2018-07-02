@@ -10,17 +10,24 @@ import org.apache.spark.scheduler._
 class SparkListenerService16(private val sc: SparkContext) extends SparkListenerService {
 
     def addSparkListener(@Nonnull listener: StandardSparkListener): Unit =
-        sc.addSparkListener(new SparkListener {
-            override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = listener.onStageCompleted(stageCompleted)
+        sc.addSparkListener(new SparkListener16(listener))
+}
 
-            override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted): Unit = listener.onStageSubmitted(stageSubmitted)
+/** Implementation of [[SparkListener]] for Spark 1.6.
+  *
+  * Do not make this an anonymous class. The onOtherEvent method must be public to work with CDH 5.8+.
+  */
+private class SparkListener16(private val listener: StandardSparkListener) extends SparkListener {
 
-            override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = listener.onTaskEnd(taskEnd)
+    override def onStageCompleted(stageCompleted: SparkListenerStageCompleted): Unit = listener.onStageCompleted(stageCompleted)
 
-            override def onJobStart(jobStart: SparkListenerJobStart): Unit = listener.onJobStart(jobStart)
+    override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted): Unit = listener.onStageSubmitted(stageSubmitted)
 
-            override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = listener.onJobEnd(jobEnd)
+    override def onTaskEnd(taskEnd: SparkListenerTaskEnd): Unit = listener.onTaskEnd(taskEnd)
 
-            def onOtherEvent(event: SparkListenerEvent) {}
-        })
+    override def onJobStart(jobStart: SparkListenerJobStart): Unit = listener.onJobStart(jobStart)
+
+    override def onJobEnd(jobEnd: SparkListenerJobEnd): Unit = listener.onJobEnd(jobEnd)
+
+    def onOtherEvent(event: SparkListenerEvent) {}
 }

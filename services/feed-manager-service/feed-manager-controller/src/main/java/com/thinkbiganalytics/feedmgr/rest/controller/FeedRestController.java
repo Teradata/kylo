@@ -63,6 +63,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.search.rest.model.Pair;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -74,8 +75,9 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.directory.api.util.Strings;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.BodyPartEntity;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.hibernate.JDBCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -146,6 +149,7 @@ public class FeedRestController {
     private static final int MAX_LIMIT = 1000;
     private static final String NAMES = "/names";
     private static final String SUMMARY = "/feed-summary";
+    private static final int FILE_UPLOAD_RETRY = 20;
 
     @Inject
     private MetadataService metadataService;
@@ -179,6 +183,9 @@ public class FeedRestController {
 
     @Inject
     PropertyExpressionResolver propertyExpressionResolver;
+
+    @org.springframework.beans.factory.annotation.Value("${kylo.feed.file.upload.preserveFileName:false}")
+    private boolean feedFileUploadPreserveFileNameFlag;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -320,6 +327,31 @@ public class FeedRestController {
         }
         return Response.ok(feed).build();
     }
+    
+    @POST
+    @Path("/start/{feedId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Starts a feed.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The feed was started.", response = FeedSummary.class),
+        @ApiResponse(code = 500, message = "The feed could not be started.", response = RestResponseStatus.class)
+    })
+    public Response startFeed(@PathParam("feedId") String feedId) {
+
+            FeedSummary feed = getMetadataService().startFeed(feedId);
+            RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
+            RestResponseStatus status = null;
+            if(feed != null){
+                status = builder.message("Feed " + feed.getCategoryAndFeedDisplayName() +" started successfully")
+                    .buildSuccess();
+            }
+            else {
+                status = builder.message("Error starting feed for id "+feedId).buildError();
+            }
+
+
+        return Response.ok(status).build();
+    }
 
     @POST
     @Path("/enable/{feedId}")
@@ -361,6 +393,30 @@ public class FeedRestController {
     public Response getFeedNames() {
         Collection<FeedSummary> feeds = getMetadataService().getFeedSummaryData();
         return Response.ok(feeds).build();
+    }
+
+    @POST
+    @Path("/feed-system-name-to-display-name")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Maps feed ids to feed display names")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns a list of feed ids mapped to feed display names", response = Pair.class, responseContainer = "List")
+    )
+    public Response convertFeedIdToDisplayName(@Nonnull final List<String> feedSystemNames) {
+        Pair nullPair = new Pair(UUID.randomUUID().toString(),UUID.randomUUID().toString());
+        List<Pair> names = feedSystemNames.stream().map(systemName -> {
+            int dotIdx = systemName.indexOf(".");
+            String categorySystemName = systemName.substring(0, dotIdx);
+            String feedSystemName = systemName.substring(dotIdx + 1);
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            if(feed != null) {
+                return new Pair(systemName, feed.getFeedName());
+            }
+            else {
+                return nullPair;
+            }
+        }).filter(pair -> !pair.equals(nullPair)).collect(Collectors.toList());
+        return Response.ok(names).build();
     }
 
     @GET
@@ -906,22 +962,112 @@ public class FeedRestController {
     @Path("/{feedId}/upload-file")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Uploads a file to be ingested by a feed.")
+    @ApiOperation("Uploads files to be ingested by a feed.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The file is ready to be ingested."),
-                      @ApiResponse(code = 500, message = "The file could not be saved.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Files are ready to be ingested."),
+                      @ApiResponse(code = 500, message = "Files could not be saved.", response = RestResponseStatus.class)
                   })
-    public Response uploadFile(@PathParam("feedId") String feedId,
-                               @FormDataParam("file") InputStream fileInputStream,
-                               @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
+    public Response uploadFile(@PathParam("feedId") String feedId, FormDataMultiPart multiPart) {
+        List<NifiProperty> properties = getNifiProperties(feedId);
+        FileUploadContext context = getFileUploadContext(properties);
 
-        FeedMetadata feed = getMetadataService().getFeedById(feedId, false);
-        // Derive path and file
-        feed = registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
-        propertyExpressionResolver.resolvePropertyExpressions(feed);
-        List<NifiProperty> properties = feed.getProperties();
+        if (!context.isValid()) {
+            throw new InternalServerErrorException("Unable to upload file with empty dropzone or file");
+        }
+
+        List<BodyPart> bodyParts = multiPart.getBodyParts();
+        List<String> uploadedFiles = new ArrayList<>();
+        for (BodyPart bodyPart : bodyParts) {
+            BodyPartEntity entity = (BodyPartEntity)bodyPart.getEntity();
+            String fileName = bodyPart.getContentDisposition().getFileName();
+            try {
+                saveFile(entity.getInputStream(), context, fileName);
+                uploadedFiles.add(fileName);
+            } catch (AccessDeniedException e) {
+                String errTemplate = getErrorTemplate(uploadedFiles, "Permission denied attempting to write file [%s] to [%s]. Check with system administrator to ensure this application has write permissions to folder");
+                String err = String.format(errTemplate, fileName, context.getDropzone());
+                log.error(err);
+                throw new InternalServerErrorException(err);
+
+            } catch (Exception e) {
+                String errTemplate = getErrorTemplate(uploadedFiles, "Unexpected exception writing file [%s] to [%s].");
+                String err = String.format(errTemplate, fileName, context.getDropzone());
+                log.error(err,e);
+                throw new InternalServerErrorException(err, e);
+            }
+        }
+
+        return Response.ok("").build();
+    }
+
+    private String getErrorTemplate(List<String> uploadedFiles, String msg) {
+        return !uploadedFiles.isEmpty() ? "Successfully uploaded files: " + String.join(", ", uploadedFiles) + ".\n" + msg : msg;
+    }
+
+    private void saveFile(InputStream stream, FileUploadContext context, String uploadedFileName) throws IOException {
+        File tempTarget = File.createTempFile("kylo-upload", "");
+
+        java.nio.file.Path dropZoneTarget = generateDropZonePath(context, uploadedFileName);
+        if (dropZoneTarget == null) {
+            throw new IOException("Unable to upload file");
+        }
+        File dropZoneFile = dropZoneTarget.toFile();
+
+        Files.copy(stream, tempTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.move(tempTarget.toPath(), dropZoneTarget);
+
+        if (!dropZoneFile.setReadable(true)) {
+            log.error("Failed to set file readable");
+        }
+        if (!dropZoneFile.setWritable(true)) {
+            log.error("Failed to set file writable");
+        }
+    }
+
+    /**
+     * Generate a dropzone path. Will retry multiple times in case of file name collision.
+     * Random file name generation based on regular expression is a feature to facilitate
+     * business analysts who are not familiar with regular expression, so they can upload
+     * file whose name doesn't match regular expression defined in feed.
+     *
+     * @param context   file upload context
+     * @param uploadedFileName original name of uploaded file
+     * @return          generated path if successful, null otherwise
+     */
+    private java.nio.file.Path generateDropZonePath(FileUploadContext context, String uploadedFileName) {
+
+        if (feedFileUploadPreserveFileNameFlag) {
+            log.info("Uploaded file name will be preserved [{}]", uploadedFileName);
+            java.nio.file.Path path = Paths.get(context.getDropzone(), uploadedFileName);
+
+            if (path.toFile().exists()) {
+                log.warn("An existing file with same name found at {}", path.toString());
+                return null;
+            } else {
+                return path;
+            }
+        }
+
+        for (int i = 0; i < FILE_UPLOAD_RETRY; i++) {
+            Generex fileNameGenerator = new Generex(context.getRegexFileFilter());
+            String fileName = fileNameGenerator.random();
+
+            // Cleanup oddball characters generated by generex
+            fileName = fileName.replaceAll("[^A-Za-z0-9\\.\\_\\+\\%\\-\\|]+", "\\.");
+            java.nio.file.Path path = Paths.get(context.getDropzone(), fileName);
+
+            if (!path.toFile().exists()) {
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    private FileUploadContext getFileUploadContext(List<NifiProperty> properties) {
         String dropzone = null;
         String regexFileFilter = null;
+
         for (NifiProperty property : properties) {
 
             if (property.getProcessorType().equals("org.apache.nifi.processors.standard.GetFile")) {
@@ -932,43 +1078,15 @@ public class FeedRestController {
                 }
             }
         }
-        if (StringUtils.isEmpty(regexFileFilter) || StringUtils.isEmpty(dropzone)) {
-            throw new IOException("Unable to upload file with empty dropzone and file");
-        }
-        File tempTarget = File.createTempFile("kylo-upload", "");
-        String fileName = "";
-        try {
-            Generex fileNameGenerator = new Generex(regexFileFilter);
-            fileName = fileNameGenerator.random();
 
-            // Cleanup oddball characters generated by generex
-            fileName = fileName.replaceAll("[^A-Za-z0-9\\.\\_\\+\\%\\-\\|]+", "\\.");
-            java.nio.file.Path dropZoneTarget = Paths.get(dropzone, fileName);
-            File dropZoneFile = dropZoneTarget.toFile();
-            if (dropZoneFile.exists()) {
-                throw new IOException("File with the name [" + fileName + "] already exists in [" + dropzone + "]");
-            }
+        return new FileUploadContext(dropzone, regexFileFilter);
+    }
 
-            Files.copy(fileInputStream, tempTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.move(tempTarget.toPath(), dropZoneTarget);
-
-            // Set read, write
-            dropZoneFile.setReadable(true);
-            dropZoneFile.setWritable(true);
-
-        } catch (AccessDeniedException e) {
-            String errTemplate = "Permission denied attempting to write file [%s] to [%s]. Check with system administrator to ensure this application has write permissions to folder";
-            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
-            log.error(err);
-            throw new InternalServerErrorException(err);
-
-        } catch (Exception e) {
-            String errTemplate = "Unexpected exception writing file [%s] to [%s].";
-            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
-            log.error(err);
-            throw new InternalServerErrorException(err, e);
-        }
-        return Response.ok("").build();
+    private List<NifiProperty> getNifiProperties(String feedId) {
+        FeedMetadata feed = getMetadataService().getFeedById(feedId, false);
+        feed = registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
+        propertyExpressionResolver.resolvePropertyExpressions(feed);
+        return feed.getProperties();
     }
 
     private PageRequest pageRequest(Integer start, Integer limit, String sort) {
@@ -981,6 +1099,28 @@ public class FeedRestController {
             return new PageRequest((start / limit), limit, dir, sort);
         } else {
             return new PageRequest((start / limit), limit);
+        }
+    }
+
+    private class FileUploadContext {
+        private String dropzone;
+        private String regexFileFilter;
+
+        public FileUploadContext(String dropzone, String regexFileFilter) {
+            this.dropzone = dropzone;
+            this.regexFileFilter = regexFileFilter;
+        }
+
+        public String getDropzone() {
+            return dropzone;
+        }
+
+        public String getRegexFileFilter() {
+            return regexFileFilter;
+        }
+
+        public Boolean isValid() {
+            return !StringUtils.isEmpty(regexFileFilter) && !StringUtils.isEmpty(dropzone);
         }
     }
 }

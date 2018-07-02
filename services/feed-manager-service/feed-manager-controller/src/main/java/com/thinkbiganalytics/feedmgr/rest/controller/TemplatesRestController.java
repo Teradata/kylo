@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -31,6 +32,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
@@ -38,22 +40,25 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
-import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -62,7 +67,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,17 +102,20 @@ public class TemplatesRestController {
     public static final String BASE = "/v1/feedmgr/templates";
     public static final String REGISTERED = "/registered";
 
-    @Autowired
-    LegacyNifiRestClient nifiRestClient;
+    @Inject
+    private LegacyNifiRestClient nifiRestClient;
 
-    @Autowired
-    MetadataService metadataService;
+    @Inject
+    private MetadataService metadataService;
+    
+    @Inject
+    private AccessController accessController;
 
-    @Autowired
-    FeedManagerTemplateService feedManagerTemplateService;
+    @Inject
+    private FeedManagerTemplateService feedManagerTemplateService;
 
-    @Autowired
-    DatasourceService datasourceService;
+    @Inject
+    private DatasourceService datasourceService;
 
     @Inject
     private SecurityService securityService;
@@ -117,14 +124,15 @@ public class TemplatesRestController {
     private SecurityModelTransform securityTransform;
 
     @Inject
-    RegisteredTemplateService registeredTemplateService;
+    private RegisteredTemplateService registeredTemplateService;
 
     @Inject
-    NifiFlowCache nifiFlowCache;
+    private NifiFlowCache nifiFlowCache;
 
     private MetadataService getMetadataService() {
         return metadataService;
     }
+
 
 
     /**
@@ -193,6 +201,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         return Response.ok(ports).build();
     }
@@ -206,6 +217,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getInputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
             @Override
@@ -226,6 +240,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@QueryParam("inputPorts") String inputPortIds) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
         if (StringUtils.isNotBlank(inputPortIds)) {
             List<String> inputPortIdsList = Arrays.asList(StringUtils.split(inputPortIds, ","));
@@ -244,6 +261,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getNiFiTemplateProcessors(@PathParam("templateId") String templateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessorsWithProperties(templateId);
         return Response.ok(processorProperties).build();
     }
@@ -262,6 +282,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getNiFiTemplateFlowInfo(@PathParam("templateId") String templateId, NiFiTemplateFlowRequest flowRequest) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
         NiFiTemplateFlowResponse response = new NiFiTemplateFlowResponse();
         response.setRequest(flowRequest);
@@ -315,6 +338,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getOutputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
             @Override
@@ -584,7 +610,18 @@ public class TemplatesRestController {
                         .map(m -> Response.ok(m).build())
                         .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
     }
-    
+
+
+    @GET
+    @Path("/remote-process-group/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets information regarding if the template registration should allow the user to select input ports to be 'remote process group aware'")
+
+    public Response getRemoteProcessGroupAwareStatus() {
+
+        return Response.ok(ImmutableMap.of( "remoteProcessGroupAware",registeredTemplateService.isRemoteProcessGroupsEnabled())).build();
+    }
+
 
     @POST
     @Path("/registered/{templateId}/roles")

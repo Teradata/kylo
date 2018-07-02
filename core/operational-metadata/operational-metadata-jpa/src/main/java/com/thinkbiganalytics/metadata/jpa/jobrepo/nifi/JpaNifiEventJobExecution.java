@@ -42,6 +42,8 @@ import javax.persistence.Table;
 @Table(name = "BATCH_NIFI_JOB")
 public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecution {
 
+    private static final long serialVersionUID = 1468401235969406140L;
+
     @OneToOne(targetEntity = JpaBatchJobExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobExecution jobExecution;

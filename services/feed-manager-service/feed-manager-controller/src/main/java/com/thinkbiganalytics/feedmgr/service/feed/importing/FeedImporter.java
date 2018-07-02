@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.service.feed.importing;
  * limitations under the License.
  * #L%
  */
+
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
@@ -33,10 +34,15 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
+import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
+import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ImportFeedException;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
@@ -71,7 +77,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -126,6 +135,12 @@ public class FeedImporter {
     @Inject
     private ImportTemplateRoutineFactory importTemplateRoutineFactory;
 
+    @Inject
+    private FeedManagerCategoryService feedManagerCategoryService;
+
+    @Inject
+    private FeedManagerFeedService feedManagerFeedService;
+
 
     protected ImportFeed importFeed;
     protected ImportFeedOptions importFeedOptions;
@@ -140,6 +155,16 @@ public class FeedImporter {
         this.fileName = fileName;
         this.file = file;
         this.importFeedOptions = importFeedOptions;
+
+        //Set the ContinueIfExists flag on the Template components
+        final ImportComponentOption templateImportOption = importFeedOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+        if (templateImportOption != null && !templateImportOption.isOverwrite()) {
+            templateImportOption.setContinueIfExists(true);
+        }
+        final ImportComponentOption reusableTemplateOption = importFeedOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE);
+        if (reusableTemplateOption != null && !reusableTemplateOption.isOverwrite()) {
+            reusableTemplateOption.setContinueIfExists(true);
+        }
     }
 
 
@@ -173,7 +198,7 @@ public class FeedImporter {
             }
 
             //sensitive properties
-            if (!validateSensitiveProperties()) {
+            if (!validateProperties()) {
                 return importFeed;
             }
 
@@ -182,6 +207,8 @@ public class FeedImporter {
                 return importFeed;
             }
 
+            //  final ImportComponentOption templateImportOption = importFeedOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+            //  if(templateImportOption.isShouldImport() && templateImportOption.isOverwrite()) {
             //UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating the template data");
             TemplateImporter templateImporter = templateImporterFactory.apply(importFeed.getFileName(), file, importFeedOptions);
             ImportTemplate importTemplate = templateImporter.validate();
@@ -198,7 +225,9 @@ public class FeedImporter {
                         importFeed.addErrorMessage(metadata, msg);
                     }
                 }
+                return importFeed;
             }
+            //     }
             //  statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validation complete: the feed is "+(importFeed.isValid() ? "valid" : "invalid"),true,importFeed.isValid());
 
         } catch (Exception e) {
@@ -256,6 +285,16 @@ public class FeedImporter {
     }
 
 
+    private boolean validateProperties() {
+
+        boolean valid = validateSensitiveProperties();
+
+        valid &= validateRequiredFeedAndCategoryProperties();
+
+        uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_PROPERTIES);
+        return valid;
+    }
+
     private boolean validateSensitiveProperties() {
         FeedMetadata metadata = importFeed.getFeedToImport();
 
@@ -270,9 +309,102 @@ public class FeedImporter {
         } else {
             statusMessage.update("Validated feed properties.", valid);
         }
-        uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_PROPERTIES);
+
         return valid;
 
+    }
+
+    private boolean validateRequiredFeedAndCategoryProperties() {
+        FeedMetadata feedToImport = importFeed.getFeedToImport();
+        boolean valid = true;
+        // on new categories validate there are no required properties
+        FeedCategory category = metadataService.getCategoryBySystemName(feedToImport.getCategory().getSystemName());
+        if (category == null) {
+            UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "New category detected. Validating properties.");
+            ImportComponentOption categoryUserFieldOption = importFeed.getImportOptions().findImportComponentOption(ImportComponent.FEED_CATEGORY_USER_FIELDS);
+
+            Map<String, UserProperty>
+                suppliedUploadCategoryProperties =
+                categoryUserFieldOption.getProperties().stream().map(property -> toUserProperty(property)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+            if (feedToImport.getCategory().getUserProperties() != null) {
+                Map<String, UserProperty>
+                    suppliedCategoryProperties =
+                    feedToImport.getCategory().getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+                suppliedUploadCategoryProperties.putAll(suppliedCategoryProperties);
+            }
+            //set the list back
+            feedToImport.getCategory().setUserProperties(new HashSet<>(suppliedUploadCategoryProperties.values()));
+            Map<String, UserProperty>
+                requiredCategoryUserProperties =
+                feedManagerCategoryService.getUserProperties().stream().filter(p -> Objects.equals(p.isRequired(), Boolean.TRUE)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+
+            //add back in the required if they dont exist of they are blank
+            for (String k : requiredCategoryUserProperties.keySet()) {
+                boolean supplied = suppliedUploadCategoryProperties.containsKey(k);
+                if (!supplied || (supplied && StringUtils.isBlank(suppliedUploadCategoryProperties.get(k).getValue()))) {
+                    if (!supplied) {
+                        categoryUserFieldOption.getProperties().add(toImportProperty(requiredCategoryUserProperties.get(k)));
+                    }
+                    valid = false;
+                }
+            }
+            if (valid) {
+                statusMessage.update("Validated category properties.", valid);
+            } else {
+                statusMessage.update("Validation Error. Additional properties are needed on the category before importing.", false);
+            }
+        }
+
+        ImportComponentOption feedUserFieldOption = importFeed.getImportOptions().findImportComponentOption(ImportComponent.FEED_USER_FIELDS);
+
+        Set<UserField> feedUserFields = feedManagerFeedService.getUserFields();
+        //Add in any additional userfields that may be required by this category
+        if (category != null) {
+            Set<UserField> requiredCategoryFeedUserFields = category.getUserFields().stream().filter(f -> Objects.equals(f.isRequired(), Boolean.TRUE)).collect(Collectors.toSet());
+            if (!requiredCategoryFeedUserFields.isEmpty()) {
+                feedUserFields.addAll(requiredCategoryFeedUserFields);
+            }
+        }
+
+        Map<String, UserProperty>
+            suppliedUploadFeedProperties =
+            feedUserFieldOption.getProperties().stream().map(property -> toUserProperty(property)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+        if (feedToImport.getUserProperties() != null) {
+            Map<String, UserProperty> suppliedFeedProperties = feedToImport.getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+            suppliedUploadFeedProperties.putAll(suppliedFeedProperties);
+        }
+        //set the list back
+        feedToImport.setUserProperties(new HashSet<>(suppliedUploadFeedProperties.values()));
+
+        Map<String, UserProperty>
+            requiredFeedUserProperties =
+            UserPropertyTransform.toUserProperties(Collections.emptyMap(), UserPropertyTransform.toUserFieldDescriptors(feedUserFields)).stream().filter(p -> Objects.equals(p.isRequired(), Boolean.TRUE))
+                .collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
+        if (!requiredFeedUserProperties.isEmpty()) {
+            boolean feedValid = true;
+            UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating additional required feed properties.");
+            //add back in the required if they dont exist of they are blank
+            for (String k : requiredFeedUserProperties.keySet()) {
+                boolean supplied = suppliedUploadFeedProperties.containsKey(k);
+                if (!supplied || (supplied && StringUtils.isBlank(suppliedUploadFeedProperties.get(k).getValue()))) {
+                    if (!supplied) {
+                        feedUserFieldOption.getProperties().add(toImportProperty(requiredFeedUserProperties.get(k)));
+                    }
+                    valid = false;
+                    feedValid = false;
+                }
+            }
+            if (feedValid) {
+                statusMessage.update("Validated additional required feed properties.", true);
+            } else {
+                statusMessage.update("Validation Error. Additional properties are needed on the feed before importing.", false);
+            }
+        }
+        if (!valid) {
+            importFeed.setValid(false);
+        }
+
+        return valid;
     }
 
     /**
@@ -449,6 +581,25 @@ public class FeedImporter {
         }
         uploadProgressService.completeSection(importFeedOptions, ImportSection.Section.VALIDATE_FEED_CATEGORY);
         return valid;
+    }
+
+
+    private ImportProperty toImportProperty(UserProperty userProperty) {
+        ImportProperty p = new ImportProperty();
+        p.setDescription(userProperty.getDescription());
+        p.setDisplayName(userProperty.getDisplayName());
+        p.setPropertyKey(userProperty.getSystemName());
+        p.setPropertyValue(userProperty.getValue());
+        return p;
+    }
+
+    private UserProperty toUserProperty(ImportProperty importProperty) {
+        UserProperty userProperty = new UserProperty();
+        userProperty.setSystemName(importProperty.getPropertyKey());
+        userProperty.setDisplayName(importProperty.getDisplayName());
+        userProperty.setDescription(importProperty.getDescription());
+        userProperty.setValue(importProperty.getPropertyValue());
+        return userProperty;
     }
 
     //Import

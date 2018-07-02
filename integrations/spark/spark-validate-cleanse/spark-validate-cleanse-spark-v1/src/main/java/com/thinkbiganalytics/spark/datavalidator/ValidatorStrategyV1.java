@@ -33,6 +33,8 @@ import java.io.Serializable;
 @Component
 public class ValidatorStrategyV1 implements IValidatorStrategy, Serializable {
 
+    private static final long serialVersionUID = 1064950159197507892L;
+
     @Override
     public JavaRDD<long[]> getCleansedRowResultPartitionCounts(JavaRDD<CleansedRowResult> cleansedRowResultJavaRDD, int schemaLength) {
         return cleansedRowResultJavaRDD.mapPartitions(new PartitionLevelCountsV1(schemaLength));

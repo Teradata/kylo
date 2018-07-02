@@ -17,12 +17,12 @@ chown $NIFI_USER:$NIFI_GROUP $HDF_NIFI_HOME_FOLDER/lib/app
 echo "Creating symbolic links"
 
 # Expected path something like /usr/hdf/current/nifi
-framework_name=$(find $NIFI_HOME/lib/ -name "nifi-framework-api*.jar")
-prefix="$NIFI_HOME/current/lib/nifi-framework-api-"
+framework_name=$(find $HDF_NIFI_HOME_FOLDER/lib/ -name "nifi-framework-api*.jar")
+prefix="$HDF_NIFI_HOME_FOLDER/lib/nifi-framework-api-"
 len=${#prefix}
 ver=${framework_name:$len}
 
-ln -f -s $NIFI_HOME/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-elasticsearch-nar.nar
+ln -f -s $NIFI_KYLO_FOLDER/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $HDF_NIFI_HOME_FOLDER/lib/kylo-nifi-elasticsearch-nar.nar
 
 if [[ $ver == 1.0* ]] || [[ $ver == 1.1* ]] ;
 then
@@ -56,6 +56,8 @@ fi
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-validate-cleanse-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-validate-cleanse-jar-with-dependencies.jar
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-job-profiler-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-interpreter-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
+ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-merge-table-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-merge-table-jar-with-dependencies.jar
+ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-multi-exec-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-multi-exec-jar-with-dependencies.jar
 
 
 echo "Updating permissions for the nifi sym links"

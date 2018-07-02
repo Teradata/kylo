@@ -18,10 +18,12 @@
   #L%
   -->
 <card-layout header-css="filter-header">
-  <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                  on-menu-open="vm.onOptionsMenuOpen" on-selected-option="vm.selectedTableOption" additional-options="vm.additionalMenuOptions"
-                  on-selected-additional-option="vm.selectedAdditionalMenuOption" filter-model="vm.filter" filter-model-options="{debounce:1000}"
-                  on-show-filter-help="vm.showFilterHelpPanel">
+  <header-section>
+      <tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+            on-menu-open="vm.onOptionsMenuOpen" on-selected-option="vm.selectedTableOption" additional-options="vm.additionalMenuOptions"
+            on-selected-additional-option="vm.selectedAdditionalMenuOption" filter-model="vm.filter" filter-model-options="{debounce:1000}"
+            on-show-filter-help="vm.showFilterHelpPanel">
+        </tba-card-filter-header>
   </header-section>
     <body-section transclude-to="body">
             <md-tabs   flex md-selected="vm.tabMetadata.selectedIndex"
@@ -45,7 +47,7 @@
                             <div layout="row" layout-fill>
                                 <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
                                    <span class="item-title">
-                                       {{job.jobName}}
+                                       {{job.displayName === undefined ? job.jobName : job.displayName.value}}
                                    </span>
                                    <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}" class="column-title-bottom">
                                        <ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>

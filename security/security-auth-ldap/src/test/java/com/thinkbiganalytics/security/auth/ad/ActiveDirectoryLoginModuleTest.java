@@ -28,7 +28,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test for the ActiveDirectoryLoginModule.  Note that these tests are disabled by default as it
  * requires an actual Active Directory instance running as configured in the file ad-test.properties.
  */
-@SpringApplicationConfiguration(classes = {
+@SpringBootTest(classes = {
     SecurityConfig.class,
     JaasAuthConfig.class,
     ActiveDirectoryAuthConfig.class,

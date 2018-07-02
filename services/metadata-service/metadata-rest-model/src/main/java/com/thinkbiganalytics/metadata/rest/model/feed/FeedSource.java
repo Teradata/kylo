@@ -34,10 +34,11 @@ import java.io.Serializable;
 /**
  *
  */
-@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedSource implements Serializable {
+
+    private static final long serialVersionUID = 7942198011976271715L;
 
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime lastLoadTime;

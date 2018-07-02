@@ -1,4 +1,13 @@
-define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'kylo-common', 'kylo-services', 'jquery','angular-drag-and-drop-lists', 'fattable'], function (angular, moduleName) {
+define([
+    'angular', 
+    'feed-mgr/module-name', 
+    'codemirror-require/module', 
+    'kylo-common', 
+    'kylo-services', 
+    'jquery',
+    'angular-drag-and-drop-lists', 
+    'fattable'
+], function (angular, moduleName) {
     var module = angular.module(moduleName, ['ui.codemirror','dndLists']);
 
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
@@ -9,7 +18,7 @@ define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'kylo-co
                     'js/feed-mgr/shared/cron-expression-preview/cron-expression-preview.css',
                     'js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.css',
                     "bower_components/fattable/fattable.css",
-                    'js/feed-mgr/services/fattable/fattable.css'
+                    'js/feed-mgr/services/fattable/fattable-service.css'
             ], serie: true
         })
     }]);

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.policy;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -69,7 +69,8 @@ public class FieldPoliciesJsonTransformer {
     /**
      * build a map of field to field policies
      *
-     * @return a map with the field name as the key and a field policy object as the valure listing the possible {@link StandardizationPolicy} and {@link ValidationPolicy} associated with the given
+     * @return a map with the field name as the key and a field policy object as the value listing the
+     * possible {@link StandardizationPolicy} and {@link ValidationPolicy} associated with the given
      * field
      */
     public Map<String, FieldPolicy> buildPolicies() {
@@ -88,29 +89,6 @@ public class FieldPoliciesJsonTransformer {
         log.info("Transformed UI Policies to Field Policies.  {} ", listener.getCounts());
         return fieldPolicyMap;
 
-    }
-
-    /**
-     * Listener to count the total standardizers/validators on a given field
-     */
-    private class PolicyTransformationListener implements FieldPolicyTransformerListener {
-
-        private int validationCount = 0;
-        private int standardizationCount = 0;
-
-        @Override
-        public void onAddValidationPolicy(ValidationPolicy policy) {
-            validationCount++;
-        }
-
-        @Override
-        public void onAddStandardizationPolicy(StandardizationPolicy policy) {
-            standardizationCount++;
-        }
-
-        public String getCounts() {
-            return "Total Validation Policies: " + validationCount + ", Total Standardization Policies: " + standardizationCount;
-        }
     }
 
     public void augmentPartitionColumnValidation() {
@@ -185,6 +163,29 @@ public class FieldPoliciesJsonTransformer {
                 }
 
             }
+        }
+    }
+
+    /**
+     * Listener to count the total standardizers/validators on a given field
+     */
+    private class PolicyTransformationListener implements FieldPolicyTransformerListener {
+
+        private int validationCount = 0;
+        private int standardizationCount = 0;
+
+        @Override
+        public void onAddValidationPolicy(ValidationPolicy policy) {
+            validationCount++;
+        }
+
+        @Override
+        public void onAddStandardizationPolicy(StandardizationPolicy policy) {
+            standardizationCount++;
+        }
+
+        public String getCounts() {
+            return "Total Validation Policies: " + validationCount + ", Total Standardization Policies: " + standardizationCount;
         }
     }
 }

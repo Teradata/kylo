@@ -38,7 +38,7 @@ public interface ExtensibleEntity {
 
     Map<String, Object> getProperties();
 
-    Object getProperty(String name);
+    <T> T getProperty(String name);
 
     <T> Set<T> getPropertyAsSet(String name, Class<T> objectType);
 

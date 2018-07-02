@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * #L%
  */
 
+import com.google.common.base.Stopwatch;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Expression;
@@ -100,6 +101,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -260,7 +262,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         jobExecution.setJobInstance(jobInstance);
         //add in the parameters from the attributes
         jobExecution.setCreateTime(DateTimeUtil.getNowUTCTime());
-        jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+        if(event.getStartTime() != null) {
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getStartTime()));
+        } else {
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+        }
         jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
         jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
         jobExecution.setLastUpdated(DateTimeUtil.getNowUTCTime());
@@ -413,7 +419,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * Get or Create the JobExecution for a given ProvenanceEvent
      */
     @Override
-    public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+    public  JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
@@ -541,7 +547,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
         if (event.isStartOfJob() && !isNew) {
             jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
-            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            if(event.getStartTime() != null) {
+                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getStartTime()));
+            } else {
+                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            }
             //create the job params
             Map<String, Object> jobParameters = new HashMap<>();
             if (event.isStartOfJob() && event.getAttributeMap() != null) {
@@ -561,6 +571,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
             if (updatedJobType) {
                 //notify operations status
+                if(feed instanceof  JpaOpsManagerFeed){
+                    ((JpaOpsManagerFeed)feed).setFeedType(OpsManagerFeed.FeedType.CHECK);
+                }
                 jobExecutionChangedNotifier.notifyDataConfidenceJob(jobExecution, feed, "Data Confidence Job detected ");
             }
 
@@ -655,7 +668,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (jobExecution == null) {
             return null;
         }
+        Stopwatch stopwatch = Stopwatch.createStarted();
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
+        log.debug("Time to create step {} ms ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return jobExecution;
     }
 
@@ -666,7 +681,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event, feed);
+        log.info("Time to get/create job {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         if (jobExecution != null) {
             return save(jobExecution, event);
         }
@@ -680,8 +697,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     @Override
-    public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
-        return jobExecutionRepository.findOne(jobExecutionId);
+    public BatchJobExecution findByJobExecutionId(Long jobExecutionId, boolean fetchSteps) {
+        if(fetchSteps) {
+            return jobExecutionRepository.findByJobExecutionIdWithSteps(jobExecutionId);
+        }
+        else {
+
+        }   return jobExecutionRepository.findOne(jobExecutionId);
     }
 
 
@@ -1009,7 +1031,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Override
     public BatchJobExecution abandonJob(Long executionId) {
-        BatchJobExecution execution = findByJobExecutionId(executionId);
+        BatchJobExecution execution = findByJobExecutionId(executionId,false);
         if (execution != null && !execution.getStatus().equals(BatchJobExecution.JobStatus.ABANDONED)) {
             if (execution.getStartTime() == null) {
                 execution.setStartTime(DateTimeUtil.getNowUTCTime());

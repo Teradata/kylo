@@ -29,7 +29,9 @@ import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
@@ -48,7 +50,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, AuditLogProviderConfig.class,TestSpringConfiguration.class})
+@SpringBootTest(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, AuditLogProviderConfig.class, TestSpringConfiguration.class})
+@EnableAutoConfiguration(exclude = {WebMvcAutoConfiguration.class })
 public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
 
     private static final Principal ADMIN = new UsernamePrincipal("admin");

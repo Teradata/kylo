@@ -71,7 +71,7 @@ public class DefaultJobService implements JobService {
 
         SavepointReplayJobExecution savepointReplayJobExecution = ((SavepointReplayJobExecution) replayJobExecution);
         return metadataAccess.commit(() -> {
-            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId(),false);
             if (jobExecution != null) {
                 ((JpaBatchJobExecution) jobExecution).markAsRunning();
                 //trigger the jms message
@@ -95,7 +95,7 @@ public class DefaultJobService implements JobService {
     public boolean stopJobExecution(ReplayJobExecution replayJobExecution) throws JobExecutionException {
         SavepointReplayJobExecution savepointReplayJobExecution = ((SavepointReplayJobExecution) replayJobExecution);
         return metadataAccess.commit(() -> {
-            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId(),false);
             if (jobExecution != null) {
                 ((JpaBatchJobExecution) jobExecution).markAsRunning();
                 //  ((JpaBatchJobExecution)jobExecution).failJob();
@@ -123,7 +123,7 @@ public class DefaultJobService implements JobService {
     public void failJobExecution(Long executionId) {
         metadataAccess.commit(() -> {
 
-            BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId);
+            BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId,false);
             if (execution != null && !execution.isFailed()) {
                 Set<BatchStepExecution> steps = execution.getStepExecutions();
                 if (steps != null) {

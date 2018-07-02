@@ -1,16 +1,20 @@
+import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {BrowserModule} from "@angular/platform-browser";
 import {UpgradeModule} from "@angular/upgrade/static";
+import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 
-import {notificationServiceProvider} from "./angular2";
-
+import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider} from "./angular2";
+//import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
     imports: [
-        BrowserModule,
+        CommonModule,
         UpgradeModule
     ],
     providers: [
-        notificationServiceProvider
+        notificationServiceProvider,
+        PreviewDatasetCollectionService,
+        addButtonServiceProvider,
+        broadcastServiceProvider
     ]
 })
 export class KyloServicesModule {

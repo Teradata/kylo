@@ -20,11 +20,10 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 /**
  * A request to perform a transformation on a table.
@@ -42,6 +41,21 @@ public class TransformRequest {
     private List<Datasource> datasources;
 
     /**
+     * List of the catalog datasources
+     */
+    private List<DataSet> catalogDatasets;
+
+    /**
+     * Whether to perform validation
+     */
+    private boolean doValidate = true;
+
+    /**
+     * Whether to perform profiling
+     */
+    private boolean doProfile = false;
+
+    /**
      * Previous transformation result
      */
     private Parent parent;
@@ -55,6 +69,11 @@ public class TransformRequest {
      * Scala script with transformation
      */
     private String script;
+
+    /**
+     * Constrain the results returned to the client
+     */
+    private PageSpec pageSpec;
 
     /**
      * Indicates the transformation should be cached for asynchronous requests
@@ -114,6 +133,7 @@ public class TransformRequest {
         this.policies = policies;
     }
 
+
     /**
      * Gets the Scala script with the transformation.
      *
@@ -130,6 +150,74 @@ public class TransformRequest {
      */
     public void setScript(final String script) {
         this.script = script;
+    }
+
+    /**
+     * Returns the page index information
+     *
+     * @return the page spec
+     */
+    public PageSpec getPageSpec() {
+        return pageSpec;
+    }
+
+    /**
+     * Sets the page index information
+     *
+     * @param pageSpec the page spec
+     */
+    public void setPageSpec(PageSpec pageSpec) {
+        this.pageSpec = pageSpec;
+    }
+
+    /**
+     * Whether to perform the validation stage using the configured validation policies
+     *
+     * @return true if validation stage should be run
+     */
+    public boolean isDoValidate() {
+        return doValidate;
+    }
+
+    /**
+     * Set whether to perform the validation stage on the results
+     *
+     * @param doValidate true if validation stage should be performed
+     */
+    public void setDoValidate(boolean doValidate) {
+        this.doValidate = doValidate;
+    }
+
+    /**
+     * Whether to profile the resultset
+     *
+     * @return true if profile should be performed
+     */
+    public boolean isDoProfile() {
+        return doProfile;
+    }
+
+    /**
+     * Set whether profile statistics should be generated for the result
+     *
+     * @param doProfile true if to perform profiling
+     */
+    public void setDoProfile(boolean doProfile) {
+        this.doProfile = doProfile;
+    }
+
+    /**
+     * Get the DataSets from the catalog that need to be transformed
+     */
+    public List<DataSet> getCatalogDatasets() {
+        return catalogDatasets;
+    }
+
+    /**
+     * set the DataSets to be transformed
+     */
+    public void setCatalogDatasets(List<DataSet> catalogDatasets) {
+        this.catalogDatasets = catalogDatasets;
     }
 
     /**
@@ -182,5 +270,7 @@ public class TransformRequest {
         public void setTable(String table) {
             this.table = table;
         }
+
+
     }
 }

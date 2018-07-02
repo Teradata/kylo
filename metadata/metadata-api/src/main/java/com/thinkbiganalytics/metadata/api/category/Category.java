@@ -102,9 +102,9 @@ public interface Category extends AccessControlled {
 
     void setIconColor(String iconColor);
 
-    String getAllowIndexing();
+    boolean isAllowIndexing();
 
-    void setAllowIndexing(String allowIndexing);
+    void setAllowIndexing(boolean allowIndexing);
 
     Set<RoleMembership> getFeedRoleMemberships();
 

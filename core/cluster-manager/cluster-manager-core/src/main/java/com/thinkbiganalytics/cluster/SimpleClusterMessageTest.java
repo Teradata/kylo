@@ -28,6 +28,8 @@ import java.util.UUID;
  */
 public class SimpleClusterMessageTest implements Serializable{
 
+    private static final long serialVersionUID = 6313893570788932028L;
+
     private String type;
     private String message;
     private String from;

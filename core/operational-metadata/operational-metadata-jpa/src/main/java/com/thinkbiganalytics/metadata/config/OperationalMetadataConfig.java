@@ -75,10 +75,10 @@ public class OperationalMetadataConfig {
      * @param dataSource the datasource to use as the connection for the entity manager
      * @return the entity manager
      */
-    @Bean(name = "operationalMetadataJpaEntityManager")
+    /*@Bean(name = "operationalMetadataJpaEntityManager")
     public EntityManager entityManager(@Qualifier("dataSource") DataSource dataSource) {
         return entityManagerFactory(dataSource).createEntityManager();
-    }
+    }*/
 
     /**
      * Return the JPA transaction manager

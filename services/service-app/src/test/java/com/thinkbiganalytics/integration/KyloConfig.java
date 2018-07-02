@@ -20,7 +20,6 @@ package com.thinkbiganalytics.integration;
  * #L%
  */
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
@@ -35,18 +34,26 @@ public class KyloConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(KyloConfig.class);
 
+    public static final String TEST_INFRASTRUCTURE_TYPE_EC2 = "EC2";
+    public static final String TEST_INFRASTRUCTURE_TYPE_KUBERNETES = "KUBERNETES";
+
     private String host;
     private int port;
     private String basePath;
     private String protocol;
 
+    private String testInfrastructureType;
+    private int servicesPort;
+
     @PostConstruct
-    public void initIt() throws Exception {
+    public void initIt() {
         LOG.info(new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                      .append("protocol", protocol)
                      .append("host", host)
                      .append("port", port)
                      .append("basePath", basePath)
+                     .append("testInfrastructureType", testInfrastructureType)
+                     .append("servicesPort", servicesPort)
                      .toString());
     }
     public String getProtocol() {
@@ -79,5 +86,21 @@ public class KyloConfig {
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public String getTestInfrastructureType() {
+        return testInfrastructureType;
+    }
+
+    public void setTestInfrastructureType(String testInfrastructureType) {
+        this.testInfrastructureType = testInfrastructureType;
+    }
+
+    public int getServicesPort() {
+        return servicesPort;
+    }
+
+    public void setServicesPort(int servicesPort) {
+        this.servicesPort = servicesPort;
     }
 }

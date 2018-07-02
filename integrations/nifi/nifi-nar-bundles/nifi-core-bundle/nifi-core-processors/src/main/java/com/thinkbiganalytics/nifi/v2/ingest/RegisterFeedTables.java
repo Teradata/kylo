@@ -60,6 +60,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_FORMAT_SPECS;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TBLPROPERTIES;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_TBLPROPERTIES;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
 
@@ -93,6 +94,17 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    public static final PropertyDescriptor FEED_TABLE_OVERRIDE = new PropertyDescriptor.Builder()
+        .name("Feed Table Override")
+        .description(
+            "Executes the provided DDL for the feed table create instead of the default behavior.")
+        .required(false)
+        .defaultValue("${metadata.table.feedTableOverride}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
     private final static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
     private final static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
     /**
@@ -131,9 +143,11 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         pds.add(FEED_FORMAT_SPECS);
         pds.add(TARGET_FORMAT_SPECS);
         pds.add(TARGET_TBLPROPERTIES);
+        pds.add(FEED_TBLPROPERTIES);
         pds.add(FEED_ROOT);
         pds.add(PROFILE_ROOT);
         pds.add(MASTER_ROOT);
+        pds.add(FEED_TABLE_OVERRIDE);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -164,18 +178,20 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         final String targetFormatOptions = Optional.ofNullable(context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .orElse(DEFAULT_STORAGE_FORMAT);
+        final String feedTableProperties = context.getProperty(FEED_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
         final String targetTableProperties = context.getProperty(TARGET_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
         final ColumnSpec[] partitions = Optional.ofNullable(context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
         final String tableType = context.getProperty(TABLE_TYPE).getValue();
+        final String feedTableOverride = context.getProperty(FEED_TABLE_OVERRIDE).evaluateAttributeExpressions(flowFile).getValue();
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
-        if (columnSpecs == null || columnSpecs.length == 0) {
+        if (StringUtils.isEmpty(feedTableOverride) && (columnSpecs == null || columnSpecs.length == 0)) {
             getLog().error("Missing field specification");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
@@ -218,10 +234,12 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
 
             final boolean result;
             if (ALL_TABLES.equals(tableType)) {
-                result = register.registerStandardTables(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
+                result = register.registerStandardTables(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTableProperties,
+                                                         targetTableProperties,feedTableOverride);
             } else {
-                result = register.registerTable(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType),
-                                                true);
+                result = register.registerTable(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTableProperties, targetTableProperties,
+                                                TableType.valueOf(tableType),
+                                                true, feedTableOverride);
             }
 
             final Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);

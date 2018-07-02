@@ -1,0 +1,14 @@
+import 'angular';
+import "./services/AlertsService";
+import "./services/AlertsServiceV2";
+import "./services/EventService";
+import "./services/OpsManagerFeedService";
+import "./services/ChartJobStatusService";
+import "./services/IconStatusService";
+import "./services/Nvd3ChartService";
+import "./services/OpsManagerJobService";
+import "./services/OpsManagerRestUrlService";
+import "./services/ProvenanceEventStatsService";
+import "./services/ServicesStatusService";
+import "./services/TabService";
+import "./services/OpsManagerDashboardService";

@@ -31,10 +31,8 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
-import com.thinkbiganalytics.metadata.modeshape.security.DefaultAccessController;
-import com.thinkbiganalytics.scheduler.JobScheduler;
-import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
@@ -45,8 +43,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
-
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -79,11 +75,6 @@ public class JcrTestConfig {
     @Bean
     public FeedOperationsProvider feedOperationsProvider() {
         return Mockito.mock(FeedOperationsProvider.class);
-    }
-
-    @Bean
-    public JobScheduler jobSchedule() {
-        return Mockito.mock(JobScheduler.class);
     }
 
     @Bean
@@ -142,6 +133,12 @@ public class JcrTestConfig {
                                 .action(DatasourceAccessControl.EDIT_DETAILS)
                                 .action(DatasourceAccessControl.DELETE)
                                 .action(DatasourceAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.PROJECTS)
+                                .action(ProjectAccessControl.ACCESS_PROJECT)
+                                .action(ProjectAccessControl.EDIT_PROJECT)
+                                .action(ProjectAccessControl.DELETE_PROJECT)
+                                .action(ProjectAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

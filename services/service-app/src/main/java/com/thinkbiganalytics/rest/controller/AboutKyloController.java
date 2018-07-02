@@ -22,7 +22,6 @@ package com.thinkbiganalytics.rest.controller;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
-import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.User;
 
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
@@ -32,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.acl.Group;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -96,10 +96,10 @@ public class AboutKyloController {
             user.setGroups(auth.getAuthorities().stream()
                                .filter(JaasGrantedAuthority.class::isInstance)
                                .map(JaasGrantedAuthority.class::cast)
-                               .filter(authority -> authority.getPrincipal() instanceof GroupPrincipal)
+                               .filter(authority -> authority.getPrincipal() instanceof Group)
                                .map(JaasGrantedAuthority::getAuthority)
                                .collect(Collectors.toSet()));
-            user.setSystemName(auth.getPrincipal().toString());
+            user.setSystemName(auth.getName());
         }
 
         // Return principal

@@ -31,6 +31,7 @@ import org.apache.spark.sql.types.StructField;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -38,8 +39,9 @@ import javax.annotation.Nonnull;
 /**
  * Class to hold common profile statistics for columns of all data types
  */
-@SuppressWarnings("serial")
 public abstract class StandardColumnStatistics implements ColumnStatistics, Serializable {
+
+    private static final long serialVersionUID = 1602490256792712550L;
 
     /* Schema information for column */
     final StructField columnField;
@@ -55,6 +57,7 @@ public abstract class StandardColumnStatistics implements ColumnStatistics, Seri
     private double percDuplicateValues;
     private ProfilerConfiguration profilerConfiguration;
 
+    protected List<OutputRow> rows;
 
     /**
      * One-argument constructor
@@ -309,9 +312,18 @@ public abstract class StandardColumnStatistics implements ColumnStatistics, Seri
 
     public abstract void combine(StandardColumnStatistics v_columnStatistics);
 
-    public abstract List<OutputRow> getStatistics();
-
     public abstract String getVerboseStatistics();
+
+    public abstract void populateStatistics(List<OutputRow> rows);
+
+
+    final public List<OutputRow> getStatistics() {
+        if (this.rows == null) {
+            this.rows = new ArrayList<>();
+            populateStatistics(this.rows);
+        }
+        return this.rows;
+    }
 
     /*
      * Check if all values are null

@@ -32,7 +32,7 @@ import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
@@ -52,7 +52,7 @@ import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, FeedOpsAccessControlConfig.class, TestJpaConfiguration.class})
+@SpringBootTest(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, FeedOpsAccessControlConfig.class, TestJpaConfiguration.class})
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class JpaFeedOpsAccessControlProviderTest {
 

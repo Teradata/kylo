@@ -1,0 +1,91 @@
+<!--
+  #%L
+  kylo-install-inspector
+  %%
+  Copyright (C) 2017 - 2018 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<mat-card class="example-card">
+        <div class="title">Welcome to Kylo Configuration Inspector!</div>
+        <div class="subtitle muted">This application will check your Kylo configuration by reading its properties and assessing their values</div>
+
+        <div class="form" fxLayout="column" fxLayoutAlign="space-evenly start">
+            <div fxLayout="row" fxLayoutAlign="start center">
+                <mat-form-field class="path">
+                    <input matInput placeholder="Absolute path to Kylo installation, e.g. /opt/kylo" [formControl]="path" required>
+                    <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
+                </mat-form-field>
+                <mat-chip-list *ngIf="configuration !== undefined">
+                    <mat-chip *ngIf="configuration.version">{{configuration.version}}</mat-chip>
+                    <mat-chip *ngIf="configuration.buildDate">{{configuration.buildDate}}</mat-chip>
+                    <small class="release-notes-link"><a *ngIf="configuration.version" target="_blank" href="http://kylo.readthedocs.io/en/latest/release-notes/ReleaseNotes.html">Release Notes</a></small>
+                </mat-chip-list>
+            </div>
+            <mat-checkbox *ngIf="!isProd" [formControl]="devMode"  (change)="onDevModeChange()">
+                <div class="checkbox-label">
+                    <div>Running from source</div>
+                    <div class="control-hint muted">Check this if you are inspecting Kylo configuration checked out from GitHub</div>
+                </div>
+            </mat-checkbox>
+            <div class="actions" fxlayout="row" fxLayoutAlign="space-between center">
+                <button fxFlex="nogrow" [disabled]="path.invalid"
+                        mat-raised-button color="primary"
+                        (click)="checkConfig()">Inspect Configuration
+                </button>
+                <button fxFlex="nogrow" title="Download Report"
+                        mat-mini-fab color="secondary"
+                        (click)="downloadReport()">
+                    <i class="fa fa-download"></i>
+                </button>
+            </div>
+        </div>
+
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+        <mat-card class="inspection" *ngFor="let check of checks; let i = index">
+            <mat-card-content>
+                <div fxLayout="row" fxLayoutAlign="center center">
+                    <div fxFlex fxLayout="column">
+                        <div>
+                            <span class="inspection-header">{{check.name}}</span>
+                            <span *ngIf="check.docsUrl" class="inspection-docs">
+                                <a target="_blank" href="http://kylo.readthedocs.io/en/latest/{{check.docsUrl}}" title="More Information">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </span>
+                        </div>
+                        <div class="inspection-description muted">
+                            {{check.description}}
+                        </div>
+                        <div *ngIf="hasDescriptions(check)" class="inspection-status-description">
+                            <div *ngFor="let desc of check.status.descriptions">
+                                {{desc}}
+                            </div>
+                        </div>
+                        <div *ngIf="hasErrors(check)" class="inspection-status-error">
+                            <ul *ngFor="let error of check.status.errors">
+                                <li>{{error}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-around center">
+                        <i *ngIf="check.isLoading === true" class="fa fa-cog fa-spin fa-larger"></i>
+                        <i *ngIf="check.status.valid === true" class="fa fa-check fa-larger"></i>
+                        <i *ngIf="check.status.valid === false" class="fa fa-warning fa-larger"></i>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </mat-card-content>
+</mat-card>

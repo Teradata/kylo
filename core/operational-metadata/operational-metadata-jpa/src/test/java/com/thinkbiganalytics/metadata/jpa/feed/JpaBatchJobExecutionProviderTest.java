@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
@@ -49,14 +49,16 @@ import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class,
-                                           OperationalMetadataConfig.class,
-                                           TestJpaConfiguration.class,
-                                           JpaBatchJobExecutionProviderTest.class})
+@SpringBootTest(classes = {CommonsSpringConfiguration.class,
+                           OperationalMetadataConfig.class,
+                           TestJpaConfiguration.class,
+                           JpaBatchJobExecutionProviderTest.class})
 @Transactional
 @Configuration
 public class JpaBatchJobExecutionProviderTest {

@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of unsupported data type<br>
  * [Hive data types: CHAR, BINARY, ARRAY, MAP, STRUCT, UNIONTYPE]
  */
-@SuppressWarnings("serial")
 public class UnsupportedColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 8123966580070772417L;
 
     /**
      * One-argument constructor
@@ -79,14 +80,9 @@ public class UnsupportedColumnStatistics extends StandardColumnStatistics {
 
     }
 
-    /**
-     * Write statistics for output result table<br>
-     * No additional statistics written
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
-        return rows;
     }
+
 }

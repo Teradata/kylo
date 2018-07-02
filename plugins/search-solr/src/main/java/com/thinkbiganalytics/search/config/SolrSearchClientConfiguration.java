@@ -27,6 +27,8 @@ import java.io.Serializable;
  */
 public class SolrSearchClientConfiguration implements Serializable {
 
+    private static final long serialVersionUID = 1639818027441031568L;
+
     private String host;
     private Integer port;
     private String indexStorageDirectory;

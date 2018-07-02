@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.rest.client;
  */
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
 
 import java.util.Optional;
 
@@ -50,4 +51,22 @@ public interface NiFiConnectionsRestClient {
      * @return {@code true} if the contents of the queue were deleted, or {@code false} if the process group or connection does not exist
      */
     boolean deleteQueue(@Nonnull String processGroupId, @Nonnull String connectionId);
+
+
+    /**
+     * Gets the status of a given connection
+     * @param connectionId the connection to inspect
+     * @return the status or Optional.empty() if not found
+     */
+    Optional<ConnectionStatusEntity> getConnectionStatus(@Nonnull final String connectionId);
+
+
+    /**
+     * Update a Connection
+     * @param connectionDTO
+     * @return
+     */
+    Optional<ConnectionDTO> update(@Nonnull ConnectionDTO connectionDTO);
+
+
 }

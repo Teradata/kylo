@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spring;
  * #L%
  */
 
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,6 +39,11 @@ public class CommonsSpringConfiguration {
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
+    }
+
+    @Bean
+    public UsernameCaseStrategyUtil usernameCaseStrategyUtil() {
+        return new UsernameCaseStrategyUtil();
     }
 
 }

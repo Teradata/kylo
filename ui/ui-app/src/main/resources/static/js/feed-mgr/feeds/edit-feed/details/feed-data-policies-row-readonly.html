@@ -33,12 +33,25 @@
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
     </div>
   </div>
-  <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10 layout-padding-right-4 layout-padding-top-1" ng-class="'versions-' + vm.diffPolicies($index)">
-    <div layout="row" layout-align="space-between start">
-      <thinkbig-feed-data-policies-validators-standardisers policy="policy"></thinkbig-feed-data-policies-validators-standardisers>
-      <thinkbig-feed-data-policies-validators-standardisers ng-if="vm.versions" policy-idx="$index"></thinkbig-feed-data-policies-validators-standardisers>
-    </div>
+  <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10 layout-padding-right-4 layout-padding-top-1">
+    <div layout="row" ng-class="'versions-' + vm.diffPolicies($index)">
+      <div flex class="">
+        <div ng-if="vm.getAllFieldPolicies(policy).length <= 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:2">{{rule.name}}</div>
+        <div ng-if="vm.getAllFieldPolicies(policy).length > 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:1">{{rule.name}}</div>
+        <div ng-if="vm.getAllFieldPolicies(policy).length > 2">
+          + {{vm.getAllFieldPolicies(policy).length - 1}} More
+        </div>
+      </div>
 
+      <div flex class="" ng-if="vm.versions">
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length <= 2" ng-repeat="rule in vm.getAllVersionedFieldPolicies($index) | limitTo:2">{{rule.name}}</div>
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length > 2" ng-repeat="rule in vm.getAllVersionedFieldPolicies($index) | limitTo:1">{{rule.name}}</div>
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length > 2">
+          + {{vm.getAllVersionedFieldPolicies($index).length - 1}} More
+        </div>
+      </div>
+
+    </div>
     <md-tooltip
         class="tooltip-multi-line"
         ng-class="{'versions-tooltip': vm.versions}"

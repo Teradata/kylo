@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.provenance;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,9 @@ package com.thinkbiganalytics.nifi.provenance;
  */
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
 
@@ -36,6 +38,8 @@ import java.util.Map;
  */
 public class ProvenanceEventRecordConverter implements Serializable {
 
+    private static final long serialVersionUID = -5171655677407369400L;
+
 
     public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();
@@ -43,6 +47,11 @@ public class ProvenanceEventRecordConverter implements Serializable {
         return dto;
     }
 
+    private static void addAttributeIfNotBlank(ProvenanceEventRecordDTO dto, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            dto.getUpdatedAttributes().put(key, value);
+        }
+    }
 
     public static void populateEvent(ProvenanceEventRecordDTO dto, ProvenanceEventRecord event) {
 
@@ -62,6 +71,10 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setRelationship(event.getRelationship());
 
         dto.setUpdatedAttributes(updatedAttrs);
+        //add in the other attribues
+        addAttributeIfNotBlank(dto, "transitUri", event.getTransitUri());
+        addAttributeIfNotBlank(dto, "sourceSystemFlowFileIdentifier", ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event));
+
         dto.setPreviousAttributes(previousAttrs);
         dto.setAttributeMap(event.getAttributes());
 

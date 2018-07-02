@@ -20,11 +20,14 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
+import com.thinkbiganalytics.cluster.MessageDeliveryStatus;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionListener;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -72,6 +75,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
@@ -175,6 +179,9 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
      */
     private Map<String, NiFiFlowCacheSync> syncMap = new ConcurrentHashMap<>();
 
+  //  Cache<String, MessageDeliveryStatus> syncMap = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).build();
+
+
 
     /**
      * Map with the sync Id and the last time that item was sync'd with the system
@@ -184,12 +191,21 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     private DateTime lastUpdated = null;
 
+    private  ScheduledExecutorService expireCacheTimerService;
+
     @PostConstruct
     private void init() {
         nifiConnectionService.subscribeConnectionListener(this);
         startup.subscribe(this);
         initExpireTimerThread();
         initializeLatestSnapshot();
+    }
+
+    @PreDestroy
+    private void destroy(){
+        if(expireCacheTimerService != null){
+            expireCacheTimerService.shutdown();
+        }
     }
 
 
@@ -882,9 +898,10 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     private void initExpireTimerThread() {
         long timer = 30; // run ever 30 sec to check and expire
-        ScheduledExecutorService service = Executors
+       expireCacheTimerService = Executors
             .newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(() -> {
+
+        expireCacheTimerService.scheduleAtFixedRate(() -> {
             checkAndExpireUnusedCache();
         }, timer, timer, TimeUnit.SECONDS);
 

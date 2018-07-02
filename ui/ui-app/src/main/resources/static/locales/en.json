@@ -29,6 +29,8 @@
     "views.main.adminTitle": "Admin",
     "views.main.feedManagerTitle": "Feed Manager",
     "views.main.opsManagerTitle": "Operations",
+    "views.main.repository": "Repository",
+    "views.main.repository-narrow": "Repo",
     "views.main.access-denied": "Access Deined",
     "views.main.got-it": "Got it!",
     "views.main.accessCategories": "Access Categories",
@@ -187,6 +189,7 @@
     "views.feed-details.FS": "Feed Summary",
     "views.feed-details.Disable": "Disable",
     "views.feed-details.Enable": "Enable",
+    "views.feed-details.StartFeed": "Start now",
     "views.feed-details.Delete": "Delete...",
     "views.feed-details.Upload": "Upload...",
     "views.feed-details.Export": "Export",
@@ -263,7 +266,7 @@
     "views.feed-activity-template.1Y": "1 Year",
 
     "views.feeds.feed-details.Jobs": "Jobs",
-    "views.feeds.feed-details.FD": "Feed Details",
+    "views.feeds.feed-details.FD": "Job Summary",
     "views.feeds.feed-details.Completed": "COMPLETED",
     "views.feeds.feed-details.Running": "RUNNING",
     "views.feeds.feed-details.Failed": "FAILED",
@@ -273,6 +276,8 @@
     "views.feeds.feed-details.FM": "Feed Manager",
     "views.feeds.feed-details.FeedD": "Feed Details",
     "views.feeds.feed-details.LF": "Loading Feed ...",
+    "views.feeds.feed-details.db.describe-table-dialog.Title":"Analyzing the table ",
+    "views.feeds.feed-details.db.describe-table-dialog.Message":"Analyzing the table and determining the schema and data types.  Please be patient",
 
     "views.all-page.Rows_per_page": "Rows per page",
 
@@ -307,7 +312,9 @@
     "views.feed-data-policies.TF": "Target Format",
     "views.feed-data-policies.Co": "Compression options",
     "views.feed-data-policies.Sh": "Skip header",
-    "views.feed-data-policies.Rip": "Reindexing In Progress",
+    "views.feed-data-policies.Rip": "Reindexing In Progress?",
+    "views.feed-data-policies.Rip.Yes": "Yes",
+    "views.feed-data-policies.Rip.No": "No",
     "views.feed-data-policies.Rls": "Reindexing Last Status",
     "views.feed-data-policies.SFRF2": "Source Feed Record Format",
     "views.feed-data-policies.DTN2": "Destination Table Name",
@@ -327,7 +334,7 @@
     "views.feed-data-policies.Index2": "Index",
     "view.feed-data-policies.Index2Star": "Index(*)",
     "views.feed-data-policies.DwsbstGS2": "Define what should be sent to «Global Search»",
-    "views.feed-data-policies.HripCd": "History data reindexing is in progress. Changes will be allowed after completion.",
+    "views.feed-data-policies.HripCd": "History data reindexing changes already pending. Further indexing changes will be allowed after those have completed.",
     "views.feed-data-policies.Profile2": "Profile",
     "views.feed-data-policies.Stfbp2": "Should this field be profiled?",
     "views.feed-data-policies.Standardize2": "Standardize",
@@ -579,6 +586,8 @@
     "views.alerts-template.ALERT2": "Alerts",
     "views.alerts-template.ALERT5": "Alerts",
     "views.alerts-template. Job Failure": "Job Failure",
+    "views.alerts-template. Service": "Service Failure",
+    "views.alerts-template. Sla Violation": "SLA",
 
     "views.vertical-section-layout-template.Delete": "Delete",
     "views.vertical-section-layout-template.Cancel": "Cancel",
@@ -611,7 +620,7 @@
     "view.login.Password": "Password",
     "view.login.Pir": "Password is required",
     "view.login.Login-btn": "Login",
-    "view.login-app.Invalid username or password.": "Invalid username or password.",
+    "view.login-app.login-error": "Invalid username or password.",
 
     "views.module.Categories": "Categories",
 
@@ -641,9 +650,12 @@
     "views.query-table-header.sort-descending": "Sort Descending",
     "views.query-table-header.remove-sort": "Remove Sort",
     "views.query-table-header.hide-column": "Hide Column",
+    "views.query-table-header.clone-column": "Clone Column",
     "views.query-table-header.rename-column": "Rename Column",
     "views.query-table-header.filter": "Filter",
+    "views.query-table-header.filter-apply" : "Apply",
     "views.query-table-header.transform": "Transform",
+    "views.query-table-header.analyze": "Analyze...",
     "view.FeedService.Fss": "Feed successfully saved",
 
     "view.feed-stats-charts.Time": "Time",
@@ -657,6 +669,7 @@
     "view.search.Title": "Title",
     "view.search.System name (Kylo)": "System name (Kylo)",
     "view.search.Description": "Description",
+    "view.search.User properties": "User properties",
 
     "views.job-details.JE": "Job Execution",
     "views.job-details-template.ED": "Exit Description",
@@ -711,7 +724,7 @@
     "views.job-details-template.EC": "Exit Code",
 
     "views.about.Version": "Version:",
-    "views.about.Close": "Close:",
+    "views.about.Close": "Close",
 
     "views.feed-stats-charts.Last Minute": "Last Minute",
     "views.feed-stats-charts.Last 3 Minutes": "Last 3 Minutes",
@@ -760,6 +773,9 @@
     "views.feed-stats-charts.Failed Events": "Failed Events",
     "views.feed-stats-charts.Processor": "Processor",
     "views.feed-stats-charts.Errors": "Errors",
+
+    "views.repository.templates": "Templates",
+    "views.repository.feeds": "Feeds",
 
     "views.feed-details-delete-dialogDelete": "Delete",
     "views.feed-details-delete-dialogDelete2": "All data for this feed will be permanently deleted.",
@@ -822,6 +838,7 @@
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
+    "dirPagination.tpl.100": "100",
     "dirPagination.tpl.All": "All"
 
 

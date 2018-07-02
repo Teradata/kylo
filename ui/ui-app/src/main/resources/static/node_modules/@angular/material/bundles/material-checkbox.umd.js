@@ -221,7 +221,7 @@ var MatCheckbox = /** @class */ (function (_super) {
     function () {
         var _this = this;
         this._focusMonitor
-            .monitor(this._inputElement.nativeElement, false)
+            .monitor(this._inputElement.nativeElement)
             .subscribe(function (focusOrigin) { return _this._onInputFocusChange(focusOrigin); });
     };
     /**

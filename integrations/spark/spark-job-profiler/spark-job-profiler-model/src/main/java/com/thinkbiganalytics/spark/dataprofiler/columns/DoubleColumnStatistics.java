@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of double data type <br>
  * [Hive data type: DOUBLE]
  */
-@SuppressWarnings("serial")
 public class DoubleColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -839931257398277201L;
 
     /* Double specific metrics */
     private double max;
@@ -192,14 +193,8 @@ public class DoubleColumnStatistics extends StandardColumnStatistics {
                + "]\n}";
     }
 
-
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
 
         if (allNulls()) {
@@ -217,9 +212,8 @@ public class DoubleColumnStatistics extends StandardColumnStatistics {
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
-        return rows;
-    }
 
+    }
 
     /**
      * Get maximum value

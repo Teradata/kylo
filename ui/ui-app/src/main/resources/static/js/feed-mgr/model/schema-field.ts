@@ -70,6 +70,7 @@ export class SchemaField {
 
     /**
      * Tags assigned to this column.
+     * //{ name: string }
      */
-    tags?: { name: string };
+    tags?: any[];
 }

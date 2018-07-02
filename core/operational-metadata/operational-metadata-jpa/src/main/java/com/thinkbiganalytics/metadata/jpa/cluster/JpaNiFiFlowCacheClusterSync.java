@@ -144,6 +144,8 @@ public class JpaNiFiFlowCacheClusterSync implements NiFiFlowCacheClusterSync {
     @Embeddable
     public static class NiFiFlowCacheKey implements Serializable {
 
+        private static final long serialVersionUID = -9135627079696305561L;
+
         @Column(name = "KYLO_CLUSTER_ADDRESS")
         private String clusterAddress;
 

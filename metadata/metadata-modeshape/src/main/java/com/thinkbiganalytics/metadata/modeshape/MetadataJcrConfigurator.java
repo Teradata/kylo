@@ -82,7 +82,9 @@ public class MetadataJcrConfigurator {
 
         for (PostMetadataConfigAction action : this.postConfigActions) {
             // TODO: catch exceptions and continue?  Currently propagates runtime exceptions and will fail startup.
+            log.info("Starting post metadata config action: {}...", action.getClass().getName());
             action.run();
+            log.info("Finished post metadata config action: {}", action.getClass().getName());
         }
     }
 

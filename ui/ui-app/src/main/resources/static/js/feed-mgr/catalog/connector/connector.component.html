@@ -1,0 +1,66 @@
+<ng-container>
+
+  <mat-card>
+    <mat-card-title fxLayout="row" fxLayoutAlign=" center">
+      <div>
+        <ng-md-icon
+            class="card-title-icon"
+            [icon]="connector.icon ? connector.icon : 'fa-database'"
+            [ngClass]="connector.color ? 'tc-'+connector.color : 'icon-component'" size="30"></ng-md-icon>
+      </div>
+      <div class="card-title-text">{{connector.title}}</div>
+    </mat-card-title>
+    <mat-card-subtitle>Create new '{{connector.title}}' data source</mat-card-subtitle>
+    <mat-divider></mat-divider>
+
+    <mat-card-content>
+      <form>
+        <div fxLayout="column">
+          <mat-form-field fxFlex="100">
+            <input
+                matInput type="text"
+                placeholder="Title"
+                required
+                autocomplete="new-password"
+                [formControl]="titleControl"/>
+            <mat-error *ngIf="titleControl.hasError('required')">Required</mat-error>
+          </mat-form-field>
+
+          <ng-template let-element let-last="last" ngFor [ngForOf]="connector.options">
+            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}">
+              <input
+                  *ngIf="isInputType(element)"
+                  matInput type="{{element.type}}"
+                  placeholder="{{element.label}}"
+                  required="{{element.required ? element.required : 'required'}}"
+                  autocomplete="new-password"
+                  [formControl]="getControl(element)"/>
+
+              <mat-select
+                  *ngIf="isSelectType(element)"
+                  placeholder="{{element.label}}"
+                  required="{{element.required ? element.required : 'required'}}"
+                  [formControl]="getControl(element)">
+                <ng-template let-option ngFor [ngForOf]="element.selections">
+                  <mat-option value="{{option.value}}">{{option.label}}</mat-option>
+                </ng-template>
+              </mat-select>
+
+
+              <mat-error *ngIf="getControl(element).hasError('required')">Required</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url')">Invalid Url</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url-protocol')">Invalid Url Protocol</mat-error>
+              <mat-hint *ngIf="element.hint">{{element.hint}}</mat-hint>
+            </mat-form-field>
+          </ng-template>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button mat-raised-button color="primary" class="text-upper"
+              [disabled]="isFormInvalid() || isLoading"
+              (click)="createDatasource()">Save</button>
+    </mat-card-actions>
+  </mat-card>
+</ng-container>

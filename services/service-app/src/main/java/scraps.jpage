@@ -1,0 +1,16 @@
+
+
+File classesFile = new File("/Users/SF186028/projects/kylo/non-ser-id-classes.txt");
+try (BufferedReader reader = new BufferedReader(new FileReader(classesFile))) {
+    String name = reader.readLine();
+    
+    while (name != null) {
+        Class<?> cls = Class.forName(name);
+        long sid = ObjectStreamClass.lookup(cls).getSerialVersionUID();
+        System.out.println(name + "  " + Long.toString(sid));
+        name = reader.readLine();
+    }
+}
+
+
+

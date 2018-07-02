@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,6 +55,7 @@ public class ExecuteSparkJobTest {
     @Before
     public void setUp() {
         // Setup test runner
+        runner.setProperty(ExecuteSparkJob.SPARK_HOME, System.getProperty("java.io.tmpdir"));
         runner.setProperty(ExecuteSparkJob.APPLICATION_JAR, "file:///home/app.jar");
         runner.setProperty(ExecuteSparkJob.MAIN_CLASS, "com.example.App");
         runner.setProperty(ExecuteSparkJob.MAIN_ARGS, "run");
@@ -128,6 +129,19 @@ public class ExecuteSparkJobTest {
         Assert.assertTrue(results.contains("'MainClass' is invalid because MainClass is required"));
         Assert.assertTrue(results.contains("'MainArgs' is invalid because MainArgs is required"));
         Assert.assertTrue(results.contains("'Spark Application Name' is invalid because Spark Application Name is required"));
+    }
+
+    @Test
+    public void testLeadingSpaces() {
+        runner.setProperty(ExecuteSparkJob.SPARK_HOME, " " + System.getProperty("java.io.tmpdir"));
+
+        final Set<String> results = ((MockProcessContext) runner.getProcessContext()).validate().stream().map(Object::toString).collect(Collectors.toSet());
+        Assert.assertEquals(1, results.size());
+        results.stream().forEach( invalidResult -> {
+            Assert.assertTrue(invalidResult.contains("'SparkHome' validated against "));
+            Assert.assertTrue(invalidResult.contains(" is invalid because File  "));
+            Assert.assertTrue(invalidResult.contains(" does not exist"));
+        });
     }
 
     /**

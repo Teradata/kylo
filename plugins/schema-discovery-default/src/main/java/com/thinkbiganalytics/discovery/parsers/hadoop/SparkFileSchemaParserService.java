@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,10 +20,11 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
+import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
@@ -73,15 +74,16 @@ public class SparkFileSchemaParserService {
     @Inject
     private SparkShellRestClient restClient;
 
+
     /**
      * Delegate to spark shell service to load the file into a temporary table and loading it
      */
-    public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+    public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType, SparkCommandBuilder commandBuilder) throws IOException {
 
         File tempFile = toFile(inputStream);
         try {
             SparkShellProcess shellProcess = shellProcessManager.getSystemProcess();
-            TransformResponse response = restClient.transform(shellProcess, createTransformRequest(tempFile, fileType));
+            TransformResponse response = restClient.transform(shellProcess, createTransformRequest(tempFile, fileType, commandBuilder));
             while (response.getStatus() != TransformResponse.Status.SUCCESS) {
                 if (response.getStatus() == TransformResponse.Status.ERROR) {
                     throw new IOException("Failed to process data [" + response.getMessage() + "]");
@@ -107,41 +109,49 @@ public class SparkFileSchemaParserService {
     }
     // Port: 8450
 
-    private TransformRequest createTransformRequest(File localFile, SparkFileType fileType) {
+    public SampleFileSparkScript getSparkScript(InputStream inputStream, SparkFileType fileType, SparkCommandBuilder commandBuilder) throws IOException {
+        File tempFile = toFile(inputStream);
+       return getSparkScript(tempFile,fileType,commandBuilder);
+    }
+
+    public SampleFileSparkScript getSparkScript(List<String> filePaths,  SparkCommandBuilder commandBuilder){
+        String script = toScript(filePaths, commandBuilder);
+        return new SampleFileSparkScript(filePaths, script);
+    }
+
+    public SampleFileSparkScript getSparkScript(File tempFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) throws IOException {
+        String script = toScript(tempFile, fileType, commandBuilder);
+        SampleFileSparkScript sparkScript = new SampleFileSparkScript(tempFile.getPath(), script);
+        return sparkScript;
+    }
+
+    public TransformRequest createTransformRequest(File localFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) {
         TransformRequest transformRequest = new TransformRequest();
-        transformRequest.setScript(toScript(localFile, fileType));
+        transformRequest.setScript(toScript(localFile, fileType, commandBuilder));
         return transformRequest;
     }
 
-    private String toScript(File localFile, SparkFileType fileType) {
+    private String toScript(File localFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) {
         String path = "file://" + localFile.getAbsolutePath();
+        return toScript(Lists.newArrayList(path),commandBuilder);
+    }
+
+    private String toScript(List<String> paths,SparkCommandBuilder commandBuilder) {
+
         // IDE testing:
         //path = "file:///var/sample/signups.orc";
         //path = "file:///var/sample/HiveGroup.parquet";
         StringBuffer sb = new StringBuffer();
-        sb.append("import sqlContext.implicits._\n");
-        sb.append("import org.apache.spark.sql._\n");
-
-        String method;
-        switch (fileType) {
-            case AVRO:
-                method = "avro";
-                sb.append("import com.databricks.spark.avro._\n");
-                sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
-                break;
-            case JSON:
-                method = "json";
-                break;
-            case PARQUET:
-                method = "parquet";
-                break;
-            case ORC:
-                method = "orc";
-                break;
-            default:
-                throw new UnsupportedOperationException("Type not supported [" + fileType + "]");
+        //sb.append("import sqlContext.implicits._\n");
+        //sb.append("import org.apache.spark.sql._\n");
+        if(paths.size() >1) {
+            sb.append(commandBuilder.build(paths));
         }
-        sb.append(String.format("sqlContext.read.%s(\"%s\").limit(10).toDF()", method, path));
+        else {
+            sb.append(commandBuilder.build(paths.get(0)));
+        }
+
+        log.info("Script {}", sb.toString());
         return sb.toString();
     }
 
@@ -205,7 +215,7 @@ public class SparkFileSchemaParserService {
         return schema;
     }
 
-    private File toFile(InputStream is) throws IOException {
+    public File toFile(InputStream is) throws IOException {
         File tempFile = File.createTempFile("kylo-spark-parser", ".dat");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
@@ -214,7 +224,5 @@ public class SparkFileSchemaParserService {
         return tempFile;
     }
 
-    public enum SparkFileType {
-        PARQUET, AVRO, JSON, ORC
-    }
+
 }

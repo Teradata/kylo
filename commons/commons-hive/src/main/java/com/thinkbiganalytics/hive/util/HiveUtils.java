@@ -54,6 +54,21 @@ public class HiveUtils {
     }
 
     /**
+     * Quotes a data type fieldnames for struct
+     *
+     * @param dataType the dataType
+     */
+    public static String quoteDataType(@Nonnull final String dataType) {
+        String result = dataType.toLowerCase();
+        if (result.toLowerCase().contains("struct<")) {
+            String nameFinderRegex = "(?<=struct\\<|,)(.*?)(?=:)";
+            result = result.replaceAll(nameFinderRegex, "`$0`");
+        }
+        return result;
+    }
+
+
+    /**
      * Quotes the specified Hive identifiers. This method is commonly used to reference a specific table in a specific database.
      *
      * <p>If the first argument is not {@code null}, then the result will be in the format: `first`.`second`. Otherwise, the

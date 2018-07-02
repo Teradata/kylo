@@ -25,6 +25,7 @@ package com.thinkbiganalytics.metadata.jpa;
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.metadata.jpa.feed.AugmentableQueryRepositoryFactoryBean;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.security.AccessController;
@@ -37,6 +38,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import javax.sql.DataSource;
 
@@ -45,6 +48,12 @@ import reactor.bus.EventBus;
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @Configuration
+@PropertySource("classpath:test-application.properties")
+@EnableJpaRepositories(
+    basePackages = {"com.thinkbiganalytics.metadata.jpa", "com.thinkbiganalytics.metadata.jpa.feed.security"},
+    transactionManagerRef = "operationalMetadataTransactionManager",
+    entityManagerFactoryRef = "operationalMetadataEntityManagerFactory",
+    repositoryFactoryBeanClass = AugmentableQueryRepositoryFactoryBean.class)
 public class TestJpaConfiguration {
 
     @Bean
@@ -68,7 +77,7 @@ public class TestJpaConfiguration {
      */
     @Bean(name = "dataSource")
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource", locations = "classpath:test-application.properties")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         DataSource newDataSource = DataSourceBuilder.create().build();
 

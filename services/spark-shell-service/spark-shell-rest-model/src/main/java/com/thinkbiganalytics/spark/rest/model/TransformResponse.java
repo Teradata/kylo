@@ -67,6 +67,16 @@ public class TransformResponse {
     private String table;
 
     /**
+     * Actual rows in underlying resultset (may be different than results returned to client due to paging)
+     */
+    private Integer actualRows;
+
+    /**
+     * Actual cols in underlying resultset (may be different than results returned to client due to paging)
+     */
+    private Integer actualCols;
+
+    /**
      * Gets the error message.
      *
      * @return the error message
@@ -172,6 +182,30 @@ public class TransformResponse {
      */
     public void setTable(String table) {
         this.table = table;
+    }
+
+    /**
+     * Actual rows returned by the query but may be different than results due to paging
+     * @return rows
+     */
+    public Integer getActualRows() {
+        return actualRows;
+    }
+
+    public void setActualRows(Integer actualRows) {
+        this.actualRows = actualRows;
+    }
+
+    /**
+     * Actual cols returned by the query but may be different than results due to paging
+     * @return cols
+     */
+    public Integer getActualCols() {
+        return actualCols;
+    }
+
+    public void setActualCols(Integer actualCols) {
+        this.actualCols = actualCols;
     }
 
     /**

@@ -50,6 +50,29 @@ public interface NiFiRemoteProcessGroupsRestClient {
     @Nonnull
     Optional<RemoteProcessGroupDTO> findById(@Nonnull String processGroupId);
 
+    /**
+     * Enable (set transmitting = true)
+     * @param remoteProcessGroupId the remote process group id
+     * @return the updated remote process group, if found and updated
+     */
+    Optional<RemoteProcessGroupDTO> enable(String remoteProcessGroupId);
+
+
+    /**
+     * Disable (set transmitting = false)
+     * @param remoteProcessGroupId the remote process group id
+     * @return the updated remote process group, if found and updated
+     */
+    Optional<RemoteProcessGroupDTO> disable(String remoteProcessGroupId);
+
+
+    /**
+     * Create a new process group under a parent
+     * @param processGroup the group to create.  the parentGroupId will be used to define where this remote group is created
+     * @return the remote process group
+     */
+    Optional<RemoteProcessGroupDTO> create(@Nonnull final RemoteProcessGroupDTO processGroup);
+
 
     /**
      * Updates a process group.
@@ -60,4 +83,12 @@ public interface NiFiRemoteProcessGroupsRestClient {
      */
     @Nonnull
     RemoteProcessGroupDTO update(@Nonnull RemoteProcessGroupDTO processGroup);
+
+
+    /**
+     * delete a RemoteProcessGroup
+     * @param remoteProcessGroupId the groupId to delete
+     * @return an optional remoteprocessgroup that was deleted
+     */
+    Optional<RemoteProcessGroupDTO> delete(@Nonnull final String remoteProcessGroupId);
 }

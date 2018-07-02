@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -64,6 +65,29 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     // TODO: Referencing the ops access provider is kind of ugly but is needed so that 
     // a it can be passed to each feed entity when they are constructed.
     private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
+    
+    
+    /**
+     * Constructs a JcrCategory instance starting with either its base node or a child node, and an
+     * optional FeedOpsAccessControlProvider.
+     * @param node a tba:category type node or one of its child nodes
+     * @param accessPvdr the optional provider
+     * @return a new JcrCategory instance wrapping its derived base node
+     */
+    public static JcrCategory createCategory(Node node, Optional<FeedOpsAccessControlProvider> accessPvdr) {
+        Node baseNode = node;
+        if (JcrUtil.isNodeType(node, CategoryDetails.NODE_TYPE)) {
+            baseNode = JcrUtil.getParent(node);
+        } else if (! JcrUtil.isNodeType(node, JcrCategory.NODE_TYPE)) {
+            throw new IllegalArgumentException("Unexpected node type for category: " + node);
+        }
+        final Node catNode = baseNode;
+        
+        return accessPvdr
+            .map(pvdr -> JcrUtil.createJcrObject(catNode, JcrCategory.class, pvdr))
+            .orElse(JcrUtil.createJcrObject(catNode, JcrCategory.class));
+
+    }
 
     public JcrCategory(Node node) {
         super(node);
@@ -209,13 +233,14 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     @Override
-    public String getAllowIndexing() {
-        return super.getProperty(ALLOW_INDEXING, String.class);
+    public boolean isAllowIndexing() {
+        String allowIndexing = JcrPropertyUtil.getProperty(getNode(),ALLOW_INDEXING, "Y"); //returns Y if property doesn't exist
+        return allowIndexing.equals("Y");
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
-        super.setProperty(ALLOW_INDEXING, allowIndexing);
+    public void setAllowIndexing(boolean allowIndexing) {
+        super.setProperty(ALLOW_INDEXING, allowIndexing?"Y":"N");
     }
 
     @Override

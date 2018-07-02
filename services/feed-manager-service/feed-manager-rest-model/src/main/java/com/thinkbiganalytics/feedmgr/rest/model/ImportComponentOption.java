@@ -26,6 +26,7 @@ import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class ImportComponentOption {
@@ -75,6 +76,11 @@ public class ImportComponentOption {
      * connection information describing the output port to input port mapping
      */
     private List<ReusableTemplateConnectionInfo> connectionInfo;
+
+    /**
+     * List of input ports on a reusable template that should be created as remote input ports in the nifi cavans
+     */
+    private List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts;
 
 
     /**
@@ -197,7 +203,26 @@ public class ImportComponentOption {
             connectionInfo.stream().filter(connectionInfo1 -> !hasReusableConnection(connectionInfo1)).forEach(connectionInfo1 -> getConnectionInfo().add(connectionInfo1));
         }
     }
+    public void addRemoteProcessGroupInputPorts(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts) {
+        if(remoteProcessGroupInputPorts != null){
+            remoteProcessGroupInputPorts.stream().filter(port -> !getRemoteProcessGroupInputPorts().contains(port)).forEach(port -> getRemoteProcessGroupInputPorts().add(port));
+        }
+    }
     public void setConnectionInfo(List<ReusableTemplateConnectionInfo> connectionInfo) {
         this.connectionInfo = connectionInfo;
+    }
+
+    public List<RemoteProcessGroupInputPort> getRemoteProcessGroupInputPorts() {
+        if(remoteProcessGroupInputPorts == null){
+            remoteProcessGroupInputPorts = new ArrayList<>();
+        }
+        return remoteProcessGroupInputPorts;
+    }
+
+    public List<RemoteProcessGroupInputPort> getRemoteProcessGroupInputPortsForTemplate(String template) {
+        return getRemoteProcessGroupInputPorts().stream().filter(inputPort -> inputPort.getTemplateName().equalsIgnoreCase(template)).collect(Collectors.toList());
+    }
+    public void setRemoteProcessGroupInputPorts(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts) {
+        this.remoteProcessGroupInputPorts = remoteProcessGroupInputPorts;
     }
 }

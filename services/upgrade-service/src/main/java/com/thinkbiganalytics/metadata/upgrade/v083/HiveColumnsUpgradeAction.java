@@ -23,15 +23,17 @@ package com.thinkbiganalytics.metadata.upgrade.v083;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -51,9 +53,12 @@ import javax.inject.Inject;
  */
 @Component("hiveColumnsUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
+@Order(HiveColumnsUpgradeAction.UPGRADE_ORDER) 
 public class HiveColumnsUpgradeAction implements UpgradeState {
-
+    
     private static final Logger log = LoggerFactory.getLogger(HiveColumnsUpgradeAction.class);
+    
+    public static final int UPGRADE_ORDER = 83 + 2;  // Run second in v0.8.3
 
     /**
      * Provides access to datasources
@@ -65,7 +70,10 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
      * Provides access to feeds
      */
     @Inject
-    private FeedManagerFeedService feedService;
+    private FeedProvider feedProvider;
+    
+    @Inject
+    private FeedModelTransform modelTransform;
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
@@ -76,7 +84,8 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
     public void upgradeTo(final KyloVersion startingVersion) {
         log.info("Upgrading hive columns from version: {}", startingVersion);
 
-        feedService.getFeeds().stream()
+        feedProvider.getFeeds().stream()
+            .map(domain -> modelTransform.deserializeFeedMetadata(domain))
             .filter(feed -> Optional.ofNullable(feed.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent())
             .forEach(feed -> {
                 final TableSchema schema = feed.getTable().getTableSchema();

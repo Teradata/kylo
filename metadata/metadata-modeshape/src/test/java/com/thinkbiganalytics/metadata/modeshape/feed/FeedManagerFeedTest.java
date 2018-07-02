@@ -41,8 +41,10 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.testng.Assert;
 
 import java.util.HashSet;
@@ -52,8 +54,9 @@ import java.util.Set;
 import javax.inject.Inject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class},loader=AnnotationConfigContextLoader.class,inheritInitializers = false)
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FeedManagerFeedTest {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerFeedTest.class);
@@ -68,7 +71,7 @@ public class FeedManagerFeedTest {
     private DatasourceProvider datasourceProvider;
 
     @Inject
-    private JcrMetadataAccess metadata;
+    private MetadataAccess metadata;
 
     @Inject
     private FeedTestUtil feedTestUtil;
@@ -159,9 +162,9 @@ public class FeedManagerFeedTest {
 
     @Test
     public void testFeedDatasource() {
-        String categorySystemName = "my_category";
-        String feedName = "my_feed";
-        String templateName = "my_template";
+        String categorySystemName = "my_category2";
+        String feedName = "my_feed2";
+        String templateName = "my_template2";
         String description = " my feed description";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
 //        boolean isDefineTable = true;
@@ -208,9 +211,9 @@ public class FeedManagerFeedTest {
 
     @Test
     public void testFeedTemplates() {
-        String categorySystemName = "my_category";
-        String feedName = "my_feed";
-        String templateName = "my_template";
+        String categorySystemName = "my_category1";
+        String feedName = "my_feed1";
+        String templateName = "my_template1";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
 
         //try to delete the template.  This should fail since there are feeds attached to it

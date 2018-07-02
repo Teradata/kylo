@@ -31,6 +31,8 @@ import javax.annotation.Nonnull;
  */
 public class CleansedRowResult implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Nonnull
     private final Row row;
 
@@ -56,5 +58,24 @@ public class CleansedRowResult implements Serializable {
 
     public boolean isRowValid() {
         return rowIsValid;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("CleansedRowResult{");
+        sb.append("row=").append(row);
+        sb.append(", columnsValid=");
+        if (columnsValid == null) {
+            sb.append("null");
+        } else {
+            sb.append('[');
+            for (int i = 0; i < columnsValid.length; ++i) {
+                sb.append(i == 0 ? "" : ", ").append(columnsValid[i]);
+            }
+            sb.append(']');
+        }
+        sb.append(", rowIsValid=").append(rowIsValid);
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.service.template.importing.importprocess;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
@@ -130,6 +131,7 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         //after the templates are created we then connect the templates
         if (!this.importTemplateOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).hasErrorMessages()) {
             if (!importedReusableTemplates.isEmpty()) {
+                templateConnectionUtil.ensureReusableTemplateProcessGroup();
                 connectReusableTemplates();
             } else {
                 importTemplate.setSuccess(true);
@@ -182,16 +184,33 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         //now connect these
         boolean validConnections = true;
         for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
-            validConnections &= importReusableTemplate.connectAndValidate();
-            if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {
-                importReusableTemplate.getImportTemplate().getReusableTemplateConnections().stream().forEach(connectionInfo -> this.importTemplate.addReusableTemplateConnection(connectionInfo));
-                this.importTemplate.setReusableFlowOutputPortConnectionsNeeded(true);
+            ImportComponentOption remoteProcessGroupOption = importReusableTemplate.getImportTemplateOptions().findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
+            //first validate the remote inputs if they exist
+            if (validConnections && remoteProcessGroupOption.isShouldImport()) {
+                validConnections &= importReusableTemplate.validateRemoteInputPorts(remoteProcessGroupOption);
+                if (importReusableTemplate.getImportTemplate().isRemoteProcessGroupInputPortsNeeded()) {
+                    importReusableTemplate.getImportTemplate().getRemoteProcessGroupInputPortNames().stream()
+                        .forEach(connectionInfo -> this.importTemplate.addRemoteProcessGroupInputPort(connectionInfo));
+                    this.importTemplate.setRemoteProcessGroupInputPortsNeeded(true);
+                }
             }
-            if (!validConnections) {
-                break;
+        }
+
+        if (validConnections) {
+
+            for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
+                validConnections &= importReusableTemplate.connectAndValidate();
+                if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {
+                    importReusableTemplate.getImportTemplate().getReusableTemplateConnections().stream().forEach(connectionInfo -> this.importTemplate.addReusableTemplateConnection(connectionInfo));
+                    this.importTemplate.setReusableFlowOutputPortConnectionsNeeded(true);
+                }
+                if (!validConnections) {
+                    break;
+                }
             }
         }
         if (validConnections) {
+
             for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
                 validConnections &= importReusableTemplate.validateInstance();
                 if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {
@@ -334,8 +353,10 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
                     statusMessage.update("Errors importing reusable template: Imported Reusable Template. " + lastReusableTemplate != null ? lastReusableTemplate.getTemplateName() : "");
                 }
             } catch (Exception e) {
-                log.error("Error importing reusable template from archive {}.  {} ", importTemplate.getFileName(), lastReusableTemplate != null ? lastReusableTemplate.getTemplateName() : "");
+                log.error("Error importing reusable template from archive {}.  {} ", importTemplate.getFileName(), lastReusableTemplate != null ? lastReusableTemplate.getTemplateName() : "", e);
                 importTemplate.setSuccess(false);
+                this.importTemplateOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).getErrorMessages()
+                    .add("Error importing reusable template from archive " + importTemplate.getFileName() + ". " + e.getMessage());
             }
         }
         uploadProgressService.completeSection(importOptions, ImportSection.Section.IMPORT_REUSABLE_TEMPLATE);

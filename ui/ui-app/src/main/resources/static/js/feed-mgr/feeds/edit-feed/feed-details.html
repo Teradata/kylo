@@ -82,6 +82,12 @@
                     {{"views.feed-details.Enable" | translate}}
                   </md-button>
                 </md-menu-item>
+                <md-menu-item  ng-if="vm.allowStart" ng-click="vm.startFeed()" >
+                  <md-button ng-disabled="(vm.startingFeed || self.allowStart)" >
+                    <ng-md-icon icon="play_circle_outline" class="orange" md-menu-align-target="""></ng-md-icon>
+                    {{"views.feed-details.StartFeed" | translate}}
+                  </md-button>
+                </md-menu-item>
                 <md-menu-item ng-click="vm.cloneFeed()" >
                   <md-button ng-disabled="!vm.allowEdit">
                     <ng-md-icon icon="content_copy" class="orange" md-menu-align-target=""></ng-md-icon>
@@ -132,7 +138,7 @@
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
 
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}">
                         <span ng-if="vm.model.state == 'ENABLED'">{{"views.feed-details.Enabled" | translate}}</span>
@@ -166,12 +172,30 @@
                     <span class="hint"> {{"views.feed-details.Category" | translate}} </span>
                 </div>
 
+                <!-- Most users won't want to see this level of detail
+                <div layout="column" class="layout-padding-top-bottom">
+                  <div>
+                    <span ng-if="vm.shouldIndexingOptionsBeDisabled()">{{"views.feed-data-policies.Rip.Yes" | translate}}</span>
+                    <span ng-if="vm.shouldIndexingOptionsBeEnabled()">{{"views.feed-data-policies.Rip.No" | translate}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rip" | translate}} </span>
+                </div>
+
+                <div layout="column" class="layout-padding-top-bottom" ng-if="vm.shouldIndexingOptionsBeEnabled()">
+                  <div>
+                    <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | capitalizeFirstLetterOfEachWord}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rls" | translate}} </span>
+                </div>
+                -->
+
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
-                <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div>
-                  <md-button class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
-                  <md-button ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
-              </div>
+               <!-- <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div> -->
+                  <md-button style="text-align:left" class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                  <md-button style="text-align:left"  ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                 <md-button style="text-align:left"  ng-repeat="item in vm.feedNavigationLinks" ng-click="vm.feedNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
+              <!-- </div> -->
 
               <md-divider ng-if="!vm.isNiFiRunning"></md-divider>
               <div layout="row" class="warn layout-padding-top-bottom" ng-if="!vm.isNiFiRunning">

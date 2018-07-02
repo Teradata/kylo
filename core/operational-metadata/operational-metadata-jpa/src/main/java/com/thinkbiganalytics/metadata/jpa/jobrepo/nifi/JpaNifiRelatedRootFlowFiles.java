@@ -98,6 +98,8 @@ public class JpaNifiRelatedRootFlowFiles implements NifiRelatedRootFlowFiles {
     @Embeddable
     public static class NifiRelatedFlowFilesPK implements Serializable {
 
+        private static final long serialVersionUID = -153279820265257805L;
+
         @Column(name = "FLOW_FILE_ID")
         private String flowFileId;
 

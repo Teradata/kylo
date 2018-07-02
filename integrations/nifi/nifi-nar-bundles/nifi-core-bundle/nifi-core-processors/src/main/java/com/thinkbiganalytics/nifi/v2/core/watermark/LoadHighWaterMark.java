@@ -60,31 +60,35 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         .name("activeFailure")
         .description("The water mark is actively being processed and has not yet been committed or rejected")
         .build();
+    
     protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[]{
-        new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later."),
+        new AllowableValue("YIELD", "Yield", "Yield the processor so that another attempt to obtain the high-water mark can be made later."),
         new AllowableValue("PENALIZE", "Penalize", "Penalize the flow file and return it to the queue that it came from so that another "
-                                                   + "attempt to obtain the high-water mark can be made later.  Performs a yield instead if this processor is the first in the flow."),
+                                                   + "attempt to obtain the high-water mark can be made later.  "
+                                                   + "Behaves the same as \"Yield\" if this processor is the first one in the flow."),
         new AllowableValue("ROUTE", "Route", "Route immediately to the \"activeFailure\" relationship.")
     };
+    
     protected static final AllowableValue[] MAX_YIELD_STRATEGY_VALUES = new AllowableValue[]{
         new AllowableValue("ROUTE_ACTIVE", "Route to activeFailure", "Routes the flow file to the \"activeFailure\" relationship"),
         new AllowableValue("CANCEL_PREVIOUS", "Cancel previous", "Cancels the actived water mark of any previous flow file, "
-                        + "reactivates the water mark for a new flow file, and routes to the \"success\" relationship.  "
+                        + "reactivates the water mark for the next flow file, and routes it to the \"success\" relationship.  "
                         + "Any in-flight flow file with pending commits will be ignored in favor of the newly routed flow file "),
                                                                                       };
     protected static final PropertyDescriptor ACTIVE_WATER_MARK_STRATEGY = new PropertyDescriptor.Builder()
         .name("Active Water Mark Strategy")
         .description("Specifies what strategy should be followed when an attempt to obtain the latest high-water mark fails because another "
-                     + "is flow already actively using it")
+                     + "flow file is already actively using it")
         .allowableValues(ACTIVE_STRATEGY_VALUES)
         .defaultValue("YIELD")
         .required(true)
         .build();
     protected static final PropertyDescriptor MAX_YIELD_COUNT = new PropertyDescriptor.Builder()
         .name("Max Yield Count")
-        .description("The maximum number of yields, if the yield strategy is selected, "
-                     + "that should be attempted before failures to obtain a high-water mark are routed to the \"active\" relationship "
-                     + "(routing never occurs if unset or less than zero)")
+        .description("The maximum number of yields/penalizations, if the yield strategy is selected, "
+                     + "that should be attempted before failures to obtain a high-water mark are handled according to "
+                     + "the \"Max Yield Count Strategy\" setting "
+                     + "(handling never occurs if unset or less than zero)")
         .required(false)
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .expressionLanguageSupported(true)

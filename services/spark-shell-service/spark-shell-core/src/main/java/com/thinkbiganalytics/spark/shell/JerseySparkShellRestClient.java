@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.shell;
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
+import com.thinkbiganalytics.spark.rest.model.DataSources;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
@@ -31,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -69,6 +70,12 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
      */
     private static final String TRANSFORM_PATH = "/api/v1/spark/shell/transform";
 
+
+    /**
+     * Path to make a Kylo Catalog transformation
+     */
+    private static final String KYLO_CATALOG_TRANSFORM_PATH = "/api/v1/spark/shell/transform/kylo-catalog";
+
     /**
      * Map of Spark Shell processes to Jersey REST clients
      */
@@ -89,10 +96,12 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
     @Nonnull
     @Override
-    public List<String> getDataSources(@Nonnull final SparkShellProcess process) {
-        final GenericType<List<String>> stringListType = new GenericType<List<String>>() {
-        };
-        return getClient(process).get("/api/v1/spark/shell/data-sources", Collections.emptyMap(), stringListType);
+    public DataSources getDataSources(@Nonnull final SparkShellProcess process) {
+        DataSources dataSources =
+            getClient(process).get("/api/v1/spark/shell/data-sources", Collections.emptyMap(), DataSources.class);
+
+        log.trace("{}", dataSources);
+        return dataSources;
     }
 
     @Nonnull
@@ -162,6 +171,16 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     public TransformResponse transform(@Nonnull final SparkShellProcess process, @Nonnull final TransformRequest request) {
         try {
             return getClient(process).post(TRANSFORM_PATH, request, TransformResponse.class);
+        } catch (final InternalServerErrorException e) {
+            throw propagateTransform(e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request) {
+        try {
+            return getClient(process).post(KYLO_CATALOG_TRANSFORM_PATH, request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
             throw propagateTransform(e);
         }

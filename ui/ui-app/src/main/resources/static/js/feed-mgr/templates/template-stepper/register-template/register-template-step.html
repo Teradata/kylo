@@ -109,7 +109,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
@@ -150,7 +149,17 @@
 
             </div>
 
-            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
+            <div layout="column" ng-if="!vm.remoteProcessGroupValidation.validatingPorts && !vm.remoteProcessGroupValidation.valid">
+                <md-subheader class="md-subhead left-aligned">Remote Process Group Issues</md-subheader>
+                <div layout="row" class="layout-padding-top-bottom">
+                        <span>
+                          <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
+                        </span>
+                    <span ng-bind-html="vm.remoteProcessGroupValidation.invalidMessage"></span>
+                </div>
+            </div>
+
+            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.remoteProcessGroupValidation.valid && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
                                    final-step="Register"
                                    on-click-final-button="vm.registerTemplate()">
             </thinkbig-step-buttons>

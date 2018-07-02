@@ -1,5 +1,7 @@
 import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
+import * as angular from "angular";
+import * as _ from "underscore";
 
 import {DIALOG_SERVICE} from "./api/index";
 import {SaveRequest, SaveResponse} from "./api/rest-model";
@@ -10,6 +12,42 @@ import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaFie
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
+import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+
+export class PageSpec {
+    firstRow : number;
+    numRows : number;
+    firstCol : number;
+    numCols : number;
+
+    public constructor (init?:Partial<PageSpec>) {
+        Object.assign(this, init);
+    }
+
+    equals(page: PageSpec) : boolean {
+        return JSON.stringify(this) === JSON.stringify(page);
+    }
+
+    static emptyPage() : PageSpec {
+        return new PageSpec({ firstRow:0, numRows: 0, firstCol: 0, numCols: 0 });
+    }
+
+    static defaultPage() : PageSpec {
+        return new PageSpec({ firstRow:0, numRows:64, firstCol: 0, numCols: 1000 });
+    }
+}
+
+export interface SampleFile{
+    /**
+     * the file
+     */
+    fileLocation:string;
+
+    /**
+     * Generated script from the server
+     */
+    script:string;
+}
 
 /**
  * Provides the ability to query and transform data.
@@ -20,6 +58,11 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * List of required data source ids.
      */
     protected datasources_: UserDatasource[];
+
+    /**
+     * The page of the dataset to display
+     */
+    protected pageSpec : PageSpec;
 
     /**
      * Transformation function definitions.
@@ -51,10 +94,21 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     protected source_: string;
 
+
+    protected sampleFile: SampleFile;
+
+    protected datasets:SparkDataSet[];
+
     /**
      * List of states.
      */
     protected states_: ScriptState<T>[] = [this.newState()];
+
+    /**
+     * Whether state has changed since last execution
+     * @type {boolean}
+     */
+    protected stateChanged = false;
 
     /**
      * Construct a {@code QueryEngine}.
@@ -91,6 +145,29 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         return true;
     }
 
+    getSampleFile(){
+        return this.sampleFile;
+    }
+
+    setSampleFile(file:SampleFile){
+        this.sampleFile = file;
+    }
+    hasSampleFile(): boolean {
+        return angular.isDefined(this.sampleFile) && this.sampleFile != null;
+    }
+
+    setDatasets(datasets:SparkDataSet[]){
+        this.datasets = datasets;
+    }
+
+    getDatasets(){
+        return this.datasets;
+    }
+
+    hasDatasets(){
+        return this.datasets && this.datasets.length >0;
+    }
+
     /**
      * Indicates if a previously undone transformation can be redone.
      *
@@ -99,6 +176,21 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     canRedo(): boolean {
         return (this.redo_.length !== 0);
     }
+
+    /**
+     * Whether state has changed
+     */
+    hasStateChanged(): boolean {
+        return this.stateChanged;
+    }
+
+    /**
+     * State executed
+     */
+    resetStateChange() : void {
+        this.stateChanged = false;
+    }
+
 
     /**
      * Indicates if the current transformation can be undone.
@@ -191,6 +283,14 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     getFieldPolicies(): any[] | null {
         return this.getState().fieldPolicies;
+    }
+
+    getActualRows() : number | null {
+        return this.getState().actualRows;
+    }
+
+    getActualCols() : number | null {
+        return this.getState().actualCols;
     }
 
     /**
@@ -307,6 +407,15 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     }
 
     /**
+     * Gets the cols
+     *
+     * @returns the rows or {@code null} if the transformation has not been applied
+     */
+    getCols(): QueryResultColumn[] | null {
+        return this.getState().columns;
+    }
+
+    /**
      * Gets the Spark script.
      *
      * @param start - the index of the first transformation
@@ -360,6 +469,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.limit_ = value;
+            this.stateChanged = true;
         }
         return this.limit_;
     }
@@ -387,7 +497,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         state.context = context;
         state.fieldPolicies = this.getState().fieldPolicies;
         state.script = this.parseAcornTree(tree);
+        state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
         this.states_.push(state);
+        this.stateChanged = true;
 
         // Clear redo states
         this.redo_ = [];
@@ -404,6 +516,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (this.redo_.length > 0) {
             let state = this.redo_.pop();
             this.states_.push(state);
+            this.stateChanged = true;
             return state.context;
         } else {
             throw new Error("No states to redo");
@@ -420,6 +533,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.sample_ = value;
+            this.stateChanged = true;
         }
         return this.sample_;
     }
@@ -482,16 +596,19 @@ export abstract class QueryEngine<T> implements WranglerEngine {
             state.script = src.script;
             this.states_.push(state);
         });
+        this.stateChanged = true;
     }
 
     /**
      * Sets the query and datasources.
      */
-    setQuery(query: string | object, datasources: UserDatasource[] = []): void {
+    setQuery(query: string | object, datasources: UserDatasource[] = [], pageSpec : PageSpec = null): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
         this.redo_ = [];
         this.source_ = this.parseQuery(query);
         this.states_ = [this.newState()];
+        this.pageSpec = pageSpec;
+        this.stateChanged = true;
     }
 
     /**
@@ -504,6 +621,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.limitBeforeSample_ = value;
+            this.stateChanged = true;
         }
         return this.limitBeforeSample_;
     }
@@ -535,7 +653,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      *
      * @return an observable for the response progress
      */
-    abstract transform(): Observable<any>;
+    abstract transform(pageSpec ?:PageSpec, doValidate ?: boolean, doProfile ?: boolean): Observable<any>;
 
     /**
      * Reverts to the previous transformation. The current transformation is remembered and may be restored.
@@ -549,6 +667,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (this.states_.length > 1) {
             let state = this.states_.pop();
             this.redo_.push(state);
+            this.stateChanged = true;
             return state.context;
         } else {
             throw new Error("No states to undo");
@@ -583,7 +702,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Gets the current state.
      */
-    protected getState(): ScriptState<T> {
+    public getState(): ScriptState<T> {
         return this.states_.length > 0 ? this.states_[this.states_.length - 1] : {} as ScriptState<T>;
     }
 
@@ -593,6 +712,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null};
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, tableState:(new Date()).getTime(), sort: null};
     }
+
+
 }
+

@@ -55,7 +55,7 @@ which chkconfig > /dev/null && echo "chkonfig" && return 0
 # ubuntu sysv
 which update-rc.d > /dev/null && echo "update-rc.d" && return 0
 echo "Couldn't recognize linux version, after installation you need to do these steps manually:"
-echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services,kylo-spark-shell} files"
+echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services} files"
 echo " * set them to autostart"
 }
 
@@ -73,7 +73,7 @@ chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
 pgrepMarkerKyloUi=kylo-ui-pgrep-marker
 pgrepMarkerKyloServices=kylo-services-pgrep-marker
-pgrepMarkerKyloSparkShell=kylo-spark-shell-pgrep-marker
+pgrepMarkerKyloInstallInspector=kylo-install-inspector-pgrep-marker
 rpmLogDir=$LOG_DIRECTORY_LOCATION
 
 echo "    - Install kylo-ui application"
@@ -95,7 +95,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
-java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
+java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --static.path=$INSTALL_HOME/kylo-ui/plugin/static/ --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
@@ -104,7 +104,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication  --static.path=$INSTALL_HOME/kylo-ui/plugin/static/ --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
@@ -213,6 +213,9 @@ elif [ "$linux_type" == "update-rc.d" ]; then
 fi
 echo "   - Added service 'kylo-ui'"
 echo "    - Completed kylo-ui install"
+
+
+
 
 echo "    - Install kylo-services application"
 
@@ -369,6 +372,7 @@ echo "   - Added service 'kylo-services'"
 
 echo "    - Completed kylo-services install"
 
+
 echo "    - Install kylo-spark-shell application"
 
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
@@ -414,60 +418,72 @@ spark-submit --master local --conf spark.driver.userClassPathFirst=true --class 
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
-echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"
+
+echo "    - Completed kylo-services install"
+
+
+
+
+echo "    - Install kylo-install-inspector application"
+cat << EOF > $INSTALL_HOME/kylo-install-inspector/bin/run-kylo-install-inspector.sh
+#!/bin/bash
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+
+java -cp java -jar ${INSTALL_HOME}/kylo-install-inspector/lib/* --inspections.path=${INSTALL_HOME}/kylo-install-inspector/inspections --pgrep-marker=$pgrepMarkerKyloInstallInspector > ${LOG_DIRECTORY_LOCATION}/kylo-install-inspector/std.out 2>${LOG_DIRECTORY_LOCATION}/kylo-install-inspector/std.err &
+EOF
+chmod +x ${INSTALL_HOME}/kylo-install-inspector/bin/run-kylo-install-inspector.sh
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
+cat << EOF > /etc/init.d/kylo-install-inspector
 #! /bin/sh
-# chkconfig: 345 98 20
-# description: kylo-spark-shell
-# processname: kylo-spark-shell
+# chkconfig: - 98 98
+# description: kylo-install-inspector
+# processname: kylo-install-inspector
 EOF
 elif [ "$linux_type" == "update-rc.d" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
+cat << EOF > /etc/init.d/kylo-install-inspector
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          kylo-spark-shell
+# Provides:          kylo-install-inspector
 # Required-Start:    $local_fs $network $named $time $syslog
 # Required-Stop:     $local_fs $network $named $time $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Description:       kylo-spark-shell
+# Default-Start:
+# Default-Stop:      0 1 2 3 4 5 6
+# Description:       kylo-install-inspector
 ### END INIT INFO
 EOF
 fi
 
-cat << EOF >> /etc/init.d/kylo-spark-shell
-stdout_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.out"
-stderr_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.err"
+cat << EOF >> /etc/init.d/kylo-install-inspector
 RUN_AS_USER=$INSTALL_USER
 
 start() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting kylo-spark-shell ...
-        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh >> \$stdout_log 2>> \$stderr_log" &
+        echo Starting kylo-install-inspector ...
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-install-inspector/bin/run-kylo-install-inspector.sh"
     fi
 }
 
 stop() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
       then
-        echo Stopping kylo-spark-shell ...
-        pkill -f $pgrepMarkerKyloSparkShell
+        echo Stopping kylo-install-inspector ...
+        pkill -f $pgrepMarkerKyloInstallInspector
       else
         echo Already stopped.
     fi
 }
 
 status() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloInstallInspector >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
-          pgrep -lf $pgrepMarkerKyloSparkShell
+          pgrep -lf $pgrepMarkerKyloInstallInspector
       else
         echo Stopped.
     fi
@@ -484,31 +500,30 @@ case "\$1" in
         status
     ;;
     restart)
-       echo "Restarting kylo-spark-shell"
+       echo "Restarting kylo-install-inspector"
        stop
        sleep 2
        start
-       echo "kylo-spark-shell started"
+       echo "kylo-install-inspector started"
     ;;
 esac
 exit 0
 EOF
-chmod +x /etc/init.d/kylo-spark-shell
-echo "   - Created kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
+chmod +x /etc/init.d/kylo-install-inspector
+echo "   - Created kylo-install-inspector script '/etc/init.d/kylo-install-inspector'"
+
+mkdir -p ${rpmLogDir}/kylo-install-inspector/
+echo "   - Created Log folder $rpmLogDir/kylo-install-inspector/"
 
 if [ "$linux_type" == "chkonfig" ]; then
-    chkconfig --add kylo-spark-shell
-    chkconfig kylo-spark-shell on
+    chkconfig --add kylo-install-inspector
+    chkconfig kylo-install-inspector off
 elif [ "$linux_type" == "update-rc.d" ]; then
-    update-rc.d kylo-spark-shell defaults
+    update-rc.d kylo-install-inspector disable
 fi
-echo "   - Added service 'kylo-spark-shell'"
+echo "   - Added service 'kylo-install-inspector'"
+echo "    - Completed kylo-install-inspector install"
 
-mkdir -p $rpmLogDir/kylo-spark-shell/
-echo "   - Created Log folder $rpmLogDir/kylo-spark-shell/"
-
-
-echo "    - Completed kylo-spark-shell install"
 
 {
 echo "    - Create an RPM Removal script at: $INSTALL_HOME/remove-kylo.sh"
@@ -530,7 +545,7 @@ chmod 755 $rpmLogDir/kylo*
 chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
 # Setup kylo-service command
-cp $INSTALL_HOME/kylo-service /usr/bin/kylo-service
+cp $INSTALL_HOME/bin/kylo-service /usr/bin/kylo-service
 chown root:root /usr/bin/kylo-service
 chmod 755 /usr/bin/kylo-service
 

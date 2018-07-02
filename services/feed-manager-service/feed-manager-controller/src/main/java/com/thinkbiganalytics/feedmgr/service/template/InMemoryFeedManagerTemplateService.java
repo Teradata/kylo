@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
@@ -181,7 +182,7 @@ public class InMemoryFeedManagerTemplateService implements FeedManagerTemplateSe
     }
 
     @Override
-    public Set<PortDTO> getReusableFeedInputPorts() {
+    public Set<PortDTOWithGroupInfo> getReusableFeedInputPorts() {
         return null;
     }
 

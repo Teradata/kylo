@@ -36,8 +36,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of integer data type <br>
  * [Hive data type: INTEGER]
  */
-@SuppressWarnings("serial")
 public class IntegerColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -859059599768191387L;
 
     /* Integer specific metrics */
     private int max;
@@ -197,15 +198,9 @@ public class IntegerColumnStatistics extends StandardColumnStatistics {
     }
 
 
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
-
         if (allNulls()) {
             min = 0;
             max = 0;
@@ -221,9 +216,7 @@ public class IntegerColumnStatistics extends StandardColumnStatistics {
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(df.format(mean))));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(df.format(stddev))));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(df.format(variance))));
-        return rows;
     }
-
 
     /**
      * Get maximum value

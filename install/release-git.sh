@@ -11,10 +11,11 @@ NEXT_VERSION=$2
 set -x
 
 setVersion() {
+  NPM_VERSION=${2:-$1}
   mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$1
-  find ui -name package.json -a \! -path '*node_modules*' -exec sed -i '' "s/\"version\": \"[0-9.A-Z-]*\"/\"version\": \"$1\"/" {} \;
-  sed -i '' "s/\"\?ver=[0-9.A-Z-]*\"/\"?ver=$1\"/" ui/ui-app/src/main/resources/static/js/systemjs.config.js
-  mvn package -f services/upgrade-service
+  find ui -name package.json -a \! -path '*node_modules*' -exec sed -i '' "s/\"version\": \"[0-9.A-Z-]*\"/\"version\": \"$NPM_VERSION\"/" {} \;
+  sed -i '' "s/\"\?ver=[0-9.A-Z-]*\"/\"?ver=$NPM_VERSION\"/" ui/ui-app/src/main/resources/static/js/systemjs.config.js
+  mvn package -DskipTests -am -pl services/upgrade-service
 }
 
 #############################################################
@@ -43,8 +44,8 @@ git commit -a -m "Begin $NEXT_VERSION-SNAPSHOT"
 git checkout master
 git merge release-$RELEASE_VERSION
 
-git push 
-git push --tags
+git push
+git push origin v$RELEASE_VERSION
 ##git branch -d release-$RELEASE_VERSION
 
 
@@ -54,7 +55,7 @@ git push --tags
 
 git checkout -b point-$RELEASE_VERSION v$RELEASE_VERSION
 
-setVersion ${RELEASE_VERSION}.1-SNAPSHOT
+setVersion ${RELEASE_VERSION}.1-SNAPSHOT ${RELEASE_VERSION}-1-SNAPSHOT
 
 git commit -a -m "Begin $RELEASE_VERSION.1-SNAPSHOT"
 git push origin point-$RELEASE_VERSION:release/$RELEASE_VERSION

@@ -1,7 +1,8 @@
 import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 
-import {DomainType} from "../../services/DomainTypesService";
+import {moduleName} from "../module-name";
+import {DomainType} from "../../services/DomainTypesService.d";
 
 /**
  * Manages communication between {@link DomainTypeDetailsComponent} and its individual sections.
@@ -85,5 +86,5 @@ export class DomainTypeDetailsService {
     }
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .service("DomainTypeDetailsService", DomainTypeDetailsService);

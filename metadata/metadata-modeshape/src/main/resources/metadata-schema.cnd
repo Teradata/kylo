@@ -97,6 +97,8 @@
     + * (tba:project) sns
 
 [tba:feedsFolder] > nt:folder 
+    + tba:categoryUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
+    + tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
     + * (tba:category) sns
 
 [tba:feedFolder] > nt:folder 
@@ -172,7 +174,6 @@
 
 [tba:roleMembership]
     - tba:role (REFERENCE)
-//    - tba:groups (REFERENCE) multiple
     - tba:groups (STRING) multiple
     - tba:users (STRING) multiple
 
@@ -226,7 +227,7 @@
 [tba:extensibleEntity] > tba:entity
     - * (UNDEFINED) COPY
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:accessControlled
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, mix:referenceable, tba:accessControlled
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -235,7 +236,7 @@
     - tba:nifiTemplateId (STRING)
     - tba:state (STRING) = 'ENABLED'
     - tba:json (STRING)
-    - tba:feeds (REFERENCE) multiple
+    - tba:feeds (WEAKREFERENCE) multiple
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
     - tba:templateTableOption (STRING)
@@ -252,7 +253,11 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
 	+ tba:feedRoleMemberships (tba:CategoryFeedRoleMemberships) = tba:CategoryFeedRoleMemberships autocreated 
+	+ tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
 	+ * (tba:feed) sns
+
+[tba:userFieldDescriptors] > nt:hierarchyNode
+    + * (tba:fieldDescriptor)
 
 [tba:CategoryFeedRoleMemberships] > nt:hierarchyNode
     + tba:roleMemberships (tba:roleMembership) sns
@@ -264,11 +269,10 @@
 
 [tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable, tba:indexControlled
     - tba:systemName (STRING) mandatory
-    - tba:category (REFERENCE) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
 
-[tba:feedDetails] > nt:hierarchyNode, tba:propertied
-    - tba:feedTemplate (REFERENCE)
+[tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
+    - tba:feedTemplate (WEAKREFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple
     - tba:usedByFeeds (WEAKREFERENCE) multiple
@@ -338,6 +342,10 @@
     - tba:enabled (BOOLEAN) = 'true'
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
+    + tba:relatedFeeds (tba:slaFeedsRelationship)
+
+[tba:slaFeedsRelationship] > nt:hierarchyNode
+    - tba:feeds (WEAKREFERENCE) multiple
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.conf;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.conf;
  * #L%
  */
 
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
@@ -39,6 +40,7 @@ import org.springframework.boot.context.embedded.Ssl;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 import java.net.InetAddress;
@@ -47,6 +49,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
@@ -54,6 +57,9 @@ import javax.annotation.Nonnull;
 @Configuration
 @PropertySource("classpath:spark.properties")
 public class SparkShellConfiguration {
+
+    @Inject
+    private UsernameCaseStrategyUtil usernameCaseStrategyUtil;
 
     /**
      * Listens for cluster events and updates the process manager.
@@ -88,6 +94,7 @@ public class SparkShellConfiguration {
      * @return a Spark Shell process manager
      */
     @Bean
+    @Profile("!kyloUpgrade")
     public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,
                                                    @Qualifier("sparkLoginUsers") final Optional<Properties> users) {
         if (sparkShellProperties.getServer() != null) {
@@ -100,6 +107,12 @@ public class SparkShellConfiguration {
         } else {
             return new DefaultProcessManager(sparkShellProperties, kerberosProperties, users.get());
         }
+    }
+
+    @Bean
+    @Profile("kyloUpgrade")
+    public SparkShellProcessManager processManagerForUpgrade() {
+        return new ServerProcessManager(new SparkShellProperties());
     }
 
     /**
@@ -121,7 +134,6 @@ public class SparkShellConfiguration {
     @ConfigurationProperties("spark.shell")
     public SparkShellProperties sparkShellProperties(@Nonnull final ServerProperties server) {
         final SparkShellProperties properties = new SparkShellProperties();
-
         // Automatically determine registration url
         if (properties.getRegistrationUrl() == null) {
             // Get protocol
@@ -140,6 +152,8 @@ public class SparkShellConfiguration {
                 properties.setRegistrationUrl(protocol + "://" + address + ":8400/proxy/v1/spark/shell/register");
             }
         }
+        UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy = usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();
+        properties.setProxyUserCaseStrategy(usernameCaseStrategy.name());
 
         return properties;
     }

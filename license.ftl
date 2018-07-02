@@ -110,10 +110,14 @@
   <@automatonLicense/>
 <#elseif project.groupId == "dom4j">
   <@dom4jLicense/>
+<#elseif project.groupId == "jakarta-regexp">
+  <@apache2License/>
 <#elseif project.groupId == "javax.servlet" || project.groupId == "javax.servlet.jsp">
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "javax.transaction">
   <@javaxTransactionLicense/>
+<#elseif project.groupId == "javax.ws.rs" && project.artifactId == "jsr311-api">
+  <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "net.jcip">
   <@apache2License/>
 <#elseif project.groupId?starts_with("org.apache.")>
@@ -162,6 +166,10 @@
   <@generalLicense "GNU Lesser General Public License, Version 2.1"/>
 <#elseif licenses?seq_contains("Common Development and Distribution License Version 1.1")>
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
+<#elseif project.groupId == "org.json">
+    <@generalLicense "Copyright (c) 2002 JSON.org"/>
+<#elseif project.groupId == "com.googlecode.juniversalchardet">
+    <@mozillaPublicLicense />
 <#else>
   <#stop "Template missing license for " + project.groupId + ":" + project.artifactId + ": " + licenses?join(", ")/>
 </#if>
@@ -239,6 +247,12 @@ Copyright (c) 2009 codehaus.org.
   <@mitLicense/>
 </#macro>
 
+<!-- Mozilla Public License -->
+<#macro mozillaPublicLicense>
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
+</#macro>
 
 <#-- BSD 3-Clause License -->
 <#macro bsd3License>

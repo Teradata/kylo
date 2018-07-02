@@ -33,6 +33,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,16 +101,16 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public JcrFeed(Node node, JcrCategory category) {
         this(node, (FeedOpsAccessControlProvider) null);
-        if (category != null) {
-            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-        }
+//        if (category != null) {
+//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
+//        }
     }
 
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
         this(node, opsAccessProvider);
-        if (category != null) {
-            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-        }
+//        if (category != null) {
+//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
+//        }
     }
 
 
@@ -255,9 +256,19 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         getFeedSummary().ifPresent(s -> s.setTitle(title));
     }
 
+//    
+//    public Category getCategory() {
+//        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
+//    }
 
     public Category getCategory() {
-        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
+        Node catNode = JcrUtil.getParent(getNode());
+        
+        if (catNode != null) {
+            return JcrCategory.createCategory(catNode, getOpsAccessProvider());
+        } else {
+            return null;
+        }
     }
 
     public FeedManagerTemplate getTemplate() {
@@ -444,12 +455,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     @Nonnull
     @Override
     public Map<String, String> getUserProperties() {
-        return JcrPropertyUtil.getUserProperties(node);
+        return getFeedDetails().map(FeedDetails::getUserProperties).orElse(new HashMap<>());
     }
 
     @Override
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+        getFeedDetails().ifPresent(d -> d.setUserProperties(userProperties, userFields));
     }
 
     @Override
@@ -580,16 +591,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     @Override
-    public String getAllowIndexing() {
-        Optional<FeedSummary> feedSummary = getFeedSummary();
-        if (feedSummary.isPresent()) {
-          return String.valueOf(feedSummary.get().getProperty(FeedSummary.ALLOW_INDEXING));
-        }
-        return null;
+    public boolean isAllowIndexing() {
+        return getFeedSummary().map(s -> s.isAllowIndexing()).orElse(true); //default is true
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
-        getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.ALLOW_INDEXING, allowIndexing));
+    public void setAllowIndexing(boolean allowIndexing) {
+        getFeedSummary().ifPresent(s -> s.setAllowIndexing(allowIndexing));
     }
 }

@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column.css"/>
+
+<md-dialog class="column-analysis" arial-label="Profile Data" ng-cloak style="width: 800px; height: 525px">
+  <div class="md-toolbar-tools" layout="row" layout-align="left">
+    <md-dialog-actions layout="row" layout-align="end start" flex class="layout-padding-top">
+      <button type="button" class="close" data-dismiss="modal" ng-click="dialog.hide()" aria-hidden="true">×</button>
+    </md-dialog-actions>
+    <h4 class="md-title">
+      <span>{{dialog.fieldName}}</span>
+    </h4>
+  </div>
+  <md-dialog-content layout-padding>
+    <column-analysis profile="dialog.profile" field="dialog.fieldName"></column-analysis>
+  </md-dialog-content>
+</md-dialog>
+
+
+
+

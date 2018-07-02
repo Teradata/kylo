@@ -29,6 +29,8 @@ import java.util.UUID;
  */
 public class RetryAggregatedFeedProcessorStatisticsHolder extends AggregatedFeedProcessorStatisticsHolder {
 
+    private static final long serialVersionUID = -6344769389124838681L;
+
 
     private RetryAttempt retryAttempt;
 

@@ -35,10 +35,11 @@ import java.io.Serializable;
 /**
  *
  */
-@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InitializationStatus implements Serializable {
+
+    private static final long serialVersionUID = 7571656769451718640L;
 
     private State state;
     private DateTime timestamp;
@@ -75,7 +76,7 @@ public class InitializationStatus implements Serializable {
     }
 
     public enum State {
-        PENDING, IN_PROGRESS, SUCCESS, FAILED
+        PENDING, IN_PROGRESS, SUCCESS, FAILED, REINITIALIZE, REINITIALIZE_FAILED
     }
 
 }

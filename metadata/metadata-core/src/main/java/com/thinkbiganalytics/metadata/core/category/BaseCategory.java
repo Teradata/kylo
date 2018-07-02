@@ -57,7 +57,7 @@ public class BaseCategory implements Category {
 
     private Integer version;
 
-    private String allowIndexing;
+    private boolean allowIndexing;
 
     private DateTime createdTime;
 
@@ -255,12 +255,12 @@ public class BaseCategory implements Category {
     }
 
     @Override
-    public String getAllowIndexing() {
+    public boolean isAllowIndexing() {
         return allowIndexing;
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
+    public void setAllowIndexing(boolean allowIndexing) {
         this.allowIndexing = allowIndexing;
     }
 

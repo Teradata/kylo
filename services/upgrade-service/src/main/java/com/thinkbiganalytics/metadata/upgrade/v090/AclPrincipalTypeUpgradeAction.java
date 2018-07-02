@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
@@ -60,7 +61,7 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 /**
  * Ensures that all categories have the new, mandatory feedRoleMemberships node.
  */
-@Component("aclPrincipalTypeUpgradeAction084")
+@Component("aclPrincipalTypeUpgradeAction090")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class AclPrincipalTypeUpgradeAction implements UpgradeState {
 
@@ -96,55 +97,59 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
         Set<String> groupNames = StreamSupport.stream(this.userProvider.findGroups().spliterator(), false)
             .map(UserGroup::getSystemName)
             .collect(Collectors.toSet());
+        
+        Set<String> userNames = StreamSupport.stream(this.userProvider.findUsers().spliterator(), false)
+                        .map(User::getSystemName)
+                        .collect(Collectors.toSet());
 
-        upgradeServices(groupNames);
-        upgradeDataSources(groupNames);
-        upgradeFeeds(groupNames);
-        upgradeCategories(groupNames);
-        upgradeTemplates(groupNames);
+        upgradeServices(userNames, groupNames);
+        upgradeDataSources(userNames, groupNames);
+        upgradeFeeds(userNames, groupNames);
+        upgradeCategories(userNames, groupNames);
+        upgradeTemplates(userNames, groupNames);
 
     }
 
     /**
      * @param groupNames
      */
-    private void upgradeServices(Set<String> groupNames) {
+    private void upgradeServices(Set<String> userNames, Set<String> groupNames) {
         actionsProvider.getAllowedActions(AllowedActions.SERVICES)
             .map(JcrAllowedActions.class::cast)
-            .ifPresent(allowed -> upgrade(allowed, groupNames));
+            .ifPresent(allowed -> upgrade(allowed, userNames, groupNames));
     }
 
-    private void upgradeTemplates(Set<String> groupNames) {
+    private void upgradeTemplates(Set<String> userNames, Set<String> groupNames) {
         this.templateProvider.findAll().stream()
             .map(JcrFeedTemplate.class::cast)
             .map(template -> template.getAllowedActions())
             .map(JcrTemplateAllowedActions.class::cast)
-            .forEach(allowed -> upgrade(allowed, groupNames));
+            .forEach(allowed -> upgrade(allowed, userNames, groupNames));
     }
 
-    private void upgradeCategories(Set<String> groupNames) {
+    private void upgradeCategories(Set<String> userNames, Set<String> groupNames) {
         this.categoryProvider.findAll().stream()
             .map(JcrCategory.class::cast)
             .map(category -> category.getAllowedActions())
             .map(JcrCategoryAllowedActions.class::cast)
-            .forEach(allowed -> upgrade(allowed, groupNames));
+            .forEach(allowed -> upgrade(allowed, userNames, groupNames));
     }
 
-    private void upgradeFeeds(Set<String> groupNames) {
+    private void upgradeFeeds(Set<String> userNames, Set<String> groupNames) {
         this.feedProvider.findAll().stream()
             .map(JcrFeed.class::cast)
             .map(feed -> feed.getAllowedActions())
             .map(JcrFeedAllowedActions.class::cast)
-            .forEach(allowed -> upgrade(allowed, groupNames));
+            .forEach(allowed -> upgrade(allowed, userNames, groupNames));
     }
 
-    private void upgradeDataSources(Set<String> groupNames) {
+    private void upgradeDataSources(Set<String> userNames, Set<String> groupNames) {
         this.datasourceProvider.getDatasources().stream()
             .filter(JcrUserDatasource.class::isInstance)
             .map(JcrUserDatasource.class::cast)
             .map(ds -> ds.getAllowedActions())
             .map(JcrDatasourceAllowedActions.class::cast)
-            .forEach(allowed -> upgrade(allowed, groupNames));
+            .forEach(allowed -> upgrade(allowed, userNames, groupNames));
     }
     
     private boolean isUpgradable(Principal principal) {
@@ -154,29 +159,29 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
                         principal.getName().equals("everyone"));
     }
     
-    private void upgrade(JcrAllowedActions allowed, Set<String> groupNames) {
+    private void upgrade(JcrAllowedActions allowed, Set<String> userNames, Set<String> groupNames) {
         allowed.streamActions()
             .forEach(action -> {
                 allowed.getPrincipalsAllowedAll(action).stream()
                     .filter(this::isUpgradable)
                     .forEach(principal -> {
-                        // If the principal name does not match a group name then assume it is a user.
+                        // Re-add known groups and users principals of the correct type.
                         if (groupNames.contains(principal.getName())) {
                             GroupPrincipal group = new GroupPrincipal(principal.getName());
                             allowed.enable(group, action);
-                        } else {
+                        } else if (userNames.contains(principal.getName())) {
                             UsernamePrincipal newPrincipal = new UsernamePrincipal(principal.getName());
                             allowed.enable(newPrincipal, action);
-                        }
+                        } 
                     });
             });
         
+        // Clean out any generic principals not upgraded to the correct type.
         allowed.streamActions()
             .forEach(action -> {
                 allowed.getPrincipalsAllowedAll(action).stream()
                     .filter(this::isUpgradable)
                     .forEach(principal -> {
-                        // If the principal name does not match a group name then assume it is a user.
                         if (! (principal instanceof UsernamePrincipal || principal instanceof Group)) {
                             allowed.disable(new RemovedPrincipal(principal), action);
                         }

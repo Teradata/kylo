@@ -59,7 +59,10 @@ public class ProfileStage implements Function<TransformResult, TransformResult> 
         Preconditions.checkNotNull(result);
 
         // Profile data set
-        final StatisticsModel dataStats = profiler.profile(result.getDataSet(), new ProfilerConfiguration());
+        ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(50);
+        profilerConfiguration.setBins(35);
+        final StatisticsModel dataStats = profiler.profile(result.getDataSet(), profilerConfiguration);
 
         // Add stats to result
         if (dataStats != null) {

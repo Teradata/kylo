@@ -46,6 +46,9 @@ import java.util.stream.Collectors;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Feed implements Serializable {
+
+    private static final long serialVersionUID = 3674704789170742920L;
+
     private String id;
     private String systemName;
     private String displayName;
@@ -60,7 +63,7 @@ public class Feed implements Serializable {
     private Properties properties = new Properties();
     private FeedCategory category;
     private InitializationStatus currentInitStatus;
-    private String allowIndexing;
+    private boolean allowIndexing;
 
     /*
      * Data history reindexing
@@ -219,11 +222,11 @@ public class Feed implements Serializable {
         this.currentInitStatus = currentInitStatus;
     }
 
-    public String getAllowIndexing() {
+    public boolean isAllowIndexing() {
         return allowIndexing;
     }
 
-    public void setAllowIndexing(String allowIndexing) {
+    public void setAllowIndexing(boolean allowIndexing) {
         this.allowIndexing = allowIndexing;
     }
 

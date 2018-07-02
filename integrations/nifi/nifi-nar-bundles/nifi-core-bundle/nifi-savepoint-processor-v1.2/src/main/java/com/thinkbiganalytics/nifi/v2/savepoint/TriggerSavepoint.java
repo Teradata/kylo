@@ -85,9 +85,9 @@ public class TriggerSavepoint extends AbstractProcessor {
     public static final String SAVE_POINT_BEHAVIOR_STATUS_DESC = "savepoint.behavior.status.desc";
 
 
-    public static final String RETRY = "RETRY";
-    public static final String RELEASE = "RELEASE";
-    public static final String FAIL = "FAIL";
+    public static final String RETRY = SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.RETRY.name();
+    public static final String RELEASE = SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.RELEASE.name();
+    public static final String FAIL = SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.FAIL.name();
 
     // Number of times a flowfile can fail to process before routing to failure
     public static final int MAX_FAILURES_ALLOWED = 3;

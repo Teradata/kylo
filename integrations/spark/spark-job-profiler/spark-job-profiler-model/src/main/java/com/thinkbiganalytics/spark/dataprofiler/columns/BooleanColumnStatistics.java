@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of boolean data type <br>
  * [Hive data type: BOOLEAN]
  */
-@SuppressWarnings("serial")
 public class BooleanColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 2676008710763738295L;
 
     /* Boolean specific metrics */
     private long trueCount;
@@ -114,21 +115,13 @@ public class BooleanColumnStatistics extends StandardColumnStatistics {
                + "]\n}";
     }
 
-
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
 
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TRUE_COUNT), String.valueOf(trueCount)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.FALSE_COUNT), String.valueOf(falseCount)));
-        return rows;
     }
-
 
     /**
      * Get TRUE count

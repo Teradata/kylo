@@ -1,13 +1,13 @@
 import * as angular from "angular";
 import "fattable";
 
-import {DomainType} from "../../../services/DomainTypesService";
+import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
 
 /**
  * Default font.
  */
-const DEFAULT_FONT = "10px sans-serif";
+const DEFAULT_FONT = "10px ''SourceSansPro'";
 
 /**
  * HTML template for header cells.
@@ -22,9 +22,14 @@ const PIXELS = "px";
 export class VisualQueryPainterService extends fattable.Painter {
 
     /**
+     * Maximum display length for column context functions before they are ellipses (asthetics)
+     */
+    static readonly MAX_DISPLAY_LENGTH = 25;
+
+    /**
      * Left and right padding for normal columns.
      */
-    static readonly COLUMN_PADDING = 28;
+    static readonly COLUMN_PADDING = 5;
 
     /**
      * Left padding for the first column.
@@ -39,7 +44,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Height of data rows.
      */
-    static readonly ROW_HEIGHT = 48;
+    static readonly ROW_HEIGHT = 27;
 
     /**
      * Class for selected cells.
@@ -91,6 +96,20 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private tooltipVisible: boolean = false;
 
+    /**
+     * Indicate thate the header template has been loaded into the $templateCache
+     * @type {boolean}
+     */
+    private headerTemplateLoaded : boolean = false;
+
+
+    /**
+     * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
+     * Once the template is loaded these elements will get filled
+     * @type {any[]}
+     */
+    private waitingHeaderDivs : HTMLElement[] = [];
+
     static readonly $inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
 
     /**
@@ -101,15 +120,23 @@ export class VisualQueryPainterService extends fattable.Painter {
                 private $window: angular.IWindowService) {
         super();
 
-        $templateRequest(HEADER_TEMPLATE);
+        //Request the Header template and fill in the contents of any header divs waiting on the template.
+        $templateRequest(HEADER_TEMPLATE).then((response) => {
+            this.headerTemplateLoaded = true;
+            angular.forEach(this.waitingHeaderDivs,(headerDiv : HTMLElement) => {
+                this.compileHeader(headerDiv);
+            });
+            this.waitingHeaderDivs = [];
+        });
 
         // Hide tooltip on scroll. Skip Angular change detection.
+       /*
         window.addEventListener("scroll", () => {
             if (this.tooltipVisible) {
                 this.hideTooltip();
             }
-        }, true);
-
+        }, {passive:true, capture:true});
+    */
         // Create menu
         this.menuPanel = $mdPanel.create({
             animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
@@ -133,6 +160,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             zIndex: 100
         });
         this.tooltipPanel.attach();
+
     }
 
     /**
@@ -179,6 +207,15 @@ export class VisualQueryPainterService extends fattable.Painter {
         this._rowFont = value;
     }
 
+    fillCellPending(cellDiv: HTMLElement) {
+        cellDiv.textContent = "Loading...";
+        cellDiv.className = "pending";
+    }
+
+    fillHeaderPending(cellDiv: HTMLElement) {
+        // Override so it doesn't replace our angular template for column cell
+    }
+
     /**
      * Fills and style a cell div.
      *
@@ -186,24 +223,21 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableCell|null} cell the cell object
      */
     fillCell(cellDiv: HTMLElement, cell: any) {
-        // Adjust padding based on column number
-        if (cell !== null && cell.column === 0) {
-            cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-            cellDiv.style.paddingRight = 0 + PIXELS;
-        } else {
-            cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-        }
-
         // Set style
+
         if (cell === null) {
             cellDiv.className = "";
         } else if (cell.validation) {
-            cellDiv.className = "invalid";
+            $(cellDiv).addClass("invalid");
         } else if (cell.value === null) {
             cellDiv.className = "null";
         } else {
             cellDiv.className = "";
+        }
+
+        // Adjust padding based on column number
+        if (cell !== null && cell.column === 0) {
+            cellDiv.className += " first-column ";
         }
 
         // Set contents
@@ -216,6 +250,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
 
         if (cell !== null) {
+            cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
+
             angular.element(cellDiv)
                 .data("column", cell.column)
                 .data("validation", cell.validation);
@@ -229,25 +265,17 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableHeader|null} header the column header
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
-        // Adjust padding based on column number
-        if (header !== null && header.index === 0) {
-            headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-            headerDiv.style.paddingRight = 0 + PIXELS;
-        } else {
-            headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            headerDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-        }
 
         // Update scope in a separate thread
         const $scope: any = angular.element(headerDiv).scope();
 
-        if ($scope.header !== header) {
+        if (header != null && $scope.header !== header && header.delegate != undefined) {
+            $scope.header = header;
+            $scope.table = this.delegate;
             $scope.availableCasts = header.delegate.getAvailableCasts();
             $scope.availableDomainTypes = this.domainTypes;
             $scope.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
-            $scope.header = header;
             $scope.header.unsort = this.unsort.bind(this);
-            $scope.table = this.delegate;
         }
     }
 
@@ -271,6 +299,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {HTMLElement} cellDiv the cell <div> element
      */
     setupCell(cellDiv: HTMLElement) {
+
         angular.element(cellDiv)
             .on("contextmenu", () => false)
             .on("mousedown", () => this.setSelected(cellDiv))
@@ -290,13 +319,21 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {HTMLElement} headerDiv the header <div> element
      */
     setupHeader(headerDiv: HTMLElement) {
+
         // Set style attributes
         headerDiv.style.font = this.headerFont;
         headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
+        //if the header template is not loaded yet then fill it with Loading text.
+        // the callback on the templateRequest will compile those headers waiting
+        if(!this.headerTemplateLoaded) {
+            headerDiv.textContent = "Loading...";
+            headerDiv.className = "pending";
+            this.waitingHeaderDivs.push(headerDiv)
+        }
+        else {
+            this.compileHeader(headerDiv);
+        }
 
-        // Load template
-        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
-        this.$compile(headerDiv)(this.$scope.$new(true));
     }
 
     /**
@@ -304,9 +341,10 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param headerDiv
      */
     cleanUpHeader(headerDiv: HTMLElement){
-        var scope = angular.element(headerDiv).scope();
-        if(scope){
-            scope.$destroy();
+        //destroy the old scope if it exists
+        let oldScope = angular.element(headerDiv).isolateScope();
+        if(angular.isDefined(oldScope)){
+            oldScope.$destroy();
         }
     }
 
@@ -324,8 +362,26 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param table
      */
     cleanUp(table:HTMLElement){
+        //remove all header scopes
+        this.headerScopes.forEach((headerScope: IScope) => {
+            headerScope.$destroy();
+        });
+        this.headerScopes = [];
+
         super.cleanUp(table);
         angular.element(table).unbind();
+    }
+    private headerScopes : IScope[] = []
+
+    private compileHeader(headerDiv: HTMLElement) {
+        // Load template
+        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
+
+        let newScope = this.$scope.$new(true)
+        this.headerScopes.push(newScope);
+        this.$compile(headerDiv)(newScope);
+
+
     }
 
     /**
@@ -383,6 +439,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : cellDiv.innerText;
+        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
 
         // Update position
         this.menuPanel.updatePosition(

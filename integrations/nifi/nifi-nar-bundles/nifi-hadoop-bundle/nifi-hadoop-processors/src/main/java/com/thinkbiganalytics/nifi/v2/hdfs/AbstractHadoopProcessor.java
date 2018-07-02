@@ -199,26 +199,21 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         }
     }
 
-    protected void resetFileSystem() throws IOException {
-        HdfsResources resources = hdfsResources.get();
-        Configuration conf = resources.configuration;
-        UserGroupInformation ugi = resources.userGroupInformation;
-        FileSystem fs = resources.fileSystem;
-        if (fs != null) {
-            fs.close();
-        }
-        if (ugi != null) {
-            fs = getFileSystemAsUser(conf, ugi);
-        }else {
-            fs = getFileSystem(conf);
-        }
-        resources = new HdfsResources(conf, fs, ugi);
-        hdfsResources.set(resources);
-    }
-
     @OnStopped
     public final void abstractOnStopped() {
-        hdfsResources.set(new HdfsResources(null, null, null));
+        HdfsResources hdfs = hdfsResources.get();
+        if( hdfs != null ) {
+            FileSystem fs = hdfsResources.get().getFileSystem();
+            if (fs != null) {
+                try {
+                    getLog().info("Processor Stop in progress. Will release HDFS resources.");
+                    fs.close();
+                } catch (IOException e) {
+                    getLog().error("Received IOException when attempting to close HDFS FileSystem handle");
+                }
+            }
+        }
+        hdfsResources.set(new  HdfsResources(null, null, null));
     }
 
     /**
@@ -246,6 +241,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
             // disable caching of Configuration and FileSystem objects, else we cannot reconfigure the processor without a complete
             // restart
             String disableCacheName = String.format("fs.%s.impl.disable.cache", FileSystem.getDefaultUri(config).getScheme());
+            config.set(disableCacheName, "true");
 
             // If kerberos is enabled, create the file system as the kerberos principal
             // -- use RESOURCE_LOCK to guarantee UserGroupInformation is accessed by only a single thread at at time
@@ -257,23 +253,26 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
                     String keyTab = context.getProperty(kerberosKeytab).getValue();
                     UserGroupInformation.setConfiguration(config);
                     ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keyTab);
+                    modifyConfig(context, config);
                     fs = getFileSystemAsUser(config, ugi);
                     lastKerberosReloginTime = System.currentTimeMillis() / 1000;
                 } else {
                     config.set("ipc.client.fallback-to-simple-auth-allowed", "true");
                     config.set("hadoop.security.authentication", "simple");
+                    modifyConfig(context, config);
                     fs = getFileSystem(config);
                 }
             }
-            config.set(disableCacheName, "true");
             getLog().info("Initialized a new HDFS File System with working dir: {} default block size: {} default replication: {} config: {}",
                           new Object[]{fs.getWorkingDirectory(), fs.getDefaultBlockSize(new Path(dir)), fs.getDefaultReplication(new Path(dir)), config.toString()});
             return new HdfsResources(config, fs, ugi);
-
         } finally {
             Thread.currentThread().setContextClassLoader(savedClassLoader);
         }
     }
+
+    // can be overridden by child classes to modify configuration before filesystem handle is obtained
+    abstract void modifyConfig(ProcessContext context, Configuration config);
 
     /**
      * This exists in order to allow unit tests to override it so that they don't take several minutes waiting for UDP packets to be received
@@ -283,6 +282,11 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
      * @throws IOException if unable to create the FileSystem
      */
     protected FileSystem getFileSystem(final Configuration config) throws IOException {
+        if( getLog().isDebugEnabled() ) {
+            String disableCacheName = String.format("fs.%s.impl.disable.cache", FileSystem.getDefaultUri(config).getScheme());
+            getLog().debug(String.format( "'%s'='%s'", disableCacheName, config.get(disableCacheName) ));
+        }
+
         return FileSystem.get(config);
     }
 

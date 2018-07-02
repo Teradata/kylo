@@ -36,8 +36,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of bigdecimal data type <br>
  * [Hive data type: DECIMAL]
  */
-@SuppressWarnings("serial")
 public class BigDecimalColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -4160529180454600403L;
 
     /* BigDecimal specific metrics */
     private BigDecimal max;
@@ -133,14 +134,8 @@ public class BigDecimalColumnStatistics extends StandardColumnStatistics {
                + "]\n}";
     }
 
-
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
 
 
@@ -153,9 +148,7 @@ public class BigDecimalColumnStatistics extends StandardColumnStatistics {
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
-        return rows;
     }
-
 
     /**
      * Get maximum value

@@ -98,7 +98,9 @@ public class JerseyConfig extends ResourceConfig {
                  "com.thinkbiganalytics.discovery.rest.controller",
                  "com.thinkbiganalytics.audit.rest.controller",
                  "com.thinkbiganalytics.alerts.rest.controller",
-                 "com.thinkbiganalytics.rest.controller"
+                 "com.thinkbiganalytics.rest.controller",
+                 "com.thinkbiganalytics.kylo.plugin",
+                 "com.thinkbiganalytics.kylo.catalog.rest.controller"
         );
 
         register(JacksonFeature.class);

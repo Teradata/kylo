@@ -24,14 +24,13 @@
       <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>
 
       <div flex="25"> {{vm.model.name}}</div>
-      <span flex="5"></span>
-      <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>
-
-      <div flex>{{vm.model.systemName}}</div>
+    </div>
+    <div layout="row" class="layout-padding-top-bottom" flex>
+      <span flex="25" class="property-name">{{"views.main.system-name" | translate}}</span>
+      <div flex="25">{{vm.model.systemName}}</div>
     </div>
     <div layout="row" class="layout-padding-top-bottom">
       <span flex="25" class="property-name">{{"views.category-definition.Description" | translate}}</span>
-
       <div flex>
         {{vm.model.description}}
       </div>

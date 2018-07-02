@@ -17,11 +17,11 @@
                      allow-execute-query="false"></thinkbig-hql-editor>
 
 <div ng-if="!property.renderWithCodeMirror && !property.isLoading">
-    <input name="{{property.formKey}}" ng-model="property.value" ng-if="!property.sensitive && (property.renderType == 'text' || property.renderType == null)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input empty-string-to-null name="{{property.formKey}}" ng-model="property.value" ng-if="!property.sensitive && (property.renderType == 'text' || property.renderType == null)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" autocomplete="new-password"/>
 
-    <input name="{{property.formKey}}" ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input empty-string-to-null name="{{property.formKey}}" ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" autocomplete="new-password"/>
 
-    <input name="{{property.formKey}}" ng-model="property.value" type="password" ng-if="property.renderType == 'password' || (property.renderType == 'text' && property.sensitive)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" />
+    <input empty-string-to-null name="{{property.formKey}}" ng-model="property.value" type="password" ng-if="property.renderType == 'password' || (property.renderType == 'text' && property.sensitive)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" autocomplete="new-password"/>
 
     <textarea name="{{property.formKey}}" ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)">
         {{property.value}}

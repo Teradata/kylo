@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,10 +26,15 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
+import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.DropRequestDTO;
+import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
+import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -41,6 +46,8 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClient {
 
+    private static final Logger log = LoggerFactory.getLogger(NiFiConnectionsRestClientV1.class);
+
     /**
      * Path to a connection entity
      */
@@ -51,7 +58,10 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
      */
     private static final String QUEUE_PATH = "/flowfile-queues/";
 
+    private static final String FLOW_PATH = "/flow";
+
     /**
+     * REST client for communicating with NiFi
      * REST client for communicating with NiFi
      */
     private final NiFiRestClientV1 client;
@@ -122,5 +132,51 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
+    }
+
+    @Nonnull
+    public Optional<ConnectionStatusEntity> getConnectionStatus(@Nonnull final String connectionId) {
+        try {
+            return Optional.of(client.get(FLOW_PATH + "/connections/" + connectionId + "/status", null, ConnectionStatusEntity.class));
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<ConnectionDTO> update(@Nonnull ConnectionDTO connectionDTO) {
+
+        Optional<ConnectionEntity> current = findEntityById(connectionDTO.getId());
+        if (current.isPresent()) {
+
+            ConnectionEntity connectionEntity = new ConnectionEntity();
+            ConnectionDTO updateDto = new ConnectionDTO();
+            connectionEntity.setComponent(updateDto);
+            updateDto.setId(connectionDTO.getId());
+            updateDto.setSelectedRelationships(connectionDTO.getSelectedRelationships());
+            if (connectionDTO.getSource() != null) {
+                updateDto.setSource(new ConnectableDTO());
+                updateDto.getSource().setGroupId(connectionDTO.getSource().getGroupId());
+                updateDto.getSource().setId(connectionDTO.getSource().getId());
+                updateDto.getSource().setType(connectionDTO.getSource().getType());
+            }
+            if (connectionDTO.getDestination() != null) {
+                updateDto.setDestination(new ConnectableDTO());
+                updateDto.getDestination().setGroupId(connectionDTO.getDestination().getGroupId());
+                updateDto.getDestination().setId(connectionDTO.getDestination().getId());
+                updateDto.getDestination().setType(connectionDTO.getDestination().getType());
+            }
+            final RevisionDTO revision = new RevisionDTO();
+            revision.setVersion(current.get().getRevision().getVersion());
+            connectionEntity.setRevision(revision);
+
+            try {
+                return Optional.of(client.put(CONNECTION_PATH + connectionDTO.getId(), connectionEntity, ConnectionEntity.class).getComponent());
+            } catch (Exception e) {
+                log.error("Error updating connection entry info for connection: {} {} ", connectionDTO, e.getMessage());
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
     }
 }

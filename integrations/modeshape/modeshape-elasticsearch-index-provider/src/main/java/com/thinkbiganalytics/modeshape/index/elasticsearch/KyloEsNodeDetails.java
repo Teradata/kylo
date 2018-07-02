@@ -21,22 +21,32 @@ package com.thinkbiganalytics.modeshape.index.elasticsearch;
  */
 
 /**
- * A simple class to store relevant properties for modeshape node raising a change event
+ * Store relevant properties for modeshape node raising a change event. Used for indexing metadata in Elasticsearch.
  */
 public class KyloEsNodeDetails {
 
     private String extendedId;
     private String id;
     private String allowIndexing;
+    private String workspaceName;
     private static final Integer START_INDEX_UUID_EXTRACTION = 14;
+    private boolean valid = false;
 
     public String getExtendedId() {
         return extendedId;
     }
 
     public void setExtendedId(String extendedId) {
+        setExtendedId(extendedId, true);
+    }
+
+    public void setExtendedId(String extendedId, boolean isExtendedLongerVersion) {
         this.extendedId = extendedId;
-        this.id = extendedId.substring(START_INDEX_UUID_EXTRACTION, extendedId.length());
+        if (isExtendedLongerVersion) {
+            this.id = extendedId.substring(START_INDEX_UUID_EXTRACTION, extendedId.length());
+        } else {
+            this.id = extendedId;
+        }
     }
 
     public String getId() {
@@ -51,12 +61,30 @@ public class KyloEsNodeDetails {
         this.allowIndexing = allowIndexing;
     }
 
+    public String getWorkspaceName() {
+        return workspaceName;
+    }
+
+    public void setWorkspaceName(String workspaceName) {
+        this.workspaceName = workspaceName;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
     @Override
     public String toString() {
         return "KyloEsNodeDetails{" +
                "extendedId='" + extendedId + '\'' +
                ", id='" + id + '\'' +
                ", allowIndexing='" + allowIndexing + '\'' +
+               ", workspaceName='" + workspaceName + '\'' +
+               ", valid=" + valid +
                '}';
     }
 }

@@ -1,0 +1,112 @@
+/* ==========================================================================
+Main page styles
+========================================================================== */
+
+.title {
+    font-size: 25px;
+}
+
+.subtitle {
+    font-size: 15px;
+}
+
+.release-notes-link {
+    margin-left: 10px;
+}
+
+.control-hint {
+    font-size: 0.8em;
+}
+
+.inspection {
+    margin-bottom: 10px;
+
+    .fa {
+        color: dimgray;
+        margin-right: 15px;
+        margin-top: -5px;
+    }
+
+    .fa-warning {
+        color: tomato;
+    }
+
+    .fa-check {
+        color: seagreen;
+    }
+
+    .fa-larger {
+        font-size: 3em;
+    }
+}
+
+.inspection.disabled .fa {
+    color: lightgray;
+}
+
+.inspection-header {
+    font-size: 18px;
+}
+
+.inspection-docs {
+    font-size: 16px;
+    margin-left: 15px;
+}
+
+.inspection-description {
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.inspection-enabled-check {
+    margin-top: -5px;
+    margin-right: 15px;
+}
+
+.inspection-enabled-check > * {
+    padding-bottom: 4px;
+}
+
+.actions {
+    width: 100%;
+}
+
+.inspection-enabled-check-checkbox {
+}
+
+.inspection-status-description {
+    margin-bottom: 10px;
+}
+
+.inspection-status-error {
+    background: #ff634726;
+    margin-right: 40px;
+}
+
+.checkbox-label {
+    line-height: 17px;
+    padding-top: 5px;
+}
+
+.muted {
+    color: dimgray;
+}
+
+.disabled, .disabled .inspection-description {
+    color: lightgray;
+}
+
+.form {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.form > * {
+    margin-bottom: 10px;
+}
+
+.form .path {
+    margin-right: 10px;
+    min-width: 500px;
+}
+

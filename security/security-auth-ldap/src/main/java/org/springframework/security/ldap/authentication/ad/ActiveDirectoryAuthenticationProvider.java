@@ -23,6 +23,7 @@ package org.springframework.security.ldap.authentication.ad;
  * #L%
  */
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.DistinguishedName;
@@ -100,10 +101,10 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
      * @param url an LDAP url (or multiple URLs)
      */
     public ActiveDirectoryAuthenticationProvider(String domain, 
-                                                       String url, 
-                                                       boolean enableGroups, 
-                                                       String serviceUser, 
-                                                       String servicePassword) {
+                                                 String url, 
+                                                 boolean enableGroups, 
+                                                 String serviceUser, 
+                                                 char[] servicePassword) {
         Assert.isTrue(StringUtils.hasText(url), "Url cannot be empty");
         
         this.domain = StringUtils.hasText(domain) ? domain.toLowerCase() : null;
@@ -112,7 +113,7 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
         this.rootDn = this.domain == null ? null : rootDnFromDomain(this.domain);
         
         if (serviceUser != null) {
-            Assert.isTrue(StringUtils.hasText(servicePassword), "service password cannot be empty");
+            Assert.isTrue(servicePassword != null && servicePassword.length > 0, "service password cannot be empty");
             this.serviceToken = new UsernamePasswordAuthenticationToken(new UsernamePrincipal(serviceUser), servicePassword);
         } else {
             this.serviceToken = null;
@@ -149,14 +150,15 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
             throw new BadCredentialsException(this.messages.getMessage("LdapAuthenticationProvider.emptyUsername", "Empty Username"));
         }
 
-        if (!StringUtils.hasLength((String) authToken.getCredentials())) {
+        String credentials = String.valueOf((char[]) authToken.getCredentials());
+        if (!StringUtils.hasLength(credentials)) {
             throw new BadCredentialsException(this.messages.getMessage("AbstractLdapAuthenticationProvider.emptyPassword", "Empty Password"));
         }
 
         DirContextOperations userData = doAuthentication(userToken);
         Collection<? extends GrantedAuthority> authorities = loadUserAuthorities(userData, 
-                                                                                 authToken.getName(), 
-                                                                                 (String) authToken.getCredentials());
+                                                                                 authToken.getName(),
+                                                                                 credentials);
         UserDetails user = this.userDetailsContextMapper.mapUserFromContext(userData, userToken.getName(), authorities);
 
         return createSuccessfulAuthentication(userToken, user);
@@ -165,7 +167,7 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
     @Override
     protected DirContextOperations doAuthentication(UsernamePasswordAuthenticationToken userToken) {
         final UsernamePasswordAuthenticationToken authToken = this.serviceToken != null ? this.serviceToken : userToken;
-        DirContext ctx = bindAsUser(authToken.getName(), (String) authToken.getCredentials());
+        DirContext ctx = bindAsUser(authToken.getName(), authToken.getCredentials());
     
         try {
             return searchForUser(ctx, userToken.getName());
@@ -204,16 +206,16 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
         }
     }
     
-    private DirContext bindAsUser(String username, String password) {
+    private DirContext bindAsUser(String username, Object password) {
         // TODO. add DNS lookup based on domain
         final String bindUrl = url;
-    
-        Hashtable<String, String> env = new Hashtable<String, String>();
+
+        Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         String bindPrincipal = createBindPrincipal(username);
         env.put(Context.SECURITY_PRINCIPAL, bindPrincipal);
         env.put(Context.PROVIDER_URL, bindUrl);
-        env.put(Context.SECURITY_CREDENTIALS, password);
+        env.put(Context.SECURITY_CREDENTIALS, String.valueOf((char[])password));
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.OBJECT_FACTORIES, DefaultDirObjectFactory.class.getName());
     

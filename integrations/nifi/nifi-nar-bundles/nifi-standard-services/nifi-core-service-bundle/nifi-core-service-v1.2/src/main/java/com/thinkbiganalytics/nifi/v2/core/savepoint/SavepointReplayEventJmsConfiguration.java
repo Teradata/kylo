@@ -37,11 +37,6 @@ public class SavepointReplayEventJmsConfiguration {
         LOG.info("CREATING NEW SavepointReplayEventJmsConfiguration ");
     }
 
-    //   @Bean
-    //   public ConfigurationClassPostProcessor configurationClassPostProcessor() {
-    //      return new ConfigurationClassPostProcessor();
-    //  }
-
     @Bean
     public com.thinkbiganalytics.nifi.v2.core.savepoint.JmsSavepointReplayEventConsumer savepointReplayEventConsumer() {
         LOG.info("Creating new Spring Bean for JmsSavepointReplayEventConsumer");

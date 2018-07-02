@@ -23,7 +23,7 @@ else
 	exit 1
 fi
 
-kylo_indexes=kylo-data,kylo-datasources,kylo-categories-metadata,kylo-categories-default,kylo-feeds-metadata,kylo-feeds-default
+kylo_indexes=kylo-data,kylo-datasources,kylo-categories-metadata,kylo-categories-default,kylo-feeds-metadata,kylo-feeds-default,kylo-internal-fd1-default,kylo-internal-fd1-metadata
 
 BODY="{
 		\"settings\" : {

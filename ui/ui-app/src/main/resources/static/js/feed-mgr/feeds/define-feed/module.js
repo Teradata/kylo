@@ -10,7 +10,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
+        $stateProvider.state(AccessConstants.default.UI_STATES.DEFINE_FEED.state, {
             url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
                 templateId: null,
@@ -33,20 +33,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.DEFINE_FEED.permissions
+                permissions:AccessConstants.default.UI_STATES.DEFINE_FEED.permissions
             }
         });
 
-        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.state, {
+        $stateProvider.state(AccessConstants.default.UI_STATES.DEFINE_FEED_COMPLETE.state, {
             url: '/define-feed-complete',
             params: {
                 templateId: null
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
-                    controller: 'DefineFeedCompleteController',
-                    controllerAs: 'vm'
+                    component: 'thinkbigDefineFeedCompleteController',
                 }
             },
             resolve: {
@@ -56,13 +54,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.permissions
+                permissions:AccessConstants.default.UI_STATES.DEFINE_FEED_COMPLETE.permissions
             }
         });
 
 
 
-        $stateProvider.state(AccessConstants.UI_STATES.IMPORT_FEED.state, {
+        $stateProvider.state(AccessConstants.default.UI_STATES.IMPORT_FEED.state, {
             url: '/import-feed',
             params: {},
             views: {
@@ -79,12 +77,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Import Feed',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
+                permissions:AccessConstants.default.UI_STATES.IMPORT_FEED.permissions
             }
         });
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/define-feed/module-require','feed-mgr/visual-query/module-require']);
+            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/define-feed/module-require','feed-mgr/visual-query/module-require']);
         }
     }]);
 

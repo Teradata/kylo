@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
@@ -50,6 +51,8 @@ public final class RegisteredTemplate extends EntityAccessControl {
     private List<Processor> nonInputProcessors;
 
     private List<Processor> inputProcessors;
+
+    private List<NiFiRemoteProcessGroup> remoteProcessGroups;
 
     private String id;
 
@@ -168,7 +171,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
 
     public List<NifiProperty> getProperties() {
-        if(properties == null){
+        if (properties == null) {
             properties = new ArrayList<>();
         }
         return properties;
@@ -275,6 +278,9 @@ public final class RegisteredTemplate extends EntityAccessControl {
     }
 
     public List<ReusableTemplateConnectionInfo> getReusableTemplateConnections() {
+        if (reusableTemplateConnections == null) {
+            reusableTemplateConnections = new ArrayList<>();
+        }
         return reusableTemplateConnections;
     }
 
@@ -322,20 +328,22 @@ public final class RegisteredTemplate extends EntityAccessControl {
     @JsonIgnore
     public void initializeNonInputProcessors() {
         Map<String, Processor> processorMap = new HashMap<>();
-
-        properties.stream().filter(property -> !property.isInputProperty()).forEach(property -> {
-            processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(processorId)).addProperty(property);
-        });
+        if (properties != null) {
+            properties.stream().filter(property -> !property.isInputProperty()).forEach(property -> {
+                processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(processorId)).addProperty(property);
+            });
+        }
         nonInputProcessors = Lists.newArrayList(processorMap.values());
     }
 
     @JsonIgnore
     public void initializeInputProcessors() {
         Map<String, Processor> processorMap = new HashMap<>();
-
-        properties.stream().filter(isValidInput()).forEach(property -> {
-            processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(property.getProcessorId())).addProperty(property);
-        });
+        if (properties != null) {
+            properties.stream().filter(isValidInput()).forEach(property -> {
+                processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(property.getProcessorId())).addProperty(property);
+            });
+        }
         inputProcessors = Lists.newArrayList(processorMap.values());
     }
 
@@ -343,23 +351,24 @@ public final class RegisteredTemplate extends EntityAccessControl {
         Map<String, Processor> processorMap = new HashMap<>();
         Map<String, Processor> inputProcessorMap = new HashMap<>();
         Map<String, Processor> nonInputProcessorMap = new HashMap<>();
-
-        properties.stream().forEach(property -> {
-            processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(property.getProcessorId())).addProperty(property);
-            if (property.isInputProperty()) {
-                //dont allow the cleanup processor as a valid input selection
-                if (property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
-                    inputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
+        if (properties != null) {
+            properties.stream().forEach(property -> {
+                processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(property.getProcessorId())).addProperty(property);
+                if (property.isInputProperty()) {
+                    //dont allow the cleanup processor as a valid input selection
+                    if (property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
+                        inputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
+                    }
+                    //mark the template as allowing preconditions if it has an input of TriggerFeed
+                    if (NifiProcessUtil.TRIGGER_FEED_TYPE.equalsIgnoreCase(property.getProcessorType()) && !this.isAllowPreconditions()) {
+                        this.setAllowPreconditions(true);
+                    }
+                } else {
+                    nonInputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
                 }
-                //mark the template as allowing preconditions if it has an input of TriggerFeed
-                if(NifiProcessUtil.TRIGGER_FEED_TYPE.equalsIgnoreCase(property.getProcessorType()) && !this.isAllowPreconditions()) {
-                    this.setAllowPreconditions(true);
-                }
-            } else {
-                nonInputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
-            }
 
-        });
+            });
+        }
 
         inputProcessors = Lists.newArrayList(inputProcessorMap.values());
         nonInputProcessors = Lists.newArrayList(nonInputProcessorMap.values());
@@ -429,11 +438,12 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
 
     @JsonIgnore
-    public List<NifiProperty> getConfigurationProperties(){
+    public List<NifiProperty> getConfigurationProperties() {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
     }
+
     @JsonIgnore
-    public List<NifiProperty> getSensitiveProperties(){
+    public List<NifiProperty> getSensitiveProperties() {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
     }
 
@@ -443,6 +453,15 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     public void setTemplateTableOption(String templateTableOption) {
         this.templateTableOption = templateTableOption;
+    }
+
+
+    public List<NiFiRemoteProcessGroup> getRemoteProcessGroups() {
+        return remoteProcessGroups;
+    }
+
+    public void setRemoteProcessGroups(List<NiFiRemoteProcessGroup> remoteProcessGroups) {
+        this.remoteProcessGroups = remoteProcessGroups;
     }
 
     public static class FlowProcessor extends RegisteredTemplate.Processor {
@@ -588,13 +607,13 @@ public final class RegisteredTemplate extends EntityAccessControl {
         }
 
 
-
     }
 
     @JsonIgnore
     public boolean isUpdated() {
         return updated;
     }
+
     @JsonIgnore
     public void setUpdated(boolean updated) {
         this.updated = updated;

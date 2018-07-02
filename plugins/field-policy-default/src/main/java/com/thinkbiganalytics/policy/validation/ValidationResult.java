@@ -27,6 +27,8 @@ import java.io.Serializable;
  */
 public class ValidationResult implements Serializable {
 
+    private static final long serialVersionUID = -4262871699742123719L;
+
     boolean result = true;
     String scope;
     String fieldName;

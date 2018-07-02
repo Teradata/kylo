@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,23 +30,20 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
-  */
+ */
 public class JcrObject {
-    
-    private static final Logger log = LoggerFactory.getLogger(JcrObject.class);
 
     protected final Node node;
 
@@ -154,7 +151,7 @@ public class JcrObject {
         return JcrPropertyUtil.getProperties(this.node);
     }
 
-    public Object getProperty(String name) {
+    public <T> T  getProperty(String name) {
         try {
             return JcrPropertyUtil.getProperty(this.node, name);
         } catch (AccessControlException e) {
@@ -223,6 +220,7 @@ public class JcrObject {
         return getPropertyFromNode(this.node, name, type, allowNotFound);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound) {
         Object o = JcrPropertyUtil.getProperty(node, name, allowNotFound);
         if (allowNotFound && o == null) {
@@ -236,18 +234,21 @@ public class JcrObject {
             }
         }
         if (!o.getClass().isAssignableFrom(type)) {
-            //if it cant be matched and it is a Node > JcrObject, do the conversion
+            // conversion for Node to JcrObject
             if (o instanceof Node && JcrObject.class.isAssignableFrom(type)) {
                 return JcrUtil.constructNodeObject((Node) o, type, null);
-            } else {
-                if(name.toLowerCase().contains("password")) {
-                    throw new MetadataRepositoryException("Unable to convert Property \"UNKNOWN\" to type " + type);
-                }
-                else {
-                    throw new MetadataRepositoryException("Unable to convert Property " + name + " to type " + type);
-                }
-
             }
+            // conversion for byte[] to String
+            if (o instanceof byte[] && String.class.equals(type)) {
+                try {
+                    return (T) new String((byte[]) o, "UTF-8");
+                } catch (final UnsupportedEncodingException e) {
+                    throw new MetadataRepositoryException("Unable to decode String property '" + name + "'", e);
+                }
+            }
+            // unable to convert
+            final String safeName = name.toLowerCase().contains("password") ? "UNKNOWN" : name;
+            throw new MetadataRepositoryException("Unable to convert Property " + safeName + " to type " + type);
         } else {
             return (T) o;
         }
@@ -258,10 +259,9 @@ public class JcrObject {
             JcrPropertyUtil.setProperty(this.node, name, value);
         } catch (AccessControlException e) {
             // Re-throw with possibly a better message. Filter out passwords
-            if(name.toLowerCase().contains("password")) {
+            if (name.toLowerCase().contains("password")) {
                 throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
-            }
-            else {
+            } else {
                 throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
             }
         }

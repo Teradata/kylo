@@ -37,8 +37,10 @@ import org.apache.nifi.reporting.InitializationException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Tags({"savepoint", "thinkbig", "kylo", "distributed"})
@@ -49,6 +51,8 @@ public class DistributedSavepointController extends AbstractControllerService im
 
     private SavepointReplayEventListener savepointReplayEventListener = new DefaultSavepointReplayEventListener();
 
+
+    private SavepointProcessorCache cache = new SavepointProcessorCache();
 
     /**
      * List of properties
@@ -77,8 +81,9 @@ public class DistributedSavepointController extends AbstractControllerService im
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         getLogger().info("Configuring Savepoint controller.");
-        final DistributedMapCacheClient cache = context.getProperty(DISTRIBUTED_CACHE_SERVICE).asControllerService(DistributedMapCacheClient.class);
-        this.provider = new DistributedSavepointProviderImpl(cache);
+        final DistributedMapCacheClient cacheClient = context.getProperty(DISTRIBUTED_CACHE_SERVICE).asControllerService(DistributedMapCacheClient.class);
+        this.provider = new DistributedSavepointProviderImpl(cacheClient);
+        this.provider.subscribeDistributedSavepointChanges(this.cache);
         this.springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
         addJmsListeners();
     }
@@ -114,7 +119,6 @@ public class DistributedSavepointController extends AbstractControllerService im
         }
     }
 
-
     private void removeJmsListeners() {
         SavepointReplayEventConsumer consumer = this.springService.getBean(SavepointReplayEventConsumer.class);
         if (consumer != null) {
@@ -122,16 +126,60 @@ public class DistributedSavepointController extends AbstractControllerService im
         }
     }
 
+
+    /**
+     * Add the flow file back to processing
+     *
+     * @param processorId the processor id
+     * @param flowfileId  the flow file to add back to the cache
+     */
+    public void putFlowfileBack(String processorId, String flowfileId, boolean top) {
+        if(top) {
+            cache.putFlowfileBack(processorId, flowfileId);
+        }
+        else {
+            cache.putFlowfile(processorId,flowfileId);
+        }
+    }
+
+    public List<String> getNextFlowFiles(String processorId) throws CacheNotInitializedException {
+        return cache.getNextFlowFiles(processorId);
+    }
+
+    public List<String> initializeAndGetNextFlowFiles(String processorId, Collection<String> newFlowfiles, Collection<SavepointEntry> savepointEntries) {
+        newFlowfiles.stream().forEach(e -> cache.putFlowfile(processorId, e));
+        savepointEntries.stream().forEach(e -> cache.putSavepoint(e));
+        cache.markInitialized(processorId);
+        try {
+            return getNextFlowFiles(processorId);
+        } catch (CacheNotInitializedException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public Optional<String> getNextFlowFile(String processorId) throws CacheNotInitializedException {
+        return cache.getNextFlowFile(processorId);
+    }
+
+    public Optional<String> initializeAndGetNextFlowFile(String processorId, Collection<String> newFlowfiles, Collection<SavepointEntry> savepointEntries) {
+        newFlowfiles.stream().forEach(e -> cache.putFlowfile(processorId, e));
+        savepointEntries.stream().forEach(e -> cache.putSavepoint(e));
+        cache.markInitialized(processorId);
+        try {
+            return getNextFlowFile(processorId);
+        } catch (CacheNotInitializedException e) {
+            return Optional.empty();
+        }
+    }
+
     private class DefaultSavepointReplayEventListener implements SavepointReplayEventListener {
 
-        //**
-        //Abandon == release
-        // trigger == retry
         private int maxRetries = 10;
 
         private void lockAndProcess(SavepointReplayEvent event, String savepointId, int attempt) {
+            Lock lock = null;
             try {
-                Lock lock = provider.lock(savepointId);
+                lock = provider.lock(savepointId);
                 if (lock != null) {
                     if (event.getAction() == SavepointReplayEvent.Action.RETRY) {
                         getLogger().info("Attempt to retry savepoint: {}, flowfile: {}, lock: {} ", new Object[]{savepointId, event.getFlowfileId(), lock});
@@ -166,6 +214,14 @@ public class DistributedSavepointController extends AbstractControllerService im
             } catch (IOException e) {
                 getLogger().info("Unable to obtain lock for {} ", new Object[]{event});
                 getSavepointReplayResponseJmsProduce().replayFailure(event, "Unable to obtain lock for savepoint " + savepointId + ". Exception: " + e.getMessage());
+            } finally {
+                if (lock != null) {
+                    try {
+                        provider.unlock(lock);
+                    } catch (IOException e) {
+                        getLogger().warn("Unable to unlock {}", new String[]{savepointId});
+                    }
+                }
             }
 
         }

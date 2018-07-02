@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -130,6 +131,9 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
         return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).
             add(DIRECTORY).add(FAIL_IF_INCORRECT_CHECKSUM).add(FILES).build();
     }
+
+    @Override
+    protected void modifyConfig(ProcessContext context, Configuration config) {   }
 
     /**
      * get the relationships for this processor

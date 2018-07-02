@@ -24,13 +24,14 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -43,11 +44,11 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
-    private JcrExtensibleTypeProvider typeProvider;
+    private ExtensibleTypeProvider typeProvider;
 
     @Inject
     private ExtensibleEntityProvider entityProvider;
@@ -58,7 +59,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     @BeforeClass
     public void ensureExtensibleTypes() {
         metadata.commit(() -> {
-            typeProvider.ensureTypeDescriptors();
+            ((JcrExtensibleTypeProvider)this.typeProvider).ensureTypeDescriptors();
         }, MetadataAccess.SERVICE);
     }
 
@@ -214,7 +215,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             ExtensibleEntity entity = entityProvider.getEntity(id);
 
             assertThat(entity).isNotNull();
-            assertThat(entity.getProperty("name")).isEqualTo("Bob");
+            assertThat(entity.<String>getProperty("name")).isEqualTo("Bob");
 
             return entity.getTypeName();
         }, MetadataAccess.SERVICE);

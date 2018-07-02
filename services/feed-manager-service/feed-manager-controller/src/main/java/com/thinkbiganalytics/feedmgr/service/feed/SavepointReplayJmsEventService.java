@@ -85,13 +85,15 @@ public class SavepointReplayJmsEventService {
     public void receiveEvent(SavepointReplayResponseEvent event) {
         log.info("{} Received feed savepoint replay response event  {} ", event);
 
-        if (event.getResponse() == SavepointReplayResponseEvent.RESPONSE.FAILURE) {
+       /* if (event.getResponse() == SavepointReplayResponseEvent.RESPONSE.FAILURE) {
             //fail it if we get an error on the trigger
             metadataAccess.commit(() -> {
+                //query for job and fail it if its not already failed
                 this.jobService.failJobExecution(event.getJobExecutionId());
                 return null;
             }, MetadataAccess.SERVICE);
         }
+        */
 
 
     }

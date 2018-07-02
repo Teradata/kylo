@@ -38,8 +38,9 @@ import javax.annotation.Nullable;
  * Class to hold profile statistics for columns of timestamp data type <br>
  * [Hive data type: TIMESTAMP]
  */
-@SuppressWarnings("serial")
 public class TimestampColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 1352400209627105475L;
 
     /**
      * Records the maximum value of the column
@@ -121,20 +122,14 @@ public class TimestampColumnStatistics extends StandardColumnStatistics {
                + "TimestampColumnStatistics [maxTimestamp=" + (maxTimestamp != null ? maxTimestamp : "") + ", minTimestamp=" + (minTimestamp != null ? minTimestamp : "") + "]\n}";
     }
 
-    /**
-     * Writes the statistics to an output table.
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         // Write common statistics
         writeStatisticsCommon(rows);
 
         // Write timestamp-specific statistics
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_TIMESTAMP), (maxTimestamp != null) ? maxTimestamp.toString() : ""));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_TIMESTAMP), (minTimestamp != null) ? minTimestamp.toString() : ""));
-        return rows;
     }
 
     /**

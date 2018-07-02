@@ -20,8 +20,12 @@ package com.thinkbiganalytics.spark.config;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.KyloCatalog;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.metadata.TransformScript16;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
+import com.thinkbiganalytics.spark.service.DataSetConverterServiceV1;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService16;
 
@@ -37,6 +41,11 @@ import javax.annotation.Nonnull;
 @Configuration
 public class SparkShellConfig16 {
 
+    @Bean
+    public DataSetConverterService converterService() {
+        return new DataSetConverterServiceV1();
+    }
+
     /**
      * Creates a Spark listener service.
      */
@@ -51,5 +60,14 @@ public class SparkShellConfig16 {
     @Bean
     public Class<? extends TransformScript> transformScriptClass() {
         return TransformScript16.class;
+    }
+
+
+    /**
+     * Gets the class for transform scripts.
+     */
+    @Bean
+    public KyloCatalogClientBuilder kyloCatalogClientBuilder(){
+        return KyloCatalog.builder();
     }
 }

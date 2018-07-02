@@ -44,6 +44,16 @@
     </dependencySet-->
   </dependencySets>
   <fileSets>
+    <!-- Create kylo-install-inspector folders -->
+    <fileSet>
+      <outputDirectory>/kylo-install-inspector/bin</outputDirectory>
+      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
+      <directory>.</directory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+      <fileMode>755</fileMode>
+    </fileSet>
     <!-- Create UI folders. Most of the UI files are in the file section since they were individual files -->
     <fileSet>
       <outputDirectory>/kylo-ui/bin</outputDirectory>
@@ -61,6 +71,12 @@
       <excludes>
         <exclude>**/*</exclude>
       </excludes>
+      <fileMode>755</fileMode>
+    </fileSet>
+    <fileSet>
+      <!-- externalise static content in case end users want to customise look and feel of ui application -->
+      <outputDirectory>/kylo-ui/plugin/static</outputDirectory>
+      <directory>${project.parent.parent.basedir}/ui/ui-app/target/classes/static/assets/</directory>
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
@@ -133,14 +149,6 @@
       <fileMode>755</fileMode>
       <includes>
         <include>spark.properties</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-app/src/main/config/rpm-build</directory>
-      <outputDirectory>kylo-services/conf</outputDirectory>
-      <fileMode>755</fileMode>
-      <includes>
-        <include>log4j-spark.properties</include>
       </includes>
     </fileSet>
     <fileSet>
@@ -316,6 +324,13 @@
     </fileSet>
 
     <fileSet>
+      <outputDirectory>setup/nifi/hdf</outputDirectory>
+      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
+      <directory>${project.parent.basedir}/setup/nifi/hdf</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+
+    <fileSet>
       <outputDirectory>setup/sql</outputDirectory>
       <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
       <directory>${project.parent.basedir}/setup/sql</directory>
@@ -424,7 +439,6 @@
         <include>start-kylo-apps.sh</include>
         <include>stop-kylo-apps.sh</include>
         <include>status-kylo-apps.sh</include>
-        <include>kylo-service</include>
       </includes>
     </fileSet>
 
@@ -459,7 +473,33 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
+      <outputDirectory>kylo-install-inspector/lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/src/main/resources/logback-spring.xml</source>
+      <outputDirectory>kylo-install-inspector/conf</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-api/target/kylo-install-inspector-api-${project.version}.jar</source>
+      <outputDirectory>kylo-install-inspector/inspections</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-inspections/target/kylo-install-inspector-inspections-${project.version}.jar</source>
+      <outputDirectory>kylo-install-inspector/inspections</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.basedir}/bin/encryptSqoopPassword.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/setup/kylo-service</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>
@@ -642,6 +682,13 @@
     </file>
 
     <file>
+      <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-teradata-tdch-bundle/nifi-teradata-tdch-nar/target/kylo-nifi-teradata-tdch-nar-${project.version}.nar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+
+    <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-job-profiler/spark-job-profiler-spark-v1/target/kylo-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
@@ -669,6 +716,20 @@
     </file>
     <file>
       <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-merge-table/spark-merge-table-spark-v1/target/kylo-spark-merge-table-spark-v1-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-merge-table/spark-merge-table-spark-v2/target/kylo-spark-merge-table-spark-v2-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
         ${project.parent.parent.basedir}/integrations/spark/spark-interpreter/spark-interpreter-spark-v1/target/kylo-spark-interpreter-spark-v1-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
@@ -677,6 +738,20 @@
     <file>
       <source>
         ${project.parent.parent.basedir}/integrations/spark/spark-interpreter/spark-interpreter-spark-v2/target/kylo-spark-interpreter-spark-v2-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-multi-exec/spark-multi-exec-spark-v1/target/kylo-spark-multi-exec-spark-v1-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-multi-exec/spark-multi-exec-spark-v2/target/kylo-spark-multi-exec-spark-v2-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
       <fileMode>755</fileMode>

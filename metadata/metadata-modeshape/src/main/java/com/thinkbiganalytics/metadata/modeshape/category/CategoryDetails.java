@@ -54,9 +54,11 @@ import com.thinkbiganalytics.security.role.SecurityRole;
  */
 public class CategoryDetails extends JcrPropertiesEntity {
     
+    public static final String NODE_TYPE = "tba:categoryDetails";
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
     public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
     public static final String FEED_ROLE_MEMBERSHIPS_TYPE = "tba:CategoryFeedRoleMemberships";
+    public static final String FEED_USER_FIELDS = "tba:feedUserFields";
 
     private Optional<FeedOpsAccessControlProvider> opsAccessProvider;
     

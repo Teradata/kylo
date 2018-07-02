@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
@@ -14,10 +14,10 @@
 
   <modules>
     <module>ui-annotation</module>
+    <module>nifi-provenance</module>
     <module>sla</module>
     <module>alerts</module>
     <module>schema-discovery</module>
-
     <module>field-policy</module>
     <module>precondition</module>
     <module>job-repository</module>
@@ -28,6 +28,7 @@
     <module>operational-metadata</module>
     <module>cluster-manager</module>
     <module>search</module>
+    <module>file-metadata</module>
   </modules>
 
 </project>

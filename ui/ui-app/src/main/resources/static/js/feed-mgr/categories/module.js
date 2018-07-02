@@ -7,15 +7,13 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state(AccessConstants.UI_STATES.CATEGORIES.state,{
+        $stateProvider.state(AccessConstants.default.UI_STATES.CATEGORIES.state,{
             url:'/categories',
             params: {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/categories/categories.html',
-                    controller:'CategoriesController',
-                    controllerAs:'vm'
+                    component: "categoriesController"
                 }
             },
             resolve: {
@@ -25,18 +23,16 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 breadcrumbRoot:true,
                 displayName:'Categories',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.CATEGORIES.permissions
+                permissions:AccessConstants.default.UI_STATES.CATEGORIES.permissions
             }
-        }).state(AccessConstants.UI_STATES.CATEGORY_DETAILS.state,{
+        }).state(AccessConstants.default.UI_STATES.CATEGORY_DETAILS.state,{
             url:'/category-details/{categoryId}',
             params: {
                 categoryId:null
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/categories/category-details.html',
-                    controller: 'CategoryDetailsController',
-                    controllerAs: 'vm'
+                    component: "categoryDetailsController"
                 }
             },
             resolve: {
@@ -46,7 +42,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 breadcrumbRoot:false,
                 displayName:'Category Details',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.CATEGORY_DETAILS.permissions
+                permissions:AccessConstants.default.UI_STATES.CATEGORY_DETAILS.permissions
             }
         })
 
@@ -56,7 +52,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
     }]);
 
     function lazyLoadController(path){
-        return lazyLoadUtil.lazyLoadController(path,'feed-mgr/categories/module-require');
+        return lazyLoadUtil.default.lazyLoadController(path,'feed-mgr/categories/module-require');
     }
 
 

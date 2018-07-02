@@ -21,6 +21,8 @@ package com.thinkbiganalytics.nifi.rest.client;
  */
 
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
@@ -64,13 +66,21 @@ public interface NiFiProcessorsRestClient {
      */
     Optional<ProcessorDTO> update(@Nonnull final ProcessorEntity processorEntity);
 
-
     /**
      * Updates the schedule for a processor
      * @param schedule
      * @return
      */
     ProcessorDTO schedule(NifiProcessorSchedule schedule);
+    
+    /**
+     * Attempts to trigger a single execution of the processor and then restore that processor back to 
+     * the state it was in prior to waking it up.
+     * 
+     * @param processor to be woken
+     * @return the end state of the processor
+     */
+    ProcessorDTO wakeUp(ProcessorDTO processor);
 
     /**
      * Updates a processor and retries {@code retryAmount} number of times if the update is unsuccessful

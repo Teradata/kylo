@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.service;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -29,6 +30,10 @@ import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
+import com.thinkbiganalytics.kylo.catalog.spark.DataSourceResourceLoader;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
@@ -49,16 +54,23 @@ import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -67,6 +79,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +88,7 @@ import java.util.concurrent.TimeoutException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
+import javax.ws.rs.core.Response;
 
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
@@ -88,10 +102,20 @@ public class TransformService {
     private static final XLogger log = XLoggerFactory.getXLogger(TransformService.class);
 
     /**
+     * Data set converter service
+     */
+    @Nonnull
+    private final DataSetConverterService converterService;
+
+    /**
      * Data source provider factory
      */
     @Nullable
     private DatasourceProviderFactory datasourceProviderFactory;
+
+
+    @Nullable
+    private CatalogDataSetProviderFactory catalogDataSetProviderFactory;
 
     /**
      * Script execution engine
@@ -112,6 +136,12 @@ public class TransformService {
     private Profiler profiler;
 
     /**
+     * Hive SessionState for adding to other threads.
+     */
+    @Nullable
+    private final SessionState sessionState = SessionState.get();
+
+    /**
      * Provides access to the Spark context
      */
     @Nonnull
@@ -122,6 +152,13 @@ public class TransformService {
      */
     @Nonnull
     private final JobTrackerService tracker;
+
+
+    /**
+     * Builder for the kylo client reader
+     */
+    @Nonnull
+    private final KyloCatalogClientBuilder kyloCatalogClientBuilder;
 
     /**
      * Cache of transformations
@@ -151,13 +188,16 @@ public class TransformService {
      * @param engine               the script engine
      * @param sparkContextService  the Spark context service
      * @param tracker              job tracker for transformations
+     * @param converterService     data set converter service
      */
     public TransformService(@Nonnull final Class<? extends TransformScript> transformScriptClass, @Nonnull final SparkScriptEngine engine, @Nonnull final SparkContextService sparkContextService,
-                            @Nonnull final JobTrackerService tracker) {
+                            @Nonnull final JobTrackerService tracker, @Nonnull final DataSetConverterService converterService, @Nonnull KyloCatalogClientBuilder kyloCatalogClientBuilder) {
         this.transformScriptClass = transformScriptClass;
         this.engine = engine;
         this.sparkContextService = sparkContextService;
         this.tracker = tracker;
+        this.converterService = converterService;
+        this.kyloCatalogClientBuilder = kyloCatalogClientBuilder;
     }
 
     /**
@@ -180,6 +220,16 @@ public class TransformService {
         this.datasourceProviderFactory = datasourceProviderFactory;
     }
 
+
+    @Nullable
+    public CatalogDataSetProviderFactory getCatalogDataSetProviderFactory() {
+        return catalogDataSetProviderFactory;
+    }
+
+    public void setCatalogDataSetProviderFactory(@Nullable CatalogDataSetProviderFactory catalogDataSetProviderFactory) {
+        this.catalogDataSetProviderFactory = catalogDataSetProviderFactory;
+    }
+
     /**
      * Executes the specified transformation and returns the name of the Hive table containing the results.
      *
@@ -200,13 +250,19 @@ public class TransformService {
         // Execute script
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet), getPolicies(request));
+        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request);
+        updateTransformResponse(response,dataSet);
+        return log.exit(response);
+    }
+
+    private void updateTransformResponse(TransformResponse response, DataSet dataSet) throws ScriptException{
+        final StructType schema = dataSet.schema();
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
             final String table = response.getTable();
             final TransformQueryResult partialResult = new TransformQueryResult();
-            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table).columns()));
+            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table, converterService).columns()));
 
             response = new TransformResponse();
             response.setProgress(0.0);
@@ -214,8 +270,6 @@ public class TransformService {
             response.setStatus(TransformResponse.Status.PENDING);
             response.setTable(table);
         }
-
-        return log.exit(response);
     }
 
     /**
@@ -314,7 +368,7 @@ public class TransformService {
         }
 
         // Execute query
-        final TransformResponse response = submitTransformJob(createSqlTask(request), getPolicies(request));
+        final TransformResponse response = submitTransformJob(createSqlTask(request), request);
         return log.exit(response);
     }
 
@@ -326,7 +380,7 @@ public class TransformService {
         log.entry(id, save);
 
         final DataSet dataSet = createShellTask(getTransformRequest(id));
-        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet)));
+        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet, converterService)));
         return log.exit(response);
     }
 
@@ -399,8 +453,40 @@ public class TransformService {
 
         script.append("}\n");
         script.append("new Transform(sqlContext, sparkContextService).run()\n");
-
         return script.toString();
+    }
+
+
+    public TransformResponse kyloReaderResponse(KyloCatalogReadRequest request) throws ScriptException{
+       KyloCatalogClient client = kyloCatalogClientBuilder.build();
+       KyloCatalogReader reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
+       Object dataFrame = null;
+       DataSet dataSet = null;
+       if(!request.getPaths().isEmpty()) {
+           if(request.getPaths().size() >1) {
+               dataFrame = reader.load(request.getPaths().toArray(new String[request.getPaths().size()]));
+           }
+           else {
+               dataFrame =  reader.load(request.getPaths().get(0));
+           }
+       }
+       else {
+           dataFrame = reader.load();
+       }
+       if(dataFrame != null){
+         dataSet =  sparkContextService.toDataSet(dataFrame);
+
+           TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request.getPageSpec());
+
+           updateTransformResponse(response,dataSet);
+           return log.exit(response);
+       }
+      else {
+           throw new ScriptException("Cannot read request");
+       }
+
+
+
     }
 
     /**
@@ -423,7 +509,7 @@ public class TransformService {
     @Nonnull
     private Supplier<SaveResult> createSaveTask(@Nonnull final SaveRequest request, @Nonnull final Supplier<TransformResult> transform) {
         Preconditions.checkState(hadoopFileSystem != null, "Saving is not enabled.");
-        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem), transform);
+        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem, converterService), transform);
     }
 
     /**
@@ -444,6 +530,22 @@ public class TransformService {
             } else {
                 throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
             }
+        }
+
+        if(request.getCatalogDatasets() != null && !request.getCatalogDatasets().isEmpty()) {
+
+            if (catalogDataSetProviderFactory != null) {
+                log.info("Creating new Shell task with {} data sets ",request.getCatalogDatasets().size());
+                final CatalogDataSetProvider catalogDataSetProvider = catalogDataSetProviderFactory.getDataSetProvider(request.getCatalogDatasets());
+                bindings.add(new NamedParamClass("catalogDataSetProvider", CatalogDataSetProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", catalogDataSetProvider));
+            } else {
+                throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
+            }
+        }
+
+        // Ensure SessionState is valid
+        if (SessionState.get() == null && sessionState != null) {
+            SessionState.setCurrentSessionState(sessionState);
         }
 
         // Execute script
@@ -539,22 +641,44 @@ public class TransformService {
      * Submits the specified task to be executed and returns the result.
      */
     @Nonnull
-    private TransformResponse submitTransformJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies) throws ScriptException {
+    private TransformResponse submitTransformJob(final Supplier<TransformResult> task, @Nonnull final TransformRequest request) throws ScriptException {
+
+        final FieldPolicy[] policies = getPolicies(request);
+        final PageSpec pageSpec = request.getPageSpec();
+
         log.entry(task, policies);
 
         // Prepare script
         Supplier<TransformResult> result = task;
 
-        if (policies != null && policies.length > 0 && validator != null) {
-            result = Suppliers.compose(new ValidationStage(policies, validator), result);
+        if (request.isDoValidate()) {
+            if (policies != null && policies.length > 0 && validator != null) {
+                result = Suppliers.compose(new ValidationStage(policies, validator), result);
+            }
         }
-        if (profiler != null) {
-            result = Suppliers.compose(new ProfileStage(profiler), result);
+
+        if (request.isDoProfile()) {
+            if (profiler != null) {
+                result = Suppliers.compose(new ProfileStage(profiler), result);
+            }
         }
+        return submitTransformJob(result,pageSpec);
+    }
+
+
+
+    /**
+     * Submits the specified task to be executed and returns the result.
+     */
+    @Nonnull
+    private TransformResponse submitTransformJob(final Supplier<TransformResult> task, @Nonnull final PageSpec pageSpec) throws ScriptException {
+
+        // Prepare script
+        Supplier<TransformResult> result = task;
 
         // Execute script
         final String table = newTableName();
-        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table), result), engine.getSparkContext());
+        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table, converterService, pageSpec), result), engine.getSparkContext());
         tracker.submitJob(job);
 
         // Build response

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
@@ -33,5 +33,9 @@
     <module>jms-service-amazon-sqs</module>
     <module>search-elasticsearch-rest</module>
     <module>service-monitor-activemq</module>
+    <module>catalog-filesystem-aws-hadoop-v2</module>
+    <module>catalog-filesystem-aws-hadoop-v3</module>
+    <module>catalog-filesystem-azure</module>
+    <module>catalog-credential-simple</module>
   </modules>
 </project>

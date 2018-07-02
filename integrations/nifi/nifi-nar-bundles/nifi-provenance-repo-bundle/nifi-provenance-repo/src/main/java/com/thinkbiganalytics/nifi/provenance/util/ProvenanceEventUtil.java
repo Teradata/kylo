@@ -62,4 +62,19 @@ public class ProvenanceEventUtil {
         return (isEndingFlowFileEvent(event) && StringUtils.isNotBlank(event.getDetails()) && event.getDetails().toLowerCase().startsWith(FLOWFILE_QUEUE_EMPTIED));
     }
 
+    /**
+     * Attempt to find the source flow file id from the 'sourceSystemFlowFileIdentifier' on the Event
+     * This is used for Remote Input port Provenance Events to help correlate the event back to the other flow file coming in from the other system
+     * Example sourceSystemFlowFileIdentifier string is : urn:nifi:afc0d172-254d-4cc8-8ff0-dcadfa828731
+     * @param event the ProvenanceEvent record
+     * @return a Flowfile Id string
+     */
+    public static String parseSourceSystemFlowFileIdentifier(ProvenanceEventRecord event){
+        if(StringUtils.isNotBlank(event.getSourceSystemFlowFileIdentifier())){
+            String prefix = "urn:nifi:";
+            return StringUtils.substringAfter(event.getSourceSystemFlowFileIdentifier(),prefix);
+        }
+        return null;
+    }
+
 }

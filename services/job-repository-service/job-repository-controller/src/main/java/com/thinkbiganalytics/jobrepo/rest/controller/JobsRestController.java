@@ -116,7 +116,7 @@ public class JobsRestController {
 
         return metadataAccess.read(() -> {
             ExecutedJob executedJob = null;
-            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId));
+            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId),false);
             if (jobExecution != null) {
                 if (includeSteps) {
                     executedJob = JobModelTransform.executedJob(jobExecution);
@@ -255,7 +255,7 @@ public class JobsRestController {
                   })
     public SearchResult findJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                  @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                 @QueryParam("start") @DefaultValue("1") Integer start,
+                                 @QueryParam("start") @DefaultValue("0") Integer start,
                                  @QueryParam("filter") String filter,
                                  @Context HttpServletRequest request) {
         return metadataAccess.read(() -> {
@@ -277,7 +277,7 @@ public class JobsRestController {
                   })
     public List<ExecutedJob> findJobsList(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("start") @DefaultValue("0") Integer start,
                                           @QueryParam("filter") String filter,
                                           @Context HttpServletRequest request) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -301,7 +301,7 @@ public class JobsRestController {
                   })
     public SearchResult findRunningJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                        @QueryParam("start") @DefaultValue("1") Integer start,
+                                        @QueryParam("start") @DefaultValue("0") Integer start,
                                         @QueryParam("filter") String filter,
                                         @Context HttpServletRequest request) {
 
@@ -328,7 +328,7 @@ public class JobsRestController {
                   })
     public SearchResult findFailedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                       @QueryParam("start") @DefaultValue("1") Integer start,
+                                       @QueryParam("start") @DefaultValue("0") Integer start,
                                        @QueryParam("filter") String filter,
                                        @Context HttpServletRequest request) {
 
@@ -352,7 +352,7 @@ public class JobsRestController {
                   })
     public SearchResult findStoppedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                        @QueryParam("start") @DefaultValue("1") Integer start,
+                                        @QueryParam("start") @DefaultValue("0") Integer start,
                                         @QueryParam("filter") String filter,
                                         @Context HttpServletRequest request) {
 
@@ -378,7 +378,7 @@ public class JobsRestController {
                   })
     public SearchResult findCompletedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("start") @DefaultValue("0") Integer start,
                                           @QueryParam("filter") String filter,
                                           @Context HttpServletRequest request) {
 
@@ -405,7 +405,7 @@ public class JobsRestController {
                   })
     public SearchResult findAbandonedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("start") @DefaultValue("0") Integer start,
                                           @QueryParam("filter") String filter,
                                           @Context HttpServletRequest request) {
 

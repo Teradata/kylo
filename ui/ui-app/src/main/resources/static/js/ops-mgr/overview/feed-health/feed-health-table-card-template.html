@@ -18,9 +18,10 @@
   #L%
   -->
 <card-layout flex header-css="filter-header">
-  <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
-
+  <header-section>
+    <tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+      on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
+    </tba-card-filter-header>
   </header-section>
   <body-section>
     <md-tabs flex md-selected="vm.tabMetadata.selectedIndex"
@@ -43,7 +44,7 @@
                   <div class="item-column md-list-item-text item-column-title"
                        layout-fill flex>
                            <span class="item-title" title="{{feed.feed}}">
-                              {{feed.feed}}
+                              {{feed.displayName === undefined ? feed.feed : feed.displayName.value}}
                             </span>
                   </div>
                   <div layout="row" layout-fill class="overview-row">

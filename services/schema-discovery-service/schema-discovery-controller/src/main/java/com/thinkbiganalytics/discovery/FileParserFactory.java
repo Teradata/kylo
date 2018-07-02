@@ -20,8 +20,11 @@ package com.thinkbiganalytics.discovery;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserAnnotationTransformer;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserDescriptorUtil;
 import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
 import com.thinkbiganalytics.spring.SpringApplicationContext;
 
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Provides available parsers
@@ -90,5 +94,19 @@ public class FileParserFactory {
         }
         return supportedParsers;
     }
+
+    /**
+     * Returns the list of Schema Parsers transformed for the UI that support Spark
+     * @return
+     */
+    public List<SchemaParserDescriptor> getSparkSchemaParserDescriptors(){
+        List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        List<SchemaParserDescriptor> list = parsers.stream().map(parser -> transformer.toUIModel(parser))
+            .sorted(SchemaParserDescriptorUtil.compareByNameThenSpark()).collect(Collectors.toList());
+        list = SchemaParserDescriptorUtil.keepFirstByName(list);
+        return list;
+    }
+
 
 }

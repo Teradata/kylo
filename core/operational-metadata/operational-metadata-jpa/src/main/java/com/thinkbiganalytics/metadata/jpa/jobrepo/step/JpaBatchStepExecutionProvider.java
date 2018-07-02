@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provider for accessing {@link JpaBatchStepExecution}
@@ -88,7 +89,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
      * @return {@code true} if the steps were evaluated, {@code false} if no work was needed to be done
      */
     public boolean ensureFailureSteps(BatchJobExecution jobExecution) {
-
         //find all the Steps for this Job that have records in the Failure table for this job flow file
         List<JpaBatchStepExecution> stepsNeedingToBeFailed = batchStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
         if (stepsNeedingToBeFailed != null) {
@@ -128,7 +128,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 //Drop on SetSavepoint indicates release on parent flowfile id
 
     public BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-
         //only create the step if it doesnt exist yet for this event
         JpaBatchStepExecution stepExecution = batchStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
         if (stepExecution == null) {
@@ -167,12 +166,14 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 if (steps == null) {
                     ((JpaBatchJobExecution) jobExecution).setStepExecutions(new HashSet<>());
                 }
-                jobExecution.getStepExecutions().add(stepExecution);
                 //saving the StepExecution will cascade and save the nifiEventStep
                 stepExecution = batchStepExecutionRepository.save(stepExecution);
+                jobExecution.getStepExecutions().add(stepExecution);
+
             }
 
         } else {
+            log.info("Updating step {} ",event.getComponentName());
             //update it
             assignStepExecutionContextMap(event, stepExecution);
             //update the timing info
@@ -193,6 +194,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             boolean failure = event.isFailure();
             if (failure) {
                 //notify failure listeners
+                log.info("Failing Step");
                 failStep(jobExecution, stepExecution, event.getFlowFileUuid(), event.getComponentId());
                 if (StringUtils.isBlank(stepExecution.getExitMessage())) {
                     stepExecution.setExitMessage(event.getDetails());
@@ -200,30 +202,21 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
             }
             stepExecution = batchStepExecutionRepository.save(stepExecution);
-        }
+          }
 
         return stepExecution;
 
     }
 
     private void checkForSavepointTriggerFailure(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
-        if (event.getComponentType().equalsIgnoreCase("TriggerSavepoint") && "FAIL".equalsIgnoreCase(event.getUpdatedAttributes().get(SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS))) {
+        if (event.getComponentType().equalsIgnoreCase("TriggerSavepoint") && SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.FAIL.name().equalsIgnoreCase(event.getUpdatedAttributes().get(SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS))) {
             Map<String, String> stepExecutionMap = stepExecution.getStepExecutionContextAsMap();
             if (stepExecutionMap != null && stepExecutionMap.containsKey(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE)) {
-                //
-                /*
-                JpaBatchStepExecutionContextValue contextValue = new JpaBatchStepExecutionContextValue(stepExecution, "savepoint.trigger");
-                contextValue.setStringVal(event.getJobFlowFileId());
-                stepExecution.addStepExecutionContext(contextValue);
-                log.info("TriggerSavepoint failure detected. added trigger for flow file {}",event.getJobFlowFileId());
-                */
                 //notify the job that we have a possible trigger
                 //add it to the jobexecution
                 String triggerId = stepExecutionMap.get(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE);
-
                 ((JpaBatchJobExecution) stepExecution.getJobExecution()).updateJobExecutionContext(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerId);
                 ((JpaBatchJobExecution) stepExecution.getJobExecution()).failJob();
-
             }
         } else if (event.getComponentType().equalsIgnoreCase("SetSavepoint")) {
             if (event.getEventType().equalsIgnoreCase("DROP")) {
@@ -270,8 +263,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 }
             }
         }
-
-
     }
 
     private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
@@ -291,5 +282,12 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         eventIdContextValue.setStringVal(event.getEventId().toString());
         stepExecution.addStepExecutionContext(eventIdContextValue);
 
+        //add in the clusterNodeIdAddress as a property
+        String clusterAddress = event.getClusterNodeAddress();
+        if(StringUtils.isNotBlank(clusterAddress)) {
+            JpaBatchStepExecutionContextValue clusterNodeAddress = new JpaBatchStepExecutionContextValue(stepExecution, "NiFi Node Address");
+            clusterNodeAddress.setStringVal(clusterAddress);
+            stepExecution.addStepExecutionContext(clusterNodeAddress);
+        }
     }
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.processor.BaseProcessor;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
@@ -40,6 +40,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
@@ -56,6 +57,7 @@ import org.apache.spark.launcher.SparkLauncher;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,7 +77,7 @@ import javax.annotation.Nonnull;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"spark", "thinkbig"})
 @CapabilityDescription("Execute a Spark job.")
-public class ExecuteSparkJob extends AbstractNiFiProcessor {
+public class ExecuteSparkJob extends BaseProcessor {
 
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
     public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
@@ -127,14 +129,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .name("MainArgs")
         .description("Comma separated arguments to be passed into the main as args")
         .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-    public static final PropertyDescriptor SPARK_HOME = new PropertyDescriptor.Builder()
-        .name("SparkHome")
-        .description("Path to the Spark Client directory")
-        .required(true)
-        .defaultValue("/usr/hdp/current/spark-client/")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -231,6 +225,29 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
+        .name("Metadata Service")
+        .description("Kylo metadata service")
+        .required(false)
+        .identifiesControllerService(MetadataProviderService.class)
+        .build();
+    private static final String SPARK_HOME_DEFAULT = Arrays.asList(System.getenv("SPARK_HOME"), "/usr/hdp/current/spark-client", "/usr/lib/spark")
+        .stream()
+        .filter(p -> validPath(p))
+        .findFirst()
+        .orElse(null);
+    private static final PropertyDescriptor.Builder SPARK_HOME_BUILDER = new PropertyDescriptor.Builder()
+        .name("SparkHome")
+        .description("Path to the Spark Client directory")
+        .required(true)
+        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+        .expressionLanguageSupported(true);
+    public static final PropertyDescriptor SPARK_HOME = (SPARK_HOME_DEFAULT != null) ? SPARK_HOME_BUILDER.defaultValue(SPARK_HOME_DEFAULT).build() : SPARK_HOME_BUILDER.build();
+    /**
+     * Matches a comma-separated list of UUIDs
+     */
+    private static final Pattern UUID_REGEX = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                                                              + "(,[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})*$");
     public static final PropertyDescriptor DATASOURCES = new PropertyDescriptor.Builder()
         .name("Data Sources")
         .description("A comma-separated list of data source ids to include in the environment for Spark.")
@@ -238,41 +255,22 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(createUuidListValidator())
         .expressionLanguageSupported(true)
         .build();
-    public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
-        .name("Metadata Service")
-        .description("Kylo metadata service")
-        .required(false)
-        .identifiesControllerService(MetadataProviderService.class)
-        .build();
-
-    /**
-     * Matches a comma-separated list of UUIDs
-     */
-    private static final Pattern UUID_REGEX = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
-                                                              + "(,[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})*$");
-
-    private final Set<Relationship> relationships;
 
     /**
      * Kerberos service keytab
      */
     private PropertyDescriptor kerberosKeyTab;
-
     /**
      * Kerberos service principal
      */
     private PropertyDescriptor kerberosPrincipal;
 
-    /**
-     * List of properties
-     */
-    private List<PropertyDescriptor> propDescriptors;
-
-    public ExecuteSparkJob() {
-        final Set<Relationship> r = new HashSet<>();
-        r.add(REL_SUCCESS);
-        r.add(REL_FAILURE);
-        relationships = Collections.unmodifiableSet(r);
+    public static Boolean validPath(String path) {
+        try {
+            return (path != null && Paths.get(path).toFile().exists()) ? true : false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /*
@@ -322,49 +320,56 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
-        super.init(context);
-
         // Create Kerberos properties
         final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
         final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
         kerberosKeyTab = kerberosProperties.createKerberosKeytabProperty();
         kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
 
-        // Create list of properties
-        final List<PropertyDescriptor> pds = new ArrayList<>();
-        pds.add(APPLICATION_JAR);
-        pds.add(EXTRA_JARS);
-        pds.add(MAIN_CLASS);
-        pds.add(MAIN_ARGS);
-        pds.add(SPARK_MASTER);
-        pds.add(SPARK_YARN_DEPLOY_MODE);
-        pds.add(SPARK_HOME);
-        pds.add(PROCESS_TIMEOUT);
-        pds.add(DRIVER_MEMORY);
-        pds.add(EXECUTOR_MEMORY);
-        pds.add(NUMBER_EXECUTORS);
-        pds.add(SPARK_APPLICATION_NAME);
-        pds.add(EXECUTOR_CORES);
-        pds.add(NETWORK_TIMEOUT);
-        pds.add(HADOOP_CONFIGURATION_RESOURCES);
-        pds.add(kerberosPrincipal);
-        pds.add(kerberosKeyTab);
-        pds.add(YARN_QUEUE);
-        pds.add(SPARK_CONFS);
-        pds.add(EXTRA_SPARK_FILES);
-        pds.add(DATASOURCES);
-        pds.add(METADATA_SERVICE);
-        propDescriptors = Collections.unmodifiableList(pds);
+        // Call the superclass init(), which builds the property list.
+        super.init(context);
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addProperties(java.util.List)
+     */
     @Override
-    public Set<Relationship> getRelationships() {
-        return relationships;
+    protected void addProperties(Set<PropertyDescriptor> list) {
+        super.addProperties(list);
+
+        list.add(APPLICATION_JAR);
+        list.add(EXTRA_JARS);
+        list.add(MAIN_CLASS);
+        list.add(MAIN_ARGS);
+        list.add(SPARK_MASTER);
+        list.add(SPARK_YARN_DEPLOY_MODE);
+        list.add(SPARK_HOME);
+        list.add(PROCESS_TIMEOUT);
+        list.add(DRIVER_MEMORY);
+        list.add(EXECUTOR_MEMORY);
+        list.add(NUMBER_EXECUTORS);
+        list.add(SPARK_APPLICATION_NAME);
+        list.add(EXECUTOR_CORES);
+        list.add(NETWORK_TIMEOUT);
+        list.add(HADOOP_CONFIGURATION_RESOURCES);
+        list.add(kerberosPrincipal);
+        list.add(kerberosKeyTab);
+        list.add(YARN_QUEUE);
+        list.add(SPARK_CONFS);
+        list.add(EXTRA_SPARK_FILES);
+        list.add(DATASOURCES);
+        list.add(METADATA_SERVICE);
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addRelationships(java.util.Set)
+     */
     @Override
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return propDescriptors;
+    protected void addRelationships(Set<Relationship> set) {
+        super.addRelationships(set);
+        
+        set.add(REL_SUCCESS);
+        set.add(REL_FAILURE);
     }
 
     @Override
@@ -382,14 +387,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             PROVENANCE_JOB_STATUS_KEY = context.getName() + " Job Status";
             PROVENANCE_SPARK_EXIT_CODE_KEY = context.getName() + " Spark Exit Code";
 
-              /* Configuration parameters for spark launcher */
-            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
-            String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
+            /* Configuration parameters for spark launcher */
+            String appJar = getApplicationJar(context, flowFile);
+            String mainClass = getMainClass(context, flowFile);
+            String[] appArgs = getMainArgs(context, flowFile);
+            String extraJars = getExtraJars(context, flowFile);
             String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
-            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkYarnDeployMode = context.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions(flowFile).getValue();
-            String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String driverMemory = context.getProperty(DRIVER_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
             String executorMemory = context.getProperty(EXECUTOR_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
             String numberOfExecutors = context.getProperty(NUMBER_EXECUTORS).evaluateAttributeExpressions(flowFile).getValue();
@@ -449,7 +454,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 return;
             }
 
-             /* Launch the spark job as a child process */
+            /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
                 .setAppResource(appJar)
                 .setMainClass(mainClass)
@@ -472,20 +477,20 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setExtraFiles(extraFiles);
 
             Process spark = optionalSparkConf.getLaucnher().launch();
-
+//
             /* Read/clear the process input stream */
             InputStreamReaderRunnable inputStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getInputStream());
             Thread inputThread = new Thread(inputStreamReaderRunnable, "stream input");
             inputThread.start();
 
-             /* Read/clear the process error stream */
+            /* Read/clear the process error stream */
             InputStreamReaderRunnable errorStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getErrorStream());
             Thread errorThread = new Thread(errorStreamReaderRunnable, "stream error");
             errorThread.start();
 
             logger.info("Waiting for Spark job to complete");
 
-             /* Wait for job completion */
+            /* Wait for job completion */
             boolean completed = spark.waitFor(sparkProcessTimeout, TimeUnit.SECONDS);
             if (!completed) {
                 spark.destroyForcibly();
@@ -512,6 +517,29 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
+    }
+
+    protected String[] getMainArgs(final ProcessContext context, FlowFile flowFile) {
+        PropertyValue prop = context.getProperty(MAIN_ARGS);
+        if (prop != null) {
+            String csv = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
+            return csv.split(",");
+        } else {
+            return new String[0];
+        }
+    }
+
+    protected String getMainClass(final ProcessContext context, FlowFile flowFile) {
+        return context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
+    }
+
+    protected String getApplicationJar(final ProcessContext context, FlowFile flowFile) {
+        return context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+    }
+
+    protected String getExtraJars(final ProcessContext context, FlowFile flowFile) {
+        PropertyValue prop = context.getProperty(EXTRA_JARS);
+        return prop.isSet() && StringUtils.isNoneBlank(prop.getValue()) ? prop.evaluateAttributeExpressions(flowFile).getValue() : "";
     }
 
     private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService,
@@ -563,7 +591,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         }
         return extraJarPaths;
     }
-
 
     @Override
     protected Collection<ValidationResult> customValidate(@Nonnull final ValidationContext validationContext) {
@@ -630,9 +657,9 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             return this;
         }
 
-        private OptionalSparkConfigurator addAppArgs(String appArgs) {
-            if (!StringUtils.isEmpty(appArgs)) {
-                launcher.addAppArgs(appArgs.split(","));
+        private OptionalSparkConfigurator addAppArgs(String... appArgs) {
+            if (appArgs != null) {
+                launcher.addAppArgs(appArgs);
             }
             return this;
         }

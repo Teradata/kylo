@@ -72,4 +72,12 @@ public interface Search extends Serializable {
      * @return {@link SearchResult}
      */
     SearchResult search(String query, int size, int start);
+
+    /**
+     * Delete all documents in an index of a specific type
+     * @param indexName index name
+     * @param typeName type name
+     * @return count of documents deleted
+     */
+    int deleteAll(@Nonnull String indexName, @Nonnull String typeName);
 }

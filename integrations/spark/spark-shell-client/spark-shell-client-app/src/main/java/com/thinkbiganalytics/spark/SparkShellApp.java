@@ -26,18 +26,25 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.JobTrackerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
 import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
@@ -52,7 +59,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
 import org.springframework.boot.context.config.ConfigFileApplicationListener;
@@ -63,6 +69,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
@@ -85,9 +92,10 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-@ComponentScan("com.thinkbiganalytics.spark")
+@ComponentScan(basePackages = {"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"},
+               excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
-@SpringBootApplication(exclude = {SecurityCoreConfig.class, VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
+@SpringBootApplication(exclude = {WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
 
     /**
@@ -124,7 +132,26 @@ public class SparkShellApp {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainer(final ServerProperties serverProperties, @Qualifier("sparkShellPort") final int serverPort) {
         serverProperties.setPort(serverPort);
-        return new TomcatEmbeddedServletContainerFactory();
+        return new TomcatEmbeddedServletContainerFactory() {
+            @Override
+            protected void customizeConnector(final Connector connector) {
+                super.customizeConnector(connector);
+
+                // KYLO-2237 Bind immediately instead of waiting
+                connector.setProperty("bindOnInit", "true");
+                try {
+                    connector.init();
+                } catch (final LifecycleException e) {
+                    throw new IllegalStateException("Failed to start connector: " + e, e);
+                }
+            }
+
+            @Override
+            protected boolean shouldRegisterJspServlet() {
+                // Skip JSP as it conflicts with Hadoop dependencies
+                return false;
+            }
+        };
     }
 
     /**
@@ -302,7 +329,6 @@ public class SparkShellApp {
     public SparkLocatorService sparkLocatorService(final SparkContext sc, @Value("${spark.shell.datasources.exclude}") final String excludedDataSources,
                                                    @Value("${spark.shell.datasources.include}") final String includedDataSources) {
         final SparkLocatorService service = new SparkLocatorService();
-        service.setSparkClassLoader(sc.getClass().getClassLoader());
         if (excludedDataSources != null && !excludedDataSources.isEmpty()) {
             final List<String> dataSources = Arrays.asList(excludedDataSources.split(","));
             service.excludeDataSources(dataSources);
@@ -345,12 +371,33 @@ public class SparkShellApp {
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
                                              final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem) {
-        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
+                                             final FileSystem fileSystem, final DataSetConverterService converterService, final KyloCatalogClientBuilder kyloCatalogClientBuilder, final
+                                             CatalogDataSetProviderFactory catalogDataSetProviderFactory) {
+        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService, kyloCatalogClientBuilder);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
         service.setValidator(validator);
+        service.setCatalogDataSetProviderFactory(catalogDataSetProviderFactory);
         return service;
     }
+
+    @Bean(name = "downloadsDatasourceExcludes")
+    public List<String> getDownloadsDatasourceExcludes(@Value("${spark.shell.datasources.exclude.downloads}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
+    @Bean(name = "tablesDatasourceExcludes")
+    public List<String> getTablesDatasourceExcludes(@Value("${spark.shell.datasources.exclude.tables}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
 }

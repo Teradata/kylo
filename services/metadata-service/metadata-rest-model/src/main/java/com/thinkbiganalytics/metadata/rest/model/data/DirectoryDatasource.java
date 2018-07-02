@@ -31,6 +31,8 @@ import java.util.Set;
  */
 public class DirectoryDatasource extends Datasource {
 
+    private static final long serialVersionUID = -5314582121113583387L;
+
     private String path;
     private Set<FilePattern> patterns = new HashSet<>();
 

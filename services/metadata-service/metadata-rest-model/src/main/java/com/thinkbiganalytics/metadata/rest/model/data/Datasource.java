@@ -56,6 +56,8 @@ import java.util.Set;
 )
 public class Datasource extends EntityAccessControl implements com.thinkbiganalytics.metadata.datasource.Datasource, Serializable {
 
+    private static final long serialVersionUID = -8706437149258151889L;
+
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime creationTime;
 

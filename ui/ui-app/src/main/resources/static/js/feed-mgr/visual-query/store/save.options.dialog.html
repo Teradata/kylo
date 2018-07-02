@@ -1,0 +1,82 @@
+<link rel="stylesheet" href="js/feed-mgr/visual-query/store/store-options.css"/>
+<md-dialog>
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Data Format Properties</h2>
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="dialog.hide()">
+        <ng-md-icon icon="close" size="20"></ng-md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
+  <md-dialog-content layout-padding>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Kylo - Save Options</title>
+    </head>
+    <body>
+    <div style="overflow-x:auto; align:center; padding:10px">
+      <table>
+        <tr>
+          <th>Format</th>
+          <th>Properties</th>
+        </tr>
+        <tr>
+          <td>csv</td>
+          <td>
+            <ul>
+              <li><b>delimiter</b> (default <code>,</code>)</li>
+              <li><b>quote</b> (default <code>"</code>)</li>
+              <li><b>escape</b> (default <code>\</code>)</li>
+              <li><b>escapeQuotes</b> (default <code>true</code>)</li>
+              <li><b>quoteAll</b> (default <code>false</code>)</li>
+              <li><b>header</b> (default <code>false</code>)</li>
+              <li><b>nullValue</b> (default empty string)</li>
+              <li><b>compression</b> (default <code>null</code>)</li>
+              <li><b>dateFormat</b> (default <code>yyyy-MM-dd</code>)</li>
+              <li><b>timestampFormat</b> (default <code>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</code>)</li>
+            </ul>
+            <div><a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#csv(java.lang.String)" target="_blank">View additional details - Part 1</a></div>
+            <div><a href="https://github.com/databricks/spark-csv" target="_blank">View additional details - Part 2</a></div>
+          </td>
+        </tr>
+        <tr>
+          <td>json</td>
+          <td>
+            <ul>
+              <li><b>compression</b> (default <code>null</code>)</li>
+              <li><b>dateFormat</b> (default <code>yyyy-MM-dd</code>)</li>
+              <li><b>timestampFormat</b> (default <code>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</code>)</li>
+            </ul>
+            <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#json(java.lang.String)" target="_blank">View additional details</a>
+          </td>
+        </tr>
+        <tr>
+          <td>orc</td>
+          <td>
+            <ul>
+              <li><b>compression</b> (<code>default snappy</code>)</li>
+            </ul>
+            <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#orc(java.lang.String)" target="_blank">View additional details</a>
+          </td>
+        </tr>
+        <tr>
+          <td>parquet</td>
+          <td>
+            <ul>
+              <li><b>compression</b> (default is the value specified in <code>spark.sql.parquet.compression.codec</code>)</li>
+            </ul>
+            <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#parquet(java.lang.String)" target="_blank">View additional details</a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    </body>
+    </html>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-button ng-click="dialog.hide()" class="md-primary">Close</md-button>
+  </md-dialog-actions>
+</md-dialog>

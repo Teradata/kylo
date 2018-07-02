@@ -33,11 +33,12 @@ public class ProfilerConfiguration implements Serializable {
     private Integer decimalDigitsToDisplayConsoleOutput = 4;
     private String inputAndOutputTablePartitionKey = "partitionKey";
     private String inputTablePartitionColumnName = "processing_dttm";
-    private Integer numberOfTopNValues = 3;
+    private Integer numberOfTopNValues = 5;
     private String outputDbName = "default";
     private String outputTableName = "profilestats";
     private String outputTablePartitionColumnName = "processing_dttm";
     private String sqlDialect = "hiveql";  // Hive supported HQL
+    private Integer bins = 5;
 
     /**
      * Number of decimals to print out in console<br>
@@ -128,5 +129,17 @@ public class ProfilerConfiguration implements Serializable {
 
     public void setSqlDialect(String sqlDialect) {
         this.sqlDialect = sqlDialect;
+    }
+
+    public Integer getBins() {
+        return this.bins;
+    }
+
+    /**
+     * Set the number of histogram bins to generate
+     * @param bins the number of bins
+     */
+    public void setBins(Integer bins) {
+        this.bins = bins;
     }
 }

@@ -60,8 +60,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -69,6 +71,7 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -225,6 +228,68 @@ public class DebugController {
         return sw.toString();
     }
 
+    @DELETE
+    @Path("jcr/node-reference/{abspath: .*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrTree(@PathParam("abspath") final String abspath, @QueryParam("referenceId") String referenceId) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        try {
+            metadata.commit(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+                Session session = JcrMetadataAccess.getActiveSession();
+                java.nio.file.Path path = JcrPath.get(abspath);
+                Node node = session.getRootNode().getNode(path.getParent().toString());
+
+                if(node != null) {
+                   String  referenceNodeName = path.getName(path.getNameCount() -1).toString();
+                    Property property = node.getProperty(referenceNodeName);
+                    if (property != null) {
+                        if (property.isMultiple()){
+                            Set<Object> removal = new HashSet<>();
+                            JcrPropertyUtil.getSetProperty(node, referenceNodeName).stream().forEach(n -> {
+                                try {
+                                    if (n instanceof Node) {
+                                        String id = ((Node) n).getIdentifier();
+                                        if (id.equalsIgnoreCase(referenceId)) {
+                                            removal.add(n);
+                                        }
+                                    }
+                                }catch (RepositoryException e){
+                                    e.printStackTrace();
+                                    pw.print("Unable to delete node for reference " + abspath+"/"+referenceId+".  "+e.getMessage());
+                                }
+                            });
+                            if(!removal.isEmpty()) {
+                                removal.stream().forEach(n -> JcrPropertyUtil.removeFromSetProperty(node, referenceNodeName, n));
+
+                                pw.print("DELETED " + abspath+"/"+referenceId);
+                            }
+                            else {
+                                pw.print("Not Deleted.  Unable to find reference id " +referenceId+" in set for path "+ abspath);
+                            }
+                        }
+                        else {
+                            JcrPropertyUtil.setProperty(node,referenceNodeName,null);
+                            pw.print("Path is not a set of nodes.  Setting valur of node to null.  DELETED " + abspath+"/"+referenceId);
+                        }
+                    }
+                }
+
+            });
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+            throw new RuntimeException(e);
+        }
+
+        pw.flush();
+        return sw.toString();
+    }
+
+
+
+
     /**
      * Prints the nodes of the JCR path given, for debugging.
      *
@@ -357,13 +422,19 @@ public class DebugController {
     public RestResponseStatus registerIndex(JcrIndexDefinition indexDefinition){
         return  metadata.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-            
+
+            Session session = JcrMetadataAccess.getActiveSession();
+            Workspace workspace = (Workspace) session.getWorkspace();
+            String nodeType = indexDefinition.getNodeType();
             try {
-                Session session = JcrMetadataAccess.getActiveSession();
-                Workspace workspace = (Workspace) session.getWorkspace();
-                ModeshapeIndexUtil.registerIndex(workspace.getIndexManager(), indexDefinition.getIndexName(), IndexDefinition.IndexKind.valueOf(indexDefinition.getIndexKind().toUpperCase()), "local", indexDefinition.getNodeType(), indexDefinition.getDescription(), null, indexDefinition.getPropertyName(),
-                                                 indexDefinition.getPropertyType());
-                return RestResponseStatus.SUCCESS;
+                if (workspace.getNodeTypeManager().hasNodeType(nodeType)) {
+                    ModeshapeIndexUtil.registerIndex(workspace.getIndexManager(), indexDefinition.getIndexName(), IndexDefinition.IndexKind.valueOf(indexDefinition.getIndexKind().toUpperCase()),
+                                                     "local", nodeType, indexDefinition.getDescription(), null, indexDefinition.getPropertyName(),
+                                                     indexDefinition.getPropertyType());
+                    return RestResponseStatus.SUCCESS;
+                } else {
+                    throw new IllegalArgumentException(String.format("Unknown Index Node Type %s", nodeType));
+                }
             } catch (RepositoryException e) {
                 throw new RuntimeException(e);
             }
@@ -478,10 +549,13 @@ public class DebugController {
             
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
+            // If the ID is over 36 characters long then assume it is a cache key and
+            // extract only the node ID portion of the key.
+            String nodeId = jcrId.length() > 36 ? jcrId.substring(jcrId.length() - 36, jcrId.length()) : jcrId;
 
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getNodeByIdentifier(jcrId);
+                Node node = session.getNodeByIdentifier(nodeId);
                 pw.print("Path: ");
                 pw.println(node.getPath());
                 JcrTools tools = new JcrTool(true, pw);
