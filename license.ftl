@@ -140,6 +140,8 @@
   <@leveldbjniLicense/>
 <#elseif project.groupId == "org.hashids">
   <@mitLicense/>
+<#elseif project.groupId == "org.projectlombok">
+  <@mitLicense/>
 <#elseif project.groupId == "org.jvnet">
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "org.ow2.asm" || project.groupId == "asm">
