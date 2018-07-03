@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {TemplateMetadata} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
@@ -24,15 +24,24 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     selectedTemplate: string;
+    errorMsg: string = "";
 
     /**
      * List of available templates
      */
-    @Input("templates")
-    public templates: TemplateMetadata[];
+    public templates: TemplateMetadata[] = [];
 
     public ngOnInit() {
-        this.filter();
+        this.templateService.getTemplates().subscribe(
+            (data: TemplateMetadata[]) => {this.templates = data; this.filter();},
+            (error: any) => {
+                console.log(error);
+                if(error.developerMessage)
+                    this.errorMsg += error.developerMessage;
+
+                console.log(this.errorMsg);
+            }
+        );
     }
 
     /**
@@ -46,7 +55,7 @@ export class ListTemplatesComponent implements OnInit {
 
         console.log("importing templates: ", this.selectedTemplate);
         this.templateService.importTemplate(this.selectedTemplate)
-            .subscribe(data => console.log(data),
+            .subscribe(data => console.log("received data", data),
                 error => console.error(error));
     }
 

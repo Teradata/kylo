@@ -44,10 +44,12 @@
         </td-paging-bar>
       </mat-list>
 
-      <div *ngIf="templates.length == 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
-        <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
-        <h2>No Templates or Feeds available in repository.</h2>
+      <div *ngIf="templates.length === 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
+        <br>
         <span>No Templates or Feeds available in repository.</span>
+        <br>
+        <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
+
       </div>
     </mat-card>
   </ng-container>

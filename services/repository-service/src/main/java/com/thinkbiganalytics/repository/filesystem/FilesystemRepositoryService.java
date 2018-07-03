@@ -9,9 +9,9 @@ package com.thinkbiganalytics.repository.filesystem;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,6 +37,8 @@ import com.thinkbiganalytics.repository.api.RepositoryItemMetadata;
 import com.thinkbiganalytics.repository.api.RepositoryService;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,8 +65,12 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemRepositoryService.class);
 
-    @Value("#{'${template.dirs}'.split(',')}")
-    private List<String> templateDirs;
+    @NotEmpty
+    @Value("${default.template.repository}")
+    private String defaultRepositoryLocation;
+
+    @Value("#{'${user.template.repositories}'.split(',')}")
+    private List<String> repositoryLocations;
 
     @Inject
     TemplateImporterFactory templateImporterFactory;
@@ -82,7 +88,6 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Override
     public List<RepositoryItemMetadata> listTemplates() {
-        //get JSON files from samples directory
         List<RepositoryItemMetadata> metadataList = new ArrayList<>();
         findFiles(metadataList);
 
@@ -95,9 +100,9 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Override
     public ImportTemplate importTemplates(String fileName, String uploadKey, String importComponents) throws Exception {
-        validateTemplateDirs();
+        checkRepositoryLocations();
 
-        Optional<Path> opt = templateDirs
+        Optional<Path> opt = repositoryLocations
             .stream()
             .map(dir -> Paths.get(dir + "/" + fileName))
             .filter(p -> Files.exists(p))
@@ -133,7 +138,7 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Override
     public RepositoryItemMetadata publishTemplate(String templateId, boolean overwrite) throws Exception {
-        validateTemplateDirs();
+        checkRepositoryLocations();
 
         //export template
         ExportTemplate zipFile = templateExporter.exportTemplate(templateId);
@@ -159,11 +164,11 @@ public class FilesystemRepositoryService implements RepositoryService {
             foundMetadataOpt.isPresent() ? foundMetadataOpt.get() : new RepositoryItemMetadata(zipFile.getTemplateName(), zipFile.getDescription(), zipFile.getFileName(), zipFile.isStream());
         String baseName = FilenameUtils.getBaseName(metadata.getFileName());
         log.info("Writing metadata for {} template.", metadata.getTemplateName());
-        mapper.writeValue(Paths.get(templateDirs.get(0) + "/" + baseName + ".json").toFile(), metadata);
+        mapper.writeValue(Paths.get(repositoryLocations.get(0) + "/" + baseName + ".json").toFile(), metadata);
 
         //write file in first of templateLocations
         log.info("Now publishing template {} to repository.", metadata.getTemplateName());
-        Files.write(Paths.get(templateDirs.get(0) + "/" + metadata.getFileName()), zipFile.getFile());
+        Files.write(Paths.get(repositoryLocations.get(0) + "/" + metadata.getFileName()), zipFile.getFile());
         log.info("Finished publishing template {} to repository.", metadata.getTemplateName());
 
         return metadata;
@@ -171,9 +176,9 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Override
     public byte[] downloadTemplate(String fileName) throws Exception {
-        validateTemplateDirs();
+        checkRepositoryLocations();
 
-        Optional<Path> opt = templateDirs
+        Optional<Path> opt = repositoryLocations
             .stream()
             .map(dir -> Paths.get(dir + "/" + fileName))
             .filter(p -> Files.exists(p))
@@ -198,9 +203,10 @@ public class FilesystemRepositoryService implements RepositoryService {
     }
 
     private void findFiles(List<RepositoryItemMetadata> metadataList) {
-        validateTemplateDirs();
+        checkRepositoryLocations();
+        repositoryLocations.add(defaultRepositoryLocation);
 
-        templateDirs.stream().flatMap(dir -> {
+        repositoryLocations.stream().flatMap(dir -> {
             try {
                 return Files.find(Paths.get(dir),
                                   Integer.MAX_VALUE,
@@ -213,9 +219,7 @@ public class FilesystemRepositoryService implements RepositoryService {
         }).map((p) -> jsonToMetadata(p)).forEach(metadataList::add);
     }
 
-    private void validateTemplateDirs() {
-        if (templateDirs == null || templateDirs.size() == 0) {
-            throw new RuntimeException("Location for templates or feeds is not set.");
-        }
+    private void checkRepositoryLocations() {
+        repositoryLocations.removeIf(StringUtils::isBlank);
     }
 }

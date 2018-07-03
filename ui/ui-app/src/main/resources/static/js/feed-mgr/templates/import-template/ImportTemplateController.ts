@@ -248,7 +248,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
             this.checkFileName(this.templateParam.fileName);
-            console.log(this.$state.params.template);
         }
 
         this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
