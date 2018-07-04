@@ -125,13 +125,13 @@ public class VaultSecretStore implements SecretStore {
         principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst().map(principal -> {
             Options options = read(secretId, USERS, principal.getName(), Options.class);
             return new PrincipalCredentials(principal.getName(), options);
-        }).filter(pc -> pc.options != null).ifPresent(pc -> c.getUserCredentials().put(pc.principalName, ObjectMapperSerializer.deserialize(pc.options.options, CRED_OPTIONS)));
+        }).filter(pc -> pc.options != null)
+            .ifPresent(pc -> c.getUserCredentials().put(pc.principalName, ObjectMapperSerializer.deserialize(pc.options.options, CRED_OPTIONS)));
 
         principals.stream().filter(GroupPrincipal.class::isInstance).map(principal -> {
             Options options = read(secretId, GROUPS, principal.getName(), IndexedOptions.class);
             return new PrincipalCredentials(principal.getName(), options);
-        })
-            .filter(pc -> pc.options != null)
+        }).filter(pc -> pc.options != null)
             .sorted(Comparator.comparing(pc -> ((IndexedOptions) pc.options).index))
             .forEach(pc -> c.getGroupCredentials().put(pc.principalName, ObjectMapperSerializer.deserialize(pc.options.options, CRED_OPTIONS)));
 
