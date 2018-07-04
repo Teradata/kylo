@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.CredentialEntry;
 import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.Credentials;
 import com.thinkbiganalytics.security.GroupPrincipal;
@@ -32,9 +33,11 @@ import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.support.VaultResponseSupport;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 
@@ -50,14 +53,37 @@ public class VaultSecretStore implements SecretStore {
         new TypeReference<Map<String, CredentialEntry>>() { };
 
     @Data
-    public static class CredOptions {
+    public static class Options {
         private String options;
         @SuppressWarnings("unused") //used during json de-serialisation
-        public CredOptions() {}
-        CredOptions(Map<String, CredentialEntry> options) {
+        public Options() {}
+        Options(Map<String, CredentialEntry> options) {
             this.options = ObjectMapperSerializer.serialize(options);
         }
 
+    }
+
+    @Data
+    public static class IndexedOptions extends Options {
+        private int index;
+        @SuppressWarnings("unused") //used during json de-serialisation
+        public IndexedOptions() {}
+        IndexedOptions(int index, Map<String, CredentialEntry> options) {
+            super(options);
+            this.index = index;
+        }
+    }
+
+    @Data
+    private class PrincipalCredentials {
+        private final int index;
+        private final String principalName;
+        private final Map<String, CredentialEntry> options;
+        PrincipalCredentials(int index, String principalName, Map<String, CredentialEntry> options) {
+            this.index = index;
+            this.principalName = principalName;
+            this.options = options;
+        }
     }
 
     @Inject
@@ -79,15 +105,22 @@ public class VaultSecretStore implements SecretStore {
 
     @Override
     public void write(String secretId, Credentials secret) {
-        secret.getUserCredentials().forEach((principalName, options) -> write(secretId, USERS, principalName, options));
-        secret.getGroupCredentials().forEach((principalName, options) -> write(secretId, GROUPS, principalName, options));
-        write(secretId, DEFAULTS, null, secret.getDefaultCredentials());
+        secret.getUserCredentials().forEach((principalName, options) -> write(secretId, USERS, principalName, new Options(options)));
+
+        //write groups while maintaining correct index because group precedence important in AbstractDataSourceCredentialProvider
+        Object[] groups = secret.getGroupCredentials().keySet().toArray();
+        IntStream.range(0, groups.length).mapToObj(index -> {
+            String name = groups[index].toString();
+            return new PrincipalCredentials(index, name, secret.getGroupCredentials().get(name));
+        }).forEach(p -> write(secretId, GROUPS, p.principalName, new IndexedOptions(p.index, p.options)));
+
+        write(secretId, DEFAULTS, null, new Options(secret.getDefaultCredentials()));
     }
 
-    private void write(String relativePath, CredentialType type, String principalName, Map<String, CredentialEntry> options) {
+    private void write(String relativePath, CredentialType type, String principalName, Options body) {
         String absPath = getAbsolutePath(relativePath, type);
         String path = getPathForPrincipalName(absPath, principalName);
-        vaultTemplate.write(path, new CredOptions(options));
+        vaultTemplate.write(path, body);
     }
 
     @Override
@@ -122,9 +155,9 @@ public class VaultSecretStore implements SecretStore {
     private Map<String, CredentialEntry> read(String relativePath, CredentialType type, String principalName) {
         String absPath = getAbsolutePath(relativePath, type);
         String path = getPathForPrincipalName(absPath, principalName);
-        VaultResponseSupport<CredOptions> read = vaultTemplate.read(path, CredOptions.class);
+        VaultResponseSupport<Options> read = vaultTemplate.read(path, Options.class);
         if (read != null) {
-            CredOptions data = read.getData();
+            Options data = read.getData();
             return ObjectMapperSerializer.deserialize(data.options, CRED_OPTIONS);
         }
         return null;
@@ -157,4 +190,5 @@ public class VaultSecretStore implements SecretStore {
     private String getAbsolutePath(String relativePath, CredentialType type) {
         return rootPath + relativePath + "/" + type.name().toLowerCase();
     }
+
 }
