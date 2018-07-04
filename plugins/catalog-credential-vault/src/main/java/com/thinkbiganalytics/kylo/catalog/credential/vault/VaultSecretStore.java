@@ -22,7 +22,6 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.CredentialEntry;
 import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.Credentials;
 import com.thinkbiganalytics.security.GroupPrincipal;
@@ -33,7 +32,7 @@ import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.support.VaultResponseSupport;
 
 import java.security.Principal;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,12 +59,11 @@ public class VaultSecretStore implements SecretStore {
         Options(Map<String, CredentialEntry> options) {
             this.options = ObjectMapperSerializer.serialize(options);
         }
-
     }
 
     @Data
     public static class IndexedOptions extends Options {
-        private int index;
+        private Integer index;
         @SuppressWarnings("unused") //used during json de-serialisation
         public IndexedOptions() {}
         IndexedOptions(int index, Map<String, CredentialEntry> options) {
@@ -76,11 +74,9 @@ public class VaultSecretStore implements SecretStore {
 
     @Data
     private class PrincipalCredentials {
-        private final int index;
         private final String principalName;
-        private final Map<String, CredentialEntry> options;
-        PrincipalCredentials(int index, String principalName, Map<String, CredentialEntry> options) {
-            this.index = index;
+        private final Options options;
+        PrincipalCredentials(String principalName, Options options) {
             this.principalName = principalName;
             this.options = options;
         }
@@ -107,12 +103,12 @@ public class VaultSecretStore implements SecretStore {
     public void write(String secretId, Credentials secret) {
         secret.getUserCredentials().forEach((principalName, options) -> write(secretId, USERS, principalName, new Options(options)));
 
-        //write groups while maintaining correct index because group precedence important in AbstractDataSourceCredentialProvider
+        //write groups while maintaining correct index because group precedence is important in AbstractDataSourceCredentialProvider
         Object[] groups = secret.getGroupCredentials().keySet().toArray();
         IntStream.range(0, groups.length).mapToObj(index -> {
             String name = groups[index].toString();
-            return new PrincipalCredentials(index, name, secret.getGroupCredentials().get(name));
-        }).forEach(p -> write(secretId, GROUPS, p.principalName, new IndexedOptions(p.index, p.options)));
+            return new PrincipalCredentials(name, new IndexedOptions(index, secret.getGroupCredentials().get(name)));
+        }).forEach(p -> write(secretId, GROUPS, p.principalName, p.options));
 
         write(secretId, DEFAULTS, null, new Options(secret.getDefaultCredentials()));
     }
@@ -126,23 +122,22 @@ public class VaultSecretStore implements SecretStore {
     @Override
     public Credentials read(String secretId, Set<Principal> principals) {
         Credentials c = new Credentials();
-        principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst().ifPresent(principal -> {
-            Map<String, CredentialEntry> options = read(secretId, USERS, principal.getName());
-            if (options != null) {
-                c.getUserCredentials().put(principal.getName(), options);
-            }
-        });
+        principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst().map(principal -> {
+            Options options = read(secretId, USERS, principal.getName(), Options.class);
+            return new PrincipalCredentials(principal.getName(), options);
+        }).filter(pc -> pc.options != null).ifPresent(pc -> c.getUserCredentials().put(pc.principalName, ObjectMapperSerializer.deserialize(pc.options.options, CRED_OPTIONS)));
 
-        principals.stream().filter(GroupPrincipal.class::isInstance).forEach(principal -> {
-            Map<String, CredentialEntry> options = read(secretId, GROUPS, principal.getName());
-            if (options != null) {
-                c.getGroupCredentials().put(principal.getName(), options);
-            }
-        });
+        principals.stream().filter(GroupPrincipal.class::isInstance).map(principal -> {
+            Options options = read(secretId, GROUPS, principal.getName(), IndexedOptions.class);
+            return new PrincipalCredentials(principal.getName(), options);
+        })
+            .filter(pc -> pc.options != null)
+            .sorted(Comparator.comparing(pc -> ((IndexedOptions) pc.options).index))
+            .forEach(pc -> c.getGroupCredentials().put(pc.principalName, ObjectMapperSerializer.deserialize(pc.options.options, CRED_OPTIONS)));
 
-        Map<String, CredentialEntry> options = read(secretId, DEFAULTS, null);
+        Options options = read(secretId, DEFAULTS, null, Options.class);
         if (options != null) {
-            c.getDefaultCredentials().putAll(options);
+            c.getDefaultCredentials().putAll(ObjectMapperSerializer.deserialize(options.options, CRED_OPTIONS));
         }
 
         return isEmpty(c) ? null : c;
@@ -152,13 +147,12 @@ public class VaultSecretStore implements SecretStore {
         return c.getDefaultCredentials().isEmpty() && c.getGroupCredentials().isEmpty() && c.getUserCredentials().isEmpty();
     }
 
-    private Map<String, CredentialEntry> read(String relativePath, CredentialType type, String principalName) {
+    private <T> T read(String relativePath, CredentialType type, String principalName, Class<T> responseType) {
         String absPath = getAbsolutePath(relativePath, type);
         String path = getPathForPrincipalName(absPath, principalName);
-        VaultResponseSupport<Options> read = vaultTemplate.read(path, Options.class);
+        VaultResponseSupport<T> read = vaultTemplate.read(path, responseType);
         if (read != null) {
-            Options data = read.getData();
-            return ObjectMapperSerializer.deserialize(data.options, CRED_OPTIONS);
+            return read.getData();
         }
         return null;
     }
