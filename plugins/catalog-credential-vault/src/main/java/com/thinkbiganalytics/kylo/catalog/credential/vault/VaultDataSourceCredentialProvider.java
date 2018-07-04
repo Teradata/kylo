@@ -26,11 +26,11 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
 import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
+import java.security.Principal;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.inject.Inject;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Credential provider which stores credentials in Vault
@@ -46,8 +46,7 @@ public class VaultDataSourceCredentialProvider extends AbstractDataSourceCredent
     }
 
     @Override
-    protected Optional<Credentials> getCredentials(DataSource ds) {
-        Credentials c = secretStore.read(ds.getId());
-        return Optional.ofNullable(c);
+    protected Optional<Credentials> doGetCredentials(DataSource ds, Set<Principal> principals) {
+        return Optional.ofNullable(secretStore.read(ds.getId(), principals));
     }
 }

@@ -56,14 +56,14 @@ public abstract class AbstractDataSourceCredentialProvider implements DataSource
     @Override
     public abstract boolean accepts(DataSource ds);
 
-    protected abstract Optional<Credentials> getCredentials(DataSource ds);
+    protected abstract Optional<Credentials> doGetCredentials(DataSource ds, Set<Principal> principals);
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.kylo.catalog.credential.spi.DataSourceCredentialProvider#applyCredentials(com.thinkbiganalytics.kylo.catalog.rest.model.DataSource)
      */
     @Override
     public DataSource applyCredentials(DataSource ds, Set<Principal> principals) {
-        return getCredentials(ds)
+        return doGetCredentials(ds, principals)
             .map(creds -> {
                 DataSource newDs = new DataSource(ds);
 
@@ -91,7 +91,7 @@ public abstract class AbstractDataSourceCredentialProvider implements DataSource
      */
     @Override
     public DataSource applyPlaceholders(DataSource ds, Set<Principal> principals) {
-        return getCredentials(ds)
+        return doGetCredentials(ds, principals)
             .map(creds -> {
                 DataSource newDs = new DataSource(ds);
                 Properties optionProps = getOptionProperties(creds, principals);
@@ -109,7 +109,7 @@ public abstract class AbstractDataSourceCredentialProvider implements DataSource
      */
     @Override
     public Map<String, String> getCredentials(DataSource ds, Set<Principal> principals) {
-        return getCredentials(ds)
+        return doGetCredentials(ds, principals)
             .map(creds -> {
                 Map<String, String> map = new HashMap<>();
                 Properties credProps = getCredentialProperties(creds, principals);

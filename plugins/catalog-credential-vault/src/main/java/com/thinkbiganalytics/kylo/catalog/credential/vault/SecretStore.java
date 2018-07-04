@@ -20,12 +20,15 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider;
+import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.Credentials;
+
+import java.security.Principal;
+import java.util.Set;
 
 public interface SecretStore {
 
-    void write(String path, AbstractDataSourceCredentialProvider.Credentials secret);
-    AbstractDataSourceCredentialProvider.Credentials read(String path);
-    boolean contains(String path);
-    void remove(String path);
+    void write(String secretId, Credentials secret);
+    Credentials read(String secretId, Set<Principal> principals);
+    boolean contains(String secretId);
+    void remove(String secretId);
 }

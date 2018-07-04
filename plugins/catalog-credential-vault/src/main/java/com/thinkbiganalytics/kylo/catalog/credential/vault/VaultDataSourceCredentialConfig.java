@@ -28,18 +28,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.io.AbstractResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.vault.authentication.ClientAuthentication;
 import org.springframework.vault.authentication.TokenAuthentication;
 import org.springframework.vault.client.VaultEndpoint;
 import org.springframework.vault.config.AbstractVaultConfiguration;
 import org.springframework.vault.support.SslConfiguration;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
 
 import javax.inject.Inject;
 
@@ -60,7 +53,7 @@ public class VaultDataSourceCredentialConfig extends AbstractVaultConfiguration 
 
     @Bean
     public SecretStore secretStore() {
-        return new VaultSecretStore();
+        return new VaultSecretStore(vaultConfiguration.getRoot());
     }
 
     @Override

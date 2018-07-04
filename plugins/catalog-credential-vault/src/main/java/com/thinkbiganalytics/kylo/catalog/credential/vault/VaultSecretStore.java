@@ -22,69 +22,139 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider;
+import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.CredentialEntry;
+import com.thinkbiganalytics.kylo.catalog.credential.spi.AbstractDataSourceCredentialProvider.Credentials;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.vault.core.VaultTemplate;
 import org.springframework.vault.support.VaultResponseSupport;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import lombok.Data;
 
+import static com.thinkbiganalytics.kylo.catalog.credential.vault.VaultSecretStore.CredentialType.DEFAULTS;
+import static com.thinkbiganalytics.kylo.catalog.credential.vault.VaultSecretStore.CredentialType.GROUPS;
+import static com.thinkbiganalytics.kylo.catalog.credential.vault.VaultSecretStore.CredentialType.USERS;
+
 public class VaultSecretStore implements SecretStore {
 
-    private static final String ROOT = "secret/kylo/catalog/";
-    private static final TypeReference<Map<String, Map<String, AbstractDataSourceCredentialProvider.CredentialEntry>>> CRED_MAP_TYPE =
-        new TypeReference<Map<String, Map<String, AbstractDataSourceCredentialProvider.CredentialEntry>>>() { };
+    private static final TypeReference<Map<String, CredentialEntry>> CRED_OPTIONS =
+        new TypeReference<Map<String, CredentialEntry>>() { };
 
     @Data
-    public static class Creds {
-        private String users;
-        private String groups;
-
-        @SuppressWarnings("unused")
-        public Creds() {}
-        Creds(AbstractDataSourceCredentialProvider.Credentials credentials) {
-            this.users = ObjectMapperSerializer.serialize(credentials.getUserCredentials());
-            this.groups = ObjectMapperSerializer.serialize(credentials.getGroupCredentials());
+    public static class CredOptions {
+        private String options;
+        @SuppressWarnings("unused") //used during json de-serialisation
+        public CredOptions() {}
+        CredOptions(Map<String, CredentialEntry> options) {
+            this.options = ObjectMapperSerializer.serialize(options);
         }
+
     }
 
     @Inject
     private VaultTemplate vaultTemplate;
 
-    @Override
-    public void write(String path, AbstractDataSourceCredentialProvider.Credentials secret) {
-        Creds c = new Creds(secret);
-        vaultTemplate.write(ROOT + path, c);
+    enum CredentialType { USERS, GROUPS, DEFAULTS}
+
+    private final String rootPath;
+
+    VaultSecretStore(String path) {
+        if (StringUtils.isBlank(path)) {
+            path = "secret/kylo/catalog/datasource/";
+        }
+        if (!path.endsWith("/")) {
+            path += "/";
+        }
+        this.rootPath = path;
     }
 
     @Override
-    public AbstractDataSourceCredentialProvider.Credentials read(String path) {
-        VaultResponseSupport<Creds> response = vaultTemplate.read(ROOT + path, Creds.class);
-        if (response != null) {
-            Creds c = response.getData();
-            AbstractDataSourceCredentialProvider.Credentials credentials = new AbstractDataSourceCredentialProvider.Credentials();
-            Map<String, Map<String, AbstractDataSourceCredentialProvider.CredentialEntry>> users = ObjectMapperSerializer.deserialize(c.users, CRED_MAP_TYPE);
-            credentials.setUserCredentials(users);
-            Map<String, Map<String, AbstractDataSourceCredentialProvider.CredentialEntry>> groups = ObjectMapperSerializer.deserialize(c.groups, CRED_MAP_TYPE);
-            credentials.setGroupCredentials(groups);
-            return credentials;
+    public void write(String secretId, Credentials secret) {
+        secret.getUserCredentials().forEach((principalName, options) -> write(secretId, USERS, principalName, options));
+        secret.getGroupCredentials().forEach((principalName, options) -> write(secretId, GROUPS, principalName, options));
+        write(secretId, DEFAULTS, null, secret.getDefaultCredentials());
+    }
+
+    private void write(String relativePath, CredentialType type, String principalName, Map<String, CredentialEntry> options) {
+        String absPath = getAbsolutePath(relativePath, type);
+        String path = getPathForPrincipalName(absPath, principalName);
+        vaultTemplate.write(path, new CredOptions(options));
+    }
+
+    @Override
+    public Credentials read(String secretId, Set<Principal> principals) {
+        Credentials c = new Credentials();
+        principals.stream().filter(UsernamePrincipal.class::isInstance).findFirst().ifPresent(principal -> {
+            Map<String, CredentialEntry> options = read(secretId, USERS, principal.getName());
+            if (options != null) {
+                c.getUserCredentials().put(principal.getName(), options);
+            }
+        });
+
+        principals.stream().filter(GroupPrincipal.class::isInstance).forEach(principal -> {
+            Map<String, CredentialEntry> options = read(secretId, GROUPS, principal.getName());
+            if (options != null) {
+                c.getGroupCredentials().put(principal.getName(), options);
+            }
+        });
+
+        Map<String, CredentialEntry> options = read(secretId, DEFAULTS, null);
+        if (options != null) {
+            c.getDefaultCredentials().putAll(options);
+        }
+
+        return isEmpty(c) ? null : c;
+    }
+
+    private boolean isEmpty(Credentials c) {
+        return c.getDefaultCredentials().isEmpty() && c.getGroupCredentials().isEmpty() && c.getUserCredentials().isEmpty();
+    }
+
+    private Map<String, CredentialEntry> read(String relativePath, CredentialType type, String principalName) {
+        String absPath = getAbsolutePath(relativePath, type);
+        String path = getPathForPrincipalName(absPath, principalName);
+        VaultResponseSupport<CredOptions> read = vaultTemplate.read(path, CredOptions.class);
+        if (read != null) {
+            CredOptions data = read.getData();
+            return ObjectMapperSerializer.deserialize(data.options, CRED_OPTIONS);
         }
         return null;
     }
 
     @Override
-    public boolean contains(String path) {
-        List<String> list = vaultTemplate.list(ROOT);
-        return list.contains(path);
+    public boolean contains(String secretId) {
+        List<String> list = vaultTemplate.list(rootPath);
+        return list.contains(secretId + "/");
     }
 
     @Override
-    public void remove(String path) {
-        vaultTemplate.delete(ROOT + path);
+    public void remove(String secretId) {
+        vaultTemplate.delete(getAbsolutePath(secretId, DEFAULTS));
+
+        String usersPath = getAbsolutePath(secretId, USERS);
+        List<String> users = vaultTemplate.list(usersPath);
+        users.forEach(u -> vaultTemplate.delete(getPathForPrincipalName(usersPath, u)));
+
+        String groupsPath = getAbsolutePath(secretId, GROUPS);
+        List<String> groups = vaultTemplate.list(groupsPath);
+        groups.forEach(g -> vaultTemplate.delete(getPathForPrincipalName(groupsPath, g)));
+    }
+
+    private String getPathForPrincipalName(String path, String principalName) {
+        //there is no principal for default credentials
+        return StringUtils.isBlank(principalName) ? path : path + "/" + principalName;
+    }
+
+    private String getAbsolutePath(String relativePath, CredentialType type) {
+        return rootPath + relativePath + "/" + type.name().toLowerCase();
     }
 }

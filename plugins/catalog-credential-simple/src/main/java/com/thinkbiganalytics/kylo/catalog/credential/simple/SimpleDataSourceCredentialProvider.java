@@ -33,9 +33,11 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -70,7 +72,7 @@ public class SimpleDataSourceCredentialProvider extends AbstractDataSourceCreden
         return this.credentials.containsKey(connId);
     }
 
-    protected Optional<Credentials> getCredentials(DataSource ds) {
+    protected Optional<Credentials> doGetCredentials(DataSource ds, Set<Principal> principals) {
         String id = ds.getConnector().getId();
         return Optional.ofNullable(this.credentials.get(id));
     }
