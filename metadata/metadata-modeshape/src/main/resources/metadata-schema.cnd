@@ -83,6 +83,7 @@
  */
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
+	+ catalog (tba:catalogFolder) = tba:catalogFolder autocreated mandatory
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
 	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
@@ -116,10 +117,10 @@
 [tba:datasourcesFolder] > nt:folder
     + derived (tba:derivedDatasourcesFolder) = tba:derivedDatasourcesFolder autocreated mandatory
     
-/********
 [tba:catalogFolder] > nt:folder
     + connectors (tba:connectorsFolder) = tba:connectorsFolder autocreated mandatory
-********/
+
+[tba:connectorsFolder] > nt:folder 
 
 [tba:derivedDatasourcesFolder] >nt:folder
 
@@ -204,6 +205,10 @@
 [tba:fieldDescriptor] > nt:hierarchyNode, mix:title
     - usr:mandatory (BOOLEAN)
     - usr:order (LONG)
+    
+[tba:iconed] mixin
+    - tba:icon (STRING)
+    - tba:iconColor (STRING)
 
 [tba:taggable] mixin
     - tba:tags (STRING) multiple
@@ -232,12 +237,12 @@
 [tba:extensibleEntity] > tba:entity
     - * (UNDEFINED) COPY
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, mix:referenceable, tba:accessControlled
+/* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
+
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:iconed, mix:referenceable, tba:accessControlled
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
-    - tba:icon (STRING)
-    - tba:iconColor (STRING)
     - tba:nifiTemplateId (STRING)
     - tba:state (STRING) = 'ENABLED'
     - tba:json (STRING)
@@ -312,6 +317,7 @@
 [tba:hadoopSecurityGroup] > nt:hierarchyNode, mix:referenceable, mix:title
     - tba:groupId (STRING) mandatory
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:datasourceDefinition] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:connectionType  (STRING)  //source or destination
     - tba:processorType  (STRING)
@@ -319,6 +325,7 @@
     - tba:datasourcePropertyKeys (STRING) multiple
     - tba:identityString (STRING) // string defining this identity
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba.datasourceDefinition (REFERENCE)
     - tba:systemName (STRING) mandatory
@@ -326,9 +333,11 @@
     - tba:feedDestinations (WEAKREFERENCE) multiple
 	+ tba:genericJsonProperties (tba:genericJsonProperties) COPY
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:derivedDatasource] > tba:datasource
     - tba:datasourceType (STRING)
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:hiveTableDatasource] > tba:datasource
     - tba:database (STRING) 
     - tba:tableName (STRING)
@@ -336,10 +345,12 @@
     + tba:columns (nt:folder)
     + tba:partitions (nt:folder) 
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:hiveTableColumn] > nt:hierarchyNode
     - tba:name (STRING) mandatory
     - tba:type (STRING) mandatory
 
+// @deprecated This type is being superceded in the Catalog schema
 [tba:directoryDatasource] > tba:datasource
     - tba:directory (STRING) mandatory
 
@@ -381,13 +392,11 @@
  	- tba:controlerServiceId (STRING)
  	- tba:password (STRING)
 
-[tba:domainType] > mix:referenceable, mix:title
+[tba:domainType] > mix:referenceable, mix:title, tba:iconed
 	- tba:fieldJson (STRING)
 	- tba:fieldNameFlags (STRING)
 	- tba:fieldNamePattern (STRING)
 	- tba:fieldPolicyJson (STRING)
-	- tba:icon (STRING)
-	- tba:iconColor (STRING)
 	- tba:regexFlags (STRING)
 	- tba:regexPattern (STRING)
 
@@ -397,36 +406,42 @@
     - tba:iconColor (STRING)
     - tba:containerImage (STRING)
 
+
 /* -=-=-=-=-=--=-=-  Catalog types  -=-=-=-=-=-=-=-=- */
 
-/*********
+[tba:DataSetSparkParamsSupplier] mixin
+    + tba:sparkParams (tba:DataSetSparkParams) = tba:sparkSettings autocreated mandatory
 
-[tba:connector] > mix:title, mix:created, tba:propertied, tba:accessControlled
-//    - UI options?
-    + datasources (tba:connectorDataSources) = tba:connectorDataSources autocreated mandatory
+[tba:Connector] > mix:title, tba:entity, mix:title, tba:iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
+    - tba:pluginId (STRING)
+    + datasources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
     
-[tba:connectorDataSources]
-    + * (tba:dataSource) 
+[tba:ConnectorDataSources]
+    + * (tba:DataSource) 
 
-[tba:dataSource] > mix:title, mix:created, tba:accessControlled
-    + tba:dsTemplate (tba:dataSetTemplate) = tba:dataSetTemplate autocreated mandatory
-    + dataSets (tba:dataSets) = tba:dataSets autocreated mandatory
+[tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
+    + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
     
-[tba:dataSets]
-    - hash (INTEGER)
-    - alias (WEAKREFERENCE) multiple
-    + * (tba:dataSet) 
+[tba:DataSets]
+    + * (tba:DataSet) 
 
-[tba:dataSet] > mix:title, mix:created, tba:accessControlled
+[tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
+//    - hash (INTEGER)
+//    - alias (WEAKREFERENCE) multiple
+    - mimeType (STRING)
 
-[tba:dataSetTemplate] > mix:title, mix:created, tba:propertied
+[tba:DataSetSparkParams] > tba:propertied
+    - tba:format (STRING)
+    - tba:paths (STRING) multiple
+    - tba:files (STRING) multiple
+    - tba:jars (STRING) multiple
 
-**********/
+[tba:DataSetSchema]
 
 /**
 * [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
 *     - tba:message (STRING)
-*    - tba:result (STRING) mandatory
+*     - tba:result (STRING) mandatory
 *     + tba:obligationAssessments (tba:obligationAssessment) sns
 *
 * [tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
