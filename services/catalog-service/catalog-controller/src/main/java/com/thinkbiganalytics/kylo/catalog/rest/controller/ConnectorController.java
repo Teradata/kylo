@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
+
 /*-
  * #%L
  * kylo-catalog-controller
@@ -20,7 +22,6 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -54,7 +55,7 @@ public class ConnectorController extends AbstractCatalogController {
     private final XLogger log = XLoggerFactory.getXLogger(ConnectorController.class);
 
     public static final String BASE = "/v1/catalog/connector";
-
+    
     @Inject
     ConnectorProvider connectorProvider;
 

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
-import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;

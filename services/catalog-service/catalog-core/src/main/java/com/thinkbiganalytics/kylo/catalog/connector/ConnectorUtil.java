@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kylo.catalog.connector;
  */
 
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
 
 import java.util.List;
@@ -30,21 +31,20 @@ import javax.annotation.Nonnull;
 /**
  * Static utility methods for {@link Connector} instances.
  */
-@SuppressWarnings("WeakerAccess")
 public class ConnectorUtil {
 
     /**
      * Indicates if the connector has a tab matching any sref.
      */
-    public static boolean hasAnyTabSref(@Nonnull final Connector connector, @Nonnull final List<String> srefs) {
-        return srefs.stream().anyMatch(sref -> hasTabSref(connector, sref));
+    public static boolean hasAnyTabSref(@Nonnull final ConnectorPluginDescriptor descr, @Nonnull final List<String> srefs) {
+        return srefs.stream().anyMatch(sref -> hasTabSref(descr, sref));
     }
 
     /**
      * Indicates if the connector has any tab with a matching sref.
      */
-    public static boolean hasTabSref(@Nonnull final Connector connector, @Nonnull final String sref) {
-        return (connector.getTabs() != null && connector.getTabs().stream().map(ConnectorTab::getSref).anyMatch(sref::equals));
+    public static boolean hasTabSref(@Nonnull final ConnectorPluginDescriptor descr, @Nonnull final String sref) {
+        return (descr.getTabs() != null && descr.getTabs().stream().map(ConnectorTab::getSref).anyMatch(sref::equals));
     }
 
     /**

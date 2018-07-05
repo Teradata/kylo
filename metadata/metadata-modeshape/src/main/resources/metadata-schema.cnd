@@ -46,7 +46,7 @@
  *                  "services"
  *                      "roles"
  *                          role*
- *                              allowedActions
+ *                              allowedActionmetadata-schema.cnds
  *                  "projects"
  *                     "roles"
  *                          role*
@@ -115,6 +115,11 @@
 
 [tba:datasourcesFolder] > nt:folder
     + derived (tba:derivedDatasourcesFolder) = tba:derivedDatasourcesFolder autocreated mandatory
+    
+/********
+[tba:catalogFolder] > nt:folder
+    + connectors (tba:connectorsFolder) = tba:connectorsFolder autocreated mandatory
+********/
 
 [tba:derivedDatasourcesFolder] >nt:folder
 
@@ -390,6 +395,32 @@
     - tba:icon (STRING)
     - tba:iconColor (STRING)
     - tba:containerImage (STRING)
+
+/* -=-=-=-=-=--=-=-  Catalog types  -=-=-=-=-=-=-=-=- */
+
+/*********
+
+[tba:connector] > mix:title, mix:created, tba:propertied, tba:accessControlled
+//    - UI options?
+    + datasources (tba:connectorDataSources) = tba:connectorDataSources autocreated mandatory
+    
+[tba:connectorDataSources]
+    + * (tba:dataSource) 
+
+[tba:dataSource] > mix:title, mix:created, tba:accessControlled
+    + tba:dsTemplate (tba:dataSetTemplate) = tba:dataSetTemplate autocreated mandatory
+    + dataSets (tba:dataSets) = tba:dataSets autocreated mandatory
+    
+[tba:dataSets]
+    - hash (INTEGER)
+    - alias (WEAKREFERENCE) multiple
+    + * (tba:dataSet) 
+
+[tba:dataSet] > mix:title, mix:created, tba:accessControlled
+
+[tba:dataSetTemplate] > mix:title, mix:created, tba:propertied
+
+**********/
 
 /**
 * [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable

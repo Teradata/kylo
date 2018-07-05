@@ -1,158 +1,33 @@
 [
   {
     "title": "SQL Source",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc"
-    },
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
-    ]
+    }
   },
   {
     "title": "Hive",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc"
-    },
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
-    ]
+    }
   },
   {
     "title": "Amazon S3",
     "icon": "amazon",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "s3a:///"
       ]
-    },
-    "options": [
-      {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "s3a:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "spark.hadoop.fs.s3a.access.key",
-        "label": "Access Key Id"
-      },
-      {
-        "key": "spark.hadoop.fs.s3a.secret.key",
-        "type": "password",
-        "label": "Secret Access Key"
-      }
-    ]
+    }
   },
   {
     "title": "Azure Storage",
     "icon": "windows",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "wasb:///"
       ]
-    },
-    "optionsMapperId": "azureOptionsMapper",
-    "options": [
-      {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "wasb:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "account-name",
-        "label": "Account Name"
-      },
-      {
-        "key": "account-key",
-        "type": "password",
-        "label": "Account Key"
-      }
-    ]
+    }
   },
   {
     "title": "Kafka",
@@ -163,124 +38,35 @@
         "file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar",
         "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"
       ]
-    },
-    "options": [
-      {
-        "key": "kafka.bootstrap.servers",
-        "label": "Kafka Server",
-        "type": "select",
-        "value": "localhost:9093",
-        "hint": "Prefer 'Test Server'",
-        "flex": 50,
-        "selections": [
-          {
-            "label": "Dev Server",
-            "value": "localhost:9092"
-          },
-          {
-            "label": "Test Server",
-            "value": "localhost:9093"
-          },
-          {
-            "label": "Prod Server",
-            "value": "prod.server1:9092"
-          }
-        ]
-      }
-    ]
+    }
   },
   {
     "title": "File Upload",
-    "icon": "file_upload",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".upload"
-      }
-    ]
+    "icon": "file_upload"
   },
   {
     "title": "HDFS",
     "icon": "hadoop",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "hdfs://"
       ]
-    },
-    "options": [
-      {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "hdfs:"
-            }
-          }
-        ]
-      }
-    ]
+    }
   },
   {
     "title": "Teradata",
     "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc",
       "jars": [
         "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/tdgssconfig.jar",
         "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/terajdbc4.jar"
       ]
-    },
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
-    ]
+    }
   },
   {
     "title": "Mysql",
     "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc",
       "jars": [
@@ -295,12 +81,6 @@
   {
     "title": "Oracle",
     "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc",
       "jars": [
@@ -315,12 +95,6 @@
   {
     "title": "Google Cloud Storage",
     "icon": "google",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "jars": [
         "file:/opt/nifi/mysql/gcs-connector-latest-hadoop2.jar"
@@ -328,45 +102,15 @@
       "paths": [
         "gcs://"
       ]
-    },
-    "options": [
-      {
-        "key": "spark.hadoop.google.cloud.auth.service.account.email",
-        "label": "Email"
-      },
-      {
-        "key": "spark.hadoop.google.cloud.auth.service.account.keyfile",
-        "label": "Key File"
-      }
-    ]
+    }
   },
   {
     "title": "Local File System",
     "icon": "fa-file",
-    "tabs": [
-      {
-        "label": "File",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "file:/"
       ]
-    },
-    "options": [
-      {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "file:"
-            }
-          }
-        ]
-      }
-    ]
+    }
   }
 ]

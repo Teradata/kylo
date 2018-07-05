@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.file;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
+
 /*-
  * #%L
  * kylo-catalog-core
@@ -23,8 +25,10 @@ package com.thinkbiganalytics.kylo.catalog.file;
 import com.thinkbiganalytics.kylo.catalog.connector.ConnectorUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 
 import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +44,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Validates data set paths.
@@ -48,6 +53,9 @@ import javax.annotation.Nullable;
 public class PathValidator {
 
     private static final Pattern FILENAME_REGEX = Pattern.compile("^([^\\./:]{1,2}|[^/:]{3,})$");
+    
+    @Inject
+    private ConnectorPluginManager pluginManager;
 
     /**
      * Expected connector tab srefs for file systems
@@ -105,16 +113,21 @@ public class PathValidator {
         final Optional<List<String>> dataSourcePaths = DataSourceUtil.getPaths(dataSource);
         if (dataSourcePaths.isPresent()) {
             final Stream<String> allowedPaths = dataSourcePaths.get().stream();
-            final Connector connector = dataSource.getConnector();
+            final String pluginId = dataSource.getConnector().getId();
+            final Optional<ConnectorPlugin> plugin = this.pluginManager.getPlugin(pluginId);
 
-            if (ConnectorUtil.hasAnyTabSref(connector, fileSystemSrefs)) {
-                return isPathAllowed(path.toUri(), toURIs(allowedPaths));
-            }
-            if (dataSetId != null && ConnectorUtil.hasAnyTabSref(connector, uploadSrefs)) {
-                final Stream<String> uploadPaths = allowedPaths
-                    .map(allowedPath -> allowedPath.endsWith(Path.SEPARATOR) ? allowedPath : allowedPath + Path.SEPARATOR)
-                    .map(allowedPath -> allowedPath + dataSetId + Path.SEPARATOR);
-                return isPathAllowed(path.toUri(), toURIs(uploadPaths));
+            if (plugin.isPresent()) {
+                if (ConnectorUtil.hasAnyTabSref(plugin.get().getDescriptor(), fileSystemSrefs)) {
+                    return isPathAllowed(path.toUri(), toURIs(allowedPaths));
+                }
+                if (dataSetId != null && ConnectorUtil.hasAnyTabSref(plugin.get().getDescriptor(), uploadSrefs)) {
+                    final Stream<String> uploadPaths = allowedPaths
+                                    .map(allowedPath -> allowedPath.endsWith(Path.SEPARATOR) ? allowedPath : allowedPath + Path.SEPARATOR)
+                                    .map(allowedPath -> allowedPath + dataSetId + Path.SEPARATOR);
+                    return isPathAllowed(path.toUri(), toURIs(uploadPaths));
+                }
+            } else {
+                return false;
             }
         }
         return true;
