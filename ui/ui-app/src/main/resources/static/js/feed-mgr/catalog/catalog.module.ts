@@ -36,7 +36,14 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
         DatasourceComponent,
         ConnectorsComponent,
         ConnectorComponent,
-        CatalogComponent,
+        CatalogComponent
+    ],
+    exports:[
+        DataSourcesComponent,
+        DatasourceComponent,
+        ConnectorsComponent,
+        ConnectorComponent,
+        CatalogComponent
     ],
     imports: [
         CatalogApiModule,

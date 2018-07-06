@@ -318,6 +318,16 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     @Override
+    public Feed.Mode getMode() {
+        return getFeedData().map(d -> d.getMode()).orElse(null);
+    }
+
+    @Override
+    public void setMode(Mode mode) {
+        getFeedData().ifPresent(d -> d.setMode(mode));
+    }
+
+    @Override
     public boolean isInitialized() {
         return getFeedData().map(d -> d.isInitialized()).orElse(null);
     }

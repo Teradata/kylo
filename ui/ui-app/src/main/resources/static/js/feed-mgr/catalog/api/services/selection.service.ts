@@ -75,7 +75,13 @@ export class BlockParentObjectSelectionPolicy implements SelectionPolicy {
     toggleNode(node: Node, checked: boolean): void {
     }
     isSelectChildDisabled(node: Node, childName: string): boolean {
-        return node.getChild(childName).getBrowserObject().canBeParent();
+        let childNode = node.getChild(childName);
+        if(childNode != undefined){
+            return childNode.getBrowserObject().canBeParent();
+        }
+        else {
+            return true;
+        }
     }
     isSelectAllDisabled(node: Node): boolean {
         return false;

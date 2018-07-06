@@ -5,7 +5,8 @@ import {PreviewDataSet, SparkDataSet} from "../catalog/datasource/preview-schema
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
 
-const moduleName: string = require("feed-mgr/module-name");
+import {moduleName} from "../module-name";
+//const moduleName: string = require("feed-mgr/module-name");
 
 /**
  * Prefix for table aliases.

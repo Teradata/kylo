@@ -56,7 +56,13 @@ export class Node {
     }
 
     isChildSelected(name: string) {
-        return this.childrenMap.get(name).isSelected;
+        let node = this.childrenMap.get(name);
+        if(node != undefined ){
+            return node.isSelected;
+        }
+        else {
+            return false;
+        }
     }
 
     countSelectedChildren() {

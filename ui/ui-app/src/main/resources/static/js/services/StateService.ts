@@ -23,6 +23,7 @@
 */
 import * as angular from 'angular';
 import { moduleName } from './module-name';
+import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/feeds/define-feed-ng2/define-feed-states";
 
 export default class StateService {
     Auth: any;
@@ -118,6 +119,10 @@ export default class StateService {
                 tabIndex = 0;
             }
             this.$state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
+        }
+
+        data.navigateToFeedDefinition = (feedId:string) => {
+            this.$state.go(FEED_DEFINITION_STATE_NAME+".summary",{feedId:feedId});
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {

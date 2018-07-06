@@ -1,3 +1,4 @@
+import * as angular from 'angular';
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -30,6 +31,12 @@ export class DataSourcesComponent implements OnInit {
      */
     @Input()
     public selection: string;
+
+    @Input()
+    public selectedDatasourceState:string
+
+    @Input()
+    public stateParams:{}
 
     /**
      * Filtered list of datasources to display
@@ -69,7 +76,15 @@ export class DataSourcesComponent implements OnInit {
      * Creates a new data set from the specified datasource.
      */
     selectDatasource(datasource: DataSource) {
-        this.state.go("catalog.datasource", {datasourceId: datasource.id});
+        let stateRef = "catalog.datasource";
+        if(this.selectedDatasourceState != undefined){
+            stateRef = this.selectedDatasourceState;
+        }
+        let params = {datasourceId: datasource.id};
+        if(this.stateParams){
+            angular.extend(params,this.stateParams);
+        }
+        this.state.go(stateRef, params);
     }
 
     /**

@@ -4,7 +4,7 @@ import * as _ from "underscore";
 import * as moment from "moment";
 
 
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";;
 
 
 /**

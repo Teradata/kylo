@@ -534,7 +534,7 @@ export class controller {
                                     self.selectedTabIndex = tabIndex;
                                 }
 
-                                self.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
+                                self.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit',[]);
                                 self.model.inputProcessors = self.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
                                 //sort them by name
                                 self.model.inputProcessors = _.sortBy(self.model.inputProcessors,'name')

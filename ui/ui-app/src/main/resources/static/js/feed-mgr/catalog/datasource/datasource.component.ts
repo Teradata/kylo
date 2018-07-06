@@ -52,14 +52,13 @@ export class DatasourceComponent implements OnInit {
      * @param {SelectionService} selectionService
      * @param {Injector} $$angularInjector
      */
-    constructor(private state: StateService, private stateRegistry: StateRegistry, private selectionService: SelectionService,  private $$angularInjector: Injector) {
+    constructor(protected state: StateService, protected stateRegistry: StateRegistry, protected selectionService: SelectionService,  private $$angularInjector: Injector) {
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
     }
 
-    public ngOnInit() {
+    protected initTabs(statePrefix?:string ) {
         // Add tabs and register router states
-        this.selectionService.reset(this.datasource.id);
         if (this.datasource.connector.tabs) {
             this.tabs = angular.copy(this.datasource.connector.tabs);
             for (let tab of this.tabs) {
@@ -71,12 +70,17 @@ export class DatasourceComponent implements OnInit {
 
         // Add system tabs
         this.tabs.push({label: "Preview", sref: ".preview"});
-
-        // Go to the first tab
-        this.state.go(this.tabs[0].sref, {}, {location: "replace"});
     }
 
-    isDisabled(tab: ConnectorTab) {
+    public ngOnInit() {
+        // Add tabs and register router states
+        this.selectionService.reset(this.datasource.id);
+        this.initTabs();
+        // Go to the first tab
+        this.state.go(this.tabs[0].sref, {datasourceId:this.datasource.id}, {location: "replace"});
+    }
+
+    public isDisabled(tab: ConnectorTab) {
         let disabled = false;
         if (tab.sref === ".preview") {
             //disable preview until there is a selection

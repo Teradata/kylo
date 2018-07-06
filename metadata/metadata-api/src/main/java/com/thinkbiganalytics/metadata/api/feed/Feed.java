@@ -66,6 +66,18 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void setState(State state);
 
+    /**
+     * is it a DRAFT feed or not
+     * @return
+     */
+    Mode getMode();
+
+    /**
+     * Set the mode for the feed, DRAFT or COMPLETE
+     * @param mode
+     */
+    void setMode(Mode mode);
+
     boolean isInitialized();
 
     InitializationStatus getCurrentInitStatus();
@@ -185,6 +197,8 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
     void clearSourcesAndDestinations();
 
     enum State {NEW, ENABLED, DISABLED, DELETED}
+
+    enum Mode {DRAFT,COMPLETE}
 
     interface ID extends Serializable {
 

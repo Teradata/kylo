@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -111,6 +112,8 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     private boolean active = true;
 
     private String state;
+
+    private String mode;
 
     private String nifiProcessGroupId;
 
@@ -449,6 +452,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.state = state;
     }
 
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
     /**
      * Gets the user-defined business metadata for this feed.
      *
@@ -505,6 +516,10 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         return isNew;
     }
 
+    public boolean isDraft(){
+        return this.mode != null && MODE.DRAFT.name().equalsIgnoreCase(this.mode);
+    }
+
     public void setIsNew(boolean isNew) {
         this.isNew = isNew;
     }
@@ -527,6 +542,10 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public static enum STATE {
         NEW, ENABLED, DISABLED
+    }
+
+    public static enum MODE {
+        DRAFT,COMPLETE
     }
 
     @JsonIgnore

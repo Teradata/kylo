@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";
 
 
 export class EntityAccessControlService extends AccessConstants{
@@ -225,4 +225,4 @@ export class EntityAccessControlService extends AccessConstants{
 }
 
 
-angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);
+//angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);

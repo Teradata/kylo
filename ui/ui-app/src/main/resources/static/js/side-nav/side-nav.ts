@@ -11,6 +11,7 @@ import SideNavService from  "../services/SideNavService";
 import StateService from "../services/StateService";
 import AngularModuleExtensionService from "../services/AngularModuleExtensionService";
 import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuService";
+import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/feeds/define-feed-ng2/define-feed-states";
 
 export default class SideNav implements ng.IComponentController {
 
@@ -192,6 +193,7 @@ export default class SideNav implements ng.IComponentController {
         links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
         links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
         links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
+        links.push({sref: FEED_DEFINITION_STATE_NAME,type:'link', icon: "create_new_folder", text:"New Feed", permission: []});
         this.addExtensionLinks(this.MENU_KEY.FEED_MGR, links);
         var menu = ({type:'toggle', 
                 text: this.$filter('translate')('views.main.feed-manage'),
