@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
+import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
@@ -76,6 +77,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
@@ -84,6 +86,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -199,98 +202,6 @@ public class DebugController {
     }
 
     /**
-     * Delete the JCR tree specified by the absolute path following ".../jcr/".
-     *
-     * @param abspath the path with JCR to delete
-     * @return a confirmation message that the path was deleted
-     */
-    @DELETE
-    @Path("jcr/{abspath: .*}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String deleteJcrTree(@PathParam("abspath") final String abspath) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        try {
-            metadata.commit(() -> {
-                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-                
-                Session session = JcrMetadataAccess.getActiveSession();
-                session.removeItem("/" + abspath);
-                pw.print("DELETED " + abspath);
-            });
-        } catch (Exception e) {
-            e.printStackTrace(pw);
-            throw new RuntimeException(e);
-        }
-
-        pw.flush();
-        return sw.toString();
-    }
-
-    @DELETE
-    @Path("jcr/node-reference/{abspath: .*}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String deleteJcrTree(@PathParam("abspath") final String abspath, @QueryParam("referenceId") String referenceId) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-
-        try {
-            metadata.commit(() -> {
-                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-                Session session = JcrMetadataAccess.getActiveSession();
-                java.nio.file.Path path = JcrPath.get(abspath);
-                Node node = session.getRootNode().getNode(path.getParent().toString());
-
-                if(node != null) {
-                   String  referenceNodeName = path.getName(path.getNameCount() -1).toString();
-                    Property property = node.getProperty(referenceNodeName);
-                    if (property != null) {
-                        if (property.isMultiple()){
-                            Set<Object> removal = new HashSet<>();
-                            JcrPropertyUtil.getSetProperty(node, referenceNodeName).stream().forEach(n -> {
-                                try {
-                                    if (n instanceof Node) {
-                                        String id = ((Node) n).getIdentifier();
-                                        if (id.equalsIgnoreCase(referenceId)) {
-                                            removal.add(n);
-                                        }
-                                    }
-                                }catch (RepositoryException e){
-                                    e.printStackTrace();
-                                    pw.print("Unable to delete node for reference " + abspath+"/"+referenceId+".  "+e.getMessage());
-                                }
-                            });
-                            if(!removal.isEmpty()) {
-                                removal.stream().forEach(n -> JcrPropertyUtil.removeFromSetProperty(node, referenceNodeName, n));
-
-                                pw.print("DELETED " + abspath+"/"+referenceId);
-                            }
-                            else {
-                                pw.print("Not Deleted.  Unable to find reference id " +referenceId+" in set for path "+ abspath);
-                            }
-                        }
-                        else {
-                            JcrPropertyUtil.setProperty(node,referenceNodeName,null);
-                            pw.print("Path is not a set of nodes.  Setting valur of node to null.  DELETED " + abspath+"/"+referenceId);
-                        }
-                    }
-                }
-
-            });
-        } catch (Exception e) {
-            e.printStackTrace(pw);
-            throw new RuntimeException(e);
-        }
-
-        pw.flush();
-        return sw.toString();
-    }
-
-
-
-
-    /**
      * Prints the nodes of the JCR path given, for debugging.
      *
      * @param abspath the path in JCR
@@ -308,20 +219,13 @@ public class DebugController {
 
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
+                java.nio.file.Path path = JcrPath.get(abspath);
                 
                 try {
-                    Node node = Strings.isNullOrEmpty(abspath)  ? session.getRootNode() : session.getRootNode().getNode(abspath);
-                    JcrTools tools = new JcrTool(true, pw);
-                    tools.printSubgraph(node);
-                } catch (PathNotFoundException pnf) {
-                    try {
-                        java.nio.file.Path path = JcrPath.get(abspath);
-                        Node node = session.getRootNode().getNode(path.getParent().toString());
-                        Object value = JcrPropertyUtil.getProperty(node, path.getFileName().toString());
-                        pw.println(" - " + path.getFileName().toString() + "=" + value);
-                    } catch (PathNotFoundException e) {
-                        throw pnf;
-                    }
+                    Item item = getItem(abspath, session);
+                    printItem(item, pw);
+                } catch (PathNotFoundException e) {
+                    return "Path not found: " + path.toString();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -331,6 +235,314 @@ public class DebugController {
             return sw.toString();
         });
     }
+
+    /**
+     * Puts a new value into the property at the JCR path given, for debugging.
+     *
+     * @param abspath the path in JCR to a node's property
+     * @param value the new value for the property
+     * @return a print of the property showing the new current value
+     */
+    @PUT
+    @Path("jcr/{abspath: .*}")
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    public String putPropertyValue(@PathParam("abspath") final String abspath,
+                                   @QueryParam("value") final String value) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+    
+        try {
+            metadata.commit(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+                
+                Session session = JcrMetadataAccess.getActiveSession();
+                java.nio.file.Path path = JcrPath.get(abspath);
+    
+                try {
+                    Item item = getItem(abspath, session);
+                    
+                    if (item instanceof Property) {
+                        Property property = (Property) item;
+                        
+                        // No-op if value not supplied
+                        if (value != null) {
+                            property.setValue(value);
+                        }
+                    } else {
+                        pw.println("Item at path is not a property: " + path.toString());
+                    }
+                    
+                    printItem(item, pw);
+                } catch (PathNotFoundException e) {
+                    try {
+                        Item item = getItem(path.getParent().toString(), session);
+                        
+                        if (item instanceof Node && value != null) {
+                            Node node = (Node) item;
+                            String propName = path.getFileName().toString();
+                            item = node.setProperty(propName, value);
+                        } else {
+                            pw.print("Path not found: " + path.toString());
+                        }
+                        
+                        printItem(item, pw);
+                    } catch (PathNotFoundException pnf) {
+                        pw.print("Path not found: " + path.toString());
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+            throw new RuntimeException(e);
+        }
+    
+        pw.flush();
+        return sw.toString();
+    }
+    
+    /**
+     * Prints the subgraph of the node in JCR with the specified ID.
+     *
+     * @param jcrId the id of the node in JCR
+     * @return the subgraph print out
+     */
+    @GET
+    @Path("jcr")
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    public String printJcrId(@QueryParam("id") final String jcrId) {
+        return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            // If the ID is over 36 characters long then assume it is a cache key and
+            // extract only the node ID portion of the key.
+            String nodeId = jcrId.length() > 36 ? jcrId.substring(jcrId.length() - 36, jcrId.length()) : jcrId;
+    
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Node node = session.getNodeByIdentifier(nodeId);
+                pw.print("Path: ");
+                pw.println(node.getPath());
+                JcrTools tools = new JcrTool(true, pw);
+                tools.printSubgraph(node);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+    
+            pw.flush();
+            return sw.toString();
+        });
+    }
+
+    /**
+     * Delete the JCR tree specified by the absolute path following ".../jcr/".
+     *
+     * @param abspath the path with JCR to delete
+     * @return a confirmation message that the path was deleted
+     */
+    @DELETE
+    @Path("jcr/{abspath: .*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrTree(@PathParam("abspath") final String abspath) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+    
+        try {
+            metadata.commit(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+                
+                Session session = JcrMetadataAccess.getActiveSession();
+                java.nio.file.Path path = JcrPath.get(abspath);
+    
+                try {
+                    Item item = getItem(abspath, session);
+                    
+                    item.remove();
+                    pw.print("DELETED " + abspath);
+                } catch (PathNotFoundException e) {
+                    pw.print("Path not found: " + path.toString());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+            throw new RuntimeException(e);
+        }
+    
+        pw.flush();
+        return sw.toString();
+    }
+
+    /**
+     * Deletes the subgraph of the node in JCR with the specific ID.
+     *
+     * @param jcrId the id of the node in JCR
+     * @return the subgraph to delete
+     */
+    @DELETE
+    @Path("jcr")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrId(@QueryParam("id") final String jcrId) {
+        return metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Node node = session.getNodeByIdentifier(jcrId);
+                String absPath = node.getPath();
+                node.remove();
+                pw.print("DELETED " + absPath);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+    
+            pw.flush();
+            return sw.toString();
+        });
+    }
+
+    @DELETE
+    @Path("jcr/node-reference/{abspath: .*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrReference(@PathParam("abspath") final String abspath, @QueryParam("referenceId") String referenceId) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+    
+        try {
+            metadata.commit(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+                Session session = JcrMetadataAccess.getActiveSession();
+                Item item = getItem(abspath, session);
+    
+                if (item instanceof Node) {
+                    pw.println("Item at the path is not a property: " + abspath);
+                } else {
+                    Property property = (Property) item;
+                    String referenceNodeName = property.getName();
+                    Node node = property.getParent();
+                    
+                    if (property.isMultiple()){
+                        Set<Object> removal = new HashSet<>();
+                        JcrPropertyUtil.getSetProperty(node, referenceNodeName).stream().forEach(n -> {
+                            try {
+                                if (n instanceof Node) {
+                                    String id = ((Node) n).getIdentifier();
+                                    if (id.equalsIgnoreCase(referenceId)) {
+                                        removal.add(n);
+                                    }
+                                }
+                            }catch (RepositoryException e){
+                                e.printStackTrace();
+                                pw.print("Unable to delete node for reference " + abspath+"/"+referenceId+".  "+e.getMessage());
+                            }
+                        });
+                        
+                        if(!removal.isEmpty()) {
+                            removal.stream().forEach(n -> JcrPropertyUtil.removeFromSetProperty(node, referenceNodeName, n));
+    
+                            pw.print("DELETED " + abspath+"/"+referenceId);
+                        }
+                        else {
+                            pw.print("Not Deleted.  Unable to find reference id " +referenceId+" in set for path "+ abspath);
+                        }
+                    } else {
+                        property.remove();
+                        pw.print("Path is not a set of nodes.  Setting value of property to null.  DELETED " + abspath+"/"+referenceId);
+                    }
+                }
+    
+            });
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+            throw new RuntimeException(e);
+        }
+    
+        pw.flush();
+        return sw.toString();
+    }
+
+    /**
+     * Prints the nodes of the JCR path given, for debugging.
+     *
+     * @param query the jcr query
+     * @return a printout of the JCR tree
+     */
+    @GET
+    @Path("jcr-sql")
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
+        return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
+            List<List<String>> rows = new ArrayList<>();
+            Long startTime = System.currentTimeMillis();
+            JcrQueryResult jcrQueryResult = new JcrQueryResult();
+    
+    
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+    
+                Workspace workspace = (Workspace) session.getWorkspace();
+    
+                String explainPlain = JcrQueryUtil.explainPlain(session,query);
+                //start the timer now:
+                startTime = System.currentTimeMillis();
+    
+                QueryResult result = JcrQueryUtil.query(session, query);
+                jcrQueryResult.setExplainPlan(explainPlain);
+                RowIterator rowItr = result.getRows();
+                List<JcrQueryResultColumn> columns = new ArrayList<>();
+                String colsStr = StringUtils.substringAfter(query.toLowerCase(),"select");
+                colsStr = StringUtils.substringBefore(colsStr,"from");
+                if(StringUtils.isNotBlank(colsStr)){
+                    colsStr = colsStr.trim();
+                    columns = Arrays.asList(colsStr.split(",")).stream().map(c ->{
+                        String columnName =c;
+                        if(c.contains("as ")){
+                            columnName = StringUtils.substringAfter(c,"as ");
+                        }else if(c.contains(" ")){
+                            columnName = StringUtils.substringAfter(c, " ");
+                        }
+                       return new JcrQueryResultColumn(columnName);
+                    }).collect(Collectors.toList());
+                }
+                jcrQueryResult.setColumns(columns);
+    
+                while (rowItr.hasNext()) {
+                   Row row =rowItr.nextRow();
+                   Value[] rowValues = row.getValues();
+                    if(rowValues != null){
+                        if(rowValues.length != columns.size()){
+                           columns = IntStream.range(0, rowValues.length)
+                                .mapToObj(i ->  new JcrQueryResultColumn("Column "+i)).collect(Collectors.toList());
+                           jcrQueryResult.setColumns(columns);
+                        }
+                        JcrQueryResultRow jcrQueryResultRow = new JcrQueryResultRow();
+                        jcrQueryResult.addRow(jcrQueryResultRow);
+                      List<JcrQueryResultColumnValue> jcrQueryResultColumnValues = Arrays.asList(rowValues).stream().map(v->{
+                           try {
+                               String value = v.getString();
+                               return new JcrQueryResultColumnValue(value);
+                           }catch (Exception e){
+                               return new JcrQueryResultColumnValue("ERROR: "+e.getMessage());
+                           }
+                       }).collect(Collectors.toList());
+                       jcrQueryResultRow.setColumnValues(jcrQueryResultColumnValues);
+                   }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            long totalTime = System.currentTimeMillis() - startTime;
+            jcrQueryResult.setQueryTime(totalTime);
+            return jcrQueryResult;
+    
+        });
+    }
+
     @GET
     @Path("jcr-index")
     @Produces(MediaType.APPLICATION_JSON)
@@ -374,23 +586,6 @@ public class DebugController {
             }
         });
     }
-
-    private RestResponseStatus reindex() {
-
-        return  metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-            
-            try {
-                Session session = JcrMetadataAccess.getActiveSession();
-                Workspace workspace = (Workspace) session.getWorkspace();
-                workspace.reindex();
-                return RestResponseStatus.SUCCESS;
-            } catch (RepositoryException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
 
     @POST
     @Path("jcr-index/{indexName}/unregister")
@@ -441,85 +636,6 @@ public class DebugController {
         });
     }
 
-    /**
-     * Prints the nodes of the JCR path given, for debugging.
-     *
-     * @param query the jcr query
-     * @return a printout of the JCR tree
-     */
-    @GET
-    @Path("jcr-sql")
-    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
-    public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
-        return metadata.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-            
-            List<List<String>> rows = new ArrayList<>();
-            Long startTime = System.currentTimeMillis();
-            JcrQueryResult jcrQueryResult = new JcrQueryResult();
-
-
-            try {
-                Session session = JcrMetadataAccess.getActiveSession();
-
-                Workspace workspace = (Workspace) session.getWorkspace();
-
-                String explainPlain = JcrQueryUtil.explainPlain(session,query);
-                //start the timer now:
-                startTime = System.currentTimeMillis();
-
-                QueryResult result = JcrQueryUtil.query(session, query);
-                jcrQueryResult.setExplainPlan(explainPlain);
-                RowIterator rowItr = result.getRows();
-                List<JcrQueryResultColumn> columns = new ArrayList<>();
-                String colsStr = StringUtils.substringAfter(query.toLowerCase(),"select");
-                colsStr = StringUtils.substringBefore(colsStr,"from");
-                if(StringUtils.isNotBlank(colsStr)){
-                    colsStr = colsStr.trim();
-                    columns = Arrays.asList(colsStr.split(",")).stream().map(c ->{
-                        String columnName =c;
-                        if(c.contains("as ")){
-                            columnName = StringUtils.substringAfter(c,"as ");
-                        }else if(c.contains(" ")){
-                            columnName = StringUtils.substringAfter(c, " ");
-                        }
-                       return new JcrQueryResultColumn(columnName);
-                    }).collect(Collectors.toList());
-                }
-                jcrQueryResult.setColumns(columns);
-
-                while (rowItr.hasNext()) {
-                   Row row =rowItr.nextRow();
-                   Value[] rowValues = row.getValues();
-                    if(rowValues != null){
-                        if(rowValues.length != columns.size()){
-                           columns = IntStream.range(0, rowValues.length)
-                                .mapToObj(i ->  new JcrQueryResultColumn("Column "+i)).collect(Collectors.toList());
-                           jcrQueryResult.setColumns(columns);
-                        }
-                        JcrQueryResultRow jcrQueryResultRow = new JcrQueryResultRow();
-                        jcrQueryResult.addRow(jcrQueryResultRow);
-                      List<JcrQueryResultColumnValue> jcrQueryResultColumnValues = Arrays.asList(rowValues).stream().map(v->{
-                           try {
-                               String value = v.getString();
-                               return new JcrQueryResultColumnValue(value);
-                           }catch (Exception e){
-                               return new JcrQueryResultColumnValue("ERROR: "+e.getMessage());
-                           }
-                       }).collect(Collectors.toList());
-                       jcrQueryResultRow.setColumnValues(jcrQueryResultColumnValues);
-                   }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            long totalTime = System.currentTimeMillis() - startTime;
-            jcrQueryResult.setQueryTime(totalTime);
-            return jcrQueryResult;
-
-        });
-    }
-
     @POST
     @Path("jcr-index/reindex")
     @Produces(MediaType.APPLICATION_JSON)
@@ -534,69 +650,36 @@ public class DebugController {
         return reindex();
     }
 
-    /**
-     * Prints the subgraph of the node in JCR with the specified ID.
-     *
-     * @param jcrId the id of the node in JCR
-     * @return the subgraph print out
-     */
-    @GET
-    @Path("jcr")
-    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
-    public String printJcrId(@QueryParam("id") final String jcrId) {
-        return metadata.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-            
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            // If the ID is over 36 characters long then assume it is a cache key and
-            // extract only the node ID portion of the key.
-            String nodeId = jcrId.length() > 36 ? jcrId.substring(jcrId.length() - 36, jcrId.length()) : jcrId;
-
-            try {
-                Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getNodeByIdentifier(nodeId);
-                pw.print("Path: ");
-                pw.println(node.getPath());
-                JcrTools tools = new JcrTool(true, pw);
-                tools.printSubgraph(node);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            pw.flush();
-            return sw.toString();
-        });
+    private Item getItem(final String abspath, Session session) throws PathNotFoundException, RepositoryException {
+        String path = abspath.startsWith("/") ? abspath : "/" + abspath;
+        return session.getItem(path);
     }
+
+    private void printItem(Item item, PrintWriter pw) throws RepositoryException, ValueFormatException {
+        if (item instanceof Node) {
+            Node node = (Node) item;
+            JcrTools tools = new JcrTool(true, pw);
+            tools.printSubgraph(node);
+        } else {
+            Property property = (Property) item;
+            String value = property.getString();
+            pw.println(" - " + property.getName() + "=" + value);
+        }
+    }
+
+    private RestResponseStatus reindex() {
     
-    /**
-     * Prints the subgraph of the node in JCR
-     *
-     * @param jcrId the id of the node in JCR
-     * @return the subgraph print out
-     */
-    @DELETE
-    @Path("jcr")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String deleteJcrId(@QueryParam("id") final String jcrId) {
-        return metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-            
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
+        return  metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
             
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getNodeByIdentifier(jcrId);
-                String absPath = node.getPath();
-                node.remove();
-                pw.print("DELETED " + absPath);
-            } catch (Exception e) {
+                Workspace workspace = (Workspace) session.getWorkspace();
+                workspace.reindex();
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
                 throw new RuntimeException(e);
             }
-
-            pw.flush();
-            return sw.toString();
         });
     }
 
