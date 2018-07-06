@@ -108,6 +108,7 @@ EOF
 VAULT_BIN_RUN=${VAULT_INSTALL_HOME}/bin/run.sh
 VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
 VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
+VAULT_BIN_SETUP=${VAULT_INSTALL_HOME}/bin/setup.sh
 VAULT_BINARY=${VAULT_INSTALL_HOME}/bin/vault
 VAULT_LOG_DIR=/var/log/vault
 echo "Creating Vault log directory '${VAULT_LOG_DIR}'"
@@ -170,11 +171,6 @@ run() {
     fi
 }
 
-init() {
-    echo Initialising Vault ...
-    su - \$RUN_AS_USER -c "${VAULT_BIN_INIT}"
-}
-
 unseal() {
     echo Unsealing Vault ...
     su - \$RUN_AS_USER -c "${VAULT_BIN_UNSEAL}"
@@ -213,9 +209,6 @@ status() {
 case "\$1" in
     run)
         run
-    ;;
-    init)
-        init
     ;;
     unseal)
         unseal
@@ -257,6 +250,15 @@ cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat 
 done
 EOF
 
+cat << EOF >> ${VAULT_BIN_SETUP}
+#! /bin/sh
+export VAULT_TOKEN=\$1
+export VAULT_ADDR=${VAULT_ADDRESS}
+echo "Restoring non-versioned K/V backend at secret/"
+${VAULT_BINARY} secrets disable secret
+${VAULT_BINARY} secrets enable -path secret -version 1 kv
+EOF
+
 
 echo "Assigning owner and group to '$VAULT_USER:$VAULT_GROUP'"
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_INSTALL_HOME}
@@ -279,13 +281,14 @@ then
 else
     service vault status
 fi
-service vault init
+su - ${VAULT_USER} -c "${VAULT_BIN_INIT}"
+ROOT_TOKEN=$(cat ${VAULT_CONF_INIT} | grep '^Initial' | awk '{print $4}')
 service vault unseal
+su - ${VAULT_USER} -c "${VAULT_BIN_SETUP} ${ROOT_TOKEN}"
 service vault stop
 echo "Vault initialised"
 
 echo "Updating Kylo configuration"
-ROOT_TOKEN=$(cat ${VAULT_CONF_INIT} | grep '^Initial' | awk '{print $4}')
 sed -i "s/security\.vault\.token=<insert-vault-secret-token-here>/security\.vault\.token=${ROOT_TOKEN}/" ${KYLO_HOME}/kylo-services/conf/application.properties
 
 echo "Vault installation complete"
@@ -295,7 +298,6 @@ instructions() {
 
 Vault has been automatically initialized and unsealed.
 The unseal keys and root token have been stored in "${VAULT_CONF_INIT}".
-Please securely distribute and record these secrets and shred "${VAULT_CONF_INIT}".
 EOF
   exit 1
 }
