@@ -22,17 +22,21 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
 
 import com.thinkbiganalytics.kylo.catalog.credential.spi.DataSourceCredentialProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.vault.authentication.ClientAuthentication;
 import org.springframework.vault.authentication.TokenAuthentication;
 import org.springframework.vault.client.VaultEndpoint;
 import org.springframework.vault.config.AbstractVaultConfiguration;
 import org.springframework.vault.support.SslConfiguration;
+
+import java.io.File;
 
 import javax.inject.Inject;
 
@@ -66,17 +70,17 @@ public class VaultDataSourceCredentialConfig extends AbstractVaultConfiguration 
 
     @Override
     public ClientAuthentication clientAuthentication() {
-        //todo replace with client certificate authentication when available
         return new TokenAuthentication(vaultConfiguration.getToken());
     }
 
-
     @Override
     public SslConfiguration sslConfiguration() {
-        //todo replace with trust store when available
-        return SslConfiguration.NONE;
-//        return SslConfiguration.forTrustStore(
-//            new FileSystemResource(new File(vaultConfiguration.getTrustStoreDirectory(), vaultConfiguration.getTrustStoreName())), vaultConfiguration.getTrustStorePassword());
+        if (StringUtils.isNotBlank(vaultConfiguration.getTrustStoreDirectory())) {
+            return SslConfiguration.forTrustStore(
+                new FileSystemResource(new File(vaultConfiguration.getTrustStoreDirectory(), vaultConfiguration.getTrustStoreName())), vaultConfiguration.getTrustStorePassword());
+        } else {
+            return SslConfiguration.NONE;
+        }
     }
 
     @Bean
