@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.example.kylo.spark</groupId>
     <artifactId>kylo-provenance-samples</artifactId>
-    <version>0.9.1.1</version>
+    <version>0.9.1.2-SNAPSHOT</version>
   </parent>
   
   <properties>
@@ -18,7 +18,7 @@
 
   <groupId>com.example.kylo.spark</groupId>
   <artifactId>kylo-spark-provenance-app</artifactId>
-  <version>0.9.1.1</version>
+  <version>0.9.1.2-SNAPSHOT</version>
 <packaging>jar</packaging>
 
   <dependencies>
@@ -38,19 +38,19 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-nifi-provenance-model</artifactId>
-      <version>0.9.1.1</version>
+      <version>0.9.1.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-provenance-jms</artifactId>
-      <version>0.9.1.1</version>
+      <version>0.9.1.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-provenance-kafka</artifactId>
-      <version>0.9.1.1</version>
+      <version>0.9.1.2-SNAPSHOT</version>
     </dependency>
 
 
