@@ -1,9 +1,10 @@
 #!/bin/bash
-VAULT_VERSION=$1
-VAULT_INSTALL_HOME=$2
-VAULT_USER=$3
-VAULT_GROUP=$4
-WORKING_DIR=$5
+KYLO_HOME=$1
+VAULT_VERSION=$2
+VAULT_INSTALL_HOME=$3
+VAULT_USER=$4
+VAULT_GROUP=$5
+WORKING_DIR=$6
 VAULT_DATA_DIR=${VAULT_INSTALL_HOME}/data
 
 
@@ -15,14 +16,29 @@ IGNORE_CERTS="${IGNORE_CERTS:-no}"
 
 offline=false
 
-if [ "$5" = "-o" ] || [ "$5" = "-O" ]
+if [ "$7" = "-o" ] || [ "$7" = "-O" ]
 then
     echo "Working in offline mode"
     offline=true
 fi
 
-if [ $# -lt 4 ] || [ $# -gt 6 ]; then
-    echo "Unknown arguments. Arg1 should be the Vault version, Arg2 should be the Vault home, Arg3 should be the Vault user, Arg4 should be the Vault group. For offline mode pass Arg5 the kylo setup folder and Arg6 the -o -or -O option"
+
+argInstructions() {
+  cat <<EOF
+Incorrect number of arguments.
+Arg1 should be the Kylo Home
+Arg2 should be the Vault version
+Arg3 should be the Vault home
+Arg4 should be the Vault user
+Arg5 should be the Vault group.
+For offline mode pass:
+ Arg6 the kylo setup folder
+ Arg7 the -o -or -O option
+EOF
+  exit 1
+}
+if [ $# -lt 5 ] || [ $# -gt 7 ]; then
+    argInstructions
     exit 1
 fi
 
@@ -89,20 +105,16 @@ pid_file = "${VAULT_PID_FILE}"
 disable_mlock = true
 EOF
 
+VAULT_BINARY=${VAULT_INSTALL_HOME}/bin/vault
 VAULT_LOG_DIR=/var/log/vault
 echo "Creating Vault log directory '${VAULT_LOG_DIR}'"
 mkdir -p ${VAULT_LOG_DIR}
 cat << EOF > ${VAULT_INSTALL_HOME}/bin/run-vault.sh
 #!/bin/bash
 
-${VAULT_INSTALL_HOME}/bin/vault server \
+${VAULT_BINARY} server \
             -config=${VAULT_INSTALL_HOME}/conf/vault.conf \
-            -dev \
-            -dev-root-token-id="00000000-0000-0000-0000-000000000000" \
-            -dev-listen-address="0.0.0.0:8201" \
             &> ${VAULT_LOG_DIR}/vault.log &
-
-exit $?
 EOF
 
 VAULT_SERVICE_FILE=/etc/init.d/vault
@@ -196,6 +208,25 @@ esac
 exit 0
 EOF
 
+VAULT_ADDRESS="http://localhost:8200"
+VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
+VAULT_CONF_INIT=${VAULT_INSTALL_HOME}/conf/vault.init
+cat << EOF >> ${VAULT_BIN_INIT}
+#! /bin/sh
+export VAULT_ADDR=${VAULT_ADDRESS}
+${VAULT_BINARY} operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
+EOF
+
+VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
+cat << EOF >> ${VAULT_BIN_UNSEAL}
+#! /bin/sh
+export VAULT_ADDR=${VAULT_ADDRESS}
+cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat -); do
+    ${VAULT_BINARY} operator unseal \${key}
+done
+EOF
+
+
 echo "Assigning owner and group to '$VAULT_USER:$VAULT_GROUP'"
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_INSTALL_HOME}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_PID_DIR}
@@ -207,4 +238,35 @@ chmod 700 -R ${VAULT_INSTALL_HOME}/bin
 chmod 700 ${VAULT_SERVICE_FILE}
 chmod 700 ${VAULT_DATA_DIR}
 
+echo "Unsealing Vault"
+service vault start
+sleep 5 # pause for few seconds to let vault start
+if ! [ -f ${VAULT_PID_FILE} ]
+then
+    echo "Vault failed to start, aborting..."
+    exit 1;
+else
+    service vault status
+fi
+su - ${VAULT_USER} -c "${VAULT_BIN_INIT}"
+su - ${VAULT_USER} -c "${VAULT_BIN_UNSEAL}"
+service vault stop
+echo "Vault unsealed tested"
+
+echo "Updating Kylo configuration"
+ROOT_TOKEN=$(cat ${VAULT_CONF_INIT} | grep '^Initial' | awk '{print $4}')
+sed -i "s/security\.vault\.token=<insert-vault-secret-token-here>/security\.vault\.token=${ROOT_TOKEN}/" ${KYLO_HOME}/kylo-services/conf/application.properties
+
 echo "Vault installation complete"
+
+instructions() {
+  cat <<EOF
+
+Vault has been automatically initialized and unsealed once. Future unsealing must be done manually.
+The unseal keys and root token have been stored in "${VAULT_CONF_INIT}".
+Please securely distribute and record these secrets and shred "${VAULT_CONF_INIT}".
+EOF
+  exit 1
+}
+
+instructions

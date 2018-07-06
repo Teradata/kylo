@@ -301,9 +301,9 @@ if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
     echo "Installing Vault"
     if [ ${OFFLINE} = true ]
     then
-        ./vault/install-vault.sh ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
+        ./vault/install-vault.sh ${kylo_home_folder} ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
     else
-        ./vault/install-vault.sh ${vault_version} ${vault_home} ${vault_user} ${vault_group}
+        ./vault/install-vault.sh ${kylo_home_folder} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
     fi
 fi
 
