@@ -1,4 +1,4 @@
-<!--
+<!-- <!--
   #%L
   thinkbig-ui-feed-manager
   %%
@@ -17,118 +17,113 @@
   limitations under the License.
   #L%
   -->
-<div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
-        <header-section>
-            <div layout="row" layout-align="center start">
+<div class="flex-container" fxLayoutAlign="center center">
+    <mat-progress-bar flex = "90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <mat-card flex = "70">
+        <mat-card-title>
+            <mat-toolbar>
                 <div class="card-title">User Details</div>
                 <span flex></span>
-                <ng-md-icon icon="person" style="padding-right: 16px" size="30"></ng-md-icon>
-            </div>
-        </header-section>
-        <body-section>
-            <form name="userForm">
-                <vertical-section-layout section-title="Details" [on-delete]="vm.onDelete" [allow-delete]="vm.canDelete" [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel"
-                                         [editable]="vm.isEditable" [is-valid]="vm.isValid && userForm.$valid" [allow-edit]="vm.allowAdmin">
+                <mat-icon style="padding-right: 16px" size="30">person</mat-icon>
+            </mat-toolbar>
+        </mat-card-title>
+        <mat-card-body>
+            <form #userForm="ngForm">
+                <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
+                                         [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Username</span>
 
                             <div flex>
-                                {{vm.model.systemName}}
+                                {{model.systemName}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Display Name</span>
 
                             <div flex>
-                                {{vm.model.displayName}}
+                                {{model.displayName}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Email</span>
 
                             <div flex>
-                                {{vm.model.email}}
+                                {{model.email}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
                             <span flex="25" class="property-name">Status</span>
 
-                            <div class="enabled" flex ng-if="vm.model.enabled">
-                                <ng-md-icon icon="check_circle" size="20"></ng-md-icon> Active
+                            <div class="enabled" flex *ngIf="model.enabled">
+                                <mat-icon  size="20" style="color: #009933; vertical-align: middle">check_circle</mat-icon> Active
                             </div>
-                            <div class="disabled" flex ng-if="!vm.model.enabled">
-                                <ng-md-icon icon="block" size="20"></ng-md-icon> Disabled
+                            <div class="disabled" flex *ngIf="!model.enabled">
+                                <mat-icon  size="20" style="vertical-align: middle">block</mat-icon> Disabled
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Groups</span>
 
                             <div flex>
-                                {{vm.getGroupTitles().join(', ')}}
+                                {{getGroupTitles().join(', ')}}
                             </div>
                         </div>
                     </readonly-section>
-                    <editable-section>
-                        <md-input-container class="md-block" ng-if="vm.model.systemName === null">
-                            <label>Username</label>
-                            <input name="username" type="text" ng-model="vm.editModel.systemName"/>
-                            <div ng-messages="vm.$error" md-auto-hide="false">
-                                <div ng-message="duplicateUser">That username is already in use.</div>
-                                <div ng-message="missingUser">A username is required.</div>
-                            </div>
-                        </md-input-container>
-                        <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">
+                    <editable-section *ngIf="enableEdit">
+                        <mat-form-field class="block" *ngIf="model.systemName === null">
+                            <mat-label>Username</mat-label>
+                            <input matInput name="username" type="text" [(ngModel)]="editModel.systemName"/>
+                            <mat-error *ngIf="isUserNameEmpty()">A username is required.</mat-error>
+                            <mat-error *ngIf="isUserNameDuplicate()">That username is already in use.</mat-error>
+                        </mat-form-field>
+                        <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
                             <span flex="25" class="property-name">Username</span>
 
                             <div flex>
-                                {{vm.editModel.systemName}}
+                                {{editModel.systemName}}
                             </div>
                         </div>
+ 
+                        <mat-form-field class="block">
+                            <mat-label>Display Name</mat-label>
+                            <input name="displayName" matInput [(ngModel)]="editModel.displayName"/>
+                        </mat-form-field>
 
-                        <md-input-container class="md-block">
-                            <label>Display Name</label>
-                            <input ng-model="vm.editModel.displayName"/>
-                        </md-input-container>
+                        <mat-form-field class="block">
+                            <mat-label>Email Address</mat-label>
+                            <input matInput #emailField [formControl]="emailFormControl" name="email" [(ngModel)]="editModel.email"/>
+                            <mat-error *ngIf="emailField.value !== '' && emailFormControl.hasError('email')">Email address is not valid.</mat-error>
+                        </mat-form-field>
 
-                        <md-input-container class="md-block">
-                            <label>Email Address</label>
-                            <input name="email" type="email" ng-model="vm.editModel.email"/>
-                            <div ng-messages="userForm.email.$error" md-auto-hide="false">
-                                <div ng-message="email">Email address is not valid.</div>
-                            </div>
-                        </md-input-container>
+                        <mat-form-field class="block">
+                            <mat-label>Status</mat-label>
+                            <mat-select name="status" [(ngModel)]="editModel.enabled">
+                                <mat-option [value]="true">Active</mat-option>
+                                <mat-option [value]="false">Disabled</mat-option>
+                            </mat-select>
+                        </mat-form-field>
 
-                        <md-input-container class="md-block">
-                            <label>Status</label>
-                            <md-select ng-model="vm.editModel.enabled">
-                                <md-option ng-value="true">Active</md-option>
-                                <md-option ng-value="false">Disabled</md-option>
-                            </md-select>
-                        </md-input-container>
-
-                        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm">
-                            <label class="label-small md-container-ignore">Group</label>
-                            <md-chips ng-model="vm.editModel.groups" md-require-match="true">
-                                <md-autocomplete md-items="group in vm.queryGroups(vm.groupSearchText)" md-item-text="vm.getGroupTitle(group)" placeholder="Type a name and press enter"
-                                                 style="min-width: 250px;" md-no-cache="true" md-search-text="vm.groupSearchText">
-                                    <span md-highlight-text="vm.findGroupSearchText(group)">{{vm.getGroupTitle(group)}}</span>
-                                </md-autocomplete>
-                                <md-chip-template>
-                                    <span>
-                                        <strong>{{vm.getGroupTitle($chip)}}</strong>
-                                    </span>
-                                </md-chip-template>
-                            </md-chips>
-                            <div ng-messages="vm.$error" md-auto-hide="false">
-                                <div ng-message="missingGroup">At least one group is required.</div>
-                            </div>
-                        </md-input-container>
+                         <mat-form-field class="block layout-padding-top-bottom flex-gt-sm">
+                            <mat-label class="label-small md-container-ignore">Group</mat-label>
+                            <mat-chip-list name="groupsChips" #chipList [(ngModel)]="editModel.groups">
+                                <mat-chip *ngFor="let value of  editModel.groups" (remove)="removeGroup(value)">
+                                   {{getGroupTitle(value)}} <mat-icon matChipRemove>cancel</mat-icon>
+                                </mat-chip>
+                                <input name="groups" matInput #groupSearchText [matChipInputFor]="chipList"
+                                    [matAutocomplete]="auto" placeholder="Type a name and press enter">
+                            </mat-chip-list>
+                            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addGroup($event)">
+                                <mat-option *ngFor="let group of queryGroups(groupSearchText.value)" [value]="group">
+                                    <span >{{ getGroupTitle(group) }}</span>
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-hint *ngIf="isMissingGroup()" style="color: red">At least one group is required.</mat-hint>
+                        </mat-form-field> 
                     </editable-section>
                 </vertical-section-layout>
             </form>
-        </body-section>
-    </card-layout>
+        </mat-card-body>
+    </mat-card>
 </div>

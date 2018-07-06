@@ -4,7 +4,9 @@ import {UpgradeModule} from "@angular/upgrade/static";
 
 import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider, 
         paginationServiceProvider, tableOptionsServiceProvider, accessControlServiceProvider,
-        stateServiceProvider} from "./angular2";
+        stateServiceProvider,
+        commonRestURLServiceProvider,
+        userGroupServiceProvider} from "./angular2";
 
 @NgModule({
     imports: [
@@ -18,7 +20,9 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         paginationServiceProvider,
         tableOptionsServiceProvider,
         accessControlServiceProvider,
-        stateServiceProvider
+        stateServiceProvider,
+        commonRestURLServiceProvider,
+        userGroupServiceProvider
     ]
 })
 export class KyloServicesModule {

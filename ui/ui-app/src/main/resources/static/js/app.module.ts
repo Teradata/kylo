@@ -14,6 +14,7 @@ import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
 import {KyloServicesModule} from "./services/services.module";
 import {CategoryModule} from "./feed-mgr/categories/category.module";
+import { AuthModule } from "./auth/auth.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -40,7 +41,8 @@ const translateConfig: TranslateModuleConfig = {
         CategoryModule,
         UIRouterModule,
         UIRouterUpgradeModule,
-        UpgradeModule
+        UpgradeModule,
+        AuthModule
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,
