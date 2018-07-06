@@ -4,6 +4,8 @@ VAULT_INSTALL_HOME=$2
 VAULT_USER=$3
 VAULT_GROUP=$4
 WORKING_DIR=$5
+VAULT_DATA_DIR=${VAULT_INSTALL_HOME}/data
+
 
 VAULT_VERSION="${VAULT_VERSION:-0.10.1}"
 UNAME=$(uname -s |  tr '[:upper:]' '[:lower:]')
@@ -62,6 +64,9 @@ mv vault bin/
 rm -f ${VAULT_ZIP}
 rm -Rf vault
 
+echo "Creating Vault data directory '${VAULT_DATA_DIR}'"
+mkdir -p ${VAULT_DATA_DIR}
+
 echo "Creating Vault configuration at '${VAULT_INSTALL_HOME}/conf'"
 mkdir -p ${VAULT_INSTALL_HOME}/conf
 
@@ -71,7 +76,8 @@ mkdir -p ${VAULT_PID_DIR}
 VAULT_PID_FILE=${VAULT_PID_DIR}/vault.pid
 
 cat << EOF >> ${VAULT_INSTALL_HOME}/conf/vault.conf
-backend "inmem" {
+backend "file" {
+    path = "${VAULT_DATA_DIR}"
 }
 
 listener "tcp" {
@@ -194,7 +200,11 @@ echo "Assigning owner and group to '$VAULT_USER:$VAULT_GROUP'"
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_INSTALL_HOME}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_PID_DIR}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_LOG_DIR}
-chmod u+x ${VAULT_INSTALL_HOME}/bin/*
-chmod u+x ${VAULT_SERVICE_FILE}
+chmod 700 ${VAULT_PID_DIR}
+chmod 700 ${VAULT_INSTALL_HOME}/conf
+chmod 600 ${VAULT_INSTALL_HOME}/conf/*
+chmod 700 -R ${VAULT_INSTALL_HOME}/bin
+chmod 700 ${VAULT_SERVICE_FILE}
+chmod 700 ${VAULT_DATA_DIR}
 
 echo "Vault installation complete"
