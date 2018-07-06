@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-job-profiler</artifactId>
-    <version>0.9.1.1-SNAPSHOT</version>
+    <version>0.9.1.1</version>
   </parent>
   <artifactId>kylo-spark-job-profiler-app</artifactId>
 
