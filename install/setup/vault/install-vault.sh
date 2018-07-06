@@ -105,16 +105,19 @@ pid_file = "${VAULT_PID_FILE}"
 disable_mlock = true
 EOF
 
+VAULT_BIN_RUN=${VAULT_INSTALL_HOME}/bin/run.sh
+VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
+VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
 VAULT_BINARY=${VAULT_INSTALL_HOME}/bin/vault
 VAULT_LOG_DIR=/var/log/vault
 echo "Creating Vault log directory '${VAULT_LOG_DIR}'"
 mkdir -p ${VAULT_LOG_DIR}
-cat << EOF > ${VAULT_INSTALL_HOME}/bin/run-vault.sh
+cat << EOF > ${VAULT_BIN_RUN}
 #!/bin/bash
 
 ${VAULT_BINARY} server \
             -config=${VAULT_INSTALL_HOME}/conf/vault.conf \
-            &> ${VAULT_LOG_DIR}/vault.log &
+            >> ${VAULT_LOG_DIR}/vault.log 2>&1 &
 EOF
 
 VAULT_SERVICE_FILE=/etc/init.d/vault
@@ -157,13 +160,33 @@ fi
 cat << EOF >> ${VAULT_SERVICE_FILE}
 RUN_AS_USER=${VAULT_USER}
 
-start() {
+run() {
     if [ -f ${VAULT_PID_FILE} ]
       then
         echo Already running, process id file exists '${VAULT_PID_FILE}'
       else
         echo Starting Vault ...
-        su - \$RUN_AS_USER -c "${VAULT_INSTALL_HOME}/bin/run-vault.sh"
+        su - \$RUN_AS_USER -c "${VAULT_BIN_RUN}"
+    fi
+}
+
+init() {
+    echo Initialising Vault ...
+    su - \$RUN_AS_USER -c "${VAULT_BIN_INIT}"
+}
+
+unseal() {
+    echo Unsealing Vault ...
+    su - \$RUN_AS_USER -c "${VAULT_BIN_UNSEAL}"
+}
+
+start() {
+    if [ -f ${VAULT_PID_FILE} ]
+      then
+        echo Already running, process id file exists '${VAULT_PID_FILE}'
+      else
+        run
+        unseal
     fi
 }
 
@@ -188,6 +211,15 @@ status() {
 }
 
 case "\$1" in
+    run)
+        run
+    ;;
+    init)
+        init
+    ;;
+    unseal)
+        unseal
+    ;;
     start)
         start
     ;;
@@ -209,20 +241,19 @@ exit 0
 EOF
 
 VAULT_ADDRESS="http://localhost:8200"
-VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
 VAULT_CONF_INIT=${VAULT_INSTALL_HOME}/conf/vault.init
 cat << EOF >> ${VAULT_BIN_INIT}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
 ${VAULT_BINARY} operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
+chmod 600 ${VAULT_CONF_INIT}
 EOF
 
-VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
 cat << EOF >> ${VAULT_BIN_UNSEAL}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
 cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat -); do
-    ${VAULT_BINARY} operator unseal \${key}
+    ${VAULT_BINARY} operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
 done
 EOF
 
@@ -238,8 +269,8 @@ chmod 700 -R ${VAULT_INSTALL_HOME}/bin
 chmod 700 ${VAULT_SERVICE_FILE}
 chmod 700 ${VAULT_DATA_DIR}
 
-echo "Unsealing Vault"
-service vault start
+echo "Initialising Vault"
+service vault run
 sleep 5 # pause for few seconds to let vault start
 if ! [ -f ${VAULT_PID_FILE} ]
 then
@@ -248,10 +279,10 @@ then
 else
     service vault status
 fi
-su - ${VAULT_USER} -c "${VAULT_BIN_INIT}"
-su - ${VAULT_USER} -c "${VAULT_BIN_UNSEAL}"
+service vault init
+service vault unseal
 service vault stop
-echo "Vault unsealed tested"
+echo "Vault initialised"
 
 echo "Updating Kylo configuration"
 ROOT_TOKEN=$(cat ${VAULT_CONF_INIT} | grep '^Initial' | awk '{print $4}')
@@ -262,7 +293,7 @@ echo "Vault installation complete"
 instructions() {
   cat <<EOF
 
-Vault has been automatically initialized and unsealed once. Future unsealing must be done manually.
+Vault has been automatically initialized and unsealed.
 The unseal keys and root token have been stored in "${VAULT_CONF_INIT}".
 Please securely distribute and record these secrets and shred "${VAULT_CONF_INIT}".
 EOF
