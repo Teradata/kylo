@@ -346,7 +346,6 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                 }
             }
             else {
-                log.debug("Offload saving of FeedStats for external save");
                 feedStatsUpdater.updateStats(feedStatsMap);
             }
             nifiFeedStatisticsProvider.saveLatestFeedStats(new ArrayList<>(feedStatsMap.values()));
