@@ -69,6 +69,9 @@ public class FeedStatsUpdater {
     @Value("${kylo.ops.mgr.feed-stats.defer-update:true}")
     private boolean deferFeedUpdate = true;
 
+    @Value("${kylo.ops.mgr.feed-stats.defer-update-interval:5000}")
+    private Long deferFeedUpdateInterval = 5000L;
+
 
     private ThreadFactory saveFeedStatsThreadFactory = new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat("FeedStatsUpdater-%d").build();
@@ -152,7 +155,7 @@ public class FeedStatsUpdater {
 
 
     private void initTimerThread() {
-        Long runInterval = 5000L;
+        Long runInterval = deferFeedUpdateInterval;
         initSaveFeedStatsTimerThread(runInterval);
         log.info("Initialized Timer Thread to check and save feed stats every {} ms ",runInterval);
     }
