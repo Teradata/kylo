@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -62,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -87,6 +89,9 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @Inject
     private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
+    @Inject
+    private FeedStatsUpdater feedStatsUpdater;
+
     public static String NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE = "NIFI_FEED_PROCESSOR_ERROR";
 
     @Inject
@@ -98,7 +103,13 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @Value("${kylo.ops.mgr.stats.nifi.bulletins.persist:false}")
     private boolean persistErrors = false;
 
-    private LoadingCache<String, Queue<NifiFeedProcessorErrors>> feedProcessorErrors = CacheBuilder.newBuilder().build(new CacheLoader<String, Queue<NifiFeedProcessorErrors>>() {
+    @Value("${kylo.ops.mgr.stats.nifi.bulletins.enabled:false}")
+    private boolean bulletinsEnabled = false;
+
+    @Value("${kylo.ops.mgr.feed-stats.defer-update:true}")
+    private boolean deferFeedUpdate = true;
+
+    private LoadingCache<String,Queue<NifiFeedProcessorErrors>> feedProcessorErrors = CacheBuilder.newBuilder().build(new CacheLoader<String, Queue<NifiFeedProcessorErrors>>() {
         @Override
         public Queue<NifiFeedProcessorErrors> load(String feedName) throws Exception {
             return EvictingQueue.create(errorsToStorePerFeed);
@@ -170,6 +181,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
         if (readyToProcess(stats)) {
+            Stopwatch recieveTopicStopwatch = Stopwatch.createStarted();
 
             metadataAccess.commit(() -> {
                 List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
@@ -182,19 +194,21 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                         failedStatsWithFlowFiles.add((JpaNifiFeedProcessorStats) savedStats);
                     }
                 }
-                if (stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
-                    saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2) stats, summaryStats);
+                if(stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
+                   Map<String,JpaNifiFeedStats> updatedFeedStats = saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2)stats, summaryStats,!deferFeedUpdate);
+
                 }
-                if (!failedStatsWithFlowFiles.isEmpty()) {
+                if( bulletinsEnabled && !failedStatsWithFlowFiles.isEmpty()){
                     assignNiFiBulletinErrors(failedStatsWithFlowFiles);
                 }
                 return summaryStats;
             }, MetadataAccess.SERVICE);
+            recieveTopicStopwatch.stop();
+            log.debug("Time to recieveTopic {} ms ",recieveTopicStopwatch.elapsed(TimeUnit.MILLISECONDS));
         } else {
             log.info("NiFi is not up yet.  Sending back to JMS for later dequeue ");
             throw new JmsProcessingException("Unable to process Statistics Events.  NiFi is either not up, or there is an error trying to populate the Kylo NiFi Flow Cache. ");
         }
-
     }
 
 
@@ -281,7 +295,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     /**
      * Save the running totals for the feed
      */
-    private Map<String, JpaNifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder, List<NifiFeedProcessorStats> summaryStats) {
+    private Map<String, JpaNifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder, List<NifiFeedProcessorStats> summaryStats,boolean saveStats) {
         Map<String, JpaNifiFeedStats> feedStatsMap = new HashMap<>();
 
         if (summaryStats != null) {
@@ -325,13 +339,25 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         }
 
         if (!feedStatsMap.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Saving Stats for {} ", feedStatsMap.values().stream().map(s -> s.toString()).collect(Collectors.joining("\n")));
+            if(saveStats) {
+                nifiFeedStatisticsProvider.saveLatestFeedStats(new ArrayList<>(feedStatsMap.values()));
+                if (log.isDebugEnabled()) {
+                    log.debug("Saving Stats for {} ", feedStatsMap.values().stream().map(s -> s.toString()).collect(Collectors.joining("\n")));
+                }
+            }
+            else {
+                log.debug("Offload saving of FeedStats for external save");
+                feedStatsUpdater.updateStats(feedStatsMap);
             }
             nifiFeedStatisticsProvider.saveLatestFeedStats(new ArrayList<>(feedStatsMap.values()));
         }
         return feedStatsMap;
     }
+
+
+
+
+
 
     private List<NifiFeedProcessorStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
         List<NifiFeedProcessorStats> nifiFeedProcessorStatsList = new ArrayList<>();

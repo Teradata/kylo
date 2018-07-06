@@ -84,7 +84,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public NifiFeedProcessorStats create(NifiFeedProcessorStats t) {
         NifiFeedProcessorStats stats = statisticsRepository.save((JpaNifiFeedProcessorStats) t);
-        ItemLastModified lastModified = itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()), t.getMaxEventId().toString());
+     //   ItemLastModified lastModified = itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()), t.getMaxEventId().toString());
         return stats;
     }
 
