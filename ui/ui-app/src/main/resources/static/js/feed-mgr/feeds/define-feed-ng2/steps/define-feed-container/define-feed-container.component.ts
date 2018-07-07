@@ -67,7 +67,11 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     }
 
     onSave(){
-        this.registerLoading()
+        this.registerLoading();
+        //notify any subscribers that we are about to save the service feed model.
+        //this gives them a chance to update the service with their data prior to the actual save call
+        this.defineFeedService.beforeSave();
+        //notify the subscribers on the actual save call so they can listen when the save finishes
         this.defineFeedService.saveFeed();
     }
     onEdit(){

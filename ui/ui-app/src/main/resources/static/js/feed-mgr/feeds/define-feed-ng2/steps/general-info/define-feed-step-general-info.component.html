@@ -1,5 +1,5 @@
 
-<define-feed-step-card [feed]="feed" [step]="step">
+<define-feed-step-card [(feed)]="feed" [(step)]="step">
 
   <feed-step-readonly-content>
 
@@ -61,6 +61,7 @@
 
       <!-- Once the feed has been defined show the following components -->
       <div *ngIf="feed.id != null">
+
         Access Controls form here
         <Br/>
         ...

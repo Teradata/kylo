@@ -51,7 +51,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         });
 
         //watch for changes on the feed name to generate the system name
-        this.feedNameCtrl.valueChanges.debounceTime(500).subscribe(text => this.generateSystemName());
+        this.feedNameCtrl.valueChanges.debounceTime(200).subscribe(text => this.generateSystemName());
     }
 
 
@@ -71,6 +71,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     generateSystemName(){
         this.feedService.getSystemName(this.feed.feedName).then((response:any) => {
             this.feed.systemName = response.data;
+            //TODO add in this validation
           //  this.model.table.tableSchema.name = this.model.systemFeedName;
           //  this.validateUniqueFeedName();
           //  this.validate();

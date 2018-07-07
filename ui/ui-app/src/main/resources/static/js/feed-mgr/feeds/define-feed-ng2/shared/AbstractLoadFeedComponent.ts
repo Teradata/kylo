@@ -1,4 +1,4 @@
-import {OnInit} from "@angular/core";
+import {OnInit, Input} from "@angular/core";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {Observable} from "rxjs/Observable";
 import {FeedModel, Step} from "../model/feed.model";
@@ -24,6 +24,7 @@ export abstract class AbstractLoadFeedComponent  {
       let observable = this.feedLoadingService.loadFeed(feedId);
       observable.subscribe((feedModel:FeedModel) => {
             this.feed = this.defineFeedService.getFeed();
+            this._setFeedState();
             this.loadingFeed = false;
             this.resolveLoading();
         },(error:any) =>{
@@ -41,24 +42,27 @@ export abstract class AbstractLoadFeedComponent  {
         this.feedLoadingService.resolveLoading();
     }
 
-    initializeFeed(feedId:string){
-        let feed = this.defineFeedService.getFeed();
-        if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {
-          this.loadFeed(feedId);
+    private _setFeedState(){
+        this.selectedStep = this.defineFeedService.getCurrentStep();
+        if(this.feed.isNew()){
+            //make editable if this is a new feed
+            this.feed.readonly = false;
         }
-        else {
-            if (feed == undefined) {
-                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
+    }
+
+    initializeFeed(feedId:string){
+        if(this.feed == undefined) {
+            let feed = this.defineFeedService.getFeed();
+            if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {
+                this.loadFeed(feedId);
             }
             else {
-                this.feed = this.defineFeedService.getFeed();
-                this.selectedStep = this.defineFeedService.getCurrentStep();
-                if(this.feed.isNew()){
-                    //make editable if this is a new feed
-                    this.feed.readonly = false;
-                }
+                this.feed = feed;
+                this._setFeedState();
             }
         }
-
+        else {
+            this._setFeedState();
+        }
     }
 }

@@ -9,6 +9,8 @@ import {HttpClient} from "@angular/common/http";
 import {SaveFeedResponse} from "../model/SaveFeedResponse";
 import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
+import "rxjs/add/observable/empty";
+import "rxjs/add/observable/of";
 
 @Injectable()
 export class DefineFeedService {
@@ -44,6 +46,19 @@ export class DefineFeedService {
 
 
 
+    /**
+     * Allow other components to listen for changes to the currentStep
+     *
+     */
+    public beforeSave$: Observable<FeedModel>;
+
+    /**
+     * The datasets subject for listening
+     */
+    private beforeSaveSubject: Subject<FeedModel>;
+
+
+
 
     constructor(private http:HttpClient,private $$angularInjector: Injector){
         this.currentStepSubject = new Subject<Step>();
@@ -51,6 +66,9 @@ export class DefineFeedService {
 
         this.savedFeedSubject = new Subject<SaveFeedResponse>();
         this.savedFeed$ = this.savedFeedSubject.asObservable();
+
+        this.beforeSaveSubject = new Subject<FeedModel>();
+        this.beforeSave$ = this.beforeSaveSubject.asObservable();
     }
 
     /**
@@ -59,17 +77,28 @@ export class DefineFeedService {
      * @param {string} id
      * @return {Observable<FeedModel>}
      */
-    loadFeed(id:string) :Observable<FeedModel> {
-        let observable  = <Observable<FeedModel>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
-        observable.subscribe((feed)=> {
-            console.log("LOADED ",feed)
-            //convert it to our needed class
-            let feedModel = new DefaultFeedModel(feed)
-            this.initializeFeedSteps(feedModel);
-            feedModel.validate();
-            this.setFeed(feedModel)
-        });
-        return observable;
+    loadFeed(id:string, force?:boolean) :Observable<FeedModel> {
+
+        let feed = this.getFeed();
+        if((feed && feed.id != id) || (feed == undefined && id != undefined)) {
+
+            let observable = <Observable<FeedModel>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
+            observable.subscribe((feed) => {
+                console.log("LOADED ", feed)
+                //convert it to our needed class
+                let feedModel = new DefaultFeedModel(feed)
+                this.initializeFeedSteps(feedModel);
+                feedModel.validate();
+                this.setFeed(feedModel)
+            });
+            return observable;
+        }
+        else if(feed){
+            return Observable.of(this.getFeed())
+        }
+        else {
+            return Observable.empty();
+        }
     }
 
     /**
@@ -81,6 +110,10 @@ export class DefineFeedService {
         this.feed.steps.forEach(step => {
             this.stepSrefMap[step.sref] = step;
         })
+    }
+
+    beforeSave() {
+        this.beforeSaveSubject.next(this.feed);
     }
 
     /**

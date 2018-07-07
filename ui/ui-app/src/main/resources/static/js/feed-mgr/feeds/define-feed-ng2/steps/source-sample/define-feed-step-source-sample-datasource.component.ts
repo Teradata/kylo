@@ -31,8 +31,11 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
 
     selectedTab:ConnectorTab;
 
+    private beforeSaveSubscription : ISubscription;
+
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,  $$angularInjector: Injector,private  defineFeedService:DefineFeedService) {
        super(state,stateRegistry,selectionService,$$angularInjector);
+        this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
     }
 
     onTabClicked(tab:ConnectorTab) {
@@ -55,7 +58,16 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
         this.onTabClicked(this.tabs[0]);
     }
     ngOnDestroy(){
+
+        this.beforeSaveSubscription.unsubscribe();
+
     }
+
+    private updateFeedService(){
+        //update the feed service with this data
+        this.defineFeedService.setFeed(this.feed);
+    }
+
 
 }
 

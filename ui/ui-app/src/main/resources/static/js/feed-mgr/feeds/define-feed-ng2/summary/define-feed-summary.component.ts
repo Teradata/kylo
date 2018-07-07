@@ -22,33 +22,13 @@ export class DefineFeedSummaryComponent extends AbstractLoadFeedComponent implem
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService,  defineFeedService:DefineFeedService, private $$angularInjector: Injector) {
         super(feedLoadingService, stateService,defineFeedService);
-        this.feedLoadingService.registerLoading();
         let sideNavService = $$angularInjector.get("SideNavService");
         sideNavService.showSideNav();
     }
 
     ngOnInit(){
-        let feed = this.defineFeedService.getFeed();
         let feedId = this.stateParams? this.stateParams.feedId : undefined;
         this.initializeFeed(feedId);
-        /*
-        console.log('NAVIGATE TO FEED  ',feedId,feed)
-        if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {
-            this.loadFeed(feedId).subscribe((feedModel:FeedModel) =>{
-                this.feed = this.defineFeedService.getFeed();
-            });
-        }
-        else {
-            if (feed == undefined) {
-                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
-            }
-            else {
-                this.feed = this.defineFeedService.getFeed();
-                this.selectedStep = this.defineFeedService.getCurrentStep();
-            }
-        }
-        */
-
     }
 
 

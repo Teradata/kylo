@@ -3,7 +3,7 @@ import {FeedModel, Step} from "../model/feed.model";
 import {FeedStepValidator} from "../model/feed-step-validator";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {OnDestroy, OnInit} from "@angular/core";
+import {Input, OnDestroy, OnInit} from "@angular/core";
 import {ISubscription} from "rxjs/Subscription";
 import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states"
 
@@ -16,10 +16,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     public abstract getStepName() :string;
 
+    private beforeSaveSubscription : ISubscription;
 
     constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService) {
-
-
+        //subscribe to the beforeSave call so the step can update the service with the latest feed information
+        this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
     }
     ngOnInit() {
         this.initData();
@@ -28,7 +29,10 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(){
       this.destroy();
-      this.defineFeedService.setFeed(this.feed)
+      //update the feed service with any changes
+      this.updateFeedService();
+      //unsubscribe from the beforeSave call
+      this.beforeSaveSubscription.unsubscribe();
     }
 
 
@@ -43,15 +47,20 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     }
 
+    private updateFeedService(){
+        //update the feed service with this data
+        this.defineFeedService.setFeed(this.feed);
+    }
+
 
 
     public initData(){
-       this.feed =this.defineFeedService.getFeed();
-
         if(this.feed == undefined) {
-            this.stateService.go(FEED_DEFINITION_STATE_NAME+".select-template")
+            this.feed = this.defineFeedService.getFeed();
+            if (this.feed == undefined) {
+                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
+            }
         }
-        else {
             this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
             if (this.step) {
                 this.defineFeedService.setCurrentStep(this.step)
@@ -60,6 +69,6 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             else {
                 //ERROR OUT
             }
-        }
+
     }
 }
