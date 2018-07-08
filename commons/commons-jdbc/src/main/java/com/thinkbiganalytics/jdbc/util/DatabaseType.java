@@ -51,7 +51,8 @@ public enum DatabaseType {
     SQLITE("SQLite", "jdbc:sqlite", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
     SYBASE("Sybase", "jdbc:sybase", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
-    TERADATA("Teradata", "jdbc:teradata", "select 1", "SELECT {0} FROM {1}.{2} SAMPLE {3}");
+    TERADATA("Teradata", "jdbc:teradata", "select 1", "SELECT {0} FROM {1}.{2} SAMPLE {3}"),
+    REDSHIFT("Redshift", "jdbc:redshift:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}");
 
     private static final Map<String, DatabaseType> databaseProductNameMap;
 
