@@ -10,7 +10,7 @@ then
     fi
 fi
 
-CURRENT_DIR=$(dirname $0)
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "The working directory is $CURRENT_DIR"
 
 echo "Welcome to the Kylo setup wizard. Lets get started !!!"

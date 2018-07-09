@@ -42,7 +42,8 @@ if [ $# -lt 5 ] || [ $# -gt 7 ]; then
     exit 1
 fi
 
-echo "The Vault home folder is $VAULT_INSTALL_HOME using permissions $VAULT_USER:$VAULT_GROUP"
+echo "The Vault home folder is $VAULT_INSTALL_HOME"
+echo "Using permissions $VAULT_USER:$VAULT_GROUP"
 
 echo "Installing Vault"
 mkdir ${VAULT_INSTALL_HOME}
@@ -50,6 +51,9 @@ cd ${VAULT_INSTALL_HOME}
 
 if [ ${offline} = true ]
 then
+    echo "who am i: $(whoami)"
+    echo "working dir: ${WORKING_DIR}"
+    echo "pwd: $(pwd)"
     cp ${WORKING_DIR}/vault/${VAULT_ZIP} .
 else
     echo "Downloading Vault ${VAULT_VERSION}"
@@ -69,7 +73,7 @@ fi
 
 if ! [ -f ${VAULT_ZIP} ]
 then
-    echo "Working in online mode and file '${VAULT_ZIP}' not found.. exiting"
+    echo "Working in online mode and file '${VAULT_ZIP}' not found.. aborting"
     exit 1
 fi
 
