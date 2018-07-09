@@ -14,13 +14,20 @@ VAULT_BINARY_NAME="vault_${VAULT_VERSION}_${UNAME}_amd64"
 VAULT_ZIP="${VAULT_BINARY_NAME}.zip"
 IGNORE_CERTS="${IGNORE_CERTS:-no}"
 
-VAULT_BIN_RUN=${VAULT_INSTALL_HOME}/bin/run.sh
-VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
-VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
-VAULT_BIN_SETUP=${VAULT_INSTALL_HOME}/bin/setup.sh
 VAULT_CURRENT=${VAULT_INSTALL_HOME}/current
-VAULT_BINARY=${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/vault
+VAULT_CURRENT_HOME=${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}
+VAULT_BINARY=${VAULT_CURRENT}/bin/vault
+VAULT_BIN_RUN=${VAULT_CURRENT}/bin/run.sh
+VAULT_BIN_INIT=${VAULT_CURRENT}/bin/init.sh
+VAULT_BIN_UNSEAL=${VAULT_CURRENT}/bin/unseal.sh
+VAULT_BIN_SETUP=${VAULT_CURRENT}/bin/setup.sh
 VAULT_LOG_DIR=/var/log/vault
+VAULT_PORT="8200"
+VAULT_ADDRESS="http://localhost:${VAULT_PORT}"
+VAULT_CONF_INIT=${VAULT_CURRENT_HOME}/conf/vault.init
+VAULT_PID_DIR=/var/run/vault
+VAULT_PID_FILE=${VAULT_PID_DIR}/vault.pid
+VAULT_SERVICE_FILE=/etc/init.d/vault
 
 offline=false
 
@@ -55,6 +62,9 @@ echo "Using permissions $VAULT_USER:$VAULT_GROUP"
 
 echo "Installing Vault"
 mkdir ${VAULT_INSTALL_HOME}
+mkdir ${VAULT_CURRENT_HOME}
+mkdir ${VAULT_CURRENT_HOME}/bin
+mkdir ${VAULT_CURRENT_HOME}/conf
 cd ${VAULT_INSTALL_HOME}
 
 if [ ${offline} = true ]
@@ -86,26 +96,22 @@ then
 fi
 
 echo "Installing Vault to '${VAULT_INSTALL_HOME}'"
-mkdir -p ${VAULT_INSTALL_HOME}/bin
-mkdir -p ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}
+mkdir -p ${VAULT_CURRENT_HOME}
 unzip ${VAULT_ZIP}
-mv vault ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/
-ln -s ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/vault current
+mv vault ${VAULT_CURRENT_HOME}/bin/
+ln -s ${VAULT_CURRENT_HOME} current
 rm -f ${VAULT_ZIP}
 
 echo "Creating Vault data directory '${VAULT_DATA_DIR}'"
 mkdir -p ${VAULT_DATA_DIR}
 
-echo "Creating Vault configuration at '${VAULT_INSTALL_HOME}/conf'"
-mkdir -p ${VAULT_INSTALL_HOME}/conf
+echo "Creating Vault configuration at '${VAULT_CURRENT}/conf'"
+mkdir -p ${VAULT_CURRENT}/conf
 
-VAULT_PID_DIR=/var/run/vault
 echo "Creating Vault PID directory '${VAULT_PID_DIR}'"
 mkdir -p ${VAULT_PID_DIR}
-VAULT_PID_FILE=${VAULT_PID_DIR}/vault.pid
 
-VAULT_PORT="8200"
-cat << EOF >> ${VAULT_INSTALL_HOME}/conf/vault.conf
+cat << EOF >> ${VAULT_CURRENT}/conf/vault.conf
 backend "file" {
     path = "${VAULT_DATA_DIR}"
 }
@@ -124,12 +130,11 @@ mkdir -p ${VAULT_LOG_DIR}
 cat << EOF > ${VAULT_BIN_RUN}
 #!/bin/bash
 
-${VAULT_CURRENT} server \
-            -config=${VAULT_INSTALL_HOME}/conf/vault.conf \
+${VAULT_CURRENT_HOME}/bin/vault server \
+            -config=${VAULT_CURRENT_HOME}/conf/vault.conf \
             >> ${VAULT_LOG_DIR}/vault.log 2>&1 &
 EOF
 
-VAULT_SERVICE_FILE=/etc/init.d/vault
 echo "Creating Vault service at '${VAULT_SERVICE_FILE}'"
 # function for determining way to handle startup scripts
 function get_linux_type {
@@ -241,12 +246,10 @@ esac
 exit 0
 EOF
 
-VAULT_ADDRESS="http://localhost:${VAULT_PORT}"
-VAULT_CONF_INIT=${VAULT_INSTALL_HOME}/conf/vault.init
 cat << EOF >> ${VAULT_BIN_INIT}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
-${VAULT_CURRENT} operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
+${VAULT_CURRENT_HOME}/bin/vault operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
 chmod 600 ${VAULT_CONF_INIT}
 EOF
 
@@ -254,7 +257,7 @@ cat << EOF >> ${VAULT_BIN_UNSEAL}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
 cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat -); do
-    ${VAULT_CURRENT} operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
+    ${VAULT_CURRENT_HOME}/bin/vault operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
 done
 EOF
 
@@ -263,8 +266,8 @@ cat << EOF >> ${VAULT_BIN_SETUP}
 export VAULT_TOKEN=\$1
 export VAULT_ADDR=${VAULT_ADDRESS}
 echo "Restoring non-versioned K/V backend at secret/"
-${VAULT_CURRENT} secrets disable secret
-${VAULT_CURRENT} secrets enable -path secret -version 1 kv
+${VAULT_CURRENT_HOME}/bin/vault secrets disable secret
+${VAULT_CURRENT_HOME}/bin/vault secrets enable -path secret -version 1 kv
 EOF
 
 
@@ -272,10 +275,11 @@ echo "Assigning owner and group to '$VAULT_USER:$VAULT_GROUP'"
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_INSTALL_HOME}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_PID_DIR}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_LOG_DIR}
-chmod 700 ${VAULT_PID_DIR}
+chmod 700 -R ${VAULT_PID_DIR}
+chmod 700 -R ${VAULT_LOG_DIR}
 chmod 700 ${VAULT_SERVICE_FILE}
 chmod 700 -R ${VAULT_INSTALL_HOME}
-chmod 600 ${VAULT_INSTALL_HOME}/conf/*
+chmod 600 ${VAULT_CURRENT_HOME}/conf/*
 chmod 700 -R ${VAULT_DATA_DIR}
 
 echo "Initialising Vault"
