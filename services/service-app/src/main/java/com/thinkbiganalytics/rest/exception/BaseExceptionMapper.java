@@ -51,5 +51,7 @@ public class BaseExceptionMapper {
         return Response.accepted(builder.buildError()).status(Response.Status.BAD_REQUEST).build();
     }
 
-
+    public void setReq(HttpServletRequest req) {
+        this.req = req;
+    }
 }
