@@ -1,19 +1,22 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-import {moduleName} from "../module-name";
 import UserService from "../services/UserService";
 import AddButtonService from  "../../services/AddButtonService";
 import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
 import StateService from  "../../services/StateService";
 import {DefaultTableOptionsService} from  "../../services/TableOptionsService";
-import "../module";
-import "../module-require";
+// import "../module";
+// import "../module-require";
+import { Component } from '@angular/core';
 /**
  * Identifier for this page.
  * @type {string}
  */
 const PAGE_NAME:string = "groups";
-
+@Component({
+    templateUrl: "js/auth/groups/groups-table.html",
+    selector: 'groups-Table'
+})
 export default class GroupsTableController implements ng.IComponentController {
     /**
      * Page title.
@@ -161,10 +164,3 @@ export default class GroupsTableController implements ng.IComponentController {
         });
     }
 }
-angular.module(moduleName)
-.component("groupsTableController", {
-        controller: GroupsTableController,
-        controllerAs: "vm",
-        templateUrl: "js/auth/groups/groups-table.html"
-    });
-//.controller("GroupsTableController", GroupsTableController]);

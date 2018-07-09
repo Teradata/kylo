@@ -17,87 +17,55 @@
   limitations under the License.
   #L%
   -->
-<div >
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <card-layout header-css="filter-header" class="centered" ng-if="!vm.loading">
-        <header-section>
-            <tba-card-filter-header  flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-                [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
-            </tba-card-filter-header>
-        </header-section>
-        <body-section>
-            <div ng-show="vm.viewType == 'list'">
-                <md-list flex layout-fill class="list-item-table">
-                    <md-list-item class="md-secondary" dir-paginate="user in vm.users |orderBy:vm.paginationData.sort |filter:vm.filter |itemsPerPage:vm.paginationData.rowsPerPage"
-                                  pagination-id="vm.pageName" ng-class="{disabled: !user.enabled}">
-                        <div layout="row" layout-fill>
-                            <div flex="30" layout="column" class="item-column md-list-item-text" ng-click="vm.userDetails(user)" title="{{vm.getDisplayName(user)}}">
-                                <span class="item-title" title="{{vm.getDisplayName(user)}}">
-                                    {{vm.getDisplayName(user)}}
-                                </span>
-                                <span class="column-title column-title-bottom">
-                                    <span ng-if="!user.enabled">
-                                        <ng-md-icon icon="block" size="20" hide-xs></ng-md-icon>
-                                    </span>
-                                    Display Name
-                                </span>
-                            </div>
-                            <div flex="40" layout="column" class="item-column md-list-item-text">
-                                <span class="item-title">{{user.email}}</span>
-                                <span class="column-title column-title-bottom">Email Address</span>
-                            </div>
-                            <div flex="30" layout="column" class="item-column md-list-item-text">
-                                <span class="item-title">{{vm.getGroupTitles(user).join(', ')}}</span>
-                                <span class="column-title column-title-bottom">Groups</span>
-                            </div>
+<div>
+    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <div *ngIf="!loading" class="flex-container" fxLayoutAlign="center center">
+        <mat-card flex="80">
+            <mat-card-title>
+                <mat-toolbar>
+                    <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle}}</div>
+                    <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)"
+                        [showUnderline]="true" [alwaysVisible]="true" flex>
+                    </td-search-box>
+                </mat-toolbar>
+            </mat-card-title>
+            <mat-card-content>
+                <td-data-table #dataTable 
+                [data]="filteredData"
+                [columns]="columns"
+                [clickable]="true"
+                [sortable]="true"
+                [sortOrder]="sortOrder"
+                [sortBy]="sortBy"
+                (sortChange)="sort($event)"
+                (rowClick)="userDetails($event)">
+                    <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
+                        <h3>No results to display.</h3>
+                    </div>
+                    <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+                        <div layout="row">
+                            <mat-icon class="ng-md-icon" size="20" *ngIf="value == 'Active'" style="color: #009933">check_circle</mat-icon>
+                            <mat-icon class="ng-md-icon" size="20" *ngIf="value == 'Disabled'" color="green">block</mat-icon>
                         </div>
-                        <md-divider ng-if="!$last"></md-divider>
-                    </md-list-item>
-                    <md-list-item ng-show="vm.loading == false && vm.users.length == 0" class="md-list-item with-padding">
-                        No results found
-                    </md-list-item >
-                    <md-divider></md-divider>
-                    <md-list-item layout-align="end center" layout-row class="pagination-list-item">
-                        <dir-pagination-controls pagination-id="vm.pageName" auto-hide="false" max-size="5" direction-links="true" boundary-links="false"
-                                                 template-url="js/common/dir-pagination/dirPagination.tpl.html" current-page="vm.currentPage" on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                 label='{{"views.all-page.Rows_per_page" | translate}}' rows-per-page="vm.paginationData.rowsPerPage" rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                 class="pagination-row">
-                        </dir-pagination-controls>
-                    </md-list-item>
-                </md-list>
-            </div>
-            <div ng-show="vm.viewType == 'table'">
-                <md-table-container>
-                    <table md-table>
-                        <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                        <tr md-row>
-                            <th md-column name="Display Name" md-order-by="displayName">Display Name</th>
-                            <th md-column name="System Name" md-order-by="email">Email Address</th>
-                            <th md-column name="State" md-order-by="enabled">Status</th>
-                            <th md-column name="Groups" md-order-by="groups">Groups</th>
-                        </tr>
-                        </thead>
-                        <tbody md-body>
-                        <tr md-row
-                            ng-repeat="user in vm.users |orderBy:vm.paginationData.sort |filter:vm.filter |limitTo:vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
-                            ng-click="vm.userDetails(user)">
-                            <td md-cell>{{vm.getDisplayName(user)}}</td>
-                            <td md-cell>{{user.email}}</td>
-                            <td md-cell>
-                                <span ng-class="{enabled: user.enabled, disabled: !user.enabled}">
-                                    <ng-md-icon icon="check_circle" size="20" ng-if="user.enabled"></ng-md-icon>
-                                    <ng-md-icon icon="block" size="20" ng-if="!user.enabled"></ng-md-icon>
-                                    <span ng-if="user.enabled">Active</span>
-                                    <span ng-if="!user.enabled">Disabled</span>
-                                </span>
-                            </td>
-                            <td md-cell>{{vm.getGroupTitles(user).join(', ')}}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </md-table-container>
-                <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.data.length}}" md-on-paginate="vm.onPaginationChange"></md-table-pagination>
-            </div>
-        </body-section>
-    </card-layout>
+                    </ng-template>
+
+                </td-data-table>
+                <!-- paging not working because of this bug in mat-select https://github.com/angular/material2/issues/11063 -->
+                <td-paging-bar #pagingBar
+                    [firstLast]="false"
+                    [pageSize]="pageSize"
+                    [total]="filteredTotal"
+                    (change)="onPageSizeChange($event)">
+                        <span hide-xs>Rows per page:</span>
+                        <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+                            <mat-option *ngFor="let size of [5,10,20,50]" [value]="size">
+                                {{size}}
+                            </mat-option>
+                        </mat-select>
+                        {{pagingBar.range}}
+                        <span hide-xs>of {{pagingBar.total}}</span>
+                </td-paging-bar>
+            </mat-card-content>
+        </mat-card>
+    </div>
 </div>

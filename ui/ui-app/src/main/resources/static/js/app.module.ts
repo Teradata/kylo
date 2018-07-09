@@ -15,6 +15,7 @@ import {KyloCommonModule} from "./common/common.module";
 import {KyloServicesModule} from "./services/services.module";
 import {CategoryModule} from "./feed-mgr/categories/category.module";
 import { SLAModule } from "./feed-mgr/sla/sla.module";
+import { AuthModule } from "./auth/auth.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -42,7 +43,8 @@ const translateConfig: TranslateModuleConfig = {
         SLAModule,
         UIRouterModule,
         UIRouterUpgradeModule,
-        UpgradeModule
+        UpgradeModule,
+        AuthModule
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,

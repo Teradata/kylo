@@ -1,15 +1,18 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-import {moduleName} from "../../module-name";
 import UserService from "../../services/UserService";
 import StateService from  "../../../services/StateService";
 import AccessControlService from "../../../services/AccessControlService";
 import PermissionsTableController from "../../shared/permissions-table/permissions-table";
 import AccessConstants from "../../../constants/AccessConstants";
-import "../../module";
-import "../../module-require";
 import {Transition} from "@uirouter/core";
+import { Component } from '@angular/core';
 
+
+@Component({
+    templateUrl: "js/auth/groups/group-details/group-details.html",
+    selector: 'groups-Table'
+})
 export default class GroupDetailsController implements ng.IComponentController {
     $transition$: Transition;
     $error:any = {duplicateName: false, missingName: false };
@@ -242,12 +245,12 @@ export default class GroupDetailsController implements ng.IComponentController {
     };
 }
 
-angular.module(moduleName)
-.component("groupDetailsController", { 
-        bindings: {
-            $transition$: '<'
-        },
-        controller: GroupDetailsController,
-        controllerAs: "vm",
-        templateUrl: "js/auth/groups/group-details/group-details.html"
-    });
+// angular.module(moduleName)
+// .component("groupDetailsController", { 
+//         bindings: {
+//             $transition$: '<'
+//         },
+//         controller: GroupDetailsController,
+//         controllerAs: "vm",
+//         templateUrl: "js/auth/groups/group-details/group-details.html"
+    // });

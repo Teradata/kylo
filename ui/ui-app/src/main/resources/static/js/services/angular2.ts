@@ -10,6 +10,8 @@ import {DefaultPaginationDataService} from "./PaginationDataService";
 import {DefaultTableOptionsService} from "./TableOptionsService";
 import AccessControlService from "./AccessControlService";
 import StateService from "./StateService";
+import CommonRestUrlService from "./CommonRestUrlService";
+import UserGroupService from "./UserGroupService";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -51,5 +53,17 @@ export const stateServiceProvider: FactoryProvider = {
     provide: StateService,
     useFactory: (i: angular.auto.IInjectorService) => i.get("StateService"),
     deps: ["$injector"]
+};
+
+export const commonRestURLServiceProvider : FactoryProvider = {
+    provide : CommonRestUrlService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("CommonRestUrlService"),
+    deps : ["$injector"]
+};
+
+export const userGroupServiceProvider : FactoryProvider = {
+    provide : UserGroupService,
+    useFactory : (i: angular.auto.IInjectorService) => i.get("UserGroupService"),
+    deps : ["$injector"]
 };
 

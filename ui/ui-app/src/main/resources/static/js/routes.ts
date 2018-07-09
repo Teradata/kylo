@@ -254,21 +254,11 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         //     }
         // });
 
-        $stateProvider.state({
-            name: 'users.**',
-            url: '/users',
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('users')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading users ", err);
-                    return err;
-                });
-                ;
-            }
-        });
+        $stateProvider.state({ 
+            name: 'users.**', 
+            url: '/users', 
+            loadChildren: 'auth/auth.module#AuthModule' 
+        }); 
 
         $stateProvider.state({
             name: 'groups.**',

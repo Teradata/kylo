@@ -1,17 +1,17 @@
 import * as angular from 'angular';
 /*import 'rxjs/add/operator/toPromise';*/
 import {Headers, RequestOptions, Response} from '@angular/http';
-//const moduleName = require('auth/module-name');
-import {moduleName} from "../module-name";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import CommonRestUrlService from '../../services/CommonRestUrlService';
+import UserGroupService from '../../services/UserGroupService';
 
-//@Injectable()
+@Injectable()
 export default class UserService {
     headers: Headers;
     options: RequestOptions;
 
-    static $inject = ['$http', 'CommonRestUrlService', 'UserGroupService']
-
-    constructor(private http: any, private CommonRestUrlService: any, private UserGroupService: any) {
+    constructor(private http: HttpClient, private commonRestUrlService: CommonRestUrlService, private userGroupService: UserGroupService) {
     }
 
     private extractData(res: Response) {
@@ -32,7 +32,7 @@ export default class UserService {
      * @returns {Promise} for when the group is deleted
      */
     deleteGroup(groupId: string): Promise<any> {
-        return this.http.delete(this.CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId));
+        return this.http.delete(this.commonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId)).toPromise();
     }
 
     /**
@@ -42,7 +42,7 @@ export default class UserService {
      * @returns {Promise} for when the user is deleted
      */
     deleteUser(userId: any): Promise<any> {
-        return this.http.delete(this.CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId)/*,this.options*/)
+        return this.http.delete(this.commonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId)).toPromise()/*,this.options*/
             /*   .toPromise().then(this.extractData)
                .catch(this.handleError);    */
             ;
@@ -55,7 +55,7 @@ export default class UserService {
      * @returns {GroupPrincipal} the group
      */
     getGroup(groupId: any) {
-        return this.UserGroupService.getGroup(groupId);
+        return this.userGroupService.getGroup(groupId);
     }
 
     /**
@@ -64,7 +64,7 @@ export default class UserService {
      * @returns {Promise} with the list of groups
      */
     getGroups(): Promise<any> {
-        return this.UserGroupService.getGroups();
+        return this.userGroupService.getGroups();
         /*   return  this.http.get(this.CommonRestUrlService.SECURITY_GROUPS_URL)
                     .toPromise().then(this.extractData)*/
     }
@@ -77,7 +77,7 @@ export default class UserService {
      * @returns {UserPrincipal} the user
      */
     getUser(userId: any) {
-        return this.UserGroupService.getUser(userId);
+        return this.userGroupService.getUser(userId);
     }
 
     /**
@@ -86,7 +86,7 @@ export default class UserService {
      * @returns {Array.<UserPrincipal>} the users
      */
     getUsers(): Promise<any> {
-        return this.UserGroupService.getUsers();
+        return this.userGroupService.getUsers();
         /*return  this.http.get(this.CommonRestUrlService.SECURITY_USERS_URL)
                  .toPromise().then(this.extractData)*/
     }
@@ -102,7 +102,7 @@ export default class UserService {
      * @returns {Array.<UserPrincipal>} the users
      */
     getUsersByGroup(groupId: any): any {
-        return this.UserGroupService.getUsersByGroup(groupId);
+        return this.userGroupService.getUsersByGroup(groupId);
     }
 
     /**
@@ -112,7 +112,7 @@ export default class UserService {
      * @returns {Promise} for when the group is saved
      */
     saveGroup(group: any): Promise<any> {
-        return this.http.post(this.CommonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group)/*,this.options*/)
+        return this.http.post(this.commonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group)/*,this.options*/).toPromise()
             /* .toPromise().then(this.extractData)
              .catch(this.handleError); */
             ;
@@ -125,14 +125,10 @@ export default class UserService {
      * @returns {Promise} for when the user is saved
      */
     saveUser(user: any): Promise<any> {
-        return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL, angular.toJson(user)/*,this.options*/)
+        return this.http.post(this.commonRestUrlService.SECURITY_USERS_URL, angular.toJson(user)/*,this.options*/).toPromise()
             /* .toPromise().then(this.extractData)
              .catch(this.handleError);  */
             ;
 
     }
 }
-
-
-angular.module(moduleName)
-    .service('UserService', UserService);
