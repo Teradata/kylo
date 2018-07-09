@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.api;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import java.io.Closeable;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -46,6 +47,12 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
     Option<DataSetProvider<T>> getDataSetProvider(@Nonnull String source);
 
     /**
+     * Gets the values for all high water marks.
+     */
+    @Nonnull
+    Map<String, String> getHighWaterMarks();
+
+    /**
      * Indicates that this client has been closed and can no longer be used.
      */
     boolean isClosed();
@@ -55,6 +62,15 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
      */
     @Nonnull
     KyloCatalogReader<T> read();
+
+    /**
+     * Sets the values of the specified high water marks.
+     *
+     * <p>A {@code null} value will delete the high water mark.</p>
+     *
+     * @param highWaterMarks map of high water mark names to values that should be set
+     */
+    void setHighWaterMarks(@Nonnull Map<String, String> highWaterMarks);
 
     /**
      * Creates a writer for saving the specified non-streaming Spark {@code DataFrame}.
