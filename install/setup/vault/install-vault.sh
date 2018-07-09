@@ -10,9 +10,17 @@ VAULT_DATA_DIR=${VAULT_INSTALL_HOME}/data
 
 VAULT_VERSION="${VAULT_VERSION:-0.10.1}"
 UNAME=$(uname -s |  tr '[:upper:]' '[:lower:]')
-VAULT_ZIP="vault_${VAULT_VERSION}_${UNAME}_amd64.zip"
+VAULT_BINARY_NAME="vault_${VAULT_VERSION}_${UNAME}_amd64"
+VAULT_ZIP="${VAULT_BINARY_NAME}.zip"
 IGNORE_CERTS="${IGNORE_CERTS:-no}"
 
+VAULT_BIN_RUN=${VAULT_INSTALL_HOME}/bin/run.sh
+VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
+VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
+VAULT_BIN_SETUP=${VAULT_INSTALL_HOME}/bin/setup.sh
+VAULT_CURRENT=${VAULT_INSTALL_HOME}/current
+VAULT_BINARY=${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/vault
+VAULT_LOG_DIR=/var/log/vault
 
 offline=false
 
@@ -79,10 +87,11 @@ fi
 
 echo "Installing Vault to '${VAULT_INSTALL_HOME}'"
 mkdir -p ${VAULT_INSTALL_HOME}/bin
+mkdir -p ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}
 unzip ${VAULT_ZIP}
-mv vault bin/
+mv vault ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/
+ln -s ${VAULT_INSTALL_HOME}/${VAULT_BINARY_NAME}/vault current
 rm -f ${VAULT_ZIP}
-rm -Rf vault
 
 echo "Creating Vault data directory '${VAULT_DATA_DIR}'"
 mkdir -p ${VAULT_DATA_DIR}
@@ -95,13 +104,14 @@ echo "Creating Vault PID directory '${VAULT_PID_DIR}'"
 mkdir -p ${VAULT_PID_DIR}
 VAULT_PID_FILE=${VAULT_PID_DIR}/vault.pid
 
+VAULT_PORT="8200"
 cat << EOF >> ${VAULT_INSTALL_HOME}/conf/vault.conf
 backend "file" {
     path = "${VAULT_DATA_DIR}"
 }
 
 listener "tcp" {
-  address = "0.0.0.0:8200"
+  address = "0.0.0.0:${VAULT_PORT}"
   tls_disable = 1
 }
 
@@ -109,18 +119,12 @@ pid_file = "${VAULT_PID_FILE}"
 disable_mlock = true
 EOF
 
-VAULT_BIN_RUN=${VAULT_INSTALL_HOME}/bin/run.sh
-VAULT_BIN_INIT=${VAULT_INSTALL_HOME}/bin/init.sh
-VAULT_BIN_UNSEAL=${VAULT_INSTALL_HOME}/bin/unseal.sh
-VAULT_BIN_SETUP=${VAULT_INSTALL_HOME}/bin/setup.sh
-VAULT_BINARY=${VAULT_INSTALL_HOME}/bin/vault
-VAULT_LOG_DIR=/var/log/vault
 echo "Creating Vault log directory '${VAULT_LOG_DIR}'"
 mkdir -p ${VAULT_LOG_DIR}
 cat << EOF > ${VAULT_BIN_RUN}
 #!/bin/bash
 
-${VAULT_BINARY} server \
+${VAULT_CURRENT} server \
             -config=${VAULT_INSTALL_HOME}/conf/vault.conf \
             >> ${VAULT_LOG_DIR}/vault.log 2>&1 &
 EOF
@@ -237,12 +241,12 @@ esac
 exit 0
 EOF
 
-VAULT_ADDRESS="http://localhost:8200"
+VAULT_ADDRESS="http://localhost:${VAULT_PORT}"
 VAULT_CONF_INIT=${VAULT_INSTALL_HOME}/conf/vault.init
 cat << EOF >> ${VAULT_BIN_INIT}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
-${VAULT_BINARY} operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
+${VAULT_CURRENT} operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
 chmod 600 ${VAULT_CONF_INIT}
 EOF
 
@@ -250,7 +254,7 @@ cat << EOF >> ${VAULT_BIN_UNSEAL}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
 cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat -); do
-    ${VAULT_BINARY} operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
+    ${VAULT_CURRENT} operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
 done
 EOF
 
@@ -259,8 +263,8 @@ cat << EOF >> ${VAULT_BIN_SETUP}
 export VAULT_TOKEN=\$1
 export VAULT_ADDR=${VAULT_ADDRESS}
 echo "Restoring non-versioned K/V backend at secret/"
-${VAULT_BINARY} secrets disable secret
-${VAULT_BINARY} secrets enable -path secret -version 1 kv
+${VAULT_CURRENT} secrets disable secret
+${VAULT_CURRENT} secrets enable -path secret -version 1 kv
 EOF
 
 
@@ -269,11 +273,10 @@ chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_INSTALL_HOME}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_PID_DIR}
 chown -R ${VAULT_USER}:${VAULT_GROUP} ${VAULT_LOG_DIR}
 chmod 700 ${VAULT_PID_DIR}
-chmod 700 ${VAULT_INSTALL_HOME}/conf
-chmod 600 ${VAULT_INSTALL_HOME}/conf/*
-chmod 700 -R ${VAULT_INSTALL_HOME}/bin
 chmod 700 ${VAULT_SERVICE_FILE}
-chmod 700 ${VAULT_DATA_DIR}
+chmod 700 -R ${VAULT_INSTALL_HOME}
+chmod 600 ${VAULT_INSTALL_HOME}/conf/*
+chmod 700 -R ${VAULT_DATA_DIR}
 
 echo "Initialising Vault"
 service vault run
