@@ -1,115 +1,119 @@
 <div layout="row" layout-align="center start">
-  <card-layout class="centered"  style="max-width:980px;width:980px;" flex="initial">
-    <header-section>
+  <mat-card class="centered"  style="max-width:980px;width:980px;" flex="initial">
+    <mat-card-title>
       <div class="card-title" flex>Service Level Agreement Email Templates</div>
-    </header-section>
+    </mat-card-title>
 
-    <body-section>
-
+    <mat-card-content style="padding: 0;">
       <div class="layout-padding-left-right-16" >
-
-        <div ng-if="vm.availableSlaActions.length ==0" class="layout-padding-bottom" layout="column">
+        <div *ngIf="availableSlaActions.length ==0" class="layout-padding-bottom" layout="column">
           <div layout="row" layout-align="start start">
             <span>
               <ng-md-icon icon="warning" class="warn" ></ng-md-icon>
             </span>
           <span class="md-subhead layout-padding-left">Warning.  The SLA email plugin was not found.  This template will not be applied.</span>
-            <span flex/>
+            <span flex></span>
           </div>
             <span class="hint">Please consult with your administrator about configuring the SLA email plugin.</span>
         </div>
+        <form #slaEmailTemplateForm="ngForm">
 
-        <ng-form name="vm.slaEmailTemplateForm">
+        <div *ngIf="template != null" layout="column">
+          <mat-form-field>
+            <input matInput name="templateName" placeholder="Template Name" [(ngModel)]="template.name" required>
+          </mat-form-field>
 
-        <div ng-if="vm.template != null" layout="column">
-          <md-input-container>
-            <label>Template Name</label>
-            <input ng-model="vm.template.name" required>
-          </md-input-container>
+          <mat-form-field>
+            <input matInput name="templateSubject" placeholder="Subject" [(ngModel)]="template.subject" required>
+            <mat-hint align="start">
+                <span class="hint"> Supports Velocity and Template Variables (i.e. $sla.name will resolve to the SLA name)</span>
+            </mat-hint>
+          </mat-form-field>
 
-          <md-input-container>
-            <label>Subject</label>
-            <input ng-model="vm.template.subject" required>
-            <span class="hint"> Supports Velocity and Template Variables (i.e. $sla.name will resolve to the SLA name)</span>
-          </md-input-container>
-
-          <div ng-model="vm.template.template" ui-codemirror="{
-        lineWrapping : true,
-        indentWithTabs: true,
-        smartIndent: true,
-        lineNumbers: true,
-        matchBrackets : true,
-        autofocus: true,
-        mode: 'text/velocity'
-        }">
-          </div>
+          <!-- <td-text-editor [value]="Some Text" [options]="options"></td-text-editor> -->
+          
+          <!-- <div [(ngModel)]="template.template" ui-codemirror="{
+                lineWrapping : true,
+                indentWithTabs: true,
+                smartIndent: true,
+                lineNumbers: true,
+                matchBrackets : true,
+                autofocus: true,
+                mode: 'text/velocity'
+                }">
+          </div> -->
 
           <div layout="row" layout-align="space-between start">
-            <md-input-container class="condensed-no-float md-block layout-padding-top-bottom" flex="50">
-              <md-checkbox ng-model="vm.template.enabled" aria-label="Enabled" ng-disabled="vm.relatedSlas.length >0">
+            <div class="condensed-no-float md-block layout-padding-top-bottom" flex="50">
+              <mat-checkbox name="enableTemplate" [(ngModel)]="template.enabled" aria-label="Enabled" [disabled]="relatedSlas.length >0">
                 Active
-              </md-checkbox>
-              <div class="hint" ng-if="vm.relatedSlas.length >0">If the template has related SLA's it cannot be disabled.</div>
-            </md-input-container>
+              </mat-checkbox>
+              <mat-hint align="start">
+                <div class="hint" *ngIf="relatedSlas.length >0">If the template has related SLA's it cannot be disabled.</div>
+              </mat-hint>
+              </div>
 
-            <md-button ng-click="vm.exampleTemplate()" ng-if="vm.template.template.length ==0">Load Example Template</md-button>
+            <button (click)="exampleTemplate()" *ngIf="template.template && template.template.length ==0">Load Example Template</button>
           </div>
 
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom">
-            <md-checkbox ng-model="vm.template.default" aria-label="Default" ng-disabled="vm.isDefault">
+          <div class="condensed-no-float md-block layout-padding-bottom">
+            <mat-checkbox name="defaultTemplate" [(ngModel)]="template.default" aria-label="Default" [disabled]="isDefault">
               Default Template
-            </md-checkbox>
-            <div class="hint">The default template will be used for SLA emails when a template has not yet been assigned to the SLA. There is only one default template.</div>
-          </md-input-container>
+            </mat-checkbox>
+            <mat-hint align="start">
+              <div class="hint">The default template will be used for SLA emails when a template has not yet been assigned to the SLA. There is only one default template.</div>
+            </mat-hint>
+          </div>
 
           <div layout="row" layout-align="space-between start">
             <div layout="row" layout-align="space-between start" flex="50">
-              <md-button ng-click="vm.validate()">Preview</md-button>
-              <md-input-container >
-                <label>Test email address</label>
-                <input ng-model="vm.emailAddress" type="email" size="50">
-              </md-input-container>
-              <md-button ng-click="vm.sendTestEmail()" class="md-primary" ng-disabled="!vm.self.allowEdit && (vm.emailAddress == null || vm.emailAddress == '')">Send Test</md-button>
+              <button class="md-button md-kylo-theme md-ink-ripple" (click)="validate()">Preview</button>
+              <mat-form-field>
+                <input name="emailAddress" matInput placeholder="Test email address" [(ngModel)]="emailAddress" type="email" size="50">
+              </mat-form-field>
+              <button (click)="sendTestEmail()" class="md-primary md-button md-kylo-theme md-ink-ripple" [disabled]="allowEdit && (emailAddress == null || emailAddress == '')">Send Test</button>
             </div>
-            <md-button ng-click="vm.saveTemplate()" class="md-primary" ng-disabled="!vm.slaEmailTemplateForm.$valid && !vm.self.allowEdit">Save</md-button>
+            <button (click)="saveTemplate()" class="md-primary md-button md-kylo-theme md-ink-ripple" [disabled]="!slaEmailTemplateForm.form.valid && !allowEdit">Save</button>
           </div>
 
         </div>
-        </ng-form>
+        </form>
       </div>
-    </body-section>
-  </card-layout>
+    </mat-card-content>
+  </mat-card>
 
-  <card-layout offsetleftfromprevious top="8" card-css="layout-fill"
+  <mat-card offsetleftfromprevious top="8" card-css="layout-fill"
                style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-    <header-section>
+    <mat-card-title>
       <div class="card-title">Template Variables</div>
 
-    </header-section>
+    </mat-card-title>
 
-    <body-section>
+    <mat-card-content style="padding: 0;">
       <div class="layout-padding-left-right">
       <div layout="column" class="layout-padding-top-bottom">
-        <md-list  class="md-dense">
-          <md-list-item class="md-2-line" ng-repeat="item in vm.templateVariables">
+        <mat-list  class="md-dense">
+          <mat-list-item class="md-2-line" *ngFor="let item of templateVariables">
             <div class="md-list-item-text" layout="column">
               <span>{{item.item}}</span>
               <span class="hint">{{item.desc}}</span>
             </div>
-          </md-list-item>
-        </md-list>
+          </mat-list-item>
+        </mat-list>
       </div>
-      <md-divider></md-divider>
+      <mat-divider style="position:relative;width: auto;"></mat-divider>
       <div class="md-subhead">Related SLA's</div>
-      <md-list  class="md-dense">
-        <md-list-item class="md-2-line" ng-repeat="item in vm.relatedSlas">
-          <div class="md-list-item-text pointer" layout="column" ng-click="vm.navigateToSla(item.slaId)">
+      <mat-list  class="md-dense">
+        <mat-list-item class="md-2-line" *ngFor="let item of relatedSlas">
+          <div class="md-list-item-text pointer" layout="column" (click)="navigateToSla(item.slaId)">
             <h3>{{item.name}}</h3>
-            <span class="hint">{{item.description}}</span>
+            <mat-hint align="start">
+              <span class="hint">{{item.description}}</span>
+            </mat-hint>
           </div>
-        </md-list-item>
-      </md-list>
+        </mat-list-item>
+      </mat-list>
       </div>
-    </body-section>
-  </card-layout>
+    </mat-card-content>
+  </mat-card>
 </div>

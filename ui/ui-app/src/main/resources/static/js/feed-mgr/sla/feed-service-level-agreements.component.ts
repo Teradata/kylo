@@ -1,5 +1,4 @@
 import * as angular from 'angular';
-import { moduleName } from './module-name';
 import * as _ from 'underscore';
 import AccessControlService from '../../services/AccessControlService';
 import StateService from '../../services/StateService';
@@ -8,23 +7,34 @@ import { DefaultPaginationDataService } from '../../services/PaginationDataServi
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import AddButtonService from '../../services/AddButtonService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
+import { SlaService } from '../services/SlaService';
+import { Input, Component, SimpleChanges, Inject } from '@angular/core';
+import { Subject } from 'rxjs/Subject';
+import { ITdDataTableColumn, TdDataTableSortingOrder, TdDataTableService, ITdDataTableSortChangeEvent } from '@covalent/core/data-table';
+import { IPageChangeEvent } from '@covalent/core/paging';
 
-
-export default class ServiceLevelAgreements {
+@Component({
+    selector: 'thinkbig-feed-service-level-agreements',
+    templateUrl: 'js/feed-mgr/sla/feed-service-level-agreements.html'
+})
+export default class FeedServiceLevelAgreements {
    
-    newSla: any;
-    slaId: any;
-    feed: any;
+    @Input() newSla: any;
+    @Input() slaId: any;
+    @Input() feed: any;
     editRule: any = null;
+
+    private newSlaObserver = new Subject();
+
     //Pagination DAta
     pageName: string = "service-level-agreements";
     paginationData: any = this.paginationDataService.paginationData(this.pageName);
     paginationId: any = 'service-level-agreements';
 
     /**
-         * Indicates if editing SLAs is allowed.
-         * @type {boolean}
-         */
+     * Indicates if editing SLAs is allowed.
+     * @type {boolean}
+     */
     allowEdit: boolean = false;
 
     /**
@@ -48,6 +58,23 @@ export default class ServiceLevelAgreements {
     loadingListMessage: string = "Loading Service Level Agreements";
     loadingSingleMessage: string = "Loading Service Level Agreement";
 
+    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Descending;
+    sortBy: string = 'name';
+
+    pageSize: number = 2;
+    fromRow: number = 1;
+    searchTerm: string = '';
+
+    filteredData: any[];
+    filteredTotal: number = 0;
+
+    currentPage: number = 1;
+
+    columns: ITdDataTableColumn[] = [
+        { name: 'name',  label: 'Name', sortable: true, filter: true },
+        { name: 'description', label: 'Description', sortable: true, filter: true },
+        { name: 'feedNames', label: 'RelatedFeeds', sortable: true, filter: true}
+      ];
 
     /**
      * SLA Options (aka. Metric Classes annotated with @ServiceLevelPolicy exposing the properties
@@ -150,9 +177,6 @@ export default class ServiceLevelAgreements {
 
     userSuppliedDescription: boolean = false;
 
-    currentPage: any;
-    viewType: any;
-    sortOptions: any;
     loadingMessage: any;
 
     
@@ -166,11 +190,11 @@ export default class ServiceLevelAgreements {
 
             var currentFeedValue = null;
             if (this.feed != null) {
-                currentFeedValue = this.PolicyInputFormService.currentFeedValue(this.feed);
+                currentFeedValue = this.$injector.get("PolicyInputFormService").currentFeedValue(this.feed);
             }
-            this.options = this.PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            this.options = this.$injector.get("PolicyInputFormService").groupPolicyOptions(response.data, currentFeedValue);
             if (this.allowCreate || this.allowEdit) {
-                this.PolicyInputFormService.stripNonEditableFeeds(this.options);
+                this.$injector.get("PolicyInputFormService").stripNonEditableFeeds(this.options);
             }
 
         });
@@ -181,9 +205,9 @@ export default class ServiceLevelAgreements {
         this.SlaService.getPossibleSlaActionOptions().then((response: any) => {
             var currentFeedValue = null;
             if (this.feed != null) {
-                currentFeedValue = this.PolicyInputFormService.currentFeedValue(this.feed);
+                currentFeedValue = this.$injector.get("PolicyInputFormService").currentFeedValue(this.feed);
             }
-            this.slaActionOptions = this.PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            this.slaActionOptions = this.$injector.get("PolicyInputFormService").groupPolicyOptions(response.data, currentFeedValue);
             if (this.slaActionOptions.length > 0) {
                 this.showActionOptions = true;
 
@@ -193,7 +217,7 @@ export default class ServiceLevelAgreements {
                 });
 
                 if (this.allowCreate || this.allowEdit) {
-                    this.PolicyInputFormService.stripNonEditableFeeds(this.slaActionOptions);
+                    this.$injector.get("PolicyInputFormService").stripNonEditableFeeds(this.slaActionOptions);
                 }
 
             }
@@ -202,38 +226,27 @@ export default class ServiceLevelAgreements {
             }
         });
 
-        // here 
-        this.currentPage = this.paginationDataService.currentPage(this.pageName) || 1;
-        this.viewType = this.paginationDataService.viewType(this.pageName);
-        this.sortOptions = this.loadSortOptions();
         /**
          * Loading message
          */
         this.loadingMessage = this.loadingListMessage;
     }
-    $onInit() {
-        this.ngOnInit();
+    
+    public ngOnChanges(changes: SimpleChanges): void {
+        if (changes.newSla.currentValue) {
+            this.newSlaObserver.next(changes.newSla.currentValue);
+        }
     }
-   
-    static readonly $inject = ["$scope", "$mdDialog", "$mdToast", "$http", "$rootScope", "$q",
-    "StateService", "FeedService", "SlaService", "PolicyInputFormService",
-    "PaginationDataService", "TableOptionsService", "AddButtonService",
-    "AccessControlService", "EntityAccessControlService"];
-    constructor(private $scope: IScope,
-        private $mdDialog: angular.material.IDialogService,
-        private $mdToast: angular.material.IToastService,
-        private $http: angular.IHttpService,
-        private $rootScope: IScope,
-        private $q: angular.IQService,
-        private stateService: StateService,
-        private feedService: FeedService,
-        private SlaService: any,
-        private PolicyInputFormService: any,
-        private paginationDataService: DefaultPaginationDataService,
-        private tableOptionsService: DefaultTableOptionsService,
-        private addButtonService: AddButtonService,
-        private accessControlService: AccessControlService,
-        private entityAccessControlService: EntityAccessControlService){
+
+    constructor(private stateService: StateService,
+                private SlaService: SlaService,
+                private paginationDataService: DefaultPaginationDataService,
+                private tableOptionsService: DefaultTableOptionsService,
+                private addButtonService: AddButtonService,
+                private accessControlService: AccessControlService,
+                private entityAccessControlService: EntityAccessControlService,
+                @Inject("$injector") private $injector: any,
+                private _dataTableService: TdDataTableService){
 
          //if the newSLA flag is tripped then show the new SLA form and then reset it
 
@@ -241,14 +254,10 @@ export default class ServiceLevelAgreements {
             this.newSla = false;
         }
 
-        $scope.$watch(() => {
-            return this.newSla;
-        }, (newVal: any) => {
-            if (newVal == true) {
-                this.onNewSla();
-                this.newSla = false;
-                this.loading = false;
-            }
+        this.newSlaObserver.subscribe(()=>{
+            this.onNewSla();
+            this.newSla = false;
+            this.loading = false;
         });
 
         // Register Add button
@@ -262,11 +271,7 @@ export default class ServiceLevelAgreements {
                 }
             });
 
-        $scope.$watch(() => {
-            return this.viewType;
-        }, (newVal: any) => {
-            this.onViewTypeChange(newVal);
-        });
+        
 
         this.paginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
         if (this.feed != null) {
@@ -298,38 +303,13 @@ export default class ServiceLevelAgreements {
             this.loadSlas();
         }
         this.applyAccessPermissions();
-    }
-
-    /**
-     * Build the possible Sorting Options
-     * @returns {*[]}
-     */
-    loadSortOptions = () => {
-        var options = { 'Name': 'name', 'Description': 'description' };
-        var sortOptions = this.tableOptionsService.newSortOptions(this.pageName, options, 'name', 'asc');
-        this.tableOptionsService.initializeSortOption(this.pageName);
-        return sortOptions;
-    }
-
-    onViewTypeChange = (viewType: any) => {
-        this.paginationDataService.viewType(this.pageName, this.viewType);
-    }
-
-    onOrderChange = (order: any) => {
-        this.paginationDataService.sort(this.pageName, order);
-        this.tableOptionsService.setSortOption(this.pageName, order);
-    };
-
-    onPaginationChange = (page: any, limit: any) => {
-        this.paginationDataService.currentPage(this.pageName, null, page);
-        this.currentPage = page;
-    };
+    } 
 
     /**
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption = (option: any) => {
+    selectedTableOption(option: any) {
         var sortString = this.tableOptionsService.toSortString(option);
         this.paginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
@@ -341,7 +321,7 @@ export default class ServiceLevelAgreements {
      * If there is a Feed using this page it will only get the SLAs related for this feed
      * otherwise it will get all the SLas
      */
-    loadSlas= () => {
+    loadSlas() {
         this.loadingMessage = this.loadingListMessage;
         this.loading = true;
         /**
@@ -368,6 +348,11 @@ export default class ServiceLevelAgreements {
             this.SlaService.getAllSlas().then((response: any) => {
                 this.serviceLevelAgreements = response.data;
                 this.loading = false;
+
+                this.filteredData = this.serviceLevelAgreements;
+                this.filteredTotal = this.serviceLevelAgreements.length;
+                this.filter();
+
             });
         }
     }
@@ -375,14 +360,14 @@ export default class ServiceLevelAgreements {
     /**
      * Called when the user cancels a specific SLA
      */
-    cancelEditSla = () => {
+    cancelEditSla() {
         this.showList(false);
         this.applyAccessPermissions();
         this.userSuppliedName = false;
         this.userSuppliedDescription = false;
     }
 
-    addNewCondition = () => {
+    addNewCondition() {
         this.ruleType = this.EMPTY_RULE_TYPE;
         //if editing one already validate, complete it and then add the new one
         var valid = true;
@@ -396,18 +381,18 @@ export default class ServiceLevelAgreements {
 
     }
 
-    addNewActionCondition = () => {
+    addNewActionCondition() {
         this.addingSlaAction = true;
     }
 
-    deriveSlaName =() => {
+    deriveSlaName() {
 
         var feedNamesString = null;
-        var feedNames = this.PolicyInputFormService.getFeedNames(this.editSla.rules);
+        var feedNames = this.$injector.get("PolicyInputFormService").getFeedNames(this.editSla.rules);
         if (feedNames.length > 0) {
             feedNamesString = feedNames.join(",");
         }
-        var ruleNames = this.PolicyInputFormService.getRuleNames(this.editSla.rules);
+        var ruleNames = this.$injector.get("PolicyInputFormService").getRuleNames(this.editSla.rules);
         var slaName = ruleNames.join(",");
         if (feedNamesString != null) {
             slaName = feedNamesString + " - " + slaName;
@@ -415,13 +400,13 @@ export default class ServiceLevelAgreements {
         return slaName;
     }
 
-    deriveDescription = () => {
+    deriveDescription() {
         var feedNamesString = null;
-        var feedNames = this.PolicyInputFormService.getFeedNames(this.editSla.rules);
+        var feedNames = this.$injector.get("PolicyInputFormService").getFeedNames(this.editSla.rules);
         if (feedNames.length > 0) {
             feedNamesString = feedNames.join(",");
         }
-        var ruleNames = this.PolicyInputFormService.getRuleNames(this.editSla.rules);
+        var ruleNames = this.$injector.get("PolicyInputFormService").getRuleNames(this.editSla.rules);
         var desc = ruleNames.join(",");
         if (feedNamesString != null) {
             desc += " for " + feedNamesString;
@@ -429,8 +414,8 @@ export default class ServiceLevelAgreements {
         return desc;
     }
 
-    onPropertyChange = (property: any) => {
-        if (this.PolicyInputFormService.isFeedProperty(property)) {
+    onPropertyChange(property: any) {
+        if (this.$injector.get("PolicyInputFormService").isFeedProperty(property)) {
             if (this.editSla != null && (this.userSuppliedName == false || (this.editSla.name == '' || this.editSla.name == null))) {
                 this.editSla.name = this.deriveSlaName();
             }
@@ -440,15 +425,15 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onNameChange = () => {
+    onNameChange() {
         this.userSuppliedName = true;
     }
 
-    onDescriptionChange = () => {
+    onDescriptionChange() {
         this.userSuppliedDescription = true;
     }
 
-    saveSla = () => {
+    saveSla() {
         var valid = this.validateForm();
         if (valid) {
             let success = (response: any) => { //success
@@ -462,8 +447,8 @@ export default class ServiceLevelAgreements {
                     this.serviceLevelAgreements.push(this.editSla);
                 }
                 this.showList(true);
-                this.$mdToast.show(
-                    this.$mdToast.simple()
+                this.$injector.get("$mdToast").show(
+                    this.$injector.get("$mdToast").simple()
                         .textContent("Saved the SLA")
                         .hideDelay(1000)
                 );
@@ -472,9 +457,9 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    saveSlaSuccess = (successFn: any, failureFn: any) => {
-        this.$mdDialog.show(
-            this.$mdDialog.alert()
+    saveSlaSuccess(successFn: any, failureFn: any) {
+        this.$injector.get("$mdDialog").show(
+            this.$injector.get("$mdDialog").alert()
                 .parent(angular.element(document.body))
                 .clickOutsideToClose(false)
                 .title('Saving SLA')
@@ -483,7 +468,7 @@ export default class ServiceLevelAgreements {
         );
         if (this.feed != null) {
             this.SlaService.saveFeedSla(this.feed.feedId, this.editSla).then((response: any) => {
-                this.$mdDialog.hide();
+                this.$injector.get("$mdDialog").hide();
                 if (successFn) {
                     successFn(response);
                 }
@@ -495,7 +480,7 @@ export default class ServiceLevelAgreements {
         }
         else {
             this.SlaService.saveSla(this.editSla).then(() => {
-                this.$mdDialog.hide();
+                this.$injector.get("$mdDialog").hide();
                 if (successFn) {
                     successFn();
                 }
@@ -507,7 +492,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onBackToList = (ev: any) => {
+    onBackToList(ev: any) {
         var requery = false;
         if (this.serviceLevelAgreements == null || this.serviceLevelAgreements.length == 0) {
             requery = true;
@@ -517,7 +502,7 @@ export default class ServiceLevelAgreements {
 
     }
 
-    onNewSla = () => {
+    onNewSla() {
         this.addButtonService.hideAddButton();
         this.mode = 'NEW';
         this.creatingNewSla = true;
@@ -532,15 +517,15 @@ export default class ServiceLevelAgreements {
 
     }
 
-    onEditSla = (sla: any) => {
+    onEditSla(sla: any) {
         if (this.allowEdit) {
             this.addButtonService.hideAddButton();
             this.editSlaIndex = _.findIndex(this.serviceLevelAgreements, sla);
             this.loadAndEditSla(sla.id);
             this.renderFilter = false;
         } else {
-            this.$mdDialog.show(
-                this.$mdDialog.alert()
+            this.$injector.get("$mdDialog").show(
+                this.$injector.get("$mdDialog").alert()
                     .clickOutsideToClose(true)
                     .title("Access Denied")
                     .textContent("You do not have access to edit SLAs.")
@@ -550,13 +535,13 @@ export default class ServiceLevelAgreements {
         }
     };
 
-    viewSlaAssessments = () => {
+    viewSlaAssessments() {
         if (this.editSla) {
             this.stateService.OpsManager().Sla().navigateToServiceLevelAssessments('slaId==' + this.editSla.id);
         }
     }
 
-    loadAndEditSla = (slaId: any) => {
+    loadAndEditSla(slaId: any) {
         this.cardTitle = "Edit Service Level Agreement"
         this.mode = 'EDIT';
         this.creatingNewSla = false;
@@ -575,15 +560,15 @@ export default class ServiceLevelAgreements {
             _.each(sla.rules, (rule: any) => {
                 rule.editable = sla.canEdit;
                 rule.mode = 'EDIT'
-                rule.groups = this.PolicyInputFormService.groupProperties(rule);
-                this.PolicyInputFormService.updatePropertyIndex(rule);
+                rule.groups = this.$injector.get("PolicyInputFormService").groupProperties(rule);
+                this.$injector.get("PolicyInputFormService").updatePropertyIndex(rule);
             });
 
             _.each(sla.actionConfigurations, (rule: any) => {
                 rule.editable = sla.canEdit;
                 rule.mode = 'EDIT'
-                rule.groups = this.PolicyInputFormService.groupProperties(rule);
-                this.PolicyInputFormService.updatePropertyIndex(rule);
+                rule.groups = this.$injector.get("PolicyInputFormService").groupProperties(rule);
+                this.$injector.get("PolicyInputFormService").updatePropertyIndex(rule);
                 //validate the rules
                 this.SlaService.validateSlaActionRule(rule)
 
@@ -596,8 +581,8 @@ export default class ServiceLevelAgreements {
         }, (err: any) => {
             var msg = err.data.message || 'Error loading the SLA';
             this.loading = false;
-            this.$mdDialog.show(
-                this.$mdDialog.alert()
+            this.$injector.get("$mdDialog").show(
+                this.$injector.get("$mdDialog").alert()
                     .clickOutsideToClose(true)
                     .title("Error loading the SLA")
                     .textContent(msg)
@@ -608,12 +593,12 @@ export default class ServiceLevelAgreements {
         });
     }
 
-    applyEditPermissionsToSLA = (sla: any) => {
+    applyEditPermissionsToSLA(sla: any) {
 
         var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
 
         var functionalAccess = this.accessControlService.getUserAllowedActions()
-        this.$q.when(functionalAccess).then((response: any) => {
+        this.$injector.get("$q").when(functionalAccess).then((response: any) => {
             if (entityAccessControlled) {
                 sla.editable = sla.canEdit;
                 this.allowEdit = sla.canEdit;
@@ -626,24 +611,24 @@ export default class ServiceLevelAgreements {
         });
     }
 
-    onDeleteSla = (ev: any) => {
+    onDeleteSla(ev: any) {
         //warn are you sure you want to delete?
         if (this.editSlaIndex != null || this.editSlaId != null) {
-            var confirm = this.$mdDialog.confirm()
+            var confirm = this.$injector.get("$mdDialog").confirm()
                 .title('Delete SLA')
                 .textContent('Are you sure you want to Delete this SLA?')
                 .ariaLabel('Delete SLA')
                 .targetEvent(ev)
                 .ok('Please do it!')
                 .cancel('Nope');
-            this.$mdDialog.show(confirm).then(() => {
+            this.$injector.get("$mdDialog").show(confirm).then(() => {
                 this.SlaService.deleteSla(this.editSla.id).then(() => {
                     this.editSla = null;
                     if (this.editSlaIndex != null) {
                         this.serviceLevelAgreements.splice(this.editSlaIndex, 1);
                     }
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
+                    this.$injector.get("$mdToast").show(
+                        this.$injector.get("$mdToast").simple()
                             .textContent('SLA Deleted.')
                             .position('bottom left')
                             .hideDelay(3000)
@@ -651,8 +636,8 @@ export default class ServiceLevelAgreements {
                     this.showList(false);
                 }, () => {
                     //alert delete error
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
+                    this.$injector.get("$mdToast").show(
+                        this.$injector.get("$mdToast").simple()
                             .textContent('Error deleting SLA.')
                             .position('bottom left')
                             .hideDelay(3000)
@@ -666,7 +651,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onDeleteSlaMetric = (index: any) => {
+    onDeleteSlaMetric(index: any) {
         //warn before delete
         this.editSla.rules.splice(index, 1);
         if (this.editSla.rules.length == 0) {
@@ -674,7 +659,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onDeleteSlaAction = (index: any) => {
+    onDeleteSlaAction(index: any) {
         //warn before delete
         this.editSla.actionConfigurations.splice(index, 1);
         if (this.editSla.actionConfigurations.length == 0) {
@@ -682,13 +667,13 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onAddConditionRuleTypeChange = () => {
+    onAddConditionRuleTypeChange() {
         if (this.ruleType != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             var newRule = angular.copy(this.ruleType);
             newRule.mode = 'NEW'
             //update property index
-            this.PolicyInputFormService.updatePropertyIndex(newRule);
+            this.$injector.get("PolicyInputFormService").updatePropertyIndex(newRule);
 
             newRule.condition = this.ruleTypeCondition;
             newRule.editable = true;
@@ -706,13 +691,13 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onAddSlaActionChange = () => {
+    onAddSlaActionChange() {
         if (this.slaAction != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             var newRule = angular.copy(this.slaAction);
             newRule.mode = 'NEW'
             //update property index
-            this.PolicyInputFormService.updatePropertyIndex(newRule);
+            this.$injector.get("PolicyInputFormService").updatePropertyIndex(newRule);
 
             newRule.editable = true;
             this.editSla.actionConfigurations.push(newRule);
@@ -725,7 +710,7 @@ export default class ServiceLevelAgreements {
      * Validate the form before adding/editing a Rule for an SLA
      * @returns {boolean}
      */
-    validateForm = () => {
+    validateForm() {
         //loop through properties and determine if they are valid
         //the following _.some routine returns true if the items are invalid
         var ruleProperties: any[] = [];
@@ -735,11 +720,11 @@ export default class ServiceLevelAgreements {
             });
         });
 
-        var validForm = this.PolicyInputFormService.validateForm(this.slaForm, ruleProperties);
+        var validForm = this.$injector.get("PolicyInputFormService").validateForm(this.slaForm, ruleProperties);
         return validForm;
     }
 
-    buildDisplayString = () => {
+    buildDisplayString() {
         if (this.editRule != null) {
             var str = '';
             _.each(this.editRule.properties, (prop: any, idx: any) => {
@@ -762,7 +747,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    applyAccessPermissions = () => {
+    applyAccessPermissions() {
         //Apply the entity access permissions
         //if its an existing SLA, check to see if we can edit it
         if (this.editSla && !this.newSla) {
@@ -775,10 +760,10 @@ export default class ServiceLevelAgreements {
 
             //Apply the entity access permissions
             var requests = {
-                entityEditAccess: entityAccessControlled == true ? this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
+                entityEditAccess: entityAccessControlled == true ? this.$injector.get("$FeedService").hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
                 functionalAccess: this.accessControlService.getUserAllowedActions()
             }
-            this.$q.all(requests).then((response: any) => {
+            this.$injector.get("$q").all(requests).then((response: any) => {
                 var allowEditAccess = this.accessControlService.hasAction(AccessControlService.SLA_EDIT, response.functionalAccess.actions);
                 var slaAccess = this.accessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
                 var allowFeedEdit = this.feed != null ? this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
@@ -787,7 +772,7 @@ export default class ServiceLevelAgreements {
 
         }
     }
-    showList = (requery: any) => {
+    showList(requery: any) {
         this.cardTitle = "Service Level Agreements"
         this.renderFilter = true;
         this.editSla = null;
@@ -807,18 +792,33 @@ export default class ServiceLevelAgreements {
         this.applyAccessPermissions();
 
     }
-    //   this.feed = FeedService.editFeedModel;
-    filter = this.paginationDataService.filter(this.pageName);
-}
+    
+    filter(): void {
+        let newData: any[] = this.serviceLevelAgreements;
+        let excludedColumns: string[] = this.columns
+            .filter((column: ITdDataTableColumn) => {
+                return ((column.filter === undefined && column.hidden === true) ||
+                    (column.filter !== undefined && column.filter === false));
+            }).map((column: ITdDataTableColumn) => {
+                return column.name;
+            });
+        newData = this._dataTableService.filterData(newData, this.searchTerm, true, excludedColumns);
+        this.filteredTotal = newData.length;
+        newData = this._dataTableService.sortData(newData, this.sortBy, this.sortOrder);
+        newData = this._dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
+        this.filteredData = newData;
+    }
 
-angular.module(moduleName).component('thinkbigServiceLevelAgreements', {
-    bindings: {
-        feed: '=?',
-        newSla: '=?',
-        slaId: '=?',
-        view: '@'
-    },
-    controller : ServiceLevelAgreements,
-    templateUrl : 'js/feed-mgr/sla/service-level-agreements.html',
-    controllerAs : 'vm'
-})
+    onPaginationChange(pagingEvent: IPageChangeEvent): void {
+        this.fromRow = pagingEvent.fromRow;
+        this.currentPage = pagingEvent.page;
+        this.pageSize = pagingEvent.pageSize;
+        this.filter();
+    }
+
+    onSortOrderChange(sortEvent: ITdDataTableSortChangeEvent): void {
+        this.sortBy = sortEvent.name;
+        this.sortOrder = sortEvent.order;
+        this.filter();
+    }
+}

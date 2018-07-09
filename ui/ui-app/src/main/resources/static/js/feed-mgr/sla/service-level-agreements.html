@@ -18,37 +18,80 @@
   #L%
   -->
 <div  layout="row" layout-align="center start">
-  <card-layout header-css="filter-header" class="card-width" >
-    <header-section>
-      <tba-card-filter-header flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-        [on-selected-option]="vm.selectedTableOption" [render-filter]="vm.renderFilter" [(filter-model)]="vm.filter">
-      </tba-card-filter-header>
-    </header-section>
+  <mat-card class="card-width" style="max-width: 980px; width: 980px;">
+    <mat-card-title style="font-size:smaller;">
+      <mat-toolbar style="display:flex">
+        <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
+        <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+          </td-search-box>
+      </mat-toolbar>
+    </mat-card-title>
 
-        <body-section>
-          <ng-include src="'js/feed-mgr/sla/service-level-agreement-body.html'"></ng-include>
-        </body-section>
+      <mat-card-content>
+        <div *ngIf="loading" class="layout-padding-left-right">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <span class="md-body-2">{{loadingMessage}}</span>
+          </div>
+          
+          <div *ngIf="editSla == null && !loading" class="layout-padding-left-right">
+            <div>
+          
+            <td-data-table *ngIf="serviceLevelAgreements.length >0"
+              [data]="filteredData"
+              [columns]="columns"
+              [sortable]="true"
+              [sortBy]="sortBy"
+              [sortOrder]="sortOrder"
+              (sortChange)="onSortOrderChange($event)"
+              [clickable]="true"
+              (rowClick)="onEditSla($event.row)">
+            </td-data-table>
+          
+            <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="filteredTotal" (change)="onPaginationChange($event)">
+                <span hide-xs>Rows per page:</span>
+                <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+                  <mat-option *ngFor="let size of ['5', '10', '20', '50']" [value]="size">
+                    {{size}}
+                  </mat-option>
+                </mat-select>
+                {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+            </td-paging-bar>
+          
+          </div>
+        </div>
+        
+        <div *ngIf="editSla != null  && !loading">
+          <service-level-agreement-form [(editSla)]="editSla" [allowEdit]= "allowEdit" [onEditSla]= "onEditSla"
+            [editSlaIndex]= "editSlaIndex" [viewSlaAssessments]= "viewSlaAssessments" 
+            [feed]= "feed" [mode]= "mode" [onPropertyChange]= "onPropertyChange" 
+            [addingSlaCondition]= "addingSlaCondition" [addNewCondition]= "addNewCondition"
+            [(ruleType)]= "ruleType" [onDeleteSla]= "onDeleteSla" [cancelEditSla]= "cancelEditSla"
+            [saveSla]= "saveSla" [onNameChange]="onNameChange" [onDescriptionChange]="onDescriptionChange"
+            [(slaForm)]="slaForm" [options]="options" [onAddConditionRuleTypeChange]="onAddConditionRuleTypeChange"
+            [onDeleteSlaMetric]="onDeleteSlaMetric" [onDeleteSlaAction]="onDeleteSlaAction">
+          </service-level-agreement-form>
+        <div>
+      
+        </div>
+      </div>
+    </mat-card-content>
 
-    </card-layout>
-    <card-layout flex="20" card-toolbar="false"   header-css="sla-details-header card-toolbar2" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading && !vm.creatingNewSla">
-      <header-section>
-        <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
-        <span flex="5"></span>
+  </mat-card>
+  <mat-card flex="20" card-toolbar="false" *ngIf="editSla != null  && !loading && !creatingNewSla">
+    <mat-card-title class="sla-details-header card-toolbar2">
+      <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
+      <span flex="5"></span>
 
-      </header-section>
-      <body-section >
-        <md-content flex md-scroll-y>
-          <md-list flex layout-fill layout="column" class="list-item-table">
-            <md-list-item>
-              <div layout="column" class="item-column md-list-item-text ">
-                <md-button class="md-primary md-link" ng-click="vm.viewSlaAssessments()">SLA Assessments</md-button>
-              </div>
-            </md-list-item>
+    </mat-card-title>
+    <mat-card-content flex md-scroll-y class="sla-details-right-body">
+        <mat-list flex layout-fill layout="column" class="list-item-table">
+          <mat-list-item>
+            <div layout="column" class="item-column md-list-item-text ">
+              <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple" (click)="viewSlaAssessments()">SLA Assessments</button>
+            </div>
+          </mat-list-item>
 
-          </md-list>
-
-
-        </md-content>
-      </body-section>
-    </card-layout>
-  </div>
+        </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -230,23 +230,29 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             }
         })
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
-            params: {
-                slaId: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-agreements',transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-agreements ", err);
-                    return err;
-                });
-            }
-        });
+            loadChildren: 'feed-mgr/sla/sla.module#SLAModule' 
+        }); 
+
+        // $stateProvider.state({
+        //     name: 'service-level-agreements.**',
+        //     url: '/service-level-agreements',
+        //     params: {
+        //         slaId: null
+        //     },
+        //     lazyLoad: (transition: any)=>{
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('service-level-agreements',transition.params())
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading service-level-agreements ", err);
+        //             return err;
+        //         });
+        //     }
+        // });
 
         $stateProvider.state({
             name: 'users.**',

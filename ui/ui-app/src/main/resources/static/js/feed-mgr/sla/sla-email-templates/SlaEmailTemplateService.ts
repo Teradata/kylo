@@ -1,22 +1,27 @@
 import * as angular from 'angular';
-import { moduleName } from '../module-name';
 import * as _ from 'underscore';
+import { Injectable, Inject } from '@angular/core';
+import { RestUrlService } from '../../services/RestUrlService';
 
-
+@Injectable()
 export default class SlaEmailTemplateService {
     data: any = {};
     template: any = null;
     templates: any[];
     templateMap: any;
     availableActions: any[];
-    static readonly $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService"];
-    constructor(private $http: angular.IHttpService,
-        private $q: angular.IQService,
-        private $mdToast: angular.material.IToastService,
-        private $mdDialog: angular.material.IDialogService,
-        private RestUrlService: any,
-    ){
+    
+    constructor(private RestUrlService: RestUrlService,
+                @Inject("$injector") private $injector: any) {
+        
+        this.data = {
+            template:this.template,
+            templates:this.templates,
+            templateMap:{},
+            availableActions:[]
+        }            
         this.getExistingTemplates();
+
     };
     newTemplate = () => {
         this.data.template = this.newTemplateModel();
@@ -28,7 +33,7 @@ export default class SlaEmailTemplateService {
         return injectables;
     }
     getExistingTemplates = () => {
-        var promise = this.$http.get("/proxy/v1/feedmgr/sla/email-template");
+        var promise = this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/email-template");
         promise.then((response: any) => {
             if (response.data) {
                 this.data.templates = response.data;
@@ -42,15 +47,15 @@ export default class SlaEmailTemplateService {
     };
 
     getRelatedSlas = (id: any) => {
-        return this.$http.get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
+        return this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
     };
     getTemplate = (id: any) => {
         return this.data.templateMap[id];
     };
     getAvailableActionItems = () => {
-        var def = this.$q.defer();
+        var def = this.$injector.get("$q").defer();
         if (this.data.availableActions == undefined || this.data.availableActions == null || this.data.availableActions.length == 0) {
-            this.$http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any) => {
+            this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any) => {
                 if (response.data) {
                     this.data.availableActions = response.data;
                     def.resolve(this.data.availableActions);
@@ -64,13 +69,13 @@ export default class SlaEmailTemplateService {
     }
     validateTemplate = (subject: any, templateString: any) => {
         if (angular.isUndefined(subject)) {
-            subject = this.data.template.subject;
+            subject = this.template.subject;
         }
         if (angular.isUndefined(templateString)) {
-            templateString = this.data.template.template;
+            templateString = this.template.template;
         }
         var testTemplate = { subject: subject, body: templateString };
-        return this.$http({
+        return this.$injector.get("$http")({
             url: "/proxy/v1/feedmgr/sla/test-email-template",
             method: "POST",
             data: angular.toJson(testTemplate),
@@ -81,13 +86,13 @@ export default class SlaEmailTemplateService {
     };
     sendTestEmail = (address: any, subject: any, templateString: any) => {
         if (angular.isUndefined(subject)) {
-            subject = this.data.template.subject;
+            subject = this.template.subject;
         }
         if (angular.isUndefined(templateString)) {
-            templateString = this.data.template.template;
+            templateString = this.template.template;
         }
         var testTemplate = { emailAddress: address, subject: subject, body: templateString };
-        return this.$http({
+        return this.$injector.get("$http")({
             url: "/proxy/v1/feedmgr/sla/send-test-email-template",
             method: "POST",
             data: angular.toJson(testTemplate),
@@ -101,7 +106,7 @@ export default class SlaEmailTemplateService {
             template = this.data.template;
         }
         if (template != null) {
-            return this.$http({
+            return this.$injector.get("$http")({
                 url: "/proxy/v1/feedmgr/sla/email-template",
                 method: "POST",
                 data: angular.toJson(template),
@@ -112,8 +117,8 @@ export default class SlaEmailTemplateService {
         }
     };
     accessDeniedDialog = () => {
-        this.$mdDialog.show(
-            this.$mdDialog.alert()
+        this.$injector.get("$mdDialog").show(
+            this.$injector.get("$mdDialog").alert()
                 .clickOutsideToClose(true)
                 .title("Access Denied")
                 .textContent("You do not have access to edit templates.")
@@ -126,4 +131,3 @@ export default class SlaEmailTemplateService {
         return this.template;
     }
 }
-angular.module(moduleName).service('SlaEmailTemplateService', SlaEmailTemplateService);

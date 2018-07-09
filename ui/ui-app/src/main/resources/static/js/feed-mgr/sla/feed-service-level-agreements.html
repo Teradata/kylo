@@ -19,11 +19,54 @@
   -->
 <div class="md-padding">
 <div>
-  <span ng-if="vm.feed.state != 'ENABLED'">{{"views.feed-service-level-agreements.Warning" | translate}}</span>
-  <ng-include src="'js/feed-mgr/sla/service-level-agreement-body.html'"></ng-include>
-</div>
-  <div flex layout="column" layout-align="center end" ng-if="vm.editSla == null && vm.allowEdit">
-    <md-button class="md-primary" aria-label="Add" ng-click="vm.onNewSla($event)">{{"views.feed-service-level-agreements.ASLA" | translate}}</md-button>
+  <span *ngIf="feed.state != 'ENABLED'">{{"views.feed-service-level-agreements.Warning" | translate}}</span>
+  <div *ngIf="!loading" class="layout-padding-left-right">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <span class="md-body-2">{{loadingMessage}}</span>
+    </div>
+    
+    <div *ngIf="editSla == null && !loading" class="layout-padding-left-right">
+      <div>
+    
+      <td-data-table *ngIf="serviceLevelAgreements.length >0"
+        [data]="filteredData"
+        [columns]="columns"
+        [sortable]="true"
+        [sortBy]="sortBy"
+        [sortOrder]="sortOrder"
+        (sortChange)="onSortOrderChange($event)"
+        [clickable]="true"
+        (rowClick)="onEditSla($event.row)">
+      </td-data-table>
+    
+      <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="filteredTotal" (change)="onPaginationChange($event)">
+          <span hide-xs>Rows per page:</span>
+          <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+            <mat-option *ngFor="let size of [1,2,4,10]" [value]="size">
+              {{size}}
+            </mat-option>
+          </mat-select>
+          {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+      </td-paging-bar>
+    
+    </div>
+  </div>
+  
+  <div *ngIf="editSla != null  && !loading">
+      <service-level-agreement-form [editSla]="editSla" [allowEdit]= "allowEdit" [onEditSla]= "onEditSla"
+      [editSlaIndex]= "editSlaIndex" [viewSlaAssessments]= "viewSlaAssessments" 
+      [feed]= "feed" [mode]= "mode" [onPropertyChange]= "onPropertyChange" 
+      [addingSlaCondition]= "addingSlaCondition" [addNewCondition]= "addNewCondition"
+      [ruleType]= "ruleType" [onDeleteSla]= "onDeleteSla" [cancelEditSla]= "cancelEditSla"
+      [saveSla]= "saveSla">
+    </service-level-agreement-form>
+    <div>
+
+    </div>
+  </div>
+
+  <div flex layout="column" layout-align="center end" *ngIf="editSla == null && allowEdit">
+    <mat-button class="md-primary" aria-label="Add" (click)="onNewSla($event)">{{"views.feed-service-level-agreements.ASLA" | translate}}</mat-button>
   </div>
 
 

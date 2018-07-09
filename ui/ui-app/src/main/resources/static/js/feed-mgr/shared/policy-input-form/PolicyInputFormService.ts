@@ -1,8 +1,8 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/module-name');
+import { Injectable, Inject } from '@angular/core';
 
-
+@Injectable()
 export class PolicyInputFormService {
 
     formKeyNumber: number = 0;
@@ -17,17 +17,11 @@ export class PolicyInputFormService {
         this.init();
     }
 
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
-    static readonly $inject = ["$http", "$q", "$mdToast", "$mdDialog"];
-    constructor(private $http: angular.IHttpService, private $q: angular.IQService,
-        private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService) {
+    constructor(@Inject("$injector") private $injector: any) {
 
             this.init();
     }
-    groupProperties(metric: any) {
+    groupProperties = (metric: any) => {
         var group = _.groupBy(metric.properties, 'group');
         var groupedProperties: any = [];
         var index = 0;
@@ -58,13 +52,13 @@ export class PolicyInputFormService {
 
     }
 
-    updatePropertyIndex(rule: any) {
+    updatePropertyIndex = (rule: any)=> {
         _.each(rule.properties, (property: any) => {
             property.formKey = 'property_' + this.formKeyNumber++;
         });
     }
 
-    createFilterFor(query: any) {
+    createFilterFor=(query: any) =>{
         var lowercaseQuery = angular.lowercase(query);
         return function filterFn(option: any) {
             return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
@@ -213,11 +207,11 @@ export class PolicyInputFormService {
             return !valid;
         });
 
-        validForm = !validForm && theForm.$valid;
+        validForm = !validForm && theForm.valid;
 
         if (!validForm && showErrorDialog) {
-            this.$mdDialog.show(
-                this.$mdDialog.alert()
+            this.$injector.get("$mdDialog").show(
+                this.$injector.get("$mdDialog").alert()
                     .parent(angular.element(document.body))
                     .clickOutsideToClose(true)
                     .title('Input Errors')
@@ -246,5 +240,3 @@ export class PolicyInputFormService {
 
     }
 }
-
-angular.module(moduleName).service('PolicyInputFormService', PolicyInputFormService);

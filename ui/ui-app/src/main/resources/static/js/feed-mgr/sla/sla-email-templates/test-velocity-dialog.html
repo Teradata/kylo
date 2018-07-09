@@ -17,33 +17,33 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Velocity Template" ng-cloak>
-  <md-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
+<div mat-dialog aria-label="Velocity Template">
+  <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
     <div class="md-toolbar-tools">
       <h4>
         <span>Preview</span>
       </h4>
       <span flex></span>
     </div>
-  </md-toolbar>
-  <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-    <div layout="column" ng-if="resolvedTemplate.sendTest == false">
+  </mat-toolbar>
+  <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+    <div layout="column" *ngIf="resolvedTemplate.sendTest == false">
       <div class="md-title">Subject</div>
-      <div class="layout-padding-top-bottom" ng-bind-html="resolvedTemplateSubject"></div>
+      <div class="layout-padding-top-bottom" [innerHTML]="resolvedTemplateSubject"></div>
 
-      <md-divider></md-divider>
+      <mat-divider></mat-divider>
       <div class="md-title layout-padding-top">Body</div>
-      <div class="layout-padding-top-bottom" ng-bind-html="resolvedTemplateBody"></div>
+      <div class="layout-padding-top-bottom" [innerHTML]="resolvedTemplateBody"></div>
     </div>
 
-    <div layout="column" ng-if="resolvedTemplate.sendTest == true && resolvedTemplate.success == false">
+    <div layout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == false">
       <div class="md-title">Error sending template</div>
       <div>{{resolvedTemplate.exceptionMessage}}</div>
     </div>
 
-    <div layout="column" ng-if="resolvedTemplate.sendTest == true && resolvedTemplate.success == true">
+    <div layout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == true">
       <div class="md-title">Successfully sent template to {{emailAddress}}</div>
     </div>
 
-  </md-dialog-content>
-</md-dialog>
+  </mat-dialog-content>
+</div>

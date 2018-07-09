@@ -17,9 +17,11 @@
   limitations under the License.
   #L%
   -->
-<span ng-if="$ctrl.nextDates.length >0" class="hint"> {{"views.cron-expression-preview.CP" | translate}} </span>
+<mat-hint align="start" *ngIf="nextDates.length > 0">
+    <span>{{"views.cron-expression-preview.CP" | translate}}</span>
+</mat-hint>
 <ul class="cron-expresison-preview">
-    <li ng-repeat="nextDate in $ctrl.nextDates" >
+    <li *ngFor="let nextDate of nextDates" >
         {{nextDate}}
     </li>
 </ul>

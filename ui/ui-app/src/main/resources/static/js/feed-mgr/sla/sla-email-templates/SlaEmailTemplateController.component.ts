@@ -1,12 +1,16 @@
 import * as angular from 'angular';
-import { moduleName } from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
-import StateService from '../../../services/StateService';
-import {Transition} from "@uirouter/core";
+import {Transition, StateService} from "@uirouter/core";
+import { Component, Inject, ViewChild } from '@angular/core';
+import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
-export class SlaEmailTemplateController implements ng.IComponentController {
+@Component({
+    selector: 'sla-email-template-controller',
+    templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-template.html'
+})
+export class SlaEmailTemplateController {
 
     /**
      * The id of the template
@@ -54,25 +58,31 @@ export class SlaEmailTemplateController implements ng.IComponentController {
      */
     relatedSlas: any[] = [];
 
-    $transition$ : Transition;
-    static readonly $inject = [ '$mdDialog', '$mdToast', '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService']
+    // @ViewChild('textEditor') private _textEditor: TdTextEditorComponent;
 
-    constructor(private $mdDialog: angular.material.IDialogService,
-                private $mdToast: angular.material.IToastService,
-                private $http: angular.IHttpService,
-                private slaEmailTemplateService: SlaEmailTemplateService,
+    // options: any = {
+    //     lineWrapping: true,
+    //     toolbar: false,
+    //     indentWithTabs: true,
+    //     smartIndent: true,
+    //     lineNumbers: true,
+    //     matchBrackets : true,
+    //     autofocus: true,
+    //     mode: 'text/velocity'
+    // };
+
+    // ngAfterViewInit(): void {
+    //     this._textEditor.togglePreview();
+    // }
+
+    constructor(private slaEmailTemplateService: SlaEmailTemplateService,
                 private stateService: StateService,
-                private accessControlService: AccessControlService) {
-
-
-    }
-
-    $onInit() {
-        this.ngOnInit();
-    }
+                private accessControlService: AccessControlService,
+                private dialog: MatDialog,
+                @Inject("$injector") private $injector: any) {}
 
     ngOnInit() {
-        this.templateId = this.$transition$.params().emailTemplateId;
+        this.templateId = this.stateService.params.emailTemplateId;
         this.template = this.slaEmailTemplateService.template;
         this.templateVariables = this.slaEmailTemplateService.getTemplateVariables();
         this.loadTemplate();
@@ -99,15 +109,15 @@ export class SlaEmailTemplateController implements ng.IComponentController {
         this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then((response: angular.IHttpResponse<any>) => {
             response.data.sendTest = true;
             if (response.data.success) {
-                this.$mdToast.show(
-                    this.$mdToast.simple()
+                this.$injector.get("$mdToast").show(
+                    this.$injector.get("$mdToast").simple()
                         .textContent('Successfully sent the template')
                         .hideDelay(3000)
                 );
             }
             else {
-                this.$mdToast.show(
-                    this.$mdToast.simple()
+                this.$injector.get("$mdToast").show(
+                    this.$injector.get("$mdToast").simple()
                         .textContent('Error sending the template ')
                         .hideDelay(3000)
                 );
@@ -125,8 +135,8 @@ export class SlaEmailTemplateController implements ng.IComponentController {
         var successFn = (response: any) => {
             this.hideDialog();
             if (response.data) {
-                this.$mdToast.show(
-                    this.$mdToast.simple()
+                this.$injector.get("$mdToast").show(
+                    this.$injector.get("$mdToast").simple()
                         .textContent('Successfully saved the template')
                         .hideDelay(3000)
                 );
@@ -134,8 +144,8 @@ export class SlaEmailTemplateController implements ng.IComponentController {
         }
         var errorFn = (err: any) => {
             this.hideDialog();
-            this.$mdToast.show(
-                this.$mdToast.simple()
+            this.$injector.get("$mdToast").show(
+                this.$injector.get("$mdToast").simple()
                     .textContent('Error saving template ')
                     .hideDelay(3000)
             );
@@ -149,7 +159,7 @@ export class SlaEmailTemplateController implements ng.IComponentController {
      * @param {string} slaId
      */
     navigateToSla(slaId: string) {
-        this.stateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
+        this.stateService.go('service-level-agreements');
     }
 
     /**
@@ -211,7 +221,7 @@ export class SlaEmailTemplateController implements ng.IComponentController {
         }
         else {
             //redirect back to email template list page
-            this.stateService.FeedManager().Sla().navigateToEmailTemplates();
+            this.stateService.go('sla-email-templates');
         }
     }
 
@@ -245,27 +255,18 @@ export class SlaEmailTemplateController implements ng.IComponentController {
     }
 
     private showTestDialog(resolvedTemplate: any) {
-        this.$mdDialog.show({
-            templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
-            controller: "testDialogController",
-            parent: angular.element(document.body),
-            clickOutsideToClose: true,
-            fullscreen: true,
-            locals: {
-                resolvedTemplate: resolvedTemplate,
-                emailAddress: this.emailAddress
-            }
-        })
-            .then((answer: any) => {
-                //do something with result
-            }, () => {
-                //cancelled the dialog
-            });
+
+        let dialogRef = this.dialog.open(testDialogController, {
+            data: { resolvedTemplate: resolvedTemplate,
+                    emailAddress: this.emailAddress
+            },
+            panelClass: "full-screen-dialog"
+          });
     }
 
     private showDialog(title: string, message: string) {
-        this.$mdDialog.show(
-            this.$mdDialog.alert()
+        this.$injector.get("$mdDialog").show(
+            this.$injector.get("$mdDialog").alert()
                 .parent(angular.element(document.body))
                 .clickOutsideToClose(false)
                 .title(title)
@@ -275,53 +276,43 @@ export class SlaEmailTemplateController implements ng.IComponentController {
     }
 
     private hideDialog() {
-        this.$mdDialog.hide();
+        this.$injector.get("$mdDialog").hide();
     }
 
 }
 
+@Component({
+    selector: "test-dialog-controller",
+    templateUrl: "js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html"
+})
+export class testDialogController {
 
-export class testDialogController implements ng.IComponentController {
+    resolvedTemplateSubject: any;
+    resolvedTemplateBody: any;
+    resolvedTemplate: any;
+    emailAddress: any;
 
-
-    constructor(private $scope: any,
-                private $sce: angular.ISCEService,
-                private $mdDialog: angular.material.IDialogService,
-                private resolvedTemplate: any,
-                private emailAddress: any) {
-
-        $scope.resolvedTemplateSubject = $sce.trustAsHtml(resolvedTemplate.subject);
-        $scope.resolvedTemplateBody = $sce.trustAsHtml(resolvedTemplate.body);
-        $scope.resolvedTemplate = resolvedTemplate;
-        $scope.emailAddress = emailAddress;
-        $scope.hide = () => {
-            $mdDialog.hide();
-        };
-
-        $scope.cancel = () => {
-            $mdDialog.cancel();
-        };
-
+    ngOnInit() {
+        this.resolvedTemplateSubject = this.$injector.get("$sce").trustAsHtml(this.data.resolvedTemplate.subject);
+        this.resolvedTemplateBody = this.$injector.get("$sce").trustAsHtml(this.data.resolvedTemplate.body);
+        this.resolvedTemplate = this.data.resolvedTemplate;
+        this.emailAddress = this.data.emailAddress;
     }
 
+    constructor(@Inject("$injector") private $injector: any,
+                private dialogRef: MatDialogRef<testDialogController>,
+                @Inject(MAT_DIALOG_DATA) private data: any) {}
 
-    trustAsHtml = (string: any) => {
-        return this.$sce.trustAsHtml(string);
+    hide = () => {
+        this.dialogRef.close();
     };
 
+    cancel = () => {
+        this.dialogRef.close();
+    };
+
+    trustAsHtml = (string: any) => {
+        return this.$injector.get("$sce").trustAsHtml(string);
+    };
 
 }
-
-angular.module(moduleName)
-    .controller('velocityTemplateTestController',["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress",testDialogController]
-);
-
-angular.module(moduleName)
-    .component('slaEmailTemplateController', {
-        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-template.html',
-        controller: SlaEmailTemplateController,
-        controllerAs: "vm",
-        bindings :  {
-            $transition$ : '<'
-        }
-    });

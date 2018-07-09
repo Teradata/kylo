@@ -17,120 +17,121 @@
   limitations under the License.
   #L%
   -->
-<div ng-repeat="group in vm.rule.groups" class="layout-padding-left-right" layout="{{group.layout}}">
+  <!--layout="{{group.layout}}"-->
+  <div *ngFor="let group of rule.groups" class="layout-padding-left-right">
+      <div *ngFor="let property of group.properties">
+        <ng-container *ngIf="property.hidden == false" [formGroup]="formGroup">
+          <ng-container *ngIf="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed'  || property.type =='velocityTemplate' ">
+            <mat-form-field style="width: 100%;">
+              <mat-label>{{property.displayName}}</mat-label>
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" string-to-number type="number" *ngIf="property.type == 'number'" [(ngModel)]="property.value" md-placeholder="property.placeholder"
+                    pattern="property.patternRegExp"
+                    [required]="property.required" [disabled]="!rule.editable" (change)="onPropertyChanged(property)"/>
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'email'" [(ngModel)]="property.value" md-placeholder="property.placeholder" pattern="property.patternRegExp"
+                    [required]="property.required" [disabled]="!rule.editable" type="email" (change)="onPropertyChanged(property)"/>
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'emails'" [(ngModel)]="property.value" md-placeholder="property.placeholder" pattern="property.patternRegExp"
+                    [required]="property.required" [disabled]="!rule.editable" multiple-email-validator (change)="onPropertyChanged(property)" />
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'string' || property.type =='regex'" [(ngModel)]="property.value" md-placeholder="property.placeholder"
+                    pattern="property.patternRegExp"
+                    [required]="property.required" [disabled]="!rule.editable" type="text" (change)="onPropertyChanged(property)"/>
+              <mat-select [(ngModel)]="property.value" *ngIf="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" [required]="property.required"
+                        name="{{property.formKey}}" [formControlName]="property.formKey"
+                        [disabled]="!rule.editable || (property.type == 'currentFeed' && (feed != null || (rule.mode != undefined && rule.mode == 'EDIT')))"
+                        (change)="onPropertyChanged(property)">
+                <mat-option *ngFor="let value of property.selectableValues" value="{{value.value}}">
+                  {{value.label}}
+                </mat-option>
+              </mat-select>
+              <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+              <mat-hint *ngIf="property.errorMessage">
+                {{property.errorMessage}}
+              </mat-hint>
+              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.multipleEmails">
+                Emails are not valid
+              </mat-error>
+            
+            </mat-form-field>
+          </ng-container>
+    
+          <div *ngIf="property.type == 'cron'">
+            <mat-form-field style="width: 100%;" class="md-block condensed-medium">
+              <mat-label>{{property.displayName}}</mat-label>
+              <input matInput required [(ngModel)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" [disabled]="!rule.editable"
+                    cron-expression-validator
+                     (change)="onPropertyChanged(property)"/>
+    <!--[ngModelOptions]="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"-->
+              <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+              <mat-hint *ngIf="property.errorMessage">
+                {{property.errorMessage}}
+              </mat-hint>
+      
+              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+                This field is required
+              </mat-error>
+    
+              <div *ngIf="!formGroup.controls[property.formKey].valid">
+                <div *ngIf="formGroup.controls[property.formKey].hasError('cronExpression')">
+                  Invalid Cron Expression
+                </div>
+              </div>
+            </mat-form-field>
+              <cron-expression-preview [cronExpression]="property.value"
+                                           *ngIf="formGroup.controls[property.formKey].valid"></cron-expression-preview>
+          </div>
+          
+          <mat-form-field *ngIf="property.type == 'date' ">
+            <input matInput matInput [matDatepicker]="picker" [formControlName]="property.formKey" name="{{property.formKey}}" [formControlName]="property.formKey" [required]="property.required" *ngIf="property.type == 'date' " [(value)]="property.value" [placeholder]="property.placeholder"
+                    (change)="onPropertyChanged(property)">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+    
+            <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+            <mat-hint *ngIf="property.errorMessage">
+              {{property.errorMessage}}
+            </mat-hint>
+            <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+              This field is required
+            </mat-error>
+    
+          </mat-form-field>
 
-  <div ng-repeat="property in group.properties" ng-if="property.hidden == false">
-    <md-input-container class="md-block condensed-medium  "
-                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed'  || property.type =='velocityTemplate' ">
-      <label>{{property.displayName}}</label>
-      <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
-             ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" ng-change="vm.onPropertyChanged(property)"/>
-      <input name="{{property.formKey}}" ng-if="property.type == 'email'" ng-model="property.value" md-placeholder="property.placeholder" ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" type="email" ng-change="vm.onPropertyChanged(property)"/>
-      <input name="{{property.formKey}}" ng-if="property.type == 'emails'" ng-model="property.value" md-placeholder="property.placeholder" ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" multiple-email-validator ng-change="vm.onPropertyChanged(property)" />
-      <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
-             ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" type="text" ng-change="vm.onPropertyChanged(property)"/>
-      <md-select ng-model="property.value" ng-if="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" ng-required="property.required"
-                 name="{{property.formKey}}"
-                 ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))"
-                 ng-change="vm.onPropertyChanged(property)">
-        <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
-          {{value.label}}
-        </md-option>
-      </md-select>
-      <div ng-if="property.errorMessage" class="hint">
-        {{property.errorMessage}}
-      </div>
-      <div ng-if="vm.theForm[property.formKey].$error.multipleEmails" class="hint">
-        Emails are not valid
-      </div>
-      <div ng-if="property.hint" class="hint">
-        {{property.hint}}
-      </div>
-    </md-input-container>
+          <ng-container *ngIf="property.type == 'regex'">
+            <span>Test your Regex Pattern</span>
+            <mat-form-field class="md-block condensed-medium ">
+              <mat-label>Sample String</mat-label>
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" [(ngModel)]="property.regexSampleString" md-placeholder="Sample String" [required]="property.required" [disabled]="!rule.editable"/>
+    
+              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+                  This field is required
+                </mat-error>
+            </mat-form-field>
+            <div>
+              {{property.regexValid}}
+            </div>
+          </ng-container>
+    
+          <ng-container *ngIf="property.type == 'chips' || property.type == 'feedChips'">
+    
+            <mat-label class="label-small md-container-ignore">{{property.displayName}}</mat-label>
+            <td-chips [chipAddition]="chipAddition"
+              [chipRemoval]="chipRemoval"
+              [items]="filterStrings(null, property.selectableValues,property.values)"
+              [(ngModel)]="property.values"
+              placeholder="Type here"
+              [disabled]="false"
+              [inputPosition]="'after'"
+              (inputChange)="filterStrings($event, property.selectableValues,property.values)"
+              requireMatch>
+            </td-chips>
+           
+            <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
+            <mat-error *ngIf="property.invalid == true" >
+              This field is required
+            </mat-error>
 
-    <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
-      <label>{{property.displayName}}</label>
-      <input required ng-model="property.value" name="{{property.formKey}}" ng-disabled="!vm.rule.editable"
-             cron-expression-validator
-             ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }" ng-change="vm.onPropertyChanged(property)"/>
-
-      <div ng-if="property.hint" class="hint">
-        {{property.hint}}
-      </div>
-      <div ng-messages="vm.theForm[property.formKey].$error ">
-        <div ng-message="required">This field is required.</div>
-      </div>
-
-      <div ng-show="vm.theForm[property.formKey].$touched && vm.theForm[property.formKey].$invalid"
-           ng-messages="vm.theForm[property.formKey].$error">
-        <div ng-show="vm.theForm[property.formKey].$error.cronExpression"
-             ng-message="cronExpression">Invalid Cron Expression.
-        </div>
-      </div>
-      <cron-expression-preview cron-expression="property.value"
-                               ng-if="vm.theForm[property.formKey].$valid"></cron-expression-preview>
-    </md-input-container>
-
-    <div ng-if="property.type == 'date' ">
-      <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
-                     ng-disabled="!vm.rule.editable" ng-change="vm.onPropertyChanged(property)">
-      </md-datepicker>
-      <div ng-if="property.hint && property.type == 'date' " class="hint">
-        {{property.hint}}
-      </div>
-      <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.type == 'date' " md-auto-hide="false">
-        <div ng-message="required">This field is required.</div>
+          </ng-container>
+    
+        </ng-container>
       </div>
     </div>
-    <div ng-if="property.type == 'regex'">
-      <span>Test your Regex Pattern</span>
-      <md-input-container class="md-block condensed-medium ">
-        <label>Sample String</label>
-        <input name="{{property.formKey}}" ng-model="property.regexSampleString" md-placeholder="Sample String" ng-required="property.required" ng-disabled="!vm.rule.editable"/>
-
-        <div ng-messages="vm.theForm[property.formKey].$error ">
-          <div ng-message="required">This field is required.</div>
-        </div>
-      </md-input-container>
-      <div>
-        {{property.regexValid}}
-      </div>
-    </div>
-    <div ng-if="property.type == 'chips' || property.type == 'feedChips'">
-      <md-input-container class="md-block flex-gt-sm condensed-medium " flex-gt-sm="" style="" md-is-error="property.invalid == true">
-        <label class="label-small md-container-ignore">{{property.displayName}}</label>
-        <md-chips name="{{property.formKey}}" ng-model="property.values" md-autocomplete-snap md-on-add="vm.validateRequiredChips(property)"
-                  md-on-remove="vm.validateRequiredChips(property) "
-                  md-transform-chip="vm.transformChip($chip)"
-                  md-require-match="true" >
-          <md-autocomplete
-              md-selected-item="vm.editChips.selectedItem"
-              md-search-text="vm.editChips.searchText"
-              md-items="item in vm.queryChipSearch(property,vm.editChips.searchText)"
-              md-item-text="item.label"
-              md-min-length="0"
-              placeholder="{{property.placeholder}}"
-              ng-disabled="!vm.rule.editable">
-            <span md-highlight-text="editChips.searchText">{{item.label}}</span>
-          </md-autocomplete>
-          <md-chip-template>
-                                        <span>
-                                          <strong>{{$chip.label}}</strong>
-                                        </span>
-          </md-chip-template>
-        </md-chips>
-        <div ng-if="property.hint" class="hint">
-          {{property.hint}}
-        </div>
-        <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.invalid == true" md-auto-hide="false">
-          <div ng-message="required">This field is required.</div>
-        </div>
-      </md-input-container>
-    </div>
-
-  </div>
-</div>
+    
