@@ -292,14 +292,4 @@ echo "Updating Kylo configuration"
 sed -i "s/security\.vault\.token=<insert-vault-secret-token-here>/security\.vault\.token=${ROOT_TOKEN}/" ${KYLO_HOME}/kylo-services/conf/application.properties
 
 echo "Vault installation complete"
-
-instructions() {
-  cat <<EOF
-
-Vault has been automatically initialized and unsealed.
-The unseal keys and root token have been stored in "${VAULT_CONF_INIT}".
-EOF
-  exit 1
-}
-
-instructions
+echo "The unseal keys and root token have been stored in "${VAULT_CONF_INIT}"."
