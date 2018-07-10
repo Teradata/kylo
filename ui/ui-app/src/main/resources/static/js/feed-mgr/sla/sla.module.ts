@@ -24,6 +24,7 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
 import { CovalentChipsModule } from '@covalent/core/chips';
 
 import {TranslateModule} from "@ngx-translate/core";
+import {CodemirrorModule} from "ng2-codemirror";
 
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
@@ -83,6 +84,7 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
     ],
     imports: [
         // BrowserModule,
+        CodemirrorModule,
         CovalentCommonModule,
         CovalentLoadingModule,
         CovalentDataTableModule,
