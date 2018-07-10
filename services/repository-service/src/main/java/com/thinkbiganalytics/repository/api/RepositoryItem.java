@@ -23,15 +23,16 @@ package com.thinkbiganalytics.repository.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RepositoryItemMetadata {
+public class RepositoryItem {
 
     private String templateName;
     private String description;
     private String fileName;
     private boolean stream;
     private boolean installed;
+    private TemplateRepository repository;
 
-    public RepositoryItemMetadata() {
+    public RepositoryItem() {
     }
 
     public boolean isInstalled() {
@@ -72,15 +73,18 @@ public class RepositoryItemMetadata {
 
     @Override
     public String toString() {
-        return "RepositoryItemMetadata{" +
+        return "RepositoryItem{" +
                "templateName='" + templateName + '\'' +
                ", description='" + description + '\'' +
                ", fileName='" + fileName + '\'' +
                ", stream=" + stream +
-               '}';
+               ", installed=" + installed +
+               ", repository=[" + repository.getName() +
+               ", "+repository.getType().getKey() +
+               "]}";
     }
 
-    public RepositoryItemMetadata(String templateName, String description, String fileName, boolean stream) {
+    public RepositoryItem(String templateName, String description, String fileName, boolean stream) {
         this.templateName = templateName;
         this.description = description;
         this.fileName = fileName;
@@ -89,5 +93,13 @@ public class RepositoryItemMetadata {
 
     public void setStream(boolean stream) {
         this.stream = stream;
+    }
+
+    public TemplateRepository getRepository() {
+        return repository;
+    }
+
+    public void setRepository(TemplateRepository repository) {
+        this.repository = repository;
     }
 }

@@ -1,7 +1,7 @@
 import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
-import {TemplateMetadata} from "./model";
+import {TemplateMetadata, TemplateRepository} from "./model";
 import {catchError} from "rxjs/operators";
 import 'rxjs/add/observable/throw';
 
@@ -24,22 +24,17 @@ export class TemplateService {
             }).pipe(catchError((error) => Observable.throw(error.error)));
     }
 
-    importTemplate(fileName: string, params?: any): Observable<any> {
-        let fd: FormData = new FormData();
-        fd.append('fileName', fileName);
-        if (params) {
-            //add params to form data
-            Object.keys(params).map((key) => {
-                fd.append(key, params[key])
-            });
-        }
-        return this.http.post("/proxy/v1/repository/templates/import", fd, httpOptions);
-
+    getRepositories(): Observable<TemplateRepository[]> {
+        return this.http.get("/proxy/v1/repository")
+            .map((response) => {
+                return response;
+            }).pipe(catchError((error) => Observable.throw(error.error)));
     }
 
-    downloadTemplate(fileName: string): Observable<Object> {
-        console.log("service downloadTemplate", fileName);
-        return this.http.get("/proxy/v1/repository/templates/download/" + fileName, {responseType: "blob"});
+    downloadTemplate(template: TemplateMetadata): Observable<Object> {
+        return this.http
+            .get("/proxy/v1/repository/templates/download/"+ template.repository.type+ "/" +template.repository.name+ "/"+ template.fileName
+                , {responseType: "blob"});
     }
 
     private handleError(error: HttpErrorResponse) {

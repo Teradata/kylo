@@ -20,6 +20,7 @@ package com.thinkbiganalytics.repository.filesystem;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
@@ -33,25 +34,28 @@ import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
-import com.thinkbiganalytics.repository.api.RepositoryItemMetadata;
+import com.thinkbiganalytics.repository.api.RepositoryItem;
 import com.thinkbiganalytics.repository.api.RepositoryService;
+import com.thinkbiganalytics.repository.api.TemplateRepository;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,13 +69,6 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemRepositoryService.class);
 
-    @NotEmpty
-    @Value("${default.template.repository}")
-    private String defaultRepositoryLocation;
-
-    @Value("#{'${user.template.repositories}'.split(',')}")
-    private List<String> repositoryLocations;
-
     @Inject
     TemplateImporterFactory templateImporterFactory;
 
@@ -84,27 +81,55 @@ public class FilesystemRepositoryService implements RepositoryService {
     @Inject
     TemplateExporter templateExporter;
 
-    ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    ResourceLoader resourceLoader;
 
-    @Override
-    public List<RepositoryItemMetadata> listTemplates() {
-        List<RepositoryItemMetadata> metadataList = new ArrayList<>();
-        findFiles(metadataList);
+    ObjectMapper mapper = null;
 
-        Set<String> registeredTemplates = registeredTemplateService.getRegisteredTemplates().stream().map(t -> t.getTemplateName()).collect(Collectors.toSet());
-
-        metadataList.stream().forEach(m -> m.setInstalled(registeredTemplates.contains(m.getTemplateName())));
-
-        return metadataList;
+    public FilesystemRepositoryService() {
+        mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
     }
 
     @Override
-    public ImportTemplate importTemplates(String fileName, String uploadKey, String importComponents) throws Exception {
-        checkRepositoryLocations();
-
-        Optional<Path> opt = repositoryLocations
+    public List<RepositoryItem> listTemplates() {
+        List<RepositoryItem> repositoryItems = new ArrayList<>();
+        List<TemplateRepository> repositories = listRepositories();
+        repositories
             .stream()
-            .map(dir -> Paths.get(dir + "/" + fileName))
+            .filter(r -> StringUtils.isNotBlank(r.getLocation()))
+            .flatMap(r -> {
+                try {
+                    return Files.find(Paths.get(r.getLocation()),
+                                      Integer.MAX_VALUE,
+                                      (path, attrs) -> attrs.isRegularFile()
+                                                       && path.toString().endsWith(".json"))
+                        .map((p) -> jsonToMetadata(p, r));
+                } catch (Exception e) {
+                    log.error("Error reading repository metadata for templates", e);
+                }
+                return Collections.<RepositoryItem>emptyList().stream();
+            }).forEach(repositoryItems::add);
+
+        Set<String> registeredTemplates = registeredTemplateService
+            .getRegisteredTemplates()
+            .stream().map(t -> t.getTemplateName())
+            .collect(Collectors.toSet());
+
+        repositoryItems
+            .stream()
+            .forEach(m -> m.setInstalled(registeredTemplates.contains(m.getTemplateName())));
+
+        return repositoryItems;
+    }
+
+    @Override
+    public ImportTemplate importTemplate(String repositoryName, String repositoryType, String fileName, String uploadKey, String importComponents) throws Exception {
+
+        Optional<Path> opt = listRepositories()
+            .stream()
+            .filter(r -> StringUtils.equals(r.getName(), repositoryName) && StringUtils.equals(r.getType().getKey(), repositoryType))
+            .map(r -> Paths.get(r.getLocation() + "/" + fileName))
             .filter(p -> Files.exists(p))
             .findFirst();
 
@@ -137,17 +162,19 @@ public class FilesystemRepositoryService implements RepositoryService {
     }
 
     @Override
-    public RepositoryItemMetadata publishTemplate(String templateId, boolean overwrite) throws Exception {
-        checkRepositoryLocations();
+    public RepositoryItem publishTemplate(String repositoryName, String repositoryType, String templateId, boolean overwrite) throws Exception {
 
         //export template
         ExportTemplate zipFile = templateExporter.exportTemplate(templateId);
 
+        //get repository
+        TemplateRepository repository = getRepositoryByNameAndType(repositoryName, repositoryType);
+
         //Check if template already exists
-        Optional<RepositoryItemMetadata> foundMetadataOpt = Optional.empty();
-        for (RepositoryItemMetadata m : listTemplates()) {
-            if (m.getTemplateName().equals(zipFile.getTemplateName())) {
-                foundMetadataOpt = Optional.of(m);
+        Optional<RepositoryItem> foundMetadataOpt = Optional.empty();
+        for (RepositoryItem item : getAllTemplatesInRepository(repository)) {
+            if (item.getTemplateName().equals(zipFile.getTemplateName())) {
+                foundMetadataOpt = Optional.of(item);
                 break;
             }
         }
@@ -158,68 +185,86 @@ public class FilesystemRepositoryService implements RepositoryService {
             log.info("Overwriting template with same name.");
         }
 
-        //create metadata
-        RepositoryItemMetadata
-            metadata =
-            foundMetadataOpt.isPresent() ? foundMetadataOpt.get() : new RepositoryItemMetadata(zipFile.getTemplateName(), zipFile.getDescription(), zipFile.getFileName(), zipFile.isStream());
-        String baseName = FilenameUtils.getBaseName(metadata.getFileName());
-        log.info("Writing metadata for {} template.", metadata.getTemplateName());
-        mapper.writeValue(Paths.get(repositoryLocations.get(0) + "/" + baseName + ".json").toFile(), metadata);
+        //create repositoryItem
+        RepositoryItem
+            repositoryItem =
+            foundMetadataOpt.isPresent()
+            ? foundMetadataOpt.get()
+            : new RepositoryItem(zipFile.getTemplateName(), zipFile.getDescription(), zipFile.getFileName(), zipFile.isStream());
+        String baseName = FilenameUtils.getBaseName(repositoryItem.getFileName());
+        log.info("Writing metadata for {} template.", repositoryItem.getTemplateName());
+        mapper.writeValue(Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile(), repositoryItem);
 
         //write file in first of templateLocations
-        log.info("Now publishing template {} to repository.", metadata.getTemplateName());
-        Files.write(Paths.get(repositoryLocations.get(0) + "/" + metadata.getFileName()), zipFile.getFile());
-        log.info("Finished publishing template {} to repository.", metadata.getTemplateName());
+        log.info("Now publishing template {} to repository {}.", repositoryItem.getTemplateName(), repository.getName());
+        Files.write(Paths.get(repository.getLocation() + "/" + repositoryItem.getFileName()), zipFile.getFile());
+        log.info("Finished publishing template {} to repository {}.", repositoryItem.getTemplateName(), repository.getName());
 
-        return metadata;
+        return repositoryItem;
     }
 
     @Override
-    public byte[] downloadTemplate(String fileName) throws Exception {
-        checkRepositoryLocations();
+    public byte[] downloadTemplate(String repositoryName, String repositoryType, String fileName) throws Exception {
+        //get repository
+        TemplateRepository repository = getRepositoryByNameAndType(repositoryName, repositoryType);
+        Path path = Paths.get(repository.getLocation() + "/" + fileName);
 
-        Optional<Path> opt = repositoryLocations
-            .stream()
-            .map(dir -> Paths.get(dir + "/" + fileName))
-            .filter(p -> Files.exists(p))
-            .findFirst();
-
-        if (!opt.isPresent()) {
+        if (!Files.exists(Paths.get(repository.getLocation() + "/" + fileName))) {
             throw new RuntimeException("File not found for download: " + fileName);
         }
         log.info("Begin template download {}", fileName);
 
-        return ImportUtil.streamToByteArray(new FileInputStream(opt.get().toFile()));
+        return ImportUtil.streamToByteArray(new FileInputStream(path.toFile()));
     }
 
-    private RepositoryItemMetadata jsonToMetadata(Path path) {
+    @Override
+    public List<TemplateRepository> listRepositories() {
+        TypeReference<List<TemplateRepository>> typeReference = new TypeReference<List<TemplateRepository>>() {};
+        try {
+            InputStream is = resourceLoader.getResource("classpath:repositories.json").getInputStream();
+            List<TemplateRepository> repositories = mapper.readValue(is, typeReference);
+            Set<String> set = new HashSet<>(repositories.size());
+
+            return repositories
+                .stream()
+                .filter(r -> set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase()))
+                .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            log.error("Unable to read repositories", e);
+        }
+
+        return new ArrayList<>();
+    }
+
+    private TemplateRepository getRepositoryByNameAndType(String repositoryName, String repositoryType) {
+        return listRepositories()
+            .stream()
+            .filter(r -> StringUtils.equals(r.getName(), repositoryName) && StringUtils.equals(r.getType().getKey(), repositoryType))
+            .findFirst().get();
+    }
+
+    private List<RepositoryItem> getAllTemplatesInRepository(TemplateRepository repository) throws IOException {
+        List<RepositoryItem> repositoryItems = new ArrayList<>();
+        Files.find(Paths.get(repository.getLocation()),
+                   Integer.MAX_VALUE,
+                   (path, attrs) -> attrs.isRegularFile()
+                                    && path.toString().endsWith(".json"))
+            .map((p) -> jsonToMetadata(p, repository))
+            .forEach(repositoryItems::add);
+
+        return repositoryItems;
+    }
+
+    private RepositoryItem jsonToMetadata(Path path, TemplateRepository repository) {
         try {
             String s = new String(Files.readAllBytes(path));
-            return mapper.readValue(s, RepositoryItemMetadata.class);
+            RepositoryItem item = mapper.readValue(s, RepositoryItem.class);
+            item.setRepository(repository);
+            return item;
         } catch (IOException e) {
             log.error("Error reading metadata from {}", e);
         }
         return null;
-    }
-
-    private void findFiles(List<RepositoryItemMetadata> metadataList) {
-        checkRepositoryLocations();
-        repositoryLocations.add(defaultRepositoryLocation);
-
-        repositoryLocations.stream().flatMap(dir -> {
-            try {
-                return Files.find(Paths.get(dir),
-                                  Integer.MAX_VALUE,
-                                  (path, attrs) -> attrs.isRegularFile()
-                                                   && path.toString().endsWith(".json"));
-            } catch (Exception e) {
-                log.error("Error reading repository metadata for templates", e);
-            }
-            return Collections.<Path>emptyList().stream();
-        }).map((p) -> jsonToMetadata(p)).forEach(metadataList::add);
-    }
-
-    private void checkRepositoryLocations() {
-        repositoryLocations.removeIf(StringUtils::isBlank);
     }
 }

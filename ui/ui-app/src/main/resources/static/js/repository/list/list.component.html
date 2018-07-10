@@ -6,29 +6,27 @@
         </td-search-box>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredTemplates">
           <mat-list-item style="height: 70px;">
-              <!--<ng-md-icon icon="done" style="fill:green" size="20" *ngIf="item.installed"></ng-md-icon>-->
-            <div matLine class="md-list-item-text">
-              <div class="item-title">
-                <span><ng-md-icon icon="layers" style="fill:#9e9e9e" size="20"></ng-md-icon></span>
-                {{item.templateName}}
-              </div>
-              <div class="column-title column-title-bottom text-truncate">
+            <span style="width: 50%;">
+              <ng-md-icon icon="layers" style="fill:#9e9e9e" size="20"></ng-md-icon>{{item.templateName}}
+              <p class="column-title column-title-bottom text-truncate">
                 {{item.description}}
-              </div>
-            </div>
+              </p>
+            </span>
+            <span style="width: 30%;">
+              <ng-md-icon *ngIf="item.repository.type === 'FileSystem'" icon="work" style="fill:#9e9e9e" size="20"></ng-md-icon>{{item.repository.name}}
+              <p class="column-title column-title-bottom text-truncate">
+                Repository
+              </p>
+            </span>
             <button mat-button disabled *ngIf="item.installed" color="primary">
-              <ng-md-icon icon="done" size="20" style="fill:green"></ng-md-icon>
-              Imported
+              <ng-md-icon icon="done" size="20" style="fill:green"></ng-md-icon>Imported
             </button>
             <button mat-button *ngIf="!item.installed" color="primary" (click)="toggleImportTemplate(item)">
-              <ng-md-icon icon="file_upload" size="20" style="fill:#F08C38"></ng-md-icon>
-              Import
+              <ng-md-icon icon="file_upload" size="20" style="fill:#F08C38"></ng-md-icon>Import
             </button>
             <button mat-button color="primary" (click)="downloadTemplate(item)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
-              Download
+              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>Download
             </button>
-
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
         </ng-template>

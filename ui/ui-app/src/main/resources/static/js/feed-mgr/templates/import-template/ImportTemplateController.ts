@@ -450,6 +450,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
         if (this.templateParam) {
             params['fileName'] = this.templateParam.fileName;
+            params['repositoryName'] = this.templateParam.repository.name;
+            params['repositoryType'] = this.templateParam.repository.type;
             this.importTemplateFromRepository(params, successFn, errorFn);
         } else
             this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);

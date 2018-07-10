@@ -9,9 +9,9 @@ package com.thinkbiganalytics.repository.api;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,26 +20,22 @@ package com.thinkbiganalytics.repository.api;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TemplateRepository {
 
     @NotEmpty
     private String name;
     @NotEmpty
     private String location;
+    private String icon;
+    private RepositoryType type;
     private boolean readOnly = false;
 
-    public TemplateRepository(String name, String location){
-        this.name = name;
-        this.location = location;
-    }
-
-    public TemplateRepository(String name, String location, boolean readOnly){
-        this.name = name;
-        this.location = location;
-        this.readOnly = readOnly;
-    }
 
     public String getName() {
         return name;
@@ -63,5 +59,34 @@ public class TemplateRepository {
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public RepositoryType getType() {
+        return type;
+    }
+
+    public void setType(RepositoryType type) {
+        this.type = type;
+    }
+
+    public static enum RepositoryType {
+        FILESYSTEM("FileSystem");
+
+        private String key;
+
+        RepositoryType(String key){
+            this.key = key;
+        }
+
+        @JsonValue
+        public String getKey() { return key; }
     }
 }

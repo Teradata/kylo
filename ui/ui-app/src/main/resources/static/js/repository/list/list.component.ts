@@ -23,7 +23,7 @@ export class ListTemplatesComponent implements OnInit {
                 private state: StateService) {
     }
 
-    selectedTemplate: string;
+    selectedTemplate: TemplateMetadata;
     errorMsg: string = "";
 
     /**
@@ -44,26 +44,11 @@ export class ListTemplatesComponent implements OnInit {
         );
     }
 
-    /**
-     * Install template if not already installed
-     */
-    importTemplates() {
-        if (this.selectedTemplate.length == 0) {
-            console.warn("Select at least one template to import.")
-            return;
-        }
-
-        console.log("importing templates: ", this.selectedTemplate);
-        this.templateService.importTemplate(this.selectedTemplate)
-            .subscribe(data => console.log("received data", data),
-                error => console.error(error));
-    }
-
     /*
      * download template from repository.
      */
     downloadTemplate(template: TemplateMetadata) {
-        this.templateService.downloadTemplate(template.fileName).subscribe(blob => {
+        this.templateService.downloadTemplate(template).subscribe(blob => {
             var link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = template.fileName;
@@ -75,7 +60,7 @@ export class ListTemplatesComponent implements OnInit {
      * select/un-select template to be imported
      */
     toggleImportTemplate(template: TemplateMetadata) {
-        this.selectedTemplate = template.fileName;
+        this.selectedTemplate = template;
         let param = {"template": template};
         this.state.go("import-template", param);
     }

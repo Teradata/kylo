@@ -1,0 +1,6 @@
+[
+  {"name": "Kylo repository", "readOnly": true, "location": "samples/templates/nifi-1.0", "icon":"", "type":"FileSystem"},
+  {"name": "Example Repo1", "readOnly": false, "location": "samples/templates/nifi-1.5", "icon":"", "type":"FileSystem"},
+  {"name": "Copied Repo", "readOnly": false, "location": "samples/templates/copied", "icon":"", "type":"FileSystem"},
+  {"name": "Example Repo2", "readOnly": false, "location": "samples/templates/nifi-1.5", "icon":"", "type":"FileSystem"}
+]

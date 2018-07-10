@@ -36,9 +36,8 @@ export class TemplateInfoComponent implements OnInit {
         this.registerTemplateService.loadTemplateWithProperties(this.templateId, this.nifiTemplateId).then((response: any) => {
             this.template = this.registerTemplateService.model;
             this.loading = false;
-            // console.log(this.template);
         }, (err: any) => {
-            console.log("Error retrieving template");
+            console.log("Error retrieving template", err);
         });
     }
 
@@ -74,8 +73,9 @@ export class TemplateInfoComponent implements OnInit {
     }
 
     confirmPublish(): void {
-        let dialogRef = this.dialog.open(TemplatePublishDialog, {
-            data: {templateName: this.template.templateName, templateId: this.template.id}
+        this.dialog.open(TemplatePublishDialog, {
+            data: {templateName: this.template.templateName, templateId: this.template.id},
+            width: '500px'
         });
     }
 }
