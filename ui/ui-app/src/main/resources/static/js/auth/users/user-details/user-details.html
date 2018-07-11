@@ -16,10 +16,10 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   #L%
-  -->
+  --> 
 <div class="flex-container" fxLayoutAlign="center center">
     <mat-progress-bar flex = "90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-    <mat-card flex = "70">
+    <mat-card *ngIf="!loading" flex = "70">
         <mat-card-title>
             <mat-toolbar>
                 <div class="card-title">User Details</div>

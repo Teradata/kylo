@@ -92,7 +92,7 @@ export default class UsersTableComponent {
         });
         this.UserService.getUsers().then((users: any) => {
 
-            users.map((u: any) => {
+            users = users.map((u: any) => {
                 u.displayName = this.getDisplayName(u);
                 u.email = u.email;
                 u.status = u.enabled ? 'Active' : 'Disabled';

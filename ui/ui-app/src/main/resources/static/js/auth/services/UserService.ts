@@ -1,14 +1,14 @@
 import * as angular from 'angular';
 /*import 'rxjs/add/operator/toPromise';*/
-import {Headers, RequestOptions, Response} from '@angular/http';
+import { RequestOptions, Response} from '@angular/http';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import CommonRestUrlService from '../../services/CommonRestUrlService';
 import UserGroupService from '../../services/UserGroupService';
 
 @Injectable()
 export default class UserService {
-    headers: Headers;
+    headers = new HttpHeaders({'Content-Type':'application/json; charset=utf-8'});
     options: RequestOptions;
 
     constructor(private http: HttpClient, private commonRestUrlService: CommonRestUrlService, private userGroupService: UserGroupService) {
@@ -112,7 +112,7 @@ export default class UserService {
      * @returns {Promise} for when the group is saved
      */
     saveGroup(group: any): Promise<any> {
-        return this.http.post(this.commonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group)/*,this.options*/).toPromise()
+        return this.http.post(this.commonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group),{headers :this.headers}/*,this.options*/).toPromise()
             /* .toPromise().then(this.extractData)
              .catch(this.handleError); */
             ;
@@ -125,10 +125,10 @@ export default class UserService {
      * @returns {Promise} for when the user is saved
      */
     saveUser(user: any): Promise<any> {
-        return this.http.post(this.commonRestUrlService.SECURITY_USERS_URL, angular.toJson(user)/*,this.options*/).toPromise()
+        return this.http.post(this.commonRestUrlService.SECURITY_USERS_URL, angular.toJson(user),{headers :this.headers}/*,this.options*/).toPromise()
             /* .toPromise().then(this.extractData)
              .catch(this.handleError);  */
             ;
 
     }
-}
+} 

@@ -416,11 +416,11 @@ card-layout.visual-query-canvas section:first-child {
 }
 
 /* Permissions Table */
-md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
+mat-list-item .mat-list-item-content > mat-checkbox.permissions-indent-1 {
   margin-left: 59px;
 }
 
-md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
+mat-list-item .mat-list-item-content > mat-checkbox.permissions-indent-2 {
   margin-left: 115px;
 }
 

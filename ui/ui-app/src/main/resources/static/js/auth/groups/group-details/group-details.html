@@ -17,85 +17,82 @@
   limitations under the License.
   #L%
   -->
-<div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
-        <header-section>
-            <div layout="row" layout-align="center start">
+<div class="flex-container" fxLayoutAlign="center center">
+    <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <mat-card flex="70">
+        <mat-card-title>
+            <mat-toolbar>
                 <div class="card-title">Group Details</div>
                 <span flex></span>
-                <ng-md-icon icon="group" style="padding-right: 16px" size="30"></ng-md-icon>
-            </div>
-        </header-section>
-        <body-section>
+                <mat-icon style="padding-right: 16px" size="30">group</mat-icon>
+            </mat-toolbar>
+        </mat-card-title>
+        <mat-card-body>
             <form name="groupForm">
-                <vertical-section-layout section-title="Details" [on-delete]="vm.onDelete" [allow-delete]="vm.canDelete" [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel"
-                                         [editable]="vm.isEditable" [is-valid]="vm.isValid" [allow-edit]="vm.allowAdmin">
+                <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit"
+                    [onCancelEdit]="onCancel" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Group Name</span>
 
                             <div flex>
-                                {{vm.model.systemName}}
+                                {{model.systemName}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Title</span>
 
                             <div flex>
-                                {{vm.model.title}}
+                                {{model.title}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Description</span>
 
                             <div flex>
-                                {{vm.model.description}}
+                                {{model.description}}
                             </div>
                         </div>
                     </readonly-section>
                     <editable-section>
-                        <md-input-container class="md-block" ng-if="vm.model.systemName === null">
-                            <label>Group Name</label>
-                            <input name="systemName" type="text" ng-model="vm.editModel.systemName"/>
-                            <div ng-messages="vm.$error" md-auto-hide="false">
-                                <div ng-message="duplicateName">That group name is already in use.</div>
-                                <div ng-message="missingName">A group name is required.</div>
-                            </div>
-                        </md-input-container>
-                        <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">
+                        <mat-form-field class="block" *ngIf="model.systemName === null">
+                            <mat-label>Group Name</mat-label>
+                            <input matInput name="systemName" type="text" [(ngModel)]="editModel.systemName" />
+                            <mat-error *ngIf="isgroupNameEmpty()">A group name is required.</mat-error>
+                            <mat-error *ngIf="isgroupNameDuplicate()">That group name is already in use.</mat-error>
+                        </mat-form-field>
+                        <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
                             <span flex="25" class="property-name">Group Name</span>
-
                             <div flex>
-                                {{vm.editModel.systemName}}
+                                {{editModel.systemName}}
                             </div>
                         </div>
+                        <mat-form-field class="block">
+                            <mat-label>Title</mat-label>
+                            <input name="title" matInput [(ngModel)]="editModel.title" />
+                        </mat-form-field>
 
-                        <md-input-container class="md-block">
-                            <label>Title</label>
-                            <input ng-model="vm.editModel.title"/>
-                        </md-input-container>
-
-                        <md-input-container class="md-block">
-                            <label>Description</label>
-                            <input ng-model="vm.editModel.description"/>
-                        </md-input-container>
+                        <mat-form-field class="block">
+                            <mat-label>Description</mat-label>
+                            <input name="description" matInput [(ngModel)]="editModel.description" />
+                        </mat-form-field>
                     </editable-section>
                 </vertical-section-layout>
             </form>
-            <vertical-section-layout section-title="Permissions" [on-save-edit]="vm.onSavePermissions" [on-edit]="vm.onEditPermissions" [editable]="vm.isPermissionsEditable"
-                                     [allow-edit]="!vm.loading && vm.model.systemName !== null && vm.allowAdmin" ng-if="vm.groupId">
+            <vertical-section-layout section-title="Permissions" [onSaveEdit]="onSavePermissions" [onEdit]="onEditPermissions"
+             [onCancelEdit]="onCancelEditPermissions" [editable]="isPermissionsEditable" [allowEdit]="!loading && model.systemName !== null && allowAdmin" *ngIf="groupId">
                 <readonly-section>
-                    <thinkbig-permissions-table allowed="vm.actions" read-only="true"></thinkbig-permissions-table>
+                    <thinkbig-permissions-table [model]="actions" [readOnly]="true"></thinkbig-permissions-table>
                 </readonly-section>
                 <editable-section>
-                    <thinkbig-permissions-table allowed="vm.editActions"></thinkbig-permissions-table>
+                    <thinkbig-permissions-table [model]="editActions" [readOnly]="false"></thinkbig-permissions-table>
                 </editable-section>
             </vertical-section-layout>
-            <vertical-section-layout [allow-edit]="false" [show-vertical-check]="true" section-title="Related Users" ng-if="vm.allowUsers" ng-if="vm.groupId">
+
+            <vertical-section-layout [allowEdit]="false" [showVerticalCheck]="true" section-title="Related Users" *ngIf="groupId && allowUsers">
                 <readonly-section>
-                    <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="!vm.loading && vm.model.systemName !== null && vm.model.memberCount > 0">
-                        <md-list-item>
+                    <mat-list layout-fill class="list-item-table list-condensed" id="policy-list" *ngIf="!loading && model.systemName !== null && model.memberCount > 0">
+                        <mat-list-item>
                             <div layout="row" layout-fill>
                                 <div flex="30" class="md-list-item-text hint">
                                     Display Name
@@ -107,28 +104,26 @@
                                     Active
                                 </div>
                             </div>
-                        </md-list-item>
-                        <md-list-item ng-repeat="user in vm.users" ng-click="vm.onUserClick(user)">
+                        </mat-list-item>
+                        <mat-list-item *ngFor="let user of users" (click)="onUserClick(user)">
                             <div layout="row" layout-fill>
                                 <div flex="30" class="md-list-item-text">
-                                    <md-input-container class="md-block" flex-gt-sm>
-                                        <div>{{vm.getUserName(user)}}</div>
-                                    </md-input-container>
+                                        <div>{{getUserName(user)}}</div>
                                 </div>
                                 <div flex="50" class="md-list-item-text">
                                     {{user.email}}
                                 </div>
                                 <div flex="20" class="md-list-item-text">
-                                    <ng-md-icon icon="check" ng-if="user.enabled"></ng-md-icon>
+                                    <mat-icon size="20" *ngIf="user.enabled">check</mat-icon>
                                 </div>
                             </div>
-                        </md-list-item>
-                    </md-list>
-                    <div ng-if="vm.loading || vm.model.systemName === null || vm.model.memberCount === 0">
+                        </mat-list-item>
+                    </mat-list>
+                    <div *ngIf="loading || model.systemName === null || model.memberCount === 0">
                         There are no users associated with this group.
                     </div>
                 </readonly-section>
             </vertical-section-layout>
-        </body-section>
-    </card-layout>
+        </mat-card-body>
+    </mat-card>
 </div>

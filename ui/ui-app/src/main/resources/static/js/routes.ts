@@ -263,16 +263,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({
             name: 'groups.**',
             url: '/groups',
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('groups')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading groups ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'auth/auth.module#AuthModule' 
         });
 
         $stateProvider.state('search.**', {

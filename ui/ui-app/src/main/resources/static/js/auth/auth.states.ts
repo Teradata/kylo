@@ -2,6 +2,8 @@ import AccessConstants from "../constants/AccessConstants";
 import UsersTableComponent from "./users/UsersTableComponent";
 import { Ng2StateDeclaration } from "@uirouter/angular";
 import UserDetailsComponent from "./users/user-details/UserDetailsComponent";
+import GroupsTableComponent from "./groups/GroupsTableComponent";
+import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent";
 
 export const authStates: Ng2StateDeclaration[] = [
     {
@@ -33,6 +35,37 @@ export const authStates: Ng2StateDeclaration[] = [
         },
         params: {
             userId: null
+        }
+    },
+    {
+        name: AccessConstants.UI_STATES.GROUPS.state,
+        url: "/groups",
+        views: {
+            "content": {
+                component: GroupsTableComponent
+            }
+        },
+        data: {
+            breadcrumbRoot: true,
+            displayName: "Groups",
+            permissions: AccessConstants.UI_STATES.GROUPS.permissions
+        }
+    },
+    {
+        name: AccessConstants.UI_STATES.GROUP_DETAILS.state,
+        url: "/group-details/{group-id}",
+        views: {
+            "content": {
+                component: GroupDetailsComponent
+            }
+        },
+        data: {
+            breadcrumbRoot: false,
+            displayName: "User Details",
+            permissions: AccessConstants.UI_STATES.GROUP_DETAILS.permissions
+        },
+        params: {
+            groupId: null
         }
     }
 ]; 

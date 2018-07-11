@@ -27,11 +27,18 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
+import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent";
+import GroupsTableComponent from "./groups/GroupsTableComponent";
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {PermissionsTableComponent} from './shared/permissions-table/permissions-table.component';
 
 @NgModule({ 
     declarations: [ 
         UsersTableComponent,
-        UserDetailsComponent
+        UserDetailsComponent,
+        GroupDetailsComponent,
+        GroupsTableComponent,
+        PermissionsTableComponent
     ], 
     imports: [ 
         CommonModule, 
@@ -57,6 +64,7 @@ import { BrowserModule } from '@angular/platform-browser';
         FormsModule,
         ReactiveFormsModule,
         BrowserModule,
+        MatCheckboxModule,
         UIRouterModule.forChild({states: authStates}) 
     ],
     providers : [UserService],
