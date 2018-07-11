@@ -199,6 +199,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         }
     }
 
+
     @OnStopped
     public final void abstractOnStopped() {
         HdfsResources hdfs = hdfsResources.get();
