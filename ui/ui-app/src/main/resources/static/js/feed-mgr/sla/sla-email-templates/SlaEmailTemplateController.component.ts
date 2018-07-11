@@ -3,7 +3,7 @@ import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
 import {Transition, StateService} from "@uirouter/core";
-import { Component, Inject, ViewChild } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 @Component({
@@ -57,23 +57,6 @@ export class SlaEmailTemplateController {
      * @type {any[]}
      */
     relatedSlas: any[] = [];
-
-    // @ViewChild('textEditor') private _textEditor: TdTextEditorComponent;
-
-    // options: any = {
-    //     lineWrapping: true,
-    //     toolbar: false,
-    //     indentWithTabs: true,
-    //     smartIndent: true,
-    //     lineNumbers: true,
-    //     matchBrackets : true,
-    //     autofocus: true,
-    //     mode: 'text/velocity'
-    // };
-
-    // ngAfterViewInit(): void {
-    //     this._textEditor.togglePreview();
-    // }
 
     constructor(private slaEmailTemplateService: SlaEmailTemplateService,
                 private stateService: StateService,

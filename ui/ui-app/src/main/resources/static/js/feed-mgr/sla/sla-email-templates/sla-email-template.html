@@ -23,25 +23,24 @@
             <input matInput name="templateName" placeholder="Template Name" [(ngModel)]="template.name" required>
           </mat-form-field>
 
-          <mat-form-field>
+          <mat-form-field style="margin:18px 0;">
             <input matInput name="templateSubject" placeholder="Subject" [(ngModel)]="template.subject" required>
             <mat-hint align="start">
                 <span class="hint"> Supports Velocity and Template Variables (i.e. $sla.name will resolve to the SLA name)</span>
             </mat-hint>
           </mat-form-field>
 
-          <!-- <td-text-editor [value]="Some Text" [options]="options"></td-text-editor> -->
-          
-          <!-- <div [(ngModel)]="template.template" ui-codemirror="{
-                lineWrapping : true,
-                indentWithTabs: true,
-                smartIndent: true,
-                lineNumbers: true,
-                matchBrackets : true,
-                autofocus: true,
-                mode: 'text/velocity'
-                }">
-          </div> -->
+          <codemirror name="template" [(ngModel)]="template.template" 
+                [config]="{
+                            lineWrapping : true,
+                            indentWithTabs: true,
+                            smartIndent: true,
+                            lineNumbers: true,
+                            matchBrackets : true,
+                            autofocus: true,
+                            mode: 'text/velocity'
+                          }">
+          </codemirror >
 
           <div layout="row" layout-align="space-between start">
             <div class="condensed-no-float md-block layout-padding-top-bottom" flex="50">

@@ -40,21 +40,18 @@ import ServiceLevelAgreementInitController from "./ServiceLevelAgreementInitCont
 import ServiceLevelAgreements from "./service-level-agreements.component";
 import ServiceLevelAgreementController from "./service-level-agreement.component";
 import { SlaService } from "../services/SlaService";
-import { FeedCommonModule } from "../feeds/feeds.module";
 import FeedServiceLevelAgreements from "./feed-service-level-agreements.component";
 import ServiceLevelAgreementForm from "./service-level-agreement-form.component";
 
 import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
-import { FilterService } from "../../services/FilterService";
 import { PolicyInputFormService } from "../shared/policy-input-form/PolicyInputFormService";
 import { SlaEmailTemplatesController } from "./sla-email-templates/SlaEmailTemplatesController.component";
 import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
 import { SlaEmailTemplateController, testDialogController } from "./sla-email-templates/SlaEmailTemplateController.component";
 import { PolicyInputFormController } from "../shared/policy-input-form/policy-input-form.component";
 import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
-
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 
 @NgModule({
@@ -95,7 +92,6 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
         CovalentChipsModule,
         KyloServicesModule,
         KyloCommonModule,
-        FeedCommonModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
