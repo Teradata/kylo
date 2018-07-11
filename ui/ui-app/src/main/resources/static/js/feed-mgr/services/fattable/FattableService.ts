@@ -33,7 +33,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {VisualQueryPainterService} from '../../visual-query/transform-data/visual-query-table/visual-query-painter.service';
 
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";;
 
 function FattableService($window: any) {
     const self = this;

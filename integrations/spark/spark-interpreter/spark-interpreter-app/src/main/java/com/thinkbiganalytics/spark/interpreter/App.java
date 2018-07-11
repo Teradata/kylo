@@ -73,7 +73,8 @@ public class App {
         }
 
         // Load environment
-        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
+        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark",
+                                                                              "com.thinkbiganalytics.kylo.catalog");
 
         File scriptFile = new File(args[0]);
         if (scriptFile.exists() && scriptFile.isFile()) {

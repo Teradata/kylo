@@ -34,6 +34,7 @@
           </execution>
         </executions>
         <configuration>
+          <skip>${skipRPM}</skip>
           <name>kylo</name>
           <license>Think Big 2015</license>
           <distribution>Think Big 2015</distribution>

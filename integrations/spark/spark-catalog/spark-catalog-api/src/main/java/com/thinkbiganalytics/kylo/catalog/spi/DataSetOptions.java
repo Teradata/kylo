@@ -20,11 +20,11 @@ package com.thinkbiganalytics.kylo.catalog.spi;
  * #L%
  */
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +45,8 @@ public class DataSetOptions {
     private List<String> jars = new ArrayList<>();
     private SaveMode mode;
     private int numBuckets;
-    private final Map<String, String> options = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    private final Map<String, String> options = new CaseInsensitiveMap();
     private List<String> paths;
     private List<String> partitioningColumns;
     private StructType schema;

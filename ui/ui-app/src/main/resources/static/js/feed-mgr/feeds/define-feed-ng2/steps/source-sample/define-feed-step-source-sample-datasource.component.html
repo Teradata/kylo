@@ -1,0 +1,17 @@
+<mat-card>
+        <mat-card-content>
+<div>
+        <div fxLayout="row" >
+                <nav mat-tab-nav-bar>
+                        <a *ngFor="let tab of tabs" mat-tab-link (click)=onTabClicked(tab)
+                           [disabled]="isDisabled(tab)"
+                        >{{tab.label}}</a>
+                </nav>
+        </div>
+
+        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="selectedTab.sref =='.browse'"></remote-files>
+        <preview-schema [datasource]="datasource" *ngIf="selectedTab.sref =='.preview'"></preview-schema>
+
+</div>
+        </mat-card-content>
+</mat-card>

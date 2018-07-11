@@ -130,6 +130,7 @@
     <commons.csv>1.4</commons.csv>
     <commons.codec>1.10</commons.codec>
     <elasticsearch.version.two>2.3.0</elasticsearch.version.two>
+    <lombok.version>1.16.10</lombok.version>
     <lucene.version.elasticsearch.version.two>5.5.0</lucene.version.elasticsearch.version.two>
     <guava.version>19.0</guava.version>
     <hadoop.version>2.6.2</hadoop.version>
@@ -166,6 +167,7 @@
     <spring.security.version>4.2.6.RELEASE</spring.security.version>
     <!--  <spring.security.version>4.1.1.RELEASE</spring.security.version> -->
     <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
+    <spring.vault.version>1.1.1.RELEASE</spring.vault.version>
     <projectreactor.version>2.0.8.RELEASE</projectreactor.version>
     <assertj.version>3.4.1</assertj.version>
     <org.reflections.version>0.9.9</org.reflections.version>
@@ -284,6 +286,18 @@
         <groupId>com.beust</groupId>
         <artifactId>jcommander</artifactId>
         <version>1.48</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>${lombok.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclient.version}</version>
       </dependency>
 
       <dependency>
@@ -718,6 +732,12 @@
         <groupId>org.springframework.batch</groupId>
         <artifactId>spring-batch-core</artifactId>
         <version>${spring.batch.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.vault</groupId>
+        <artifactId>spring-vault-core</artifactId>
+        <version>${spring.vault.version}</version>
       </dependency>
 
       <!-- Apache Commons -->

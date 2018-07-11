@@ -6,7 +6,7 @@ import AccessControlService from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
-
+import {moduleName} from "../module-name";
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -480,6 +480,10 @@ export class FeedService {
                 copy.inputProcessorName = copy.inputProcessor.name;
                 }
             copy.properties = properties;
+
+            //Force this feed to always be a final feed
+            //Any save through this service is not a DRAFT feed
+            copy.mode="COMPLETE";
 
             //clear the extra UI only properties
             copy.inputProcessor = null
@@ -1052,6 +1056,3 @@ export class FeedSavingDialogController {
         };
     }
 }
-angular.module(require("feed-mgr/module-name"))
-.service('FeedService',FeedService)
-.controller('FeedSavingDialogController', FeedSavingDialogController);

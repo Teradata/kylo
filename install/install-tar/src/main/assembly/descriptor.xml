@@ -376,6 +376,12 @@
     </fileSet>
 
     <fileSet>
+      <outputDirectory>setup/vault</outputDirectory>
+      <directory>${project.parent.basedir}/setup/vault</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+
+    <fileSet>
       <outputDirectory>setup/elasticsearch</outputDirectory>
       <directory>${project.parent.basedir}/setup/elasticsearch</directory>
       <fileMode>755</fileMode>

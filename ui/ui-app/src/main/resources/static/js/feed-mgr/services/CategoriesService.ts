@@ -3,10 +3,12 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from '../module-name';
+
+//import "../module"; // ensure module is loaded first
 
 // export class CategoriesService {
-    export default class CategoriesService {
+    export  default class CategoriesService {
           loadAll= () => {
             if (!this.loading) {
                 this.loading = true;
@@ -325,4 +327,3 @@ const moduleName = require('feed-mgr/module-name');
     } // end of constructor
  }
 
-angular.module(moduleName).service('CategoriesService',CategoriesService);

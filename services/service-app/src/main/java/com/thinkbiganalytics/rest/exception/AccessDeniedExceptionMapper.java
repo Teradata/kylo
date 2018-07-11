@@ -68,7 +68,9 @@ public class AccessDeniedExceptionMapper implements ExceptionMapper<MetadataRepo
             builder.message(cause.getMessage());
             return Response.accepted(builder.buildError()).status(Response.Status.FORBIDDEN).build();
         } else {
-            return new ThrowableMapper().toResponse(cause);
+            ThrowableMapper throwableMapper = new ThrowableMapper();
+            throwableMapper.setReq(req);
+            return throwableMapper.toResponse(cause);
         }
     }
 }

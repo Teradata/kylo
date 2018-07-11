@@ -30,6 +30,9 @@ export class BrowserComponent implements OnInit {
     @Input()
     params: any;
 
+    @Input()
+    useRouterStates:boolean = true;
+
     columns: BrowserColumn[];
     sortBy: string;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
@@ -238,11 +241,22 @@ export class BrowserComponent implements OnInit {
      * @param {string} location to replace OS browser location set this to "replace"
      */
     browseTo(params: any, location: string): void {
-        const options: any = {notify: false, reload: false};
-        if (location !== undefined) {
-            options.location = location;
+        if(this.useRouterStates) {
+            const options: any = {notify: false, reload: false};
+            if (location !== undefined) {
+                options.location = location;
+            }
+            this.state.go(this.getStateName(), params, options);
         }
-        this.state.go(this.getStateName(), params, options);
+        else {
+            this.params = params;
+            if(this.params == undefined){
+                //attempt to get it from the selection service
+                this.params = this.selectionService.getLastPath(this.datasource.id);
+            }
+            this.initNodes();
+            this.initData();
+        }
     }
 
 

@@ -2,7 +2,7 @@ import * as angular from "angular";
 import * as uiGrid from "ui-grid";
 
 import {DomainType} from "../../services/DomainTypesService.d";
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";;
 
 /**
  * Local data for {@link ApplyTableDomainTypesDialog}.

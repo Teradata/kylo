@@ -53,6 +53,9 @@ import {UpgradeModule} from "@angular/upgrade/static";
         SatusDialogComponent,
         SchemaParseSettingsDialog
     ],
+    exports:[
+        PreviewSchemaComponent
+    ],
     imports: [
         CommonModule,
         CovalentDataTableModule,

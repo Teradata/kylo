@@ -18,23 +18,35 @@
   #L%
   -->
 <div>
-  <span *ngIf="!success && !error">
-    <span class="card-title">Publish '{{data.templateName}}' to Resource Repository</span><br><br>
-    <div>Overwrite template if it already exists?</div><br><br>
-  </span>
-  <span *ngIf="success">
-    <ng-md-icon icon="check_circle" size="20" style="fill:green"></ng-md-icon>
-    <span class="card-title">Successfully published '{{data.templateName}}' to repository.</span>
-  </span>
-  <span *ngIf="error">
-    <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
-    <span class="card-title">Error publishing '{{data.templateName}}' to repository. Please try again later.</span>
-  </span>
-</div>
-<div style="float: right;"><br><br>
-  <span *ngIf="!success && !error">
-    <button mat-button class="warn center" (click)="publishTemplate(true)" aria-label="Publish">Yes</button>
-    <button mat-button class="primary center" (click)="publishTemplate(false)" aria-label="No">No</button>
-  </span>
-  <button mat-button class="center" aria-label="Cancel" (click)="close()">{{(success || error )? 'Close': 'Cancel'}}</button>
+  <mat-list>
+    <mat-list-item *ngIf="!success && !error">
+      <span *ngIf="!success && !error">
+        <mat-form-field>
+          <mat-select placeholder="Select Repository">
+            <ng-container *ngFor="let repo of repositories">
+              <span *ngIf="!repo.readOnly">
+                <mat-option [value]="repo.name">{{repo.name}}</mat-option>
+              </span>
+            </ng-container>
+          </mat-select>
+        </mat-form-field>
+      </span>
+    </mat-list-item>
+    <mat-list-item *ngIf="!success && !error">
+      Overwrite?&nbsp;
+        <mat-radio-button (click)="publishTemplate(true)">Yes</mat-radio-button>&nbsp;
+        <mat-radio-button (click)="publishTemplate(false)">No</mat-radio-button>
+    </mat-list-item>
+    <mat-list-item *ngIf="success">
+      <ng-md-icon icon="check_circle" size="20" style="fill:green"></ng-md-icon>
+      <span class="card-title">Successfully published '{{data.templateName}}' to repository.</span>
+    </mat-list-item>
+    <mat-list-item *ngIf="error">
+      <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
+      <span class="card-title">Error publishing '{{data.templateName}}' to repository. Please try again later.</span>
+    </mat-list-item>
+    <mat-list-item layout="column" layout-align="center end">
+      <button mat-raised-button class="right" aria-label="Cancel" (click)="close()">{{(success || error )? 'Close': 'Cancel'}}</button>
+    </mat-list-item>
+  </mat-list>
 </div>

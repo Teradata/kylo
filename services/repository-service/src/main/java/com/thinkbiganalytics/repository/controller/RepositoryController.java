@@ -9,9 +9,9 @@ package com.thinkbiganalytics.repository.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,11 @@ package com.thinkbiganalytics.repository.controller;
  */
 
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
-import com.thinkbiganalytics.repository.api.RepositoryItemMetadata;
+import com.thinkbiganalytics.repository.api.RepositoryItem;
 import com.thinkbiganalytics.repository.api.RepositoryService;
+import com.thinkbiganalytics.repository.api.TemplateRepository;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,14 +33,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -60,11 +61,20 @@ public class RepositoryController {
     RepositoryService repositoryService;
 
     @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all available repositories.")
+    @ApiResponse(code = 200, message = "Returns available repositories.")
+    public List<TemplateRepository> listRepositories() throws Exception {
+        return repositoryService.listRepositories();
+    }
+
+    @GET
     @Path("templates")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Lists all templates available in repository.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
-    public List<RepositoryItemMetadata> listTemplates() throws Exception {
+    public List<RepositoryItem> listTemplates() throws Exception {
         return repositoryService.listTemplates();
     }
 
@@ -73,32 +83,34 @@ public class RepositoryController {
     @ApiOperation("Imports selected templates.")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response importTemplate(RepositoryRequest request) throws Exception {
-        log.info("import - begin {}, {}, {}", request.getFileName(), request.getUploadKey(), request.getImportComponents());
-        ImportTemplate importStatus = repositoryService.importTemplates(request.getFileName(), request.getUploadKey(), request.getImportComponents());
+    public Response importTemplate(ImportTemplateRequest req) throws Exception {
+        log.info("Begin import {} into {}", req.getFileName(), req.getRepositoryName());
+        ImportTemplate
+            importStatus =
+            repositoryService.importTemplate(req.getRepositoryName(), req.getRepositoryType(), req.getFileName(), req.getUploadKey(), req.getImportComponents());
         log.info("import - Received service response", importStatus);
         return Response.ok(importStatus).build();
     }
 
     @GET
-    @Path("templates/publish/{templateId}")
+    @Path("templates/publish")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Publishes template to repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
-    public Response publishTemplate(@NotNull @PathParam("templateId") String templateId, @NotNull @QueryParam("overwrite") boolean overwrite) throws Exception {
+    public Response publishTemplate(@Valid PublishTemplateRequest req) throws Exception {
 
-        RepositoryItemMetadata metadata = repositoryService.publishTemplate(templateId, overwrite);
-        return Response.ok(metadata).build();
+        RepositoryItem repositoryItem = repositoryService.publishTemplate(req.getRepositoryName(), req.getRepositoryType(), req.getTemplateId(), req.isOverwrite());
+        return Response.ok(repositoryItem).build();
     }
 
     @GET
-    @Path("templates/download/{fileName}")
+    @Path("templates/download/{repositoryType}/{repositoryName}/{fileName}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads Template zip file from repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
-    public Response downloadTemplate(@NotNull @PathParam("fileName") String fileName) throws Exception {
+    public Response downloadTemplate(@NotBlank @PathParam("repositoryName") String repositoryName, @NotBlank @PathParam("repositoryType") String repositoryType, @NotBlank @PathParam("fileName") String fileName) throws Exception {
 
-        byte[] fileData = repositoryService.downloadTemplate(fileName);
+        byte[] fileData = repositoryService.downloadTemplate(repositoryName, repositoryType, fileName);
         return Response.ok(fileData, MediaType.APPLICATION_OCTET_STREAM)
             .header("Content-Disposition", "attachments; filename=\"" + fileName + "\"") //optional
             .build();

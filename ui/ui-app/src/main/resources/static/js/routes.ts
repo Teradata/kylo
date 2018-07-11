@@ -732,6 +732,12 @@ class Route {
         });
 
         $stateProvider.state({
+            name: 'feed-definition.**',
+            url: '/feed-definition',
+            loadChildren: 'feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
+        });
+
+        $stateProvider.state({
             name: 'repository.**',
             url: '/repository',
             loadChildren: 'repository/repository.module#RepositoryModule'

@@ -34,7 +34,7 @@ System.config({
         "ment-io":"vendor/ment.io/mentio",
         "npm:": "../node_modules/",
         "ng-text-truncate":"vendor/ng-text-truncate/ng-text-truncate",
-        "routes": "routes.js",
+        "routes": "routes",
         "services/module-name":"services/module-name",
         "svg-morpheus":"../bower_components/svg-morpheus/compile/unminified/svg-morpheus",
         "underscore":"../bower_components/underscore/underscore-min",

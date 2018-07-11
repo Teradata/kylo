@@ -30,6 +30,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {TemplatePublishDialog} from "./dialog/template-publish-dialog";
+import {MatRadioModule} from "@angular/material/radio";
 
 @NgModule({
     declarations: [
@@ -62,6 +63,7 @@ import {TemplatePublishDialog} from "./dialog/template-publish-dialog";
         CdkTableModule,
         MatMenuModule,
         MatProgressBarModule,
+        MatRadioModule,
         UIRouterModule.forChild({states: repositoryStates})
     ],
     providers:[

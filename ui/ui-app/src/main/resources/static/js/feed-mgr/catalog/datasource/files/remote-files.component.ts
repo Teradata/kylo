@@ -2,15 +2,24 @@ import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../../api/models/browser-object';
 import {Node} from '../../api/models/node';
+import {Input} from "@angular/core";
 
 
 export class RemoteFilesComponent extends BrowserComponent {
 
+
+
     init(): void {
         if (this.params.path === undefined) { //e.g. when navigating from Catalog into Files
             this.params.path = this.datasource.template.paths[0];
-            this.browseTo(this.params, "replace");
-        } else {
+            if(this.useRouterStates) {
+                this.browseTo(this.params, "replace");
+            }
+            else {
+                this.initData();
+            }
+        }
+        else {
             this.initData();
         }
     }

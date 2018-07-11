@@ -37,5 +37,6 @@
     <module>catalog-filesystem-aws-hadoop-v3</module>
     <module>catalog-filesystem-azure</module>
     <module>catalog-credential-simple</module>
+    <module>catalog-credential-vault</module>
   </modules>
 </project>

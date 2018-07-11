@@ -24,9 +24,11 @@ import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.spark.KyloCatalogClientV1;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
+import org.apache.spark.sql.sources.HadoopFsRelationProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,6 +50,17 @@ public class SparkDataSetProviderV1 extends AbstractSparkDataSetProvider<DataFra
     @Override
     protected DataFrameWriter getDataFrameWriter(@Nonnull final DataFrame dataSet, @Nonnull final DataSetOptions options) {
         return dataSet.write();
+    }
+
+    @Nonnull
+    @Override
+    protected Configuration getHadoopConfiguration(@Nonnull final KyloCatalogClient<DataFrame> client) {
+        return ((KyloCatalogClientV1) client).getSQLContext().sparkContext().hadoopConfiguration();
+    }
+
+    @Override
+    protected boolean isFileFormat(@Nonnull final Class<?> formatClass) {
+        return HadoopFsRelationProvider.class.isAssignableFrom(formatClass);
     }
 
     @Nonnull

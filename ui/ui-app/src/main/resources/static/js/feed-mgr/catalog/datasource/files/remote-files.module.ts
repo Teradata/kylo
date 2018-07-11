@@ -30,6 +30,9 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
     entryComponents: [
         RemoteFilesComponent,
     ],
+    exports:[
+        RemoteFilesComponent
+    ],
     imports: [
         BrowserModule,
         FormsModule,

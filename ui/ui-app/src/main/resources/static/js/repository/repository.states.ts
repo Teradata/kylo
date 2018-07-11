@@ -12,9 +12,6 @@ export const repositoryStates: Ng2StateDeclaration[] = [
                 component: RepositoryComponent
             }
         },
-        resolve: [
-            {token: "templates", deps: [TemplateService], resolveFn: (templateService: TemplateService) => templateService.getTemplates().toPromise()}
-        ],
         data: {
             breadcrumbRoot: true,
             displayName: "Repository"

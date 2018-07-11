@@ -16,7 +16,9 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
+
+import "../module"; // ensure module is loaded first
 
 /**
  * Interacts with the Data Sources REST API.

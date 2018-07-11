@@ -33,7 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -60,6 +63,12 @@ public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<
      */
     @Nonnull
     private final Configuration hadoopConfiguration;
+
+    /**
+     * High water marks
+     */
+    @Nonnull
+    private final Map<String, String> highWaterMarks = new HashMap<>();
 
     /**
      * Indicates the client has been closed
@@ -102,6 +111,12 @@ public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<
         return Option.<DataSetProvider<T>>empty();
     }
 
+    @Nonnull
+    @Override
+    public Map<String, String> getHighWaterMarks() {
+        return Collections.unmodifiableMap(highWaterMarks);
+    }
+
     /**
      * Gets the data source with the specified name.
      *
@@ -131,6 +146,17 @@ public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<
     @Override
     public KyloCatalogReader<T> read() {
         return new DefaultKyloCatalogReader<>(this, hadoopConfiguration, resourceLoader);
+    }
+
+    @Override
+    public void setHighWaterMarks(@Nonnull final Map<String, String> highWaterMarks) {
+        for (final Map.Entry<String, String> entry : highWaterMarks.entrySet()) {
+            if (entry.getValue() != null) {
+                this.highWaterMarks.put(entry.getKey(), entry.getValue());
+            } else {
+                this.highWaterMarks.remove(entry.getKey());
+            }
+        }
     }
 
     @Nonnull

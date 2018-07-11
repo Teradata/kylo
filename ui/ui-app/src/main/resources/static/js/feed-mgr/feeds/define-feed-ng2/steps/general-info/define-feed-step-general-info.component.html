@@ -1,0 +1,73 @@
+
+<define-feed-step-card [(feed)]="feed" [(step)]="step">
+
+  <feed-step-readonly-content>
+
+    <div fxLayout="column">
+    <div fxLayout="row" fxLayoutAlign="start" class="read-only-row">
+      <div fxFlex="50">
+        <span fxFlex="25">Name</span>
+        <span>{{feed.feedName}}</span>
+      </div>
+      <div fxFlex="50">
+        <span fxFlex="25">System Name</span>
+        <span>{{feed.systemName}}</span>
+      </div>
+    </div>
+
+    <div class="read-only-row">
+      <span fxFlex="25">Category</span>
+      <span>{{feed.category.name}}</span>
+    </div>
+
+      <div class="read-only-row">
+        <span fxFlex="25">Description</span>
+        <span>{{feed.description}}</span>
+      </div>
+    </div>
+
+  </feed-step-readonly-content>
+
+  <feed-step-edit-content>
+    <div fxLayout="column">
+      <div fxLayout="row" fxLayoutAlign="start">
+        <mat-form-field fxFlex="50">
+          <input matInput [formControl]="feedNameCtrl" placeholder="Feed name" required [(ngModel)]="feed.feedName">
+        </mat-form-field>
+
+        <mat-form-field fxFlex="50">
+          <input matInput disabled readonly placeholder="System Feed name" required [(ngModel)]="feed.systemName">
+        </mat-form-field>
+
+      </div>
+
+
+        <mat-form-field >
+            <input matInput placeholder="Category" aria-label="Category" matInput [formControl]="categoryCtrl" [matAutocomplete]="auto"  [(ngModel)]="feed.category" >
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="categoryAutocompleteDisplay">
+                <mat-option *ngFor="let category of filteredCategories | async" [value]="category" >
+                  <span class="item-title" ng-class="category.createFeed ? '' : 'disabled'">
+                       <ng-md-icon icon="{{category.icon}}" style="fill:{{category.iconColor}}" ng-if="category.createFeed"></ng-md-icon>
+                    <ng-md-icon icon="block" class="disabled" ng-if="!category.createFeed"></ng-md-icon>
+                    <span> {{category.name}} </span>
+                    <small>{{category.description}}</small>
+                  </span>
+                </mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+    <mat-form-field>
+        <textarea matInput placeholder="Description" [(ngModel)]="feed.description" rows="3"></textarea>
+    </mat-form-field>
+
+      <!-- Once the feed has been defined show the following components -->
+      <div *ngIf="feed.id != null">
+
+        Access Controls form here
+        <Br/>
+        ...
+        <br/>
+        Other data
+      </div>
+    </div>
+  </feed-step-edit-content>
+</define-feed-step-card>

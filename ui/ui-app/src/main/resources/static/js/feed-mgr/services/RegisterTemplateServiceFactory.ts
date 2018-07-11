@@ -29,7 +29,7 @@ import { AccessControl } from "../../services/AccessControl";
 import { RegisteredTemplateService } from "./RegisterTemplateService";
 
 
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 import Property = Templates.Property;
 import PropertyRenderType = Templates.PropertyRenderType;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;

@@ -6,12 +6,9 @@ import {TemplateMetadata} from "./services/model";
     template: `
       <td-layout>
         <ui-view>
-          <list-templates [templates]="templates"></list-templates>
+          <list-templates></list-templates>
         </ui-view>
       </td-layout>`
 })
 export class RepositoryComponent {
-
-    @Input()
-    public templates: TemplateMetadata[];
 }

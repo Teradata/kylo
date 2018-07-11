@@ -6,8 +6,9 @@ import ImportComponentOption = Import.ImportComponentOption;
 import ImportProperty = Import.ImportProperty;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
+import {moduleName} from "../module-name";
 
-const moduleName = require('feed-mgr/module-name');
+//const moduleName = require('feed-mgr/module-name');
 
 
 export enum ImportComponentType {

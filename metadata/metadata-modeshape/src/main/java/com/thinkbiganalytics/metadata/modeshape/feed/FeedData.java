@@ -66,6 +66,7 @@ public class FeedData extends JcrPropertiesEntity {
     public static final String INIT_HISTORY = "tba:history";
     public static final int MAX_INIT_HISTORY = 10;
     public static final String INIT_STATE = "tba:state";
+    public static final String MODE = "tba:mode";
     public static final String CURRENT_INIT_STATUS = "tba:currentStatus";
 
     public static final String STATE = INIT_STATE;
@@ -92,9 +93,17 @@ public class FeedData extends JcrPropertiesEntity {
         setProperty(STATE, state);
     }
 
+
+    public Feed.Mode getMode() {
+        return getProperty(MODE, Feed.Mode.DRAFT);
+    }
+
+    public void setMode(Feed.Mode mode) {
+        setProperty(MODE, mode);
+    }
+
     public boolean isInitialized() {
-        // TODO this smells like a bug
-        return false;
+        return getCurrentInitStatus().getState() == InitializationStatus.State.SUCCESS;
     }
 
     public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {

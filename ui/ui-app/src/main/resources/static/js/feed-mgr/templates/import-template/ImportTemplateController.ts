@@ -248,7 +248,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
             this.checkFileName(this.templateParam.fileName);
-            console.log(this.$state.params.template);
         }
 
         this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
@@ -451,6 +450,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
         if (this.templateParam) {
             params['fileName'] = this.templateParam.fileName;
+            params['repositoryName'] = this.templateParam.repository.name;
+            params['repositoryType'] = this.templateParam.repository.type;
             this.importTemplateFromRepository(params, successFn, errorFn);
         } else
             this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);

@@ -26,11 +26,13 @@ import java.util.List;
 
 public interface RepositoryService {
 
-    List<RepositoryItemMetadata> listTemplates();
+    List<RepositoryItem> listTemplates();
 
-    ImportTemplate importTemplates(String fileName, String uploadKey, String importComponentOptions) throws Exception;
+    ImportTemplate importTemplate(String repositoryName, String repositoryType, String fileName, String uploadKey, String importComponentOptions) throws Exception;
 
-    RepositoryItemMetadata publishTemplate(String templateId, boolean overwrite) throws Exception;
+    RepositoryItem publishTemplate(String repositoryName, String repositoryType, String templateId, boolean overwrite) throws Exception;
 
-    byte[] downloadTemplate(String fileName) throws Exception;
+    byte[] downloadTemplate(String repositoryName, String repositoryType, String fileName) throws Exception;
+
+    List<TemplateRepository> listRepositories() throws Exception;
 }
