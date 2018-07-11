@@ -16,6 +16,7 @@ export class TemplatePublishDialog implements OnInit {
     error: boolean = false;
     repositories: TemplateRepository[] = [];
     selectedRepository: TemplateRepository;
+    errorMsg: string;
 
     constructor(private dialog: MatDialog,
                 private dialogRef: MatDialogRef<TemplatePublishDialog>,
@@ -29,6 +30,7 @@ export class TemplatePublishDialog implements OnInit {
                 this.repositories = data;
             }, (errorRsp: any) => {
                 this.error = true;
+                this.errorMsg = errorRsp.error.message;
                 console.log(errorRsp.error.message);
             });
     }
@@ -37,17 +39,21 @@ export class TemplatePublishDialog implements OnInit {
         this.dialogRef.close();
     }
 
-    publishTemplate(overwriteParam: boolean): void {
-        console.log(this.data.templateId);
-        if (this.data.templateId) {
-
-            this.http.get("/proxy/v1/repository/templates/publish/" + this.data.templateId + "?overwrite=" + overwriteParam).subscribe((response: any) => {
-                this.success = true;
-            }, (response: any) => {
-                this.error = true;
-                console.log(response.error.message);
-            });
-
+    publishTemplate(overwrite: boolean) {
+        console.log(this.data.templateId, this.selectedRepository);
+        if (this.selectedRepository) {
+            this.templateService
+                .publishTemplate({ "repositoryName": this.selectedRepository.name,
+                    "repositoryType": this.selectedRepository.type,
+                    "templateId": this.data.templateId,
+                    "overwrite": overwrite})
+                .subscribe((response: any) => {
+                    this.success = true;
+                }, (errorRsp: any) => {
+                    console.log("Error publishing template to repository", errorRsp.error.message);
+                    this.errorMsg = errorRsp.error.message;
+                    this.error = true;
+                });
         }
     }
 

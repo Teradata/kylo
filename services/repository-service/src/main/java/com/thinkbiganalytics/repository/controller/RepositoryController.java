@@ -87,19 +87,28 @@ public class RepositoryController {
         log.info("Begin import {} into {}", req.getFileName(), req.getRepositoryName());
         ImportTemplate
             importStatus =
-            repositoryService.importTemplate(req.getRepositoryName(), req.getRepositoryType(), req.getFileName(), req.getUploadKey(), req.getImportComponents());
-        log.info("import - Received service response", importStatus);
+            repositoryService.importTemplate(req.getRepositoryName(),
+                                             req.getRepositoryType(),
+                                             req.getFileName(),
+                                             req.getUploadKey(),
+                                             req.getImportComponents());
+        log.info("importTemplate - Received service response", importStatus);
         return Response.ok(importStatus).build();
     }
 
-    @GET
+    @POST
     @Path("templates/publish")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Publishes template to repository.")
+    @ApiOperation("Publishes template to the repository selected.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response publishTemplate(@Valid PublishTemplateRequest req) throws Exception {
 
-        RepositoryItem repositoryItem = repositoryService.publishTemplate(req.getRepositoryName(), req.getRepositoryType(), req.getTemplateId(), req.isOverwrite());
+        RepositoryItem repositoryItem = repositoryService
+            .publishTemplate(req.getRepositoryName(),
+                             req.getRepositoryType(),
+                             req.getTemplateId(),
+                             req.isOverwrite());
         return Response.ok(repositoryItem).build();
     }
 
@@ -108,7 +117,9 @@ public class RepositoryController {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads Template zip file from repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
-    public Response downloadTemplate(@NotBlank @PathParam("repositoryName") String repositoryName, @NotBlank @PathParam("repositoryType") String repositoryType, @NotBlank @PathParam("fileName") String fileName) throws Exception {
+    public Response downloadTemplate(@NotBlank @PathParam("repositoryName") String repositoryName,
+                                     @NotBlank @PathParam("repositoryType") String repositoryType,
+                                     @NotBlank @PathParam("fileName") String fileName) throws Exception {
 
         byte[] fileData = repositoryService.downloadTemplate(repositoryName, repositoryType, fileName);
         return Response.ok(fileData, MediaType.APPLICATION_OCTET_STREAM)

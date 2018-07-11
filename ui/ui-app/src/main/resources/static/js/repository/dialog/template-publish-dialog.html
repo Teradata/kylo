@@ -19,31 +19,29 @@
   -->
 <div>
   <mat-list>
-    <mat-list-item *ngIf="!success && !error">
-      <span *ngIf="!success && !error">
-        <mat-form-field>
-          <mat-select placeholder="Select Repository">
-            <ng-container *ngFor="let repo of repositories">
-              <span *ngIf="!repo.readOnly">
-                <mat-option [value]="repo.name">{{repo.name}}</mat-option>
-              </span>
-            </ng-container>
-          </mat-select>
-        </mat-form-field>
-      </span>
-    </mat-list-item>
-    <mat-list-item *ngIf="!success && !error">
-      Overwrite?&nbsp;
-        <mat-radio-button (click)="publishTemplate(true)">Yes</mat-radio-button>&nbsp;
-        <mat-radio-button (click)="publishTemplate(false)">No</mat-radio-button>
-    </mat-list-item>
-    <mat-list-item *ngIf="success">
+    <mat-list-item *ngIf="success && !error">
       <ng-md-icon icon="check_circle" size="20" style="fill:green"></ng-md-icon>
-      <span class="card-title">Successfully published '{{data.templateName}}' to repository.</span>
+      <div>Successfully published '{{data.templateName}}' to repository.</div>
     </mat-list-item>
     <mat-list-item *ngIf="error">
       <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
-      <span class="card-title">Error publishing '{{data.templateName}}' to repository. Please try again later.</span>
+      <div>Cannot publish '{{data.templateName}}': {{errorMsg}}</div>
+    </mat-list-item>
+    <mat-list-item>
+      <mat-form-field>
+        <mat-select [(ngModel)]="selectedRepository" placeholder="Select Repository">
+          <ng-container *ngFor="let repo of repositories">
+            <span *ngIf="!repo.readOnly">
+              <mat-option [value]="repo">{{repo.name}}</mat-option>
+            </span>
+          </ng-container>
+        </mat-select>
+      </mat-form-field>
+    </mat-list-item>
+    <mat-list-item>
+      Overwrite?&nbsp;
+        <mat-radio-button (click)="publishTemplate(true)">Yes</mat-radio-button>&nbsp;
+        <mat-radio-button (click)="publishTemplate(false)">No</mat-radio-button>
     </mat-list-item>
     <mat-list-item layout="column" layout-align="center end">
       <button mat-raised-button class="right" aria-label="Cancel" (click)="close()">{{(success || error )? 'Close': 'Cancel'}}</button>
