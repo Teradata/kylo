@@ -123,6 +123,46 @@ public class TableMergeSyncSupportTest {
         doTestSync(targetSchema, targetTable, spec);
     }
 
+    /**
+     * Extract the HDFS location of the table data.
+     *
+     * @param schema the schema or database name
+     * @param table  the table name
+     * @return the HDFS location of the table data
+     */
+    private String extractTableDirectory(String schema, String table) {
+        hiveShell.execute("use " + HiveUtils.quoteIdentifier(schema));
+        List<String> description = hiveShell.executeQuery("show table extended like " + HiveUtils.quoteIdentifier(table));
+        for(String line : description) {
+            if (line.startsWith("location:")) {
+                // Take table directory
+                return line.substring(9, line.lastIndexOf("/"));
+            }
+        }
+        return null;
+    }
+
+    @Test
+    /**
+     * Tests if HDFS location is correct
+     */
+    public void testSyncLocationHDFS() throws Exception {
+        // This the check id the schema pre and after a sync is the same
+        String describePre = extractTableDirectory(sourceSchema, sourceTable);
+
+        // Test without Partitions
+        mergeSyncSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition);
+        String describePost = extractTableDirectory(targetSchema, targetTableNP);
+        if((describePre == null) || (describePost == null)) assert(false);
+        assert(describePre.equals(describePost));
+
+        // Test with Partitions
+        mergeSyncSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition);
+        describePost = extractTableDirectory(targetSchema, targetTable);
+        if((describePre == null) || (describePost == null)) assert(false);
+        assert(describePre.equals(describePost));
+    }
+
     @Test
     /**
      * Tests the sync function
