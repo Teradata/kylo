@@ -212,7 +212,7 @@ stop() {
 status() {
     if [ -f ${VAULT_PID_FILE} ]
       then
-          echo Running. Here are the related process:
+          echo Running:
           ps -f -p \$(cat ${VAULT_PID_FILE})
       else
         echo Stopped.
