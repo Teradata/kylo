@@ -1,5 +1,9 @@
 <define-feed-step-card [feed]="feed" [step]="step" mode="custom">
   <form class="source-sample-container" [formGroup]="sourceSample">
+    <div *ngIf="feed.sourceDataSets && feed.sourceDataSets.length >0" fxLayout="column" >
+      <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
+      <span><button (click)="goToDataSet(feed.sourceDataSets[0])">{{feed.sourceDataSets[0].resolvePath()}}</button></span>
+    </div>
      <catalog-datasources [datasources]="datasources" selectedDatasourceState="feed-definition.feed-step.datasource" [stateParams]="stateParams"></catalog-datasources>
   </form>
 </define-feed-step-card>

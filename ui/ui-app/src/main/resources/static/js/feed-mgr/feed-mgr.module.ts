@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {Injector, NgModule} from "@angular/core";
 import {moduleName} from "./module-name"
 
-import {categoriesServiceProvider, entityAccessControlServiceProvider,feedServiceProvider} from "./services/angular2";
+import {categoriesServiceProvider, domainTypesServiceProvider, entityAccessControlServiceProvider, feedServiceProvider} from "./services/angular2";
 
 
 @NgModule({
@@ -12,7 +12,8 @@ import {categoriesServiceProvider, entityAccessControlServiceProvider,feedServic
     providers: [
         categoriesServiceProvider,
         entityAccessControlServiceProvider,
-        feedServiceProvider
+        feedServiceProvider,
+        domainTypesServiceProvider
     ]
 })
 export class KyloFeedManagerModule {

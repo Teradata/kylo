@@ -310,7 +310,7 @@ export class FeedService {
             setTableFields(fields: any[], policies: any[] = null) {
                 //ensure the fields are of type TableColumnDefinition
                 let newFields =  _.map(fields,(field) => {
-                    if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                    if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
                         let columnDef = new TableColumnDefinition();
                         angular.extend(columnDef,field);
                         return columnDef;

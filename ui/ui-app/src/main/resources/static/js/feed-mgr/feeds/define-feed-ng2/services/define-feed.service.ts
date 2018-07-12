@@ -11,6 +11,10 @@ import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-f
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
+import {PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
+import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
+import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
+import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
 
 @Injectable()
 export class DefineFeedService {
@@ -58,7 +62,19 @@ export class DefineFeedService {
     private beforeSaveSubject: Subject<FeedModel>;
 
 
+    /**
+     * Allow other components to listen for changes to the currentStep
+     *
+     */
+    public feedStateChange$: Observable<FeedModel>;
 
+    /**
+     * The datasets subject for listening
+     */
+    private feedStateChangeSubject: Subject<FeedModel>;
+
+
+private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
     constructor(private http:HttpClient,private $$angularInjector: Injector){
         this.currentStepSubject = new Subject<Step>();
@@ -69,6 +85,13 @@ export class DefineFeedService {
 
         this.beforeSaveSubject = new Subject<FeedModel>();
         this.beforeSave$ = this.beforeSaveSubject.asObservable();
+
+
+        this.feedStateChangeSubject = new Subject<FeedModel>();
+        this.feedStateChange$ = this.feedStateChangeSubject.asObservable();
+
+        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
+        this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
     }
 
     /**
@@ -88,7 +111,7 @@ export class DefineFeedService {
                 //convert it to our needed class
                 let feedModel = new DefaultFeedModel(feed)
                 this.initializeFeedSteps(feedModel);
-                feedModel.validate();
+                feedModel.validate(true);
                 this.setFeed(feedModel)
             });
             return observable;
@@ -113,7 +136,7 @@ export class DefineFeedService {
     }
 
     beforeSave() {
-        this.beforeSaveSubject.next(this.feed);
+        this.beforeSaveSubject.observers.forEach(o=> o.next(this.feed));
     }
 
     /**
@@ -123,7 +146,7 @@ export class DefineFeedService {
      */
     saveFeed() : Observable<FeedModel>{
 
-        let valid = this.feed.validate();
+        let valid = this.feed.validate(false);
         if(valid) {
             return this._saveFeed();
         }
@@ -131,7 +154,7 @@ export class DefineFeedService {
             //errors exist before we try to save
             //notify watchers that this step was saved
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.next(response);
+            this.savedFeedSubject.observers.forEach(o=>o.next(response));
             return null;
         }
     }
@@ -230,10 +253,12 @@ export class DefineFeedService {
         let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName("Source Sample").setDescription("Browse Catalog for sample").addDependsUpon("General Info").setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
         let feedDetails = this.feedDetailsStep(steps);
         let feedTarget = new StepBuilder().setNumber(4).setSystemName("Feed Target").setDescription("Define Target").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-target").setDisabled(true).setRequired(true).build();
+        let table = new StepBuilder().setNumber(5).setSystemName("Define Table").setDescription("Table").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
         steps.push(generalInfoStep);
         steps.push(sourceSampleStep);
         steps.push(feedDetails);
         steps.push(feedTarget);
+        steps.push(table)
         return steps;
     }
 
@@ -266,16 +291,18 @@ export class DefineFeedService {
             let steps = this.feed.steps;
             let updatedFeed = response.feedMetadata;
             //turn the response back into our FeedModel object
-            this.feed = new DefaultFeedModel(updatedFeed);
+            let savedFeed = new DefaultFeedModel(updatedFeed);
+            this.feed.update(savedFeed);
             //reset it to be editable
             this.feed.readonly = false;
             //set the steps
             this.feed.steps = steps;
             this.feed.updateDate = new Date(updatedFeed.updateDate);
+            this.feed.validate(true);
             //notify watchers that this step was saved
             let saveFeedResponse = new SaveFeedResponse(this.feed,true,"Successfully saved "+this.feed.feedName);
             saveFeedResponse.newFeed = newFeed;
-            this.savedFeedSubject.next(saveFeedResponse);
+            this.savedFeedSubject.observers.forEach(o => o.next(saveFeedResponse));
         },(error: any) => {
             console.error("Error",error);
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
@@ -283,6 +310,35 @@ export class DefineFeedService {
         });
         return observable;
     }
+
+    /**
+     * Listener for changes from the collection service
+     * @param {PreviewDataSet[]} dataSets
+     */
+    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
+        if(dataSets.length == 0){
+            this.feed.table.sourceTableSchema.fields =[];
+            this.feed.table.tableSchema.fields = [];
+        }
+        else {
+            let dataSet :PreviewDataSet = dataSets[0];
+            let columns: TableColumn[] = dataSet.schema
+            //convert to TableColumnDefintion objects
+            //set the source and target to the same
+            let sourceColumns: TableColumnDefinition[] = [];
+            let targetColumns: TableColumnDefinition[] = [];
+            columns.forEach(col => {
+                let def = angular.extend({}, col);
+                def.derivedDataType = def.dataType;
+                sourceColumns.push(new TableColumnDefinition((def)));
+                targetColumns.push(new TableColumnDefinition((def)));
+            });
+            this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
+            this.feed.table.sourceTableSchema.fields = sourceColumns;
+            this.feed.table.tableSchema.fields = targetColumns;
+        }
+    }
+
 
 
 

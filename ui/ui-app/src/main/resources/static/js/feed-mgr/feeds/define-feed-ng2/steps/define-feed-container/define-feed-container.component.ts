@@ -13,6 +13,7 @@ import {ISubscription} from "rxjs/Subscription";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {TdDialogService} from "@covalent/core/dialogs";
+import * as angular from "angular";
 
 @Component({
     selector: "define-feed-step-container",
@@ -128,7 +129,8 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         let message = response.message;
         this.openSnackBar(message)
         if(response.success){
-            this.feed = response.feed;
+            angular.extend(this.feed,response.feed);
+          //  this.feed = response.feed;
             this.feedName = this.feed.feedName;
         }
         if(response.newFeed){

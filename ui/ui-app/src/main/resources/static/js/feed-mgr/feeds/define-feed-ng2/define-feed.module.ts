@@ -44,6 +44,9 @@ import {KyloFeedManagerModule} from "../../feed-mgr.module";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
 import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/define-feed-step-edit-content.component";
+import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
+import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 
 
 @NgModule({
@@ -59,7 +62,9 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         DefineFeedStepFeedTargetComponent,
         DefineFeedStepCardComponent,
         DefineFeedStepReadonlyContentComponent,
-        DefineFeedStepEditContentComponent
+        DefineFeedStepEditContentComponent,
+        DefineFeedTableComponent,
+        FilterPartitionFormulaPipe
     ],
     providers:[
       DefineFeedService,
@@ -73,6 +78,7 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         CovalentLoadingModule,
         CovalentSearchModule,
         CovalentMediaModule,
+        CovalentVirtualScrollModule,
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
@@ -87,6 +93,7 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         MatIconModule,
         MatInputModule,
         MatListModule,
+        MatCheckboxModule,
         MatOptionModule,
         MatSelectModule,
         ReactiveFormsModule,

@@ -13,6 +13,7 @@ import 'rxjs/add/observable/fromPromise';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/map';
 import {FeedService} from "../../../../services/FeedService";
+import {SaveFeedResponse} from "../../model/SaveFeedResponse";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -53,6 +54,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         //watch for changes on the feed name to generate the system name
         this.feedNameCtrl.valueChanges.debounceTime(200).subscribe(text => this.generateSystemName());
     }
+
 
 
     getStepName() {

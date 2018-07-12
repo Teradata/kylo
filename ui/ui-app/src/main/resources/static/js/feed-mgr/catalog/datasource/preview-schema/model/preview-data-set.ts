@@ -17,8 +17,37 @@ export class SparkDataSet {
     public paths: string[];
     public schema:TableColumn[];
 
-    constructor(){
+    public constructor(init?:Partial<SparkDataSet>) {
+        this.initialize();
+        Object.assign(this, init);
+    }
+    initialize(){
 
+    }
+
+    /**
+     * resolve the path for the dataset
+     * Optionally remove the last entry
+     * @param {boolean} removeLast
+     * @return {string}
+     */
+    resolvePath(removeLast ?:boolean){
+        let path = '';
+        if(this.paths){
+            path = this.paths.join(",");
+        }
+        else if(this.options && this.options["path"]){
+            path = this.options["path"];
+        }
+        else {
+            return this.id;
+        }
+        if(removeLast){
+            return path.substring(0,path.lastIndexOf("/"));
+        }
+        else {
+            return path;
+        }
     }
 
 }

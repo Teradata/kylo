@@ -275,6 +275,15 @@ public class FeedRestController {
     public Response createFeed(@Nonnull final FeedMetadata feedMetadata) {
         NifiFeed feed;
         try {
+            if(StringUtils.isBlank(feedMetadata.getMode())) {
+                if(StringUtils.isBlank(feedMetadata.getId())){
+                    //TODO change this to default to DRAFT mode in the metadata itself once it is fully implemented
+                    feedMetadata.setMode(FeedMetadata.MODE.COMPLETE.name());
+                }
+                else {
+                    feedMetadata.setMode(FeedMetadata.MODE.COMPLETE.name());
+                }
+            }
             feed = getMetadataService().createFeed(feedMetadata);
         }
         catch (FeedHistoryDataReindexingNotEnabledException e) {

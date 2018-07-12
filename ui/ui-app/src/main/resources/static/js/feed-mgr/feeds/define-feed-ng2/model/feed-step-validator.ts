@@ -2,6 +2,8 @@ import {FeedModel, Step} from "./feed.model";
 
 export class FeedStepValidator  {
 
+    public hasFormErrors:boolean;
+
     public step : Step;
 
     constructor(step?:Step) {
