@@ -57,6 +57,11 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
+    /**
+     * COMPLETE or DRAFT
+     */
+    private String DEFAULT_MODE = "COMPLETE";
+
     boolean isNew = false;
     private String id;
 
@@ -456,6 +461,9 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     }
 
     public String getMode() {
+        if(mode == null){
+            mode = DEFAULT_MODE;
+        }
         return mode;
     }
 
