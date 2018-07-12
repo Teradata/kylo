@@ -157,7 +157,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
     
     private void delay(long millis) {
         try {
-            Thread.sleep(millis);;
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             // Do nothing
         }
