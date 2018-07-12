@@ -277,10 +277,6 @@ export class DomainTypesService{
 }
 
 
-  angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
-  function($http: any,$q: any,RestUrlService:any){
-        return new DomainTypesService($http , $q, RestUrlService);
-  }
-  ]);
+
 
 

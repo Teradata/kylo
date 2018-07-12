@@ -6,6 +6,8 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 import {Input, OnDestroy, OnInit} from "@angular/core";
 import {ISubscription} from "rxjs/Subscription";
 import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states"
+import {SaveFeedResponse} from "../model/SaveFeedResponse";
+import {FormGroup} from "@angular/forms";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -16,11 +18,18 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     public abstract getStepName() :string;
 
+    public formValid:boolean;
+
     private beforeSaveSubscription : ISubscription;
+
+    private feedStateChangeSubscription:ISubscription;
+   // private feedSavedSubscription : ISubscription;
 
     constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService) {
         //subscribe to the beforeSave call so the step can update the service with the latest feed information
         this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
+        this.feedStateChangeSubscription = this.defineFeedService.feedStateChange$.subscribe(this.feedStateChanged.bind(this))
+      //  this.feedSavedSubscription = this.defineFeedService.savedFeed$.subscribe(this.onFeedFinishedSaving.bind(this))
     }
     ngOnInit() {
         this.initData();
@@ -33,6 +42,22 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
       this.updateFeedService();
       //unsubscribe from the beforeSave call
       this.beforeSaveSubscription.unsubscribe();
+      this.feedStateChangeSubscription.unsubscribe();
+  //    this.feedSavedSubscription.unsubscribe();
+    }
+
+    subscribeToFormChanges(formGroup:FormGroup, debounceTime:number = 500) {
+        // initialize stream
+        const formValueChanges$ = formGroup.statusChanges;
+
+        // subscribe to the stream
+        formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
+            console.log("changes",changes,"formStatus",formGroup.status)
+            this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
+            this.step.setComplete(this.formValid);
+            this.step.validator.hasFormErrors = !this.formValid;
+        });
+
     }
 
 
@@ -50,6 +75,10 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     private updateFeedService(){
         //update the feed service with this data
         this.defineFeedService.setFeed(this.feed);
+    }
+
+    private feedStateChanged(feed:FeedModel){
+        this.feed.readonly = feed.readonly;
     }
 
 
@@ -71,4 +100,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             }
 
     }
+
+
+
 }

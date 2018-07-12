@@ -2,9 +2,15 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
-import {TableColumnDefinition} from "./TableColumnDefinition";
+import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
+import {CLASS_NAME} from "@angular/flex-layout";
 
 export class TableFieldPartition {
+
+    public static CLASS_NAME:string = 'TableFieldPartition'
+
+    public objectType:string = CLASS_NAME;
+
     /**
      * the 1 based index of the partition entry
      */
@@ -43,9 +49,23 @@ export class TableFieldPartition {
 
     columnDef: TableColumnDefinition;
 
-    constructor(index: number) {
+    initialize(index: number) {
         this.position = index;
         this._id = _.uniqueId();
+    }
+
+
+    public constructor(index: number,init?:Partial<TableFieldPartition>) {
+        Object.assign(this, init);
+
+        if(this.columnDef && this.columnDef.objectType && this.columnDef.objectType == TableColumnDefinition.CLASS_NAME){
+           //ok
+        }
+        else {
+            this.columnDef = new TableColumnDefinition(this.columnDef);
+        }
+
+        this.initialize(index);
     }
 
     /**

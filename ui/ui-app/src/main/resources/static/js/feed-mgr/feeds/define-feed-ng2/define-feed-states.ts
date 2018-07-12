@@ -15,8 +15,22 @@ import {DefineFeedService} from "./services/define-feed.service";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {DefineFeedStepFeedTargetComponent} from "./steps/feed-target/define-feed-step-feed-target.component";
+import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
+import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
+import {Observable} from "rxjs/Observable";
 
 export const FEED_DEFINITION_STATE_NAME :string = "feed-definition";
+
+const resolveFeed :any =
+    {
+        token: 'feed',
+            deps: [StateService, DefineFeedService],
+        resolveFn: (state: StateService, feedService:DefineFeedService) => {
+        let feedId = state.transition.params().feedId;
+        feedService.loadFeed(feedId)
+                .toPromise();
+    }
+    }
 
 
 
@@ -81,6 +95,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_STATE_NAME+".feed-step.general-info",
         url: "/:feedId/general-info",
         component: DefineFeedStepGeneralInfoComponent
+
     },
     {
         name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-details",
@@ -91,6 +106,11 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-target",
         url: "/:feedId/feed-target",
         component: DefineFeedStepFeedTargetComponent
+    },
+    {
+        name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-table",
+        url: "/:feedId/feed-table",
+        component: DefineFeedTableComponent
     },
     {
         name: FEED_DEFINITION_STATE_NAME+".feed-step.datasources",
@@ -115,22 +135,45 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     },
     {
         name:FEED_DEFINITION_STATE_NAME+".feed-step.datasource",
-        url:"/:feedId/source-sample/:datasourceId",
+        url:"/:feedId/source-sample/:datasourceId/:path",
         component: DefineFeedStepSourceSampleDatasourceComponent,
+        params: {
+            path:{value:''}
+        },
         resolve: [
             {
                 token: "datasource",
-                deps: [CatalogService, StateService, TdLoadingService],
-                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                deps: [CatalogService, StateService, TdLoadingService, DefineFeedService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService, defineFeedService:DefineFeedService) => {
                     loading.register(DefineFeedStepSourceSampleDatasourceComponent.LOADER);
                     let datasourceId = state.transition.params().datasourceId;
-                    return catalog.getDataSource(datasourceId)
-                        .pipe(finalize(() => loading.resolve(DefineFeedStepSourceSampleDatasourceComponent.LOADER)))
-                        .pipe(catchError(() => {
-                            return state.go(".datasources")
-                        }))
-                        .toPromise();
+                    let feed = defineFeedService.getFeed();
+                    if(feed && feed.sourceDataSets && feed.sourceDataSets.length >0 && feed.sourceDataSets[0].dataSource.id == datasourceId){
+                        return feed.sourceDataSets[0].dataSource;
+                    }
+                    else {
+                        return catalog.getDataSource(datasourceId)
+                            .pipe(finalize(() => loading.resolve(DefineFeedStepSourceSampleDatasourceComponent.LOADER)))
+                            .pipe(catchError(() => {
+                                return state.go(".datasources")
+                            }))
+                            .toPromise();
+                    }
                 }
+            },
+            {
+                token:"params",
+                deps:[StateService],
+                resolveFn: (state: StateService) => {
+                    let params = state.transition.params();
+                    if(params && params.path) {
+                        return {"path":params.path}
+                    }
+                    else {
+                        return {};
+                    }
+                }
+
             }
         ]
     }

@@ -4,6 +4,7 @@ import * as angular from "angular";
 import CategoriesService from "./CategoriesService";
 import {EntityAccessControlService} from "../shared/entity-access-control/EntityAccessControlService";
 import {FeedService} from "./FeedService";
+import {DomainTypesService} from "./DomainTypesService";
 
 export const entityAccessControlServiceProvider: FactoryProvider = {
     provide: EntityAccessControlService,
@@ -22,3 +23,10 @@ export const feedServiceProvider: FactoryProvider = {
     useFactory: (i: angular.auto.IInjectorService) => i.get("FeedService"),
     deps: ["$injector"]
 };
+
+export const domainTypesServiceProvider: FactoryProvider = {
+    provide: DomainTypesService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("DomainTypesService"),
+    deps: ["$injector"]
+};
+

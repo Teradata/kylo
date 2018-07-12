@@ -1,6 +1,6 @@
 import * as angular from "angular";
 
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnDestroy, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 
 import {ConnectorTab} from "../api/models/connector-tab";
@@ -9,6 +9,7 @@ import {SelectionService} from '../api/services/selection.service';
 import {Node} from '../api/models/node'
 import {PreviewDatasetCollectionService} from "../api/services/preview-dataset-collection.service";
 import {PreviewDataSet} from "./preview-schema/model/preview-data-set";
+import {ISubscription} from "rxjs/Subscription";
 
 /**
  * Displays tabs for configuring a data set (or connection).
@@ -17,7 +18,7 @@ import {PreviewDataSet} from "./preview-schema/model/preview-data-set";
     selector: "catalog-dataset",
     templateUrl: "js/feed-mgr/catalog/datasource/datasource.component.html"
 })
-export class DatasourceComponent implements OnInit {
+export class DatasourceComponent implements OnInit, OnDestroy {
 
     static readonly LOADER = "DatasourceComponent.LOADER";
 
@@ -44,6 +45,8 @@ export class DatasourceComponent implements OnInit {
      */
     private dataSetCollectionSize: number = 0;
 
+    private dataSetChangedSubscription :ISubscription;
+
     /**
      * Note:$$angularInjector is used here for previewDatasetCollectionService since its shared with the Angular 1 Wrangler
      * @param {StateService} state
@@ -54,7 +57,7 @@ export class DatasourceComponent implements OnInit {
      */
     constructor(protected state: StateService, protected stateRegistry: StateRegistry, protected selectionService: SelectionService,  private $$angularInjector: Injector) {
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
-        this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
+       this.dataSetChangedSubscription = this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
     }
 
     protected initTabs(statePrefix?:string ) {
@@ -78,6 +81,10 @@ export class DatasourceComponent implements OnInit {
         this.initTabs();
         // Go to the first tab
         this.state.go(this.tabs[0].sref, {datasourceId:this.datasource.id}, {location: "replace"});
+    }
+
+    ngOnDestroy(){
+        this.dataSetChangedSubscription.unsubscribe();
     }
 
     public isDisabled(tab: ConnectorTab) {

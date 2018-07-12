@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,19 +23,19 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -97,6 +97,9 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     private String dataOwner;
 
     private FeedCategory category;
+
+
+    private List<DataSet> sourceDataSets;
 
     @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private TableSetup table;
@@ -516,7 +519,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         return isNew;
     }
 
-    public boolean isDraft(){
+    public boolean isDraft() {
         return this.mode != null && MODE.DRAFT.name().equalsIgnoreCase(this.mode);
     }
 
@@ -545,7 +548,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     }
 
     public static enum MODE {
-        DRAFT,COMPLETE
+        DRAFT, COMPLETE
     }
 
     @JsonIgnore
@@ -578,6 +581,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setTableOption(Map<String, Object> tableOption) {
         this.tableOption = tableOption;
+    }
+
+    public List<DataSet> getSourceDataSets() {
+        return sourceDataSets;
+    }
+
+    public void setSourceDataSets(List<DataSet> sourceDataSets) {
+        this.sourceDataSets = sourceDataSets;
     }
 
     @Override
@@ -623,52 +634,55 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
-        
+        }
+
         FeedMetadata other = (FeedMetadata) obj;
-        
-        return 
-                Objects.equals(active, other.active) &&
-                Objects.equals(category, other.category) &&
-                Objects.equals(createDate, other.createDate) &&
-                Objects.equals(dataOwner, other.dataOwner) &&
-                Objects.equals(dataTransformation, other.dataTransformation) &&
-                Objects.equals(description, other.description) &&
-                Objects.equals(feedId, other.feedId) &&
-                Objects.equals(feedName, other.feedName) &&
-                Objects.equals(hadoopAuthorizationType, other.hadoopAuthorizationType) &&
-                Objects.equals(hadoopSecurityGroups, other.hadoopSecurityGroups) &&
-                Objects.equals(id, other.id) &&
-                Objects.equals(inputProcessorType, other.inputProcessorType) &&
-                Objects.equals(isNew, other.isNew) &&
-                Objects.equals(isReusableFeed, other.isReusableFeed) &&
-                Objects.equals(nifiProcessGroupId, other.nifiProcessGroupId) &&
-                Objects.equals(options, other.options) &&
-                Objects.equals(properties, other.properties) &&
-                Objects.equals(registeredTemplate, other.registeredTemplate) &&
-                Objects.equals(schedule, other.schedule) &&
-                Objects.equals(securityGroups, other.securityGroups) &&
-                Objects.equals(state, other.state) &&
-                Objects.equals(systemFeedName, other.systemFeedName) &&
-                Objects.equals(table, other.table) &&
-                Objects.equals(tableOption, other.tableOption) &&
-                Objects.equals(tags, other.tags) &&
-                Objects.equals(templateId, other.templateId) &&
-                Objects.equals(templateName, other.templateName) &&
-                Objects.equals(updateDate, other.updateDate) &&
-                Objects.equals(usedByFeeds, other.usedByFeeds) &&
-                Objects.equals(userDatasources, other.userDatasources) &&
-                Objects.equals(userProperties, other.userProperties) &&
-                Objects.equals(version, other.version) &&
-                Objects.equals(versionName, other.versionName) &&
-                Objects.equals(allowIndexing, other.allowIndexing) &&
-                Objects.equals(historyReindexingStatus, other.historyReindexingStatus);
+
+        return
+            Objects.equals(active, other.active) &&
+            Objects.equals(category, other.category) &&
+            Objects.equals(createDate, other.createDate) &&
+            Objects.equals(dataOwner, other.dataOwner) &&
+            Objects.equals(dataTransformation, other.dataTransformation) &&
+            Objects.equals(description, other.description) &&
+            Objects.equals(feedId, other.feedId) &&
+            Objects.equals(feedName, other.feedName) &&
+            Objects.equals(hadoopAuthorizationType, other.hadoopAuthorizationType) &&
+            Objects.equals(hadoopSecurityGroups, other.hadoopSecurityGroups) &&
+            Objects.equals(id, other.id) &&
+            Objects.equals(inputProcessorType, other.inputProcessorType) &&
+            Objects.equals(isNew, other.isNew) &&
+            Objects.equals(isReusableFeed, other.isReusableFeed) &&
+            Objects.equals(nifiProcessGroupId, other.nifiProcessGroupId) &&
+            Objects.equals(options, other.options) &&
+            Objects.equals(properties, other.properties) &&
+            Objects.equals(registeredTemplate, other.registeredTemplate) &&
+            Objects.equals(schedule, other.schedule) &&
+            Objects.equals(securityGroups, other.securityGroups) &&
+            Objects.equals(state, other.state) &&
+            Objects.equals(systemFeedName, other.systemFeedName) &&
+            Objects.equals(table, other.table) &&
+            Objects.equals(tableOption, other.tableOption) &&
+            Objects.equals(tags, other.tags) &&
+            Objects.equals(templateId, other.templateId) &&
+            Objects.equals(templateName, other.templateName) &&
+            Objects.equals(updateDate, other.updateDate) &&
+            Objects.equals(usedByFeeds, other.usedByFeeds) &&
+            Objects.equals(userDatasources, other.userDatasources) &&
+            Objects.equals(userProperties, other.userProperties) &&
+            Objects.equals(version, other.version) &&
+            Objects.equals(versionName, other.versionName) &&
+            Objects.equals(allowIndexing, other.allowIndexing) &&
+            Objects.equals(historyReindexingStatus, other.historyReindexingStatus);
     }
 
-    
+
 }
