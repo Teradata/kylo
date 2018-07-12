@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {Injector, NgModule} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatCardModule} from "@angular/material/card";
 import {MatDividerModule} from "@angular/material/divider";
@@ -31,13 +31,18 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {TemplatePublishDialog} from "./dialog/template-publish-dialog";
 import {MatRadioModule} from "@angular/material/radio";
+import {ImportTemplateComponent, ImportTemplateDirective} from "./ng5-import-template.component";
+
+const moduleName: string = require("feed-mgr/templates/module-name");
 
 @NgModule({
     declarations: [
         ListTemplatesComponent,
         RepositoryComponent,
         TemplateInfoComponent,
-        TemplatePublishDialog
+        TemplatePublishDialog,
+        ImportTemplateComponent,
+        ImportTemplateDirective
     ],
     imports: [
         FormsModule,
@@ -72,4 +77,12 @@ import {MatRadioModule} from "@angular/material/radio";
     entryComponents: [TemplatePublishDialog]
 })
 export class RepositoryModule {
+
+    constructor(injector: Injector) {
+        // Lazy load AngularJS module and entry component
+        require("feed-mgr/templates/module");
+        injector.get("$ocLazyLoad").inject(moduleName);
+        require("feed-mgr/templates/module-require");
+        require("feed-mgr/templates/import-template/ImportTemplateController");
+    }
 }
