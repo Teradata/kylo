@@ -1,18 +1,21 @@
 [
   {
     "title": "SQL Source",
+    "pluginId": "mysql",
     "template": {
       "format": "jdbc"
     }
   },
   {
     "title": "Hive",
+    "pluginId": "hive",
     "template": {
       "format": "jdbc"
     }
   },
   {
     "title": "Amazon S3",
+    "pluginId": "amazon-s3",
     "icon": "amazon",
     "template": {
       "paths": [
@@ -22,6 +25,7 @@
   },
   {
     "title": "Azure Storage",
+    "pluginId": "azure",
     "icon": "windows",
     "template": {
       "paths": [
@@ -31,6 +35,7 @@
   },
   {
     "title": "Kafka",
+    "pluginId": "kafka",
     "icon": "kafka",
     "template": {
       "format": "org.apache.spark.sql.kafka010.KafkaSourceProvider",
@@ -42,10 +47,12 @@
   },
   {
     "title": "File Upload",
+    "pluginId": "file-upload",
     "icon": "file_upload"
   },
   {
     "title": "HDFS",
+    "pluginId": "hdfs",
     "icon": "hadoop",
     "template": {
       "paths": [
@@ -55,6 +62,7 @@
   },
   {
     "title": "Teradata",
+    "pluginId": "teradata",
     "color": "orange-700",
     "template": {
       "format": "jdbc",
@@ -66,6 +74,7 @@
   },
   {
     "title": "Mysql",
+    "pluginId": "mysql",
     "color": "orange-700",
     "template": {
       "format": "jdbc",
@@ -80,6 +89,7 @@
   },
   {
     "title": "Oracle",
+    "pluginId": "oracle",
     "color": "orange-700",
     "template": {
       "format": "jdbc",
@@ -94,6 +104,7 @@
   },
   {
     "title": "Google Cloud Storage",
+    "pluginId": "google-cloud-storage",
     "icon": "google",
     "template": {
       "jars": [
@@ -106,6 +117,7 @@
   },
   {
     "title": "Local File System",
+    "pluginId": "local-file-system",
     "icon": "fa-file",
     "template": {
       "paths": [

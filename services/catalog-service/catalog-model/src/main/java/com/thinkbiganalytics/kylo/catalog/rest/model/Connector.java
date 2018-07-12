@@ -38,6 +38,11 @@ public class Connector {
      * Unique identifier
      */
     private String id;
+    
+    /**
+     * Connector plugin ID (connector type)
+     */
+    private String pluginId;
 
     /**
      * Display name of this connector
@@ -73,6 +78,7 @@ public class Connector {
         color = other.color;
         icon = other.icon;
         id = other.id;
+        pluginId = other.pluginId;
 
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
@@ -102,6 +108,14 @@ public class Connector {
         this.id = id;
     }
 
+    public String getPluginId() {
+        return pluginId;
+    }
+    
+    public void setPluginId(String pluginId) {
+        this.pluginId = pluginId;
+    }
+    
     public DataSetTemplate getTemplate() {
         return template;
     }

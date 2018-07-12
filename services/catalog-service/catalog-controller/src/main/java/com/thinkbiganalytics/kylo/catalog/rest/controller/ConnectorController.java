@@ -61,6 +61,9 @@ public class ConnectorController extends AbstractCatalogController {
 
     @Inject
     MetadataAccess metadataService;
+    
+    @Inject
+    private ConnectorPluginController pluginController;
 
     @GET
     @ApiOperation("Gets the specified connector")
@@ -91,4 +94,21 @@ public class ConnectorController extends AbstractCatalogController {
         final List<Connector> connectors = metadataService.read(() -> connectorProvider.findAllConnectors());
         return Response.ok(log.exit(connectors)).build();
     }
-}
+
+    @GET
+    @ApiOperation("Gets the specified connector")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the connector", response = Connector.class),
+                      @ApiResponse(code = 404, message = "Connector was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("{id}/plugin")
+    public Response getConnectorPlugin(@PathParam("id") final String connectorId) {
+        log.entry(connectorId);
+        final Connector connector = metadataService.read(() -> connectorProvider.findConnector(connectorId))
+            .orElseThrow(() -> {
+                log.debug("Connector not found: {}", connectorId);
+                return new NotFoundException(getMessage("catalog.controller.notFound"));
+            });
+        return log.exit(this.pluginController.getPlugin(connector.getPluginId()));
+    }}
