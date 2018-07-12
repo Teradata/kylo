@@ -79,7 +79,10 @@ public class AbstractNiFiProcessorsRestClientTest {
                 //Ensure the dto after wakeup matches the starting dto
                 Assert.assertEquals(wakeupDto.getConfig().getSchedulingStrategy(), processorDTO.getConfig().getSchedulingStrategy());
                 Assert.assertEquals(wakeupDto.getConfig().getSchedulingPeriod(), processorDTO.getConfig().getSchedulingPeriod());
-                Assert.assertEquals(wakeupDto.getState(), processorDTO.getState());
+
+                if (wakeupDto.getState() != null) {
+                    Assert.assertEquals(wakeupDto.getState(), processorDTO.getState());
+                }
             }
         });
     }
