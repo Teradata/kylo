@@ -176,6 +176,10 @@
           <artifactId>htrace-core</artifactId>
           <groupId>org.apache.htrace</groupId>
         </exclusion>
+        <exclusion>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>jsp-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
