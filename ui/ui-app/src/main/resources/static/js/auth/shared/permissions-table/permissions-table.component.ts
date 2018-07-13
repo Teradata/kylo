@@ -1,18 +1,14 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import AccessControlService from "../../../services/AccessControlService";
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-export interface IMyScope extends ng.IScope {
-    model?: any;
-    readOnly?: boolean;
-}
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+
 @Component({
     templateUrl: "js/auth/shared/permissions-table/permissions-table.html",
     selector: 'thinkbig-permissions-table',
-    styles : ['.permissionCheckbox { width: 24px; margin-left: 3px; margin-right: 29px; margin-top: 16px;}']    
+    styles : ['.permissionCheckbox { width: 24px; margin-left: 3px; margin-right: 29px; margin-top: 16px;}']
 })
-export class PermissionsTableComponent {
+export class PermissionsTableComponent implements OnInit, OnChanges {
     /**
      * List of available actions to be displayed.
      * @type {Array.<ActionState>}
@@ -45,11 +41,11 @@ export class PermissionsTableComponent {
         });
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        this.refresh();
+    }
+
     constructor(private accessControlService: AccessControlService) {
-        // Watch for changes to the model
-        // $scope.$watch(() => { return $scope.model;},
-        //               () => { this.refresh();}
-        //               );
     }
     /**
        * Adds any allowed actions in the specified list to the model.

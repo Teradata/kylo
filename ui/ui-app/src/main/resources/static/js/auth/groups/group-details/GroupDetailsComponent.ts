@@ -194,9 +194,9 @@ export default class GroupDetailsComponent {
             this.onEdit();
             this.isEditable = true;
             this.loading = false;
-            this.UserService.getGroups().then(function (groups: any) {
+            this.UserService.getGroups().then((groups: any) => {
                 this.groupMap = {};
-                angular.forEach(groups, function (group: any) {
+                angular.forEach(groups, (group: any) => {
                     this.groupMap[group.systemName] = true;
                 });
             });
