@@ -45,6 +45,11 @@ import {EntityAccessControlService} from "./shared/entity-access-control/EntityA
 import CategoriesService from "./services/CategoriesService";
 import {FeedSavingDialogController, FeedService} from "./services/FeedService";
 import {DomainTypesService} from "./services/DomainTypesService";
+import {DefaultFeedPropertyService} from "./services/DefaultFeedPropertyService";
+import {FeedInputProcessorPropertiesTemplateService} from "./services/FeedInputProcessorPropertiesTemplateService";
+import {FeedDetailsProcessorRenderingHelper} from "./services/FeedDetailsProcessorRenderingHelper";
+import {RegisterTemplatePropertyService} from "./services/RegisterTemplatePropertyService";
+import {UiComponentsService} from "./services/UiComponentsService";
 
 
 angular.module(moduleName).service('CategoriesService',CategoriesService);
@@ -59,3 +64,14 @@ angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUr
         return new DomainTypesService($http , $q, RestUrlService);
     }
 ]);
+
+angular.module(moduleName).service("UiComponentsService", UiComponentsService);
+
+angular.module(moduleName).service('FeedPropertyService', DefaultFeedPropertyService);
+
+angular.module(moduleName).service('FeedInputProcessorPropertiesTemplateService',FeedInputProcessorPropertiesTemplateService);
+
+angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDetailsProcessorRenderingHelper);
+
+
+angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);

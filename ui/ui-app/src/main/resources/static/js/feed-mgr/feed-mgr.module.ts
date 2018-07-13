@@ -2,18 +2,31 @@ import {CommonModule} from "@angular/common";
 import {Injector, NgModule} from "@angular/core";
 import {moduleName} from "./module-name"
 
-import {categoriesServiceProvider, domainTypesServiceProvider, entityAccessControlServiceProvider, feedServiceProvider} from "./services/angular2";
+import {
+    categoriesServiceProvider,
+    domainTypesServiceProvider,
+    entityAccessControlServiceProvider, feedDetailsProcessorRenderingHelperProvider, feedInputProcessorPropertiesTemplateServiceProvider,
+    feedPropertyServiceProvider,
+    feedServiceProvider,
+    uiComponentsServiceProvider
+} from "./services/angular2";
+import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 
 
 @NgModule({
     imports: [
-        CommonModule
+        CommonModule,
+        DynamicFormModule
     ],
     providers: [
         categoriesServiceProvider,
         entityAccessControlServiceProvider,
         feedServiceProvider,
-        domainTypesServiceProvider
+        domainTypesServiceProvider,
+        feedPropertyServiceProvider,
+        uiComponentsServiceProvider,
+        feedInputProcessorPropertiesTemplateServiceProvider,
+        feedDetailsProcessorRenderingHelperProvider
     ]
 })
 export class KyloFeedManagerModule {

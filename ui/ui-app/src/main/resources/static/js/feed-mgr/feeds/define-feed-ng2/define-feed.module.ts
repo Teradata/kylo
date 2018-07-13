@@ -47,6 +47,9 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {CovalentDynamicFormsModule} from "@covalent/dynamic-forms";
+import {MatRadioModule} from "@angular/material/radio";
+import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
 
 
 @NgModule({
@@ -79,6 +82,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
         CovalentSearchModule,
         CovalentMediaModule,
         CovalentVirtualScrollModule,
+        CovalentDynamicFormsModule,
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
@@ -87,6 +91,8 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
         PreviewSchemaModule,
         MatCardModule,
         FormsModule,
+        DynamicFormModule,
+        MatRadioModule,
         MatAutocompleteModule,
         MatInputModule,
         MatFormFieldModule,

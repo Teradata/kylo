@@ -9,7 +9,7 @@ import {FeedStepValidator} from "./feed-step-validator";
 import {PreviewFileDataSet} from "../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {AbstractControl} from "@angular/forms/src/model";
-
+import { Templates } from "../../../services/TemplateTypes";
 export class Step{
     number:number;
     systemName:string;
@@ -284,20 +284,19 @@ export interface FeedModel {
      */
     inputProcessorName: string;
 
-    /**
-     * The selected input processor def
-     * TODO replace with concrete Processor type ref
-     */
-    inputProcessor: any;
+
+    inputProcessor: Templates.Processor;
+
+    inputProcessors: Templates.Processor[];
 
     /**
      * The array of all other processors in the feed flow
      */
-    nonInputProcessors: any[];
+    nonInputProcessors: Templates.Processor[];
     /**
      * Array of properties
      */
-    properties: any[];
+    properties: Templates.Property[];
 
     securityGroups: any[];
 
@@ -425,6 +424,7 @@ export interface FeedModel {
     sourceDataSets?:SparkDataSet[];
 
     update(model:Partial<FeedModel>) :void;
+    isStream:boolean;
 }
 
 
@@ -462,9 +462,10 @@ export class DefaultFeedModel implements FeedModel{
 
     inputProcessorType: string ='';
     inputProcessorName: string = null;
-    inputProcessor: any = null
-    nonInputProcessors: any[] = [];
-    properties: any[] = [];
+    inputProcessor: Templates.Processor = null;
+    inputProcessors: Templates.Processor[] = [];
+    nonInputProcessors: Templates.Processor[] = [];
+    properties: Templates.Property[] = [];
     securityGroups: any[] = [];
     schedule: FeedSchedule = { schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 };
     defineTable: boolean = false;
@@ -494,6 +495,7 @@ export class DefaultFeedModel implements FeedModel{
     schemaParser?:SchemaParser;
     schemaChanged?:boolean;
     sourceDataSets?:SparkDataSet[] = [];
+    isStream:boolean;
     /**
      * Should this feed show the "Skip Header" option
      */

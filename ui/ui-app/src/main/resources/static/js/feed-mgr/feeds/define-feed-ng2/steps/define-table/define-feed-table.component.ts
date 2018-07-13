@@ -29,9 +29,9 @@ class TablePermissions {
     tableLocked: boolean;
     dataTypeLocked: boolean;
     canRemoveFields: boolean;
-constructor() {
-
-}
+    constructor() {
+    this.canRemoveFields = true;
+    }
 }
 
 class TableFormControls {
@@ -462,6 +462,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         else {
             this.defineTableForm.get("precisionScale_" + columnDef._id).disable();
         }
+        this.onFieldChange(columnDef);
     }
 
     /**

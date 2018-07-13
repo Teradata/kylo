@@ -1,0 +1,47 @@
+<div [formGroup]="form" fxLayout="column">
+
+  <div *ngIf="readonly"  fxLayout="column">
+
+    <section class="mat-typography"  *ngIf="field.controlType == 'section-header'">
+      <h3>{{field.label}}</h3>
+    </section>
+
+
+    <div fxLayout="column" *ngIf="field.controlType != 'section-header'">
+    <div fxLayout="row" >
+      <span fxFlex="30%">{{field.label}}</span>
+      <span fxFlex="5%"></span>
+      <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.model[field['modelValueProperty']]}}</span>
+    </div>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+  </div>
+
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly"  fxLayout="column">
+
+    <section class="mat-typography pad-top-sm"  *ngSwitchCase="'section-header'"  >
+      <h3>{{field.label}}</h3>
+    </section>
+
+    <mat-form-field *ngSwitchCase="'textbox'"  class="pad-top-sm">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [(ngModel)]="field.model[field['modelValueProperty']]">
+      <mat-error *ngIf="!isValid">
+        {{field.label}} error
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+
+    <mat-form-field  *ngSwitchCase="'select'"  class="pad-top-sm">
+      <mat-select [id]="field.key"[formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]" [placeholder]="field.placeholder" >
+        <mat-option *ngFor="let opt of field.options" [value]="opt.key">
+          {{opt.value}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+
+  </div>
+
+</div>
