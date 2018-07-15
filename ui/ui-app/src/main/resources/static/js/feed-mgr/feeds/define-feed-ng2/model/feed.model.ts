@@ -236,6 +236,7 @@ export interface FeedModel {
     /**
      * reference to the Template
      * TODO ref to Template type
+     * @TODO  IS THIS NEEDED!!!!!
      */
     template:any;
     isNew():boolean;
@@ -424,7 +425,14 @@ export interface FeedModel {
     sourceDataSets?:SparkDataSet[];
 
     update(model:Partial<FeedModel>) :void;
+
+    copy() :FeedModel;
     isStream:boolean;
+
+    /**
+     * Have we merged in the template data yet?
+     */
+    mergedTemplateData?:boolean;
 }
 
 
@@ -496,6 +504,7 @@ export class DefaultFeedModel implements FeedModel{
     schemaChanged?:boolean;
     sourceDataSets?:SparkDataSet[] = [];
     isStream:boolean;
+    mergedTemplateData?:boolean;
     /**
      * Should this feed show the "Skip Header" option
      */
@@ -566,6 +575,10 @@ export class DefaultFeedModel implements FeedModel{
 
             }
         });
+    }
+
+    copy():FeedModel{
+        return Object.assign({},this)
     }
 
     initialize() {

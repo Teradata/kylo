@@ -464,6 +464,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.remoteProcessGroups = remoteProcessGroups;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 
         private String flowId;
@@ -495,6 +496,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Processor {
 
         List<NifiProperty> properties;

@@ -19,7 +19,13 @@ import {MatRadioChange} from "@angular/material";
 import {RegisterTemplatePropertyService} from "../../../../services/RegisterTemplatePropertyService";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
+import "rxjs/add/observable/empty";
+import "rxjs/add/observable/of";
+import "rxjs/add/observable/from";
+import 'rxjs/add/observable/forkJoin'
 import {SectionHeader} from "../../../../shared/dynamic-form/model/SectionHeader";
+import {RestUrlConstants} from "../../../../services/RestUrlConstants";
+import {UiComponentsService} from "../../../../services/UiComponentsService";
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -69,6 +75,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     private formFieldOrder:number = 0;
 
+    private uiComponentsService :UiComponentsService;
+
 
     /**
      * Map of all processors other inputs to array of configs
@@ -82,6 +90,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         super(defineFeedService,stateService);
         this.feedService = $$angularInjector.get("FeedService");
         this.registerTemplatePropertyService = this.$$angularInjector.get("RegisterTemplatePropertyService");
+        this.uiComponentsService = $$angularInjector.get("UiComponentsService");
         this.form = new FormGroup({});
     }
 
@@ -90,10 +99,39 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     }
 
     init(){
-this.inputProcessors = [];
-this.getRegisteredTemplate();
+        this.inputProcessors = [];
+        if(this.feed.isNew()) {
+            this.getRegisteredTemplate();
+        }
+        else {
+            this.mergeTemplateDataWithFeed(this.feed);
+        }
 
 
+    }
+
+    /**
+     * called before saving
+     */
+    updateFeedService(){
+        let properties :Templates.Property[] = [];
+        if (this.inputProcessor != null) {
+            this.inputProcessor.properties.forEach(property => {
+                //this.FeedPropertyService.initSensitivePropertyForSaving(property)
+                properties.push(property);
+            });
+        }
+
+        this.feed.nonInputProcessors.forEach(processor => {
+            processor.properties.forEach(property =>   {
+                //this.FeedPropertyService.initSensitivePropertyForSaving(property)
+                properties.push(property);})
+        });
+
+        this.feed.inputProcessorName = this.inputProcessor.name;
+        this.feed.properties = properties;
+
+        this.defineFeedService.setFeed(this.feed);
     }
 
     onInputProcessorChange(event:MatRadioChange){
@@ -156,58 +194,121 @@ this.getRegisteredTemplate();
      */
     initializeProperties(template: any) {
         if (angular.isDefined(this.feed.cloned) && this.feed.cloned == true) {
-           this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(this.feed, 'create');
-            this.inputProcessors = _.sortBy(this.feed.inputProcessors, 'name')
-            // Find controller services
-            _.chain(this.inputProcessors.concat(this.feed.nonInputProcessors))
-                .pluck("properties")
-                .flatten(true)
-                .filter((property) => {
-                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-                })
-                .each((property:any) => this.feedService.findControllerServicesForProperty(property));
+            this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(this.feed, 'create');
+            this.defineFeedService.sortAndSetupFeedProperties(this.feed);
 
         } else {
-           this.registerTemplatePropertyService.initializeProperties(template, 'create', this.feed.properties);
-            //sort them by name
-            this.inputProcessors = _.sortBy(this.registerTemplatePropertyService.removeNonUserEditableProperties(template.inputProcessors, true), 'name')
+            this.defineFeedService.setupFeedProperties(this.feed,template, 'create')
+            this.inputProcessor = feed.inputProcessor;
+            this.inputProcessors = feed.inputProcessors;
+            this.buildForm();
 
-           // this.inputProcessors = template.inputProcessors;
-            this.feed.allowPreconditions = template.allowPreconditions;
-
-            this.feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            //   this.validate();
         }
-        if (angular.isDefined(this.feed.inputProcessor)) {
-            var match = this.matchInputProcessor(this.feed.inputProcessor, this.inputProcessors);
-            if (angular.isDefined(match)) {
-                this.inputProcessor = match;
-                this.inputProcessorId = match.id;
-            }
-        }
-
-        if (this.inputProcessorId == null && this.inputProcessors != null && this.inputProcessors.length > 0) {
-            this.inputProcessorId = this.inputProcessors[0].id;
-        }
-        // Skip this step if it's empty
-        if (this.inputProcessors.length === 0 && !_.some(this.feed.nonInputProcessors, (processor: any) => {
-            return processor.userEditable
-        }))
-
-        // Find controller services
-        _.chain(template.inputProcessors.concat(template.nonInputProcessors))
-            .pluck("properties")
-            .flatten(true)
-            .filter((property) => {
-                return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-            })
-            .each((property:any) => this.feedService.findControllerServicesForProperty(property));
-
-        this.loading = false;
-        this.feed.isStream = template.isStream;
-  this.buildForm();
-
-     //   this.validate();
     }
+
+
+
+    public mergeTemplateDataWithFeed(feed:FeedModel){
+
+        if (!feed.mergedTemplateData) {
+            let observables: Observable<any>[] = [];
+            let steps = feed.steps;
+            let feedCopy = feed.copy();
+            delete feedCopy.steps;
+            observables[0] = this.http.post(RestUrlConstants.MERGE_FEED_WITH_TEMPLATE(feed.id), feedCopy, {headers: {'Content-Type': 'application/json; charset=UTF-8'}}),
+            observables[1] = Observable.from(this.uiComponentsService.getProcessorTemplates());
+
+                Observable.forkJoin(observables[0], observables[1]).subscribe(results => {
+                    const updatedFeedResponse :FeedModel = results[0];
+                    const templateResponse:any = results[1];
+                    //const [updatedFeedResponse , templateResponse] = results;
+                    if (updatedFeedResponse == undefined) {
+                        //ERROR out
+                        //@TODO present error or return observable.error()
+                    }
+                    else {
+                        //merge the properties back into this feed
+                        feed.properties = updatedFeedResponse.properties;
+                        feed.inputProcessors = updatedFeedResponse.inputProcessors;
+                        feed.nonInputProcessors = updatedFeedResponse.nonInputProcessors;
+                        feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
+                        this.defineFeedService.setupFeedProperties(feed,feed.registeredTemplate, 'edit');
+                        feed.mergedTemplateData = true;
+                        this.inputProcessor = feed.inputProcessor;
+                        this.inputProcessors = feed.inputProcessors;
+                        this.buildForm();
+
+                        /*
+                        this.registerTemplatePropertyService.initializeProperties(feed.registeredTemplate, "edit", []);
+                        //merge the input processors
+                        feed.inputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(updatedFeedResponse.registeredTemplate.inputProcessors, true)
+
+                        // find all input processors and sort them alpha.
+                        feed.inputProcessors = _.sortBy(feed.inputProcessors, 'name');
+                        //find the input processor associated to this feed
+                        feed.inputProcessor = feed.inputProcessors.find((processor: Templates.Processor) => {
+                            if (feed.inputProcessorName) {
+                                return feed.inputProcessorType == processor.type && feed.inputProcessorName.toLowerCase() == processor.name.toLowerCase()
+                            }
+                            else {
+                                return feed.inputProcessorType == processor.type;
+                            }
+                        });
+
+
+                        //merge the non input processors
+                        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(updatedFeedResponse.registeredTemplate.nonInputProcessors, false);
+                        //  self.updateMenuOptions();
+
+                        feed.isStream = updatedFeedResponse.data.registeredTemplate.stream;
+
+    */
+                        //@TODO add in  access control
+
+                        /*
+                          var entityAccessControlled = accessControlService.isEntityAccessControlled();
+                            //Apply the entity access permissions
+                            var requests = {
+                                entityEditAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model),
+                                entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
+                                entityStartAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START, self.model),
+                                entityPermissionAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
+                                functionalAccess: accessControlService.getUserAllowedActions()
+                            };
+                            $q.all(requests).then(function (response:any) {
+                                var allowEditAccess =  accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                var allowAdminAccess =  accessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                var slaAccess =  accessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                var allowExport = accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+                                var allowStart = accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+
+                                self.allowEdit = response.entityEditAccess && allowEditAccess;
+                                self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
+                                self.allowAdmin = allowAdminAccess;
+                                self.allowSlaAccess = slaAccess;
+                                self.allowExport = response.entityExportAccess && allowExport;
+                                self.allowStart = response.entityStartAccess && allowStart;
+                            });
+                         */
+
+                    }
+
+
+                })
+            }
+        else {
+            this.inputProcessor = feed.inputProcessor;
+            this.inputProcessors = feed.inputProcessors;
+            this.buildForm();
+            }
+    }
+
+
+
+
+
+
 
     matchInputProcessor(inputProcessor: Templates.Processor, inputProcessors: Templates.Processor[]) {
 
@@ -234,6 +335,9 @@ this.getRegisteredTemplate();
     }
 
    private buildForm(){
+        if(this.inputProcessorId == undefined && this.inputProcessor != undefined){
+            this.inputProcessorId = this.inputProcessor.id;
+        }
         this.formFieldOrder = 0
         this.createFormFields(this.inputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;

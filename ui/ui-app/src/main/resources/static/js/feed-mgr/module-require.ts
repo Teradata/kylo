@@ -50,6 +50,7 @@ import {FeedInputProcessorPropertiesTemplateService} from "./services/FeedInputP
 import {FeedDetailsProcessorRenderingHelper} from "./services/FeedDetailsProcessorRenderingHelper";
 import {RegisterTemplatePropertyService} from "./services/RegisterTemplatePropertyService";
 import {UiComponentsService} from "./services/UiComponentsService";
+import {RestUrlService} from "./services/RestUrlService";
 
 
 angular.module(moduleName).service('CategoriesService',CategoriesService);
@@ -75,3 +76,5 @@ angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDe
 
 
 angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);
+
+angular.module(moduleName).service('RestUrlService', RestUrlService);
