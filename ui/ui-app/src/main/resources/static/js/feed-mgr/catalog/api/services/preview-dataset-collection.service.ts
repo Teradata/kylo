@@ -87,7 +87,7 @@ export class PreviewDatasetCollectionService {
                 this.datasets.splice(index, 1)
                 dataset.collected = false
                 //notify the observers of the change
-                this.datasetsSubject.observers.next(this.datasets);
+                this.datasetsSubject.next(this.datasets);
             }
         }
 

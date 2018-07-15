@@ -199,8 +199,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
         } else {
             this.defineFeedService.setupFeedProperties(this.feed,template, 'create')
-            this.inputProcessor = feed.inputProcessor;
-            this.inputProcessors = feed.inputProcessors;
+            this.inputProcessor = this.feed.inputProcessor;
+            this.inputProcessors = this.feed.inputProcessors;
             this.buildForm();
 
             //   this.validate();
