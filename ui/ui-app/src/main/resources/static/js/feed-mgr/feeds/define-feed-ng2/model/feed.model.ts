@@ -430,9 +430,9 @@ export interface FeedModel {
     isStream:boolean;
 
     /**
-     * Have we merged in the template data yet?
+     * Have the properties been merged and initialized with the template
      */
-    mergedTemplateData?:boolean;
+    propertiesInitialized?:boolean;
 }
 
 
@@ -504,7 +504,10 @@ export class DefaultFeedModel implements FeedModel{
     schemaChanged?:boolean;
     sourceDataSets?:SparkDataSet[] = [];
     isStream:boolean;
-    mergedTemplateData?:boolean;
+    /**
+     * Have the properties been merged and initialized with the template
+     */
+    propertiesInitialized?:boolean;
     /**
      * Should this feed show the "Skip Header" option
      */
@@ -649,6 +652,12 @@ export class DefaultFeedModel implements FeedModel{
             }
         });
         return valid;
+    }
+
+    isComplete() {
+        let complete = true;
+        this.steps.forEach(step => complete  = complete && step.complete);
+        return complete;
     }
 
 

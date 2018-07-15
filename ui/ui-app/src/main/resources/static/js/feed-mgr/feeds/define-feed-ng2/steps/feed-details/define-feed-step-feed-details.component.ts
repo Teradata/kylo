@@ -101,7 +101,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     init(){
         this.inputProcessors = [];
         if(this.feed.isNew()) {
-            this.getRegisteredTemplate();
+                this.initializeTemplateProperties();
         }
         else {
             this.mergeTemplateDataWithFeed(this.feed);
@@ -173,45 +173,45 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     }
 
-    getRegisteredTemplate() :Observable<any>{
-        if (this.feed.templateId != null && this.feed.templateId != '') {
+    initializeTemplateProperties() {
+        if (!this.feed.propertiesInitialized && this.feed.templateId != null && this.feed.templateId != '') {
 
             let params  = new HttpParams().append("feedEdit","true").append("allProperties","true");
             var promise = this.http.get(this.registerTemplatePropertyService.GET_REGISTERED_TEMPLATES_URL+"/"+this.feed.templateId, { params:params});
-            promise.subscribe( (response: any) => {
-                this.initializeProperties(response);
+            promise.subscribe( (template: any) => {
+
+
+                if (angular.isDefined(this.feed.cloned) && this.feed.cloned == true) {
+                    this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(this.feed, 'create');
+                    this.defineFeedService.sortAndSetupFeedProperties(this.feed);
+
+                } else {
+                    this.defineFeedService.setupFeedProperties(this.feed,template, 'create')
+                    this.inputProcessor = this.feed.inputProcessor;
+                    this.inputProcessors = this.feed.inputProcessors;
+                    this.buildForm();
+                    this.feed.propertiesInitialized = true;
+
+                    //   this.validate();
+                }
+
+
+
 
             }, (err: any) =>{});
             return promise;
         }
-    }
-    
-
-    /**
-     * Prepares the processor properties of the specified template for display.
-     *
-     * @param {Object} template the template with properties
-     */
-    initializeProperties(template: any) {
-        if (angular.isDefined(this.feed.cloned) && this.feed.cloned == true) {
-            this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(this.feed, 'create');
-            this.defineFeedService.sortAndSetupFeedProperties(this.feed);
-
-        } else {
-            this.defineFeedService.setupFeedProperties(this.feed,template, 'create')
+        else if(this.feed.propertiesInitialized){
             this.inputProcessor = this.feed.inputProcessor;
             this.inputProcessors = this.feed.inputProcessors;
             this.buildForm();
 
-            //   this.validate();
         }
     }
 
-
-
     public mergeTemplateDataWithFeed(feed:FeedModel){
 
-        if (!feed.mergedTemplateData) {
+        if (!feed.propertiesInitialized) {
             let observables: Observable<any>[] = [];
             let steps = feed.steps;
             let feedCopy = feed.copy();
@@ -234,7 +234,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                         feed.nonInputProcessors = updatedFeedResponse.nonInputProcessors;
                         feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
                         this.defineFeedService.setupFeedProperties(feed,feed.registeredTemplate, 'edit');
-                        feed.mergedTemplateData = true;
+                        feed.propertiesInitialized = true;
                         this.inputProcessor = feed.inputProcessor;
                         this.inputProcessors = feed.inputProcessors;
                         this.buildForm();

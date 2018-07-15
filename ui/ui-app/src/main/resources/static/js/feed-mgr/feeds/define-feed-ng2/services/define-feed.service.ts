@@ -134,6 +134,9 @@ export class DefineFeedService {
                 console.log("LOADED ", feed)
                 //convert it to our needed class
                 let feedModel = new DefaultFeedModel(feed)
+                //reset the propertiesInitalized flag
+                feedModel.propertiesInitialized = false;
+
                 this.initializeFeedSteps(feedModel);
                 feedModel.validate(true);
                 this.setFeed(feedModel)

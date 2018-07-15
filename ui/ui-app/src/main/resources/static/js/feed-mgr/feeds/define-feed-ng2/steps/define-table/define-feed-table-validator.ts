@@ -10,6 +10,7 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
 
     public validate(feed:FeedModel) : boolean{
         if(this.hasFormErrors){
+            this.step.valid = false;
             this.step.setComplete(false);
         }
         else if(feed.table.tableSchema.fields.length ==0) {
@@ -19,6 +20,6 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
             this.step.setComplete(true);
         }
         console.log("Validate step finished",this.step, feed)
-        return this.step.complete;
+        return this.step.valid;
     }
 }
