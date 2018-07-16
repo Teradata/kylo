@@ -1,46 +1,46 @@
-<div>
-  <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-  <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
-    <header-section>
-      <div layout="row" layout-align="center start">
-        <div class="card-title">Data Source Details</div>
-        <span flex></span>
-        <ng-md-icon icon="{{vm.model.icon}}" ng-style="{'fill':vm.model.iconColor}" style="padding-right:16px;" size="30"></ng-md-icon>
-      </div>
-    </header-section>
-    <body-section>
-      <vertical-section-layout section-title="Details" [on-delete]="vm.onDelete" [allow-delete]="!vm.isNew" [on-save-edit]="vm.onDetailsSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancel"
-                               [editable]="vm.isDetailsEditable" [is-valid]="vm.datasourceDetailsForm.$valid" [allow-edit]="vm.allowEdit">
+<div class="flex-container" fxLayoutAlign="center center">
+  <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+  <mat-card flex="70">
+      <mat-card-title>
+          <mat-toolbar>
+              <div class="card-title">Data Source Details</div>
+              <span flex></span>
+              <mat-icon  size="30">{{model.icon}}</mat-icon><!--ngStyle="{'fill':model.iconColor, 'padding-right': '16px'}"-->
+          </mat-toolbar>
+      </mat-card-title>
+      <mat-card-body>
+      <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="!isNew" [onSaveEdit]="onDetailsSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
+                               [editable]="isDetailsEditable" [isValid]="datasourceDetailsForm.$valid" [allowEdit]="allowEdit">
         <readonly-section>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Name</span>
-            <div flex>{{vm.model.name}}</div>
+            <div flex>{{model.name}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Description</span>
-            <div flex>{{vm.model.description}}</div>
+            <div flex>{{model.description}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Type</span>
-            <div flex>{{vm.model.type}}</div>
+            <div flex>{{model.type}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Database Connection URL</span>
-            <div flex>{{vm.model.databaseConnectionUrl}}</div>
+            <div flex>{{model.databaseConnectionUrl}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Database Driver Class Name</span>
-            <div flex>{{vm.model.databaseDriverClassName}}</div>
+            <div flex>{{model.databaseDriverClassName}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Database Driver Location(s)</span>
-            <div flex>{{vm.model.databaseDriverLocation}}</div>
+            <div flex>{{model.databaseDriverLocation}}</div>
           </div>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Database User</span>
-            <div flex>{{vm.model.databaseUser}}</div>
+            <div flex>{{model.databaseUser}}</div>
           </div>
-          <div layout="row" class="layout-padding-top-bottom" ng-repeat="(key,list) in vm.model.references" ng-if="vm.model.references">
+          <div layout="row" class="layout-padding-top-bottom" ngFor="(key,list) of model.references" *ngIf="model.references">
             <span flex="25" class="property-name">{{key}} references</span>
             <div flex>{{list.length}}</div>
           </div>
@@ -48,118 +48,112 @@
             <span flex="25" class="property-name">Icon</span>
 
             <div layout="column">
-              <ng-md-icon icon="{{vm.model.icon}}" ng-style="{'fill':vm.model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
+              <mat-icon  size="45">{{model.icon}}</mat-icon><!-- ngStyle="{'fill':model.iconColor, 'margin': inherit}"-->
             </div>
           </div>
         </readonly-section>
         <editable-section>
-          <ng-form name="vm.datasourceDetailsForm">
-            <md-input-container class="md-block">
+          <form name="datasourceDetailsForm">
+            <mat-form-field class="block">
               <label>Name</label>
-              <input required ng-model="vm.editModel.name" name="datasourceName" ng-model-options="{ debounce: 500 }" ng-change="vm.onDatasourceNameChange()"/>
-              <div ng-messages="vm.datasourceDetailsForm.datasourceName.$error" md-auto-hide="false">
-                <div ng-message="required">Required.</div>
-                <div ng-message="notUnique">This name is already used.</div>
-              </div>
-            </md-input-container>
+              <input matInput required [(ngModel)]="editModel.name" name="datasourceName" (change)="onDatasourceNameChange()"/>
+              <mat-error *ngIf="isDataSourceNameEmpty()">Data Source name is required.</mat-error>
+              <mat-error *ngIf="isDataSourceNameDuplicate()">Data Source name is already in use.</mat-error>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Description</label>
-              <input ng-model="vm.editModel.description"/>
-            </md-input-container>
+              <input matInput [(ngModel)]="editModel.description" name="description"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Database Connection URL</label>
-              <input required ng-model="vm.editModel.databaseConnectionUrl"/>
-            </md-input-container>
+              <input matInput required [(ngModel)]="editModel.databaseConnectionUrl" name="connectionURL"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Database Driver Class Name</label>
-              <input required ng-model="vm.editModel.databaseDriverClassName"/>
-            </md-input-container>
+              <input matInput required [(ngModel)]="editModel.databaseDriverClassName" name="driverClassName"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Database Driver Location(s)</label>
-              <input ng-model="vm.editModel.databaseDriverLocation"/>
-            </md-input-container>
+              <input matInput [(ngModel)]="editModel.databaseDriverLocation" name="driverLocation"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Database User</label>
-              <input autocomplete="new-password" ng-model="vm.editModel.databaseUser"/>
-            </md-input-container>
+              <input matInput autocomplete="new-password" [(ngModel)]="editModel.databaseUser" name="databaseUser"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block">
+            <mat-form-field class="block">
               <label>Password</label>
-              <input type="password" autocomplete="new-password" ng-model="vm.editModel.password" ng-change="vm.onPasswordChange()"/>
-            </md-input-container>
+              <input matInput type="password" autocomplete="new-password" [(ngModel)]="editModel.password" (change)="onPasswordChange()" name="password"/>
+            </mat-form-field>
 
-            <md-input-container class="md-block" style="padding-top: 0">
               <div layout="row" layout-align="start center">
-                <md-button ng-disabled="!vm.datasourceDetailsForm.$valid" class="md-primary" ng-click="vm.testConnection()" style="margin-left: 0">Test Connection</md-button>
-                <div ng-if="vm.testConnectionResult && !vm.testConnectionResult.status" style="color: rgb(221,44,0);">{{vm.testConnectionResult.msg}}</div>
-                <ng-md-icon ng-if="vm.testConnectionResult.status" icon="check" size="30" style="margin: inherit; margin-top: -10px; fill: green"></ng-md-icon>
+                <button mat-button [disabled]="!datasourceDetailsForm.$valid" class="primary" (click)="testConnection()" style="margin-left: 0">Test Connection</button>
+                <div *ngIf="testConnectionResult && !testConnectionResult.status" style="color: rgb(221,44,0);">{{testConnectionResult.msg}}</div>
+                <mat-icon *ngIf="testConnectionResult.status" size="30" style="margin: inherit; margin-top: -10px; fill: green">check</mat-icon>
               </div>
-            </md-input-container>
 
             <div layout="column">
               <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
-                <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
-                <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit;" ng-style="{'fill': vm.editModel.iconColor}"></ng-md-icon>
-                <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
+                <span class="mat-input-label" style="font-size: 11px;" flex="25">Icon </span>
+                <mat-icon size="45" >{{editModel.icon}}</mat-icon><!--ngStyle="{'fill': editModel.iconColor, 'margin':'inherit'}"-->
+                <button mat-button class="primary" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
               </div>
             </div>
-          </ng-form>
+          </form>
         </editable-section>
       </vertical-section-layout>
 
-      <ng-form name="vm.datasourceAccessControlForm" ng-if="vm.allowChangePermissions && !vm.isNew()">
-        <vertical-section-layout section-title="Access Control" [on-save-edit]="vm.onAccessControlSave" [on-edit]="vm.onEdit" [editable]="vm.isAccessControlEditable" [is-valid]="vm.isValid">
+      <!-- <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
+        <vertical-section-layout section-title="Access Control" [onSaveEdit]="onAccessControlSave" [onEdit]="onEdit" [editable]="isAccessControlEditable" [is-valid]="isValid">
           <readonly-section>
-            <entity-access-control entity="vm.model" entity-type="datasource" the-form="vm.datasourceAccessControlForm" read-only="true"></entity-access-control>
+            <entity-access-control entity="model" entity-type="datasource" the-form="datasourceAccessControlForm" read-only="true"></entity-access-control>
           </readonly-section>
           <editable-section>
-            <entity-access-control entity="vm.editModel" entity-type="datasource" the-form="vm.datasourceAccessControlForm"></entity-access-control>
+            <entity-access-control entity="editModel" entity-type="datasource" the-form="datasourceAccessControlForm"></entity-access-control>
           </editable-section>
         </vertical-section-layout>
-      </ng-form>
+      </ng-form> -->
 
-      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" ng-if="!vm.isNew()">
+      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" *ngIf="!isNew()">
         <readonly-section>
-          <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.sourceForFeeds.length > 0">
-            <md-list-item>
+          <mat-list layout-fill class="list-item-table list-condensed" id="policy-list" *ngIf="model.sourceForFeeds.length > 0">
+            <mat-list-item>
               <div layout="row" layout-fill>
-                <div flex="50" class="md-list-item-text hint">
+                <div flex="50" class="mat-list-item-text hint">
                   Name
                 </div>
-                <div flex="10" class="md-list-item-text hint">
+                <div flex="10" class="mat-list-item-text hint">
                   Active
                 </div>
-                <div flex="40" class="md-list-item-text hint">
+                <div flex="40" class="mat-list-item-text hint">
                   Last Modified
                 </div>
               </div>
-            </md-list-item>
-            <md-list-item ng-repeat="feed in vm.model.sourceForFeeds">
-              <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
-                <div flex="50" class="md-list-item-text">
-                  <md-input-container class="md-block" flex-gt-sm>
+            </mat-list-item>
+            <mat-list-item ngFor="feed of model.sourceForFeeds">
+              <div layout="row" class="hover" layout-fill (click)="onFeedClick(feed)">
+                <div flex="50" class="mat-list-item-text">
                     <div>{{feed.displayName}}</div>
-                  </md-input-container>
                 </div>
-                <div flex="10" class="md-list-item-text ">
-                  <ng-md-icon icon="check" ng-if="feed.state == 'ENABLED'"></ng-md-icon>
+                <div flex="10" class="mat-list-item-text ">
+                  <mat-icon *ngIf="feed.state == 'ENABLED'">check</mat-icon>
                 </div>
-                <div flex="40" class="md-list-item-text ">
+                <div flex="40" class="mat-list-item-text ">
                   {{feed.modifiedTime | date : 'MM/dd/yyyy hh:mm:ss'}}
                 </div>
               </div>
-            </md-list-item>
-          </md-list>
-          <div ng-if="vm.model.sourceForFeeds == null || vm.model.sourceForFeeds.length === 0">
+            </mat-list-item>
+          </mat-list>
+          <div *ngIf="model.sourceForFeeds == null || model.sourceForFeeds.length === 0">
             There are no feeds associated with this data source.
           </div>
         </readonly-section>
       </vertical-section-layout>
-    </body-section>
-  </card-layout>
+    </mat-card-body>
+    </mat-card>
 </div>

@@ -6,6 +6,7 @@ import AccessConstants from "../../../constants/AccessConstants";
 import { Component, ViewContainerRef } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 
 @Component({
@@ -80,7 +81,8 @@ export default class GroupDetailsComponent {
         private UserService: UserService,
         private stateService: StateService,
         private _dialogService: TdDialogService,
-        private _viewContainerRef: ViewContainerRef) {
+        private _viewContainerRef: ViewContainerRef,
+        private snackBar: MatSnackBar) {
 
     }
     /**
@@ -124,15 +126,8 @@ export default class GroupDetailsComponent {
         var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
         this.UserService.deleteGroup(this.stateService.params.groupId)
             .then(() => {
-                this._dialogService.openAlert({
-                    message: "Successfully deleted the group " + name,
-                    viewContainerRef: this._viewContainerRef,
-                    width: '300 px',
-                    closeButton: 'OK',
-                    closeOnNavigation: true,
-                    disableClose: false
-                }).afterClosed().subscribe((accept: boolean) => {
-                    this.stateService.go("groups");
+                this.snackBar.open("Successfully deleted the group " + name,"OK",{
+                    duration : 3000
                 });
             }, () => {
                 this._dialogService.openAlert({

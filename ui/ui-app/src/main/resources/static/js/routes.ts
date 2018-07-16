@@ -2,8 +2,6 @@ import * as angular from 'angular';
 //import app from "./app";
 
 import {app} from './common/module-require';
-//const app = require('./common/module-require');//kylo-common
-//import {moduleName} from "./common/module-name";
 import '@uirouter/angular';
 import 'kylo-services';
 import './main/IndexController';
@@ -155,35 +153,6 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             url: '/categories', 
             loadChildren: 'feed-mgr/categories/categories.module#CategoryModule' 
         }); 
-        // $stateProvider.state({
-        //     name: 'categories.**',
-        //     url: '/categories',
-        //     lazyLoad: (transition: any) =>{
-        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-        //             //upon success go back to the state
-        //             $stateProvider.stateService.go('categories')
-        //             return args;
-        //         }, function error(err: any) {
-        //             console.log("Error loading categories ", err);
-        //             return err;
-        //         });
-        //     }
-        // }).state('category-details.**', {
-        //     url: '/category-details/{categoryId}',
-        //     params: {
-        //         categoryId: null
-        //     },
-        //     lazyLoad: (transition: any)=> {
-        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-        //             //upon success go back to the state
-        //             $stateProvider.stateService.go('category-details', transition.params())
-        //             return args;
-        //         }, function error(err: any) {
-        //             console.log("Error loading categories ", err);
-        //             return err;
-        //         });
-        //     }
-        // });
 
         $stateProvider.state('registered-templates.**', {
             url: '/registered-templates',
@@ -236,24 +205,6 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             loadChildren: 'feed-mgr/sla/sla.module#SLAModule' 
         }); 
 
-        // $stateProvider.state({
-        //     name: 'service-level-agreements.**',
-        //     url: '/service-level-agreements',
-        //     params: {
-        //         slaId: null
-        //     },
-        //     lazyLoad: (transition: any)=>{
-        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-        //             //upon success go back to the state
-        //             $stateProvider.stateService.go('service-level-agreements',transition.params())
-        //             return args;
-        //         }, function error(err: any) {
-        //             console.log("Error loading service-level-agreements ", err);
-        //             return err;
-        //         });
-        //     }
-        // });
-
         $stateProvider.state({ 
             name: 'users.**', 
             url: '/users', 
@@ -264,6 +215,12 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             name: 'groups.**',
             url: '/groups',
             loadChildren: 'auth/auth.module#AuthModule' 
+        });
+
+        $stateProvider.state({ 
+            name: 'datasources.**', 
+            url: '/datasources', 
+            loadChildren: 'feed-mgr/datasources/datasources.moule#DataSourcesModule' 
         });
 
         $stateProvider.state('search.**', {
@@ -501,36 +458,6 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                     return args;
                 }, function error(err: any) {
                     console.log("Error loading charts ", err);
-                    return err;
-                });
-            }
-        });
-
-
-
-        $stateProvider.state({
-            name: "datasources.**",
-            url: "/datasources",
-            lazyLoad: (transition: any)=>{
-                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go("datasources", transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading datasources.", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: "datasource-details.**",
-            url: "/datasource-details",
-            lazyLoad: (transition: any) =>{
-                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go("datasource-details", transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading datasource-details.", err);
                     return err;
                 });
             }

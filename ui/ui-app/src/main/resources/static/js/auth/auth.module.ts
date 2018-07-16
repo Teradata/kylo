@@ -31,6 +31,7 @@ import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent"
 import GroupsTableComponent from "./groups/GroupsTableComponent";
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {PermissionsTableComponent} from './shared/permissions-table/permissions-table.component';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 @NgModule({ 
     declarations: [ 
@@ -60,6 +61,7 @@ import {PermissionsTableComponent} from './shared/permissions-table/permissions-
         MatChipsModule,
         MatInputModule,
         MatAutocompleteModule,
+        MatSnackBarModule,
         FlexLayoutModule,
         FormsModule,
         ReactiveFormsModule,

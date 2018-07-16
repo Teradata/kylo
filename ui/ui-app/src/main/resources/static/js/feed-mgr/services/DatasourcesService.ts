@@ -16,18 +16,15 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-const moduleName = require('feed-mgr/module-name');
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import {  RestUrlService } from './RestUrlService';
 
 /**
  * Interacts with the Data Sources REST API.
  * @constructor
  */
-
-//export class DatasourcesService {
-    // DatasourcesServiceClass();
-//}
-
-// export class DatasourcesService {
+@Injectable()
  export  class DatasourcesService {
        /**
          * Type name for JDBC data sources.
@@ -55,10 +52,8 @@ const moduleName = require('feed-mgr/module-name');
             }
         }
 
-        static readonly $inject = ["$http", "$q", "RestUrlService","EntityAccessControlService"];
-        constructor(private $http:any, 
-                    private $q:any, 
-                    private RestUrlService:any, 
+        constructor(private http:HttpClient, 
+                    private restUrlService:RestUrlService, 
                     private entityAccessControlService:EntityAccessControlService) {
       //  angular.extend(DatasourcesService.prototype, {
             
@@ -90,10 +85,7 @@ const moduleName = require('feed-mgr/module-name');
              * @returns {Promise} for when the data source is deleted
              */
             deleteById= (id:any) => {
-                return this.$http({
-                    method: "DELETE",
-                    url: this.RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
-                });
+                return this.http.delete(this.restUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)).toPromise();
             }
 
             /**
@@ -115,10 +107,10 @@ const moduleName = require('feed-mgr/module-name');
              * @returns {Promise} with the list of data sources
              */
             findAll= () => {
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}})
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}}).toPromise()
                     .then((response:any) => {
-                        _.each(response.data, this.ensureDefaultIcon);
-                        return response.data;
+                        _.each(response, this.ensureDefaultIcon);
+                        return response;
                     });
             }
 
@@ -131,7 +123,7 @@ const moduleName = require('feed-mgr/module-name');
                 if (this.HIVE_DATASOURCE.id === id) {
                     return Promise.resolve(this.HIVE_DATASOURCE);
                 }
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id)
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id).toPromise()
                     .then((response:any) => {
                         this.ensureDefaultIcon(response.data);
                         return response.data;
@@ -139,7 +131,7 @@ const moduleName = require('feed-mgr/module-name');
             }
 
             findControllerServiceReferences= (controllerServiceId:any) => {
-                return this.$http.get(this.RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
+                return this.http.get(this.restUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId)).toPromise()
                     .then((response:any) => {
                         return response.data;
                     });
@@ -157,7 +149,7 @@ const moduleName = require('feed-mgr/module-name');
                     options.params.schema = opt_schema;
                 }
 
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options).toPromise()
                     .then((response:any) => {
                         return response.data;
                     });
@@ -174,7 +166,7 @@ const moduleName = require('feed-mgr/module-name');
                     options.params.tableName = "%" + opt_query + "%";
                 }
 
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options).toPromise()
                     .then((response:any) => {
                         // Get the list of tables
                         var tables = [];
@@ -201,7 +193,7 @@ const moduleName = require('feed-mgr/module-name');
             }
 
             query= (datasourceId:any, sql:any) => {
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql).toPromise()
                     .then((response:any) => {
                         return response;
                     }).catch((e:any) => {
@@ -210,7 +202,7 @@ const moduleName = require('feed-mgr/module-name');
             }
 
             preview= (datasourceId:any, schema:string, table:string, limit:number) => {
-                return this.$http.post(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                return this.http.post(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit),"").toPromise()
                     .then((response:any) => {
                         return response;
                     }).catch((e:any) => {
@@ -219,7 +211,7 @@ const moduleName = require('feed-mgr/module-name');
             }
 
            getPreviewSql= (datasourceId:any, schema:string, table:string, limit:number) => {
-                return this.$http.get(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                return this.http.get(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit)).toPromise()
                     .then((response:any) => {
                         return response.data;
                     }).catch((e:any) => {
@@ -229,7 +221,7 @@ const moduleName = require('feed-mgr/module-name');
 
             getTablesAndColumns= (datasourceId:any, schema:any) => {
                 var params = {schema: schema};
-                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
+                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
             }
 
             /**
@@ -266,19 +258,17 @@ const moduleName = require('feed-mgr/module-name');
              * @returns {Promise} with the updated data source
              */
             save= (datasource:any) => {
-                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL, datasource)
+                return this.http.post(this.restUrlService.GET_DATASOURCES_URL, datasource).toPromise()
                     .then((response:any) => {
                         return response.data;
                     });
             }
 
            testConnection= (datasource: any) => {
-                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+                return this.http.post(this.restUrlService.GET_DATASOURCES_URL + "/test", datasource).toPromise()
                     .then((response:any) => {
                         return response.data;
                     });
             }
     //}
 }
-
-angular.module(moduleName).service("DatasourcesService",DatasourcesService);

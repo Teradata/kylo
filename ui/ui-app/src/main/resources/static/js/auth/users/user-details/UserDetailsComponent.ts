@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 import { ViewContainerRef } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
@@ -91,7 +92,8 @@ export default class UserDetailsComponent {
         private UserService: UserService,
         private stateService: StateService,
         private _dialogService: TdDialogService,
-        private _viewContainerRef: ViewContainerRef
+        private _viewContainerRef: ViewContainerRef,
+        private snackBar: MatSnackBar
     ) {
 
         //     $scope.$watch(
@@ -203,16 +205,10 @@ export default class UserDetailsComponent {
         var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
         this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
             .then(() => {
-                this._dialogService.openAlert({
-                    message: "Successfully deleted the user " + name,
-                    viewContainerRef: this._viewContainerRef,
-                    width: '300 px',
-                    closeButton: 'OK',
-                    closeOnNavigation: true,
-                    disableClose: false
-                }).afterClosed().subscribe((accept: boolean) => {
-                    this.stateService.go("users");
+                this.snackBar.open("Successfully deleted the group " + name,"OK",{
+                    duration : 3000
                 });
+                    this.stateService.go("users");
             }, () => {
                 this._dialogService.openAlert({
                     message: "The user " + name + "could not be deleted. ",

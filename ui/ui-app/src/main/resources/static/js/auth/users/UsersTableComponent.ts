@@ -45,20 +45,6 @@ export default class UsersTableComponent {
     loading: boolean = true;
 
     /**
-     * Identifier for this page.
-     * @type {string}
-     */
-    pageName = PAGE_NAME;
-
-    /**
-     * Helper for table pagination.
-     * @type {*}
-     */
-    paginationData: any;
-
-    sortOptions: any;
-
-    /**
      * List of users.
      * @type {Array.<UserPrincipal>}
      */

@@ -65,7 +65,8 @@ export class TablesController {
         }, (newVal: any) => {
             this.paginationDataService.filter(this.pageName, newVal)
         });
-        this.getDatasource(this.datasourceId).then(this.init());
+        this.init();
+        this.getDatasource(this.datasourceId).then();
 
     };
     successFn = (response: any) => {

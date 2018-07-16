@@ -22,10 +22,10 @@
     <div *ngIf="!loading" class="flex-container" fxLayoutAlign="center center">
         <mat-card flex="80">
             <mat-card-title>
-                <mat-toolbar>
+                <mat-toolbar style="background: none;">
                     <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle}}</div>
                     <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)"
-                        [showUnderline]="true" [alwaysVisible]="true" flex>
+                        [showUnderline]="true" [alwaysVisible]="true" searchIcon="" flex>
                     </td-search-box>
                 </mat-toolbar>
             </mat-card-title>
