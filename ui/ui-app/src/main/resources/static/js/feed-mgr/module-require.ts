@@ -7,7 +7,6 @@ import "./services/FeedService";
 import "./services/RegisterTemplateServiceFactory";
 
 import "./services/FeedSecurityGroupsService";
-import "./services/FeedInputProcessorPropertiesTemplateFactory";
 import "./services/FeedDetailsProcessorRenderingHelper";
 import "./services/ImportService";
 import "./services/SlaService";
