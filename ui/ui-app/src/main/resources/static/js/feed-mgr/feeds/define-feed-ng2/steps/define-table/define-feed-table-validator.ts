@@ -14,9 +14,11 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
             this.step.setComplete(false);
         }
         else if(feed.table.tableSchema.fields.length ==0) {
+            this.step.valid = true;
          this.step.setComplete(false);
         }
         else {
+            this.step.valid = true;
             this.step.setComplete(true);
         }
         console.log("Validate step finished",this.step, feed)

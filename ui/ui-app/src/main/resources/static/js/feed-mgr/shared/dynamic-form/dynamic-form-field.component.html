@@ -34,14 +34,38 @@
 
 
     <mat-form-field  *ngSwitchCase="'select'"  class="pad-top-sm">
-      <mat-select [id]="field.key"[formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]" [placeholder]="field.placeholder" >
-        <mat-option *ngFor="let opt of field.options" [value]="opt.key">
-          {{opt.value}}
+      <mat-select [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]" [placeholder]="field.placeholder" >
+        <mat-option *ngFor="let opt of field.options" [value]="opt.value">
+          {{opt.label}}
         </mat-option>
       </mat-select>
+      <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
 
+    <div *ngSwitchCase="'checkbox'"  class="pad-top-sm" >
+    <mat-checkbox
+        [id]="field.key" [formControlName]="field.key"    labelPosition="before"   [(ngModel)]="field.checked" (change)="field.onChange($event)">{{field.label}}
+    </mat-checkbox>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
 
+
+    <div *ngSwitchCase="'radio'"  class="pad-top-sm" >
+    <mat-radio-group  [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]">
+      <ng-template ngFor let-opt let-index="index" let-last="last" [ngForOf]="field.options">
+        <mat-radio-button [value]="opt.value">{{opt.label}}</mat-radio-button>
+      </ng-template>
+    </mat-radio-group>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+
+    <mat-form-field  *ngSwitchCase="'textarea'"  class="pad-top-sm">
+    <textarea matInput [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]">
+        {{field.model[field['modelValueProperty']]}}
+    </textarea>
+    </mat-form-field>
+    <mat-hint>{{field.hint}}</mat-hint>
   </div>
 
 </div>

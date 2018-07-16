@@ -17,38 +17,43 @@ import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {DynamicFormService} from "./services/dynamic-form.service";
 import {DynamicFormFieldComponent} from "./dynamic-form-field.component";
 import {DynamicFormComponent} from "./dynamic-form.component";
+import {TrueFalseValueDirective} from "./true-false-value.directive";
+import {MatRadioModule} from "@angular/material/radio";
 
 
 @NgModule({
     declarations: [
         DynamicFormFieldComponent,
-        DynamicFormComponent
+        DynamicFormComponent,
+        TrueFalseValueDirective
         ],
     exports:[
         DynamicFormFieldComponent,
-        DynamicFormComponent
+        DynamicFormComponent,
+        TrueFalseValueDirective
     ],
     imports: [
         CommonModule,
-        MatCardModule,
         FormsModule,
         MatAutocompleteModule,
-        MatInputModule,
+        MatButtonModule,
+        MatCardModule,
+        MatCheckboxModule,
+        MatDividerModule,
+        MatFormFieldModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
+        MatInputModule,
         MatListModule,
-        MatCheckboxModule,
+        MatListModule,
+        MatNativeDateModule,
         MatOptionModule,
+        MatRadioModule,
         MatSelectModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatDividerModule,
-        MatListModule,
         MatTabsModule,
         MatToolbarModule,
-        MatNativeDateModule,
-        MatButtonModule
+        ReactiveFormsModule
     ],
     providers: [
         DynamicFormService
