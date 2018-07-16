@@ -9,105 +9,104 @@
           </mat-toolbar>
       </mat-card-title>
       <mat-card-body>
-      <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="!isNew" [onSaveEdit]="onDetailsSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
-                               [editable]="isDetailsEditable" [isValid]="datasourceDetailsForm.$valid" [allowEdit]="allowEdit">
-        <readonly-section>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Name</span>
-            <div flex>{{model.name}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Description</span>
-            <div flex>{{model.description}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Type</span>
-            <div flex>{{model.type}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Database Connection URL</span>
-            <div flex>{{model.databaseConnectionUrl}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Database Driver Class Name</span>
-            <div flex>{{model.databaseDriverClassName}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Database Driver Location(s)</span>
-            <div flex>{{model.databaseDriverLocation}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Database User</span>
-            <div flex>{{model.databaseUser}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom" ngFor="(key,list) of model.references" *ngIf="model.references">
-            <span flex="25" class="property-name">{{key}} references</span>
-            <div flex>{{list.length}}</div>
-          </div>
-          <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
-            <span flex="25" class="property-name">Icon</span>
-
-            <div layout="column">
-              <mat-icon  size="45">{{model.icon}}</mat-icon><!-- ngStyle="{'fill':model.iconColor, 'margin': inherit}"-->
+      <form #datasourceDetailsForm="ngForm">
+        <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="!isNew" [onSaveEdit]="onDetailsSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
+                                [editable]="isDetailsEditable" [isValid]="datasourceDetailsForm.$valid" [allowEdit]="allowEdit">
+          <readonly-section>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Name</span>
+              <div flex>{{model.name}}</div>
             </div>
-          </div>
-        </readonly-section>
-        <editable-section>
-          <form name="datasourceDetailsForm">
-            <mat-form-field class="block">
-              <label>Name</label>
-              <input matInput required [(ngModel)]="editModel.name" name="datasourceName" (change)="onDatasourceNameChange()"/>
-              <mat-error *ngIf="isDataSourceNameEmpty()">Data Source name is required.</mat-error>
-              <mat-error *ngIf="isDataSourceNameDuplicate()">Data Source name is already in use.</mat-error>
-            </mat-form-field>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Description</span>
+              <div flex>{{model.description}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Type</span>
+              <div flex>{{model.type}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Database Connection URL</span>
+              <div flex>{{model.databaseConnectionUrl}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Database Driver Class Name</span>
+              <div flex>{{model.databaseDriverClassName}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Database Driver Location(s)</span>
+              <div flex>{{model.databaseDriverLocation}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Database User</span>
+              <div flex>{{model.databaseUser}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" ngFor="(key,list) of model.references" *ngIf="model.references">
+              <span flex="25" class="property-name">{{key}} references</span>
+              <div flex>{{list.length}}</div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
+              <span flex="25" class="property-name">Icon</span>
 
-            <mat-form-field class="block">
-              <label>Description</label>
-              <input matInput [(ngModel)]="editModel.description" name="description"/>
-            </mat-form-field>
-
-            <mat-form-field class="block">
-              <label>Database Connection URL</label>
-              <input matInput required [(ngModel)]="editModel.databaseConnectionUrl" name="connectionURL"/>
-            </mat-form-field>
-
-            <mat-form-field class="block">
-              <label>Database Driver Class Name</label>
-              <input matInput required [(ngModel)]="editModel.databaseDriverClassName" name="driverClassName"/>
-            </mat-form-field>
-
-            <mat-form-field class="block">
-              <label>Database Driver Location(s)</label>
-              <input matInput [(ngModel)]="editModel.databaseDriverLocation" name="driverLocation"/>
-            </mat-form-field>
-
-            <mat-form-field class="block">
-              <label>Database User</label>
-              <input matInput autocomplete="new-password" [(ngModel)]="editModel.databaseUser" name="databaseUser"/>
-            </mat-form-field>
-
-            <mat-form-field class="block">
-              <label>Password</label>
-              <input matInput type="password" autocomplete="new-password" [(ngModel)]="editModel.password" (change)="onPasswordChange()" name="password"/>
-            </mat-form-field>
-
-              <div layout="row" layout-align="start center">
-                <button mat-button [disabled]="!datasourceDetailsForm.$valid" class="primary" (click)="testConnection()" style="margin-left: 0">Test Connection</button>
-                <div *ngIf="testConnectionResult && !testConnectionResult.status" style="color: rgb(221,44,0);">{{testConnectionResult.msg}}</div>
-                <mat-icon *ngIf="testConnectionResult.status" size="30" style="margin: inherit; margin-top: -10px; fill: green">check</mat-icon>
-              </div>
-
-            <div layout="column">
-              <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
-                <span class="mat-input-label" style="font-size: 11px;" flex="25">Icon </span>
-                <mat-icon size="45" >{{editModel.icon}}</mat-icon><!--ngStyle="{'fill': editModel.iconColor, 'margin':'inherit'}"-->
-                <button mat-button class="primary" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
+              <div layout="column">
+                <mat-icon  size="45">{{model.icon}}</mat-icon><!-- ngStyle="{'fill':model.iconColor, 'margin': inherit}"-->
               </div>
             </div>
-          </form>
-        </editable-section>
-      </vertical-section-layout>
+          </readonly-section>
+          <editable-section>
+              <mat-form-field class="block">
+                <mat-label>Name</mat-label>
+                <input matInput required [(ngModel)]="editModel.name" name="datasourceName"/>
+                <mat-error *ngIf="isDataSourceNameEmpty()">Data Source name is required.</mat-error>
+                <mat-error *ngIf="isDataSourceNameDuplicate()">Data Source name is already in use.</mat-error>
+              </mat-form-field>
 
+              <mat-form-field class="block">
+                <mat-label>Description</mat-label>
+                <input matInput [(ngModel)]="editModel.description" name="description"/>
+              </mat-form-field>
+
+              <mat-form-field class="block">
+                <mat-label>Database Connection URL</mat-label>
+                <input matInput required [(ngModel)]="editModel.databaseConnectionUrl" name="connectionURL"/>
+              </mat-form-field>
+
+              <mat-form-field class="block">
+                <mat-label>Database Driver Class Name</mat-label>
+                <input matInput required [(ngModel)]="editModel.databaseDriverClassName" name="driverClassName"/>
+              </mat-form-field>
+
+              <mat-form-field class="block">
+                <mat-label>Database Driver Location(s)</mat-label>
+                <input matInput [(ngModel)]="editModel.databaseDriverLocation" name="driverLocation"/>
+              </mat-form-field>
+
+              <mat-form-field class="block">
+                <mat-label>Database User</mat-label>
+                <input matInput autocomplete="new-password" [(ngModel)]="editModel.databaseUser" name="databaseUser"/>
+              </mat-form-field>
+
+              <mat-form-field class="block">
+                <mat-label>Password</mat-label>
+                <input matInput type="password" autocomplete="new-password" [(ngModel)]="editModel.password" (change)="onPasswordChange()" name="password"/>
+              </mat-form-field>
+
+                <div layout="row" layout-align="start center">
+                  <button mat-button [disabled]="!datasourceDetailsForm.valid" class="primary" (click)="testConnection()" style="margin-left: 0">Test Connection</button>
+                  <div *ngIf="testConnectionResult && !testConnectionResult.status" style="color: rgb(221,44,0);">{{testConnectionResult.msg}}</div>
+                  <mat-icon *ngIf="testConnectionResult.status" size="30" style="margin: inherit; margin-top: -10px; fill: green">check</mat-icon>
+                </div>
+
+              <div layout="column">
+                <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+                  <span class="mat-input-label" style="font-size: 11px;" flex="25">Icon </span>
+                  <mat-icon size="45" >{{editModel.icon}}</mat-icon><!--ngStyle="{'fill': editModel.iconColor, 'margin':'inherit'}"-->
+                  <button mat-button class="primary" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
+                </div>
+              </div>
+          </editable-section>
+        </vertical-section-layout>
+      </form>
       <!-- <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
         <vertical-section-layout section-title="Access Control" [onSaveEdit]="onAccessControlSave" [onEdit]="onEdit" [editable]="isAccessControlEditable" [is-valid]="isValid">
           <readonly-section>

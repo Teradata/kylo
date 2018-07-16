@@ -18,7 +18,7 @@ import 'rxjs/add/observable/interval';
 const PASSWORD_PLACEHOLDER = "******";
 @Component({
     templateUrl: "js/feed-mgr/datasources/details.html",
-    styles : [".block : { display : 'block'}"]
+    styles: [' .block { display : block; margin: 18px;}']
 })
 export class DatasourcesDetailsComponent {
 
@@ -37,11 +37,6 @@ export class DatasourcesDetailsComponent {
     * @type {Object}
     */
     datasourceAccessControlForm: any = {};
-    /**
-    * Angular Materials form for Details view.
-    * @type {Object}
-    */
-    datasourceDetailsForm: any = {};
     /**
     * The set of existing data source names.
     * @type {Object.<string, boolean>}
@@ -79,6 +74,7 @@ export class DatasourcesDetailsComponent {
     testConnectionResult: any = {};
 
     allowDelete: boolean = true;
+    gettingDataSources : boolean = false;
     ngOnInit() {
         // Load the data source
         if (angular.isString(this.stateService.params.datasourceId)) {
@@ -316,22 +312,36 @@ export class DatasourcesDetailsComponent {
      * Validates the edit form.
      */
     validate = () => {
-        if (angular.isDefined(this.datasourceDetailsForm["datasourceName"])) {
+        if (angular.isDefined(this.editModel.name) && !this.gettingDataSources && this.editModel.name != '') {
             let isNew = angular.isUndefined(this.model) || angular.isUndefined(this.model.id);
             let unique = true;
             if (isNew || (!isNew && this.model.name.toLowerCase() != this.editModel.name.toLowerCase())) {
                 unique = angular.isUndefined(this.existingDatasourceNames[this.editModel.name.toLowerCase()]);
             }
-            this.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", unique);
+            return unique;
+        }else {
+            return true;
         }
     };
 
     isDataSourceNameEmpty = () => {
-
+        return !angular.isString(this.editModel.name) || this.editModel.name.length === 0;
     }
 
     isDataSourceNameDuplicate = () => {
-
+        if (!this.gettingDataSources && _.isEmpty(this.existingDatasourceNames)){
+            this.gettingDataSources = true;
+            this.datasourcesService.findAll()
+                .then((datasources: any) => {
+                    this.existingDatasourceNames = {};
+                    angular.forEach(datasources, (datasource) => {
+                        this.existingDatasourceNames[datasource.name.toLowerCase()] = true;
+                    });
+                }).then( () => this.gettingDataSources = false);
+            return false;
+        }else{
+           return !this.validate();
+        }
     }
 
     testConnection = () => {
@@ -351,25 +361,6 @@ export class DatasourcesDetailsComponent {
             };
         });
     };
-
-    /**
-     * Watch for changes on the datasource name
-     */
-    onDatasourceNameChange() {
-        if (_.isEmpty(this.existingDatasourceNames)) {
-            this.datasourcesService.findAll()
-                .then((datasources: any) => {
-                    this.existingDatasourceNames = {};
-                    angular.forEach(datasources, (datasource) => {
-                        this.existingDatasourceNames[datasource.name.toLowerCase()] = true;
-                    });
-                })
-                .then(this.validate);
-        } else {
-            this.validate();
-        }
-    }
-
 
 }
 

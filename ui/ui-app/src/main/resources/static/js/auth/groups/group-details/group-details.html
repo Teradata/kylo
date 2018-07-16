@@ -28,7 +28,7 @@
             </mat-toolbar>
         </mat-card-title>
         <mat-card-body>
-            <form name="groupForm">
+            <form #groupForm="ngForm">
                 <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit"
                     [onCancelEdit]="onCancel" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
