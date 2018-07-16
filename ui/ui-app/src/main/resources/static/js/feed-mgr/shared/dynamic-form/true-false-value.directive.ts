@@ -9,9 +9,7 @@ import {ControlValueAccessor,NG_VALUE_ACCESSOR,NgControl} from '@angular/forms';
             useExisting: forwardRef(() => TrueFalseValueDirective),
             multi: true
         }
-    ],
-    schemas: [NO_ERRORS_SCHEMA
-        ]
+    ]
 })
 export class TrueFalseValueDirective implements ControlValueAccessor {
     private propagateChange = (_: any) => {};
