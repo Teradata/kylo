@@ -44,6 +44,12 @@ import {KyloFeedManagerModule} from "../../feed-mgr.module";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
 import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/define-feed-step-edit-content.component";
+import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
+import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {CovalentDynamicFormsModule} from "@covalent/dynamic-forms";
+import {MatRadioModule} from "@angular/material/radio";
+import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
 
 
 @NgModule({
@@ -59,7 +65,9 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         DefineFeedStepFeedTargetComponent,
         DefineFeedStepCardComponent,
         DefineFeedStepReadonlyContentComponent,
-        DefineFeedStepEditContentComponent
+        DefineFeedStepEditContentComponent,
+        DefineFeedTableComponent,
+        FilterPartitionFormulaPipe
     ],
     providers:[
       DefineFeedService,
@@ -73,6 +81,8 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         CovalentLoadingModule,
         CovalentSearchModule,
         CovalentMediaModule,
+        CovalentVirtualScrollModule,
+        CovalentDynamicFormsModule,
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
@@ -81,12 +91,15 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
         PreviewSchemaModule,
         MatCardModule,
         FormsModule,
+        DynamicFormModule,
+        MatRadioModule,
         MatAutocompleteModule,
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
+        MatCheckboxModule,
         MatOptionModule,
         MatSelectModule,
         ReactiveFormsModule,

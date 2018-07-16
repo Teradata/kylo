@@ -94,25 +94,6 @@ class ModuleFactory  {
                 module:moduleName,
                 permissions:AccessConstants.TEMPLATES_EDIT
             }
-        }).state('import-template',{
-            url:'/import-template',
-            params: {
-                template:null
-            },
-            views: {
-                'content': {
-                    component : 'importTemplateController'
-                }
-            },
-            resolve: {
-                loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/import-template/ImportTemplateController'])
-            },
-            data:{
-                breadcrumbRoot:false,
-                displayName:'Template Manager',
-                module:moduleName,
-                permissions:AccessConstants.TEMPLATES_IMPORT
-            }
         });
     }  
 

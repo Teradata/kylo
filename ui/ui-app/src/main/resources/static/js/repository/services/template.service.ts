@@ -49,4 +49,10 @@ export class TemplateService {
             return Observable.throw('Repository import error:' + error.error.message);
         }
     };
+
+    publishTemplate(request: any) {
+        return this.http.post("/proxy/v1/repository/templates/publish/",
+            JSON.stringify(request),
+            {headers: {'Content-Type': 'application/json'}});
+    }
 }

@@ -23,7 +23,7 @@ package com.thinkbiganalytics.repository.controller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ImportTemplateRequest extends TemplateRequest{
+public class ImportTemplateRequest extends RepositoryRequest {
 
     private String fileName;
     private String uploadKey;

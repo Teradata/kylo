@@ -7,7 +7,10 @@ export class DefineFeedStepGeneralInfoValidator  extends FeedStepValidator {
 
 
     public validate(feed:FeedModel) : boolean{
-        if(feed.feedName && feed.category) {
+        if(this.hasFormErrors){
+            this.step.setComplete(false);
+        }
+        else if(feed.feedName && feed.category && feed.category.id) {
             this.step.valid = true;
             this.step.setComplete(true);
         }
@@ -16,6 +19,6 @@ export class DefineFeedStepGeneralInfoValidator  extends FeedStepValidator {
             this.step.setComplete(false)
         }
         console.log("Validate step finished",this.step, feed)
-        return this.step.complete;
+        return this.step.valid;
     }
 }

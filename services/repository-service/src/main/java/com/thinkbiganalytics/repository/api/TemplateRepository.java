@@ -33,6 +33,7 @@ public class TemplateRepository {
     @NotEmpty
     private String location;
     private String icon;
+    @NotEmpty
     private RepositoryType type;
     private boolean readOnly = false;
 

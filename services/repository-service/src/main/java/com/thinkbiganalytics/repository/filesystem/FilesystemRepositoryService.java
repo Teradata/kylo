@@ -180,7 +180,7 @@ public class FilesystemRepositoryService implements RepositoryService {
         }
         if (foundMetadataOpt.isPresent()) {
             if (!overwrite) {
-                throw new UnsupportedOperationException("Cannot publish to repository, template with same name already exists");
+                throw new UnsupportedOperationException("Template with same name already exists.");
             }
             log.info("Overwriting template with same name.");
         }
@@ -227,7 +227,8 @@ public class FilesystemRepositoryService implements RepositoryService {
 
             return repositories
                 .stream()
-                .filter(r -> set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase()))
+                .filter(r -> Files.exists(Paths.get(r.getLocation().trim())) &&
+                             set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase()))
                 .collect(Collectors.toList());
 
         } catch (IOException e) {

@@ -9,6 +9,7 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 import {ConnectorTab} from "../../../../catalog/api/models/connector-tab";
 import {ISubscription} from "rxjs/Subscription";
 import {FeedStepValidator} from "../../model/feed-step-validator";
+import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 
 @Component({
     selector: "define-feed-source-sample-catalog-dataset",
@@ -23,6 +24,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     @Input()
     public datasource: DataSource;
 
+    @Input()
     public params:any = {};
 
     public feed: FeedModel;
@@ -30,6 +32,8 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     public step :Step;
 
     selectedTab:ConnectorTab;
+
+
 
     private beforeSaveSubscription : ISubscription;
 
@@ -43,7 +47,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     }
 
     ngOnInit(){
-        this.selectionService.reset(this.datasource.id);
         if (this.datasource.connector.tabs) {
             this.tabs = angular.copy(this.datasource.connector.tabs);
         }
@@ -58,9 +61,14 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
         this.onTabClicked(this.tabs[0]);
     }
     ngOnDestroy(){
-
+        super.ngOnDestroy();
         this.beforeSaveSubscription.unsubscribe();
+    }
 
+    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
+       super.onDataSetCollectionChanged(dataSets);
+       this.step.validate(this.feed);
+       this.step.updateStepState();
     }
 
     private updateFeedService(){

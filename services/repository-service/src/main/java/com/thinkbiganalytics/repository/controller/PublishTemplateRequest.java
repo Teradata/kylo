@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.validator.constraints.NotBlank;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PublishTemplateRequest extends TemplateRequest {
+public class PublishTemplateRequest extends RepositoryRequest {
 
     @NotBlank
     private String templateId;

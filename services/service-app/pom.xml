@@ -526,6 +526,14 @@
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
 
+    <!-- TJH test for jsp-api NSME error-->
+    <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.2</version>
+    </dependency>
+
+
   </dependencies>
 
   <build>

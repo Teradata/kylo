@@ -1,13 +1,15 @@
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet, SparkDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TableSchema} from "../../../model/table-schema";
-import {FieldPolicy} from "../../../model/field-policy";
+import {FieldPolicy, SchemaParser} from "../../../model/field-policy";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {FeedDataTransformation} from "../../../model/feed-data-transformation";
 import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states";
 import {FeedStepValidator} from "./feed-step-validator";
 import {PreviewFileDataSet} from "../../../catalog/datasource/preview-schema/model/preview-file-data-set";
-
+import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
+import {AbstractControl} from "@angular/forms/src/model";
+import { Templates } from "../../../services/TemplateTypes";
 export class Step{
     number:number;
     systemName:string;
@@ -24,13 +26,13 @@ export class Step{
     validator:FeedStepValidator
 
     validate(feed:FeedModel):boolean {
-        console.log("validate step ",this.name)
-        if(this.validator){
-            return this.validator.validate(feed);
-        }
-        else {
+        if(this.disabled){
             return true;
         }
+        else {
+            return this.validator ? this.validator.validate(feed) : true;
+        }
+
     }
 
     updateStepState(){
@@ -170,7 +172,10 @@ tableSchema:string;
 }
 
 export interface FeedTableDefinition {
-
+   // id:string;
+  //  schemaName:string;
+   // name:string;
+  //  databaseName:string;
         tableSchema: TableSchema
         sourceTableSchema: SourceTableSchema,
         feedTableSchema:  TableSchema,
@@ -231,6 +236,7 @@ export interface FeedModel {
     /**
      * reference to the Template
      * TODO ref to Template type
+     * @TODO  IS THIS NEEDED!!!!!
      */
     template:any;
     isNew():boolean;
@@ -279,20 +285,19 @@ export interface FeedModel {
      */
     inputProcessorName: string;
 
-    /**
-     * The selected input processor def
-     * TODO replace with concrete Processor type ref
-     */
-    inputProcessor: any;
+
+    inputProcessor: Templates.Processor;
+
+    inputProcessors: Templates.Processor[];
 
     /**
      * The array of all other processors in the feed flow
      */
-    nonInputProcessors: any[];
+    nonInputProcessors: Templates.Processor[];
     /**
      * Array of properties
      */
-    properties: any[];
+    properties: Templates.Property[];
 
     securityGroups: any[];
 
@@ -392,9 +397,42 @@ export interface FeedModel {
 
     registeredTemplate:any;
 
-    validate():boolean;
+    validate(updateStepState?:boolean):boolean;
 
     readonly:boolean;
+
+    /**
+     * The name of the sample file used to parse for table schema
+     * Optional
+     */
+    sampleFile?:string;
+
+    /**
+     * the name of the schema parser used to build the schema
+     */
+    schemaParser?:SchemaParser;
+
+    /**
+     * Should this feed show the "Skip Header" option
+     */
+    allowSkipHeaderOption:boolean;
+
+    /**
+     * Has the schema changed since creation
+     */
+    schemaChanged?:boolean;
+
+    sourceDataSets?:SparkDataSet[];
+
+    update(model:Partial<FeedModel>) :void;
+
+    copy() :FeedModel;
+    isStream:boolean;
+
+    /**
+     * Have the properties been merged and initialized with the template
+     */
+    propertiesInitialized?:boolean;
 }
 
 
@@ -432,9 +470,10 @@ export class DefaultFeedModel implements FeedModel{
 
     inputProcessorType: string ='';
     inputProcessorName: string = null;
-    inputProcessor: any = null
-    nonInputProcessors: any[] = [];
-    properties: any[] = [];
+    inputProcessor: Templates.Processor = null;
+    inputProcessors: Templates.Processor[] = [];
+    nonInputProcessors: Templates.Processor[] = [];
+    properties: Templates.Property[] = [];
     securityGroups: any[] = [];
     schedule: FeedSchedule = { schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 };
     defineTable: boolean = false;
@@ -460,9 +499,89 @@ export class DefaultFeedModel implements FeedModel{
     view:any;
     registeredTemplate:any;
     readonly :boolean;
+    sampleFile?:string;
+    schemaParser?:SchemaParser;
+    schemaChanged?:boolean;
+    sourceDataSets?:SparkDataSet[] = [];
+    isStream:boolean;
+    /**
+     * Have the properties been merged and initialized with the template
+     */
+    propertiesInitialized?:boolean;
+    /**
+     * Should this feed show the "Skip Header" option
+     */
+    allowSkipHeaderOption:boolean;
     public constructor(init?:Partial<FeedModel>) {
         this.initialize();
         Object.assign(this, init);
+        if(this.sourceDataSets){
+            //ensure they are of the right class objects
+            this.sourceDataSets = this.sourceDataSets.map(ds => {
+                return new SparkDataSet(ds);
+            });
+        }
+
+        //ensure the table fields are correct objects
+        let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
+        let fields = this.table.tableSchema.fields.map((field:any) => {
+            let tableColumnDef :TableColumnDefinition;
+            if(field.objectType && field.objectType == TableColumnDefinition.CLASS_NAME){
+                tableColumnDef = field;
+            }
+            else {
+                tableColumnDef = new TableColumnDefinition(field);
+            }
+            tableFieldMap[tableColumnDef.name] = tableColumnDef;
+            return tableColumnDef;
+        });
+        this.table.tableSchema.fields = fields;
+
+        //ensure the table partitions are correct objects
+        let partitions = this.table.partitions.map((partition:any) => {
+            let partitionObject :TableFieldPartition;
+            if(partition.objectType && partition.objectType == TableFieldPartition.CLASS_NAME){
+                partitionObject = partition;
+            }
+            else {
+                partitionObject = new TableFieldPartition(partition.position,partition);
+            }
+            //ensure it has the correct columnDef ref
+            if(partitionObject.sourceField && tableFieldMap[partitionObject.sourceField] != undefined){
+                //find the matching column field
+                partitionObject.columnDef = tableFieldMap[partitionObject.sourceField];
+            }
+            return partitionObject;
+        });
+        this.table.partitions = partitions;
+
+
+    }
+
+    update(model:Partial<FeedModel>) :void {
+        //keep the internal ids saved for the table.tableSchema.fields and table.partitions
+        let oldFields = this.table.tableSchema.fields;
+        let oldPartitions = this.table.partitions;
+        Object.assign(this, model);
+        let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
+        this.table.tableSchema.fields.forEach((field:TableColumnDefinition,index:number) => {
+            field._id = (<TableColumnDefinition> oldFields[index])._id;
+            tableFieldMap[field.name] = field;
+        });
+        this.table.partitions.forEach((partition:TableFieldPartition,index:number) => {
+            let oldPartition = (<TableFieldPartition> oldPartitions[index]);
+            partition._id = (<TableFieldPartition> oldPartitions[index])._id;
+            //update the columnDef ref
+            if(oldPartition.sourceField && tableFieldMap[oldPartition.sourceField] != undefined){
+                //find the matching column field
+                partition.columnDef = tableFieldMap[oldPartition.sourceField];
+
+            }
+        });
+    }
+
+    copy():FeedModel{
+        return Object.assign({},this)
     }
 
     initialize() {
@@ -523,14 +642,22 @@ export class DefaultFeedModel implements FeedModel{
         return this.id == undefined;
     }
 
-    validate() : boolean {
+    validate(updateStepState?:boolean) : boolean {
         let valid = true;
         let model = this;
         this.steps.forEach((step :Step)=> {
             valid = valid && step.validate(<FeedModel>this);
-            step.updateStepState();
+            if(updateStepState) {
+                step.updateStepState();
+            }
         });
         return valid;
+    }
+
+    isComplete() {
+        let complete = true;
+        this.steps.forEach(step => complete  = complete && step.complete);
+        return complete;
     }
 
 

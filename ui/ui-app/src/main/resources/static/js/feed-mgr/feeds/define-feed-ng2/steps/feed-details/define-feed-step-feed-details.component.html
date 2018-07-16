@@ -1,9 +1,41 @@
 <define-feed-step-card [feed]="feed" [step]="step">
     <feed-step-readonly-content>
     Feed Details.<br/>
-    additional processor attributes from NiFi
+
+        <mat-radio-group [ngModel]="inputProcessorId" [disabled]="true">
+            <ng-template ngFor let-inputProcessor let-index="index" let-last="last" [ngForOf]="inputProcessors">
+                <mat-radio-button [value]="inputProcessor.id">{{inputProcessor.name}}</mat-radio-button>
+            </ng-template>
+        </mat-radio-group>
+
+        <form [formGroup]="form">
+            <dynamic-form [form]="form" [fields]="inputProcessorFields" [readonly]="feed.readonly"></dynamic-form>
+
+            <dynamic-form [form]="form" [fields]="nonInputProcessorFields" [readonly]="feed.readonly"></dynamic-form>
+        </form>
+
     </feed-step-readonly-content>
     <feed-step-edit-content>
-       Edit Feed Details
+
+        <div fxLayout="column">
+
+            <span>Choose a source</span>
+            <mat-radio-group [(ngModel)]="inputProcessorId" (change)="onInputProcessorChange($event)">
+                <ng-template ngFor let-inputProcessor let-index="index" let-last="last" [ngForOf]="inputProcessors">
+                <mat-radio-button [value]="inputProcessor.id">{{inputProcessor.name}}</mat-radio-button>
+                </ng-template>
+            </mat-radio-group>
+
+<form [formGroup]="form">
+          <dynamic-form [form]="form" [fields]="inputProcessorFields" [readonly]="feed.readonly"></dynamic-form>
+
+          <dynamic-form [form]="form" [fields]="nonInputProcessorFields" [readonly]="feed.readonly"></dynamic-form>
+</form>
+
+        </div>
+
+
+
+
     </feed-step-edit-content>
 </define-feed-step-card>

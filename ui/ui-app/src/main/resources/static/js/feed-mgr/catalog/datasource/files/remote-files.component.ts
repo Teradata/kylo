@@ -128,10 +128,12 @@ export class RemoteFilesComponent extends BrowserComponent {
                 let node: Node = root;
                 const splits: string[] = relativePath.split("/");
                 const paths = splits.filter(p => p.length > 0);
-                for (let path of paths) {
+                for(var i=0; i<paths.length; i++){
+                    let path = paths[i];
                     let child = node.getChild(path);
                     if (child === undefined) {
                         child = new Node(path);
+                        child.setBrowserObject(RemoteFilesComponent.createTempPlaceholder(path, path));
                         node.addChild(child);
                     }
                     node = child;

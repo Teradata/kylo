@@ -5,7 +5,7 @@
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -21,222 +21,156 @@
  
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../module-name";
-//const moduleName = require('feed-mgr/module-name');
+import {RestUrlConstants} from "./RestUrlConstants"
+   export class RestUrlService {
 
-// define(['angular', 'feed-mgr/module-name'], function (angular:any, moduleName:any) {
-    angular.module(moduleName).service('RestUrlService', function () {
 
-        var self = this;
+        ROOT = RestUrlConstants.ROOT
+        ADMIN_BASE_URL = RestUrlConstants.ADMIN_BASE_URL
+        ADMIN_V2_BASE_URL = RestUrlConstants.ADMIN_V2_BASE_URL;
+        SECURITY_BASE_URL = RestUrlConstants.SECURITY_BASE_URL
+        TEMPLATES_BASE_URL = RestUrlConstants.TEMPLATES_BASE_URL
+        FEEDS_BASE_URL = RestUrlConstants.FEEDS_BASE_URL
+        SLA_BASE_URL = RestUrlConstants.SLA_BASE_URL
+        CONTROLLER_SERVICES_BASE_URL = RestUrlConstants.CONTROLLER_SERVICES_BASE_URL
+        SCHEMA_DISCOVERY_BASE_URL = RestUrlConstants.SCHEMA_DISCOVERY_BASE_URL
+        GET_TEMPLATES_URL = RestUrlConstants.GET_TEMPLATES_URL
+        GET_UNREGISTERED_TEMPLATES_URL = RestUrlConstants.GET_UNREGISTERED_TEMPLATES_URL
+        HADOOP_AUTHORIZATATION_BASE_URL = RestUrlConstants.HADOOP_AUTHORIZATATION_BASE_URL
+        UI_BASE_URL = RestUrlConstants.UI_BASE_URL
+        DOMAIN_TYPES_BASE_URL = RestUrlConstants.DOMAIN_TYPES_BASE_URL
 
-        this.ROOT = "";
-        this.ADMIN_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/admin";
-        this.ADMIN_V2_BASE_URL = this.ROOT + "/proxy/v2/feedmgr/admin";
-        this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
-        this.TEMPLATES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/templates";
-        this.FEEDS_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/feeds";
-        this.SLA_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/sla";
-        this.CONTROLLER_SERVICES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services";
-        this.SCHEMA_DISCOVERY_BASE_URL = this.ROOT + "/proxy/v1/schema-discovery";
-        this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
-        this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
-        this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
-        this.UI_BASE_URL = this.ROOT + "/api/v1/ui";
-        this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
+        UPLOAD_SAMPLE_TABLE_FILE = RestUrlConstants.UPLOAD_SAMPLE_TABLE_FILE
+        UPLOAD_SPARK_SAMPLE_FILE = RestUrlConstants.UPLOAD_SPARK_SAMPLE_FILE
+        LIST_FILE_PARSERS = RestUrlConstants.LIST_FILE_PARSERS
+        LIST_SPARK_FILE_PARSERS = RestUrlConstants.LIST_SPARK_FILE_PARSERS
 
-        this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
-        this.UPLOAD_SPARK_SAMPLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/spark/sample-file";
-        this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
-        this.LIST_SPARK_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/spark-file-parsers";
+        VALIDATE_CRON_EXPRESSION_URL = RestUrlConstants.VALIDATE_CRON_EXPRESSION_URL
 
-        this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
+        PREVIEW_CRON_EXPRESSION_URL = RestUrlConstants.PREVIEW_CRON_EXPRESSION_URL
 
-        this.PREVIEW_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/preview";
+        GET_SYSTEM_NAME = RestUrlConstants.GET_SYSTEM_NAME
 
-        this.GET_SYSTEM_NAME = this.ROOT + "/proxy/v1/feedmgr/util/system-name";
+        ICONS_URL = RestUrlConstants.ICONS_URL
+        ICON_COLORS_URL = RestUrlConstants.ICON_COLORS_URL
 
-        this.ICONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icons";
-        this.ICON_COLORS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icon-colors";
+        CODE_MIRROR_TYPES_URL = RestUrlConstants.CODE_MIRROR_TYPES_URL
 
-        this.CODE_MIRROR_TYPES_URL = this.ROOT + "/proxy/v1/feedmgr/util/codemirror-types";
+        CATEGORIES_URL = RestUrlConstants.CATEGORIES_URL
 
-        this.CATEGORIES_URL = this.ROOT + "/proxy/v1/feedmgr/categories";
+        SEARCH_URL = RestUrlConstants.SEARCH_URL
 
-        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        HIVE_SERVICE_URL = RestUrlConstants.HIVE_SERVICE_URL
 
-        this.HIVE_SERVICE_URL = this.ROOT + "/proxy/v1/hive";
-
-        this.SPARK_SHELL_SERVICE_URL = this.ROOT + "/proxy/v1/spark/shell";
+        SPARK_SHELL_SERVICE_URL = RestUrlConstants.SPARK_SHELL_SERVICE_URL
 
         ///TEMPLATE REGISTRATION
 
-        this.REGISTER_TEMPLATE_URL = function () {
-            return self.TEMPLATES_BASE_URL + "/register";
-        }
+        REGISTER_TEMPLATE_URL = RestUrlConstants.REGISTER_TEMPLATE_URL;
 
-        this.SAVE_TEMPLATE_ORDER_URL = self.TEMPLATES_BASE_URL + "/order";
+        SAVE_TEMPLATE_ORDER_URL = RestUrlConstants.SAVE_TEMPLATE_ORDER_URL;
 
-        this.GET_REGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/registered";
+        GET_REGISTERED_TEMPLATES_URL = RestUrlConstants.GET_REGISTERED_TEMPLATES_URL
 
-        this.GET_REGISTERED_TEMPLATE_PROPERTIES_URL = function (templateId:any) {
-            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/properties";
-        }
+        GET_REGISTERED_TEMPLATE_PROPERTIES_URL = RestUrlConstants.GET_REGISTERED_TEMPLATE_PROPERTIES_URL;
 
-        this.GET_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId;
-        }
+        GET_REGISTERED_TEMPLATE_URL = RestUrlConstants.GET_REGISTERED_TEMPLATE_URL;
 
-        this.REGISTERED_TEMPLATE_NIFI_INPUT_PORTS = function (nifiTemplateId:any) {
-            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/input-ports";
-        }
+        REGISTERED_TEMPLATE_NIFI_INPUT_PORTS = RestUrlConstants.REGISTERED_TEMPLATE_NIFI_INPUT_PORTS;
 
-        this.REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS = function (nifiTemplateId:any) {
-            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/output-ports";
-        }
+        REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS = RestUrlConstants.REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS;
 
-        this.REGISTERED_TEMPLATE_NIFI_ALL_PORTS = function (nifiTemplateId:any) {
-            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/ports";
-        }
+        REGISTERED_TEMPLATE_NIFI_ALL_PORTS = RestUrlConstants.REGISTERED_TEMPLATE_NIFI_ALL_PORTS;
 
-        this.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS = function (nifiTemplateId:any) {
-            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/datasource-definitions";
-        }
+        TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS = RestUrlConstants.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS;
 
-        this.TEMPLATE_FLOW_INFORMATION = function (nifiTemplateId:any) {
-            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/flow-info";
-        }
+        TEMPLATE_FLOW_INFORMATION = RestUrlConstants.TEMPLATE_FLOW_INFORMATION;
 
-        this.DISABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable";
-        }
-        this.ENABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/enable";
-        }
-        this.DELETE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
-        }
+        DISABLE_REGISTERED_TEMPLATE_URL = RestUrlConstants.DISABLE_REGISTERED_TEMPLATE_URL;
 
-        this.REMOTE_PROCESS_GROUP_AWARE = self.TEMPLATES_BASE_URL+"/remote-process-group/status";
+        ENABLE_REGISTERED_TEMPLATE_URL = RestUrlConstants.ENABLE_REGISTERED_TEMPLATE_URL;
 
-        this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
+        DELETE_REGISTERED_TEMPLATE_URL = RestUrlConstants.DELETE_REGISTERED_TEMPLATE_URL;
+
+        REMOTE_PROCESS_GROUP_AWARE = RestUrlConstants.REMOTE_PROCESS_GROUP_AWARE
+
+        ALL_REUSABLE_FEED_INPUT_PORTS = RestUrlConstants.ALL_REUSABLE_FEED_INPUT_PORTS
 
 
-        this.ROOT_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/root-input-ports";
+        ROOT_INPUT_PORTS = RestUrlConstants.ROOT_INPUT_PORTS
 
-        this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
-        this.METADATA_PROPERTY_NAMES_URL = this.ROOT + "/proxy/v1/feedmgr/metadata-properties";
+        CONFIGURATION_PROPERTIES_URL = RestUrlConstants.CONFIGURATION_PROPERTIES_URL
+        METADATA_PROPERTY_NAMES_URL = RestUrlConstants.METADATA_PROPERTY_NAMES_URL
 
-        this.GET_DATASOURCE_TYPES = this.ROOT + "/proxy/v1/metadata/datasource/types";
+        GET_DATASOURCE_TYPES = RestUrlConstants.GET_DATASOURCE_TYPES
 
         //FEED URLS
 
-        this.CREATE_FEED_FROM_TEMPLATE_URL = self.FEEDS_BASE_URL;
+        CREATE_FEED_FROM_TEMPLATE_URL = RestUrlConstants.CREATE_FEED_FROM_TEMPLATE_URL
 
-        this.MERGE_FEED_WITH_TEMPLATE = function (feedId:any) {
-            return self.GET_FEEDS_URL + "/" + feedId + "/merge-template";
-        }
+        MERGE_FEED_WITH_TEMPLATE = RestUrlConstants.MERGE_FEED_WITH_TEMPLATE
 
-        this.GET_FEEDS_URL = self.FEEDS_BASE_URL;
+        GET_FEEDS_URL = RestUrlConstants.GET_FEEDS_URL
 
-        this.GET_FEED_NAMES_URL = self.FEEDS_BASE_URL + "/names";
+        GET_FEED_NAMES_URL = RestUrlConstants.GET_FEED_NAMES_URL
 
-        this.GET_POSSIBLE_FEED_PRECONDITIONS_URL = self.FEEDS_BASE_URL + "/possible-preconditions";
+        GET_POSSIBLE_FEED_PRECONDITIONS_URL = RestUrlConstants.GET_POSSIBLE_FEED_PRECONDITIONS_URL
 
-        this.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL = self.SLA_BASE_URL + "/available-metrics";
+        GET_POSSIBLE_SLA_METRIC_OPTIONS_URL = RestUrlConstants.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL
 
-        this.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = self.SLA_BASE_URL + "/available-responders";
+        GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = RestUrlConstants.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL
 
-        this.VALIDATE_SLA_ACTION_URL = self.SLA_BASE_URL + "/action/validate";
+        VALIDATE_SLA_ACTION_URL = RestUrlConstants.VALIDATE_SLA_ACTION_URL
 
-        this.SAVE_FEED_SLA_URL = function (feedId:any) {
-            return self.SLA_BASE_URL + "/feed/" + feedId;
-        }
-        this.SAVE_SLA_URL = self.SLA_BASE_URL;
+        SAVE_FEED_SLA_URL = RestUrlConstants.SAVE_FEED_SLA_URL;
 
-        this.DELETE_SLA_URL = function (slaId:any) {
-            return self.SLA_BASE_URL + "/" + slaId;
-        }
+        SAVE_SLA_URL = RestUrlConstants.SAVE_SLA_URL
 
-        this.GET_FEED_SLA_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
-        }
+        DELETE_SLA_URL = RestUrlConstants.DELETE_SLA_URL
 
-        this.GET_SLA_BY_ID_URL = function (slaId:any) {
-            return self.SLA_BASE_URL + "/" + slaId;
-        }
+        GET_FEED_SLA_URL = RestUrlConstants.GET_FEED_SLA_URL
 
-        this.GET_SLA_AS_EDIT_FORM = function (slaId:any) {
-            return self.SLA_BASE_URL + "/" + slaId + "/form-object";
-        }
+        GET_SLA_BY_ID_URL = RestUrlConstants.GET_SLA_BY_ID_URL
 
-        this.GET_SLAS_URL = self.SLA_BASE_URL;
+        GET_SLA_AS_EDIT_FORM = RestUrlConstants.GET_SLA_AS_EDIT_FORM
 
-        this.GET_CONTROLLER_SERVICES_TYPES_URL = self.CONTROLLER_SERVICES_BASE_URL + "/types";
+        GET_SLAS_URL = RestUrlConstants.GET_SLAS_URL
 
-        this.GET_CONTROLLER_SERVICES_URL = self.CONTROLLER_SERVICES_BASE_URL;
+        GET_CONTROLLER_SERVICES_TYPES_URL = RestUrlConstants.GET_CONTROLLER_SERVICES_TYPES_URL
 
-        this.GET_CONTROLLER_SERVICE_URL = function (serviceId:any) {
-            return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
-        }
+        GET_CONTROLLER_SERVICES_URL = RestUrlConstants.GET_CONTROLLER_SERVICES_URL
 
-        this.CONTROLLER_SERVICES_PREVIEW_QUERY_URL = function (serviceId:any, schema:string, table:string, limit:number) {
-            return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
-        }
+        GET_CONTROLLER_SERVICE_URL = RestUrlConstants.GET_CONTROLLER_SERVICE_URL
+
+        CONTROLLER_SERVICES_PREVIEW_QUERY_URL = RestUrlConstants.CONTROLLER_SERVICES_PREVIEW_QUERY_URL
         
-        this.FEED_VERSIONS_URL = function (feedId:any) {
-        		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
-        }
+        FEED_VERSIONS_URL = RestUrlConstants.FEED_VERSIONS_URL
         
-        this.FEED_VERSION_ID_URL = function (feedId:any, verId:any) {
-        	return self.FEED_VERSIONS_URL(feedId) + "/" + verId;
-        }
+        FEED_VERSION_ID_URL = RestUrlConstants.FEED_VERSION_ID_URL
         
-        this.FEED_VERSIONS_DIFF_URL = function (feedId:any, verId1:any, verId2:any) {
-        		return self.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
-        }
+        FEED_VERSIONS_DIFF_URL = RestUrlConstants.FEED_VERSIONS_DIFF_URL
 
-        this.FEED_PROFILE_STATS_URL = function (feedId:any) {
-            return self.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
-        }
+        FEED_PROFILE_STATS_URL = RestUrlConstants.FEED_PROFILE_STATS_URL
 
-        this.FEED_PROFILE_SUMMARY_URL = function (feedId:any) {
-            return self.GET_FEEDS_URL + "/" + feedId + "/profile-summary";
-        }
+        FEED_PROFILE_SUMMARY_URL = RestUrlConstants.FEED_PROFILE_SUMMARY_URL
 
-        this.FEED_PROFILE_VALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
-            return self.GET_FEEDS_URL + "/" + feedId + "/profile-valid-results";
-        }
+        FEED_PROFILE_VALID_RESULTS_URL = RestUrlConstants.FEED_PROFILE_VALID_RESULTS_URL
 
-        this.FEED_PROFILE_INVALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
-            return self.GET_FEEDS_URL + "/" + feedId + "/profile-invalid-results";
-        }
+        FEED_PROFILE_INVALID_RESULTS_URL = RestUrlConstants.FEED_PROFILE_INVALID_RESULTS_URL
 
-        this.ENABLE_FEED_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/enable/" + feedId;
-        }
-        this.DISABLE_FEED_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/disable/" + feedId;
-        }
+        ENABLE_FEED_URL = RestUrlConstants.ENABLE_FEED_URL
 
-        this.START_FEED_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/start/" + feedId;
-        }
+        DISABLE_FEED_URL = RestUrlConstants.DISABLE_FEED_URL
 
-        this.UPLOAD_FILE_FEED_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
-        }
+        START_FEED_URL = RestUrlConstants.START_FEED_URL
 
-        this.FEED_DETAILS_BY_NAME_URL = function (feedName:any) {
-            return self.FEEDS_BASE_URL + "/by-name/" + feedName;
-        };
+        UPLOAD_FILE_FEED_URL = RestUrlConstants.UPLOAD_FILE_FEED_URL
 
-        this.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = function (categoryName:any) {
-            return self.CATEGORIES_URL + "/by-name/" + categoryName;
-        };
+        FEED_DETAILS_BY_NAME_URL = RestUrlConstants.FEED_DETAILS_BY_NAME_URL
 
-        this.CATEGORY_DETAILS_BY_ID_URL = function (categoryId:any) {
-            return self.CATEGORIES_URL + "/by-id/" + categoryId;
-        };
+        CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = RestUrlConstants.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL
+
+        CATEGORY_DETAILS_BY_ID_URL = RestUrlConstants.CATEGORY_DETAILS_BY_ID_URL
 
         /**
          * Gets the URL for retrieving the user fields for a new feed.
@@ -244,51 +178,45 @@ import {moduleName} from "../module-name";
          * @param {string} categoryId the category id
          * @returns {string} the URL
          */
-        this.GET_FEED_USER_FIELDS_URL = function (categoryId:any) {
-            return self.CATEGORIES_URL + "/" + categoryId + "/user-fields";
-        };
+        GET_FEED_USER_FIELDS_URL = RestUrlConstants.GET_FEED_USER_FIELDS_URL
 
         /**
          * URL for retrieving the user fields for a new category.
          * @type {string}
          */
-        this.GET_CATEGORY_USER_FIELD_URL = self.CATEGORIES_URL + "/user-fields";
+        GET_CATEGORY_USER_FIELD_URL = RestUrlConstants.GET_CATEGORY_USER_FIELD_URL
 
         // Endpoint for administration of user fields
-        this.ADMIN_USER_FIELDS = self.ADMIN_BASE_URL + "/user-fields";
+        ADMIN_USER_FIELDS = RestUrlConstants.ADMIN_USER_FIELDS
 
         //Field Policy Urls
 
-        this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/standardization";
-        this.AVAILABLE_VALIDATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/validation";
+        AVAILABLE_STANDARDIZATION_POLICIES = RestUrlConstants.AVAILABLE_STANDARDIZATION_POLICIES
+        AVAILABLE_VALIDATION_POLICIES = RestUrlConstants.AVAILABLE_VALIDATION_POLICIES
 
-        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_V2_BASE_URL + "/import-template";
+        ADMIN_IMPORT_TEMPLATE_URL = RestUrlConstants.ADMIN_IMPORT_TEMPLATE_URL
 
-        this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/export-template";
+        ADMIN_EXPORT_TEMPLATE_URL = RestUrlConstants.ADMIN_EXPORT_TEMPLATE_URL
 
-        this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL + "/export-feed";
+        ADMIN_EXPORT_FEED_URL = RestUrlConstants.ADMIN_EXPORT_FEED_URL
 
-        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_V2_BASE_URL + "/import-feed";
+        ADMIN_IMPORT_FEED_URL = RestUrlConstants.ADMIN_IMPORT_FEED_URL
 
-        this.ADMIN_UPLOAD_STATUS_CHECK = function (key:any) {
-            return self.ADMIN_BASE_URL + "/upload-status/" + key;
-        };
+        ADMIN_UPLOAD_STATUS_CHECK = RestUrlConstants.ADMIN_UPLOAD_STATUS_CHECK;
 
         // Hadoop Security Authorization
-        this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
+        HADOOP_SECURITY_GROUPS = RestUrlConstants.HADOOP_SECURITY_GROUPS
 
         // Security service URLs
 
-        this.SECURITY_GROUPS_URL = self.SECURITY_BASE_URL + "/groups";
+        SECURITY_GROUPS_URL = RestUrlConstants.SECURITY_GROUPS_URL
 
-        this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
+        SECURITY_USERS_URL = RestUrlConstants.SECURITY_USERS_URL
 
-        this.FEED_LINEAGE_URL = function (feedId:any) {
-            return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
-        };
+        FEED_LINEAGE_URL = RestUrlConstants.FEED_LINEAGE_URL
 
         // Feed history data reindexing endpoint
-        this.FEED_HISTORY_CONFIGURED = self.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
+        FEED_HISTORY_CONFIGURED = RestUrlConstants.FEED_HISTORY_CONFIGURED
 
 
         /**
@@ -297,124 +225,105 @@ import {moduleName} from "../module-name";
          * @param {string} processGroupId the process group id
          * @returns {string} the URL for listing controller services
          */
-        this.LIST_SERVICES_URL = function (processGroupId:any) {
-            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
-        };
+        LIST_SERVICES_URL = RestUrlConstants.LIST_SERVICES_URL
 
         /**
          * The endpoint for retrieving the list of available Hive partition functions.
          *
          * @type {string}
          */
-        this.PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
+        PARTITION_FUNCTIONS_URL = RestUrlConstants.PARTITION_FUNCTIONS_URL
 
         /**
          * The endpoint for retrieving the NiFi status.
          * @type {string}
          */
-        this.NIFI_STATUS = this.ROOT + "/proxy/v1/feedmgr/nifi/status";
+        NIFI_STATUS = RestUrlConstants.NIFI_STATUS
 
         /**
          * the endpoint for determining if NiFi is up or not
          * @type {string}
          */
-        this.IS_NIFI_RUNNING_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/running";
+        IS_NIFI_RUNNING_URL = RestUrlConstants.IS_NIFI_RUNNING_URL
 
         /**
          * The endpoint for retrieving data sources.
          * @type {string}
          */
-        this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+        GET_DATASOURCES_URL = RestUrlConstants.GET_DATASOURCES_URL
 
         /**
          * The endpoint for querying a data source.
          */
-        this.QUERY_DATASOURCE_URL = function (id:any) {
-            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
-        };
+        QUERY_DATASOURCE_URL = RestUrlConstants.QUERY_DATASOURCE_URL
 
         /**
          * The endpoint for querying a data source.
          */
-        this.PREVIEW_DATASOURCE_URL = function (id:any, schema:string, table:string, limit:number) {
-            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/preview/" + schema + "/" + table + "?limit=" + limit;
-        };
+        PREVIEW_DATASOURCE_URL = RestUrlConstants.PREVIEW_DATASOURCE_URL
 
-        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id:any) {
-            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
-        }
+        GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = RestUrlConstants.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL
 
         /**
          * Get/Post roles changes for a Feed entity
          * @param feedId the feed id
          * @returns {string} the url to get/post feed role changes
          */
-        this.FEED_ROLES_URL = function (feedId:any) {
-            return self.FEEDS_BASE_URL + "/" + feedId + "/roles"
-        };
+        FEED_ROLES_URL = RestUrlConstants.FEED_ROLES_URL
 
         /**
          * Get/Post roles changes for a Category entity
          * @param categoryId the category id
          * @returns {string} the url to get/post category role changes
          */
-        this.CATEGORY_ROLES_URL = function (categoryId:any) {
-            return self.CATEGORIES_URL + "/" + categoryId + "/roles"
-        };
+        CATEGORY_ROLES_URL = RestUrlConstants.CATEGORY_ROLES_URL
 
         /**
          * Get/Post roles changes for a Category entity
          * @param categoryId the category id
          * @returns {string} the url to get/post category role changes
          */
-        this.CATEGORY_FEED_ROLES_URL = function (categoryId:any) {
-            return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
-        };
+        CATEGORY_FEED_ROLES_URL = RestUrlConstants.CATEGORY_FEED_ROLES_URL
 
         /**
          * Get/Post roles changes for a Template entity
          * @param templateId the Template id
          * @returns {string} the url to get/post Template role changes
          */
-        this.TEMPLATE_ROLES_URL = function (templateId:any) {
-            return self.TEMPLATES_BASE_URL + "/registered/" + templateId + "/roles"
-        };
+        TEMPLATE_ROLES_URL = RestUrlConstants.TEMPLATE_ROLES_URL
 
         /**
          * Endpoint for roles changes to a Datasource entity.
          * @param {string} datasourceId the datasource id
          * @returns {string} the url for datasource role changes
          */
-        this.DATASOURCE_ROLES_URL = function (datasourceId:any) {
-            return self.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
-        };
+        DATASOURCE_ROLES_URL = RestUrlConstants.DATASOURCE_ROLES_URL
 
         /**
          * The URL for retrieving the list of template table option plugins.
          * @type {string}
          */
-        this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
+        UI_TEMPLATE_TABLE_OPTIONS = RestUrlConstants.UI_TEMPLATE_TABLE_OPTIONS
 
         /**
          * The URL for retrieving the list of templates for custom rendering with nifi processors
          * @type {string}
          */
-        this.UI_PROCESSOR_TEMPLATES = this.UI_BASE_URL + "/processor-templates";
+        UI_PROCESSOR_TEMPLATES = RestUrlConstants.UI_PROCESSOR_TEMPLATES
 
         /**
          * return a list of the categorySystemName.feedSystemName
          * @type {string}
          */
-        this.OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
+        OPS_MANAGER_FEED_NAMES = RestUrlConstants.OPS_MANAGER_FEED_NAMES
 
         /**
          * Formats a date as a string.
          */
-        this.FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
+        FORMAT_DATE = RestUrlConstants.FORMAT_DATE
 
         /**
          * Parses a string as a date.
          */
-        this.PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
-    });
-// });
+        PARSE_DATE = RestUrlConstants.PARSE_DATE
+    }

@@ -1,0 +1,205 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<style>
+
+</style>
+
+<define-feed-step-card [(feed)]="feed" [(step)]="step">
+  <feed-step-readonly-content>
+    <div fxLayout="row">
+      <div fxFlex="30">Name</div>
+      <div fxFlex="30">Data Type</div>
+      <div fxFlex="10">Primary</div>
+      <div fxFlex="10">Created</div>
+      <div fxFlex="10">Updated</div>
+    </div>
+    <td-virtual-scroll-container [style.height.px]="400" [data]="feed.table.tableSchema.fields">
+      <ng-template let-row="row"
+                   let-index="index"
+                   let-first="first"
+                   let-last="last"
+                   let-odd="odd"
+                   let-even="even"
+                   tdVirtualScrollRow>
+        <div fxLayout="row" fxFlex="100">
+          <span fxFlex="30">{{row.name}}</span>
+
+          <div fxLayout="row" fxFlex="30">
+
+            <span>{{row.derivedDataType}}</span>
+
+            <span *ngIf="row.precisionScale != undefined">({{row.precisionScale}})</span>
+          </div>
+
+          <div fxFlex="10" >
+            <mat-checkbox disabled="true"  [ngModel]="row.primaryKey" ></mat-checkbox>
+          </div>
+          <div  fxFlex="10">
+            <mat-checkbox disabled="true" [ngModel]="row.createdTracker"></mat-checkbox>
+          </div>
+
+          <div fxFlex="10">
+            <mat-checkbox disabled="true" [ngModel]="row.updatedTracker" ></mat-checkbox>
+          </div>
+
+        </div>
+
+      </ng-template>
+    </td-virtual-scroll-container>
+
+  </feed-step-readonly-content>
+  <feed-step-edit-content>
+
+    <form [formGroup]="defineTableForm">
+<div fxLayout="row">
+  <div fxFlex="30">Name</div>
+  <div fxFlex="30">Data Type</div>
+  <div fxFlex="10">Primary</div>
+  <div fxFlex="10">Created</div>
+  <div fxFlex="10">Updated</div>
+  <div fxFlex="10">Remove</div>
+</div>
+      <td-virtual-scroll-container [style.height.px]="400" [data]="feed.table.tableSchema.fields">
+        <ng-template let-row="row"
+                     let-index="index"
+                     let-first="first"
+                     let-last="last"
+                     let-odd="odd"
+                     let-even="even"
+                     tdVirtualScrollRow>
+          <div fxLayout="row" fxFlex="100">
+            <mat-form-field fxFlex="30">
+              <input matInput [formControlName]="'name_'+row._id" placeholder="Feed name" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
+              <mat-error *ngIf="hasTableFormError('name',row,'required')">
+               Feed Name is required
+              </mat-error>
+              <mat-error *ngIf="hasTableFormError('name',row,'notUnique')">
+                Feed Name needs to be unique
+              </mat-error>
+              <mat-error *ngIf="hasTableFormError('name',row,'length')">
+                Feed Name is too long
+              </mat-error>
+              <mat-error *ngIf="hasTableFormError('name',row,'reserved')">
+                The name is reserved.  Please choose a different name
+              </mat-error>
+            </mat-form-field>
+
+            <div fxLayout="row" fxFlex="30">
+
+              <mat-form-field>
+                <mat-select placeholder="Data Type" [formControlName]="'dataType_'+row._id" [(ngModel)]="row.derivedDataType" (change)="onDataTypeChange(row)">
+                  <mat-option *ngFor="let dataType of availableDefinitionDataTypes" [value]="dataType">
+                    {{dataType}}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="hasTableFormError('dataType',row,'required')">
+                 Data Type is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field fxFlex="30" *ngIf="row.derivedDataType == 'decimal'">
+                <input matInput [formControlName]="'precisionScale_'+row._id" placeholder="10,0" required [(ngModel)]="row.precisionScale" >
+                <mat-error *ngIf="hasTableFormError('precisionScale',row,'precisionScale')">
+                  Precision Scale is invalid. It must be in the format of #,# (i.e. 10,2)
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div fxFlex="10" >
+              <mat-checkbox [formControlName]="'primaryKey_'+row._id"  [(ngModel)]="row.primaryKey" (change)="onFieldChange(row)"></mat-checkbox>
+            </div>
+            <div  fxFlex="10">
+              <mat-checkbox [formControlName]="'created_'+row._id" [(ngModel)]="row.createdTracker" (change)="onFieldChange(row)"></mat-checkbox>
+            </div>
+
+            <div fxFlex="10">
+              <mat-checkbox [formControlName]="'updated_'+row._id" [(ngModel)]="row.updatedTracker" (change)="onFieldChange(row)"></mat-checkbox>
+            </div>
+
+            <button mat-icon-button [disabled]="!canRemoveFields || row.deleted" (click)="removeColumn(index)" ><mat-icon>delete</mat-icon></button>
+
+            <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1" ><mat-icon>undo</mat-icon></button>
+
+          </div>
+
+        </ng-template>
+      </td-virtual-scroll-container>
+<button mat-button (click)="addColumn()">Add Column</button>
+    </form>
+
+  </feed-step-edit-content>
+</define-feed-step-card>
+
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Table Partitions</mat-card-title>
+    <mat-card-subtitle>Define partitions on the table</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div  *ngIf="feed.readonly">
+      <div *ngFor="let partition of feed.table.partitions" fxLayout="row">
+        <span>{{partition.columnDef.name}}</span>
+        <span>{{partition.formula}}</span>
+        <span>{{partition.field}}</span>
+      </div>
+    </div>
+    <div *ngIf="!feed.readonly">
+      <form [formGroup]="definePartitionForm">
+      <ng-template let-partition let-last="last" let-index="index" ngFor [ngForOf]="feed.table.partitions">
+
+        <mat-form-field>
+        <mat-select  required placeholder="Partition Column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef" (change)="onPartitionSourceFieldChange(partition)">
+          <mat-option *ngFor="let field of feed.table.tableSchema.fields" [value]="field">
+            {{field.name}}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="hasPartitionFormError('partition',partition,'required')">
+          Partition field is required
+        </mat-error>
+      </mat-form-field>
+
+
+        <mat-form-field>
+          <mat-select  required placeholder="Partition Formula" [formControlName]="'partitionFormula_'+partition._id" [(ngModel)]="partition.formula" (change)="onPartitionFormulaChange(partition)">
+            <mat-option *ngFor="let formula of partitionFormulas | filterPartitionFormula:partition" [value]="formula">
+              {{formula}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="hasPartitionFormError('partitionFormula',partition,'required')">
+            Partition formula is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="30">
+          <input matInput [formControlName]="'partitionName_'+partition._id" placeholder="Name" required [(ngModel)]="partition.field" (change)="onPartitionNameChange(partition)" >
+          <mat-error *ngIf="hasPartitionFormError('partitionName',partition,'required')">
+            Partition name is required
+          </mat-error>
+        </mat-form-field>
+
+        <button mat-icon-button (click)="removePartitionField(index)"><mat-icon>delete</mat-icon></button>
+
+      </ng-template>
+         <button mat-button (click)="addPartitionField()">Add Partition</button>
+
+      </form>
+    </div>
+  </mat-card-content>
+</mat-card>

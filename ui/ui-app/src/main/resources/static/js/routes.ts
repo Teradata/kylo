@@ -211,23 +211,6 @@ class Route {
             }
         })
 
-        $stateProvider.state('import-template.**', {
-            url: '/import-template',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('import-template', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading import-template ", err);
-                    return err;
-                });
-            },
-            params: {
-                "template": null
-            }
-        })
-
         $stateProvider.state({
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
@@ -746,6 +729,12 @@ class Route {
         $stateProvider.state({
             name: 'template-info.**',
             url: '/template-info',
+            loadChildren: 'repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'import-template.**',
+            url: '/importTemplate',
             loadChildren: 'repository/repository.module#RepositoryModule'
         });
     }

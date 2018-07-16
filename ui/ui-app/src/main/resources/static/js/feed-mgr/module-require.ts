@@ -44,6 +44,13 @@ import "./shared/entity-access-control/EntityAccessControlService";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
 import CategoriesService from "./services/CategoriesService";
 import {FeedSavingDialogController, FeedService} from "./services/FeedService";
+import {DomainTypesService} from "./services/DomainTypesService";
+import {DefaultFeedPropertyService} from "./services/DefaultFeedPropertyService";
+import {FeedInputProcessorPropertiesTemplateService} from "./services/FeedInputProcessorPropertiesTemplateService";
+import {FeedDetailsProcessorRenderingHelper} from "./services/FeedDetailsProcessorRenderingHelper";
+import {RegisterTemplatePropertyService} from "./services/RegisterTemplatePropertyService";
+import {UiComponentsService} from "./services/UiComponentsService";
+import {RestUrlService} from "./services/RestUrlService";
 
 
 angular.module(moduleName).service('CategoriesService',CategoriesService);
@@ -52,3 +59,22 @@ angular.module(moduleName).service('EntityAccessControlService', EntityAccessCon
 angular.module(moduleName)
     .service('FeedService',FeedService)
     .controller('FeedSavingDialogController', FeedSavingDialogController);
+
+angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
+    function($http: any,$q: any,RestUrlService:any){
+        return new DomainTypesService($http , $q, RestUrlService);
+    }
+]);
+
+angular.module(moduleName).service("UiComponentsService", UiComponentsService);
+
+angular.module(moduleName).service('FeedPropertyService', DefaultFeedPropertyService);
+
+angular.module(moduleName).service('FeedInputProcessorPropertiesTemplateService',FeedInputProcessorPropertiesTemplateService);
+
+angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDetailsProcessorRenderingHelper);
+
+
+angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);
+
+angular.module(moduleName).service('RestUrlService', RestUrlService);
