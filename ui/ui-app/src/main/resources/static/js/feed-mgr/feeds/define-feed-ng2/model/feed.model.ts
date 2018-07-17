@@ -9,7 +9,7 @@ import {FeedStepValidator} from "./feed-step-validator";
 import {PreviewFileDataSet} from "../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {AbstractControl} from "@angular/forms/src/model";
-
+import { Templates } from "../../../services/TemplateTypes";
 export class Step{
     number:number;
     systemName:string;
@@ -236,6 +236,7 @@ export interface FeedModel {
     /**
      * reference to the Template
      * TODO ref to Template type
+     * @TODO  IS THIS NEEDED!!!!!
      */
     template:any;
     isNew():boolean;
@@ -284,20 +285,19 @@ export interface FeedModel {
      */
     inputProcessorName: string;
 
-    /**
-     * The selected input processor def
-     * TODO replace with concrete Processor type ref
-     */
-    inputProcessor: any;
+
+    inputProcessor: Templates.Processor;
+
+    inputProcessors: Templates.Processor[];
 
     /**
      * The array of all other processors in the feed flow
      */
-    nonInputProcessors: any[];
+    nonInputProcessors: Templates.Processor[];
     /**
      * Array of properties
      */
-    properties: any[];
+    properties: Templates.Property[];
 
     securityGroups: any[];
 
@@ -425,6 +425,14 @@ export interface FeedModel {
     sourceDataSets?:SparkDataSet[];
 
     update(model:Partial<FeedModel>) :void;
+
+    copy() :FeedModel;
+    isStream:boolean;
+
+    /**
+     * Have the properties been merged and initialized with the template
+     */
+    propertiesInitialized?:boolean;
 }
 
 
@@ -462,9 +470,10 @@ export class DefaultFeedModel implements FeedModel{
 
     inputProcessorType: string ='';
     inputProcessorName: string = null;
-    inputProcessor: any = null
-    nonInputProcessors: any[] = [];
-    properties: any[] = [];
+    inputProcessor: Templates.Processor = null;
+    inputProcessors: Templates.Processor[] = [];
+    nonInputProcessors: Templates.Processor[] = [];
+    properties: Templates.Property[] = [];
     securityGroups: any[] = [];
     schedule: FeedSchedule = { schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 };
     defineTable: boolean = false;
@@ -494,6 +503,11 @@ export class DefaultFeedModel implements FeedModel{
     schemaParser?:SchemaParser;
     schemaChanged?:boolean;
     sourceDataSets?:SparkDataSet[] = [];
+    isStream:boolean;
+    /**
+     * Have the properties been merged and initialized with the template
+     */
+    propertiesInitialized?:boolean;
     /**
      * Should this feed show the "Skip Header" option
      */
@@ -544,11 +558,22 @@ export class DefaultFeedModel implements FeedModel{
 
     }
 
+    updateNonNullFields(model:any){
+        let keys = Object.keys(model);
+        let obj = {}
+        keys.forEach((key:string) => {
+            if(model[key] && model[key] != null){
+                obj[key] = model[key];
+            }
+        });
+        Object.assign(this,obj);
+    }
+
     update(model:Partial<FeedModel>) :void {
         //keep the internal ids saved for the table.tableSchema.fields and table.partitions
         let oldFields = this.table.tableSchema.fields;
         let oldPartitions = this.table.partitions;
-        Object.assign(this, model);
+        this.updateNonNullFields(model);
         let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
         this.table.tableSchema.fields.forEach((field:TableColumnDefinition,index:number) => {
             field._id = (<TableColumnDefinition> oldFields[index])._id;
@@ -564,6 +589,10 @@ export class DefaultFeedModel implements FeedModel{
 
             }
         });
+    }
+
+    copy():FeedModel{
+        return Object.assign({},this)
     }
 
     initialize() {
@@ -634,6 +663,12 @@ export class DefaultFeedModel implements FeedModel{
             }
         });
         return valid;
+    }
+
+    isComplete() {
+        let complete = true;
+        this.steps.forEach(step => complete  = complete && step.complete);
+        return complete;
     }
 
 

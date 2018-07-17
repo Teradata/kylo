@@ -18,7 +18,7 @@ export class FeedStepValidator  {
         console.log("Validating ",this.step.name)
         this.step.setComplete(true);
         this.step.valid = true;
-        return true;
+        return this.step.valid;
     }
 
 }

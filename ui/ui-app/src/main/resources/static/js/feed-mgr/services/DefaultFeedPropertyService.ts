@@ -88,4 +88,3 @@ import {moduleName} from "../module-name";;
         }
 
     }
-angular.module(moduleName).service('FeedPropertyService', DefaultFeedPropertyService);

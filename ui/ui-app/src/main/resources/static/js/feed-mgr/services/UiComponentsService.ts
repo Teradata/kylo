@@ -192,5 +192,3 @@ export class UiComponentsService {
     }
 
 }
-
-angular.module(moduleName).service("UiComponentsService", UiComponentsService);

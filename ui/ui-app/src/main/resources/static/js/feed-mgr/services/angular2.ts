@@ -5,28 +5,42 @@ import CategoriesService from "./CategoriesService";
 import {EntityAccessControlService} from "../shared/entity-access-control/EntityAccessControlService";
 import {FeedService} from "./FeedService";
 import {DomainTypesService} from "./DomainTypesService";
+import {DefaultFeedPropertyService} from "./DefaultFeedPropertyService";
+import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
+import {UiComponentsService} from "./UiComponentsService";
+import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
+import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
 
-export const entityAccessControlServiceProvider: FactoryProvider = {
-    provide: EntityAccessControlService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("EntityAccessControlService"),
-    deps: ["$injector"]
-};
+export class AngularServiceUpgrader {
+    constructor(){
 
-export const categoriesServiceProvider: FactoryProvider = {
-    provide: CategoriesService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("CategoriesService"),
-    deps: ["$injector"]
-};
+    }
 
-export const feedServiceProvider: FactoryProvider = {
-    provide: FeedService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("FeedService"),
-    deps: ["$injector"]
-};
+    static upgrade(service:Function,name:string = service.name) :FactoryProvider{
+        return {
+            provide: service,
+            useFactory: (i: angular.auto.IInjectorService) => i.get(name),
+            deps: ["$injector"]
+        }
+    }
+}
 
-export const domainTypesServiceProvider: FactoryProvider = {
-    provide: DomainTypesService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("DomainTypesService"),
-    deps: ["$injector"]
-};
+export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
+
+export const categoriesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(CategoriesService);
+
+export const feedServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedService);
+
+export const domainTypesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DomainTypesService);
+
+export const feedPropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DefaultFeedPropertyService,"FeedPropertyService");
+
+export const registerTemplatePropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(RegisterTemplatePropertyService);
+
+export const uiComponentsServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(UiComponentsService);
+
+export const feedInputProcessorPropertiesTemplateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedInputProcessorPropertiesTemplateService);
+
+export const feedDetailsProcessorRenderingHelperProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedDetailsProcessorRenderingHelper);
+
 

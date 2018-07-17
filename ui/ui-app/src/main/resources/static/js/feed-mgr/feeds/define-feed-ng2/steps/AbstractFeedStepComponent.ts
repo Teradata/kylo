@@ -72,7 +72,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     }
 
-    private updateFeedService(){
+    updateFeedService(){
         //update the feed service with this data
         this.defineFeedService.setFeed(this.feed);
     }

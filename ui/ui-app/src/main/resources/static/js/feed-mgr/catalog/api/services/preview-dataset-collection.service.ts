@@ -50,7 +50,7 @@ export class PreviewDatasetCollectionService {
             this.datasets.push(dataset);
             dataset.collected = true;
             //notify the observers of the change
-            this.datasetsSubject.observers.forEach(o => o.next(this.datasets));
+            this.datasetsSubject.next(this.datasets);
           }
     }
 
@@ -87,7 +87,7 @@ export class PreviewDatasetCollectionService {
                 this.datasets.splice(index, 1)
                 dataset.collected = false
                 //notify the observers of the change
-                this.datasetsSubject.observers.forEach(o => o.next(this.datasets));
+                this.datasetsSubject.next(this.datasets);
             }
         }
 

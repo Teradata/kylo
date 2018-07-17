@@ -19,6 +19,6 @@ export class DefineFeedStepGeneralInfoValidator  extends FeedStepValidator {
             this.step.setComplete(false)
         }
         console.log("Validate step finished",this.step, feed)
-        return this.step.complete;
+        return this.step.valid;
     }
 }

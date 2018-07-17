@@ -1,7 +1,9 @@
 import * as angular from "angular";
+import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
 import {DefaultFeedModel, FeedModel, Step, StepBuilder} from "../model/feed.model";
 import {Common} from "../../../../common/CommonTypes"
+import { Templates } from "../../../services/TemplateTypes";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
@@ -11,10 +13,18 @@ import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-f
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
+import 'rxjs/add/observable/forkJoin'
 import {PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
 import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
+import {EntityAccessControlService} from "../../../shared/entity-access-control/EntityAccessControlService";
+import AccessControlService from "../../../../services/AccessControlService";
+import {RestUrlConstants} from "../../../services/RestUrlConstants";
+import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
+import {UiComponentsService} from "../../../services/UiComponentsService";
+import {FeedService} from "../../../services/FeedService";
+
 
 @Injectable()
 export class DefineFeedService {
@@ -73,8 +83,16 @@ export class DefineFeedService {
      */
     private feedStateChangeSubject: Subject<FeedModel>;
 
+    private uiComponentsService :UiComponentsService;
 
-private previewDatasetCollectionService:PreviewDatasetCollectionService;
+    private registerTemplatePropertyService :RegisterTemplatePropertyService;
+
+    private feedService :FeedService;
+
+    /**
+     * Listen for when a user chooses a new source
+     */
+    private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
     constructor(private http:HttpClient,private $$angularInjector: Injector){
         this.currentStepSubject = new Subject<Step>();
@@ -92,6 +110,12 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
+
+        this.uiComponentsService = $$angularInjector.get("UiComponentsService");
+
+        this.registerTemplatePropertyService = $$angularInjector.get("RegisterTemplatePropertyService");
+
+        this.feedService = $$angularInjector.get("FeedService");
     }
 
     /**
@@ -110,6 +134,9 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
                 console.log("LOADED ", feed)
                 //convert it to our needed class
                 let feedModel = new DefaultFeedModel(feed)
+                //reset the propertiesInitalized flag
+                feedModel.propertiesInitialized = false;
+
                 this.initializeFeedSteps(feedModel);
                 feedModel.validate(true);
                 this.setFeed(feedModel)
@@ -124,6 +151,84 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
         }
     }
 
+
+
+    sortAndSetupFeedProperties(feed:FeedModel){
+        if((feed.inputProcessors == undefined || feed.inputProcessors.length == 0) && feed.registeredTemplate){
+            feed.inputProcessors = feed.registeredTemplate.inputProcessors;
+        }
+
+        feed.inputProcessors= _.sortBy(feed.inputProcessors, 'name')
+        // Find controller services
+        _.chain(feed.inputProcessors.concat(feed.nonInputProcessors))
+            .pluck("properties")
+            .flatten(true)
+            .filter((property) => {
+                return property != undefined && property.propertyDescriptor && property.propertyDescriptor.identifiesControllerService && (typeof property.propertyDescriptor.identifiesControllerService == 'string' );
+            })
+            .each((property:any) => this.feedService.findControllerServicesForProperty(property));
+
+        //find the input processor associated to this feed
+        feed.inputProcessor = feed.inputProcessors.find((processor: Templates.Processor) => {
+            if (feed.inputProcessorName) {
+                return   feed.inputProcessorType == processor.type && feed.inputProcessorName.toLowerCase() == processor.name.toLowerCase()
+            }
+            else {
+                return    feed.inputProcessorType == processor.type;
+            }
+        });
+        if(feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
+            feed.inputProcessor = feed.inputProcessors[0];
+        }
+    }
+
+    setupFeedProperties(feed:FeedModel,template:any, mode:string) {
+        if(feed.isNew()){
+            this.registerTemplatePropertyService.initializeProperties(template, 'create', feed.properties);
+        }
+        else {
+            this.registerTemplatePropertyService.initializeProperties(template, "edit", []);
+        }
+
+      this.sortAndSetupFeedProperties(feed);
+
+
+        // this.inputProcessors = template.inputProcessors;
+        feed.allowPreconditions = template.allowPreconditions;
+
+        //merge the non input processors
+        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Sets the feed
      * @param {FeedModel} feed
@@ -136,7 +241,7 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
     }
 
     beforeSave() {
-        this.beforeSaveSubject.observers.forEach(o=> o.next(this.feed));
+        this.beforeSaveSubject.next(this.feed);
     }
 
     /**
@@ -154,7 +259,7 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
             //errors exist before we try to save
             //notify watchers that this step was saved
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.observers.forEach(o=>o.next(response));
+            this.savedFeedSubject.next(response);
             return null;
         }
     }
@@ -292,7 +397,15 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
             let updatedFeed = response.feedMetadata;
             //turn the response back into our FeedModel object
             let savedFeed = new DefaultFeedModel(updatedFeed);
+
+            //if the properties are already initialized we should keep those values
+            if(this.feed.propertiesInitialized){
+                savedFeed.inputProcessor =  this.feed.inputProcessor;
+                savedFeed.inputProcessors = this.feed.inputProcessors;
+                savedFeed.nonInputProcessors = this.feed.nonInputProcessors;
+            }
             this.feed.update(savedFeed);
+
             //reset it to be editable
             this.feed.readonly = false;
             //set the steps
@@ -302,7 +415,7 @@ private previewDatasetCollectionService:PreviewDatasetCollectionService;
             //notify watchers that this step was saved
             let saveFeedResponse = new SaveFeedResponse(this.feed,true,"Successfully saved "+this.feed.feedName);
             saveFeedResponse.newFeed = newFeed;
-            this.savedFeedSubject.observers.forEach(o => o.next(saveFeedResponse));
+            this.savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
             console.error("Error",error);
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
