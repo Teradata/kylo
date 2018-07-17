@@ -1,14 +1,17 @@
 #!/bin/bash
 KYLO_HOME=$1
-VAULT_VERSION=$2
-VAULT_INSTALL_HOME=$3
-VAULT_USER=$4
-VAULT_GROUP=$5
-WORKING_DIR=$6
+KYLO_USER=$2
+KYLO_GROUP=$3
+VAULT_VERSION=$4
+VAULT_INSTALL_HOME=$5
+VAULT_USER=$6
+VAULT_GROUP=$7
+WORKING_DIR=$8
+OFFLINE_MODE=$9
 VAULT_DATA_DIR=${VAULT_INSTALL_HOME}/data
 
 
-VAULT_VERSION="${VAULT_VERSION:-0.10.1}"
+VAULT_VERSION="${VAULT_VERSION:-0.9.0}"
 UNAME=$(uname -s |  tr '[:upper:]' '[:lower:]')
 VAULT_BINARY_NAME="vault_${VAULT_VERSION}_${UNAME}_amd64"
 VAULT_ZIP="${VAULT_BINARY_NAME}.zip"
@@ -23,15 +26,29 @@ VAULT_BIN_UNSEAL=${VAULT_CURRENT}/bin/unseal.sh
 VAULT_BIN_SETUP=${VAULT_CURRENT}/bin/setup.sh
 VAULT_LOG_DIR=/var/log/vault
 VAULT_PORT="8200"
-VAULT_ADDRESS="http://localhost:${VAULT_PORT}"
-VAULT_CONF_INIT=${VAULT_CURRENT_HOME}/conf/vault.init
+VAULT_HOST="localhost"
+VAULT_ADDRESS="https://${VAULT_HOST}:${VAULT_PORT}"
+VAULT_CONF=${VAULT_CURRENT_HOME}/conf
+VAULT_CONF_INIT=${VAULT_CONF}/vault.init
+VAULT_CERT_PEM=${VAULT_CONF}/vault-cert.pem
+VAULT_KEY_PEM=${VAULT_CONF}/vault-key.pem
+VAULT_CA_CERT_PEM=${VAULT_CONF}/ca-cert.pem
+VAULT_ROOT_CERT_PEM=${VAULT_CONF}/root-cert.pem
+VAULT_TRUSTSTORE=${VAULT_CONF}/truststore.jks
 VAULT_PID_DIR=/var/run/vault
 VAULT_PID_FILE=${VAULT_PID_DIR}/vault.pid
 VAULT_SERVICE_FILE=/etc/init.d/vault
 
+KYLO_HOST=localhost
+KYLO_SSL=${KYLO_HOME}/ssl
+KYLO_TRUSTSTORE=${KYLO_SSL}/kylo-vault-truststore.jks
+KYLO_KEYSTORE=${KYLO_SSL}/kylo-vault-keystore.jks
+KYLO_CERT_PEM=${KYLO_SSL}/kylo-cert.pem
+
+
 offline=false
 
-if [ "$7" = "-o" ] || [ "$7" = "-O" ]
+if [ "${OFFLINE_MODE}" = "-o" ] || [ "${OFFLINE_MODE}" = "-O" ]
 then
     echo "Working in offline mode"
     offline=true
@@ -42,17 +59,19 @@ argInstructions() {
   cat <<EOF
 Incorrect number of arguments.
 Arg1 should be the Kylo Home
-Arg2 should be the Vault version
-Arg3 should be the Vault home
-Arg4 should be the Vault user
-Arg5 should be the Vault group.
+Arg2 should be the Kylo User
+Arg3 should be the Kylo Group
+Arg4 should be the Vault version
+Arg5 should be the Vault home
+Arg6 should be the Vault user
+Arg7 should be the Vault group.
 For offline mode pass:
- Arg6 the kylo setup folder
- Arg7 the -o -or -O option
+ Arg8 the kylo setup folder
+ Arg9 the -o -or -O option
 EOF
   exit 1
 }
-if [ $# -lt 5 ] || [ $# -gt 7 ]; then
+if [ $# -lt 7 ] || [ $# -gt 9 ]; then
     argInstructions
     exit 1
 fi
@@ -111,6 +130,63 @@ mkdir -p ${VAULT_CURRENT}/conf
 echo "Creating Vault PID directory '${VAULT_PID_DIR}'"
 mkdir -p ${VAULT_PID_DIR}
 
+
+echo "Creating SSL config"
+mkdir -p ${KYLO_SSL}
+echo "Creating keystore and key password in ${VAULT_CONF}/password"
+head -c 64 /dev/urandom | md5sum | cut -d' ' -f1 > ${VAULT_CONF}/password
+PW=`cat ${VAULT_CONF}/password`
+
+echo "Creating Kylo truststore password in ${KYLO_SSL}/password"
+head -c 64 /dev/urandom | md5sum | cut -d' ' -f1 > ${KYLO_SSL}/password
+KPW=`cat ${KYLO_SSL}/password`
+
+echo "Creating keystore for root, ca, vault in ${VAULT_CONF}"
+keytool -genkeypair -keystore ${VAULT_CONF}/root.jks -alias root -ext bc:c -validity 10000 -keyalg RSA -keysize 2048 -keypass ${PW} -storepass ${PW} -deststoretype pkcs12 -dname "cn=root"
+keytool -genkeypair -keystore ${VAULT_CONF}/ca.jks -alias ca -ext bc:c -validity 10000 -keyalg RSA -keysize 2048 -keypass ${PW} -storepass ${PW} -deststoretype pkcs12  -dname "cn=CA"
+keytool -genkeypair -keystore ${VAULT_CONF}/vault.jks -alias vault -validity 10000 -keyalg RSA -keysize 2048 -keypass ${PW} -storepass ${PW} -deststoretype pkcs12  -dname "cn=${VAULT_HOST}"
+echo "Creating keystore for kylo in ${KYLO_SSL}"
+keytool -genkeypair -keystore ${KYLO_KEYSTORE} -alias kylo -validity 10000 -keyalg RSA -keysize 2048 -keypass ${KPW} -storepass ${KPW} -deststoretype pkcs12  -dname "cn=${KYLO_HOST}"
+
+echo "Storing root cert to ${VAULT_ROOT_CERT_PEM}"
+keytool -keystore ${VAULT_CONF}/root.jks -alias root -exportcert -rfc -storepass ${PW} > ${VAULT_ROOT_CERT_PEM}
+
+echo "Storing CA cert to ${VAULT_CA_CERT_PEM}"
+keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -certreq -alias ca | keytool -storepass ${PW} -keystore ${VAULT_CONF}/root.jks -gencert -alias root -ext BC=0 -rfc > ${VAULT_CA_CERT_PEM}
+
+cat ${VAULT_ROOT_CERT_PEM} ${VAULT_CA_CERT_PEM} > ${VAULT_CONF}/cachain.pem
+keytool -keystore ${VAULT_CONF}/ca.jks -importcert -alias ca -file ${VAULT_CONF}/cachain.pem -storepass ${PW} -trustcacerts -noprompt
+
+echo "Storing Kylo cert to ${KYLO_CERT_PEM}"
+keytool -storepass ${KPW} -keystore ${KYLO_KEYSTORE} -certreq -alias kylo | keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -gencert -alias ca -ext ku:c=dig,keyEncipherment -rfc > ${KYLO_CERT_PEM}
+keytool -storepass ${KPW} -keystore ${KYLO_KEYSTORE} -importcert -trustcacerts -noprompt -alias root -file ${VAULT_ROOT_CERT_PEM}
+keytool -storepass ${KPW} -keystore ${KYLO_KEYSTORE} -importcert -alias ca -file ${VAULT_CA_CERT_PEM}
+keytool -storepass ${KPW} -keystore ${KYLO_KEYSTORE} -importcert -alias kylo -file ${KYLO_CERT_PEM}
+cp ${KYLO_CERT_PEM} ${VAULT_CONF}/kylo-cert.pem
+
+echo "Storing Vault cert to ${VAULT_CERT_PEM}"
+keytool -storepass ${PW} -keystore ${VAULT_CONF}/vault.jks -certreq -alias vault | keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -gencert -alias ca -ext ku:c=dig,keyEncipherment -rfc > ${VAULT_CERT_PEM}
+
+echo "Storing Vault key to ${VAULT_KEY_PEM}"
+openssl pkcs12 -in ${VAULT_CONF}/vault.jks  -nodes -nocerts -out ${VAULT_KEY_PEM} -password pass:${PW}
+
+echo "Creating Kylo truststore in ${KYLO_TRUSTSTORE}"
+keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -trustcacerts -noprompt -alias root -file ${VAULT_ROOT_CERT_PEM}
+keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -alias ca -file ${VAULT_CA_CERT_PEM}
+keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -alias vault -file ${VAULT_CERT_PEM}
+
+chown -R ${KYLO_USER}:${KYLO_GROUP} ${KYLO_SSL}
+chmod -R 600 ${KYLO_SSL}
+
+
+
+cat << EOF >> ${VAULT_CURRENT}/conf/kylo-policy.hcl
+# This section grants all access on "secret/kylo/*"
+path "secret/kylo/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+EOF
+
 cat << EOF >> ${VAULT_CURRENT}/conf/vault.conf
 backend "file" {
     path = "${VAULT_DATA_DIR}"
@@ -118,7 +194,10 @@ backend "file" {
 
 listener "tcp" {
   address = "0.0.0.0:${VAULT_PORT}"
-  tls_disable = 1
+  tls_cert_file = "${VAULT_CERT_PEM}"
+  tls_key_file = "${VAULT_KEY_PEM}"
+
+  tls_min_version = "tls10"
 }
 
 pid_file = "${VAULT_PID_FILE}"
@@ -249,15 +328,17 @@ EOF
 cat << EOF >> ${VAULT_BIN_INIT}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
-${VAULT_CURRENT_HOME}/bin/vault operator init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
+export VAULT_CAPATH="${VAULT_CA_CERT_PEM}"
+${VAULT_CURRENT_HOME}/bin/vault init -key-shares=3 -key-threshold=3 | tee ${VAULT_CONF_INIT} > /dev/null
 chmod 600 ${VAULT_CONF_INIT}
 EOF
 
 cat << EOF >> ${VAULT_BIN_UNSEAL}
 #! /bin/sh
 export VAULT_ADDR=${VAULT_ADDRESS}
+export VAULT_CAPATH="${VAULT_CA_CERT_PEM}"
 cat ${VAULT_CONF_INIT} | grep '^Unseal' | awk '{print \$4}' | for key in \$(cat -); do
-    ${VAULT_CURRENT_HOME}/bin/vault operator unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
+    ${VAULT_CURRENT_HOME}/bin/vault unseal \${key} > ${VAULT_LOG_DIR}/unseal-vault.log 2>&1
 done
 EOF
 
@@ -265,9 +346,18 @@ cat << EOF >> ${VAULT_BIN_SETUP}
 #! /bin/sh
 export VAULT_TOKEN=\$1
 export VAULT_ADDR=${VAULT_ADDRESS}
-echo "Restoring non-versioned K/V backend at secret/"
-${VAULT_CURRENT_HOME}/bin/vault secrets disable secret
-${VAULT_CURRENT_HOME}/bin/vault secrets enable -path secret -version 1 kv
+export VAULT_CAPATH="${VAULT_CA_CERT_PEM}"
+#echo "Restoring non-versioned K/V backend at secret/"
+# Non-versioned secrets only applicable to Vault v0.10.1+, cannot upgrade Vault to 0.10.1+ because
+# upgrading Vault would mean upgrading Spring Vault, but cannot upgrade Spring Vault because Kylo is not running recent enough Spring
+#${VAULT_CURRENT_HOME}/bin/vault secrets disable secret
+#${VAULT_CURRENT_HOME}/bin/vault secrets enable -path secret -version 1 kv
+
+echo "Setting up client cert authentication for Kylo"
+${VAULT_CURRENT_HOME}/bin/vault auth-enable cert
+${VAULT_CURRENT_HOME}/bin/vault write auth/cert/certs/kylo display_name=kylo policies=kylo certificate=@${VAULT_CONF}/kylo-cert.pem ttl=3600
+${VAULT_CURRENT_HOME}/bin/vault policy-write kylo ${VAULT_CONF}/kylo-policy.hcl
+
 EOF
 
 
@@ -300,7 +390,11 @@ service vault stop
 echo "Vault initialised"
 
 echo "Updating Kylo configuration"
-sed -i "s/security\.vault\.token=<insert-vault-secret-token-here>/security\.vault\.token=${ROOT_TOKEN}/" ${KYLO_HOME}/kylo-services/conf/application.properties
+PROPS=${KYLO_HOME}/kylo-services/conf/application.properties
+sed -i -r "s|^vault\.keyStorePassword=.*|vault\.keyStorePassword=${KPW}|" ${PROPS}
+sed -i -r "s|^vault\.keyStoreDirectory=.*|vault\.keyStoreDirectory=${KYLO_SSL}|" ${PROPS}
+sed -i -r "s|^vault\.trustStorePassword=.*|vault\.trustStorePassword=${KPW}|" ${PROPS}
+sed -i -r "s|^vault\.trustStoreDirectory=.*|vault\.trustStoreDirectory=${KYLO_SSL}|" ${PROPS}
 
 echo "Vault installation complete"
 echo "The unseal keys and root token have been stored in "${VAULT_CONF_INIT}"."

@@ -51,6 +51,16 @@ rm -rf /var/lib/elasticsearch/
 rm -rf /etc/elasticsearch/
 rm -rf /usr/share/elasticsearch/
 
+
+echo "Uninstalling Vault"
+service vault stop
+rm -f /etc/init.d/vault
+rm -f /etc/default/vault
+rm -rf /opt/vault
+rm -rf /var/log/vault
+rm -rf /var/run/vault
+
+
 echo "Uninstalling /opt/java"
 rm -rf /opt/java
 

@@ -26,9 +26,17 @@ import lombok.Data;
 class VaultConfiguration {
 
     private String token;
+
+    private String keyStoreDirectory;
+    private String keyStoreName;
+    private char[] keyStorePassword;
+    private String keyStoreType;
+
     private String trustStoreDirectory;
     private String trustStoreName;
     private char[] trustStorePassword;
+    private String trustStoreType;
+
     private boolean trustSelfSignedCert;
 
     private String scheme;
