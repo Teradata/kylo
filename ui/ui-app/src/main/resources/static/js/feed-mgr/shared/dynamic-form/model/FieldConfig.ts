@@ -37,4 +37,12 @@ export class FieldConfig<T> {
         this.readonlyValue = options.readonlyValue || this.model.value;
 
     }
+
+    setModelValue(value:any){
+        this.model[this.modelValueProperty]= value;
+    }
+
+    getModelValue():any {
+        return this.model[this.modelValueProperty];
+    }
 }

@@ -558,11 +558,22 @@ export class DefaultFeedModel implements FeedModel{
 
     }
 
+    updateNonNullFields(model:any){
+        let keys = Object.keys(model);
+        let obj = {}
+        keys.forEach((key:string) => {
+            if(model[key] && model[key] != null){
+                obj[key] = model[key];
+            }
+        });
+        Object.assign(this,obj);
+    }
+
     update(model:Partial<FeedModel>) :void {
         //keep the internal ids saved for the table.tableSchema.fields and table.partitions
         let oldFields = this.table.tableSchema.fields;
         let oldPartitions = this.table.partitions;
-        Object.assign(this, model);
+        this.updateNonNullFields(model);
         let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
         this.table.tableSchema.fields.forEach((field:TableColumnDefinition,index:number) => {
             field._id = (<TableColumnDefinition> oldFields[index])._id;

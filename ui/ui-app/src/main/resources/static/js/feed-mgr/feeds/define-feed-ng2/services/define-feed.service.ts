@@ -397,7 +397,15 @@ export class DefineFeedService {
             let updatedFeed = response.feedMetadata;
             //turn the response back into our FeedModel object
             let savedFeed = new DefaultFeedModel(updatedFeed);
+
+            //if the properties are already initialized we should keep those values
+            if(this.feed.propertiesInitialized){
+                savedFeed.inputProcessor =  this.feed.inputProcessor;
+                savedFeed.inputProcessors = this.feed.inputProcessors;
+                savedFeed.nonInputProcessors = this.feed.nonInputProcessors;
+            }
             this.feed.update(savedFeed);
+
             //reset it to be editable
             this.feed.readonly = false;
             //set the steps

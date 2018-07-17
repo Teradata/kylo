@@ -14,6 +14,7 @@ import {TdDynamicType} from "@covalent/dynamic-forms/services/dynamic-forms.serv
 import {FieldConfig} from "../../../../shared/dynamic-form/model/FieldConfig";
 import {InputText} from "../../../../shared/dynamic-form/model/InputText";
 import {Select} from "../../../../shared/dynamic-form/model/Select";
+import {Checkbox} from "../../../../shared/dynamic-form/model/Checkbox";
 import {DynamicFormService} from "../../../../shared/dynamic-form/services/dynamic-form.service";
 import {MatRadioChange} from "@angular/material";
 import {RegisterTemplatePropertyService} from "../../../../services/RegisterTemplatePropertyService";
@@ -26,6 +27,8 @@ import 'rxjs/add/observable/forkJoin'
 import {SectionHeader} from "../../../../shared/dynamic-form/model/SectionHeader";
 import {RestUrlConstants} from "../../../../services/RestUrlConstants";
 import {UiComponentsService} from "../../../../services/UiComponentsService";
+import {RadioButton} from "../../../../shared/dynamic-form/model/RadioButton";
+import {Textarea} from "../../../../shared/dynamic-form/model/Textarea";
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -239,31 +242,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                         this.inputProcessors = feed.inputProcessors;
                         this.buildForm();
 
-                        /*
-                        this.registerTemplatePropertyService.initializeProperties(feed.registeredTemplate, "edit", []);
-                        //merge the input processors
-                        feed.inputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(updatedFeedResponse.registeredTemplate.inputProcessors, true)
-
-                        // find all input processors and sort them alpha.
-                        feed.inputProcessors = _.sortBy(feed.inputProcessors, 'name');
-                        //find the input processor associated to this feed
-                        feed.inputProcessor = feed.inputProcessors.find((processor: Templates.Processor) => {
-                            if (feed.inputProcessorName) {
-                                return feed.inputProcessorType == processor.type && feed.inputProcessorName.toLowerCase() == processor.name.toLowerCase()
-                            }
-                            else {
-                                return feed.inputProcessorType == processor.type;
-                            }
-                        });
-
-
-                        //merge the non input processors
-                        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(updatedFeedResponse.registeredTemplate.nonInputProcessors, false);
-                        //  self.updateMenuOptions();
-
-                        feed.isStream = updatedFeedResponse.data.registeredTemplate.stream;
-
-    */
                         //@TODO add in  access control
 
                         /*
@@ -298,6 +276,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 })
             }
         else {
+          //  this.defineFeedService.setupFeedProperties(this.feed,this.feed.registeredTemplate, 'edit')
             this.inputProcessor = feed.inputProcessor;
             this.inputProcessors = feed.inputProcessors;
             this.buildForm();
@@ -305,27 +284,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     }
 
 
-
-
-
-
-
-    matchInputProcessor(inputProcessor: Templates.Processor, inputProcessors: Templates.Processor[]) {
-
-        if (inputProcessor == null) {
-            //input processor is null when feed is being created
-            return undefined;
-        }
-
-        var matchingInput = _.find(inputProcessors, (input: any) => {
-            if (input.id == inputProcessor.id) {
-                return true;
-            }
-            return (input.type == inputProcessor.type && input.name == inputProcessor.name);
-        });
-
-        return matchingInput;
-    }
 
     private toFieldConfigOptions(property :Templates.Property):any {
         let key:string = property.idKey;
@@ -363,6 +321,9 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
            });
        return elements;
     }
+    private isInputText(property:Templates.Property){
+        return (property.renderType == null || property.renderType == "text" || property.renderType == "email" || property.renderType == "number" || property.renderType == "password");
+    }
 
     toFieldConfig(processor:Templates.Processor):FieldConfig<any>[]{
         let elements :FieldConfig<any>[] = []
@@ -374,7 +335,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 let fieldConfig:FieldConfig<any> = null;
                 let fieldConfigOptions = this.toFieldConfigOptions(property);
                 fieldConfigOptions.order= this.formFieldOrder;
-                if(property.renderType == "text" || property.renderType == "email"){
+                if(this.isInputText(property)){
                     let type = property.renderType;
                     if(property.sensitive) {
                         type = "password";
@@ -382,12 +343,45 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                     fieldConfigOptions.type = type;
                     fieldConfig = new InputText(fieldConfigOptions);
                 }
-                else if(property.renderType == "select"){
-                    let options = (<any[]>property.propertyDescriptor.allowableValues).map(allowableValue => {
-                        return {key: allowableValue.value, value: allowableValue.displayName}
-                    });
+                else if(property.renderType == "select" || property.renderType == "radio"){
+
+                    let options :any[] = [];
+                    if(property.propertyDescriptor.allowableValues && property.propertyDescriptor.allowableValues.length >0) {
+                        options = (<any[]>property.propertyDescriptor.allowableValues).map(allowableValue => {
+                            return {label: allowableValue.displayName,value: allowableValue.value}
+                        });
+                    }
+                    else if(property.renderOptions && property.renderOptions.selectOptions && property.renderOptions.selectOptions.length >0) {
+                        let selectOptions = JSON.parse(property.renderOptions.selectOptions)
+                        options = (<any[]>selectOptions).map(allowableValue => {
+                            return {label: allowableValue,value: allowableValue}
+                        });
+                    }
+                    //add in the not set value
+                    if(!property.required){
+                        options.unshift({label:"Not Set",value:""});
+                    }
+
+
                     fieldConfigOptions.options = options;
-                    fieldConfig = new Select(fieldConfigOptions);
+                    if(property.renderType == "select") {
+                        fieldConfig = new Select(fieldConfigOptions);
+                    }
+                    else if(property.renderType == "radio") {
+                        fieldConfig = new RadioButton(fieldConfigOptions);
+                    }
+                }
+                else if(property.renderType == "checkbox-true-false" || property.renderType == "checkbox-custom") {
+                    //default value is true, false.  Only need to set it if its custom
+                    if (property.renderType == "checkbox-custom") {
+                        fieldConfigOptions.trueValue = property.renderOptions['trueValue'];
+                        fieldConfigOptions.falseValue = property.renderOptions['falseValue'];
+                    }
+                    fieldConfig = new Checkbox(fieldConfigOptions);
+
+                }
+                else if(property.renderType == "textarea") {
+                    fieldConfig = new Textarea(fieldConfigOptions);
                 }
                 fieldConfig.model = property;
 
