@@ -79,8 +79,6 @@ public class RepositoryItem {
                ", fileName='" + fileName + '\'' +
                ", stream=" + stream +
                ", installed=" + installed +
-               ", repository=[" + repository.getName() +
-               ", "+repository.getType().getKey() +
                "]}";
     }
 
