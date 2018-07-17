@@ -28,7 +28,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 
 @Configuration
-@ComponentScan(basePackages = {"com.thinkbiganalytics.repository"})
+@ComponentScan(basePackages = {"com.thinkbiganalytics.repository", "com.thinkbiganalytics.repository.filesystem"})
 public class RepositoryConfig {
 
     @Bean

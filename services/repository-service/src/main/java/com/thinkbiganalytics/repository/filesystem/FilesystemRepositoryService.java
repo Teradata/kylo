@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -84,51 +85,56 @@ public class FilesystemRepositoryService implements RepositoryService {
     @Autowired
     ResourceLoader resourceLoader;
 
-    ObjectMapper mapper = null;
-
-    public FilesystemRepositoryService() {
-        mapper = new ObjectMapper();
-        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-    }
+    ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public List<RepositoryItem> listTemplates() {
         List<RepositoryItem> repositoryItems = new ArrayList<>();
         List<TemplateRepository> repositories = listRepositories();
-        repositories
-            .stream()
-            .filter(r -> StringUtils.isNotBlank(r.getLocation()))
-            .flatMap(r -> {
-                try {
-                    return Files.find(Paths.get(r.getLocation()),
-                                      Integer.MAX_VALUE,
-                                      (path, attrs) -> attrs.isRegularFile()
-                                                       && path.toString().endsWith(".json"))
-                        .map((p) -> jsonToMetadata(p, r));
-                } catch (Exception e) {
-                    log.error("Error reading repository metadata for templates", e);
-                }
-                return Collections.<RepositoryItem>emptyList().stream();
-            }).forEach(repositoryItems::add);
 
         Set<String> registeredTemplates = registeredTemplateService
             .getRegisteredTemplates()
             .stream().map(t -> t.getTemplateName())
             .collect(Collectors.toSet());
 
-        repositoryItems
+        repositories
             .stream()
-            .forEach(m -> m.setInstalled(registeredTemplates.contains(m.getTemplateName())));
+            .filter(r -> StringUtils.isNotBlank(r.getLocation()))
+            .flatMap(r -> {
+                return fileToTemplateConversion(registeredTemplates, r);
+            }).forEach(repositoryItems::add);
 
         return repositoryItems;
     }
 
+    private Stream<? extends RepositoryItem> fileToTemplateConversion(Set<String> registeredTemplates, TemplateRepository r) {
+        try {
+            return Files.find(Paths.get(r.getLocation()),
+                              Integer.MAX_VALUE,
+                              (path, attrs) -> attrs.isRegularFile()
+                                               && path.toString().endsWith(".json"))
+                .map((p) -> {
+                    RepositoryItem template = jsonToMetadata(p, r);
+                    template.setInstalled(registeredTemplates.contains(template.getTemplateName()));
+                    return template;
+                });
+        } catch (Exception e) {
+            log.error("Error reading repository metadata for templates", e);
+        }
+        return Collections.<RepositoryItem>emptyList().stream();
+    }
+
     @Override
-    public ImportTemplate importTemplate(String repositoryName, String repositoryType, String fileName, String uploadKey, String importComponents) throws Exception {
+    public ImportTemplate importTemplate(String repositoryName,
+                                         String repositoryType,
+                                         String fileName,
+                                         String uploadKey,
+                                         String importComponents) throws Exception {
 
         Optional<Path> opt = listRepositories()
             .stream()
-            .filter(r -> StringUtils.equals(r.getName(), repositoryName) && StringUtils.equals(r.getType().getKey(), repositoryType))
+            .filter(r -> StringUtils.equals(r.getName(), repositoryName) &&
+                         StringUtils.equals(r.getType().getKey(), repositoryType))
             .map(r -> Paths.get(r.getLocation() + "/" + fileName))
             .filter(p -> Files.exists(p))
             .findFirst();
@@ -227,11 +233,12 @@ public class FilesystemRepositoryService implements RepositoryService {
 
             return repositories
                 .stream()
-                .filter(r -> Files.exists(Paths.get(r.getLocation().trim())) &&
-                             set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase()))
+                .filter(r -> StringUtils.isNotBlank(r.getLocation()) && //location must be provided
+                             Files.exists(Paths.get(r.getLocation().trim())) && //location must be valid
+                             set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase())) //unique name per repository type
                 .collect(Collectors.toList());
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Unable to read repositories", e);
         }
 
