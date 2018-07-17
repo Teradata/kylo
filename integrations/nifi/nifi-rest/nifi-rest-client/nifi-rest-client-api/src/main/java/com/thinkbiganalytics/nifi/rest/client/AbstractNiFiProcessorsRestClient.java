@@ -94,7 +94,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
         
         // Stop the processor if it is disabled or running.
         if (state == PROCESS_STATE.DISABLED || state == PROCESS_STATE.RUNNING) {
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
@@ -105,28 +105,34 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
         // In all other cases add the sequence: set a long timer -> start -> stop -> reset original scheduling.
         if (state != PROCESS_STATE.RUNNING || strategy != SCHEDULE_STRATEGIES.TIMER_DRIVEN) {
             // Set long timer -> start -> stop -> reset scheduling.
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 proc.setConfig(createConfig(SCHEDULE_STRATEGIES.TIMER_DRIVEN.name(), TRIGGER_TIMER_PERIOD));
                 proc.setState(PROCESS_STATE.RUNNING.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
-            sequence.add((proc) -> {
+
+            sequence.add(proc -> {
+                delay(2000);
+                proc.setState(PROCESS_STATE.STOPPED.name());
+                return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
+            });
+
+            sequence.add(proc -> {
                 delay(2000);
                 proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
-                proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
         }
 
         // Disable or start the processor again depending on its original state
         if (state == PROCESS_STATE.DISABLED) {
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
                 proc.setState(PROCESS_STATE.DISABLED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
         } else if (state == PROCESS_STATE.RUNNING) {
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
                 proc.setState(PROCESS_STATE.RUNNING.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
@@ -151,7 +157,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
     
     private void delay(long millis) {
         try {
-            Thread.sleep(millis);;
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             // Do nothing
         }

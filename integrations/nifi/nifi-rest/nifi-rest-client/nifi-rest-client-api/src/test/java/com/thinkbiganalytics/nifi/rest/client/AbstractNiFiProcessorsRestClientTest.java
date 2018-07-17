@@ -36,7 +36,6 @@ import java.util.Optional;
 
 public class AbstractNiFiProcessorsRestClientTest {
 
-
     private ProcessorDTO newProcessor(String id, String state, String scheduleStrategy, String schedule) {
         final ProcessorDTO dto = new ProcessorDTO();
         dto.setId(id);
@@ -75,12 +74,16 @@ public class AbstractNiFiProcessorsRestClientTest {
         processors.stream().forEach(processorDTO -> {
             Mockito.when(client.findById("parent", processorDTO.getId())).thenReturn(Optional.of(processorDTO));
             ProcessorDTO wakeupDto = client.wakeUp(processorDTO);
-            //Ensure the dto after wakeup matches the starting dto
-            Assert.assertEquals(wakeupDto.getConfig().getSchedulingStrategy(), processorDTO.getConfig().getSchedulingStrategy());
-            Assert.assertEquals(wakeupDto.getConfig().getSchedulingPeriod(), processorDTO.getConfig().getSchedulingPeriod());
-            Assert.assertEquals(wakeupDto.getState(),processorDTO.getState());
+
+            if (wakeupDto.getConfig() != null) {
+                //Ensure the dto after wakeup matches the starting dto
+                Assert.assertEquals(wakeupDto.getConfig().getSchedulingStrategy(), processorDTO.getConfig().getSchedulingStrategy());
+                Assert.assertEquals(wakeupDto.getConfig().getSchedulingPeriod(), processorDTO.getConfig().getSchedulingPeriod());
+
+                if (wakeupDto.getState() != null) {
+                    Assert.assertEquals(wakeupDto.getState(), processorDTO.getState());
+                }
+            }
         });
-
-
     }
 }
