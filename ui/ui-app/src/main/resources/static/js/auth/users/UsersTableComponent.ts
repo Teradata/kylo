@@ -11,6 +11,7 @@ import "../module-require";
 import { Component } from '@angular/core';
 import { ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableSortingOrder, TdDataTableService } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
+import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 const PAGE_NAME: string = "users";
 
 
@@ -18,50 +19,24 @@ const PAGE_NAME: string = "users";
     selector: 'users-Table',
     templateUrl: "js/auth/users/users-table.html"
 })
-export default class UsersTableComponent {
+export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
     /**
      * Page title.
      * @type {string}
      */
     cardTitle: string = "Users";
-
-    /**
-     * Index of the current page.
-     * @type {number}
-     */
-    currentPage: number = 1;
-
-
     /**
      * Mapping of group names to group metadata.
      * @type {Object.<string, GroupPrincipal>}
      */
     groups: any = {};
-
     /**
      * Indicates that the table data is being loaded.
      * @type {boolean}
      */
     loading: boolean = true;
 
-    /**
-     * List of users.
-     * @type {Array.<UserPrincipal>}
-     */
-    users: any = [];
-
-    filteredData: any[];
-    filteredTotal: number = 0;
-
-    sortBy: string = 'displayName';
-
-    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
-
-    pageSize: number = 5;
-    fromRow: number = 1;
-    searchTerm: string = '';
-
-    private columns: ITdDataTableColumn[] = [
+    public columns: ITdDataTableColumn[] = [
         { name: 'displayName', label: 'Display Name', sortable: true, filter : true },
         { name: 'email', label: 'Email Address', sortable: true, filter : true},
         { name: 'status', label: 'Status', sortable: true, filter : true },
@@ -85,10 +60,9 @@ export default class UsersTableComponent {
                 u.groups = this.getGroupTitles(u);
                 return u;
             });
-            this.users = users;
-            this.filteredData = this.users;
-            this.filteredTotal = this.users.length;
-            this.filter();
+            super.setSortBy('displayName');
+            super.setDataAndColumnSchema(users,this.columns);
+            super.filter();
             this.loading = false;
         });
     }
@@ -97,51 +71,15 @@ export default class UsersTableComponent {
         private AddButtonService: AddButtonService,
         private stateService: StateService,
         private UserService: UserService,
-        private _dataTableService: TdDataTableService
+        public _dataTableService: TdDataTableService
     ) {
-
+        super(_dataTableService);
         // Register Add button
         this.AddButtonService.registerAddButton('users', () => {
             this.stateService.Auth.navigateToUserDetails();
         });
 
     }
-
-    onPageSizeChange(pagingEvent: IPageChangeEvent): void {
-        this.fromRow = pagingEvent.fromRow;
-        this.currentPage = pagingEvent.page;
-        this.pageSize = pagingEvent.pageSize;
-        this.filter();
-    }
-
-    search(searchTerm: string): void {
-        this.searchTerm = searchTerm;
-        this.filter();
-    }
-
-    sort(sortEvent: ITdDataTableSortChangeEvent): void {
-        this.sortBy = sortEvent.name;
-        this.sortOrder = sortEvent.order;
-        this.filter();
-    }
-
-    filter(): void {
-        let newData: any[] = this.users;
-        let excludedColumns: string[] = this.columns
-            .filter((column: ITdDataTableColumn) => {
-                return ((column.filter === undefined && column.hidden === true) ||
-                    (column.filter !== undefined && column.filter === false));
-            }).map((column: ITdDataTableColumn) => {
-                return column.name;
-            });
-        newData = this._dataTableService.filterData(newData, this.searchTerm, true, excludedColumns);
-        this.filteredTotal = newData.length;
-        newData = this._dataTableService.sortData(newData, this.sortBy, this.sortOrder);
-        newData = this._dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
-        this.filteredData = newData;
-    }
-
-
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
      *
