@@ -37,6 +37,10 @@ import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.repository.api.RepositoryItem;
 import com.thinkbiganalytics.repository.api.RepositoryService;
 import com.thinkbiganalytics.repository.api.TemplateRepository;
+import com.thinkbiganalytics.repository.api.TemplateSearchFilter;
+import com.thinkbiganalytics.repository.api.TemplateSearchFilter.TemplateComparator;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +59,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +68,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+
+import static com.thinkbiganalytics.repository.api.TemplateSearchFilter.TemplateComparator.NAME;
+import static com.thinkbiganalytics.repository.api.TemplateSearchFilter.TemplateComparator.valueOf;
 
 @Service
 @PropertySource("classpath:filesystem-repository.properties")
@@ -243,6 +251,32 @@ public class FilesystemRepositoryService implements RepositoryService {
         }
 
         return new ArrayList<>();
+    }
+
+    @Override
+    public SearchResult getTemplatesPage(TemplateSearchFilter filter) {
+        SearchResult<RepositoryItem> searchResult = new SearchResultImpl<>();
+        List<RepositoryItem> templates = listTemplates();
+
+        String sort = filter.getSort();
+
+        List<RepositoryItem> data = templates.stream()
+            .sorted(getComparator(sort))
+            .skip(filter.getStart())
+            .limit(filter.getLimit() > 0 ? filter.getLimit() : Integer.MAX_VALUE)
+            .collect(Collectors.toList());
+
+        Long total = new Long(templates.size());
+        searchResult.setData(data);
+        searchResult.setRecordsTotal(total);
+        searchResult.setRecordsFiltered(total);
+        return searchResult;
+    }
+
+    private Comparator<RepositoryItem> getComparator(String sort) {
+        return StringUtils.isNotBlank(sort) ?
+               (sort.startsWith("-") ? valueOf(sort.substring(1)).getComparator().reversed() : valueOf(sort).getComparator())
+                                            : NAME.getComparator();
     }
 
     private TemplateRepository getRepositoryByNameAndType(String repositoryName, String repositoryType) {

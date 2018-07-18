@@ -32,6 +32,10 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {TemplatePublishDialog} from "./dialog/template-publish-dialog";
 import {MatRadioModule} from "@angular/material/radio";
 import {ImportTemplateComponent, ImportTemplateDirective} from "./ng5-import-template.component";
+import {CovalentCommonModule} from "@covalent/core/common";
+import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatSortModule} from "@angular/material/sort";
+import {MatInputModule} from "@angular/material/input";
 
 const moduleName: string = require("feed-mgr/templates/module-name");
 
@@ -47,6 +51,7 @@ const moduleName: string = require("feed-mgr/templates/module-name");
     imports: [
         FormsModule,
         CommonModule,
+        CovalentCommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
         CovalentLayoutModule,
@@ -64,6 +69,9 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         MatSelectModule,
         MatButtonModule,
         MatTableModule,
+        MatPaginatorModule,
+        MatSortModule,
+        MatInputModule,
         MatProgressSpinnerModule,
         CdkTableModule,
         MatMenuModule,

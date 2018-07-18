@@ -1,9 +1,11 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {TemplateMetadata} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
-import {IPageChangeEvent} from "@covalent/core/paging";
 import {StateService} from "@uirouter/angular";
+import {MatPaginator} from "@angular/material/paginator";
+import {MatSort} from "@angular/material/sort";
+import {MatTableDataSource} from "@angular/material/table";
 
 /**
  * List templates from repository ready for installation.
@@ -16,8 +18,6 @@ export class ListTemplatesComponent implements OnInit {
 
     static readonly LOADER = "ListTemplatesComponent.LOADER";
 
-    downloadUrl: string = "/proxy/v1/repository/templates";
-
     constructor(private templateService: TemplateService,
                 private dataTableService: TdDataTableService,
                 private state: StateService) {
@@ -25,15 +25,27 @@ export class ListTemplatesComponent implements OnInit {
 
     selectedTemplate: TemplateMetadata;
     errorMsg: string = "";
+    @ViewChild(MatPaginator) paginator: MatPaginator;
+    @ViewChild(MatSort) sort: MatSort;
 
     /**
      * List of available templates
      */
     public templates: TemplateMetadata[] = [];
+    dataSource = new MatTableDataSource();
 
     public ngOnInit() {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+        this.loadTemplates();
+    }
+
+    loadTemplates() {
         this.templateService.getTemplates().subscribe(
-            (data: TemplateMetadata[]) => {this.templates = data; this.filter();},
+            (data: TemplateMetadata[]) => {
+                this.templates = data;
+                this.dataSource.data = data;
+            },
             (error: any) => {
                 console.log(error);
                 if(error.developerMessage)
@@ -56,10 +68,7 @@ export class ListTemplatesComponent implements OnInit {
         });
     }
 
-    /**
-     * select/un-select template to be imported
-     */
-    toggleImportTemplate(template: TemplateMetadata) {
+    importTemplate(template: TemplateMetadata) {
         this.selectedTemplate = template;
         let param = {"template": template};
         this.state.go("import-template", param);
@@ -67,27 +76,9 @@ export class ListTemplatesComponent implements OnInit {
 
     pageSize: number = 50;
     currentPage: number = 1;
-    fromRow: number = 1;
     searchTerm: string = '';
-    filteredTotal = 0;
-    filteredTemplates: TemplateMetadata[] = [];
 
-    page(pagingEvent: IPageChangeEvent): void {
-        this.fromRow = pagingEvent.fromRow;
-        this.currentPage = pagingEvent.page;
-        this.pageSize = pagingEvent.pageSize;
-        this.filter();
-    }
-
-    search(searchTerm: string): void {
-        this.searchTerm = searchTerm;
-        this.filter();
-    }
-
-    private filter(): void {
-        let newData = this.dataTableService.filterData(this.templates, this.searchTerm, true, []);
-        this.filteredTotal = newData.length;
-        newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
-        this.filteredTemplates = newData;
+    search(filter: string): void {
+        this.dataSource.filter = filter.trim().toLowerCase();
     }
 }

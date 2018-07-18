@@ -24,6 +24,8 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemp
 import com.thinkbiganalytics.repository.api.RepositoryItem;
 import com.thinkbiganalytics.repository.api.RepositoryService;
 import com.thinkbiganalytics.repository.api.TemplateRepository;
+import com.thinkbiganalytics.repository.api.TemplateSearchFilter;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -35,11 +37,13 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -72,10 +76,21 @@ public class RepositoryController {
     @GET
     @Path("templates")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all templates available in repository.")
+    @ApiOperation("Lists all templates available in all repositories.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
     public List<RepositoryItem> listTemplates() throws Exception {
         return repositoryService.listTemplates();
+    }
+
+    @GET
+    @Path("template-page")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Paginated response of available templates in all repositories.")
+    @ApiResponse(code = 200, message = "Returns templates of all types.")
+    public SearchResult getTemplatesPage(@QueryParam("sort") @DefaultValue("") String sort,
+                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                         @QueryParam("start") @DefaultValue("0") Integer start) {
+        return repositoryService.getTemplatesPage(new TemplateSearchFilter(sort, limit, start));
     }
 
     @POST

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.repository.api;
  */
 
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 
 import java.util.List;
 
@@ -35,4 +36,6 @@ public interface RepositoryService {
     byte[] downloadTemplate(String repositoryName, String repositoryType, String fileName) throws Exception;
 
     List<TemplateRepository> listRepositories() throws Exception;
+
+    SearchResult getTemplatesPage(TemplateSearchFilter templateSearchFilter);
 }
