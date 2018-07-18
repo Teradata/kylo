@@ -17,17 +17,20 @@
   limitations under the License.
   #L%
   -->
-<h1 mat-dialog-title>Saving data source</h1>
-<div class="mat-toolbar-tools">
-  <h4>
-    <mat-icon size="24" ngStyle="'fill':#3483BA">save</mat-icon>
-    <span>Saving {{datasourceName | characters:50}}</span>
-  </h4>
-  <span flex></span>
-</div>
-<div mat-dialog-content>
-  <div class="mat-subhead">{{message}}</div>
-    <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    </div>
-</div>
+<div mat-dialog aria-label="Saving data source">
+    <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
+      <div class="md-toolbar-tools">
+        <h4>
+          <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template" style="fill:#3483BA"></ng-md-icon>
+          <span>Saving {{datasourceName}}</span>
+        </h4>
+        <span flex></span>
+      </div>
+    </mat-toolbar>
+    <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+      <div class="md-subhead">Saving the data source. Hang tight.</div>
+      <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
+    </mat-dialog-content>
+  </div>

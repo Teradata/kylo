@@ -16,7 +16,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {  RestUrlService } from './RestUrlService';
 
@@ -55,12 +55,8 @@ import {  RestUrlService } from './RestUrlService';
         constructor(private http:HttpClient, 
                     private restUrlService:RestUrlService, 
                     private entityAccessControlService:EntityAccessControlService) {
-      //  angular.extend(DatasourcesService.prototype, {
             
-        }//);
-        //return new DatasourcesService();
-        
-
+        }     
         /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons
@@ -265,10 +261,6 @@ import {  RestUrlService } from './RestUrlService';
             }
 
            testConnection= (datasource: any) => {
-                return this.http.post(this.restUrlService.GET_DATASOURCES_URL + "/test", datasource).toPromise()
-                    .then((response:any) => {
-                        return response.data;
-                    });
+                return this.http.post(this.restUrlService.GET_DATASOURCES_URL + "/test", datasource,{headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})}).toPromise();
             }
-    //}
 }

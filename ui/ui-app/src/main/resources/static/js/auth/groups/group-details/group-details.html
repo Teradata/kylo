@@ -29,7 +29,7 @@
         </mat-card-title>
         <mat-card-body>
             <form #groupForm="ngForm">
-                <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit"
+                <vertical-section-layout [sectionTitle]="'Details'" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit"
                     [onCancelEdit]="onCancel" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
@@ -79,7 +79,7 @@
                     </editable-section>
                 </vertical-section-layout>
             </form>
-            <vertical-section-layout section-title="Permissions" [onSaveEdit]="onSavePermissions" [onEdit]="onEditPermissions"
+            <vertical-section-layout [sectionTitle]="'Permissions'" [onSaveEdit]="onSavePermissions" [onEdit]="onEditPermissions"
              [onCancelEdit]="onCancelEditPermissions" [editable]="isPermissionsEditable" [allowEdit]="!loading && model.systemName !== null && allowAdmin" *ngIf="groupId">
                 <readonly-section>
                     <thinkbig-permissions-table [model]="actions" [readOnly]="true"></thinkbig-permissions-table>
@@ -89,7 +89,7 @@
                 </editable-section>
             </vertical-section-layout>
 
-            <vertical-section-layout [allowEdit]="false" [showVerticalCheck]="true" section-title="Related Users" *ngIf="groupId && allowUsers">
+            <vertical-section-layout [allowEdit]="false" [showVerticalCheck]="true" [sectionTitle]="'Related Users'" *ngIf="groupId && allowUsers">
                 <readonly-section>
                     <mat-list layout-fill class="list-item-table list-condensed" id="policy-list" *ngIf="!loading && model.systemName !== null && model.memberCount > 0">
                         <mat-list-item>

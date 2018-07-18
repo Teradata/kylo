@@ -90,7 +90,8 @@ import { RestUrlService } from "../feed-mgr/services/RestUrlService";
      exports: [
         KyloIconComponent,
         VerticalSectionLayoutComponent,
-        CardFilterHeaderComponent
+        CardFilterHeaderComponent,
+        IconPickerDialog
     ],
     providers: [AboutKyloService, RestUrlService]
 })

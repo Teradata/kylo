@@ -24,15 +24,17 @@ import { DatasourcesTableComponent } from "./DatasourcesTableComponent";
 import { DatasourcesService } from "../services/DatasourcesService";
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatButtonModule} from '@angular/material/button';
-import { DatasourcesDetailsComponent } from "./DatasourcesDetailsComponent";
+import { DatasourcesDetailsComponent, SaveDatasourceDialogComponent } from "./DatasourcesDetailsComponent";
 import { CommonModule } from "@angular/common";
 import { KyloCommonModule } from "../../common/common.module";
 
 @NgModule({ 
     declarations: [  
         DatasourcesTableComponent,
-        DatasourcesDetailsComponent
+        DatasourcesDetailsComponent,
+        SaveDatasourceDialogComponent
     ], 
+    entryComponents : [SaveDatasourceDialogComponent],
     imports: [ 
         CommonModule,
         KyloCommonModule,
@@ -60,7 +62,7 @@ import { KyloCommonModule } from "../../common/common.module";
         UIRouterModule.forChild({states: datasourcesStates}) 
     ],
     providers : [DatasourcesService],
-    schemas : [NO_ERRORS_SCHEMA]
+    schemas : [NO_ERRORS_SCHEMA],
 }) 
 export class DataSourcesModule { 
 } 

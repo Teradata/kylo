@@ -1,4 +1,3 @@
-
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
@@ -7,11 +6,9 @@ import { Transition, StateService } from '@uirouter/core';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { Component, ViewContainerRef, Inject } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
-import IconPickerDialog from '../../common/icon-picker-dialog/icon-picker-dialog';
+import {IconPickerDialog} from '../../common/icon-picker-dialog/icon-picker-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/interval';
 
 
 
@@ -253,25 +250,15 @@ export class DatasourcesDetailsComponent {
             model.password = null;
         }
         this._dialogService.open(SaveDatasourceDialogComponent,{
-            viewContainerRef : this._viewContainerRef,
-            disableClose : true,
             data : {
                 datasourceName: this.model.name
             },
+            viewContainerRef : this._viewContainerRef,
             panelClass: "full-screen-dialog"
-        }).afterClosed().subscribe((msg : any) => {
-            if (msg) {
-                this.editModel.icon = msg.icon;
-                this.editModel.iconColor = msg.color;
-            }
         });
-
+        this.isDetailsEditable = false;
         // Save the changes
-        this.saveModel(model)
-            .catch(() => {
-                this._dialogService.closeAll();
-                this.isDetailsEditable = true;
-            });
+        this.saveModel(model);
     };
 
     /**
@@ -295,7 +282,7 @@ export class DatasourcesDetailsComponent {
                 this.isDetailsEditable = true;
                 this._dialogService.closeAll();
                 this._dialogService.openAlert({
-                    message: "The data source '" + model.name + "' could not be saved. " + err.data.message,
+                    message: "The data source '" + model.name + "' could not be saved. " + err.message,
                     viewContainerRef: this._viewContainerRef,
                     width: '300 px',
                     title: "Save Failed",
@@ -359,6 +346,14 @@ export class DatasourcesDetailsComponent {
                 msg: msg,
                 status: isConnectionOk
             };
+        }, (err  : any) =>{
+            const isConnectionOk = err.message === undefined;
+            const msg = isConnectionOk ? "" : err.message;
+            this.testConnectionResult = {
+                msg: msg,
+                status: isConnectionOk
+            };
+            this.snackBar.open(msg,"OK");
         });
     };
 
@@ -368,10 +363,6 @@ export class DatasourcesDetailsComponent {
     templateUrl: 'js/feed-mgr/datasources/datasource-saving-dialog.html',
 })
 export class SaveDatasourceDialogComponent {
-    messageInterval: any = null;
-    counter: number = 0;
-    index: number = 0;
-    messages: any = [];
     message : string ;
     dataSourceName : string = "";
 
@@ -385,41 +376,8 @@ export class SaveDatasourceDialogComponent {
 
         this.message = "Saving the data source " + this.dataSourceName;
 
-        this.messages.push("Hang tight. Still working.");
-        this.messages.push("Just a little while longer.");
-        this.messages.push("Saving the data source.");
-
-        this.messageInterval = Observable.interval(3000).subscribe(() => {
-            this.updateMessage();
-          });
-        // this.dialogRef.close();
-        // this.hide = () => {
-
-        // }
-        // $scope.hide = () => {
-        //     this.cancelMessageInterval();
-        //     $mdDialog.hide();
-
-        // };
-
-        // $scope.cancel = () => {
-        //     this.cancelMessageInterval();
-        //     $mdDialog.cancel();
-        // };
-
     }
-    updateMessage = () => {
-        this.index++;
-        var len = this.messages.length;
-        if (this.index == len) {
-            this.index = 0;
-        }
-        this.message = this.messages[this.index];
-
-    }
-    cancelMessageInterval = () => {
-        if (this.messageInterval != null) {
-            this.messageInterval.cancel(this.messageInterval);
-        }
+    hide = () => {
+        this.dialogRef.close();   
     }
 }

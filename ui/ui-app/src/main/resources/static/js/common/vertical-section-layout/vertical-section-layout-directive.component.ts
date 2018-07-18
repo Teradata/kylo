@@ -18,18 +18,18 @@ import {Component, Input} from "@angular/core";
 })
 export class VerticalSectionLayoutComponent {
 
-    @Input() showVerticalCheck: any;
-    @Input() allowEdit: any;
-    @Input() sectionTitle: any;
-    @Input() formName: any;
+    @Input() showVerticalCheck: boolean;
+    @Input() allowEdit: boolean;
+    @Input() sectionTitle: string;
+    @Input() formName: string;
     @Input() onDelete: any;
-    @Input() isDeleteVisible: any;
-    @Input() allowDelete: any;
+    @Input() isDeleteVisible: boolean;
+    @Input() allowDelete: boolean;
     @Input() onEdit: any;
     @Input() onSaveEdit: any;
     @Input() onCancelEdit: any;
-    @Input() editable: any;
-    @Input() keepEditableAfterSave: any;
+    @Input() editable: boolean;
+    @Input() keepEditableAfterSave: boolean;
     @Input() isValid: any;
     @Input() theForm: any;
 

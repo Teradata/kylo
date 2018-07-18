@@ -29,7 +29,7 @@
         </mat-card-title>
         <mat-card-body>
             <form #userForm="ngForm">
-                <vertical-section-layout section-title="Details" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
+                <vertical-section-layout [sectionTitle]="'Details'" [onDelete]="onDelete" [allowDelete]="canDelete" [onSaveEdit]="onSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
                                          [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
