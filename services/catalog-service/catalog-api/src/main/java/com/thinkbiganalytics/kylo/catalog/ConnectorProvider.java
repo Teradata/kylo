@@ -1,8 +1,11 @@
-package com.thinkbiganalytics.kylo.catalog.credential.vault;
+/**
+ * 
+ */
+package com.thinkbiganalytics.kylo.catalog;
 
 /*-
  * #%L
- * kylo-catalog-credential-vault
+ * kylo-catalog-api
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,28 +23,17 @@ package com.thinkbiganalytics.kylo.catalog.credential.vault;
  * #L%
  */
 
-import lombok.Data;
+import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 
-@Data
-class VaultConfiguration {
+import java.util.List;
+import java.util.Optional;
 
-    private String token;
+/**
+ *
+ */
+public interface ConnectorProvider {
+    
+    public List<Connector> findAllConnectors();
 
-    private String keyStoreDirectory;
-    private String keyStoreName;
-    private char[] keyStorePassword;
-    private String keyStoreType;
-
-    private String trustStoreDirectory;
-    private String trustStoreName;
-    private char[] trustStorePassword;
-    private String trustStoreType;
-
-    private boolean trustSelfSignedCert;
-
-    private String scheme;
-    private String host;
-    private int port;
-
-    private String root;
+    public Optional<Connector> findConnector(String id);
 }

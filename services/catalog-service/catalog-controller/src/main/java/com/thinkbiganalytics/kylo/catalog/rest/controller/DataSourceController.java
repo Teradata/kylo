@@ -100,6 +100,9 @@ public class DataSourceController extends AbstractCatalogController {
     
     @Inject
     private DataSourceCredentialManager credentialManager;
+    
+    @Inject
+    private ConnectorPluginController pluginController;
 
     @POST
     @ApiOperation("Create a new data source")
@@ -303,6 +306,22 @@ public class DataSourceController extends AbstractCatalogController {
                             .buildError();
             throw new InternalServerErrorException(Response.serverError().entity(status).build());
         }
+    }
+
+    @GET
+    @Path("{id}/plugin")
+    @ApiOperation("Gets the plugin associates with the connector of the specified data source")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The plugin associates with the data source's connector", response = DataSetTable.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Failed to obtain the plugin", response = RestResponseStatus.class)
+                  })
+    public Response getConnectorPlugin(@PathParam("id") final String dataSourceId) {
+        log.entry(dataSourceId);
+
+        final DataSource dataSource = findDataSource(dataSourceId);
+
+        return log.exit(this.pluginController.getPlugin(dataSource.getConnector().getPluginId()));
     }
 
     /**

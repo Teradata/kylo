@@ -1,6 +1,7 @@
 import {Component, Input} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {Connector} from '../api/models/connector';
+import {ConnectorPlugin} from '../api/models/connector-plugin';
 import {AbstractControl, FormControl, ValidatorFn} from '@angular/forms';
 import {UiOption} from '../api/models/ui-option';
 import {DataSource} from '../api/models/datasource';
@@ -51,6 +52,9 @@ export class ConnectorComponent {
 
     @Input("connector")
     public connector: Connector;
+
+    @Input("connectorPlugin")
+    public plugin: ConnectorPlugin;
 
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
@@ -104,11 +108,11 @@ export class ConnectorComponent {
         ds.template = new DataSourceTemplate();
         ds.template.paths = [];
         ds.template.options = {};
-        const optionsMapper = <UiOptionsMapper>this[this.connector.optionsMapperId || "defaultOptionsMapper"];
+        const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
         if (optionsMapper) {
             optionsMapper.mapOptions(ds, this.controls);
         } else {
-            this.showSnackBar("Unknown ui options mapper " + this.connector.optionsMapperId
+            this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
                 + " for connector " + this.connector.title);
             return;
         }

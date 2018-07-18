@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.connector;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 
 import org.apache.commons.io.IOUtils;
@@ -41,7 +42,7 @@ import javax.annotation.Nonnull;
  * Provides access to {@link Connector} objects.
  */
 @Component
-public class ConnectorProvider {
+public class FileConnectorProvider implements ConnectorProvider {
 
     /**
      * Maps id to connector
@@ -50,9 +51,9 @@ public class ConnectorProvider {
     private final Map<String, Connector> connectors;
 
     /**
-     * Constructs a {@code ConnectorProvider}.
+     * Constructs a {@code FileConnectorProvider}.
      */
-    public ConnectorProvider() throws IOException {
+    public FileConnectorProvider() throws IOException {
         final String connectorsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-connectors.json"), StandardCharsets.UTF_8);
         final List<Connector> connectorList = ObjectMapperSerializer.deserialize(connectorsJson, new TypeReference<List<Connector>>() {
         });
@@ -68,6 +69,7 @@ public class ConnectorProvider {
     /**
      * Gets the connector with the specified id.
      */
+    @Override
     @Nonnull
     public Optional<Connector> findConnector(@Nonnull final String id) {
         return Optional.ofNullable(connectors.get(id)).map(Connector::new);
@@ -76,6 +78,7 @@ public class ConnectorProvider {
     /**
      * Gets the list of available connectors.
      */
+    @Override
     @Nonnull
     public List<Connector> findAllConnectors() {
         return connectors.values().stream().map(Connector::new).collect(Collectors.toList());

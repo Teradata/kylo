@@ -62,6 +62,17 @@ export const catalogStates: Ng2StateDeclaration[] = [
                         }))
                         .toPromise();
                 }
+            },
+            {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    return catalog.getConnectorPlugin(state.transition.params().connectorId)
+                        .pipe(catchError(() => {
+                            return state.go("catalog.connectors")
+                        }))
+                        .toPromise();
+                }
             }
         ]
     },
@@ -99,6 +110,18 @@ export const catalogStates: Ng2StateDeclaration[] = [
                     let datasourceId = state.transition.params().datasourceId;
                     return catalog.getDataSource(datasourceId)
                         .pipe(finalize(() => loading.resolve(DatasourceComponent.LOADER)))
+                        .pipe(catchError(() => {
+                            return state.go("catalog")
+                        }))
+                        .toPromise();
+                }
+            },
+            {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    let datasourceId = state.transition.params().datasourceId;
+                    return catalog.getDataSourceConnectorPlugin(datasourceId)
                         .pipe(catchError(() => {
                             return state.go("catalog")
                         }))

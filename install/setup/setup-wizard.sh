@@ -27,6 +27,15 @@ if [[ -z "$kylo_home_folder" ]]; then
     kylo_home_folder=/opt/kylo
 fi
 
+read -p "Enter the kylo linux user, hit Enter for 'kylo': " kylo_user
+if [[ -z "$kylo_user" ]]; then
+    kylo_user=kylo
+fi
+read -p "Enter the kylo linux group, hit Enter for 'users': " kylo_group
+if [[ -z "$kylo_group" ]]; then
+    kylo_group=users
+fi
+
 echo " ";
 while [[ ! $install_db =~ $yes_no ]]; do
     read -p "Would you like to install the database scripts in a database instance? Please enter y/n: " install_db
@@ -194,9 +203,9 @@ while [[ ! ${install_vault} =~ $yes_no ]]; do
     read -p "Would you like me to install a local Vault instance? Please enter y/n: " install_vault
 
     if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
-        read -p "Enter Vault version you wish to install, hit Enter for '0.10.1': " vault_version
+        read -p "Enter Vault version you wish to install, hit Enter for '0.9.0': " vault_version
         if [[ -z "$vault_version" ]]; then
-            vault_version=0.10.1
+            vault_version=0.9.0
         fi
 
         read -p "Enter the Vault home folder location, hit Enter for '/opt/vault': " vault_home
@@ -301,9 +310,9 @@ if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
     echo "Installing Vault"
     if [ ${OFFLINE} = true ]
     then
-        ./vault/install-vault.sh ${kylo_home_folder} ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
+        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
     else
-        ./vault/install-vault.sh ${kylo_home_folder} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
+        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
     fi
 fi
 
