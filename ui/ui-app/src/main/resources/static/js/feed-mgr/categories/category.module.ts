@@ -35,8 +35,6 @@ import { CategoryFeedsController } from "./details/category-feeds.component";
 import {CategoriesControllerComponent} from "./CategoriesController.component";
 import {CategoryDetailsController} from "./category-details.component";
 
-import {PropertiesAdminController} from "../shared/properties-admin/properties-admin.component";
-import {PropertiesAdminEditorController} from "../shared/properties-admin/properties-admin-editor.component";
 
 import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
@@ -55,8 +53,6 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         CategoryAccessControlController,
         CategoryFeedsController,
         CategoryDetailsController,
-        PropertiesAdminController,
-        PropertiesAdminEditorController
     ],
     entryComponents: [
         CategoriesControllerComponent,
@@ -66,8 +62,6 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         CategoryAccessControlController,
         CategoryFeedsController,
         CategoryDetailsController,
-        PropertiesAdminController,
-        PropertiesAdminEditorController
     ],
     imports: [
         BrowserModule,
