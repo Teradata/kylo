@@ -6,18 +6,14 @@ import {authStates} from "./auth.states";
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatListModule} from '@angular/material/list';
-import {MatTableModule} from '@angular/material/table';
 import {MatIconModule} from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
 import UsersTableComponent from "./users/UsersTableComponent";
 import { NgModule } from "@angular/core";
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import UserService from "./services/UserService";
-import { CovalentDataTableModule } from '@covalent/core/data-table';
-import { CovalentPagingModule } from '@covalent/core/paging';
 import {MatSelectModule} from '@angular/material/select';
 import {MatToolbarModule} from '@angular/material/toolbar';
-import { CovalentSearchModule } from '@covalent/core/search';
 import UserDetailsComponent from "./users/user-details/UserDetailsComponent";
 import { CovalentDialogsModule } from '@covalent/core/dialogs';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -48,14 +44,10 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
         MatProgressBarModule,
         MatDividerModule,
         MatListModule,
-        MatTableModule,
         MatIconModule,
         MatCardModule,
-        CovalentDataTableModule,
-        CovalentPagingModule,
         MatSelectModule,
         MatToolbarModule,
-        CovalentSearchModule,
         CovalentDialogsModule,
         MatFormFieldModule,
         MatChipsModule,

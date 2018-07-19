@@ -33,19 +33,19 @@ export class BaseFilteredPaginatedTableView {
         this.sortBy = sortBy;
     }
 
-    onPageSizeChange(pagingEvent: IPageChangeEvent): void {
+    onPageSizeChange = (pagingEvent: IPageChangeEvent) => {
         this.fromRow = pagingEvent.fromRow;
         this.currentPage = pagingEvent.page;
         this.pageSize = pagingEvent.pageSize;
         this.filter();
     }
 
-    search(searchTerm: string): void {
+    search = (searchTerm: string): void  => {
         this.searchTerm = searchTerm;
         this.filter();
     }
 
-    sort(sortEvent: ITdDataTableSortChangeEvent): void {
+    sort = (sortEvent: ITdDataTableSortChangeEvent): void => {
         this.sortBy = sortEvent.name;
         this.sortOrder = sortEvent.order;
         this.filter();

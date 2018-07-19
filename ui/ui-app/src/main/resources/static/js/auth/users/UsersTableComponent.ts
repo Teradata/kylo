@@ -110,7 +110,7 @@ export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
      *
      * @param user the user
      */
-    userDetails(user: any) {
-        this.stateService.Auth.navigateToUserDetails(user.row.systemName);
+    userDetails = (clickEvent: any) =>{
+        this.stateService.Auth.navigateToUserDetails(clickEvent.row.systemName);
     };
 }

@@ -10,14 +10,21 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatCardModule} from '@angular/material/card';
+import {MatToolbarModule} from '@angular/material/toolbar';
 
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 import {TranslateModule} from "@ngx-translate/core";
+import { CovalentDataTableModule } from '@covalent/core/data-table';
+import { CovalentPagingModule } from '@covalent/core/paging';
+import { CovalentSearchModule } from '@covalent/core/search';
 
 import {KyloServicesModule} from "../services/services.module";
 import {AddButtonComponent} from "./add-button/add-button.component";
@@ -37,6 +44,7 @@ import {IconPickerDialog} from "./icon-picker-dialog/icon-picker-dialog.componen
 
 import {AboutKyloService} from "./about-kylo/AboutKyloService";
 import { RestUrlService } from "../feed-mgr/services/RestUrlService";
+import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-view/filteredPaginatedTableView.component";
 
 @NgModule({
     declarations: [
@@ -53,6 +61,7 @@ import { RestUrlService } from "../feed-mgr/services/RestUrlService";
         CardLayoutComponent,
         IconPickerDialog,
         AboutKyloDialogController,
+        FilteredPaginatedTableViewComponent
     ],
     entryComponents: [
         AddButtonComponent,
@@ -66,13 +75,17 @@ import { RestUrlService } from "../feed-mgr/services/RestUrlService";
         UploadFileComponent,
         CardLayoutComponent,
         AboutKyloDialogController,
-        IconPickerDialog
+        IconPickerDialog,
+        FilteredPaginatedTableViewComponent
     ],
     imports: [
         CommonModule,
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
+        CovalentDataTableModule,
+        CovalentPagingModule,
+        CovalentSearchModule,
         KyloServicesModule,
         MatButtonModule,
         MatIconModule,
@@ -83,15 +96,20 @@ import { RestUrlService } from "../feed-mgr/services/RestUrlService";
         MatProgressSpinnerModule,
         MatGridListModule,
         MatDialogModule,
+        MatToolbarModule,
+        MatCardModule,
         FormsModule,
+        FlexLayoutModule,
         HttpClientModule,
-        TranslateModule
+        TranslateModule,
+        MatProgressBarModule
     ],
      exports: [
         KyloIconComponent,
         VerticalSectionLayoutComponent,
         CardFilterHeaderComponent,
-        IconPickerDialog
+        IconPickerDialog,
+        FilteredPaginatedTableViewComponent
     ],
     providers: [AboutKyloService, RestUrlService]
 })
