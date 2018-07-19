@@ -1,36 +1,18 @@
-<!--
-  #%L
-  thinkbig-ui-feed-manager
-  %%
-  Copyright (C) 2017 ThinkBig Analytics
-  %%
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-  
-      http://www.apache.org/licenses/LICENSE-2.0
-  
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  #L%
-  -->
-<style>
 
-</style>
+<div fxLayout="row">
+<define-feed-step-card [(feed)]="feed" [(step)]="step" mode="custom" fxFlex="80">
 
-<define-feed-step-card [(feed)]="feed" [(step)]="step">
-  <feed-step-readonly-content>
-    <div fxLayout="row">
+  <ng-container *ngIf="feed.readonly">
+    <div fxLayout="row" fxFlex="100">
+      <div fxLayout="column" fxFlex="100">
+        <div fxLayout="row">
       <div fxFlex="30">Name</div>
       <div fxFlex="30">Data Type</div>
       <div fxFlex="10">Primary</div>
       <div fxFlex="10">Created</div>
       <div fxFlex="10">Updated</div>
     </div>
-    <td-virtual-scroll-container [style.height.px]="400" [data]="feed.table.tableSchema.fields">
+        <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
       <ng-template let-row="row"
                    let-index="index"
                    let-first="first"
@@ -38,10 +20,10 @@
                    let-odd="odd"
                    let-even="even"
                    tdVirtualScrollRow>
-        <div fxLayout="row" fxFlex="100">
-          <span fxFlex="30">{{row.name}}</span>
+        <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)">
+          <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
 
-          <div fxLayout="row" fxFlex="30">
+          <div fxLayout="row" fxFlex="30" [class.strike]="row.deleted">
 
             <span>{{row.derivedDataType}}</span>
 
@@ -52,7 +34,7 @@
             <mat-checkbox disabled="true"  [ngModel]="row.primaryKey" ></mat-checkbox>
           </div>
           <div  fxFlex="10">
-            <mat-checkbox disabled="true" [ngModel]="row.createdTracker"></mat-checkbox>
+            <mat-checkbox disabled="true"  [ngModel]="row.createdTracker"></mat-checkbox>
           </div>
 
           <div fxFlex="10">
@@ -63,9 +45,13 @@
 
       </ng-template>
     </td-virtual-scroll-container>
+      </div>
 
-  </feed-step-readonly-content>
-  <feed-step-edit-content>
+
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!feed.readonly">
 
     <form [formGroup]="defineTableForm">
 <div fxLayout="row">
@@ -76,7 +62,7 @@
   <div fxFlex="10">Updated</div>
   <div fxFlex="10">Remove</div>
 </div>
-      <td-virtual-scroll-container [style.height.px]="400" [data]="feed.table.tableSchema.fields">
+      <td-virtual-scroll-container  #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
         <ng-template let-row="row"
                      let-index="index"
                      let-first="first"
@@ -84,11 +70,12 @@
                      let-odd="odd"
                      let-even="even"
                      tdVirtualScrollRow>
-          <div fxLayout="row" fxFlex="100">
-            <mat-form-field fxFlex="30">
-              <input matInput [formControlName]="'name_'+row._id" placeholder="Feed name" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
+          <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)">
+
+            <mat-form-field fxFlex="30" >
+              <input  matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id" placeholder="Field name" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
               <mat-error *ngIf="hasTableFormError('name',row,'required')">
-               Feed Name is required
+                Feed Name is required
               </mat-error>
               <mat-error *ngIf="hasTableFormError('name',row,'notUnique')">
                 Feed Name needs to be unique
@@ -110,7 +97,7 @@
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="hasTableFormError('dataType',row,'required')">
-                 Data Type is required
+                  Data Type is required
                 </mat-error>
               </mat-form-field>
 
@@ -133,7 +120,7 @@
               <mat-checkbox [formControlName]="'updated_'+row._id" [(ngModel)]="row.updatedTracker" (change)="onFieldChange(row)"></mat-checkbox>
             </div>
 
-            <button mat-icon-button [disabled]="!canRemoveFields || row.deleted" (click)="removeColumn(index)" ><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button [disabled]="!tablePermissions.canRemoveFields || row.deleted" (click)="removeColumn(index)" ><mat-icon>delete</mat-icon></button>
 
             <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1" ><mat-icon>undo</mat-icon></button>
 
@@ -141,11 +128,82 @@
 
         </ng-template>
       </td-virtual-scroll-container>
-<button mat-button (click)="addColumn()">Add Column</button>
+      <button mat-button (click)="addColumn()">Add Column</button>
     </form>
 
-  </feed-step-edit-content>
+  </ng-container>
 </define-feed-step-card>
+
+<!-- read only feed column selection -->
+<mat-card *ngIf="feed.table.tableSchema.fields.length >0" fxFlex="20">
+  <mat-card-header>
+    <mat-card-title>
+      <span *ngIf="selectedColumn == undefined">Column Details</span>
+      <span *ngIf="selectedColumn != undefined">{{selectedColumn.name}}</span>
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <span *ngIf="selectedColumn == undefined">Select a column for additional details</span>
+    <div *ngIf="selectedColumn != undefined" fxLayout="column">
+     <ng-container *ngIf="feed.readonly">
+      <div fxLayout="column">
+        <span>{{selectedColumn.description || "Not set"}}</span>
+        <mat-hint>Description</mat-hint>
+      </div>
+
+      <div fxLayout="column">
+        <span>{{selectedColumn.tags || "Not set"}}</span>
+        <mat-hint>Tags</mat-hint>
+      </div>
+
+      <div fxLayout="column">
+        <span> List of std and validators</span>
+        <mat-hint>Standardizers & Validators</mat-hint>
+      </div>
+
+      <div fxLayout="column">
+        <span>Domain Types</span>
+        <mat-hint>Domain Types</mat-hint>
+      </div>
+     </ng-container>
+
+      <ng-container *ngIf="!feed.readonly">
+          <mat-form-field>
+            <textarea placeholder="Description" matInput [(ngModel)]="selectedColumn.description" rows="2"></textarea>
+          </mat-form-field>
+
+
+        <td-chips [chipAddition]="true"
+                  [chipRemoval]="true"
+                  [items]="selectedColumn.tags"
+                  [(value)]="selectedColumn.tags"
+                  placeholder="Tags"
+                  [inputPosition]="'after'">
+          <ng-template td-chip let-chip="chip">
+            {{chip}}
+          </ng-template>
+        </td-chips>
+
+        <div fxLayout="column">
+          <span>{{selectedColumn.tags || "Not set"}}</span>
+          <mat-hint>Tags</mat-hint>
+        </div>
+
+        <div fxLayout="column">
+         <button mat-button (click)="onFieldPoliciesClicked(selectedColumn)">Standardizers & Validators</button>
+          <mat-hint>Standardizers & Validators</mat-hint>
+        </div>
+
+        <div fxLayout="column">
+          <span>Domain Types</span>
+          <mat-hint>Domain Types</mat-hint>
+        </div>
+      </ng-container>
+
+    </div>
+  </mat-card-content>
+</mat-card>
+</div>
 
 <mat-card>
   <mat-card-header>

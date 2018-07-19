@@ -1,0 +1,93 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<h2 mat-dialog-title>{{viewText.title}}  {{data.field.name}}</h2>
+<mat-dialog-content>
+
+    <div *ngIf="policyRules != null && policyRules.length >0 ">
+        <ul dnd-list="policyRules" class="simple-dnd-list">
+        <ng-template ngFor let-rule let-index="$index" let-last="last" [ngForOf]="policyRules">
+                <li
+                    dnd-draggable="rule"
+                    dnd-moved="onMovedPolicyRule($index)"
+                    dnd-effect-allowed="move">
+                    <div layout="row" layout-align="start">
+                        <div layout="column" flex>
+                            <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
+                            <span class="md-list-item-text hint">{{rule.type}}</span>
+                        </div>
+                        <div layout="row">
+                            <button mat-button class="md-icon-button" ng-click="editPolicy($index,rule)">
+                                <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
+                            </button>
+                            <button mat-button class="md-icon-button" ng-click="deletePolicy($index)">
+                                <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+        </ng-template>
+        </ul>
+    </div>
+        <!-- if loading -->
+
+        <div class="edit-form" >
+            <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+
+            <div class="mat-title">{{titleText}}</div>
+
+            <mat-radio-group [(ngModel)]="selectedOptionType" (change)="onChangedOptionType($event)" *ngIf="optionTypes != null" [ngModelOptions]="{standalone: true}">
+                <ng-template ngFor let-optionType let-index="index" let-last="last" [ngForOf]="optionTypes">
+                    <mat-radio-button [value]="optionType.type">{{optionType.name}}</mat-radio-button>
+                </ng-template>
+            </mat-radio-group>
+
+
+            <mat-form-field  class="pad-top-sm">
+                <mat-select  [(ngModel)]="selectedRuleTypeName" placeholder="Select a policy" (change)="onRuleTypeChange($event)" [ngModelOptions]="{standalone: true}">
+                    <mat-option *ngFor="let opt of options" [value]="opt.name">
+                        {{opt.name}}
+                    </mat-option>
+                </mat-select>
+                <mat-hint *ngIf="selectedRuleTypeName">{{editRule.description}}</mat-hint>
+            </mat-form-field>
+
+             <policy-input-form  [parentFormGroup]="policyForm" [(rule)]="editRule" [mode]="editMode" [feed]="data.feed" ></policy-input-form>
+
+            <div fxLayoutAlign="start stretch" fxFlex >
+                <button mat-button  (click)="cancelEdit()">{{viewText.cancelText}}</button>
+                <span fxFlex></span>
+                <button  (click)="addPolicy()" [disabled]="!policyFormIsValid" >{{viewText.addText}}</button>
+            </div>
+        </div>
+
+
+</mat-dialog-content>
+<mat-dialog-actions>
+
+    <span fxFlex=""></span>
+    <button mat-button (click)="cancel()">
+        Cancel
+    </button>
+    <button mat-button (click)="done()" [disabled]="!pendingEdits || editRule != null || !policyFormIsValid">
+       Done
+    </button>
+</mat-dialog-actions>
+

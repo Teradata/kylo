@@ -25,7 +25,7 @@
     </section>
 
     <mat-form-field *ngSwitchCase="'textbox'"  class="pad-top-sm">
-      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [(ngModel)]="field.model[field['modelValueProperty']]">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" >
       <mat-error *ngIf="!isValid">
         {{field.label}} error
       </mat-error>
@@ -34,7 +34,7 @@
 
 
     <mat-form-field  *ngSwitchCase="'select'"  class="pad-top-sm">
-      <mat-select [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]" [placeholder]="field.placeholder" >
+      <mat-select [id]="field.key" [formControlName]="field.key"  [placeholder]="field.placeholder" >
         <mat-option *ngFor="let opt of field.options" [value]="opt.value">
           {{opt.label}}
         </mat-option>
@@ -44,14 +44,14 @@
 
     <div *ngSwitchCase="'checkbox'"  class="pad-top-sm" >
     <mat-checkbox
-        [id]="field.key" [formControlName]="field.key"    labelPosition="before"   [(ngModel)]="field.checked" (change)="field.onChange($event)">{{field.label}}
+        [id]="field.key" [formControlName]="field.key"    labelPosition="before"  (change)="field.onChange($event)">{{field.label}}
     </mat-checkbox>
       <mat-hint>{{field.hint}}</mat-hint>
     </div>
 
 
     <div *ngSwitchCase="'radio'"  class="pad-top-sm" >
-    <mat-radio-group  [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]">
+    <mat-radio-group  [id]="field.key" [formControlName]="field.key"  >
       <ng-template ngFor let-opt let-index="index" let-last="last" [ngForOf]="field.options">
         <mat-radio-button [value]="opt.value">{{opt.label}}</mat-radio-button>
       </ng-template>
@@ -61,7 +61,7 @@
 
 
     <mat-form-field  *ngSwitchCase="'textarea'"  class="pad-top-sm">
-    <textarea matInput [id]="field.key" [formControlName]="field.key"  [(ngModel)]="field.model[field['modelValueProperty']]">
+    <textarea matInput [id]="field.key" [formControlName]="field.key" >
         {{field.model[field['modelValueProperty']]}}
     </textarea>
     </mat-form-field>

@@ -10,6 +10,7 @@ export class FieldConfig<T> {
     hint?:string;
     readonlyValue:string;
     modelValueProperty:string;
+    pattern?:string;
 
     constructor(options: {
         value?: T,
@@ -22,7 +23,8 @@ export class FieldConfig<T> {
         model?:any,
         hint?:string,
         readonlyValue?:string,
-        modelValueProperty?:string
+        modelValueProperty?:string,
+        pattern?:string
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -35,6 +37,7 @@ export class FieldConfig<T> {
         this.model = (options.model && options.model[this.modelValueProperty]) ? options.model : this;
         this.hint = options.hint || '';
         this.readonlyValue = options.readonlyValue || this.model.value;
+        this.pattern = options.pattern;
 
     }
 

@@ -3,13 +3,12 @@ import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
-import {CLASS_NAME} from "@angular/flex-layout";
 
 export class TableFieldPartition {
 
-    public static CLASS_NAME:string = 'TableFieldPartition'
+    public static OBJECT_TYPE:string = 'TableFieldPartition'
 
-    public objectType:string = CLASS_NAME;
+    public objectType:string = TableFieldPartition.OBJECT_TYPE;
 
     /**
      * the 1 based index of the partition entry
@@ -58,7 +57,7 @@ export class TableFieldPartition {
     public constructor(index: number,init?:Partial<TableFieldPartition>) {
         Object.assign(this, init);
 
-        if(this.columnDef && this.columnDef.objectType && this.columnDef.objectType == TableColumnDefinition.CLASS_NAME){
+        if(this.columnDef && this.columnDef.objectType && this.columnDef.objectType == TableColumnDefinition.OBJECT_TYPE){
            //ok
         }
         else {

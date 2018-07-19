@@ -4,6 +4,7 @@ import { Input, Component, OnInit,OnChanges} from '@angular/core';
 import {FieldPolicyOptionsService} from "./field-policy-options.service";
 import {PolicyInputFormService} from "./policy-input-form.service"
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
+import {FormGroup} from "@angular/forms";
 
 @Component({
     selector: "inline-field-policy-form",
@@ -32,7 +33,9 @@ export class InlinePolicyInputFormComponent implements OnInit {
     @Input()
     expandAdvancedOptions ?:boolean = false;
 
-    policyForm :any = {};
+    @Input()
+    policyForm ?:FormGroup;
+
     loadingPolicies :boolean = true;
 
     /**
@@ -47,6 +50,9 @@ export class InlinePolicyInputFormComponent implements OnInit {
         this.onRuleTypeChange.bind(this)
     }
     ngOnInit() {
+        if(this.policyForm == undefined){
+            this.policyForm = new FormGroup({});
+        }
         console.log('policyParameter',this.policyParameter)
         this.fieldPolicyOptionsService.getOptionsForType(this.policyParameter).subscribe( (response:any) => {
             var currentFeedValue = null;

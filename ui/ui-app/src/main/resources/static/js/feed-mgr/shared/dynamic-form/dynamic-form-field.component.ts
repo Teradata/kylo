@@ -14,6 +14,10 @@ export class DynamicFormFieldComponent {
     @Input() form: FormGroup;
     @Input() readonly :boolean;
 
+    constructor(){
+
+    }
+
     get isValid() {
         if(this.field.controlType == SectionHeader.CONTROL_TYPE) {
         return true;

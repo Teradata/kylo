@@ -54,7 +54,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         , private feedInputProcessorPropertiesTemplateService: FeedInputProcessorPropertiesTemplateService, private feedDetailsProcessorRenderingHelper: FeedDetailsProcessorRenderingHelper
         , private feedPropertyService: FeedPropertyService, private accessControlService: AccessControlService
         , private entityAccessControlService: EntityAccessControlService, private $filter: angular.IFilterService,
-                private registerTemplatePropertyService :RegisterTemplatePropertyService) {
+        private registerTemplatePropertyService :RegisterTemplatePropertyService) {
         this.init();
 
     }

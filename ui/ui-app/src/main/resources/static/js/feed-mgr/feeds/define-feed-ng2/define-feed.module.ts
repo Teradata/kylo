@@ -50,6 +50,8 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {CovalentDynamicFormsModule} from "@covalent/dynamic-forms";
 import {MatRadioModule} from "@angular/material/radio";
 import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
+import {CovalentChipsModule} from "@covalent/core/chips";
+import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-policies.module";
 
 
 @NgModule({
@@ -75,6 +77,7 @@ import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
     ],
     imports: [
         CommonModule,
+        CovalentChipsModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
         CovalentLayoutModule,
@@ -88,6 +91,7 @@ import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
         KyloFeedManagerModule,
         CatalogModule,
         RemoteFilesModule,
+        FieldPoliciesModule,
         PreviewSchemaModule,
         MatCardModule,
         FormsModule,

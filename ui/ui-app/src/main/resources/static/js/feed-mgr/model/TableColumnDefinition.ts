@@ -4,7 +4,7 @@ import {DomainType, DomainTypesService} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
 import {FeedModel} from "../feeds/define-feed-ng2/model/feed.model";
-import {CLASS_NAME} from "@angular/flex-layout";
+import {CloneUtil} from "../../common/utils/CloneUtil";
 
 
 export class ColumnDefinitionHistoryRecord {
@@ -61,9 +61,9 @@ export class TableColumnDefinition extends SchemaField {
     private static PRECISION_SCALE_PATTERN: RegExp = /^\d+,\d+$/;
     private static MAX_COLUMN_LENGTH: number = 767;
 
-   public static CLASS_NAME:string = 'TableColumnDefinition'
+   public static OBJECT_TYPE:string = 'TableColumnDefinition'
 
-    public objectType:string = CLASS_NAME;
+    public objectType:string = TableColumnDefinition.OBJECT_TYPE;
 
     /**
      * Vaidate message types
@@ -286,6 +286,15 @@ export class TableColumnDefinition extends SchemaField {
 
     isComplex(){
         return this.dataTypeDescriptor && angular.isDefined(this.dataTypeDescriptor.complex) ? this.dataTypeDescriptor.complex : false;
+    }
+
+    copy(){
+        return CloneUtil.deepCopy(this);
+    }
+
+    prepareForSave(){
+        this.sampleValues = null;
+        this.history = null;
     }
 
 }

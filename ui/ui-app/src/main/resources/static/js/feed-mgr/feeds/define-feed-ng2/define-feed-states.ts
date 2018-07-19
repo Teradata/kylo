@@ -130,7 +130,13 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                         }))
                         .toPromise();
                 }
+           },
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
             }
+
         ]
     },
     {

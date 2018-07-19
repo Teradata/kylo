@@ -155,7 +155,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         this.oldInputProcessorId = event.value;
     }
 
-    updateInputProcessorFormElements(newInput:string,oldInput?:string,) {
+
+    private updateInputProcessorFormElements(newInput:string,oldInput?:string) {
         if(oldInput) {
             let oldConfig = this.inputFieldsMap[oldInput];
             if(oldConfig != undefined) {
@@ -168,12 +169,10 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             }
         }
 
-            this.inputProcessorFields = this.inputFieldsMap[newInput];
+        this.inputProcessorFields = this.inputFieldsMap[newInput];
         if(this.inputProcessorFields != undefined) {
             this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
         }
-
-
     }
 
     initializeTemplateProperties() {
@@ -297,6 +296,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             this.inputProcessorId = this.inputProcessor.id;
         }
         this.formFieldOrder = 0
+
         this.createFormFields(this.inputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;
         });
@@ -335,6 +335,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 let fieldConfig:FieldConfig<any> = null;
                 let fieldConfigOptions = this.toFieldConfigOptions(property);
                 fieldConfigOptions.order= this.formFieldOrder;
+
                 if(this.isInputText(property)){
                     let type = property.renderType;
                     if(property.sensitive) {
@@ -361,7 +362,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                     if(!property.required){
                         options.unshift({label:"Not Set",value:""});
                     }
-
 
                     fieldConfigOptions.options = options;
                     if(property.renderType == "select") {

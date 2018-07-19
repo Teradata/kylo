@@ -1,32 +1,33 @@
-import {PreviewDataSet, SparkDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {SparkDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TableSchema} from "../../../model/table-schema";
-import {FieldPolicy, SchemaParser} from "../../../model/field-policy";
+import {SchemaParser} from "../../../model/field-policy";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {FeedDataTransformation} from "../../../model/feed-data-transformation";
 import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states";
 import {FeedStepValidator} from "./feed-step-validator";
-import {PreviewFileDataSet} from "../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
-import {AbstractControl} from "@angular/forms/src/model";
-import { Templates } from "../../../services/TemplateTypes";
-export class Step{
-    number:number;
-    systemName:string;
-    name:string;
-    description:string;
-    complete:boolean;
-    valid:boolean;
-    sref:string;
-    required?:boolean;
-    dependsUponSteps?:string[] = [];
-    allSteps:Step[];
-    disabled:boolean;
-    visited:boolean;
-    validator:FeedStepValidator
+import {Templates} from "../../../services/TemplateTypes";
+import {CloneUtil} from "../../../../common/utils/CloneUtil";
+import {DefaultSourceTableSchema, FeedTableSchema} from "./default-table.schema";
 
-    validate(feed:FeedModel):boolean {
-        if(this.disabled){
+export class Step {
+    number: number;
+    systemName: string;
+    name: string;
+    description: string;
+    complete: boolean;
+    valid: boolean;
+    sref: string;
+    required?: boolean;
+    dependsUponSteps?: string[] = [];
+    allSteps: Step[];
+    disabled: boolean;
+    visited: boolean;
+    validator: FeedStepValidator
+
+    validate(feed: FeedModel): boolean {
+        if (this.disabled) {
             return true;
         }
         else {
@@ -35,214 +36,237 @@ export class Step{
 
     }
 
-    updateStepState(){
+    updateStepState() {
         let disabled = !this.complete;
         //update dependent step states
         let dependentSteps = this.findDependentSteps();
-        if(dependentSteps){
+        if (dependentSteps) {
             dependentSteps.forEach(step => step.disabled = disabled);
         }
     }
 
 
-    public constructor(init?:Partial<Step>) {
-            Object.assign(this, init);
-     }
+    public constructor(init?: Partial<Step>) {
+        Object.assign(this, init);
+    }
 
-     setComplete(complete:boolean){
+    setComplete(complete: boolean) {
         this.complete = complete;
-     }
+    }
 
-     isPreviousStepComplete(){
-        let index = this.number -1;
-        if(index >0) {
+    isPreviousStepComplete() {
+        let index = this.number - 1;
+        if (index > 0) {
             let prevStep = this.allSteps[index - 1];
             return prevStep.complete;
         }
         else {
             return true;
         }
-     }
+    }
 
-     findDependentSteps(){
-        return this.allSteps.filter(step => step.dependsUponSteps.find(name=> this.systemName == name) != undefined);
-     }
+    findDependentSteps() {
+        return this.allSteps.filter(step => step.dependsUponSteps.find(name => this.systemName == name) != undefined);
+    }
 
-     isDisabled(){
+    isDisabled() {
         return this.disabled;
-     }
+    }
+
+    shallowCopy():Step{
+        return Object.assign(Object.create(this),this)
+    }
 
 
 }
 
-export class StepBuilder{
-    number:number;
-    systemName:string;
-    name:string;
-    description:string;
-    complete:boolean;
-    sref:string;
-    required?:boolean;
-    dependsUponSteps?:string[] = [];
-    allSteps:Step[];
-    disabled:boolean;
-    validator:FeedStepValidator;
+export class StepBuilder {
+    number: number;
+    systemName: string;
+    name: string;
+    description: string;
+    complete: boolean;
+    sref: string;
+    required?: boolean;
+    dependsUponSteps?: string[] = [];
+    allSteps: Step[];
+    disabled: boolean;
+    validator: FeedStepValidator;
 
-    setNumber(num:number): StepBuilder{
+    setNumber(num: number): StepBuilder {
         this.number = num;
         return this;
     }
-    setSystemName(sysName:string){
+
+    setSystemName(sysName: string) {
         this.systemName = sysName;
-        if(this.name == undefined){
+        if (this.name == undefined) {
             this.name = this.systemName;
         }
         return this;
     }
 
-    setName(name:string){
+    setName(name: string) {
         this.name = name;
-        if(this.systemName == undefined){
+        if (this.systemName == undefined) {
             this.systemName = this.name;
         }
         return this;
     }
-    setDescription(description:string){
+
+    setDescription(description: string) {
         this.description = description;
         return this;
     }
-    setSref(sref:string){
+
+    setSref(sref: string) {
         this.sref = sref;
         return this;
     }
-    setRequired(required:boolean){
+
+    setRequired(required: boolean) {
         this.required = required;
         return this;
     }
-    addDependsUpon(systemName:string){
+
+    addDependsUpon(systemName: string) {
         this.dependsUponSteps.push(systemName);
         return this;
     }
-    setDependsUpon(systemNames:string[]){
+
+    setDependsUpon(systemNames: string[]) {
         this.dependsUponSteps = systemNames;
         return this;
     }
-    setAllSteps(steps:Step[]){
+
+    setAllSteps(steps: Step[]) {
         this.allSteps = steps;
         return this;
     }
-    setDisabled(disabled:boolean){
+
+    setDisabled(disabled: boolean) {
         this.disabled = disabled;
         return this;
     }
-    setValidator(feedStepValidator:FeedStepValidator){
+
+    setValidator(feedStepValidator: FeedStepValidator) {
         this.validator = feedStepValidator;
         return this;
     }
 
-    build(){
-        let step = new Step({number:this.number,name:this.name,systemName:this.systemName,description:this.description,sref:FEED_DEFINITION_STATE_NAME+".feed-step."+this.sref,complete:false,dependsUponSteps:this.dependsUponSteps,required:this.required});
+    build() {
+        let step = new Step({
+            number: this.number,
+            name: this.name,
+            systemName: this.systemName,
+            description: this.description,
+            sref: FEED_DEFINITION_STATE_NAME + ".feed-step." + this.sref,
+            complete: false,
+            dependsUponSteps: this.dependsUponSteps,
+            required: this.required
+        });
         step.allSteps = this.allSteps;
         step.disabled = this.disabled;
         step.validator = this.validator;
-        if(step.validator == undefined){
+        if (step.validator == undefined) {
             //add a default one
             step.validator = new FeedStepValidator();
         }
-        if(step.validator){
+        if (step.validator) {
             step.validator.setStep(step)
         }
         return step;
     }
 
 
-
 }
 
 export interface TableOptions {
-compress: boolean;
-compressionFormat: string;
-auditLogging: boolean;
-encrypt: boolean;
-trackHistory: boolean;
+    compress: boolean;
+    compressionFormat: string;
+    auditLogging: boolean;
+    encrypt: boolean;
+    trackHistory: boolean;
 }
 
 export interface SourceTableSchema extends TableSchema {
-tableSchema:string;
+    tableSchema: string;
 }
 
 export interface FeedTableDefinition {
-   // id:string;
-  //  schemaName:string;
-   // name:string;
-  //  databaseName:string;
-        tableSchema: TableSchema
-        sourceTableSchema: SourceTableSchema,
-        feedTableSchema:  TableSchema,
-        method: string;
-        existingTableName: string;
-        structured: boolean;
-        targetMergeStrategy: string;
-        feedFormat: string;
-        targetFormat: string;
-        feedTblProperties: string;
-        fieldPolicies: TableFieldPolicy[]
-        partitions: TableFieldPartition[],
-        options: TableOptions,
-        sourceTableIncrementalDateField: string
+    // id:string;
+    //  schemaName:string;
+    // name:string;
+    //  databaseName:string;
+    tableSchema: TableSchema
+    sourceTableSchema: SourceTableSchema,
+    feedTableSchema: TableSchema,
+    method: string;
+    existingTableName: string;
+    structured: boolean;
+    targetMergeStrategy: string;
+    feedFormat: string;
+    targetFormat: string;
+    feedTblProperties: string;
+    fieldPolicies: TableFieldPolicy[]
+    partitions: TableFieldPartition[],
+    options: TableOptions,
+    sourceTableIncrementalDateField: string
 
 
 }
 
 export interface FeedSchedule {
- schedulingPeriod: string;
- schedulingStrategy: string;
-    concurrentTasks: number ;
+    schedulingPeriod: string;
+    schedulingStrategy: string;
+    concurrentTasks: number;
 }
 
 export interface Category {
-id:string;
-name:string;
-systemName:string;
-description:string
-    createFeed?:boolean;
-icon?:string;
-iconColor?:string;
-    }
+    id: string;
+    name: string;
+    systemName: string;
+    description: string
+    createFeed?: boolean;
+    icon?: string;
+    iconColor?: string;
+}
 
 
 export interface FeedModel {
     /**
      * What options does the template provide for the feed
      */
-    templateTableOption:string;
+    templateTableOption: string;
     /**
      * Number of presteps allowed for the feed
      * TODO wire into new feed step framework
      */
-    totalPreSteps:number;
+    totalPreSteps: number;
     /**
      * Wire in for the feed step framework
      */
-    totalSteps:number;
+    totalSteps: number;
     /**
      * wire into the feed step framework
      */
-    renderTemporaryPreStep:boolean;
+    renderTemporaryPreStep: boolean;
     /**
      * Steps allowed for the feed
      */
-    steps:Step[]
+    steps: Step[]
     /**
      * reference to the Template
      * TODO ref to Template type
      * @TODO  IS THIS NEEDED!!!!!
      */
-    template:any;
-    isNew():boolean;
-    state:string; //NEW, ENABLED, DISABLED
-    mode:string; //DRAFT or COMPLETE
-    updateDate:Date;
+    template: any;
+
+    isNew(): boolean;
+
+    state: string; //NEW, ENABLED, DISABLED
+    mode: string; //DRAFT or COMPLETE
+    updateDate: Date;
     /**
      * The Feed ID
      */
@@ -258,7 +282,7 @@ export interface FeedModel {
     /**
      * the template name
      */
-    templateName:string;
+    templateName: string;
     /**
      * the name of the feed
      */
@@ -271,7 +295,7 @@ export interface FeedModel {
     /**
      * the system name
      */
-    systemFeedName:string;
+    systemFeedName: string;
     /**
      * Feed Description
      */
@@ -395,87 +419,83 @@ export interface FeedModel {
      */
     view: any;
 
-    registeredTemplate:any;
+    registeredTemplate: any;
 
-    validate(updateStepState?:boolean):boolean;
+    validate(updateStepState?: boolean): boolean;
 
-    readonly:boolean;
+    readonly: boolean;
 
     /**
      * The name of the sample file used to parse for table schema
      * Optional
      */
-    sampleFile?:string;
+    sampleFile?: string;
 
     /**
      * the name of the schema parser used to build the schema
      */
-    schemaParser?:SchemaParser;
+    schemaParser?: SchemaParser;
 
     /**
      * Should this feed show the "Skip Header" option
      */
-    allowSkipHeaderOption:boolean;
+    allowSkipHeaderOption: boolean;
 
     /**
      * Has the schema changed since creation
      */
-    schemaChanged?:boolean;
+    schemaChanged?: boolean;
 
-    sourceDataSets?:SparkDataSet[];
+    sourceDataSets?: SparkDataSet[];
 
-    update(model:Partial<FeedModel>) :void;
+    update(model: Partial<FeedModel>): void;
 
-    copy() :FeedModel;
-    isStream:boolean;
+    copy(): FeedModel;
+
+    copyModelForSave() :FeedModel
+
+    isStream: boolean;
 
     /**
      * Have the properties been merged and initialized with the template
      */
-    propertiesInitialized?:boolean;
+    propertiesInitialized?: boolean;
 }
 
 
+export class DefaultFeedModel implements FeedModel {
+
+    templateName: string = '';
+    templateTableOption: string = null;
+    totalPreSteps: number = 0;
+    totalSteps: number = null;
+    renderTemporaryPreStep: boolean = false;
+    steps: Step[] = [];
 
 
-
-
-
-
-
-export class DefaultFeedModel implements FeedModel{
-
-    templateName:string = '';
-    templateTableOption:string = null;
-    totalPreSteps:number = 0;
-    totalSteps:number = null;
-    renderTemporaryPreStep:boolean = false;
-    steps:Step[] = [];
-
-
-    id:string = null;
-    template:any;
-    updateDate:Date;
-    state:string;
-    mode:string;
+    id: string = null;
+    template: any;
+    updateDate: Date;
+    state: string;
+    mode: string;
 
     versionName: string = null;
     templateId: string = '';
 
-    feedName: string ='';
-    systemName:string = '';
-    systemFeedName:string = this.systemName;
+    feedName: string = '';
+    systemName: string = '';
+    systemFeedName: string = this.systemName;
 
-    description: string ='';
+    description: string = '';
 
-    inputProcessorType: string ='';
+    inputProcessorType: string = '';
     inputProcessorName: string = null;
     inputProcessor: Templates.Processor = null;
     inputProcessors: Templates.Processor[] = [];
     nonInputProcessors: Templates.Processor[] = [];
     properties: Templates.Property[] = [];
     securityGroups: any[] = [];
-    schedule: FeedSchedule = { schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 };
+    schedule: FeedSchedule = {schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1};
     defineTable: boolean = false;
     allowPreconditions: boolean = false;
     dataTransformationFeed: boolean = false;
@@ -483,10 +503,10 @@ export class DefaultFeedModel implements FeedModel{
     category: Category;
     dataOwner: string = '';
     tags: any[];
-    reusableFeed:boolean= false;
+    reusableFeed: boolean = false;
     dataTransformation: any;
     userProperties: any[] = [];
-    options:any = { skipHeader: false };
+    options: any = {skipHeader: false};
     active: boolean = true;
     roleMemberships: any[] = [];
     owner: string = null;
@@ -494,28 +514,29 @@ export class DefaultFeedModel implements FeedModel{
     tableOption: any = {};
     cloned: boolean = false;
     usedByFeeds: any[] = [];
-    allowIndexing: boolean =true;
+    allowIndexing: boolean = true;
     historyReindexingStatus: string = 'NEVER_RUN';
-    view:any;
-    registeredTemplate:any;
-    readonly :boolean;
-    sampleFile?:string;
-    schemaParser?:SchemaParser;
-    schemaChanged?:boolean;
-    sourceDataSets?:SparkDataSet[] = [];
-    isStream:boolean;
+    view: any;
+    registeredTemplate: any;
+    readonly: boolean;
+    sampleFile?: string;
+    schemaParser?: SchemaParser;
+    schemaChanged?: boolean;
+    sourceDataSets?: SparkDataSet[] = [];
+    isStream: boolean;
     /**
      * Have the properties been merged and initialized with the template
      */
-    propertiesInitialized?:boolean;
+    propertiesInitialized?: boolean;
     /**
      * Should this feed show the "Skip Header" option
      */
-    allowSkipHeaderOption:boolean;
-    public constructor(init?:Partial<FeedModel>) {
+    allowSkipHeaderOption: boolean;
+
+    public constructor(init?: Partial<FeedModel>) {
         this.initialize();
         Object.assign(this, init);
-        if(this.sourceDataSets){
+        if (this.sourceDataSets) {
             //ensure they are of the right class objects
             this.sourceDataSets = this.sourceDataSets.map(ds => {
                 return new SparkDataSet(ds);
@@ -523,10 +544,10 @@ export class DefaultFeedModel implements FeedModel{
         }
 
         //ensure the table fields are correct objects
-        let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
-        let fields = this.table.tableSchema.fields.map((field:any) => {
-            let tableColumnDef :TableColumnDefinition;
-            if(field.objectType && field.objectType == TableColumnDefinition.CLASS_NAME){
+        let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
+        let fields = this.table.tableSchema.fields.map((field: any) => {
+            let tableColumnDef: TableColumnDefinition;
+            if (field.objectType && field.objectType == TableColumnDefinition.OBJECT_TYPE) {
                 tableColumnDef = field;
             }
             else {
@@ -538,73 +559,93 @@ export class DefaultFeedModel implements FeedModel{
         this.table.tableSchema.fields = fields;
 
         //ensure the table partitions are correct objects
-        let partitions = this.table.partitions.map((partition:any) => {
-            let partitionObject :TableFieldPartition;
-            if(partition.objectType && partition.objectType == TableFieldPartition.CLASS_NAME){
+        let partitions = this.table.partitions.map((partition: any) => {
+            let partitionObject: TableFieldPartition;
+            if (partition.objectType && partition.objectType == TableFieldPartition.OBJECT_TYPE) {
                 partitionObject = partition;
             }
             else {
-                partitionObject = new TableFieldPartition(partition.position,partition);
+                partitionObject = new TableFieldPartition(partition.position, partition);
             }
             //ensure it has the correct columnDef ref
-            if(partitionObject.sourceField && tableFieldMap[partitionObject.sourceField] != undefined){
+            if (partitionObject.sourceField && tableFieldMap[partitionObject.sourceField] != undefined) {
                 //find the matching column field
                 partitionObject.columnDef = tableFieldMap[partitionObject.sourceField];
             }
             return partitionObject;
         });
         this.table.partitions = partitions;
+        this.ensureTableFieldPolicyTypes();
 
 
     }
 
-    updateNonNullFields(model:any){
+    updateNonNullFields(model: any) {
         let keys = Object.keys(model);
         let obj = {}
-        keys.forEach((key:string) => {
-            if(model[key] && model[key] != null){
+        keys.forEach((key: string) => {
+            if (model[key] && model[key] != null) {
                 obj[key] = model[key];
             }
         });
-        Object.assign(this,obj);
+        Object.assign(this, obj);
     }
 
-    update(model:Partial<FeedModel>) :void {
+    update(model: Partial<FeedModel>): void {
         //keep the internal ids saved for the table.tableSchema.fields and table.partitions
         let oldFields = this.table.tableSchema.fields;
         let oldPartitions = this.table.partitions;
         this.updateNonNullFields(model);
-        let tableFieldMap : { [key: string]: TableColumnDefinition; } = {};
-        this.table.tableSchema.fields.forEach((field:TableColumnDefinition,index:number) => {
+        let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
+        this.table.tableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
             field._id = (<TableColumnDefinition> oldFields[index])._id;
             tableFieldMap[field.name] = field;
         });
-        this.table.partitions.forEach((partition:TableFieldPartition,index:number) => {
+        this.table.partitions.forEach((partition: TableFieldPartition, index: number) => {
             let oldPartition = (<TableFieldPartition> oldPartitions[index]);
             partition._id = (<TableFieldPartition> oldPartitions[index])._id;
             //update the columnDef ref
-            if(oldPartition.sourceField && tableFieldMap[oldPartition.sourceField] != undefined){
+            if (oldPartition.sourceField && tableFieldMap[oldPartition.sourceField] != undefined) {
                 //find the matching column field
                 partition.columnDef = tableFieldMap[oldPartition.sourceField];
 
             }
         });
+        this.ensureTableFieldPolicyTypes();
     }
 
-    copy():FeedModel{
-        return Object.assign({},this)
+    private ensureTableFieldPolicyTypes() {
+
+        let fieldPolicies = this.table.fieldPolicies.map((policy: any) => {
+            let policyObj: TableFieldPolicy;
+            if (policy.objectType && policy.objectType == TableFieldPolicy.OBJECT_TYPE) {
+                policyObj = policy;
+            }
+            else {
+                policyObj = new TableFieldPolicy(policy);
+            }
+            return policyObj;
+        });
+        this.table.fieldPolicies = fieldPolicies;
     }
+
+
+    /**
+     * {id: null, name: null, schemaName: null, databaseName: null, fields: [], description: null, charset: null, properties: null},
+     sourceTableSchema: {id: null, name: null, schemaName: null, tableSchema: null, databaseName: null, fields: [], description: null, charset: null, properties: null},
+     feedTableSchema: {id: null, name: null, databaseName: null, schemaName: null, fields: [], description: null, charset: null, properties: null},
+     */
 
     initialize() {
         this.readonly = true;
-        this.systemName ='';
+        this.systemName = '';
         this.feedName = '';
         this.mode = "DRAFT";
-        this.category = { id: null, name: null ,systemName:null,description:null};
+        this.category = {id: null, name: null, systemName: null, description: null};
         this.table = {
-            tableSchema: {id:null, name: null, schemaName:null, databaseName:null,fields: [], description:null,charset:null,properties:null },
-            sourceTableSchema: {id:null, name: null, schemaName:null,tableSchema: null, databaseName:null,fields:[],description:null,charset:null,properties:null },
-            feedTableSchema: { id:null,name: null,databaseName:null,schemaName:null, fields: [],description:null,charset:null,properties:null },
+            tableSchema: new FeedTableSchema(),
+            sourceTableSchema: new DefaultSourceTableSchema(),
+            feedTableSchema : new FeedTableSchema(),
             method: 'SAMPLE_FILE',
             existingTableName: null,
             structured: false,
@@ -627,50 +668,182 @@ export class DefaultFeedModel implements FeedModel{
             sql: null,
             states: []
         };
-        this.view =  {
-            generalInfo: { disabled: false },
-            feedDetails: { disabled: false },
-            table: { disabled: false },
-            dataPolicies: { disabled: false },
+        this.view = {
+            generalInfo: {disabled: false},
+            feedDetails: {disabled: false},
+            table: {disabled: false},
+            dataPolicies: {disabled: false},
             properties: {
                 disabled: false,
-                dataOwner: { disabled: false },
-                tags: { disabled: false }
+                dataOwner: {disabled: false},
+                tags: {disabled: false}
             },
-            accessControl: { disabled: false },
+            accessControl: {disabled: false},
             schedule: {
                 disabled: false,
-                schedulingPeriod: { disabled: false },
-                schedulingStrategy: { disabled: false },
-                active: { disabled: false },
-                executionNode: { disabled: false },
-                preconditions: { disabled: false }
+                schedulingPeriod: {disabled: false},
+                schedulingStrategy: {disabled: false},
+                active: {disabled: false},
+                executionNode: {disabled: false},
+                preconditions: {disabled: false}
             }
         };
     }
 
-    isNew(){
+    isNew() {
         return this.id == undefined;
     }
 
-    validate(updateStepState?:boolean) : boolean {
+    validate(updateStepState?: boolean): boolean {
         let valid = true;
         let model = this;
-        this.steps.forEach((step :Step)=> {
+        this.steps.forEach((step: Step) => {
             valid = valid && step.validate(<FeedModel>this);
-            if(updateStepState) {
+            if (updateStepState) {
                 step.updateStepState();
             }
         });
         return valid;
     }
 
+    /**
+     * Are all the steps for this feed complete
+     * @return {boolean}
+     */
     isComplete() {
         let complete = true;
-        this.steps.forEach(step => complete  = complete && step.complete);
+        this.steps.forEach(step => complete = complete && step.complete);
         return complete;
     }
 
+
+    /**
+     * Deep copy of this object
+     * @return {FeedModel}
+     */
+    copy(): FeedModel {
+        //steps have self references back to themselves.
+        let allSteps: Step[] = [];
+        this.steps.forEach(step => {let copy = step.shallowCopy();
+        allSteps.push(copy);
+        copy.allSteps = allSteps;
+        });
+        let newFeed :FeedModel =  Object.create(this);
+        Object.assign(newFeed,this)
+        newFeed.steps = null;
+        let copy :FeedModel = CloneUtil.deepCopy(newFeed);
+        copy.steps = allSteps;
+        return copy;
+    }
+
+    /**
+     * Return a copy of this model that is stripped of un necessary properties ready to be saved
+     * @param {FeedModel} copy
+     * @return {FeedModel}
+     */
+     copyModelForSave() :FeedModel{
+         //create a deep copy
+        let copy = this.copy();
+
+        if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
+            // Set feed
+
+            //if the sourceSchema is not defined then set it to match the target
+            let addSourceSchemaFields:boolean = copy.table.sourceTableSchema.fields.length == 0;
+            let addFeedSchemaFields = copy.isNew() && copy.table.feedTableSchema.fields.length ==0;
+
+
+            /**
+             * Undeleted fields
+             * @type {any[]}
+             */
+            let tableFields: TableColumnDefinition[] = [];
+            /**
+             * Field Policies ensuring the names match the column fields
+             * @type {any[]}
+             */
+            var newPolicies: TableFieldPolicy[] = [];
+            /**
+             * Feed Schema
+             * @type {any[]}
+             */
+            var feedFields: TableColumnDefinition[] = [];
+            /**
+             * Source Schema
+             * @type {any[]}
+             */
+            var sourceFields: TableColumnDefinition[] = [];
+
+            copy.table.tableSchema.fields.forEach((columnDef: TableColumnDefinition, idx: number) => {
+
+                if(addSourceSchemaFields) {
+                    let sourceField :TableColumnDefinition = columnDef.copy();
+                    //set the original names as the source field names
+                    sourceField.name = columnDef.origName;
+                    sourceField.derivedDataType = columnDef.origDataType;
+                    //remove sample
+                    sourceField.prepareForSave();
+                    sourceFields.push(sourceField);
+                }
+
+                if(addFeedSchemaFields) {
+                    let feedField :TableColumnDefinition= columnDef.copy();
+                    feedField.prepareForSave();
+                    feedFields.push(feedField);
+                    //TODO
+                    // structured files must use the original names
+                    // if (copy.table.structured == true) {
+                    //     feedField.name = columnDef.origName;
+                    //     feedField.derivedDataType = columnDef.origDataType;
+                    //  }
+                }
+                if (!columnDef.deleted) {
+                    columnDef.prepareForSave();
+                    tableFields.push(columnDef);
+
+                    let policy = copy.table.fieldPolicies[idx];
+                    if (policy) {
+                        policy.feedFieldName = columnDef.name;
+                        policy.name = columnDef.name;
+                        newPolicies.push(policy);
+                    }
+                }
+
+               /*
+                    // For files the feed table must contain all the columns from the source even if unused in the target
+                    if (copy.table.method == 'SAMPLE_FILE') {
+                        feedFields.push(feedField);
+                    } else if (copy.table.method == 'EXISTING_TABLE' && copy.table.sourceTableIncrementalDateField == sourceField.name) {
+                        feedFields.push(feedField);
+                        sourceFields.push(sourceField);
+                    }
+                    */
+            });
+
+            //update the table schema and policies
+            copy.table.fieldPolicies = newPolicies;
+            copy.table.tableSchema.fields = tableFields;
+
+            //TODO move init logic for undefind schema to a FeedTable class constuctor so its handled prior to this step
+            if (copy.table.sourceTableSchema == undefined) {
+                copy.table.sourceTableSchema = new DefaultSourceTableSchema();
+            }
+            //only set the sourceFields if its the first time creating this feed
+            if (copy.id == null) {
+                copy.table.sourceTableSchema.fields = sourceFields;
+                copy.table.feedTableSchema.fields = feedFields;
+            }
+            if (copy.table.feedTableSchema == undefined) {
+                copy.table.feedTableSchema = new FeedTableSchema();
+            }
+
+            if (copy.registeredTemplate) {
+                copy.registeredTemplate = undefined;
+            }
+
+        }
+        return copy;
+    }
 
 
 

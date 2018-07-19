@@ -1,4 +1,4 @@
-import {Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, ViewContainerRef} from '@angular/core';
+import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, ViewChild, ViewContainerRef} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../../common/CommonTypes";
@@ -22,6 +22,8 @@ import {TableSchema} from "../../../../model/table-schema";
 import {SchemaField} from "../../../../model/schema-field";
 import {ValidationErrors} from "@angular/forms/src/directives/validators";
 import {SaveFeedResponse} from "../../model/SaveFeedResponse";
+import {TdVirtualScrollContainerComponent} from "@covalent/core/virtual-scroll";
+import {FeedFieldPolicyRulesDialogService} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.service";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -36,9 +38,28 @@ class TablePermissions {
 
 class TableFormControls {
 
-    public constructor(public defineTableForm:FormGroup,public definePartitionForm:FormGroup,private feedTableColumnDefinitionValidation: FeedTableColumnDefinitionValidation, private tablePermissions:TablePermissions ){
+    public constructor(public defineTableForm:FormGroup,public definePartitionForm:FormGroup,
+                       private feedTableColumnDefinitionValidation: FeedTableColumnDefinitionValidation,
+                       private tablePermissions:TablePermissions ){
 
     }
+
+
+
+    public static TABLE_COLUMN_DEF_NAME_PREFIX:string = "name";
+    public static TABLE_COLUMN_DEF_DATA_TYPE_PREFIX:string = "dataType";
+    public static TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX:string = "precisionScale";
+    public static TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX:string = "primaryKey";
+    public static TABLE_COLUMN_DEF_CREATED_PREFIX:string = "created";
+    public static TABLE_COLUMN_DEF_UPDATED_PREFIX:string = "updated";
+
+
+    public static TABLE_COLUMN_DEF_PREFIXES :string[] = [TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_CREATED_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_UPDATED_PREFIX];
 
     public static precisionScale(control: AbstractControl): ValidationErrors {
         let pattern = new RegExp("[0-9]+(,[0-9]+)");
@@ -68,13 +89,13 @@ class TableFormControls {
 
     private buildTableFieldFormControl(field: TableColumnDefinition ) :Common.Map<FormControl> {
         let controls :Common.Map<FormControl> = {}
-        controls["name_"+field._id] = new FormControl(field.name,[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
-        controls["dataType_"+field._id] = new FormControl(field.derivedDataType,[Validators.required]);
-        controls["precisionScale_" + field._id] = new FormControl({value:field.precisionScale,disabled:this.tablePermissions.dataTypeLocked},[TableFormControls.precisionScale]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX+"_"+field._id] = new FormControl({value:field.name,disabled:field.deleted },[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX+"_"+field._id] = new FormControl({value:field.derivedDataType,disabled:field.deleted },[Validators.required]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX+"_" + field._id] = new FormControl({value:field.precisionScale,disabled:this.tablePermissions.dataTypeLocked || field.deleted},[TableFormControls.precisionScale]);
 
-        controls["primaryKey_" + field._id] = new FormControl({value:field.primaryKey,disabled:field.isComplex() || field.deleted},[]);
-        controls["created_" + field._id] = new FormControl({value:field.createdTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
-        controls["updated_" + field._id] = new FormControl({value:field.updatedTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX+"_" + field._id] = new FormControl({value:field.primaryKey,disabled:field.isComplex() || field.deleted},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_CREATED_PREFIX+"_" + field._id] = new FormControl({value:field.createdTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_UPDATED_PREFIX+"_" + field._id] = new FormControl({value:field.updatedTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
         return controls;
     }
 
@@ -127,7 +148,18 @@ class TableFormControls {
         this.definePartitionForm.removeControl("partitionColumnRef_"+partition._id);
         this.definePartitionForm.removeControl("partitionFormula_"+partition._id);
         this.definePartitionForm.removeControl("partitionName_"+partition._id);
+    }
 
+    updateFieldState(field:TableColumnDefinition){
+            TableFormControls.TABLE_COLUMN_DEF_PREFIXES.forEach(prefix => {
+                let formControl = this.getFormControl(this.defineTableForm,prefix,field);
+                if(field.deleted){
+                    formControl.disable();
+                }
+                else {
+                    formControl.enable()
+                }
+            })
     }
 
 }
@@ -206,13 +238,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     availableDomainTypes: DomainType[] = [];
 
-    /**
-     * the 0 based string index
-     */
-    stepIndex: string;
-
     tablePermissions:TablePermissions =new TablePermissions();
-
 
     feedTableColumnDefinitionValidation: FeedTableColumnDefinitionValidation;
 
@@ -225,26 +251,20 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     private tableFormControls:TableFormControls;
 
+   @ViewChild('virtualScroll')
+   virtualScroll: TdVirtualScrollContainerComponent
 
     getStepName() {
         return "Define Table";
     }
 
 
-    /**
-     * Validation function which does not allow only empty space
-     * @param {AbstractControl} control
-     * @returns {ValidationErrors}
-     */
-
-
-
-
-
 
     constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
-                private _viewContainerRef: ViewContainerRef) {
+                private _viewContainerRef: ViewContainerRef,
+                private cdr: ChangeDetectorRef,
+                private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService) {
         super(defineFeedService,stateService)
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
@@ -308,7 +328,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
-
     /**
      * Adding a new Column to the schema
      * This is called both when the user clicks the "Add Field" button or when the sample file is uploaded
@@ -316,11 +335,18 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * @param columnDef
      */
     addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) {
+
         // console.log("addColumn");
         if (columnDef == null) {
             columnDef = this.feedService.newTableFieldDefinition();
         }
-        //redefine index =
+        if(!columnDef.name){
+            columnDef.name = "col_"+this.feed.table.tableSchema.fields.length+1;
+        }
+        if(!columnDef.derivedDataType){
+            columnDef.derivedDataType = 'string'
+            columnDef.dataTypeDisplay = 'string';
+        }
 
         // when adding a new column this is also called to synchronize the field policies array with the columns
         let policy = this.feedService.newTableFieldPolicy(columnDef.name);
@@ -348,6 +374,15 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
             this.feedService.syncTableFieldPolicyNames();
         }
+        if(this.virtualScroll) {
+      //      this.virtualScroll.refresh();
+        }
+        setTimeout(() => {
+            if(this.virtualScroll) {
+                this.virtualScroll.scrollTo(10);
+            }
+        },10);
+        //this.cdr.detectChanges();
     };
 
     undoColumn(index: number) {
@@ -359,6 +394,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
         this.feedService.syncTableFieldPolicyNames();
         this.isValid = this.feedTableColumnDefinitionValidation.validate();
+        this.tableFormControls.updateFieldState(columnDef);
     };
 
     /**
@@ -386,6 +422,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 }
             });
 
+        this.tableFormControls.updateFieldState(columnDef);
+
         //ensure the field names on the columns are unique again as removing a column might fix a "notUnique" error
         this.feedTableColumnDefinitionValidation.validateColumn(columnDef);
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
@@ -402,6 +440,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.removeColumn(idx);
         }
     };
+
 
     /**
      * Add a partition to the schema
@@ -522,6 +561,14 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             }
             */
             }
+        }
+    }
+
+    onFieldPoliciesClicked(field:TableColumnDefinition){
+
+        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == field.name );
+        if(fieldPolicy) {
+            this.feedFieldPolicyRulesDialogService.openDialog(this.feed, fieldPolicy);
         }
     }
 

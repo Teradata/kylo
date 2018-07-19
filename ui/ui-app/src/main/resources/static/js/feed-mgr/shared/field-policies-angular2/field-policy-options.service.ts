@@ -33,8 +33,8 @@ export class FieldPolicyOptionsService {
 
     private static STANDARDIZTION_VALIDATION:string = 'standardization-validation';
     private static SPARK_PARSERS:string ='sparkSchemaParser';
-    private static VALIDATION:string ='validation';
-    private static STANDARDIZATION:string ='standardization';
+    public static VALIDATION:string ='validation';
+    public static STANDARDIZATION:string ='standardization';
     private static SCHEMA_PARSER:string = 'schemaParser';
 
 
@@ -87,8 +87,9 @@ export class FieldPolicyOptionsService {
     }
 
     getOptionsForType(type:string) : Observable<any[]>{
+
         if (type == FieldPolicyOptionsService.STANDARDIZTION_VALIDATION) {
-           return Observable.forkJoin(this.getValidationOptions(),this.getStandardizationOptions())
+           return Observable.forkJoin(this.getStandardizationOptions(),this.getValidationOptions())
         }
         if (type == FieldPolicyOptionsService.STANDARDIZATION) {
             return this.getStandardizationOptions();

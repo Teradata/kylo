@@ -24,12 +24,15 @@ import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
 import {UiComponentsService} from "../../../services/UiComponentsService";
 import {FeedService} from "../../../services/FeedService";
+import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 
 
 @Injectable()
 export class DefineFeedService {
 
     feed:FeedModel;
+
+    lastSavedFeed:FeedModel;
 
     stepSrefMap:Common.Map<Step> = {}
 
@@ -140,6 +143,7 @@ export class DefineFeedService {
                 this.initializeFeedSteps(feedModel);
                 feedModel.validate(true);
                 this.setFeed(feedModel)
+                this.lastSavedFeed = feedModel.copy();
             });
             return observable;
         }
@@ -148,6 +152,16 @@ export class DefineFeedService {
         }
         else {
             return Observable.empty();
+        }
+    }
+
+    /**
+     * Restore the last saved feed effectively removing all edits done on the current feed
+     */
+    restoreLastSavedFeed() : FeedModel{
+        if(this.lastSavedFeed) {
+            this.feed.update(this.lastSavedFeed.copy());
+            return this.getFeed();
         }
     }
 
@@ -200,34 +214,6 @@ export class DefineFeedService {
         feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Sets the feed
@@ -377,6 +363,8 @@ export class DefineFeedService {
         return steps;
     }
 
+
+
     /**
      * Call kylo-services and save the feed
      * @return {Observable<FeedModel>}
@@ -384,7 +372,8 @@ export class DefineFeedService {
      */
     private _saveFeed() : Observable<FeedModel>{
         this.feed.systemFeedName = this.feed.systemName;
-        let body = angular.copy(this.feed);
+        let body = this.feed.copyModelForSave();
+
 
         let newFeed = body.id == undefined;
         //remove circular steps
@@ -412,6 +401,8 @@ export class DefineFeedService {
             this.feed.steps = steps;
             this.feed.updateDate = new Date(updatedFeed.updateDate);
             this.feed.validate(true);
+            //mark the last saved feed
+            this.lastSavedFeed = this.feed.copy();
             //notify watchers that this step was saved
             let saveFeedResponse = new SaveFeedResponse(this.feed,true,"Successfully saved "+this.feed.feedName);
             saveFeedResponse.newFeed = newFeed;
@@ -431,6 +422,7 @@ export class DefineFeedService {
     onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
         if(dataSets.length == 0){
             this.feed.table.sourceTableSchema.fields =[];
+            this.feed.table.feedTableSchema.fields = [];
             this.feed.table.tableSchema.fields = [];
         }
         else {
@@ -440,15 +432,19 @@ export class DefineFeedService {
             //set the source and target to the same
             let sourceColumns: TableColumnDefinition[] = [];
             let targetColumns: TableColumnDefinition[] = [];
+            let feedColumns: TableColumnDefinition[] = [];
             columns.forEach(col => {
                 let def = angular.extend({}, col);
                 def.derivedDataType = def.dataType;
                 sourceColumns.push(new TableColumnDefinition((def)));
                 targetColumns.push(new TableColumnDefinition((def)));
+                feedColumns.push(new TableColumnDefinition((def)));
             });
             this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
             this.feed.table.sourceTableSchema.fields = sourceColumns;
+            this.feed.table.feedTableSchema.fields = feedColumns;
             this.feed.table.tableSchema.fields = targetColumns;
+            this.feed.table.fieldPolicies = targetColumns.map(field => TableFieldPolicy.forName(field.name));
         }
     }
 

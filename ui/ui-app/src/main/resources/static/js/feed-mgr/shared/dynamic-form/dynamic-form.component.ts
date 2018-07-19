@@ -11,7 +11,7 @@ import {FieldConfig} from "./model/FieldConfig";
 export class DynamicFormComponent implements OnInit {
 
     @Input()
-   public fields: FieldConfig<any>[] = [];
+   public fields: FieldConfig<any>[];
 
     @Input()
     public form: FormGroup;
@@ -24,6 +24,10 @@ export class DynamicFormComponent implements OnInit {
     constructor(private dynamicFormService: DynamicFormService) {  }
 
     ngOnInit() {
+        if(this.fields == undefined){
+            this.fields = [];
+        }
+        console.log("new Form ",this.form, this.fields)
         this.dynamicFormService.addToFormGroup(this.fields, this.form);
     }
 
