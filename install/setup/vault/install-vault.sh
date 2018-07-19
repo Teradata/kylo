@@ -153,9 +153,8 @@ keytool -keystore ${VAULT_CONF}/root.jks -alias root -exportcert -rfc -storepass
 
 echo "Storing CA cert to ${VAULT_CA_CERT_PEM}"
 keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -certreq -alias ca | keytool -storepass ${PW} -keystore ${VAULT_CONF}/root.jks -gencert -alias root -ext BC=0 -rfc > ${VAULT_CA_CERT_PEM}
-
-cat ${VAULT_ROOT_CERT_PEM} ${VAULT_CA_CERT_PEM} > ${VAULT_CONF}/cachain.pem
-keytool -keystore ${VAULT_CONF}/ca.jks -importcert -alias ca -file ${VAULT_CONF}/cachain.pem -storepass ${PW} -trustcacerts -noprompt
+keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -importcert -trustcacerts -noprompt -alias root -file ${VAULT_ROOT_CERT_PEM}
+keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -importcert -alias ca -file ${VAULT_CA_CERT_PEM}
 
 echo "Storing Kylo cert to ${KYLO_CERT_PEM}"
 keytool -storepass ${KPW} -keystore ${KYLO_KEYSTORE} -certreq -alias kylo | keytool -storepass ${PW} -keystore ${VAULT_CONF}/ca.jks -gencert -alias ca -ext ku:c=dig,keyEncipherment -rfc > ${KYLO_CERT_PEM}
@@ -174,6 +173,14 @@ echo "Creating Kylo truststore in ${KYLO_TRUSTSTORE}"
 keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -trustcacerts -noprompt -alias root -file ${VAULT_ROOT_CERT_PEM}
 keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -alias ca -file ${VAULT_CA_CERT_PEM}
 keytool -keystore ${KYLO_TRUSTSTORE} -storepass ${KPW} -importcert -alias vault -file ${VAULT_CERT_PEM}
+
+rm -f ${VAULT_CONF}/root.jks
+rm -f ${VAULT_CONF}/ca.jks
+rm -f ${VAULT_CONF}/vault.jks
+rm -f ${VAULT_CONF}/password
+rm -f ${VAULT_ROOT_CERT_PEM}
+rm -f ${KYLO_CERT_PEM}
+rm -f ${KYLO_SSL}/password
 
 chown -R ${KYLO_USER}:${KYLO_GROUP} ${KYLO_SSL}
 chmod -R 600 ${KYLO_SSL}
@@ -357,6 +364,9 @@ echo "Setting up client cert authentication for Kylo"
 ${VAULT_CURRENT_HOME}/bin/vault auth-enable cert
 ${VAULT_CURRENT_HOME}/bin/vault write auth/cert/certs/kylo display_name=kylo policies=kylo certificate=@${VAULT_CONF}/kylo-cert.pem ttl=3600
 ${VAULT_CURRENT_HOME}/bin/vault policy-write kylo ${VAULT_CONF}/kylo-policy.hcl
+
+rm -f ${VAULT_CONF}/kylo-policy.hcl
+rm -f ${VAULT_CONF}/kylo-cert.pem
 
 EOF
 

@@ -37,8 +37,6 @@ class VaultConfiguration {
     private char[] trustStorePassword;
     private String trustStoreType;
 
-    private boolean trustSelfSignedCert;
-
     private String scheme;
     private String host;
     private int port;
