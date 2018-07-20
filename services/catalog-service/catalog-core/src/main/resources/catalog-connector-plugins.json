@@ -68,7 +68,7 @@
     ]
   },
   {
-    "pluginId": "azure",
+    "pluginId": "azure-storage",
     "tabs": [
       {
         "label": "Files",

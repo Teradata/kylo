@@ -26,7 +26,7 @@
             <mat-error *ngIf="titleControl.hasError('required')">Required</mat-error>
           </mat-form-field>
 
-          <ng-template let-element let-last="last" ngFor [ngForOf]="connector.options">
+          <ng-template let-element let-last="last" ngFor [ngForOf]="plugin.options">
             <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}">
               <input
                   *ngIf="isInputType(element)"
