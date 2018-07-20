@@ -224,28 +224,40 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     }
 
     /**
-     * When the timer changes show warning if it is < 3 seconds indicating to the user this is a "Rapid Fire" feed
+     * Ensure timer is not rapid for batch type feeds
      */
     timerChanged() {
         if (this.timerAmount < 0) {
             this.timerAmount = null;
+            return;
         }
-        if (this.timerAmount != null && (this.timerAmount == 0 || (this.timerAmount < 3 && this.timerUnits == 'sec'))) {
-            this.showTimerAlert();
+
+        if (this.feed.registeredTemplate.isStream === false) {
+            //batch feed
+            if (this.timerAmount != null && (this.timerAmount == 0)) {
+                this.showBatchTimerAlert();
+
+                if (this.lastKnownTimerAmount != null) {
+                    this.timerAmount = this.lastKnownTimerAmount;
+                } else {
+                    this.timerAmount = 5;
+                }
+            }
         }
+
         this.feed.schedule.schedulingPeriod = this.timerAmount + " " + this.timerUnits;
         this.validate();
     }
 
     /**
-     * Show alert for a rapid timer.
+     * Show alert for a rapid timer for batch feed.
      * @param ev
      */
-    showTimerAlert(ev?: any) {
+    showBatchTimerAlert(ev?: any) {
         this.dialogService.openAlert({
-            message: 'Warning: You have this feed scheduled for a very fast timer. Please ensure you want this feed scheduled this fast before you proceed.',
+            message: 'Warning: This is a batch-type feed, and scheduling for a very fast timer is not permitted. Please modify the timer amount to a non-zero value.',
             disableClose: true,
-            title: 'Warning: Rapid Timer',
+            title: 'Warning: Rapid Timer (Batch Feed)',
             closeButton: 'Close',
             width: '200 px',
         });
