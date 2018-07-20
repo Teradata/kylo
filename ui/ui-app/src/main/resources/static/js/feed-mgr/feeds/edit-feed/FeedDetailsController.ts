@@ -432,7 +432,7 @@ export class FeedDetailsController {
     };
 
     onTableClick = () => {
-        this.StateService.FeedManager().Table().navigateToTable(this.DatasourcesService.getHiveDatasource().id, this.model.category.systemName, this.model.table.tableSchema.name);
+   //     this.StateService.FeedManager().Table().navigateToTable(this.DatasourcesService.getHiveDatasource().id, this.model.category.systemName, this.model.table.tableSchema.name);
     }
 
     addSla = () => {

@@ -18,7 +18,6 @@ export class PolicyInputFormService {
     }
 
     constructor(@Inject("$injector") private $injector: any) {
-
             this.init();
     }
     groupProperties = (metric: any) => {

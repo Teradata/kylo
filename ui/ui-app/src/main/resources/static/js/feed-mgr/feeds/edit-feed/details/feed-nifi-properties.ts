@@ -3,6 +3,7 @@ import 'pascalprecht.translate';
 import * as _ from "underscore";
 import AccessControlService from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -60,11 +61,11 @@ export class FeedNIFIController implements ng.IComponentController {
      */
     editableSection: boolean = false;
 
-    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
+    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorPropertiesTemplateService", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
 
     constructor(private $scope: any, private $http: angular.IHttpService, private $q: angular.IQService, private RestUrlService: any, private accessControlService: AccessControlService
         , private entityAccessControlService: EntityAccessControlService, private FeedService: any, private EditFeedNifiPropertiesService: any
-        , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any,
+        , private FeedInputProcessorPropertiesTemplateService: any, private FeedDetailsProcessorRenderingHelper: any,
                 private BroadcastService: any, private FeedPropertyService: any, private $filter: angular.IFilterService) {
 
         this.versions = $scope.versions;
@@ -123,7 +124,7 @@ export class FeedNIFIController implements ng.IComponentController {
     /**
      * Edit the data
      */
-    onEdit = () => {
+    onEdit() {
         //copy the model
         var inputProcessors = angular.copy(this.FeedService.editFeedModel.inputProcessors);
         var nonInputProcessors = angular.copy(this.FeedService.editFeedModel.nonInputProcessors);
@@ -163,7 +164,7 @@ export class FeedNIFIController implements ng.IComponentController {
     /**
      * Cancel an Edit
      */
-    onCancel = () => {
+    onCancel() {
 
     };
 
@@ -171,7 +172,7 @@ export class FeedNIFIController implements ng.IComponentController {
      * Save the editModel
      * @param ev
      */
-    onSave = (ev: angular.IAngularEvent) => {
+    onSave(ev: angular.IAngularEvent) {
         this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-nifi-properties.Saving'), this.model.feedName);
 
         var copy = angular.copy(this.FeedService.editFeedModel);
@@ -222,7 +223,7 @@ export class FeedNIFIController implements ng.IComponentController {
     };
 
 
-    private updateControllerServiceDisplayName = () => {
+    private updateControllerServiceDisplayName() :void {
         if(this.model != null) {
             _.chain(this.model.inputProcessors.concat(this.model.nonInputProcessors))
                 .pluck("properties")
@@ -235,7 +236,7 @@ export class FeedNIFIController implements ng.IComponentController {
 
     }
 
-    private updateInputProcessor = (newVal: any) => {
+    private updateInputProcessor(newVal: any) {
         angular.forEach(this.editModel.inputProcessors, (processor) => {
             if (processor.processorId == newVal) {
                 //check the type and return the custom form if there is one via a factory
@@ -250,7 +251,7 @@ export class FeedNIFIController implements ng.IComponentController {
         })
     }
 
-    diff = (path: any) => {
+    diff(path: any) {
         return this.FeedService.diffOperation(path);
     }
 }

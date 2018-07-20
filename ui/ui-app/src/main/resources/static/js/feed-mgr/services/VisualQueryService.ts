@@ -4,7 +4,7 @@ import {UnderscoreStatic} from "underscore";
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
 
-const moduleName: string = require("feed-mgr/module-name");
+import {moduleName} from "../module-name";
 
 /**
  * Prefix for table aliases.
@@ -540,6 +540,9 @@ angular.extend(SqlBuilder.prototype, {
         };
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
+        }
+        if(node.dataset){
+            rangeVar.dataset = node.dataset;
         }
         return rangeVar;
     },

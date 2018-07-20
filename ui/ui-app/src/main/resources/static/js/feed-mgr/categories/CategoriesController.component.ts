@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import { Component, Input, Inject, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import * as _ from "underscore";
-import CategoriesService from '../services/CategoriesService';
+import {CategoriesService} from '../services/CategoriesService';
 import AccessControlService from '../../services/AccessControlService';
 import AddButtonService from '../../services/AddButtonService';
 import StateService from '../../services/StateService';

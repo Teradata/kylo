@@ -4,7 +4,7 @@ import * as _ from 'underscore';
 import {Transition} from "@uirouter/core";
 import SearchService from "../../services/SearchService";
 import Utils from "../../services/Utils";
-import CategoriesService from "../../feed-mgr/services/CategoriesService";
+import {CategoriesService} from "../../feed-mgr/services/CategoriesService";
 import StateService from "../../services/StateService";
 import {FeedService} from "../../feed-mgr/services/FeedService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";

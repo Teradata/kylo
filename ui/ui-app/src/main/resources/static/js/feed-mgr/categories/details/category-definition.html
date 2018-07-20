@@ -17,8 +17,8 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout sectionTitle='{{"views.category-definition.CD" | translate}}' [onDelete]="onDelete" [allowDelete]="canDelete" [isDeleteVisible]="model.id != null" [onSaveEdit]="onSave"
-  [onEdit]="onEdit" [onCancelEdit]="onCancel" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm" [isValid]="isValid">
+<vertical-section-layout section-title='{{"views.category-definition.CD" | translate}}' (on-delete)="onDelete()" [allowDelete]="canDelete" [isDeleteVisible]="model.id != null" (on-save-edit)="onSave"
+  (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm" [isValid]="isValid">
   <readonly-section>
     <div layout="row" class="layout-padding-top-bottom" flex>
       <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>

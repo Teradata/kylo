@@ -6,7 +6,7 @@ import AccessControlService from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
-
+import {moduleName} from "../module-name";
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -301,7 +301,7 @@ export class FeedService {
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
             newTableFieldPolicy(fieldName: string): TableFieldPolicy {
-                return new TableFieldPolicy(fieldName);
+                return TableFieldPolicy.forName(fieldName);
                 // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
             }
             /**
@@ -310,7 +310,7 @@ export class FeedService {
             setTableFields(fields: any[], policies: any[] = null) {
                 //ensure the fields are of type TableColumnDefinition
                 let newFields =  _.map(fields,(field) => {
-                    if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                    if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
                         let columnDef = new TableColumnDefinition();
                         angular.extend(columnDef,field);
                         return columnDef;
@@ -481,6 +481,10 @@ export class FeedService {
                 }
             copy.properties = properties;
 
+            //Force this feed to always be a final feed
+            //Any save through this service is not a DRAFT feed
+            copy.mode="COMPLETE";
+
             //clear the extra UI only properties
             copy.inputProcessor = null
             copy.nonInputProcessors = null
@@ -640,7 +644,7 @@ export class FeedService {
             this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
                 var deferred = this.$q.defer();
-                var successFn = function (response: any) {
+                var successFn = (response: any) => {
                     var invalidCount = 0;
                     if (response.data && response.data.success) {
                         //update the feed versionId and internal id upon save
@@ -1052,6 +1056,3 @@ export class FeedSavingDialogController {
         };
     }
 }
-angular.module(require("feed-mgr/module-name"))
-.service('FeedService',FeedService)
-.controller('FeedSavingDialogController', FeedSavingDialogController);

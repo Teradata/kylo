@@ -29,7 +29,7 @@ import { AccessControl } from "../../services/AccessControl";
 import { RegisteredTemplateService } from "./RegisterTemplateService";
 
 
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 import Property = Templates.Property;
 import PropertyRenderType = Templates.PropertyRenderType;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;
@@ -39,18 +39,22 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
 import AccessControlService from '../../services/AccessControlService';
 import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
+import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
+import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
+import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
 
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
 
     static $inject = ["$http", "$q", "$mdDialog", "RestUrlService"
-        , "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper"
-        , "FeedPropertyService", "AccessControlService", "EntityAccessControlService", "$filter"]
+        , "FeedInputProcessorPropertiesTemplateService", "FeedDetailsProcessorRenderingHelper"
+        , "FeedPropertyService", "AccessControlService", "EntityAccessControlService", "$filter","RegisterTemplatePropertyService"]
 
     constructor(private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any
-        , private FeedPropertyService: FeedPropertyService, private accessControlService: AccessControlService
-        , private entityAccessControlService: EntityAccessControlService, private $filter: angular.IFilterService) {
+        , private feedInputProcessorPropertiesTemplateService: FeedInputProcessorPropertiesTemplateService, private feedDetailsProcessorRenderingHelper: FeedDetailsProcessorRenderingHelper
+        , private feedPropertyService: FeedPropertyService, private accessControlService: AccessControlService
+        , private entityAccessControlService: EntityAccessControlService, private $filter: angular.IFilterService,
+        private registerTemplatePropertyService :RegisterTemplatePropertyService) {
         this.init();
 
     }
@@ -64,45 +68,9 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param processor
      */
     private setRenderTemplateForProcessor(processor: Processor, mode: any) {
-        if (processor.feedPropertiesUrl == undefined) {
-            processor.feedPropertiesUrl = null;
-        }
-        if (processor.feedPropertiesUrl == null) {
-            this.FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
-        }
+      return this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(processor,mode)
     }
 
-    /**
-     * Properties that require custom Rendering, separate from the standard Nifi Property (key  value) rendering
-     * This is used in conjunction with the method {@code this.isCustomPropertyRendering(key)} to determine how to render the property to the end user
-     */
-    customPropertyRendering: string[] = ["metadata.table.targetFormat", "metadata.table.feedFormat"];
-
-    public codemirrorTypes: Common.Map<string> = null;
-
-    /**
-     * Avaliable types that a user can select for property rendering
-     */
-    propertyRenderTypes: PropertyRenderType[] = [{ type: 'text', 'label': 'Text' }, { type: 'password', 'label': 'Password' }, { type: 'number', 'label': 'Number', codemirror: false },
-    { type: 'textarea', 'label': 'Textarea', codemirror: false }, { type: 'select', label: 'Select', codemirror: false },
-    { type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false }];
-
-    trueFalseRenderTypes: PropertyRenderType[] = [{ type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false },
-    { type: 'select', label: 'Select', codemirror: false }]
-
-
-    selectRenderType: PropertyRenderType[] = [{ type: 'select', 'label': 'Select', codemirror: false },
-    { type: 'radio', label: 'Radio Button', codemirror: false }]
-
-    codeMirrorRenderTypes: any[] = []
-
-    configurationProperties: Common.Map<string> = {}
-
-    metadataProperties: MetadataProperty[] = []
-
-    propertyList: MetadataProperty[] = []
-
-    configurationPropertyMap: Common.Map<string> = {};
 
     model: ExtendedTemplate = null;
 
@@ -121,9 +89,6 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      */
     init() {
         this.newModel();
-        this.fetchConfigurationProperties();
-        this.fetchMetadataProperties();
-        this.getCodeMirrorTypes();
     }
 
     /**
@@ -164,16 +129,12 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     }
 
     /**
-     * Is a probpery selected
+     * Is a property selected
      * @param property
      * @return {boolean | any}
      */
     isSelectedProperty(property: Property): boolean {
-        var selected = (property.selected || (property.value != null && property.value != undefined && (property.value.includes("${metadata") || property.value.includes("${config."))));
-        if (selected) {
-            property.selected = true;
-        }
-        return selected;
+        return this.registerTemplatePropertyService.isSelectedProperty(property);
     }
 
     /**
@@ -193,7 +154,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                     property.processorName = property.processorOrigName;
                 }
 
-                this.FeedPropertyService.initSensitivePropertyForSaving(property);
+                this.feedPropertyService.initSensitivePropertyForSaving(property);
             }
         });
 
@@ -206,7 +167,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 if (property.processorOrigName != undefined && property.processorOrigName != null) {
                     property.processorName = property.processorOrigName;
                 }
-                this.FeedPropertyService.initSensitivePropertyForSaving(property);
+                this.feedPropertyService.initSensitivePropertyForSaving(property);
             }
         });
 
@@ -214,27 +175,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     }
 
     sortPropertiesForDisplay(properties: Property[]): PropertyAndProcessors {
-        let propertiesAndProcessors: PropertyAndProcessors = { properties: [], processors: [] };
-
-        //sort them by processor name and property key
-        var arr = _.chain(properties).sortBy('key').sortBy('processorName').value();
-        propertiesAndProcessors.properties = arr;
-        //set the initial processor flag for the heading to print
-        var lastProcessorId: string = null;
-        _.each(arr, (property, i) => {
-            if ((angular.isUndefined(property.hidden) || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
-                property.firstProperty = true;
-                propertiesAndProcessors.processors.push(property.processor);
-                property.processor.topIndex = i;
-            }
-            else {
-                property.firstProperty = false;
-            }
-            if (!property.hidden) {
-                lastProcessorId = property.processor.id;
-            }
-        });
-        return propertiesAndProcessors;
+      return this.registerTemplatePropertyService.sortPropertiesForDisplay(properties)
     }
 
     /**
@@ -243,29 +184,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param {(err: any) => any} errorFn
      */
     fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<Common.Map<string>>> | undefined {
-
-
-        if (Object.keys(this.configurationProperties).length == 0) {
-            let _successFn = (response: angular.IHttpResponse<Common.Map<string>>) => {
-                this.configurationProperties = response.data;
-                angular.forEach(response.data, (value: any, key: any) => {
-                    this.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
-                    this.configurationPropertyMap[key] = value;
-                })
-                if (successFn) {
-                    successFn(response);
-                }
-            }
-            let _errorFn = (err: any) => {
-                if (errorFn) {
-                    errorFn(err)
-                }
-            }
-
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.RestUrlService.CONFIGURATION_PROPERTIES_URL);
-            promise.then(_successFn, _errorFn);
-            return promise;
-        }
+return this.registerTemplatePropertyService.fetchConfigurationProperties(successFn, errorFn);
 
     }
 
@@ -277,33 +196,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @return {angular.IPromise<any> | undefined}
      */
     fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<any>> | undefined {
-
-        if (this.metadataProperties.length == 0) {
-            let _successFn = (response: angular.IHttpResponse<any>) => {
-                this.metadataProperties = response.data;
-                angular.forEach(response.data, (annotatedProperty: MetadataProperty, i: any) => {
-                    this.propertyList.push({
-                        key: annotatedProperty.name,
-                        value: '',
-                        dataType: annotatedProperty.dataType,
-                        description: annotatedProperty.description,
-                        type: 'metadata'
-                    });
-                })
-                if (successFn) {
-                    successFn(response);
-                }
-            }
-            let _errorFn = (err: any) => {
-                if (errorFn) {
-                    errorFn(err)
-                }
-            }
-
-            var promise = this.$http.get(this.RestUrlService.METADATA_PROPERTY_NAMES_URL);
-            promise.then(_successFn, _errorFn);
-            return promise;
-        }
+return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, errorFn);
 
     }
 
@@ -338,52 +231,9 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     deriveExpression(expression: string, configOnly: boolean): string {
 
-        var replaced = false;
-        if (expression != null && expression != '') {
-            var variables = expression.match(/\$\{(.*?)\}/gi);
-            if (variables && variables.length) {
-                angular.forEach(variables, (variable: any) => {
-                    var varNameMatches = variable.match(/\$\{(.*)\}/);
-                    var varName = null;
-                    if (varNameMatches.length > 1) {
-                        varName = varNameMatches[1];
-                    }
-                    if (varName) {
-                        let value = this.configurationPropertyMap[varName];
-                        if (value) {
-                            expression = this.replaceAll(expression, variable, value);
-                            replaced = true;
-                        }
-
-                    }
-                });
-            }
-        }
-        if (configOnly == true && !replaced) {
-            expression = '';
-        }
-        return expression;
+       return this.registerTemplatePropertyService.deriveExpression(expression, configOnly);
     }
 
-
-    getCodeMirrorTypes(): angular.IPromise<any> {
-
-        if (this.codemirrorTypes == null) {
-            let successFn = (response: angular.IHttpResponse<any>) => {
-                this.codemirrorTypes = response.data;
-                angular.forEach(this.codemirrorTypes, (label: string, type: string) => {
-                    this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
-                });
-            }
-            var errorFn = (err: angular.IHttpResponse<any>) => {
-
-            }
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.RestUrlService.CODE_MIRROR_TYPES_URL);
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-        return this.$q.when(this.codemirrorTypes);
-    }
 
 
     /**
@@ -392,7 +242,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @return {boolean}
      */
     isRenderPropertyWithCodeMirror(property: Property): boolean {
-        return this.codemirrorTypes[property.renderType] !== undefined;
+        return this.registerTemplatePropertyService.isRenderPropertyWithCodeMirror(property);
     }
 
     /**
@@ -403,10 +253,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      */
     isCustomPropertyRendering(key: any): boolean {
 
-        var custom = _.find(this.customPropertyRendering, (customKey) => {
-            return key == customKey;
-        });
-        return custom !== undefined;
+      return this.registerTemplatePropertyService.isCustomPropertyRendering(key);
     }
 
 
@@ -453,40 +300,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @return {Processor[]}
      */
     removeNonUserEditableProperties(processorArray: Processor[], keepProcessorIfEmpty: boolean): Processor[] {
-        //only keep those that are userEditable:true
-        var validProcessors: any = [];
-        var processorsToRemove: any = [];
-        //temp placeholder until Register Templates allows for user defined input processor selection
-
-        _.each(processorArray, (processor: Processor, i: number) => {
-            processor.allProperties = processor.properties;
-
-            var validProperties = _.reject(processor.properties, (property: Property) => {
-                return !property.userEditable;
-            });
-
-
-            processor.properties = validProperties;
-            if (validProperties != null && validProperties.length > 0) {
-                validProcessors.push(processor);
-            }
-            if (this.FeedDetailsProcessorRenderingHelper.isGetTableDataProcessor(processor) || this.FeedDetailsProcessorRenderingHelper.isWatermarkProcessor(processor)) {
-                processor.sortIndex = 0;
-            }
-            else {
-                processor.sortIndex = i;
-            }
-        });
-        var arr = null;
-
-        if (keepProcessorIfEmpty != undefined && keepProcessorIfEmpty == true) {
-            arr = processorArray;
-        }
-        else {
-            arr = validProcessors;
-        }
-        // sort it
-        return _.sortBy(arr, 'sortIndex');
+      return this.registerTemplatePropertyService.removeNonUserEditableProperties(processorArray,keepProcessorIfEmpty)
 
     }
 
@@ -495,18 +309,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param model
      */
     setProcessorRenderTemplateUrl(model: any, mode: any): void {
-        _.each(model.inputProcessors, (processor: Processor) => {
-            processor.feedPropertiesUrl = null;
-            //ensure the processorId attr is set
-            processor.processorId = processor.id
-            this.setRenderTemplateForProcessor(processor, mode);
-        });
-        _.each(model.nonInputProcessors, (processor: Processor) => {
-            processor.feedPropertiesUrl = null;
-            //ensure the processorId attr is set
-            processor.processorId = processor.id
-            this.setRenderTemplateForProcessor(processor, mode);
-        });
+      this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(model,mode)
 
     }
 
@@ -516,68 +319,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * used in Feed creation and feed details to render the nifi input fields
      * @param template
      */
-    initializeProperties(template: any, mode: any, feedProperties ?: Property[]): void {
-        //get the saved properties
-
-        /**
-         * Propert.idKey to value
-         * @type {{}}
-         */
-        let savedProperties: Common.Map<string> = {};
-
-        if (feedProperties) {
-            _.each(feedProperties, (property: any) => {
-                if (property.userEditable && property.templateProperty) {
-                    savedProperties[property.templateProperty.idKey] = property;
-                }
-            });
-        }
-
-
-        let updateProperties = (processor: any, properties: any) => {
-
-            _.each(properties, (property: Property) => {
-                //set the value if its saved
-                if (savedProperties[property.idKey] != undefined) {
-                    property.value == savedProperties[property.idKey]
-                }
-                //mark as not selected
-                property.selected = false;
-
-                property.value = this.deriveExpression(property.value, false);
-                property.renderWithCodeMirror = this.isRenderPropertyWithCodeMirror(property);
-
-                //if it is a custom render property then dont allow the default editing.
-                //the other fields are coded to look for these specific properties
-                //otherwise check to see if it is editable
-                if (this.isCustomPropertyRendering(property.key)) {
-                    property.customProperty = true;
-                    property.userEditable = false;
-                } else if (property.userEditable == true) {
-                    processor.userEditable = true;
-                }
-
-                //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
-                this.FeedPropertyService.initSensitivePropertyForEditing(property);
-
-                this.FeedPropertyService.updateDisplayValue(property);
-
-            })
-
-        }
-
-        _.each(template.inputProcessors, (processor: Processor) => {
-            //ensure the processorId attr is set
-            processor.processorId = processor.id
-            updateProperties(processor, processor.properties)
-            this.setRenderTemplateForProcessor(processor, mode);
-        });
-        _.each(template.nonInputProcessors, (processor: Processor) => {
-            //ensure the processorId attr is set
-            processor.processorId = processor.id
-            updateProperties(processor, processor.properties)
-            this.setRenderTemplateForProcessor(processor, mode);
-        });
+    initializeProperties(template: any, mode: any, feedProperties?: Property[]): void {
+        this.registerTemplatePropertyService.initializeProperties(template,mode,feedProperties)
 
     }
 
@@ -628,23 +371,6 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         return deferred.promise;
     }
 
-    /*
-    getTemplateProcessorDatasourceDefinitions(nifiTemplateId:string, inputPortIds:string[]) {
-        var deferred = $q.defer();
-        if (nifiTemplateId != null) {
-            $http.get(this.RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId), {params: {inputPorts: inputPortIds}}).then((response:any) =>{
-                deferred.resolve(response);
-            }, function (response:any) {
-                deferred.reject(response);
-            });
-        }
-        else {
-            deferred.resolve({data: []});
-        }
-        return deferred.promise;
-
-    }
-    */
 
     /**
      * Walks the NiFi template and its related connections(if any) to the reusable flow and returns data about the graph, its processors, and any Datasource definitions
@@ -769,16 +495,16 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                         return (value.value.toLowerCase() == 'false' || value.value.toLowerCase() == 'true');
                     });
                     if (list != undefined && list.length == 2) {
-                        property.renderTypes = this.trueFalseRenderTypes;
+                        property.renderTypes = RegisterTemplatePropertyService.trueFalseRenderTypes;
                     }
                 }
                 if (property.renderTypes == undefined) {
-                    property.renderTypes = this.selectRenderType;
+                    property.renderTypes = RegisterTemplatePropertyService.selectRenderType;
                 }
                 property.renderType = property.renderType == undefined ? 'select' : property.renderType;
             }
             else {
-                property.renderTypes = this.propertyRenderTypes;
+                property.renderTypes = this.registerTemplatePropertyService.propertyRenderTypes;
                 property.renderType = property.renderType == undefined ? 'text' : property.renderType;
             }
         }
@@ -823,7 +549,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
                 assignPropertyRenderType(property)
 
-                this.FeedPropertyService.initSensitivePropertyForEditing(property);
+                this.feedPropertyService.initSensitivePropertyForEditing(property);
 
                 property.templateValue = property.value;
                 property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;

@@ -1,4 +1,4 @@
-import {NgModule, CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {NgModule, CUSTOM_ELEMENTS_SCHEMA, Injector} from "@angular/core";
 
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -39,10 +39,12 @@ import {CategoryDetailsController} from "./category-details.component";
 import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
 
-import CategoriesService from "../services/CategoriesService";
+import {CategoriesService} from "../services/CategoriesService";
 import { RestUrlService } from "../services/RestUrlService";
-import { FeedSecurityGroups } from "../services/FeedSecurityGroupsService";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
+import {KyloFeedManagerModule} from "../feed-mgr.module";
+import {CommonModule} from "@angular/common";
+
 
 @NgModule({
     declarations: [
@@ -64,7 +66,7 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         CategoryDetailsController,
     ],
     imports: [
-        BrowserModule,
+        CommonModule,
         CovalentCommonModule,
         CovalentLoadingModule,
         CovalentMenuModule,
@@ -87,7 +89,14 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         UIRouterModule.forChild({states: categoriesStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [CategoriesService, RestUrlService, FeedSecurityGroups, EntityAccessControlService]
+    providers: []
 })
-export class CategoryModule {
+export class CategoriesModule {
+
+    constructor(injector: Injector) {
+        console.log("Categories Module")
+
+
+
+    }
 }

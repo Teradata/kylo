@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import AccessControlService from '../../services/AccessControlService';
 import { Component, Inject } from "@angular/core";
-import CategoriesService from "../services/CategoriesService";
+import {CategoriesService} from "../services/CategoriesService";
 import { Transition, StateService } from '@uirouter/core';
 
 // const moduleName = require('feed-mgr/categories/module-name');

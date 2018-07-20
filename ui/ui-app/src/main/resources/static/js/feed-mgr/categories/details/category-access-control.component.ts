@@ -3,7 +3,7 @@ import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Inject } from '@angular/core';
-import CategoriesService from '../../services/CategoriesService';
+import {CategoriesService} from '../../services/CategoriesService';
 // const moduleName = require('feed-mgr/categories/module-name');
 
 @Component({

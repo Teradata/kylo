@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { FeedService } from '../../services/FeedService';
 import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";;
 
 export class FeedFieldPolicyRuleDialogController {
 
@@ -124,7 +124,7 @@ export class FeedFieldPolicyRuleDialogController {
 
 
         function setupPoliciesForFeed() {
-            var arr = this.feedFieldPolicyRuleService.getAllPolicyRules(field);
+            var arr = feedFieldPolicyRuleService.getAllPolicyRules(field);
             if (arr != null && arr != undefined) {
                 $scope.policyRules = angular.copy(arr);
             }

@@ -4,7 +4,7 @@ import {Templates} from "./TemplateTypes";
 import Property = Templates.Property;
 import Processor = Templates.Processor;
 import {FeedPropertyService} from "./FeedPropertyService";
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 
 
  export class DefaultFeedPropertyService implements FeedPropertyService{
@@ -88,4 +88,3 @@ const moduleName = require('feed-mgr/module-name');
         }
 
     }
-angular.module(moduleName).service('FeedPropertyService', DefaultFeedPropertyService);

@@ -2,26 +2,25 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';
-import { Injectable, Inject } from '@angular/core';
-import { RestUrlService } from '../../services/RestUrlService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";
 
-@Injectable()
+
 export class EntityAccessControlService extends AccessConstants{
 
     roleUrlsMap: any;
     public static entityRoleTypes: any ={ CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource" };
 
-    constructor(private accessControlService: AccessControlService, 
-                private restUrlService: RestUrlService,
-                @Inject("$injector") private $injector: any) {
+
+
+    static readonly $inject = ["$http", "$q", "AccessControlService", "RestUrlService"];
+    constructor(private $http: angular.IHttpService, private $q: angular.IQService, private accessControlService: AccessControlService, private RestUrlService: any) {
         super();
         this.roleUrlsMap = {
-            "feed": restUrlService.FEED_ROLES_URL,
-            "category": restUrlService.CATEGORY_ROLES_URL,
-            "category-feed": restUrlService.CATEGORY_FEED_ROLES_URL,
-            "template": restUrlService.TEMPLATE_ROLES_URL,
-            "datasource": restUrlService.DATASOURCE_ROLES_URL
+            "feed": RestUrlService.FEED_ROLES_URL,
+            "category": RestUrlService.CATEGORY_ROLES_URL,
+            "category-feed": RestUrlService.CATEGORY_FEED_ROLES_URL,
+            "template": RestUrlService.TEMPLATE_ROLES_URL,
+            "datasource": RestUrlService.DATASOURCE_ROLES_URL
         };
     }
     augmentRoleWithUiModel(roleMembership: any) {
@@ -37,10 +36,10 @@ export class EntityAccessControlService extends AccessConstants{
                 var f = this.roleUrlsMap[membersType];
                 url = f(entity.id);
             }
-            return this.$injector.get("$http").get(url);
+            return this.$http.get(url);
         }
         else {
-            var deferred = this.$injector.get("$q").defer();
+            var deferred = this.$q.defer();
             deferred.resolve({ data: {} });
             return deferred.promise;
         }
@@ -87,7 +86,7 @@ export class EntityAccessControlService extends AccessConstants{
          * Merges all possible roles for this entity, with the assigned roles/memberships
          */
     mergeRoleAssignments = (entity: any, membershipType: any, entityRoleMemberships: any) => {
-        var deferred = this.$injector.get("$q").defer();
+        var deferred = this.$q.defer();
         var existingModelRoleAssignments = {};
         this.queryForRoleAssignments(entity, membershipType).then((response: any) => {
             entityRoleMemberships.splice(0, entityRoleMemberships.length);
@@ -181,24 +180,24 @@ export class EntityAccessControlService extends AccessConstants{
          * @param $event
          */
     saveRoleMemberships = (entityType: any, entityId: any, roleMemberships: any, callbackFn?: any) => {
-        var defer = this.$injector.get("$q").defer();
+        var defer = this.$q.defer();
         var url = '';
         if (entityType === 'feed') {
-            url = this.restUrlService.FEED_ROLES_URL(entityId);
+            url = this.RestUrlService.FEED_ROLES_URL(entityId);
         } else if (entityType === 'project') {
-            // url = this.restUrlService.PROJECT_ROLES_URL(entityId);
+            url = this.RestUrlService.PROJECT_ROLES_URL(entityId);
         } else if (entityType === 'category') {
-            url = this.restUrlService.CATEGORY_ROLES_URL(entityId);
+            url = this.RestUrlService.CATEGORY_ROLES_URL(entityId);
         } else if (entityType === 'template') {
-            url = this.restUrlService.TEMPLATE_ROLES_URL(entityId);
+            url = this.RestUrlService.TEMPLATE_ROLES_URL(entityId);
         } else if (entityType === "datasource") {
-            url = this.restUrlService.DATASOURCE_ROLES_URL(entityId);
+            url = this.RestUrlService.DATASOURCE_ROLES_URL(entityId);
         }
         //construct a RoleMembershipChange object
         var changes = this.toRoleMembershipChange(roleMemberships);
         var responses: any = [];
         _.each(changes, (roleMembershipChange) => {
-            var promise = this.$injector.get("$http")({
+            var promise = this.$http({
                 url: url,
                 method: "POST",
                 data: angular.toJson(roleMembershipChange),
@@ -209,7 +208,7 @@ export class EntityAccessControlService extends AccessConstants{
             responses.push(promise);
         });
 
-        this.$injector.get("$q").all(responses).then((resolvedResponses: any) => {
+        this.$q.all(responses).then((resolvedResponses: any) => {
             var responses: any = [];
             _.each(resolvedResponses, (response: any) => {
                 responses.push(response.data);
@@ -224,4 +223,6 @@ export class EntityAccessControlService extends AccessConstants{
 
 
 }
-angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);
+
+
+//angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);

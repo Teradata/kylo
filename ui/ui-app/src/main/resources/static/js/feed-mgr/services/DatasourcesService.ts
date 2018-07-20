@@ -16,15 +16,20 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import {  RestUrlService } from './RestUrlService';
+import {moduleName} from "../module-name";;
+
+import "../module"; // ensure module is loaded first
 
 /**
  * Interacts with the Data Sources REST API.
  * @constructor
  */
-@Injectable()
+
+//export class DatasourcesService {
+    // DatasourcesServiceClass();
+//}
+
+// export class DatasourcesService {
  export  class DatasourcesService {
        /**
          * Type name for JDBC data sources.
@@ -52,11 +57,17 @@ import {  RestUrlService } from './RestUrlService';
             }
         }
 
-        constructor(private http:HttpClient, 
-                    private restUrlService:RestUrlService, 
+        static readonly $inject = ["$http", "$q", "RestUrlService","EntityAccessControlService"];
+        constructor(private $http:any,
+                    private $q:any,
+                    private RestUrlService:any,
                     private entityAccessControlService:EntityAccessControlService) {
-            
-        }     
+      //  angular.extend(DatasourcesService.prototype, {
+
+        }//);
+        //return new DatasourcesService();
+
+
         /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons
@@ -81,7 +92,10 @@ import {  RestUrlService } from './RestUrlService';
              * @returns {Promise} for when the data source is deleted
              */
             deleteById= (id:any) => {
-                return this.http.delete(this.restUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)).toPromise();
+                return this.$http({
+                    method: "DELETE",
+                    url: this.RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
+                });
             }
 
             /**
@@ -103,10 +117,10 @@ import {  RestUrlService } from './RestUrlService';
              * @returns {Promise} with the list of data sources
              */
             findAll= () => {
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}}).toPromise()
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}})
                     .then((response:any) => {
-                        _.each(response, this.ensureDefaultIcon);
-                        return response;
+                        _.each(response.data, this.ensureDefaultIcon);
+                        return response.data;
                     });
             }
 
@@ -119,7 +133,7 @@ import {  RestUrlService } from './RestUrlService';
                 if (this.HIVE_DATASOURCE.id === id) {
                     return Promise.resolve(this.HIVE_DATASOURCE);
                 }
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id).toPromise()
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id)
                     .then((response:any) => {
                         this.ensureDefaultIcon(response.data);
                         return response.data;
@@ -127,7 +141,7 @@ import {  RestUrlService } from './RestUrlService';
             }
 
             findControllerServiceReferences= (controllerServiceId:any) => {
-                return this.http.get(this.restUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId)).toPromise()
+                return this.$http.get(this.RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
                     .then((response:any) => {
                         return response.data;
                     });
@@ -145,7 +159,7 @@ import {  RestUrlService } from './RestUrlService';
                     options.params.schema = opt_schema;
                 }
 
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options).toPromise()
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
                     .then((response:any) => {
                         return response.data;
                     });
@@ -162,7 +176,7 @@ import {  RestUrlService } from './RestUrlService';
                     options.params.tableName = "%" + opt_query + "%";
                 }
 
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options).toPromise()
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
                     .then((response:any) => {
                         // Get the list of tables
                         var tables = [];
@@ -189,7 +203,7 @@ import {  RestUrlService } from './RestUrlService';
             }
 
             query= (datasourceId:any, sql:any) => {
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql).toPromise()
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
                     .then((response:any) => {
                         return response;
                     }).catch((e:any) => {
@@ -198,7 +212,7 @@ import {  RestUrlService } from './RestUrlService';
             }
 
             preview= (datasourceId:any, schema:string, table:string, limit:number) => {
-                return this.http.post(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit),"").toPromise()
+                return this.$http.post(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then((response:any) => {
                         return response;
                     }).catch((e:any) => {
@@ -207,7 +221,7 @@ import {  RestUrlService } from './RestUrlService';
             }
 
            getPreviewSql= (datasourceId:any, schema:string, table:string, limit:number) => {
-                return this.http.get(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit)).toPromise()
+                return this.$http.get(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then((response:any) => {
                         return response.data;
                     }).catch((e:any) => {
@@ -217,7 +231,7 @@ import {  RestUrlService } from './RestUrlService';
 
             getTablesAndColumns= (datasourceId:any, schema:any) => {
                 var params = {schema: schema};
-                return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
             }
 
             /**
@@ -254,13 +268,17 @@ import {  RestUrlService } from './RestUrlService';
              * @returns {Promise} with the updated data source
              */
             save= (datasource:any) => {
-                return this.http.post(this.restUrlService.GET_DATASOURCES_URL, datasource).toPromise()
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL, datasource)
                     .then((response:any) => {
                         return response.data;
                     });
             }
 
            testConnection= (datasource: any) => {
-                return this.http.post(this.restUrlService.GET_DATASOURCES_URL + "/test", datasource,{headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})}).toPromise();
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+                    .then((response:any) => {
+                        return response.data;
+                    });
             }
+    //}
 }
