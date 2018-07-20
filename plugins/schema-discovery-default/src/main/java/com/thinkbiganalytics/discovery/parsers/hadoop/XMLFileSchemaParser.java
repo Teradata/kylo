@@ -62,8 +62,8 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     @PolicyProperty(name = "Attribute Prefix", required = true, hint = "The prefix for attributes so that we can differentiating attributes and elements. This will be the prefix for field names", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "attributePrefix")})
     private String attributePrefix = "_";
 
-    @PolicyProperty(name = "Value Tag", required = true, hint = "The prefix for attributes so that we can differentiating attributes and elements. This will be the prefix for field names", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "valueTag")})
-    private String valueTag = "_";
+    @PolicyProperty(name = "Value Tag", required = true, hint = "The tag used for the value when there are attributes in the element having no child", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "valueTag")})
+    private String valueTag = "_VALUE";
 
 
     @Override
