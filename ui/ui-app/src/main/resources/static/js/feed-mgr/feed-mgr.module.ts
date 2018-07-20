@@ -1,6 +1,6 @@
 import {CommonModule} from "@angular/common";
 import {Injector, NgModule} from "@angular/core";
-import {moduleName} from "./module-name"
+import {moduleName} from "./module-name";
 
 import {
     categoriesServiceProvider,
@@ -11,6 +11,7 @@ import {
     uiComponentsServiceProvider
 } from "./services/angular2";
 import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
+import {NiFiService} from "./services/NiFiService";
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
         feedPropertyServiceProvider,
         uiComponentsServiceProvider,
         feedInputProcessorPropertiesTemplateServiceProvider,
-        feedDetailsProcessorRenderingHelperProvider
+        feedDetailsProcessorRenderingHelperProvider,
+        NiFiService
     ]
 })
 export class KyloFeedManagerModule {

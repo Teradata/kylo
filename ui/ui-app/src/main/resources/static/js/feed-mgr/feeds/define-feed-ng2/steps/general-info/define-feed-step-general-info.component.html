@@ -1,82 +1,72 @@
-
 <define-feed-step-card [(feed)]="feed" [(step)]="step">
 
   <feed-step-readonly-content>
 
     <div fxLayout="column">
-    <div fxLayout="row" fxLayoutAlign="start" class="read-only-row">
-      <div fxFlex="50">
-        <span fxFlex="25">Name</span>
-        <span>{{feed.feedName}}</span>
+      <div fxLayout="row" fxLayoutAlign="start" class="read-only-row">
+        <div fxFlex="50">
+          <span fxFlex="25">Name</span>
+          <span>{{feed.feedName}}</span>
+        </div>
+        <div fxFlex="50">
+          <span fxFlex="25">System Name</span>
+          <span>{{feed.systemName}}</span>
+        </div>
       </div>
-      <div fxFlex="50">
-        <span fxFlex="25">System Name</span>
-        <span>{{feed.systemName}}</span>
-      </div>
-    </div>
 
-    <div class="read-only-row">
-      <span fxFlex="25">Category</span>
-      <span>{{feed.category.name}}</span>
-    </div>
+      <div class="read-only-row">
+        <span fxFlex="25">Category</span>
+        <span>{{feed.category.name}}</span>
+      </div>
 
       <div class="read-only-row">
         <span fxFlex="25">Description</span>
         <span>{{feed.description}}</span>
       </div>
 
-
-      <!-- start for schedule section -->
-      <!-- TODO: Add feed versioning if else to showing schedulingStrategy-->
-      <div *ngIf="feed.reusableFeed == false">
-
-        <div layout="row" class="feed-property">
-          <span flex="25" class="property-name"> Schedule Strategy </span>
-          <div flex>
-            {{feed.schedule.schedulingStrategy }}
-          </div>
+      <!-- TODO: Add feed versioning for schedulingStrategy -->
+      <div fxLayout="row" class="pad-top-sm">
+        <span fxFlex="25" class="tc-grey-600"> Schedule Strategy </span>
+        <div fxFlex>
+          {{feed.schedule.schedulingStrategy }}
         </div>
+      </div>
 
-        <!-- TODO: Add feed versioning if else to showing schedulingPeriod-->
-        <div layout="row" class="feed-property" ng-if="feed.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
-          <span flex="25" class="property-name"> Schedule Period </span>
-          <div flex>
-            {{feed.schedule.schedulingPeriod}}
-          </div>
+      <!-- TODO: Add feed versioning for schedulingPeriod -->
+      <div fxLayout="row" class="pad-top-sm" *ngIf="feed.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
+        <span fxFlex="25" class="tc-grey-600"> Schedule Period </span>
+        <div fxFlex>
+          {{feed.schedule.schedulingPeriod}}
         </div>
+      </div>
 
-        <!-- TODO: Need to call Kylo services for this, something like $http.get(this.RestUrlService.NIFI_STATUS) -->
-        <!--<div layout="row" class="feed-property" ng-if="vm.isClustered && vm.supportsExecutionNode">-->
-          <!--<span flex="25" class="property-name">Execution Node</span>-->
+      <!-- TODO: Add feed versioning for executionNode -->
+      <div fxLayout="row" class="pad-top-sm" *ngIf="isClustered && supportsExecutionNode">
+        <span fxFlex="25" class="tc-grey-600">Execution Node</span>
+        <div fxFlex>
+          {{feed.schedule.executionNode}}
+        </div>
+      </div>
 
-          <!--<div flex>-->
-            <!--{{vm.model.schedule.executionNode}}-->
-          <!--</div>-->
-        <!--</div>-->
-
-        <div *ngIf="feed.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
-          <div layout="column">
-            <div class="md-subhead">Run Preconditions</div>
-          </div>
-          <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length >0 " layout-fill>
-            <mat-list class="md-2-line">
-              <mat-list-item ng-repeat="rule in feed.schedule.preconditions" layout-fill class="with-padding feed-property">
-              <div layout="row" flex>
-                <div layout="column" flex class="md-list-item-text">
+      <!-- TODO: Add feed versioning for preconditions-->
+      <div *ngIf="feed.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+        <div fxLayout="column">
+          <div class="md-subhead">Run Preconditions</div>
+        </div>
+        <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length > 0 " fxFlexFill>
+          <mat-list>
+            <mat-list-item *ngFor="let rule of feed.schedule.preconditions; let index = index; let first = first; let last = last" fxFlexFill class="pad-top-sm">
+              <div fxLayout="row" fxFlex>
+                <div fxLayout="column" fxFlex class="md-list-item-text">
                   <span>{{rule.propertyValuesDisplayString}}</span>
                   <span class="hint">{{rule.name}}</span>
                 </div>
               </div>
-              <mat-divider *ngIf="!$last"></mat-divider>
-              </mat-list-item>
-            </mat-list>
-          </div>
+              <mat-divider *ngIf="!last"></mat-divider>
+            </mat-list-item>
+          </mat-list>
         </div>
       </div>
-      <div *ngIf="feed.reusableFeed == true">
-        This is an abstract Reusable Feed. No Schedule is applied to this Feed.  Other Templates that reference this feed will supply their schedule
-      </div>
-      <!-- end for schedule section -->
 
     </div>
 
@@ -96,72 +86,114 @@
       </div>
 
 
-        <mat-form-field >
-            <input matInput placeholder="Category" aria-label="Category" matInput [formControl]="categoryCtrl" [matAutocomplete]="auto"  [(ngModel)]="feed.category" >
-            <mat-autocomplete #auto="matAutocomplete" [displayWith]="categoryAutocompleteDisplay">
-                <mat-option *ngFor="let category of filteredCategories | async" [value]="category" >
+      <mat-form-field>
+        <input matInput placeholder="Category" aria-label="Category" matInput [formControl]="categoryCtrl" [matAutocomplete]="auto" [(ngModel)]="feed.category">
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="categoryAutocompleteDisplay">
+          <mat-option *ngFor="let category of filteredCategories | async" [value]="category">
                   <span class="item-title" ng-class="category.createFeed ? '' : 'disabled'">
                        <ng-md-icon icon="{{category.icon}}" style="fill:{{category.iconColor}}" ng-if="category.createFeed"></ng-md-icon>
                     <ng-md-icon icon="block" class="disabled" ng-if="!category.createFeed"></ng-md-icon>
                     <span> {{category.name}} </span>
                     <small>{{category.description}}</small>
                   </span>
-                </mat-option>
-            </mat-autocomplete>
-        </mat-form-field>
-    <mat-form-field>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field>
         <textarea matInput placeholder="Description" [(ngModel)]="feed.description" rows="3"></textarea>
-    </mat-form-field>
+      </mat-form-field>
+
       <!-- Once the feed has been defined show the following components -->
       <div *ngIf="feed.id != null">
 
-        Access Controls form here
-        <br/>
-        ...
-        <br/>
-        <!--<button mat-button (click)="printDebug()">Print Debug Info</button>-->
+        <!-- TODO: Access Controls form here -->
+
         <mat-form-field>
-          <mat-select placeholder="Schedule Strategy" [(ngModel)]="feed.schedule.schedulingStrategy">
+          <mat-select placeholder="Schedule Strategy" [(ngModel)]="feed.schedule.schedulingStrategy" (change)="onScheduleStrategyChange()">
             <mat-option *ngFor="let opt of scheduleStrategies" [value]="opt.value">
               {{ opt.label }}
             </mat-option>
           </mat-select>
         </mat-form-field>
+
         <div *ngIf="feed.schedule.schedulingStrategy == 'CRON_DRIVEN'">
           <mat-form-field>
             <!-- TODO: Add cron-expression-validator logic -->
             <input matInput placeholder="Cron Expression"
-                   [(ngModel)]="feed.schedule.schedulingPeriod"
                    name="cronExpression"
-                   required>
+                   required
+                   [(ngModel)]="feed.schedule.schedulingPeriod">
+            <mat-error>Cron Expression is required</mat-error>
           </mat-form-field>
         </div>
         <!-- TODO: Add cron expression preview logic -->
+
       </div>
 
-      <!-- TODO: This is updating the feed.schedule.schedulingPeriod via timerChanged event. The same is being used for CRON_DRIVEN display. How is this working today? -->
-      <div *ngIf="feed.schedule.schedulingStrategy == 'TIMER_DRIVEN' || feed.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'">
+      <div *ngIf="feed.schedule.schedulingStrategy == 'TIMER_DRIVEN' || feed.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" class="push-bottom-md">
         <mat-form-field>
-          <input matInput placeholder="Schedule"
+          <input matInput placeholder="Run Schedule"
                  type="number"
-                 [(ngModel)]="timerAmount"
-                 (ngModelChange)="timerChanged($event)"
                  name="timer"
-                 required>
+                 required
+                 [(ngModel)]="timerAmount"
+                 (change)="timerChanged()">
+          <mat-error>Run Schedule is required</mat-error>
         </mat-form-field>
 
         <mat-form-field>
           <mat-select placeholder="Units"
                       [(ngModel)]="timerUnits"
-                      (ngModelChange)="timerChanged($event)">
-            <mat-option value="days">Days</mat-option>
-            <mat-option value="hrs">Hours</mat-option>
-            <mat-option value="min">Minutes</mat-option>
-            <mat-option value="sec">Seconds</mat-option>
+                      (change)="timerChanged()"
+                      required>
+            <mat-option *ngFor="let timerUnit of getNiFiTimerUnits()" [value]="timerUnit.value">
+              {{ timerUnit.description }}
+            </mat-option>
           </mat-select>
+          <mat-error>Timer units is required</mat-error>
         </mat-form-field>
-
       </div>
     </div>
+
+    <div *ngIf="isClustered && supportsExecutionNode" class="push-top-md push-bottom-md">
+      <mat-form-field>
+        <mat-select placeholder="Execution Node"
+                    [(ngModel)]="feed.schedule.executionNode"
+                    required>
+          <mat-option *ngFor="let executionNode of getNiFiExecutionNodeConfigurations()" [value]="executionNode.value">
+            {{ executionNode.description }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div *ngIf="feed.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+      <div layout="column">
+        <div class="md-subhead">Run Preconditions</div>
+        <div class="hint">Specify execution dependencies</div>
+      </div>
+      <div layout="column" layout-align="start start" class="pad-top-sm pad-bottom-sm">
+        <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length > 0" fxFlexFill>
+          <mat-list>
+            <mat-list-item *ngFor="let rule of feed.schedule.preconditions; let index = index; let first = first; let last = last" fxFlexFill class="pad-top-sm pad-bottom-sm">
+              <div layout="column" fxFlex="75" class="md-list-item-text">
+                <span>{{rule.propertyValuesDisplayString}}</span>
+                <span class="hint">{{rule.name}}</span>
+              </div>
+            </mat-list-item>
+            <span class="md-secondary">
+              <button mat-button (click)="showPreconditionDialog(index)">
+                <ng-md-icon icon="edit"></ng-md-icon>
+              </button>
+            </span>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </mat-list>
+        </div>
+        <button mat-button (click)="showPreconditionDialog()">
+          Add Precondition
+        </button>
+      </div>
+    </div>
+
   </feed-step-edit-content>
 </define-feed-step-card>
