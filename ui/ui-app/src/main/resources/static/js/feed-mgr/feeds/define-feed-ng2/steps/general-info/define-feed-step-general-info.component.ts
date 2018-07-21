@@ -1,5 +1,7 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
-import {Category, DefaultFeedModel, FeedModel, Step} from "../../model/feed.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
+import {Category} from "../../../../model/category/category.model";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FormsModule} from '@angular/forms'
@@ -7,13 +9,13 @@ import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import CategoriesService from "../../../../services/CategoriesService";
 import {Observable} from "rxjs/Observable";
-import {FeedStepValidator} from "../../model/feed-step-validator";
+import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
 import {map, startWith, flatMap} from 'rxjs/operators';
 import 'rxjs/add/observable/fromPromise';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/map';
 import {FeedService} from "../../../../services/FeedService";
-import {SaveFeedResponse} from "../../model/SaveFeedResponse";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {MatButtonModule, MatFormFieldModule, MatInputModule} from '@angular/material';
 import {MatListModule} from '@angular/material/list';
 import * as _ from 'underscore';
@@ -196,7 +198,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         });
     }
 
-    getversionFeedModel() {
+    getversionFeed() {
         return this.feedService.versionFeedModel;
     }
 

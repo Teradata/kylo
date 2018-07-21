@@ -11,7 +11,8 @@ import SideNavService from  "../services/SideNavService";
 import StateService from "../services/StateService";
 import AngularModuleExtensionService from "../services/AngularModuleExtensionService";
 import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuService";
-import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/feeds/define-feed-ng2/define-feed-states";
+import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
+
 
 export default class SideNav implements ng.IComponentController {
 

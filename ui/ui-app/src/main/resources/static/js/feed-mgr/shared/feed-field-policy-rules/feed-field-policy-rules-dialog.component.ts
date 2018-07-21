@@ -8,6 +8,7 @@ import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatSelectChange} from "@angular/material/select";
+import {CloneUtil} from "../../../common/utils/clone-util";
 
 
 interface ViewText {
@@ -43,7 +44,6 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     optionTypes = [{ type: FieldPolicyOptionsService.STANDARDIZATION, name: 'Standardization' }, { type: FieldPolicyOptionsService.VALIDATION, name: 'Validation' }]
 
 
-
     /**
      * The list of available validators
      * @type {Array}
@@ -71,10 +71,16 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
     public policyForm:FormGroup;
 
-
+    /**
+     * Any pending changes
+     * @type {boolean}
+     */
     pendingEdits :boolean = false;
 
-
+    /**
+     * The rule currently editing
+     * @type {any}
+     */
     editRule:any = this.emptyRule();
     /**
      * is this needed?  dup of selectedOptionType?
@@ -128,88 +134,46 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
     }
 
-    emptyRule():any {
-        return {name:"",groups:[],editable:false};
+    /**
+     * When the rule select drop down changes
+     * Clone the rule and show the dynamic form
+     * @param {MatSelectChange} change
+     */
+    onRuleTypeChange(change:MatSelectChange) {
+        if(this.selectedRuleTypeName && this.selectedOptionType) {
+            let ruleType :any = this.findRuleType(this.selectedRuleTypeName, this.selectedOptionType);
+
+            if(ruleType) {
+                var rule :any = CloneUtil.deepCopy(ruleType);
+                rule.groups = this.policyInputFormService.groupProperties(rule);
+                this.policyInputFormService.updatePropertyIndex(rule);
+                //make all rules editable
+                rule.editable = true;
+
+                this.editRule = rule;
+                this.editRuleSelected = true;
+
+            }
+            else {
+                this.editRule = this.emptyRule();
+                this.editRuleSelected = false;
+
+            }
+        }
     }
 
+    /**
+     * When the std/validator changes
+     * @param {MatRadioChange} event
+     */
     onChangedOptionType(event:MatRadioChange){
         let type:string = event.value;
         this._changedOptionType(type);
     }
 
 
-    private _changedOptionType(type: string) {
-        this.options = type == FieldPolicyOptionsService.STANDARDIZATION ? this.standardizers : this.validators;
-        this.selectedOptionType = type;
-    }
 
-    compareRuleTypes(o1: any, o2: any): boolean {
-        if (o1 != null && o2 != null) {
-            return o1.name === o2.name;
-        }
-        else if(o1 == null && o2 == null){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
 
-      onRuleTypeChange(change:MatSelectChange) {
-        if(this.selectedRuleTypeName && this.selectedOptionType) {
-            let ruleType :any = this.findRuleType(this.selectedRuleTypeName, this.selectedOptionType);
-
-            if(ruleType) {
-                var rule :any = Object.assign({},ruleType);
-                rule.groups = this.policyInputFormService.groupProperties(rule);
-                this.policyInputFormService.updatePropertyIndex(rule);
-                //make all rules editable
-                rule.editable = true;
-
-                this.editRule = rule;
-                this.editRuleSelected = true;
-
-            }
-            else {
-                this.editRule = this.emptyRule();
-                this.editRuleSelected = false;
-
-            }
-        }
-    }
-
-    onRuleTypeChange2(change:MatSelectChange) {
-        this.ruleType = change.value;
-            if (this.ruleType != null) {
-                var rule :any = Object.assign({},this.ruleType);
-                rule.groups = this.policyInputFormService.groupProperties(rule);
-                this.policyInputFormService.updatePropertyIndex(rule);
-                //make all rules editable
-                rule.editable = true;
-
-                this.editRule = rule;
-                this.editRuleSelected = true;
-
-            }
-            else {
-                this.editRule = this.emptyRule();
-                this.editRuleSelected = false;
-            }
-    }
-
-    /**
-     * when canceling a pending edit
-     */
-     cancelEdit() {
-        this.editMode = 'NEW';
-        this.viewText.addText = 'ADD RULE';
-        this.viewText.cancelText = 'CANCEL ADD';
-        this.viewText.titleText = 'Add a new policy';
-
-        this.ruleType = null;
-        this.editRule = this.emptyRule();
-        this.editRuleSelected = false;
-    }
 
 
     /**
@@ -220,12 +184,17 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         this.policyRules.splice($index, 1);
         this.moved = true;
         this.pendingEdits = true;
-     //resequence
+        //resequence
         this.policyRules.forEach((rule:any,index:number) =>rule.sequence = index);
 
     }
 
 
+
+    /**
+     * When a user deletes a given policy
+     * @param {number} $index
+     */
     deletePolicy($index?: number) {
         if($index == undefined){
             $index = this.editIndex;
@@ -238,7 +207,37 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         this.cancelEdit();
     }
 
+    /**
+     * When a user adds a new policy
+     */
+    addPolicy(){
 
+        var validForm = this.validateForm();
+        if (validForm == true) {
+            if (this.policyRules == null) {
+                this.policyRules = [];
+            }
+            // buildDisplayString();
+
+            this.editRule.ruleType = this.ruleType;
+            if (this.editMode == 'NEW') {
+                this.policyRules.push(this.editRule);
+            }
+            else if (this.editMode == 'EDIT') {
+                this.policyRules[this.editIndex] = this.editRule;
+            }
+
+            this.pendingEdits = true;
+            this.cancelEdit();
+        }
+    }
+
+
+    /**
+     * When a user edits a policy
+     * @param {number} index
+     * @param rule
+     */
     editPolicy(index: number, rule: any) {
         if (this.editMode == 'EDIT') {
             this.cancelEdit();
@@ -280,6 +279,9 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
     }
 
+    /**
+     * When the user is done adding/editing save the changes back to the model
+     */
     done(){
         var validators: any = [];
         var standardizers: any = [];
@@ -297,31 +299,51 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         this.dialogRef.close('done');
     }
 
+    /**
+     * when a user cancels the entire edit of the form
+     */
+    onCancelClick(): void {
+        this.cancelEdit();
+        this.dialogRef.close();
+    }
+
+
+
+    private emptyRule():any {
+        return {name:"",groups:[],editable:false};
+    }
+
+    private _changedOptionType(type: string) {
+        this.options = type == FieldPolicyOptionsService.STANDARDIZATION ? this.standardizers : this.validators;
+        this.selectedOptionType = type;
+    }
+
+
+
+
+    /**
+     * when canceling a pending edit
+     */
+    private cancelEdit() {
+        this.editMode = 'NEW';
+        this.viewText.addText = 'ADD RULE';
+        this.viewText.cancelText = 'CANCEL ADD';
+        this.viewText.titleText = 'Add a new policy';
+
+        this.ruleType = null;
+        this.editRule = this.emptyRule();
+        this.editRuleSelected = false;
+        this.selectedRuleTypeName  = null;
+    }
+
+
+
+
     private validateForm(){
         return true;
     }
 
-    addPolicy(){
 
-        var validForm = this.validateForm();
-        if (validForm == true) {
-            if (this.policyRules == null) {
-                this.policyRules = [];
-            }
-            // buildDisplayString();
-
-            this.editRule.ruleType = this.ruleType;
-            if (this.editMode == 'NEW') {
-                this.policyRules.push(this.editRule);
-            }
-            else if (this.editMode == 'EDIT') {
-                this.policyRules[this.editIndex] = this.editRule;
-            }
-
-            this.pendingEdits = true;
-            this.cancelEdit();
-        }
-    }
 
 
     private buildStandardizersAndValidators(){
@@ -370,16 +392,9 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     private setupPoliciesForFeed() {
         var arr = this.getAllPolicyRules(this.data.field);
         if (arr != null && arr != undefined) {
-            this.policyRules = this.deepCopy(arr);
+            this.policyRules = CloneUtil.deepCopy(arr);
         }
     }
-
-    private deepCopy(obj:any):any {
-        return JSON.parse(JSON.stringify( obj ));
-    }
-
-
-
 
     private findRuleType(ruleName: any, type: any) {
         return _.find(this.validatorsAndStandardizers, (opt: any) => {
@@ -398,13 +413,9 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         }
     }
 
-    onCancelClick(): void {
-        this.cancelEdit();
-        this.dialogRef.close();
-    }
 
 
-    private    getAllPolicyRules(field: TableFieldPolicy) {
+    private  getAllPolicyRules(field: TableFieldPolicy) {
         if (field === undefined) {
             return [];
         }
@@ -415,15 +426,11 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
         //add in the type so we know what we are dealing with
         if (standardizers) {
-            _.each(standardizers, (item: any) => {
-                item.type = 'standardization';
-            });
+            standardizers.forEach(item => item.type = 'standardization')
         }
 
         if (validators) {
-            _.each(validators, (item: any) => {
-                item.type = 'validation';
-            });
+            validators.forEach(item => item.type = 'validation')
         }
 
         var tmpArr = _.union(standardizers, validators);

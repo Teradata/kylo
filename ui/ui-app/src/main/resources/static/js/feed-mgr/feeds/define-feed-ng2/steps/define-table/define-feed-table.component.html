@@ -20,7 +20,7 @@
                    let-odd="odd"
                    let-even="even"
                    tdVirtualScrollRow>
-        <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)">
+        <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
           <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
 
           <div fxLayout="row" fxFlex="30" [class.strike]="row.deleted">
@@ -70,7 +70,7 @@
                      let-odd="odd"
                      let-even="even"
                      tdVirtualScrollRow>
-          <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)">
+          <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
 
             <mat-form-field fxFlex="30" >
               <input  matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id" placeholder="Field name" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
@@ -139,62 +139,63 @@
   <mat-card-header>
     <mat-card-title>
       <span *ngIf="selectedColumn == undefined">Column Details</span>
-      <span *ngIf="selectedColumn != undefined">{{selectedColumn.name}}</span>
+      <span *ngIf="selectedColumn != undefined">{{selectedColumn.field.name}}</span>
     </mat-card-title>
   </mat-card-header>
   <mat-card-content>
     <span *ngIf="selectedColumn == undefined">Select a column for additional details</span>
     <div *ngIf="selectedColumn != undefined" fxLayout="column">
      <ng-container *ngIf="feed.readonly">
-      <div fxLayout="column">
-        <span>{{selectedColumn.description || "Not set"}}</span>
+      <div fxLayout="column" class="pad-sm">
+        <span>{{selectedColumn.field.description || "Not set"}}</span>
         <mat-hint>Description</mat-hint>
       </div>
 
-      <div fxLayout="column">
-        <span>{{selectedColumn.tags || "Not set"}}</span>
+      <div fxLayout="column" class="pad-sm">
+        <span>{{selectedColumn.field.tags || "Not set"}}</span>
         <mat-hint>Tags</mat-hint>
       </div>
 
-      <div fxLayout="column">
-        <span> List of std and validators</span>
-        <mat-hint>Standardizers & Validators</mat-hint>
+      <div fxLayout="column" class="pad-sm">
+        <span>{{selectedColumn.standardizerCount}} Standardizers</span>
+        <span>{{selectedColumn.validatorCount}} Validators</span>
       </div>
 
-      <div fxLayout="column">
+      <div fxLayout="column" class="pad-sm">
         <span>Domain Types</span>
         <mat-hint>Domain Types</mat-hint>
       </div>
      </ng-container>
 
-      <ng-container *ngIf="!feed.readonly">
+      <ng-container *ngIf="!feed.readonly" >
           <mat-form-field>
-            <textarea placeholder="Description" matInput [(ngModel)]="selectedColumn.description" rows="2"></textarea>
+            <textarea placeholder="Description" matInput [(ngModel)]="selectedColumn.field.description" rows="2"></textarea>
           </mat-form-field>
 
 
         <td-chips [chipAddition]="true"
                   [chipRemoval]="true"
-                  [items]="selectedColumn.tags"
-                  [(value)]="selectedColumn.tags"
+                  [items]="selectedColumn.field.tags"
+                  [(value)]="selectedColumn.field.tags"
                   placeholder="Tags"
-                  [inputPosition]="'after'">
+                  [inputPosition]="'after'" class="pad-sm">
           <ng-template td-chip let-chip="chip">
             {{chip}}
           </ng-template>
         </td-chips>
 
-        <div fxLayout="column">
-          <span>{{selectedColumn.tags || "Not set"}}</span>
+        <div fxLayout="column" class="pad-sm">
+          <span>{{selectedColumn.field.tags || "Not set"}}</span>
           <mat-hint>Tags</mat-hint>
         </div>
 
-        <div fxLayout="column">
+        <div fxLayout="column" class="pad-sm">
          <button mat-button (click)="onFieldPoliciesClicked(selectedColumn)">Standardizers & Validators</button>
-          <mat-hint>Standardizers & Validators</mat-hint>
+          <mat-hint>{{selectedColumn.standardizerCount}} Standardizers</mat-hint>
+          <mat-hint>{{selectedColumn.validatorCount}} Validators</mat-hint>
         </div>
 
-        <div fxLayout="column">
+        <div fxLayout="column" class="pad-sm">
           <span>Domain Types</span>
           <mat-hint>Domain Types</mat-hint>
         </div>

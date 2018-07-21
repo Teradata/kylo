@@ -5,52 +5,9 @@ import {SchemaParser} from "../../../../model/field-policy";
 import {PreviewDataSetRequest} from "./preview-data-set-request"
 import {TableViewModel, TableColumn} from "./table-view-model";
 import {Common} from "../../../../../common/CommonTypes";
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
-/**
- * DataSet used by the Data Wrangler
- */
-export class SparkDataSet {
-    public dataSource: DataSource;
-    public id: string
-    public format: string;
-    public options: Common.Map<string>;
-    public paths: string[];
-    public schema:TableColumn[];
 
-    public constructor(init?:Partial<SparkDataSet>) {
-        this.initialize();
-        Object.assign(this, init);
-    }
-    initialize(){
-
-    }
-
-    /**
-     * resolve the path for the dataset
-     * Optionally remove the last entry
-     * @param {boolean} removeLast
-     * @return {string}
-     */
-    resolvePath(removeLast ?:boolean){
-        let path = '';
-        if(this.paths){
-            path = this.paths.join(",");
-        }
-        else if(this.options && this.options["path"]){
-            path = this.options["path"];
-        }
-        else {
-            return this.id;
-        }
-        if(removeLast){
-            return path.substring(0,path.lastIndexOf("/"));
-        }
-        else {
-            return path;
-        }
-    }
-
-}
 /**
  * Core Dataset used for previewing
  * There are other concrete types of data sets used for specialize options

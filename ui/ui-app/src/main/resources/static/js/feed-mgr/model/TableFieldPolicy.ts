@@ -1,9 +1,10 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
-import {FeedModel} from "../feeds/define-feed-ng2/model/feed.model";
+import {KyloObject} from "../../common/common.model";
+import {TableColumnDefinition} from "./TableColumnDefinition";
 
-export class TableFieldPolicy {
+export class TableFieldPolicy implements KyloObject{
 
     public static OBJECT_TYPE:string = 'TableFieldPolicy'
 
@@ -42,6 +43,8 @@ export class TableFieldPolicy {
 
 
     $currentDomainType: DomainType;
+
+    field?:TableColumnDefinition;
 
     static forName(name:string) :TableFieldPolicy {
         return new this({name:name});

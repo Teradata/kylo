@@ -18,8 +18,9 @@ import {DefineFeedStepFeedTargetComponent} from "./steps/feed-target/define-feed
 import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
 import {Observable} from "rxjs/Observable";
+import {FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
 
-export const FEED_DEFINITION_STATE_NAME :string = "feed-definition";
+
 
 const resolveFeed :any =
     {

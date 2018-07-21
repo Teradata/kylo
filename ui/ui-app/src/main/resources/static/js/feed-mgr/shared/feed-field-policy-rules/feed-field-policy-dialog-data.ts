@@ -1,9 +1,9 @@
-import {FeedModel} from "../../feeds/define-feed-ng2/model/feed.model";
+import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 
 export interface FeedFieldPolicyDialogData {
 
-    feed:FeedModel;
+    feed:Feed;
     field:TableFieldPolicy;
 }

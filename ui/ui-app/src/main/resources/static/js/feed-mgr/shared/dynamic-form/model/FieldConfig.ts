@@ -1,3 +1,6 @@
+import {AbstractControlOptions} from "@angular/forms/src/model";
+import {AsyncValidatorFn, ValidatorFn} from "@angular/forms/src/directives/validators";
+
 export class FieldConfig<T> {
     value: T;
     key: string;
@@ -11,6 +14,9 @@ export class FieldConfig<T> {
     readonlyValue:string;
     modelValueProperty:string;
     pattern?:string;
+    onModelChange?:Function;
+    validators?: ValidatorFn[] | null;
+    disabled?:boolean;
 
     constructor(options: {
         value?: T,
@@ -24,7 +30,8 @@ export class FieldConfig<T> {
         hint?:string,
         readonlyValue?:string,
         modelValueProperty?:string,
-        pattern?:string
+        pattern?:string,
+        disabled?:boolean
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -38,6 +45,7 @@ export class FieldConfig<T> {
         this.hint = options.hint || '';
         this.readonlyValue = options.readonlyValue || this.model.value;
         this.pattern = options.pattern;
+        this.disabled = options.disabled || false;
 
     }
 
@@ -48,4 +56,6 @@ export class FieldConfig<T> {
     getModelValue():any {
         return this.model[this.modelValueProperty];
     }
+
+
 }

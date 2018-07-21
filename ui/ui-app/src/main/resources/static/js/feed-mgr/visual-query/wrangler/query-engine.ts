@@ -12,7 +12,8 @@ import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaFie
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
-import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+import {SparkDataSet} from "../../model/spark-data-set.model";
 
 export class PageSpec {
     firstRow : number;

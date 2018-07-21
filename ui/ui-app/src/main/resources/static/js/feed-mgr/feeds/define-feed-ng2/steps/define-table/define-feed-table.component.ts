@@ -9,8 +9,8 @@ import {TableFieldPolicy} from "../../../../model/TableFieldPolicy";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {TableCreateMethod} from "../../../../model/feed-table";
-import {FeedTableColumnDefinitionValidation} from "../../../../model/feed-table-column-definition-validation";
+import {TableCreateMethod} from "../../../../model/feed/feed-table";
+import {FeedTableColumnDefinitionValidation} from "../../../../model/feed/feed-table-column-definition-validation";
 import {FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {AbstractControl} from "@angular/forms/src/model";
 import { interval } from 'rxjs/observable/interval';
@@ -21,9 +21,10 @@ import {FeedService} from "../../../../services/FeedService";
 import {TableSchema} from "../../../../model/table-schema";
 import {SchemaField} from "../../../../model/schema-field";
 import {ValidationErrors} from "@angular/forms/src/directives/validators";
-import {SaveFeedResponse} from "../../model/SaveFeedResponse";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {TdVirtualScrollContainerComponent} from "@covalent/core/virtual-scroll";
 import {FeedFieldPolicyRulesDialogService} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.service";
+import {SelectedColumn} from "./feed-table-selected-column.model";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -200,7 +201,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     /**
      * the selected field
      */
-    selectedColumn: TableColumnDefinition = null;
+    selectedColumn: SelectedColumn = null;
 
     fieldNamesUniqueRetryAmount: number = 0;
 
@@ -250,6 +251,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     private domainTypesService: DomainTypesService;
 
     private tableFormControls:TableFormControls;
+
 
    @ViewChild('virtualScroll')
    virtualScroll: TdVirtualScrollContainerComponent
@@ -313,6 +315,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             });
 
         this.subscribeToFormChanges(this.defineTableForm);
+
+
 
 
 
@@ -448,7 +452,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     addPartitionField() {
         var partitionLength = this.feed.table.partitions.length;
-        var partition = new TableFieldPartition(partitionLength);
+        var partition = TableFieldPartition.atPosition(partitionLength);
         this.tableFormControls.addPartitionFieldFormControl(partition)
         this.feed.table.partitions.push(partition);
     };
@@ -465,28 +469,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
 
     /**
-     * Not Used now
+     *
      * @deprecated
      * @param {TableColumnDefinition} selectedColumn
      */
     onSelectedColumn(selectedColumn: TableColumnDefinition) {
-        var firstSelection = this.selectedColumn == null;
-        this.selectedColumn = selectedColumn;
-        // Show an item in dropdown
-        if (this.selectedColumn.selectedSampleValue == null && this.selectedColumn.sampleValues.length > 0) {
-            this.selectedColumn.selectedSampleValue = this.selectedColumn.sampleValues[0];
-        }
-        if (firstSelection) {
-            //trigger scroll to stick the selection to the screen
-          //  this.utils.waitForDomElementReady('#selectedColumnPanel', () => {
-           //     angular.element('#selectedColumnPanel').triggerHandler('stickIt');
-           // })
-        }
-
-        // Ensure tags is an array
-        if (angular.isUndefined(selectedColumn.tags) ) {
-            selectedColumn.tags = [];
-        }
+       this._selectColumn(selectedColumn);
     };
 
     onPrecisionChange(columnDef: TableColumnDefinition) {
@@ -564,11 +552,13 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         }
     }
 
-    onFieldPoliciesClicked(field:TableColumnDefinition){
+    onFieldPoliciesClicked(selectedColumn:SelectedColumn){
 
-        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == field.name );
+        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == selectedColumn.field.name );
         if(fieldPolicy) {
-            this.feedFieldPolicyRulesDialogService.openDialog(this.feed, fieldPolicy);
+            this.feedFieldPolicyRulesDialogService.openDialog(this.feed, fieldPolicy).subscribe((result:any) => {
+                this.selectedColumn.update()
+            });
         }
     }
 
@@ -620,11 +610,16 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
 
     private onFieldChange(columnDef: TableColumnDefinition) {
-        this.selectedColumn = columnDef;
+       this._selectColumn(columnDef);
         columnDef.changeColumn();
         this.feedTableColumnDefinitionValidation.validateColumn(columnDef);
     }
 
+
+    private _selectColumn(columnDef:TableColumnDefinition){
+        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == columnDef.name );
+        this.selectedColumn = new SelectedColumn(columnDef, fieldPolicy);
+    }
 
     /**
      * Ensure that for the partitions the sourceField and sourceDataTypes match the respective schema field data

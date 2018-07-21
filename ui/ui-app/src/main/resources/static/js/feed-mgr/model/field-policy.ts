@@ -26,6 +26,8 @@ export interface FieldPolicyProperty{
     pattern:string;
     patternInvalidMessage:string;
     additionalProperties?:Common.LabelValue[]
+    formKey?:string;
+    patternRegExp?:string;
 
 }
 

@@ -3,8 +3,8 @@ import * as _ from "underscore";
 import {DomainType, DomainTypesService} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
-import {FeedModel} from "../feeds/define-feed-ng2/model/feed.model";
-import {CloneUtil} from "../../common/utils/CloneUtil";
+import {CloneUtil} from "../../common/utils/clone-util";
+import {KyloObject} from "../../common/common.model";
 
 
 export class ColumnDefinitionHistoryRecord {
@@ -55,13 +55,13 @@ export interface ValidationMessages {
 }
 
 
-export class TableColumnDefinition extends SchemaField {
+export class TableColumnDefinition extends SchemaField implements KyloObject{
 
     private static NAME_PATTERN: RegExp = /^[a-zA-Z0-9_\s\)\(-]*$/;
     private static PRECISION_SCALE_PATTERN: RegExp = /^\d+,\d+$/;
     private static MAX_COLUMN_LENGTH: number = 767;
 
-   public static OBJECT_TYPE:string = 'TableColumnDefinition'
+    public static OBJECT_TYPE:string = 'TableColumnDefinition'
 
     public objectType:string = TableColumnDefinition.OBJECT_TYPE;
 
@@ -130,6 +130,9 @@ export class TableColumnDefinition extends SchemaField {
         super();
         this.initialize();
         Object.assign(this, init);
+        if(this.tags == null || this.tags == undefined){
+            this.tags = []
+        }
 
     }
     initialize() {
@@ -138,6 +141,11 @@ export class TableColumnDefinition extends SchemaField {
         this.validationErrors = new ColumnDefinitionValidationError();
     }
 
+    initSampleValue(){
+        if (this.selectedSampleValue == null && this.sampleValues.length > 0) {
+            this.selectedSampleValue = this.sampleValues[0];
+        }
+    }
 
     replaceNameSpaces(){
         this.name = StringUtils.replaceSpaces(this.name, '_');

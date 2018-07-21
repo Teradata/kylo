@@ -27,7 +27,7 @@
     <mat-form-field *ngSwitchCase="'textbox'"  class="pad-top-sm">
       <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" >
       <mat-error *ngIf="!isValid">
-        {{field.label}} error
+        {{getErrorMessage()}}
       </mat-error>
       <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
@@ -39,6 +39,9 @@
           {{opt.label}}
         </mat-option>
       </mat-select>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
       <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
 
@@ -46,6 +49,9 @@
     <mat-checkbox
         [id]="field.key" [formControlName]="field.key"    labelPosition="before"  (change)="field.onChange($event)">{{field.label}}
     </mat-checkbox>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
       <mat-hint>{{field.hint}}</mat-hint>
     </div>
 
@@ -56,6 +62,9 @@
         <mat-radio-button [value]="opt.value">{{opt.label}}</mat-radio-button>
       </ng-template>
     </mat-radio-group>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
       <mat-hint>{{field.hint}}</mat-hint>
     </div>
 
@@ -64,8 +73,12 @@
     <textarea matInput [id]="field.key" [formControlName]="field.key" >
         {{field.model[field['modelValueProperty']]}}
     </textarea>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
-    <mat-hint>{{field.hint}}</mat-hint>
+
   </div>
 
 </div>

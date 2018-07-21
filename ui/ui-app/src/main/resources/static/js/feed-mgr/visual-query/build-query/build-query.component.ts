@@ -7,7 +7,8 @@ import {TableSchema} from "../wrangler";
 import {UserDatasource} from "../../model/user-datasource";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SchemaField} from "../wrangler";
-import {PreviewDataSet, SparkDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+import {SparkDataSet} from "../../model/spark-data-set.model";
 
 declare const flowchart: any;
 

@@ -1,13 +1,14 @@
 import {Component, Input, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
 import {DataSource} from "../../../../catalog/api/models/datasource";
-import {FeedModel, Step} from "../../model/feed.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {FormBuilder,FormGroup} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {SparkDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {SelectionService} from "../../../../catalog/api/services/selection.service";
 import * as angular from 'angular';
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -23,6 +24,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
     sourceSample: FormGroup;
 
+    @Input()
     public stateParams : any;
 
 
@@ -37,8 +39,16 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     }
 
     init(){
-        this.stateParams = {feedId:this.feed.id}
-        console.log("LOAD DATASET for ",this.feed.sourceDataSets)
+        if(this.stateParams == undefined){
+            this.stateParams = {};
+        }
+
+        if(this.stateParams.feedId == undefined) {
+            this.stateParams.feedId = this.feed.id;
+        }
+        if(this.stateParams.jumpToSource && this.feed.sourceDataSets && this.feed.sourceDataSets.length>0){
+            this.goToDataSet(this.feed.sourceDataSets[0]);
+        }
     }
 
     goToDataSet(dataSet:SparkDataSet){

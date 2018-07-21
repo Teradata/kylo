@@ -1,11 +1,12 @@
 import "feed-mgr/module";
 import {UnderscoreStatic} from "underscore";
-import {PreviewDataSet, SparkDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
 
 import {moduleName} from "../module-name";
+import {SparkDataSet} from "../model/spark-data-set.model";
 //const moduleName: string = require("feed-mgr/module-name");
 
 /**

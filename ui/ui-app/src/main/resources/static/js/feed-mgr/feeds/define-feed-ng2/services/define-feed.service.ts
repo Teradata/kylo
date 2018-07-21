@@ -1,14 +1,15 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
-import {DefaultFeedModel, FeedModel, Step, StepBuilder} from "../model/feed.model";
+import {Feed} from "../../../model/feed/feed.model";
+import {Step, StepBuilder} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {HttpClient} from "@angular/common/http";
-import {SaveFeedResponse} from "../model/SaveFeedResponse";
+import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
 import "rxjs/add/observable/empty";
@@ -27,12 +28,13 @@ import {FeedService} from "../../../services/FeedService";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 
 
+
 @Injectable()
 export class DefineFeedService {
 
-    feed:FeedModel;
+    feed:Feed;
 
-    lastSavedFeed:FeedModel;
+    lastSavedFeed:Feed;
 
     stepSrefMap:Common.Map<Step> = {}
 
@@ -67,24 +69,24 @@ export class DefineFeedService {
      * Allow other components to listen for changes to the currentStep
      *
      */
-    public beforeSave$: Observable<FeedModel>;
+    public beforeSave$: Observable<Feed>;
 
     /**
      * The datasets subject for listening
      */
-    private beforeSaveSubject: Subject<FeedModel>;
+    private beforeSaveSubject: Subject<Feed>;
 
 
     /**
      * Allow other components to listen for changes to the currentStep
      *
      */
-    public feedStateChange$: Observable<FeedModel>;
+    public feedStateChange$: Observable<Feed>;
 
     /**
      * The datasets subject for listening
      */
-    private feedStateChangeSubject: Subject<FeedModel>;
+    private feedStateChangeSubject: Subject<Feed>;
 
     private uiComponentsService :UiComponentsService;
 
@@ -104,11 +106,11 @@ export class DefineFeedService {
         this.savedFeedSubject = new Subject<SaveFeedResponse>();
         this.savedFeed$ = this.savedFeedSubject.asObservable();
 
-        this.beforeSaveSubject = new Subject<FeedModel>();
+        this.beforeSaveSubject = new Subject<Feed>();
         this.beforeSave$ = this.beforeSaveSubject.asObservable();
 
 
-        this.feedStateChangeSubject = new Subject<FeedModel>();
+        this.feedStateChangeSubject = new Subject<Feed>();
         this.feedStateChange$ = this.feedStateChangeSubject.asObservable();
 
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
@@ -125,18 +127,18 @@ export class DefineFeedService {
      * Load a feed based upon its UUID
      *
      * @param {string} id
-     * @return {Observable<FeedModel>}
+     * @return {Observable<Feed>}
      */
-    loadFeed(id:string, force?:boolean) :Observable<FeedModel> {
+    loadFeed(id:string, force?:boolean) :Observable<Feed> {
 
         let feed = this.getFeed();
         if((feed && feed.id != id) || (feed == undefined && id != undefined)) {
 
-            let observable = <Observable<FeedModel>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
+            let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
             observable.subscribe((feed) => {
                 console.log("LOADED ", feed)
                 //convert it to our needed class
-                let feedModel = new DefaultFeedModel(feed)
+                let feedModel = new Feed(feed)
                 //reset the propertiesInitalized flag
                 feedModel.propertiesInitialized = false;
 
@@ -158,7 +160,7 @@ export class DefineFeedService {
     /**
      * Restore the last saved feed effectively removing all edits done on the current feed
      */
-    restoreLastSavedFeed() : FeedModel{
+    restoreLastSavedFeed() : Feed{
         if(this.lastSavedFeed) {
             this.feed.update(this.lastSavedFeed.copy());
             return this.getFeed();
@@ -167,7 +169,7 @@ export class DefineFeedService {
 
 
 
-    sortAndSetupFeedProperties(feed:FeedModel){
+    sortAndSetupFeedProperties(feed:Feed){
         if((feed.inputProcessors == undefined || feed.inputProcessors.length == 0) && feed.registeredTemplate){
             feed.inputProcessors = feed.registeredTemplate.inputProcessors;
         }
@@ -196,7 +198,7 @@ export class DefineFeedService {
         }
     }
 
-    setupFeedProperties(feed:FeedModel,template:any, mode:string) {
+    setupFeedProperties(feed:Feed,template:any, mode:string) {
         if(feed.isNew()){
             this.registerTemplatePropertyService.initializeProperties(template, 'create', feed.properties);
         }
@@ -217,9 +219,9 @@ export class DefineFeedService {
 
     /**
      * Sets the feed
-     * @param {FeedModel} feed
+     * @param {Feed} feed
      */
-    setFeed(feed:FeedModel) : void{
+    setFeed(feed:Feed) : void{
         this.feed = feed;
         this.feed.steps.forEach(step => {
             this.stepSrefMap[step.sref] = step;
@@ -233,9 +235,9 @@ export class DefineFeedService {
     /**
      * Save the Feed
      * Users can subscribe to this event via the savedFeedSubject
-     * @return {Observable<FeedModel>}
+     * @return {Observable<Feed>}
      */
-    saveFeed() : Observable<FeedModel>{
+    saveFeed() : Observable<Feed>{
 
         let valid = this.feed.validate(false);
         if(valid) {
@@ -272,11 +274,11 @@ export class DefineFeedService {
 
     /**
      * Make a copy of this feed
-     * @return {FeedModel}
+     * @return {Feed}
      */
-    copyFeed() :FeedModel{
+    copyFeed() :Feed{
         let feed =this.getFeed();
-        let feedCopy :FeedModel = undefined;
+        let feedCopy :Feed = undefined;
         if(feed != undefined) {
             //copy the feed data for this step
             feedCopy = angular.copy(feed);
@@ -293,9 +295,9 @@ export class DefineFeedService {
 
     /**
      * Gets the current feed
-     * @return {FeedModel}
+     * @return {Feed}
      */
-    getFeed(): FeedModel{
+    getFeed(): Feed{
         return this.feed;
     }
 
@@ -314,9 +316,9 @@ export class DefineFeedService {
 
     /**
      * Initialize the Feed Steps based upon the feed template type
-     * @param {FeedModel} feed
+     * @param {Feed} feed
      */
-    initializeFeedSteps(feed:FeedModel){
+    initializeFeedSteps(feed:Feed){
         let templateTableOption = feed.templateTableOption ? feed.templateTableOption : (feed.registeredTemplate? feed.registeredTemplate.templateTableOption : '')
         if(templateTableOption == "DEFINE_TABLE"){
             feed.steps = this.newDefineTableFeedSteps();
@@ -367,10 +369,10 @@ export class DefineFeedService {
 
     /**
      * Call kylo-services and save the feed
-     * @return {Observable<FeedModel>}
+     * @return {Observable<Feed>}
      * @private
      */
-    private _saveFeed() : Observable<FeedModel>{
+    private _saveFeed() : Observable<Feed>{
         this.feed.systemFeedName = this.feed.systemName;
         let body = this.feed.copyModelForSave();
 
@@ -378,14 +380,14 @@ export class DefineFeedService {
         let newFeed = body.id == undefined;
         //remove circular steps
         delete body.steps;
-        let observable : Observable<FeedModel> = <Observable<FeedModel>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
+        let observable : Observable<Feed> = <Observable<Feed>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
         observable.subscribe((response: any)=> {
             let steps = this.feed.steps;
             let updatedFeed = response.feedMetadata;
-            //turn the response back into our FeedModel object
-            let savedFeed = new DefaultFeedModel(updatedFeed);
+            //turn the response back into our Feed object
+            let savedFeed = new Feed(updatedFeed);
 
             //if the properties are already initialized we should keep those values
             if(this.feed.propertiesInitialized){

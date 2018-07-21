@@ -3,13 +3,14 @@ import {Component, Injector, Input,OnInit,OnDestroy} from "@angular/core";
 import {DatasourceComponent} from "../../../../catalog/datasource/datasource.component";
 import {ConnectorPlugin} from "../../../../catalog/api/models/connector-plugin";
 import {DataSource} from "../../../../catalog/api/models/datasource";
-import {FeedModel, Step} from "../../model/feed.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {SelectionService} from "../../../../catalog/api/services/selection.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {ConnectorTab} from "../../../../catalog/api/models/connector-tab";
 import {ISubscription} from "rxjs/Subscription";
-import {FeedStepValidator} from "../../model/feed-step-validator";
+import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 
 @Component({
@@ -31,7 +32,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     @Input()
     public params:any = {};
 
-    public feed: FeedModel;
+    public feed: Feed;
 
     public step :Step;
 
@@ -51,7 +52,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     }
 
     ngOnInit(){
-        if (this.plugin.tabs) {
+        if (this.plugin && this.plugin.tabs) {
             this.tabs = angular.copy(this.plugin.tabs);
         }
         // Add system tabs
@@ -80,6 +81,10 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
         this.defineFeedService.setFeed(this.feed);
     }
 
+
+    public backToCatalog(){
+        this.state.go("feed-definition.feed-step.datasources",{feedId:this.feed.id,jumpToSource:false})
+    }
 
 }
 
