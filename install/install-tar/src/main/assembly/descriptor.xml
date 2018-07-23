@@ -151,14 +151,14 @@
         <include>spark.properties</include>
       </includes>
     </fileSet>
-    <!--<fileSet>-->
-      <!--<directory>${project.parent.parent.basedir}/plugins/catalog-credential-vault/target</directory>-->
-      <!--<outputDirectory>kylo-services/plugin</outputDirectory>-->
-      <!--<fileMode>755</fileMode>-->
-      <!--<includes>-->
-        <!--<include>kylo-catalog-credential-vault-${project.version}.jar</include>-->
-      <!--</includes>-->
-    <!--</fileSet>-->
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/catalog-credential-vault/target</directory>
+      <outputDirectory>kylo-services/plugin</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-catalog-credential-vault-${project.version}-jar-with-dependencies.jar</include>
+      </includes>
+    </fileSet>
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/precondition-default/target</directory>
       <outputDirectory>kylo-services/plugin</outputDirectory>
