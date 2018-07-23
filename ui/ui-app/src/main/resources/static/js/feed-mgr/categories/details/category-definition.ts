@@ -362,6 +362,7 @@ export class CategoryDefinitionController {
                 this.systemNameEditable = false;
                 this.CategoriesService.update(response.data);
                 this.model = this.CategoriesService.model = response.data;
+                this.CategoriesService.setModel(this.CategoriesService.model);
                 this.$mdToast.show(
                     this.$mdToast.simple()
                         .textContent('Saved the Category')

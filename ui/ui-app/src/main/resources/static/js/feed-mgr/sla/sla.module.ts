@@ -34,7 +34,7 @@ import {slaStates} from "./sla.states";
 
 import CategoriesService from "../services/CategoriesService";
 import { RestUrlService } from "../services/RestUrlService";
-import { FeedSecurityGroups } from "../services/FeedSecurityGroupsService";
+import { FeedSecurityGroups } from "../services/FeedSecurityGroups";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
 import ServiceLevelAgreementInitController from "./ServiceLevelAgreementInitController.component";
 import ServiceLevelAgreements from "./service-level-agreements.component";
@@ -46,7 +46,6 @@ import ServiceLevelAgreementForm from "./service-level-agreement-form.component"
 import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
-import { PolicyInputFormService } from "../shared/policy-input-form/PolicyInputFormService";
 import { SlaEmailTemplatesController } from "./sla-email-templates/SlaEmailTemplatesController.component";
 import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
 import { SlaEmailTemplateController, testDialogController } from "./sla-email-templates/SlaEmailTemplateController.component";
@@ -111,7 +110,7 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
         UIRouterModule.forChild({states: slaStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [EntityAccessControlService, SlaService, PolicyInputFormService, SlaEmailTemplateService]
+    providers: [EntityAccessControlService, SlaService,  SlaEmailTemplateService]
 })
 export class SLAModule {
 }

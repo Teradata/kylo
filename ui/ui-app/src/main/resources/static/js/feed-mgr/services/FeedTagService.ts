@@ -1,40 +1,34 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/module-name');
 
-// export class FeedTagService {
+export class FeedTagService {
 
-    function FeedTagService() {
-
-        /**
-         * Create filter function for a query string
-         */
-        function createFilterFor(query:any) {
-            var lowercaseQuery = angular.lowercase(query);
-            return function filterFn(tag:any) {
-                return (tag._lowername.indexOf(lowercaseQuery) === 0);
-            };
-        }
-
-        var data = {
-            querySearch: function (query:any) {
-                var self = this;
-                var tags = self.loadAvailableTags();
-                var results = query ? tags.filter(createFilterFor(query)) : [];
-                return results;
-            },
-            loadAvailableTags: function () {
-
-                var data:any = [];
-                return data.map(function (tag:any) {
-                    tag._lowername = tag.name.toLowerCase();
-                    return tag;
-                })
-            }
-        };
-        return data;
+    constructor() {
 
     }
-// }
+    /**
+     * Create filter function for a query string
+     */
+    createFilterFor(query: any) {
+        var lowercaseQuery = angular.lowercase(query);
+        return function filterFn(tag: any) {
+            return (tag._lowername.indexOf(lowercaseQuery) === 0);
+        };
+    }
 
-angular.module(moduleName).factory('FeedTagService', FeedTagService);
+    querySearch(query: any) {
+        var self = this;
+        var tags = self.loadAvailableTags();
+        var results = query ? tags.filter(this.createFilterFor(query)) : [];
+        return results;
+    };
+    loadAvailableTags() {
+
+        var data: any = [];
+        return data.map(function (tag: any) {
+            tag._lowername = tag.name.toLowerCase();
+            return tag;
+        })
+    }
+
+}

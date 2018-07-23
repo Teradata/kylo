@@ -7,8 +7,6 @@ import ImportProperty = Import.ImportProperty;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
 
-const moduleName = require('feed-mgr/module-name');
-
 
 export enum ImportComponentType {
     NIFI_TEMPLATE = Import.ImportComponentType.NIFI_TEMPLATE,
@@ -154,7 +152,3 @@ export class DefaultImportService implements ImportService{
     }
 
 }
-
-angular.module(moduleName).factory('ImportService', () => new DefaultImportService());
-
-

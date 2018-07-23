@@ -31,7 +31,7 @@ import {AddButtonComponent} from "./add-button/add-button.component";
 import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-selection.component";
-import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout-directive.component";
+import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout.component";
 import {OptionsMenuComponent} from "./options-menu/OptionsMenu.component"
 import {RouterBreadcrumbsComponent} from "./ui-router-breadcrumbs/ui-router-breadcrumbs.component";
 import {KyloOptionsComponent} from "./kylo-options/kylo-options.component";

@@ -13,13 +13,6 @@ export class CategoryFeedsController {
 
     model:any;
 
-    ngOnInit() {
-        /**
-         * Category data.
-         * @type {CategoryModel}
-         */
-        this.model = this.CategoriesService.model;
-    }
      /**
      * Manages the Related Feeds section of the Category Details page.
      *
@@ -28,7 +21,15 @@ export class CategoryFeedsController {
      * @param StateService the URL service
      */
     constructor(private CategoriesService:CategoriesService, 
-                private StateService:StateService) {}
+                private StateService:StateService) {
+
+        /**
+         * Category data.
+         * @type {CategoryModel}
+         */
+        this.model = this.CategoriesService.model;
+
+    }
 
     /**
     * Navigates to the specified feed.

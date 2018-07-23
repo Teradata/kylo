@@ -3,8 +3,7 @@ import AccessControlService from '../../services/AccessControlService';
 import { Component, Inject } from "@angular/core";
 import CategoriesService from "../services/CategoriesService";
 import { Transition, StateService } from '@uirouter/core';
-
-// const moduleName = require('feed-mgr/categories/module-name');
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'category-details-controller',
@@ -20,11 +19,11 @@ export class CategoryDetailsController {
     showAccessControl: boolean = false;
     model: any = {};
     
+    subscription: Subscription;
+
     /**
      * Manages the Category Details page for creating and editing categories.
      *
-     * @param $scope the application model
-     * @param $transition$ the URL parameters
      * @param CategoriesService the category service
      * @constructor
      */
@@ -45,18 +44,25 @@ export class CategoryDetailsController {
         //     },
         //     true
         // );
-    }
-
-    ngOnInit() {
-
-        // Load the list of categories
         if (this.categoriesService.categories.length === 0) {
-            this.categoriesService.reload().then(() => this.onLoad());
+            this.categoriesService.reload().subscribe(() => this.onLoad());
         } else {
             this.onLoad();
         }
         this.checkAccessControl();
+        
+        this.subscription = this.categoriesService.modelSubject.subscribe((newModel: any) => {
+            let oldModel = this.model;
+            if (oldModel && oldModel.id == null && newModel.id != null) {
+                this.checkAccessControl();
+            }
+        });
+
     }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
+      }
 
     getIconColorStyle(iconColor: any) {
         return { 'fill': iconColor };
@@ -67,8 +73,10 @@ export class CategoryDetailsController {
     onLoad=()=> {
         if (angular.isString(this.state.params.categoryId)) {
             this.model = this.categoriesService.model = this.categoriesService.findCategory(this.state.params.categoryId);
+            this.categoriesService.setModel(this.categoriesService.model);
             if (angular.isDefined(this.categoriesService.model)) {
                 this.categoriesService.model["loadingRelatedFeeds"] = true;
+                this.categoriesService.setModel(this.categoriesService.model);
                 this.categoriesService.populateRelatedFeeds(this.categoriesService.model).then((category: any) => {
                     category.loadingRelatedFeeds = false;
                 });
@@ -79,6 +87,7 @@ export class CategoryDetailsController {
                 .then((userFields: any) => {
                     this.categoriesService.model = this.categoriesService.newCategory();
                     this.categoriesService.model["userProperties"] = userFields;
+                    this.categoriesService.setModel(this.categoriesService.model);
                     this.loadingCategory = false;
                 });
         }

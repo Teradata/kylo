@@ -3,9 +3,6 @@ import {UnderscoreStatic} from "underscore";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
-
-const moduleName: string = require("feed-mgr/module-name");
-
 /**
  * Prefix for table aliases.
  * @type {string}
@@ -541,6 +538,9 @@ angular.extend(SqlBuilder.prototype, {
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
+        if(node.dataset){
+            rangeVar.dataset = node.dataset;
+        }
         return rangeVar;
     },
 
@@ -643,7 +643,6 @@ export var VisualQueryService = {
 };
 
 VisualQueryService.resetModel();
-angular.module(moduleName).factory("VisualQueryService", () => VisualQueryService);
 
 /**
  * Type of boolean expression.

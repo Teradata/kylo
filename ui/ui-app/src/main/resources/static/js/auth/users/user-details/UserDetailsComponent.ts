@@ -191,7 +191,7 @@ export default class UserDetailsComponent {
     /**
      * Cancels the current edit operation. If a new user is being created then redirects to the users page.
      */
-    onCancel = () => {
+    onCancel ()  {
         this.enableEdit = false;
         if (this.model.systemName === null) {
             this.stateService.go("users");
@@ -201,7 +201,7 @@ export default class UserDetailsComponent {
     /**
      * Deletes the current user.
      */
-    onDelete = () => {
+    onDelete () {
         var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
         this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
             .then(() => {
@@ -228,7 +228,7 @@ export default class UserDetailsComponent {
     /**
     //  * Creates a copy of the user model for editing.
      */
-    onEdit = () => {
+    onEdit () {
         this.enableEdit = true;
         this.editModel = angular.copy(this.model);
     };
@@ -236,7 +236,7 @@ export default class UserDetailsComponent {
     /**
      * Loads the user details.
      */
-    onLoad = () => {
+    onLoad () {
         // Get the list of groups
         this.UserService.getGroups()
             .then((groups: any) => {

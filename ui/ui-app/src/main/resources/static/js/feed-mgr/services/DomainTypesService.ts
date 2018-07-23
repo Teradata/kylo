@@ -14,7 +14,6 @@
  * @property {string} regexPattern - regular expression pattern for matching sample values
  * @property {string} title a human-readable title
  */
-const moduleName = require('feed-mgr/module-name');
 import * as angular from 'angular';
 import * as _ from "underscore";
 
@@ -92,7 +91,7 @@ export interface DomainType {
          */
     function getFieldNameRegExp(domainType: any){
             if (angular.isUndefined(domainType.$fieldNameRegexp)) {
-                domainType.$fieldNameRegexp = this.getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
+                domainType.$fieldNameRegexp = getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
             }
             return domainType.$fieldNameRegexp;
         }
@@ -102,7 +101,7 @@ export interface DomainType {
          */
     function getSampleDataRegExp(domainType: any){
             if (angular.isUndefined(domainType.$regexp)) {
-                domainType.$regexp = this.getRegExp(domainType.regexPattern, domainType.regexFlags);
+                domainType.$regexp = getRegExp(domainType.regexPattern, domainType.regexFlags);
             }
             return domainType.$regexp;
         }
@@ -277,10 +276,6 @@ export class DomainTypesService{
 }
 
 
-  angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
-  function($http: any,$q: any,RestUrlService:any){
-        return new DomainTypesService($http , $q, RestUrlService);
-  }
-  ]);
+
 
 

@@ -20,9 +20,11 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 
 export class FeedCreationErrorService {
+
+    static readonly $inject = ["$mdDialog","$filter"];
     constructor (private $mdDialog:any, private $filter:any) {
 
         function parseNifiFeedForErrors(nifiFeed:any, errorMap:any) {
@@ -145,8 +147,8 @@ export class FeedCreationErrorService {
             showErrorDialog: function () {
 
                 $mdDialog.show({
-                    controller: 'FeedErrorDialogController',
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html',
+                    // controller: 'FeedErrorDialogController',
+                    // templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html',
                     parent: angular.element(document.body),
                     clickOutsideToClose: false,
                     fullscreen: true,
@@ -166,31 +168,29 @@ export class FeedCreationErrorService {
 }
 
 
-var controller = function ($scope:any, $mdDialog:any, FeedCreationErrorService:any) {
-    var self = this;
+// var controller = function ($scope:any, $mdDialog:any, FeedCreationErrorService:any) {
+//     var self = this;
 
-    var errorData = FeedCreationErrorService.feedError;
-    $scope.feedName = errorData.feedName;
-    $scope.createdFeed = errorData.nifiFeed;
-    $scope.isValid = errorData.isValid;
-    $scope.message = errorData.message;
-    $scope.feedErrorsData = errorData.feedErrorsData;
-    $scope.feedErrorsCount = errorData.feedErrorsCount;
+//     var errorData = FeedCreationErrorService.feedError;
+//     $scope.feedName = errorData.feedName;
+//     $scope.createdFeed = errorData.nifiFeed;
+//     $scope.isValid = errorData.isValid;
+//     $scope.message = errorData.message;
+//     $scope.feedErrorsData = errorData.feedErrorsData;
+//     $scope.feedErrorsCount = errorData.feedErrorsCount;
 
-    $scope.fixErrors = function () {
-        $mdDialog.hide('fixErrors');
-    }
+//     $scope.fixErrors = function () {
+//         $mdDialog.hide('fixErrors');
+//     }
 
-    $scope.hide = function () {
-        $mdDialog.hide();
-    };
+//     $scope.hide = function () {
+//         $mdDialog.hide();
+//     };
 
-    $scope.cancel = function () {
-        $mdDialog.cancel();
-    };
+//     $scope.cancel = function () {
+//         $mdDialog.cancel();
+//     };
 
-};
+// };
 
-angular.module(moduleName).controller('FeedErrorDialogController',["$scope","$mdDialog","FeedCreationErrorService","$filter",controller]);
-
-angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog","$filter", FeedCreationErrorService]);
+// angular.module(moduleName).controller('FeedErrorDialogController',["$scope","$mdDialog","FeedCreationErrorService","$filter",controller]);

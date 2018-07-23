@@ -13,6 +13,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 import {BrowserModule} from "@angular/platform-browser";
 
@@ -35,14 +36,11 @@ import { CategoryFeedsController } from "./details/category-feeds.component";
 import {CategoriesControllerComponent} from "./CategoriesController.component";
 import {CategoryDetailsController} from "./category-details.component";
 
-
 import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
 
-import CategoriesService from "../services/CategoriesService";
-import { RestUrlService } from "../services/RestUrlService";
-import { FeedSecurityGroups } from "../services/FeedSecurityGroupsService";
-import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
+import {KyloFeedManagerModule} from "../feed-mgr.module";
+import {CommonModule} from "@angular/common";
 
 @NgModule({
     declarations: [
@@ -53,6 +51,7 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         CategoryAccessControlController,
         CategoryFeedsController,
         CategoryDetailsController,
+
     ],
     entryComponents: [
         CategoriesControllerComponent,
@@ -64,13 +63,13 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         CategoryDetailsController,
     ],
     imports: [
-        BrowserModule,
         CovalentCommonModule,
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
         KyloServicesModule,
         KyloCommonModule,
+        KyloFeedManagerModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
@@ -84,10 +83,11 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
         TranslateModule,
         MatFormFieldModule,
         MatCardModule,
+        MatCheckboxModule,
         UIRouterModule.forChild({states: categoriesStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [CategoriesService, RestUrlService, FeedSecurityGroups, EntityAccessControlService]
+    providers: []
 })
-export class CategoryModule {
+export class CategoriesModule {
 }

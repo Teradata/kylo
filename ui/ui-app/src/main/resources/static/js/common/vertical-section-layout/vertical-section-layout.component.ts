@@ -1,5 +1,5 @@
 import * as angular from "angular";
-import {Component, Input} from "@angular/core";
+import {Component, EventEmitter, Input,Output} from "@angular/core";
 
 @Component({
     selector: "vertical-section-layout",
@@ -20,18 +20,20 @@ export class VerticalSectionLayoutComponent {
 
     @Input() showVerticalCheck: boolean;
     @Input() allowEdit: boolean;
-    @Input() sectionTitle: string;
+    @Input("section-title") sectionTitle: string;
     @Input() formName: string;
-    @Input() onDelete: any;
+
     @Input() isDeleteVisible: boolean;
     @Input() allowDelete: boolean;
-    @Input() onEdit: any;
-    @Input() onSaveEdit: any;
-    @Input() onCancelEdit: any;
     @Input() editable: boolean;
     @Input() keepEditableAfterSave: boolean;
     @Input() isValid: any;
     @Input() theForm: any;
+
+    @Output("on-edit") onEdit:EventEmitter<any> = new EventEmitter<any>();
+    @Output("on-save-edit") onSaveEdit:EventEmitter<any> = new EventEmitter<any>();
+    @Output("on-cancel-edit") onCancelEdit:EventEmitter<any> = new EventEmitter<any>();
+    @Output("on-delete") onDelete:EventEmitter<any> = new EventEmitter<any>();
 
     ngOnInit() {
         /**
@@ -62,26 +64,32 @@ export class VerticalSectionLayoutComponent {
 
     }
 
-    edit = (ev: any) => {
+    edit(ev: any){
         this.editable = true;
-        this.onEdit(ev);
+        if(this.onEdit) {
+            this.onEdit.emit(ev);
+        }
     }
 
-    cancel = (ev: any) => {
-        this.onCancelEdit(ev);
+    cancel(ev: any){
+        if(this.onCancelEdit) {
+            this.onCancelEdit.emit()
+        }
         this.editable = false;
     }
 
-    save = (ev: any) => {
-        this.onSaveEdit(ev);
+    save(ev: any){
+        if(this.onSaveEdit) {
+            this.onSaveEdit.emit()
+        }
         if (!this.keepEditableAfterSave) {
             this.editable = false;
         }
     }
 
-    delete = (ev: any) => {
+    delete(ev: any){
         if (this.onDelete) {
-            this.onDelete(ev);
+            this.onDelete.emit()
         }
     }
 }
