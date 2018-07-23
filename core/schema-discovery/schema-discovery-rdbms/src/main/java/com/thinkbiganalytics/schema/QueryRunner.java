@@ -98,10 +98,12 @@ public class QueryRunner {
                 // Add row to the result
                 final Map<String, Object> row = new LinkedHashMap<>();
                 for (final QueryResultColumn column : queryResult.getColumns()) {
-                    row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                    if (rs.getObject(column.getHiveColumnLabel()) != null
+                            && !StringUtils.equals(rs.getObject(column.getHiveColumnLabel()).toString(), COL_DLP_REJECT_REASON)) {
+                        row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                    }
                 }
-                if(!row.containsKey(COL_DLP_REJECT_REASON))
-                    queryResult.addRow(row);
+                queryResult.addRow(row);
             }
         });
 
