@@ -2,7 +2,7 @@ import {Component, Injector, Input, OnInit} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 import {Category} from "../../../../model/category/category.model";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FormsModule} from '@angular/forms'
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
@@ -133,6 +133,12 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         {value: 'PRIMARY', description: 'Primary node'},
     ];
 
+    /**
+     * Form control for timer amount
+     */
+    public timerAmountFormControl: FormControl;
+
+
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private $$angularInjector: Injector,
@@ -163,6 +169,12 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         } else {
             this.parseCron();
         }
+
+        this.timerAmountFormControl = new FormControl('', [
+            Validators.required,
+            this.timerAmountValidator(this.feed.registeredTemplate.isStream),
+            Validators.min(0)
+        ]);
     }
 
     /**
@@ -229,24 +241,6 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      * Ensure timer is not rapid for batch type feeds
      */
     timerChanged() {
-        if (this.timerAmount < 0) {
-            this.timerAmount = null;
-            return;
-        }
-
-        if (this.feed.registeredTemplate.isStream === false) {
-            //batch feed
-            if (this.timerAmount != null && (this.timerAmount == 0)) {
-                this.showBatchTimerAlert();
-
-                if (this.lastKnownTimerAmount != null) {
-                    this.timerAmount = this.lastKnownTimerAmount;
-                } else {
-                    this.timerAmount = 5;
-                }
-            }
-        }
-
         this.feed.schedule.schedulingPeriod = this.timerAmount + " " + this.timerUnits;
         this.validate();
     }
@@ -365,4 +359,18 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     getNiFiExecutionNodeConfigurations(): NiFiExecutionNodeConfiguration[] {
         return this.nifiExecutionNodeConfigurations;
     }
+
+    /**
+     * Custom validator for timer amount
+     * @param {boolean} isStreamingFeed
+     * @returns {ValidatorFn}
+     */
+    timerAmountValidator(isStreamingFeed: boolean): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: boolean } | null => {
+            if (isStreamingFeed === false && control.value != null && control.value == 0) {
+                return { 'batchFeedRequiresNonZeroTimerAmount': true };
+            }
+            return null;
+        }
+    };
 }

@@ -135,10 +135,12 @@
           <input matInput placeholder="Run Schedule"
                  type="number"
                  name="timer"
-                 required
                  [(ngModel)]="timerAmount"
-                 (change)="timerChanged()">
-          <mat-error>Run Schedule is required</mat-error>
+                 (change)="timerChanged()"
+                 [formControl]="timerAmountFormControl">
+          <mat-error *ngIf="timerAmountFormControl.hasError('required')">Run Schedule is required</mat-error>
+          <mat-error *ngIf="timerAmountFormControl.hasError('batchFeedRequiresNonZeroTimerAmount')">Batch feed needs value greater than 0</mat-error>
+          <mat-error *ngIf="timerAmountFormControl.hasError('min')">Non-negative value is required</mat-error>
         </mat-form-field>
 
         <mat-form-field>
