@@ -1,12 +1,12 @@
-import {FeedStepValidator} from "../../model/feed-step-validator";
-import {FeedModel} from "../../model/feed.model";
+import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
+import {Feed} from "../../../../model/feed/feed.model";
 
 
 export class DefineFeedStepGeneralInfoValidator  extends FeedStepValidator {
 
 
 
-    public validate(feed:FeedModel) : boolean{
+    public validate(feed:Feed) : boolean{
         if(this.hasFormErrors){
             this.step.setComplete(false);
         }

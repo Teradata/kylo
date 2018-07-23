@@ -57,4 +57,11 @@ export class CloneUtil {
         }
         return newObj;
     }
+
+
+    /**
+     * private deepCopy(obj:any):any {
+        return JSON.parse(JSON.stringify( obj ));
+    }
+     */
 }

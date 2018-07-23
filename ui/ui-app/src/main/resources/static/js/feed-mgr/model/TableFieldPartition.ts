@@ -3,8 +3,10 @@ import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
+import {KyloObject} from "../../common/common.model";
+import {TableFieldPolicy} from "./TableFieldPolicy";
 
-export class TableFieldPartition {
+export class TableFieldPartition  implements KyloObject {
 
     public static OBJECT_TYPE:string = 'TableFieldPartition'
 
@@ -48,13 +50,11 @@ export class TableFieldPartition {
 
     columnDef: TableColumnDefinition;
 
-    initialize(index: number) {
-        this.position = index;
+    initialize() {
         this._id = _.uniqueId();
     }
 
-
-    public constructor(index: number,init?:Partial<TableFieldPartition>) {
+    public constructor(init?:Partial<TableFieldPartition>) {
         Object.assign(this, init);
 
         if(this.columnDef && this.columnDef.objectType && this.columnDef.objectType == TableColumnDefinition.OBJECT_TYPE){
@@ -64,8 +64,13 @@ export class TableFieldPartition {
             this.columnDef = new TableColumnDefinition(this.columnDef);
         }
 
-        this.initialize(index);
+        this.initialize();
     }
+
+    static atPosition(index:number) :TableFieldPartition {
+        return new this({position:index});
+    }
+
 
     /**
      * Sync the sourceField and sourceDataType with this assigned column

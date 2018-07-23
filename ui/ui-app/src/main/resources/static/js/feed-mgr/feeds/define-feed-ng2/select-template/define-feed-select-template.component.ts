@@ -1,12 +1,13 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../../services/AccessControlService';
-import {DefaultFeedModel, FeedModel} from "../model/feed.model";
+import {Feed} from "../../../model/feed/feed.model";
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states"
+import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+
 
 @Component({
     selector: "define-feed-select-template",
@@ -50,7 +51,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * The model for creating the feed
          * @type {*}
          */
-        model:FeedModel
+        model:Feed
 
 
         /**
@@ -76,7 +77,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
     constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private $$angularInjector: Injector) {
 
-        this.model = new DefaultFeedModel();
+        this.model = new Feed();
         /**
          * The total number of steps to deisplay and render for the feed stepper
          * @type {null}

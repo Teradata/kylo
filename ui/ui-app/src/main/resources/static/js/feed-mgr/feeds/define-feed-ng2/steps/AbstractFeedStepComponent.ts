@@ -1,18 +1,19 @@
 import * as angular from "angular";
-import {FeedModel, Step} from "../model/feed.model";
-import {FeedStepValidator} from "../model/feed-step-validator";
+import {Feed} from "../../../model/feed/feed.model";
+import {FeedStepValidator} from "../../../model/feed/feed-step-validator";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {Input, OnDestroy, OnInit} from "@angular/core";
 import {ISubscription} from "rxjs/Subscription";
-import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states"
-import {SaveFeedResponse} from "../model/SaveFeedResponse";
+import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {FormGroup} from "@angular/forms";
+import {Step} from "../../../model/feed/feed-step.model";
+import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
 
-    public feed: FeedModel;
+    public feed: Feed;
 
     public step : Step;
 
@@ -77,7 +78,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         this.defineFeedService.setFeed(this.feed);
     }
 
-    private feedStateChanged(feed:FeedModel){
+    private feedStateChanged(feed:Feed){
         this.feed.readonly = feed.readonly;
     }
 
@@ -87,7 +88,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         if(this.feed == undefined) {
             this.feed = this.defineFeedService.getFeed();
             if (this.feed == undefined) {
-                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
+                this.stateService.go(FEED_DEFINITION_STATE_NAME+ ".select-template")
             }
         }
             this.step = this.feed.steps.find(step => step.systemName == this.getStepName());

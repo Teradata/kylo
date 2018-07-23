@@ -1,4 +1,5 @@
-import {PreviewDataSet, SparkDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
+import {SparkDataSet} from "./spark-data-set.model";
 
 
 export interface SampleFile{

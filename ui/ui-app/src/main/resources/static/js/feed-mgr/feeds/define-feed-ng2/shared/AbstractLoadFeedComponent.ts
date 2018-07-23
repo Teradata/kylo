@@ -1,17 +1,17 @@
 import {OnInit, Input} from "@angular/core";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {Observable} from "rxjs/Observable";
-import {FeedModel, Step} from "../model/feed.model";
-import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states";
+import {Feed} from "../../../model/feed/feed.model";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../services/define-feed.service";
+import {Step} from "../../../model/feed/feed-step.model";
 
 
 export abstract class AbstractLoadFeedComponent  {
 
     public loadingFeed:boolean;
 
-    public feed: FeedModel;
+    public feed: Feed;
 
     public selectedStep : Step;
 
@@ -19,10 +19,10 @@ export abstract class AbstractLoadFeedComponent  {
 
     }
 
-    private loadFeed(feedId:string) :Observable<FeedModel>{
+    private loadFeed(feedId:string) :Observable<Feed>{
         this.registerLoading();
       let observable = this.feedLoadingService.loadFeed(feedId);
-      observable.subscribe((feedModel:FeedModel) => {
+      observable.subscribe((feedModel:Feed) => {
             this.feed = this.defineFeedService.getFeed();
             this._setFeedState();
             this.loadingFeed = false;

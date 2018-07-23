@@ -1,71 +1,35 @@
-import {TableColumnDefinition} from "./TableColumnDefinition";
-import {TableFieldPartition} from "./TableFieldPartition";
-import {ArrayUtils} from "./utils";
+import {TableColumnDefinition} from "../TableColumnDefinition";
+import {TableFieldPartition} from "../TableFieldPartition";
+import {ArrayUtils} from "../utils";
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
-import {FeedModel} from "../feeds/define-feed-ng2/model/feed.model";
+import {Feed} from "./feed.model";
 import * as angular from 'angular';
 import * as _ from "underscore";
 
-export interface TableCreateMethod {
-    name: string;
-    type: string;
-}
 
-export class TableForm {
+export class FeedTableColumnDefinitionValidation {
 
-    defineFeedTableForm: any = {};
+    invalidColumns:TableColumnDefinition[] = [];
 
     arrayUtils: ArrayUtils = new ArrayUtils();
 
 
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public beforeSave$: Observable<FeedModel>;
 
-    /**
-     * The datasets subject for listening
-     */
-    private beforeSaveSubject: Subject<FeedModel>;
+    constructor(private model: Feed) {
 
-    constructor(private model: any) {
-
-        this.touchErrorFields.bind(this);
-        if (_.isUndefined(this.defineFeedTableForm.invalidColumns)) {
-            this.defineFeedTableForm.invalidColumns = [];
+        if (_.isUndefined(this.invalidColumns)) {
+            this.invalidColumns = [];
         }
     }
 
-    validate(validForm?: boolean) {
-        // console.log("validate valid ? " + validForm);
-        if (_.isUndefined(this.defineFeedTableForm.invalidColumns)) {
-            this.defineFeedTableForm.invalidColumns = [];
-        }
-        if (validForm == undefined) {
-            validForm = this.defineFeedTableForm.$valid;
-        }
-        let valid = this.model.templateId != null && this.model.table.method != null && this.model.table.tableSchema.name != null && this.model.table.tableSchema.name != ''
-            && this.model.table.tableSchema.fields.length > 0;
-
-        if (valid) {
-            //ensure we have at least 1 field (not deleted) assigned to the model)
-            var validFields = _.filter(this.model.table.tableSchema.fields, (field: any) => {
-                return field.deleted == undefined || field.deleted == false;
-            });
-            valid = validFields.length > 0;
-        }
-
-        return valid && validForm && this.defineFeedTableForm.invalidColumns.length === 0;
-    }
 
     validateFeedName(columnDef:TableColumnDefinition){
         columnDef.validateName();
         this.validateUniqueFeedName(columnDef);
 
     }
-    validateUniqueFeedName(columnDef:TableColumnDefinition){
+    private validateUniqueFeedName(columnDef:TableColumnDefinition){
         //update all columns at all times, because column removal may fix not unique name error on other columns
         var columnsByName = _.groupBy(this.model.table.tableSchema.fields, (column: TableColumnDefinition) => {
             //we'll disregard "not unique" name for all empty names and all deleted columns, i.e. put them into single group
@@ -77,14 +41,14 @@ export class TableForm {
         _.each(_.keys(columnsByName), (columnName) => {
             var group = columnsByName[columnName];
             _.each(group, (column) => {
-                column.initializeValidationErrors();
+                let def = <TableColumnDefinition> column;
                 if (columnName !== "") {
-                    column.validationErrors.name.notUnique = group.length > 1;
+                    def.validationErrors.name.notUnique = group.length > 1;
                 } else {
                     //group with empty column name which also includes "deleted" columns
-                    column.validationErrors.name.notUnique = false;
+                    def.validationErrors.name.notUnique = false;
                 }
-                this.updateFormValidation(column);
+                this.updateFormValidation(def);
             });
         });
     }
@@ -118,13 +82,13 @@ export class TableForm {
             if (group.length > 1) {
                 _.each(group, (partition) => {
                     //.invalid another partition matches the same name
-                    this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+               //     this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
                 });
             }
             else {
                 _.each(group, (partition) => {
                     //valid this is a unique partition name
-                    this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', true);
+             //       this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', true);
                 });
             }
         });
@@ -139,29 +103,38 @@ export class TableForm {
         //add the angular errors
         _.each(this.model.table.partitions, (partition: any) => {
             if (partition.formula != undefined && partition.formula != 'val' && _.indexOf(columnNames, partition.field) >= 0) {
-                this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+       //         this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
             }
         });
 
     }
 
-    touchErrorFields() {
-        var errors = this.defineFeedTableForm.$error;
-        for (var key in errors) {
-            if (errors.hasOwnProperty(key)) {
-                var errorFields = errors[key];
-                angular.forEach(errorFields, (errorField: any) => {
-                    errorField.$setTouched();
-                });
-            }
+    validate() {
+        // console.log("validate valid ? " + validForm);
+        if (_.isUndefined(this.invalidColumns)) {
+            this.invalidColumns = [];
         }
+
+        let valid = this.model.templateId != null && this.model.table.method != null && this.model.table.tableSchema.name != null && this.model.table.tableSchema.name != ''
+            && this.model.table.tableSchema.fields.length > 0;
+
+        if (valid) {
+            //ensure we have at least 1 field (not deleted) assigned to the model)
+            var validFields = _.filter(this.model.table.tableSchema.fields, (field: any) => {
+                return field.deleted == undefined || field.deleted == false;
+            });
+            valid = validFields.length > 0;
+        }
+
+        return valid &&  this.invalidColumns.length === 0;
     }
+
 
     updateFormValidation(columnDef: TableColumnDefinition) {
         if (columnDef.isInvalid()) {
-            this.arrayUtils.add(this.defineFeedTableForm.invalidColumns, columnDef);
+            this.arrayUtils.add(this.invalidColumns, columnDef);
         } else {
-            this.arrayUtils.remove(this.defineFeedTableForm.invalidColumns, columnDef);
+            this.arrayUtils.remove(this.invalidColumns, columnDef);
         }
     }
 

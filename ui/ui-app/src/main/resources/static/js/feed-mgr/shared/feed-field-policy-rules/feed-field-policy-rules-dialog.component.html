@@ -23,21 +23,21 @@
 
     <div *ngIf="policyRules != null && policyRules.length >0 ">
         <ul dnd-list="policyRules" class="simple-dnd-list">
-        <ng-template ngFor let-rule let-index="$index" let-last="last" [ngForOf]="policyRules">
+        <ng-template ngFor let-rule let-$index="index" let-last="last" [ngForOf]="policyRules">
                 <li
                     dnd-draggable="rule"
                     dnd-moved="onMovedPolicyRule($index)"
                     dnd-effect-allowed="move">
-                    <div layout="row" layout-align="start">
-                        <div layout="column" flex>
+                    <div fxLayout="row" fxLayoutAlign="start">
+                        <div fxLayout="column" fxFlex>
                             <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
                             <span class="md-list-item-text hint">{{rule.type}}</span>
                         </div>
-                        <div layout="row">
-                            <button mat-button class="md-icon-button" ng-click="editPolicy($index,rule)">
+                        <div fxLayout="row">
+                            <button mat-icon-button  (click)="editPolicy($index,rule)">
                                 <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
                             </button>
-                            <button mat-button class="md-icon-button" ng-click="deletePolicy($index)">
+                            <button mat-icon-button  (click)="deletePolicy($index)">
                                 <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
                             </button>
                         </div>
@@ -48,7 +48,7 @@
     </div>
         <!-- if loading -->
 
-        <div class="edit-form" >
+        <div class="edit-form" fxLayout="column">
             <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
 
             <div class="mat-title">{{titleText}}</div>
@@ -72,9 +72,9 @@
              <policy-input-form  [parentFormGroup]="policyForm" [(rule)]="editRule" [mode]="editMode" [feed]="data.feed" ></policy-input-form>
 
             <div fxLayoutAlign="start stretch" fxFlex >
-                <button mat-button  (click)="cancelEdit()">{{viewText.cancelText}}</button>
+                <button mat-raised-button  (click)="cancelEdit()">{{viewText.cancelText}}</button>
                 <span fxFlex></span>
-                <button  (click)="addPolicy()" [disabled]="!policyFormIsValid" >{{viewText.addText}}</button>
+                <button mat-raised-button color="primary" (click)="addPolicy()" [disabled]="!policyFormIsValid" >{{viewText.addText}}</button>
             </div>
         </div>
 
@@ -83,10 +83,10 @@
 <mat-dialog-actions>
 
     <span fxFlex=""></span>
-    <button mat-button (click)="cancel()">
+    <button mat-raised-button (click)="onCancelClick()">
         Cancel
     </button>
-    <button mat-button (click)="done()" [disabled]="!pendingEdits || editRule != null || !policyFormIsValid">
+    <button mat-raised-button color="primary" (click)="done()" [disabled]="!pendingEdits || !policyFormIsValid">
        Done
     </button>
 </mat-dialog-actions>

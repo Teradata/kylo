@@ -4,7 +4,7 @@ import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {MatDialog} from "@angular/material/dialog";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedModel} from "../../feeds/define-feed-ng2/model/feed.model";
+import {Feed} from "../../model/feed/feed.model";
 
 
 @Injectable()
@@ -25,7 +25,7 @@ export class PolicyInputFormService {
 
 
 
-    currentFeedValue(feed:FeedModel) {
+    currentFeedValue(feed:Feed) {
         return feed.category.systemName + "." + feed.systemFeedName;
     }
     attachCurrentFeedValues(data:any, feedName:string) {

@@ -1,9 +1,7 @@
-import {TableSchema} from "../../../model/table-schema";
-import {Schema} from "../../../model/schema";
-import {SchemaField} from "../../../model/schema-field";
-import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
-import {SourceTableSchema} from "./feed.model";
-
+import {TableSchema} from "./table-schema";
+import {Schema} from "./schema";
+import {SchemaField} from "./schema-field";
+import {TableColumnDefinition} from "./TableColumnDefinition";
 
 
 
@@ -62,17 +60,3 @@ export class DefaultTableSchema extends DefaultSchema implements TableSchema{
 
 }
 
-export class DefaultSourceTableSchema extends DefaultTableSchema implements SourceTableSchema{
-    tableSchema: string;
-    constructor() {
-        super();
-    }
-}
-
-export class FeedTableSchema extends DefaultTableSchema {
-
-    constructor(){
-        super();
-    }
-
-}

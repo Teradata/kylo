@@ -15,6 +15,7 @@ import {Checkbox} from "../dynamic-form/model/Checkbox";
 import {Select} from "../dynamic-form/model/Select";
 import {InputText} from "../dynamic-form/model/InputText";
 import {DynamicFormService} from "../dynamic-form/services/dynamic-form.service";
+import {FieldPolicyProperty} from "../../model/field-policy";
 //requires CovalentChipsModule
 
 
@@ -53,14 +54,10 @@ export class PolicyInputFormComponent implements OnInit {
     @Input()
     mode: string //NEW or EDIT
 
-    @Input()
-    onPropertyChange :any
+    @Output()
+    onPropertyChange :EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
 
     editChips:any;
-
-    formControls:any = {};
-
-    fieldConfigList:FieldConfig<any>[] = [];
 
     fieldConfigGroup:RuleGroupWithFieldConfig[] = []
 
@@ -71,19 +68,17 @@ export class PolicyInputFormComponent implements OnInit {
         this.editChips.searchText = null;
 
         if(this.formGroup == undefined) {
-            console.log("Creating new form group!");
             this.formGroup = new FormGroup({});
         }
 
     }
     ngOnInit() {
 
-        console.log("Attach formGroup to parent", this.formGroup, this.parentFormGroup)
         this.parentFormGroup.registerControl("policyForm",this.formGroup);
 
         //call the onChange if the form initially sets the value
       /*
-        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)) {
+        if(this.onPropertyChange) {
             _.each(this.rule.properties,  (property:any) => {
                 if ((property.type == 'select' || property.type =='feedSelect' || property.type == 'currentFeed') && property.value != null) {
                     this.onPropertyChange()(property);
@@ -98,7 +93,6 @@ export class PolicyInputFormComponent implements OnInit {
         else {
             this.rule = {name:''}
         }
-        //_.each(this.rule.properties,(property) => this.createFormControls(property));
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -112,28 +106,6 @@ export class PolicyInputFormComponent implements OnInit {
         }
     }
 
-
-    private createFormControls2(property:any) {
-        let validatorOpts :any[] = [];
-        let formControlConfig = {}
-        if(property.patternRegExp){
-            validatorOpts.push(Validators.pattern(property.patternRegExp))
-        }
-        if(property.required){
-            validatorOpts.push(Validators.required)
-        }
-        if(property.type == "emails"){
-            validatorOpts.push(MultipleEmail)
-        }
-        if(property.type == "email"){
-            validatorOpts.push(Validators.email)
-        }
-        if(!this.rule.editable){
-            formControlConfig = {value:property.value,disabled:true}
-        }
-        let fc = new FormControl(formControlConfig,validatorOpts);
-        this.formGroup.addControl(property.formKey,fc)
-    }
 
     private createFormFieldConfig()
     {
@@ -152,28 +124,27 @@ export class PolicyInputFormComponent implements OnInit {
                 this.fieldConfigGroup[idx] = {fields:fieldConfigList, group:group};
             }
         });
-        //this.dynamicFormService.addToFormGroup(this.fieldConfigList, this.formGroup);
     }
 
 
 
-    private isInputText(property:any){
+    private isInputText(property:FieldPolicyProperty){
         return (property.type == null || property.type == "string" || property.type == "text" || property.type == "email" || property.type == "number" || property.type == "password" || property.type == 'regex' ||property.type == 'email' || property.type == 'emails' );
     }
 
-    private isSelect(property:any){
+    private isSelect(property:FieldPolicyProperty){
        return  property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate';
     }
 
 
-    private  toFieldConfigOptions(property :any):any {
+    private  toFieldConfigOptions(property :FieldPolicyProperty):any {
         let key:string = property.formKey;
         let options = {key:key,label:property.displayName,required:property.required,placeholder:property.placeholder, value:property.value,hint:property.hint,pattern:property.patternRegExp};
         return options;
 
     }
 
-    private  toFieldConfig(property:any, order:number){
+    private  toFieldConfig(property:FieldPolicyProperty, order:number) :FieldConfig<any>{
 
             let fieldConfig:FieldConfig<any> = null;
             let fieldConfigOptions :any = this.toFieldConfigOptions(property);
@@ -200,10 +171,36 @@ export class PolicyInputFormComponent implements OnInit {
                 if(property.selectableValues.length >0) {
                     //already in label,value objects
                     options = property.selectableValues;
+                    //TODO know when to change the model propertyValue to 'values' on multi select
                 }
                 fieldConfigOptions.options = options;
                 fieldConfig = new Select(fieldConfigOptions);
             }
+
+        let validatorOpts :any[] = [];
+
+        if(property.patternRegExp){
+            validatorOpts.push(Validators.pattern(property.patternRegExp))
+        }
+        if(property.pattern){
+            validatorOpts.push(Validators.pattern(property.pattern))
+        }
+        if(property.type == "emails"){
+            validatorOpts.push(MultipleEmail)
+        }
+        if(property.type == "email"){
+            validatorOpts.push(Validators.email)
+        }
+
+        fieldConfig.disabled = !this.rule.editable;
+        fieldConfig.validators = validatorOpts;
+
+        fieldConfig.model = property
+
+        if(this.onPropertyChange){
+                fieldConfig.onModelChange = (property:FieldPolicyProperty) => this.onPropertyChange.emit(property)
+        }
+
             return fieldConfig;
     }
 
@@ -216,10 +213,6 @@ export class PolicyInputFormComponent implements OnInit {
         return this.policyInputFormService.validateRequiredChips(this.formGroup, property);
     }
 
-    onPropertyChanged(property:any){
-        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)){
-            this.onPropertyChange()(property);
-        }
-    }
+
 
 }

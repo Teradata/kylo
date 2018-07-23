@@ -27,6 +27,9 @@ export class DynamicFormService {
                 if(field.model && field.modelValueProperty){
                     console.log("update the model for ",field, 'with ',value);
                     field.model[field.modelValueProperty] = value;
+                    if(field.onModelChange){
+                        field.onModelChange(field.model);
+                    }
                 }
             })
         //    group[field] = control;
@@ -36,7 +39,17 @@ export class DynamicFormService {
     }
 
     private toFormControl(field:FieldConfig<any>) : FormControl {
-        return  field.required ? new FormControl(field.value || '', Validators.required)
-            : new FormControl(field.value || '');
+
+        let validatorOpts = field.validators || null;
+        if(field.required){
+            if(validatorOpts == null){
+                validatorOpts = [];
+            }
+            validatorOpts.push(Validators.required)
+        }
+
+        return new FormControl(field.value || '', validatorOpts)
+
+
     }
 }

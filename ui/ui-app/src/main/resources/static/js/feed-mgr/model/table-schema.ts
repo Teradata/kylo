@@ -1,4 +1,5 @@
 import {Schema} from "./schema";
+import {SchemaField} from "./schema-field";
 
 /**
  * Schema of a table object

@@ -9,8 +9,8 @@
                 </nav>
         </div>
 
-        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="selectedTab.sref =='.browse'"></remote-files>
-        <preview-schema [datasource]="datasource" *ngIf="selectedTab.sref =='.preview'"></preview-schema>
+        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params"  [showCatalogButton]="true" *ngIf="selectedTab && selectedTab.sref =='.browse'"   ></remote-files>
+        <preview-schema [datasource]="datasource" *ngIf="selectedTab && selectedTab.sref =='.preview'"></preview-schema>
 
 </div>
         </mat-card-content>

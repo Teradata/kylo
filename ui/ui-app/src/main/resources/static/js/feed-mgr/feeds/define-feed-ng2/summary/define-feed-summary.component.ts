@@ -1,9 +1,9 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
-import {FeedModel, Step} from "../model/feed.model";
+import {Feed} from "../../../model/feed/feed.model";
+import {Step} from "../../../model/feed/feed-step.model";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {FormBuilder} from "@angular/forms";
 import {TdLoadingService} from "@covalent/core/loading";
-import {FEED_DEFINITION_STATE_NAME} from "../define-feed-states";
 import {DefineFeedService} from "../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../services/feed-loading-service";

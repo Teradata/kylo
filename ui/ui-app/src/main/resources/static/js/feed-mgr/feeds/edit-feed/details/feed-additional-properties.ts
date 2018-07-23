@@ -33,7 +33,7 @@ export class FeedAdditionalPropertiesController {
          */
         allowEdit:boolean = !this.versions;
         
-        model:any = this.FeedService.editFeedModel;
+        model:any = this.FeedService.editFeed;
         versionFeedModel:any = this.FeedService.versionFeedModel;
         versionFeedModelDiff:any = this.FeedService.versionFeedModelDiff;
         editModel:any = {};
