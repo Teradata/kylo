@@ -183,7 +183,8 @@ rm -f ${KYLO_CERT_PEM}
 rm -f ${KYLO_SSL}/password
 
 chown -R ${KYLO_USER}:${KYLO_GROUP} ${KYLO_SSL}
-chmod -R 600 ${KYLO_SSL}
+chmod 700 ${KYLO_SSL}
+chmod 600 ${KYLO_SSL}/*
 
 
 
