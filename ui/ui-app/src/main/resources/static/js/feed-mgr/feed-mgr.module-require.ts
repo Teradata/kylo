@@ -49,7 +49,7 @@ import {RegisterTemplatePropertyService} from "./services/RegisterTemplateProper
 import {UiComponentsService} from "./services/UiComponentsService";
 import {RestUrlService} from "./services/RestUrlService";
 import {SlaService} from "./services/SlaService";
-// import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
+import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import {downgradeInjectable} from "@angular/upgrade/static";
 import {FeedSecurityGroups} from "./services/FeedSecurityGroups";
 import { EditFeedNifiPropertiesService } from './services/EditFeedNifiPropertiesService';
@@ -106,7 +106,7 @@ angular.module(moduleName).factory('CategoriesService', downgradeInjectable(SlaS
 
 angular.module(moduleName).factory('DatasourcesService', downgradeInjectable(DatasourcesService));
 
-// angular.module(moduleName).factory('PolicyInputFormService', downgradeInjectable(PolicyInputFormService));
+angular.module(moduleName).factory('PolicyInputFormService', downgradeInjectable(PolicyInputFormService));
 
 angular.module(moduleName).service('FeedCreationErrorService', FeedCreationErrorService);
 

@@ -9,7 +9,7 @@ import {
     uiComponentsServiceProvider,
     feedSecurityGroupProvider
 } from "./services/angular2";
-// import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
+import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import {RestUrlService} from "./services/RestUrlService";
 import CategoriesService from "./services/CategoriesService";
 import {FeedSecurityGroups} from "./services/FeedSecurityGroups";
@@ -33,7 +33,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
         feedInputProcessorPropertiesTemplateServiceProvider,
         feedDetailsProcessorRenderingHelperProvider,
         feedSecurityGroupProvider,
-        // PolicyInputFormService,
+        PolicyInputFormService,
         RestUrlService
     ],
     exports:[
