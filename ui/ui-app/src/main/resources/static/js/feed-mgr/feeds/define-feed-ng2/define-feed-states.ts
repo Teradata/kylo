@@ -169,6 +169,18 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 }
             },
             {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    let datasourceId = state.transition.params().datasourceId;
+                    return catalog.getDataSourceConnectorPlugin(datasourceId)
+                        .pipe(catchError(() => {
+                            return state.go("catalog")
+                        }))
+                        .toPromise();
+                }
+            },
+            {
                 token:"params",
                 deps:[StateService],
                 resolveFn: (state: StateService) => {

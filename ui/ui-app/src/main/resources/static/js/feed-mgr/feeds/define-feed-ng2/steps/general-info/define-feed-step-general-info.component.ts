@@ -320,7 +320,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      */
     updateScheduleStrategies() {
         this.scheduleStrategies = _.filter(this.allScheduleStrategies, (strategy: any) => {
-            if (this.feed.registeredTemplate.allowPreconditions) {
+            if (this.feed && this.feed.registeredTemplate && this.feed.registeredTemplate.allowPreconditions) {
                 return (strategy.value === "TRIGGER_DRIVEN");
             } else if (strategy.value === "PRIMARY_NODE_ONLY") {
                 return (this.isClustered && !this.supportsExecutionNode);

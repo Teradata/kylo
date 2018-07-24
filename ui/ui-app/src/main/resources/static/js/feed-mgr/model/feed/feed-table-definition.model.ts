@@ -139,4 +139,63 @@ import {KyloObject} from "../../../common/common.model";
 
 
 
+       /**
+        * Adding a new Column to the schema
+        * This is called both when the user clicks the "Add Field" button or when the sample file is uploaded
+        * If adding from the UI the {@code columnDef} will be null, otherwise it will be the parsed ColumnDef from the sample file
+        * @param columnDef
+        */
+       addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) :TableColumnDefinition{
+
+           //add to the fields
+           let newColumn = this.tableSchema.addColumn(columnDef);
+
+           // when adding a new column this is also called to synchronize the field policies array with the columns
+           let policy = TableFieldPolicy.forName(newColumn.name);
+           this.fieldPolicies.push(policy);
+           this.sourceTableSchema.fields.push(new TableColumnDefinition({name:newColumn.name}));
+           if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
+               this.syncTableFieldPolicyNames();
+           }
+           return newColumn;
+
+       }
+
+       undoColumn(index: number):TableColumnDefinition {
+           var columnDef = <TableColumnDefinition> this.tableSchema.fields[index];
+           columnDef.history.pop();
+           let prevValue = columnDef.history[columnDef.history.length - 1];
+           columnDef.undo(prevValue);
+           return columnDef;
+       };
+
+       getColumnDefinitionByName(name:string) :TableColumnDefinition{
+           return <TableColumnDefinition> this.tableSchema.fields.find(columnDef =>  columnDef.name == name);
+       }
+
+       /**
+        * get the partition objects for a given column
+        * @param {string} columnName
+        * @return {TableFieldPartition[]}
+        */
+       getPartitionsOnColumn(columnName:string){
+           let partitions = this.partitions
+               .filter((partition: any) => {
+                   return partition.columnDef.name === columnName;
+               });
+           return partitions;
+       }
+
+       /**
+        * Remove a column from the schema
+        * @param index
+        */
+       removeColumn(index: number) :TableColumnDefinition{
+           var columnDef = <TableColumnDefinition> this.tableSchema.fields[index];
+           columnDef.deleteColumn();
+           return columnDef;
+
+       }
+
+
     }
