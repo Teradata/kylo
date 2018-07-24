@@ -6,16 +6,14 @@ import {
     entityAccessControlServiceProvider, feedDetailsProcessorRenderingHelperProvider, feedInputProcessorPropertiesTemplateServiceProvider,
     feedPropertyServiceProvider,
     feedServiceProvider,
-    uiComponentsServiceProvider,
-    feedSecurityGroupProvider
+    uiComponentsServiceProvider
 } from "./services/angular2";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import {RestUrlService} from "./services/RestUrlService";
 import CategoriesService from "./services/CategoriesService";
-import {FeedSecurityGroups} from "./services/FeedSecurityGroups";
 import {KyloCommonModule} from "../common/common.module";
 import {UpgradeModule} from "@angular/upgrade/static";
-
+import {FeedSecurityGroups} from "./services/FeedSecurityGroups";
 
 @NgModule({
     imports: [
@@ -32,20 +30,16 @@ import {UpgradeModule} from "@angular/upgrade/static";
         uiComponentsServiceProvider,
         feedInputProcessorPropertiesTemplateServiceProvider,
         feedDetailsProcessorRenderingHelperProvider,
-        feedSecurityGroupProvider,
         PolicyInputFormService,
-        RestUrlService
+        RestUrlService,
+        FeedSecurityGroups
     ],
     exports:[
     ]
 })
 export class KyloFeedManagerModule {
-    constructor(injector: Injector) {
-    //     console.log("Loading KyloFeedManagerModule")
-        require("./feed-mgr-angular-js.module");
-    //  //   injector.get("$ocLazyLoad").inject(moduleName);
-        require("./feed-mgr.module-require");
-
+    constructor() {
+        console.log("Loading KyloFeedManagerModule")
     }
 
 }

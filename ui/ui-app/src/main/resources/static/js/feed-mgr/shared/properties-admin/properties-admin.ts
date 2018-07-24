@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";
 
 /**
  * A user-defined property field (or business metadata) for categories or feeds.

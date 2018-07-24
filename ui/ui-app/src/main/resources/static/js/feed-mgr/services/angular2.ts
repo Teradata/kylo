@@ -10,7 +10,6 @@ import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService
 import {UiComponentsService} from "./UiComponentsService";
 import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
-import { FeedSecurityGroups } from "./FeedSecurityGroups";
 
 export class AngularServiceUpgrader {
     constructor(){
@@ -29,8 +28,6 @@ export class AngularServiceUpgrader {
 export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
 
 export const feedServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedService);
-
-export const feedSecurityGroupProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedSecurityGroups);
 
 export const domainTypesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DomainTypesService);
 

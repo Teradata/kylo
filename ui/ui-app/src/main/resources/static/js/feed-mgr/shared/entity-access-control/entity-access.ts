@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from './EntityAccessControlService';
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../../module-name";
 
 export class EntityAccessControlController {
 

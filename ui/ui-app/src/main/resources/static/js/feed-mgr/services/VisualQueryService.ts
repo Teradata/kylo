@@ -1,4 +1,3 @@
-import "feed-mgr/module";
 import {UnderscoreStatic} from "underscore";
 
 declare const _: UnderscoreStatic;

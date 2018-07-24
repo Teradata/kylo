@@ -10,7 +10,6 @@ import "./services/FeedInputProcessorPropertiesTemplateService";
 import "./services/FeedDetailsProcessorRenderingHelper";
 import "./services/ImportService";
 import "./services/DefaultFeedPropertyService";
-import "./shared/policy-input-form/policy-input-form";
 import "./services/HiveService";
 import "./shared/hql-editor/hql-editor";
 import "./services/DBCPTableSchemaService";
@@ -25,7 +24,6 @@ import "./shared/feed-field-policy-rules/inline-field-policy-form";
 import "./shared/nifi-property-input/nifi-property-timunit-input";
 import "./shared/nifi-property-input/nifi-property-input";
 import "./shared/cron-expression-validator/cron-expression-validator";
-import "./shared/cron-expression-preview/cron-expression-preview";
 //import "./services/DatasourcesService";
 import "./shared/entity-access-control/entity-access";
 import "./shared/entity-access-control/EntityAccessControlDialogService";
@@ -61,7 +59,6 @@ import { RegisterTemplateServiceFactory } from './services/RegisterTemplateServi
 import { DBCPTableSchemaService } from './services/DBCPTableSchemaService';
 import CodeMirrorService from './services/CodeMirrorService';
 
-angular.module(moduleName).service('FeedSecurityGroups',  FeedSecurityGroups);
 angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);
 
 angular.module(moduleName)
@@ -107,6 +104,8 @@ angular.module(moduleName).factory('CategoriesService', downgradeInjectable(SlaS
 angular.module(moduleName).factory('DatasourcesService', downgradeInjectable(DatasourcesService));
 
 angular.module(moduleName).factory('PolicyInputFormService', downgradeInjectable(PolicyInputFormService));
+
+angular.module(moduleName).factory('FeedSecurityGroups', downgradeInjectable(FeedSecurityGroups));
 
 angular.module(moduleName).service('FeedCreationErrorService', FeedCreationErrorService);
 

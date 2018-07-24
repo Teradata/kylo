@@ -4,7 +4,10 @@ import {moduleName} from "./module-name";
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 import AccessConstants from "../constants/AccessConstants";
 import "../services/services.module";
-const {KyloFeedManager} = require('../feed-mgr/module');
+// const {KyloFeedManager} = require('../feed-mgr/module');
+
+const {KyloFeedManager} = require("./feed-mgr-angular-js.module");
+
 
 class ModuleFactory  {
     module: ng.IModule;
