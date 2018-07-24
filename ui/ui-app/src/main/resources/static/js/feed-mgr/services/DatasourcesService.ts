@@ -119,7 +119,7 @@ import "../module"; // ensure module is loaded first
             findAll= () => {
                 return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}})
                     .then((response:any) => {
-                        _.each(response.data, this.ensureDefaultIcon);
+                        _.each(response.data, this.ensureDefaultIcon.bind(this));
                         return response.data;
                     });
             }
