@@ -341,4 +341,13 @@ public class DataSourceProvider {
         dataSource.setTemplate(template);
         return dataSource;
     }
+
+    /**
+     * Deletes datasource and any credentials stored for this data source
+     * @param dataSourceId datasource to be deleted
+     */
+    public void delete(String dataSourceId) {
+        DataSource ds = catalogDataSources.remove(dataSourceId);
+        credentialManager.removeCredentials(ds);
+    }
 }

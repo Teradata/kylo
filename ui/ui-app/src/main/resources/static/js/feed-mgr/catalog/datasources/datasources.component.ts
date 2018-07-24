@@ -2,11 +2,14 @@ import * as angular from 'angular';
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {TdLoadingService} from "@covalent/core/loading";
+import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading";
 import {StateService} from "@uirouter/angular";
 
 import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";
+import {finalize} from 'rxjs/operators/finalize';
+import {catchError} from 'rxjs/operators/catchError';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 /**
  * Displays available datasources
@@ -19,6 +22,7 @@ import {CatalogService} from "../api/services/catalog.service";
 export class DataSourcesComponent implements OnInit {
 
     static readonly LOADER = "DataSourcesComponent.LOADER";
+    private static topOfPageLoader: string = "DataSourcesComponent.topOfPageLoader";
 
     /**
      * List of available data sources
@@ -49,7 +53,14 @@ export class DataSourcesComponent implements OnInit {
     searchTerm: string;
 
     constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loadingService: TdLoadingService,
-                private state: StateService, private $$angularInjector: Injector) {
+                private state: StateService, private $$angularInjector: Injector, private snackBarService: MatSnackBar) {
+        this.loadingService.create({
+            name: DataSourcesComponent.topOfPageLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
+
         // Register Add button
         let accessControlService = $$angularInjector.get("AccessControlService");
         let addButtonService = $$angularInjector.get("AddButtonService");
@@ -88,6 +99,33 @@ export class DataSourcesComponent implements OnInit {
     }
 
     /**
+     * Edit properties of datasource
+     */
+    editDatasource(event: any, datasource: DataSource) {
+        event.stopPropagation();
+        this.state.go("catalog.edit-datasource", {datasourceId: datasource.id});
+    }
+
+    /**
+     * Delete datasource
+     */
+    deleteDatasource(event: any, datasource: DataSource) {
+        event.stopPropagation();
+        this.loadingService.register(DataSourcesComponent.topOfPageLoader);
+        this.catalog.deleteDataSource(datasource)
+            .pipe(finalize(() => {
+                this.loadingService.resolve(DataSourcesComponent.topOfPageLoader);
+            }))
+            .pipe(catchError((err) => {
+                this.showSnackBar('Failed to delete.', err.message);
+                return [];
+            }))
+            .subscribe(() => {
+                this.state.go("catalog.datasources", {}, {reload: true});
+            });
+    }
+
+    /**
      * Updates filteredDatasources by filtering availableDatasources.
      */
     private filter() {
@@ -95,4 +133,10 @@ export class DataSourcesComponent implements OnInit {
         filteredConnectors = this.dataTable.sortData(filteredConnectors, "title");
         this.filteredDatasources = filteredConnectors;
     }
+
+    showSnackBar(msg: string, err: string): void {
+        this.snackBarService
+            .open(msg + ' ' + (err ? err : ""), 'OK', { duration: 5000 });
+    }
+
 }

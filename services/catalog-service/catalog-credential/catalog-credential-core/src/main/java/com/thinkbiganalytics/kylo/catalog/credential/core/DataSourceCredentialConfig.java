@@ -82,6 +82,11 @@ public class DataSourceCredentialConfig {
             return Collections.emptyMap();
         }
 
+        @Override
+        public Void removeCredentials(DataSource ds) {
+            return null;
+        }
+
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.kylo.catalog.credential.spi.DataSourceCredentialProvider#applyPlaceholders(com.thinkbiganalytics.kylo.catalog.rest.model.DataSource, java.util.Set)
          */

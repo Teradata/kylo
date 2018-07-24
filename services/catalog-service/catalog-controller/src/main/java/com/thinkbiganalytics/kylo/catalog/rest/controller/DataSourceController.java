@@ -47,13 +47,13 @@ import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -166,6 +166,23 @@ public class DataSourceController extends AbstractCatalogController {
         }
         
         return Response.ok(log.exit(dataSource)).build();
+    }
+
+    @DELETE
+    @ApiOperation("Deletes the specified data source")
+    @ApiResponses({
+                      @ApiResponse(code = 204, message = "Data source deleted successfully", response = DataSource.class),
+                      @ApiResponse(code = 404, message = "Data source was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("{id}")
+    public Response deleteDataSource(@PathParam("id") final String dataSourceId) {
+        log.entry(dataSourceId);
+
+        metadataService.commit(() -> dataSourceProvider.delete(dataSourceId));
+
+        log.exit();
+        return Response.noContent().build();
     }
 
     @GET

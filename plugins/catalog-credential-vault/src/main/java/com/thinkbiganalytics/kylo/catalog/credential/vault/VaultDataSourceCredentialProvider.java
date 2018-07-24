@@ -42,7 +42,13 @@ public class VaultDataSourceCredentialProvider extends AbstractDataSourceCredent
 
     @Override
     public boolean accepts(DataSource ds) {
-        return secretStore.contains(ds.getId());
+        return true;
+    }
+
+    @Override
+    public Void removeCredentials(DataSource ds) {
+        secretStore.remove(ds.getId());
+        return null;
     }
 
     @Override

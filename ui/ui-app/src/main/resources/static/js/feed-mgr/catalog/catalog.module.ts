@@ -29,6 +29,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatIconModule} from '@angular/material/icon';
 
 @NgModule({
     declarations: [
@@ -59,6 +60,7 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
         MatCardModule,
         FormsModule,
         MatInputModule,
+        MatIconModule,
         MatOptionModule,
         MatSelectModule,
         ReactiveFormsModule,
