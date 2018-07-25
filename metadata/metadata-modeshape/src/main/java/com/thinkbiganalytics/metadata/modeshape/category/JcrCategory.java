@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.IndexControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
@@ -114,37 +115,20 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     }
 
     // -=-=--=-=- Delegate Propertied methods to details -=-=-=-=-=-
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin#getPropertiesObject()
+     */
     @Override
-    public Map<String, Object> getProperties() {
-        return getDetails().map(d -> d.getProperties()).orElse(Collections.emptyMap());
+    public Optional<JcrProperties> getPropertiesObject() {
+        // Delegate to the details object to get the properties node that holds 
+        // dynamic properties.
+        return getDetails().flatMap(d -> d.getPropertiesObject());
     }
 
-    @Override
-    public void setProperties(Map<String, Object> properties) {
-        getDetails().ifPresent(d -> d.setProperties(properties));
-    }
-
-    @Override
-    public void setProperty(String name, Object value) {
-        getDetails().ifPresent(d -> d.setProperty(name, value));
-    }
-
-    @Override
-    public void removeProperty(String key) {
-        getDetails().ifPresent(d -> d.removeProperty(key));
-    }
-
-    @Override
-    public Map<String, Object> mergeProperties(Map<String, Object> props) {
-        return getDetails().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
-    }
-
-    @Override
-    public Map<String, Object> replaceProperties(Map<String, Object> props) {
-        return getDetails().map(d -> d.replaceProperties(props)).orElse(Collections.emptyMap());
-    }
-
+    
+    // -=-=--=-=-=-=-=-=-=-=-
+    
 
     public Optional<CategoryDetails> getDetails() {
         if (this.details == null) {

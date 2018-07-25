@@ -75,6 +75,12 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
     }
+    
+    @Override
+    public String getSystemName() {
+        String name = SystemEntityMixin.super.getSystemName();
+        return name != null ? name : getNodeName();
+    }
 
     @Nullable
     @Override

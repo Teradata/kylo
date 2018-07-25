@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.IndexControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
@@ -134,31 +135,19 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     }
 
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin#getPropertiesObject()
+     */
+    @Override
+    public Optional<JcrProperties> getPropertiesObject() {
+        // Delegate to the feed details object to get the properties node that holds 
+        // dynamic properties.
+        return getFeedDetails().flatMap(d -> d.getPropertiesObject());
+    }
+    
+    // -=-=--=-=-=-=-=-=-=-=-
 
-//    @Override
-//    public Map<String, Object> getProperties() {
-//        return getFeedData().map(d -> d.getProperties()).orElse(Collections.emptyMap());
-//    }
-//
-//    @Override
-//    public void setProperties(Map<String, Object> properties) {
-//        getFeedData().ifPresent(d -> d.replaceProperties(properties));
-//    }
-//
-//    @Override
-//    public void setProperty(String name, Object value) {
-//        getFeedData().ifPresent(d -> d.setProperty(name, value));
-//    }
-//
-//    @Override
-//    public void removeProperty(String key) {
-//        getFeedData().ifPresent(d -> d.removeProperty(key));
-//    }
-//
-//    @Override
-//    public Map<String, Object> mergeProperties(Map<String, Object> props) {
-//        return getFeedData().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
-//    }
     
     public  void clearAdditionalProperties() {
         getFeedData().ifPresent(d -> d.clearAdditionalProperties());
