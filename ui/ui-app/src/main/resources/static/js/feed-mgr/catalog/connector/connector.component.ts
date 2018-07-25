@@ -16,12 +16,12 @@ import * as _ from "underscore";
 
 
 interface UiOptionsMapper {
-    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void;
-    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void;
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void;
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void;
 }
 
 class DefaultUiOptionsMapper implements UiOptionsMapper {
-    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
@@ -30,7 +30,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
             }
         });
     }
-    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 control.setValue(ds.template.paths[0]);
@@ -42,11 +42,11 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
 }
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
-    mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
         ds.template.paths.push(controls.get("path").value);
         ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
     }
-    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
         controls.get("path").setValue(ds.template.paths[0]);
         _.keys(ds.template.options).forEach(option => {
             if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
@@ -128,7 +128,7 @@ export class ConnectorComponent {
             this.titleControl.setValue(this.datasource.title);
             const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
             if (optionsMapper) {
-                optionsMapper.reverseMapOptions(this.datasource, this.controls);
+                optionsMapper.mapFromModelToUi(this.datasource, this.controls);
             } else {
                 this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
                     + " for connector " + this.connector.title);
@@ -173,7 +173,7 @@ export class ConnectorComponent {
         ds.template.options = {};
         const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
         if (optionsMapper) {
-            optionsMapper.mapOptions(ds, this.controls);
+            optionsMapper.mapFromUiToModel(ds, this.controls);
         } else {
             this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
                 + " for connector " + this.connector.title);
