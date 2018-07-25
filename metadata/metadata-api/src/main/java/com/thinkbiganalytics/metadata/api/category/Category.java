@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.api.category;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.IndexControlled;
 
 /*-
  * #%L
@@ -42,7 +43,7 @@ import javax.annotation.Nonnull;
 /**
  * A category is a collection of zero or more feeds.
  */
-public interface Category extends AccessControlled, SystemEntity, Auditable, Taggable {
+public interface Category extends AccessControlled, SystemEntity, Auditable, IndexControlled, Taggable {
 
     ID getId();
 
