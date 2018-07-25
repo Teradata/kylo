@@ -138,10 +138,150 @@ export class ColumnDelegate implements IColumnDelegate {
         this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Strip " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
+    /**
+     * Extracts string at indexes of the current selection
+     * @param range selected range object
+     * @param column the current column
+     * @param grid the table
+     */
+    extractStringAtSelectedIndex(range: any, column: any, grid: any) {
+        const fieldName = this.getColumnFieldName(column);
+        const startOffset = range.startOffset;
+        const endOffset = range.endOffset;
+        const formula = this.toFormula(`substr(${fieldName}, ${startOffset}, ${endOffset}).as("${fieldName}")`, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: `Extract string between index ${startOffset} and ${endOffset}`});
+    }
+
     clearRowsEquals(value: string, column: any, grid: any) {
         const fieldName = this.getColumnFieldName(column);
         const formula = this.toFormula("when(equal(" + fieldName + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise(" + fieldName + ").as(\"" + fieldName + "\")", column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
+    }
+
+    /**
+     * Replace value matching the current row
+     * @param {string} value
+     * @param column
+     * @param grid
+     */
+    replaceValueEqualTo(value: string, column:any, grid:any) {
+        const fieldName = this.getColumnFieldName(column);
+        const dataType = column.dataType;
+        const dataCategory = this.fromDataType(dataType);
+
+        let self = this;
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                replaceValue : any = "";
+                static readonly $inject = ["$mdDialog"];
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+                valid() : boolean {
+                    if (dataCategory == DataCategory.NUMERIC) {
+                        return (!isNaN(this.replaceValue));
+                    }
+                    return true;
+                }
+                cancel() {
+                    this.$mdDialog.hide();
+                }
+                apply() {
+                    this.$mdDialog.hide();
+                    let formula = '';
+                    if (dataCategory == DataCategory.NUMERIC) {
+                        if (this.replaceValue == null || this.replaceValue == '') {
+                            this.replaceValue = `''`
+                        }
+                        formula = self.toFormula(`when(${fieldName}==${value}, ${this.replaceValue}).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
+                    } else {
+                        formula = self.toFormula(`when(${fieldName}=='${value}', '${this.replaceValue}').otherwise(${fieldName}).as("${fieldName}")`, column, grid);
+                    }
+                    self.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace string ${value} with ${this.replaceValue}`});
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">${value}</h2>
+                      <md-input-container>
+                        <label>Replace with:</label>
+                        <input ng-model="dialog.replaceValue" >
+                        </input>
+                      </md-input-container>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
+                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
+
+    }
+
+    /**
+     * Convert continuous values in quantiles
+     */
+    binValues(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+        const dataType = column.dataType;
+        const dataCategory = self.fromDataType(dataType);
+
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                bins : any = "5";
+                static readonly $inject = ["$mdDialog"];
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+                valid() : boolean {
+                    if (dataCategory == DataCategory.NUMERIC) {
+                        return (!isNaN(this.bins));
+                    }
+                    return true;
+                }
+                cancel() {
+                    this.$mdDialog.hide();
+                }
+                apply() {
+                    this.$mdDialog.hide();
+                    const tempField = self.createTempField();
+                    let formula = `QuantileDiscretizer().setInputCol("${fieldName}").setNumBuckets(${this.bins}).setOutputCol("${tempField}").run(select(${fieldName}))`;
+                    let renameScript = self.generateRenameScript(fieldName, tempField, grid);
+
+                    // Two part conversion
+                    let chainedOp: ChainedOperation = new ChainedOperation(2);
+                    self.controller.setChainedQuery(chainedOp);
+                    self.controller.pushFormula(formula, {formula: formula, icon: 'insert_chart_outlined', name: `Bin ${fieldName} values`}, true, false)
+                        .then(function result() {
+                            chainedOp.nextStep();
+                            self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp column to ' + fieldName});
+                        })
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="Bin" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">Bin</h2>
+                      <md-input-container>
+                        <label># of bins:</label>
+                        <input ng-model="dialog.bins" >
+                        </input>
+                      </md-input-container>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
+                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
+
     }
 
     /**
@@ -345,7 +485,7 @@ export class ColumnDelegate implements IColumnDelegate {
             controllerAs: "dialog",
             parent: angular.element("body"),
             template: `
-                  <md-dialog arial-label="error executing the query" style="max-width: 640px;">
+                  <md-dialog arial-label="Select crosstab field" style="max-width: 640px;">
                     <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
                       <h2 class="md-title">Select crosstab field:</h2>
 
@@ -355,7 +495,7 @@ export class ColumnDelegate implements IColumnDelegate {
                             <md-option ng-repeat="x in dialog.columns" value="{{x.field}}">
                                 {{x.field}}
                             </md-option>
-                        </md-select>
+                        </md-select> 
                       </md-input-container>
                     </md-dialog-content>
                     <md-dialog-actions>
@@ -425,6 +565,61 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Extract array item into a new column
+     * @param column
+     * @param grid
+     */
+    extractArrayItem(self: any, column: any, grid: any) {
+
+        const fieldName = self.getColumnFieldName(column);
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                index : any = "0";
+                name: string = fieldName+"_"+this.index;
+                static readonly $inject = ["$mdDialog"];
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+                valid() : boolean {
+                    return (!isNaN(this.index));
+                }
+                cancel() {
+                    this.$mdDialog.hide();
+                }
+                apply() {
+                    this.$mdDialog.hide();
+                    let formula = self.createAppendColumnFormula(`getItem(${fieldName},${this.index}).as("${this.name}")`, column, grid, this.name);
+                    self.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${this.index}`});
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">${fieldName}</h2>
+                      <md-input-container>
+                        <label>Array index:</label>
+                        <input ng-model="dialog.index" >
+                        </input>
+                      </md-input-container>
+                      <md-input-container>
+                        <label>Field name:</label>
+                        <input ng-model="dialog.name" >
+                        </input>
+                      </md-input-container>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
+                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
+
+    }
+
+    /**
      * Extract array items into columns
      * @param column
      * @param grid
@@ -452,7 +647,6 @@ export class ColumnDelegate implements IColumnDelegate {
         var formula = self.generateMoveScript(fieldName, columns, grid, false);
         self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
-
 
     /**
      * Adds string labels to indexes
@@ -927,6 +1121,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     replaceEmptyWithValue(self: any, column: any, grid: any) {
+        const dataType = column.dataType;
+        const dataCategory = self.fromDataType(dataType);
 
         const prompt = (self.$mdDialog as any).prompt({
             title: "Replace Empty",
@@ -937,7 +1133,8 @@ export class ColumnDelegate implements IColumnDelegate {
         });
         self.$mdDialog.show(prompt).then(function (value: string) {
             let fieldName = self.getColumnFieldName(column);
-            let script = `when((${fieldName} == "" || isnull(${fieldName}) ),"${value}").otherwise(${fieldName}).as("${fieldName}")`;
+            let valueClean = (dataCategory == DataCategory.NUMERIC ? value : `"${value}"`);
+            let script = `when((${fieldName} == "" || isnull(${fieldName}) ),${valueClean}).otherwise(${fieldName}).as("${fieldName}")`;
             const formula = self.toFormula(script, column, grid);
             self.controller.addFunction(formula, {
                 formula: formula, icon: "find_replace",
@@ -1133,7 +1330,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
                 {icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
                 {descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
-                {descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'});
+                {descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
+                {descriptions: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues});
         }
         else if (dataCategory === DataCategory.STRING) {
             transforms.push({description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower'},
@@ -1150,13 +1348,14 @@ export class ColumnDelegate implements IColumnDelegate {
             transforms.push(
                 {description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std dev', operation: self.rescaleStdDevColumn},
                 {description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean', operation: self.rescaleMeanColumn},
-                {description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn},
+                {description: 'Rescale using mean and std dev', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn},
                 {description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax}
             );
         } else if (dataCategory === DataCategory.ARRAY) {
             transforms.push({icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
                 {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'},
-                {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems}
+                {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems},
+                {description: 'Extract item to column', icon: 'call_split', name: 'Extract item...', operation: self.extractArrayItem}
             );
         }
         else if (dataCategory === DataCategory.BINARY) {
@@ -1191,11 +1390,20 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Returns the as alias clause
+     * @param columns column list
+     * @returns {string} a unique fieldname
+     */
+    protected toAliasClause(name:string): string {
+        return ".as(\"" + name + "\")"
+    }
+
+    /**
      * Creates a guaranteed unique field name
      * @param columns column list
      * @returns {string} a unique fieldname
      */
-    protected toAsUniqueColumnName(columns: Array<any>, columnFieldName: any): string {
+    protected toUniqueColumnName(columns: Array<any>, columnFieldName: any): string {
         let prefix = "new_";
         let idx = 0;
         let columnSet = new Set();
@@ -1211,7 +1419,7 @@ export class ColumnDelegate implements IColumnDelegate {
             uniqueName = (columnSet.has(name) ? null : name);
             idx++;
         }
-        return ".as(\"" + uniqueName + "\")"
+        return uniqueName;
     }
 
     /**
@@ -1223,16 +1431,32 @@ export class ColumnDelegate implements IColumnDelegate {
      * @returns {string} a formula that replaces the column
      */
     protected toAppendColumnFormula(script: string, column: any, grid: any): string {
+        const self = this;
+        const columnFieldName = self.getColumnFieldName(column);
+        const uniqueName = self.toUniqueColumnName(grid.columns, columnFieldName);
+        return self.createAppendColumnFormula(script,column,grid,uniqueName);
+    }
+
+    /**
+     * Creates a formula that adds a new column with the specified script.
+     *
+     * @param {string} script the expression for the column
+     * @param {ui.grid.GridColumn} column the column to be replaced
+     * @param {ui.grid.Grid} grid the grid with the column
+     * @returns {string} a formula that replaces the column
+     */
+    protected createAppendColumnFormula(script: string, column: any, grid: any, newField: string): string {
+        const self = this;
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
-        const self = this;
+
         angular.forEach(grid.columns, function (item, idx) {
             if (item.visible) {
                 const itemFieldName = self.getColumnFieldName(item);
                 formula += (formula.length == 0) ? "select(" : ", ";
                 formula += itemFieldName;
                 if (itemFieldName == columnFieldName) {
-                    formula += "," + script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                    formula += "," + script + self.toAliasClause(newField);
                 }
             }
         });
@@ -1240,7 +1464,6 @@ export class ColumnDelegate implements IColumnDelegate {
         formula += ")";
         return formula;
     }
-
     /**
      * Creates a formula that replaces the specified column with the specified script.
      *

@@ -13,7 +13,13 @@
   <md-menu-item ng-if="selection !== null && selection.length > 0">
     <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selection }}</md-button>
   </md-menu-item>
+  <md-menu-item ng-if="range && value !== null && selection &&  selection.length > 0">
+    <md-button ng-click="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract string at index {{ range.startOffset }} to {{ range.endOffset }}</md-button>
+  </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>
+  <md-menu-item ng-if="value !== null">
+    <md-button ng-click="header.delegate.replaceValueEqualTo(value, header, table)">Replace values equal {{ selection }}...</md-button>
+  </md-menu-item>
   <md-menu-item ng-if="value !== null">
     <md-button ng-click="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</md-button>
   </md-menu-item>

@@ -420,6 +420,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         const header = this.delegate.columns[column];
         const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
+        const range = selection.getRangeAt(0)
 
         if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
             return;  // ignore dragging between elements
@@ -437,6 +438,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.DataCategory = DataCategory;
         $scope.header = header;
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
+        $scope.range = range;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : cellDiv.innerText;
         $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)

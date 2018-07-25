@@ -362,6 +362,20 @@ export class SparkQueryEngine extends QueryEngine<string> {
         }
     }
 
+    decodeError(msg:string) : string {
+        if (msg != null) {
+
+            if (msg.indexOf("Cannot read property") > -1) {
+                msg = "Please ensure field names are correct.";
+            } else if (msg.indexOf("Program is too long") > -1) {
+                msg = "Please check parenthesis align."
+            } else if (msg.indexOf("MatchError: ") > -1) {
+                msg = "Please remove, impute, or replace all empty values and try again."
+            }
+        }
+        return msg;
+    }
+
     /**
      * Runs the current Spark script on the server.
      *
@@ -495,7 +509,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
             let message;
 
             if (angular.isString(response.data.message)) {
-                message = (response.data.message.length <= 1024) ? response.data.message : response.data.message.substr(0, 1021) + "...";
+                message = self.decodeError(response.data.message);
+                message = (message.length <= 1024) ? message : message.substr(0, 1021) + "...";
             } else {
                 message = "An unknown error occurred.";
             }

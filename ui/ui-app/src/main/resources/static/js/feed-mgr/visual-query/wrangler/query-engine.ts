@@ -656,6 +656,12 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     abstract transform(pageSpec ?:PageSpec, doValidate ?: boolean, doProfile ?: boolean): Observable<any>;
 
+
+    /**
+     * Decode the error message into a user-friendly error
+     */
+    abstract decodeError(msg:string) : string;
+
     /**
      * Reverts to the previous transformation. The current transformation is remembered and may be restored.
      *

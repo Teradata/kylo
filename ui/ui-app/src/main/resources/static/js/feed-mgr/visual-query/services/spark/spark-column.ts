@@ -112,13 +112,15 @@ export class SparkColumnDelegate extends ColumnDelegate {
         switch (this.dataType) {
             case SparkDataType.BIGINT.value:
             case SparkDataType.INT.value:
-                return [SparkDataType.DATE, SparkDataType.STRING];
-
+                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.FLOAT, SparkDataType.DOUBLE];
+            case SparkDataType.FLOAT.value:
+                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.INT, SparkDataType.DOUBLE];
+            case SparkDataType.DOUBLE.value:
+                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.FLOAT, SparkDataType.INT];
             case SparkDataType.DATE.value:
                 return [SparkDataType.STRING, SparkDataType.TIMESTAMP];
-
             case SparkDataType.STRING.value:
-                return [SparkDataType.BIGINT, SparkDataType.DATE, SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.TIMESTAMP];
+                return [SparkDataType.BIGINT, SparkDataType.DATE, SparkDataType.FLOAT, SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.TIMESTAMP];
 
             default:
                 return [SparkDataType.STRING];
