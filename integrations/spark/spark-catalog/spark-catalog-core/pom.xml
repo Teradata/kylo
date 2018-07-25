@@ -27,6 +27,10 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-hadoop</artifactId>
       <version>${project.version}</version>
