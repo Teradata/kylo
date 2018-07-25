@@ -44,16 +44,16 @@ import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *
  */
-public class FeedData extends JcrPropertiesEntity {
+public class FeedData extends JcrObject implements PropertiedMixin {
 
     public static final String NODE_TYPE = "tba:feedData";
 
@@ -81,8 +81,11 @@ public class FeedData extends JcrPropertiesEntity {
     public static final String HISTORY_REINDEXING = "tba:historyReindexing";
     public static final String REINDEXING_STATUS = "tba:reindexingStatus";
     
-    public FeedData(Node node) {
+    private JcrFeed feed;
+
+    public FeedData(Node node, JcrFeed feed) {
         super(node);
+        this.feed = feed;
     }
 
     public State getState() {
@@ -221,7 +224,7 @@ public class FeedData extends JcrPropertiesEntity {
     }
 
     public List<? extends HadoopSecurityGroup> getSecurityGroups() {
-        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);
+        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(getNode(), HADOOP_SECURITY_GROUPS);
         List<HadoopSecurityGroup> hadoopSecurityGroups = new ArrayList<>();
         if (list != null) {
             for (Node n : list) {
@@ -232,11 +235,11 @@ public class FeedData extends JcrPropertiesEntity {
     }
 
     public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
-        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
+        JcrPropertyUtil.setProperty(getNode(), HADOOP_SECURITY_GROUPS, null);
 
         for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
             Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
-            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
+            JcrPropertyUtil.addToSetProperty(getNode(), HADOOP_SECURITY_GROUPS, securityGroupNode, true);
         }
     }
 
@@ -244,6 +247,10 @@ public class FeedData extends JcrPropertiesEntity {
         InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));
         DateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
         return new InitializationStatus(state, timestamp);
+    }
+
+    protected JcrFeed getParentFeed() {
+        return this.feed;
     }
 
 }

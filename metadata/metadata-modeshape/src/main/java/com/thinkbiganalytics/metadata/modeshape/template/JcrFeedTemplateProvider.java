@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
@@ -77,12 +78,12 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrFeedTemplate.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrFeedTemplate.NODE_TYPE;
     }
 

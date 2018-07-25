@@ -36,7 +36,7 @@ import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
-import com.thinkbiganalytics.metadata.modeshape.common.mixin.NodeEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.WrappedNodeMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
@@ -48,7 +48,7 @@ import com.thinkbiganalytics.security.role.SecurityRole;
 /**
  *
  */
-public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin {
+public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixin {
     
     @Override
     default Set<RoleMembership> getRoleMemberships() {

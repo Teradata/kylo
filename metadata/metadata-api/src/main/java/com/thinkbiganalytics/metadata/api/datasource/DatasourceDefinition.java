@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.api.datasource;
 
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -25,7 +27,7 @@ import java.util.Set;
 
 /**
  */
-public interface DatasourceDefinition {
+public interface DatasourceDefinition extends SystemEntity {
 
     ID getId();
 
@@ -50,14 +52,6 @@ public interface DatasourceDefinition {
     String getIdentityString();
 
     void setIdentityString(String identityString);
-
-    String getDescription();
-
-    void setDescription(String desc);
-
-    String getTitle();
-
-    void setTile(String title);
 
     public enum ConnectionType {
         SOURCE, DESTINATION;

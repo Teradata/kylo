@@ -32,13 +32,6 @@ import javax.annotation.Nonnull;
 public interface UserDatasource extends Datasource, AccessControlled {
 
     /**
-     * Sets the description of this data source.
-     *
-     * @param description the description
-     */
-    void setDescription(@Nonnull String description);
-
-    /**
      * Gets the additional properties for this data source.
      *
      * @return the details

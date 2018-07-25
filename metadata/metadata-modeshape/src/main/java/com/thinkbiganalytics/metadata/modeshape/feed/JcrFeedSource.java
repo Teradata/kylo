@@ -42,7 +42,7 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
 
     public JcrFeedSource(Node node, JcrDatasource datasource) {
         super(node, datasource);
-        datasource.addSourceNode(this.node);
+        datasource.addSourceNode(getNode());
     }
 
 

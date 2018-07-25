@@ -49,7 +49,7 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
     }
 
     public Datasource getDatasource() {
-        return JcrUtil.getReferencedObject(this.node, DATASOURCE, JcrDatasourceProvider.TYPE_RESOLVER);
+        return JcrUtil.getReferencedObject(getNode(), DATASOURCE, JcrDatasourceProvider.TYPE_RESOLVER);
     }
 
 
@@ -59,7 +59,7 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
             //this.getParent == tba:details.
             //this.getParent.getParent == tba:summary
             //this.getParent.getParent.getParent == tba:feed
-            return JcrUtil.createJcrObject(this.node.getParent().getParent().getParent(), JcrFeed.class);
+            return JcrUtil.createJcrObject(getNode().getParent().getParent().getParent(), JcrFeed.class);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access feed", e);
         }

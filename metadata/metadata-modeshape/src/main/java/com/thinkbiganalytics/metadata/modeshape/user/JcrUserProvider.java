@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -78,12 +79,12 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrUser.class;
     }
 
     @Override
-    public String getNodeType(@Nonnull final Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(@Nonnull final Class<? extends JcrObject> jcrEntityType) {
         return JcrUser.NODE_TYPE;
     }
 

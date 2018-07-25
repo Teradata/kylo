@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  *
  */
-public interface FeedConnection extends Serializable {
+public interface FeedConnection {
 
     Feed getFeed();
 

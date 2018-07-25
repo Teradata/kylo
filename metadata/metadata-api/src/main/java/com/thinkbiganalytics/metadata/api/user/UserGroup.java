@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.user;
 
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -34,43 +36,13 @@ import javax.annotation.Nonnull;
 /**
  * Represents a group of users and/or other groups of users.
  */
-public interface UserGroup {
+public interface UserGroup extends SystemEntity {
 
     /**
      * @return the ID of this group
      */
     @Nonnull
     ID getId();
-
-    /**
-     * @return the unique name of this group
-     */
-    @Nonnull
-    String getSystemName();
-
-    /**
-     * @return the human readable title for this group, or the system name if none has been set.
-     */
-    String getTitle();
-
-    /**
-     * Sets a human-readable title for this group.
-     *
-     * @param title the new title
-     */
-    void setTitle(String title);
-
-    /**
-     * @return the description of this group
-     */
-    String getDescription();
-
-    /**
-     * Sets the description of this group.
-     *
-     * @param descr the new description
-     */
-    void setDescription(String descr);
 
     /**
      * Indicates that the group is available to be assigned users.

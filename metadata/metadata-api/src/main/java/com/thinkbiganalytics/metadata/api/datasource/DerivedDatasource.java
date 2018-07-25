@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.api.datasource;
 
+import com.thinkbiganalytics.metadata.api.Propertied;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -28,15 +30,7 @@ import javax.annotation.Nonnull;
 
 /**
  */
-public interface DerivedDatasource extends Datasource {
-
-    String getTitle();
-
-    void setTitle(String title);
-
-    Map<String, Object> getProperties();
-
-    void setProperties(Map<String, Object> properties);
+public interface DerivedDatasource extends Datasource, Propertied {
 
     Set<DatasourceDefinition> getDatasourceDefinitions();
 

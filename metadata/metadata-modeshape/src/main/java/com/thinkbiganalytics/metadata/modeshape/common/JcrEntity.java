@@ -23,15 +23,15 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.TaggableMixin;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
 import java.security.Principal;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.jcr.Node;
@@ -40,9 +40,8 @@ import javax.jcr.RepositoryException;
 /**
  *
  */
-public class JcrEntity extends JcrObject implements ExtensibleEntity {
-
-    public static final String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
+//public abstract class JcrEntity<I extends Serializable> extends JcrObject implements ExtensibleEntity<I> {
+public abstract class JcrEntity<I extends Serializable> extends JcrObject implements TaggableMixin {
 
     public static final String OWNER = "jcr:createdBy";
 
@@ -52,41 +51,8 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
     public JcrEntity(Node node) {
         super(node);
     }
-
-    public Set<String> addTag(String tag) {
-        Set<String> tags = getTags();
-        if (!hasTag(tag)) {
-            tags.add(tag);
-            setTags(tags);
-        }
-        return tags;
-    }
-
-    public boolean hasTag(String tag) {
-        Set<String> tags = getPropertyAsSet(TAGGABLE_NAME, String.class);
-        return tags.contains(tag);
-    }
-
-    public Set<String> getTags() {
-        return getPropertyAsSet(TAGGABLE_NAME, String.class);
-    }
-
-    public void setTags(Set<String> tags) {
-        setProperty(TAGGABLE_NAME, tags);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.category.CustomEntity#getId()
-     */
-    @Override
-    public ID getId() {
-        try {
-            return new EntityId(getObjectId());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
-        }
-    }
-
+    
+    public abstract I getId();
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.category.CustomEntity#getTypeName()
@@ -94,7 +60,7 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
     @Override
     public String getTypeName() {
         try {
-            return this.node.getPrimaryNodeType().getName().replace(JcrMetadataAccess.TBA_PREFIX + ":", "");
+            return getNode().getPrimaryNodeType().getName().replace(JcrMetadataAccess.TBA_PREFIX + ":", "");
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity type name", e);
         }
@@ -105,7 +71,7 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
     }
 
 
-    public static class EntityId extends BaseId implements ID {
+    public static class EntityId extends BaseId {
 
         private static final long serialVersionUID = -9084653006891727475L;
 

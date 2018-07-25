@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.domaintype.DomainTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -49,12 +50,12 @@ public class JcrDomainTypeProvider extends BaseJcrProvider<DomainType, DomainTyp
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrDomainType.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrDomainType.NODE_TYPE;
     }
 

@@ -67,7 +67,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     private static final Pattern INVALID_SYSTEM_NAME_PATTERN = Pattern.compile("[^(A-Z)(a-z)(0-9)_-]");
     protected Class<T> entityClass;
-    protected Class<? extends JcrEntity> jcrEntityClass;
+    protected Class<? extends JcrEntity<?>> jcrEntityClass;
 
     protected String getEntityQueryStartingPath() {
         return null;
@@ -93,12 +93,12 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     public abstract Class<? extends T> getEntityClass();
 
-    public abstract Class<? extends JcrEntity> getJcrEntityClass();
+    public abstract Class<? extends JcrEntity<?>> getJcrEntityClass();
 
     /**
      * return the JCR NodeType for this entity (i.e. tba:category, tba:feed)
      */
-    public abstract String getNodeType(Class<? extends JcrEntity> jcrEntityType);
+    public abstract String getNodeType(Class<? extends JcrObject> jcrEntityType);
 
     /**
      * \
@@ -108,7 +108,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
      *
      * @return the appropriate entity class
      */
-    public Class<? extends JcrEntity> getJcrEntityClass(String jcrNodeType) {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass(String jcrNodeType) {
         return getJcrEntityClass();
     }
 
@@ -145,7 +145,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
      */
-    public Node findOrCreateEntityNode(String parentPath, String relPath, Class<? extends JcrEntity> jcrEntityType) {
+    public Node findOrCreateEntityNode(String parentPath, String relPath, Class<? extends JcrEntity<?>> jcrEntityType) {
         Session session = getSession();
 
         try {
@@ -167,15 +167,15 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return findOrCreateEntity(path, relPath, getJcrEntityClass(), props, constructorArgs);
     }
 
-    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass) {
+    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity<?>> entClass) {
         return findOrCreateEntity(path, relPath, entClass, null);
     }
 
-    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass, Map<String, Object> props, Object... constructorArgs) {
+    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity<?>> entClass, Map<String, Object> props, Object... constructorArgs) {
         Session session = getSession();
         Node entNode = findOrCreateEntityNode(path, relPath, entClass);
         entNode = JcrPropertyUtil.setProperties(session, entNode, props);
-        Class<? extends JcrEntity> actualClass = getJcrEntityClass(entNode); // Handle subtypes
+        Class<? extends JcrEntity<?>> actualClass = getJcrEntityClass(entNode); // Handle subtypes
         return (T) JcrUtil.createJcrObject(entNode, entClass, constructorArgs);
     }
 

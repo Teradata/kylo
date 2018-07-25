@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 import org.slf4j.Logger;
@@ -53,12 +54,12 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrDatasourceDefinition.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
 
         return JcrDatasourceDefinition.NODE_TYPE;
     }

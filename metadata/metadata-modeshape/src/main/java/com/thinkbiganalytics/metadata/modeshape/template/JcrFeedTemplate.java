@@ -32,8 +32,9 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
@@ -42,7 +43,7 @@ import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAll
 
 /**
  */
-public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate, AccessControlledMixin {
+public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implements FeedManagerTemplate, AuditableMixin, SystemEntityMixin, AccessControlledMixin {
 
     public static final String NODE_TYPE = "tba:feedTemplate";
 
@@ -70,7 +71,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public FeedTemplateId getId() {
         try {
-            return new JcrFeedTemplate.FeedTemplateId(this.node.getIdentifier());
+            return new JcrFeedTemplate.FeedTemplateId(getNode().getIdentifier());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
@@ -180,7 +181,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     public List<Feed> getFeeds() {
         List<Feed> feeds = new ArrayList<>();
-        Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(this.node, FEEDS);
+        Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(getNode(), FEEDS);
 
         for (Node depNode : feedNodes) {
             // TODO: note that feeds instances returned here will not be able to update feed ops 
@@ -195,14 +196,14 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
-        return JcrPropertyUtil.addToSetProperty(this.node, FEEDS, feedNode, true);
+        return JcrPropertyUtil.addToSetProperty(getNode(), FEEDS, feedNode, true);
     }
 
     public boolean removeFeed(Feed feed) {
         JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
-        return JcrPropertyUtil.removeFromSetProperty(this.node, FEEDS, feedNode);
+        return JcrPropertyUtil.removeFromSetProperty(getNode(), FEEDS, feedNode);
     }
 
     public Long getOrder() {

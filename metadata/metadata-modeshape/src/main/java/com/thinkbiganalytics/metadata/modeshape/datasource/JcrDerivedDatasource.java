@@ -61,14 +61,14 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
 
     @Override
     public Set<DatasourceDefinition> getDatasourceDefinitions() {
-        return JcrPropertyUtil.getReferencedNodeSet(this.node, DATASOURCE_DEFINITION).stream()
+        return JcrPropertyUtil.getReferencedNodeSet(getNode(), DATASOURCE_DEFINITION).stream()
             .map(n -> JcrUtil.createJcrObject(n, JcrDatasourceDefinition.class))
             .collect(Collectors.toSet());
     }
 
 
     public void setDatasourceDefinitions(Set<DatasourceDefinition> datasourceDefinitions) {
-        JcrPropertyUtil.setProperty(this.node, DATASOURCE_DEFINITION, null);
+        JcrPropertyUtil.setProperty(getNode(), DATASOURCE_DEFINITION, null);
 
         for (DatasourceDefinition dest : datasourceDefinitions) {
             Node destNode = ((JcrDatasourceDefinition) dest).getNode();
@@ -78,15 +78,15 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
 
 
     public void addDatasourceDefinition(Node node) {
-        JcrPropertyUtil.addToSetProperty(this.node, DATASOURCE_DEFINITION, node, true);
+        JcrPropertyUtil.addToSetProperty(getNode(), DATASOURCE_DEFINITION, node, true);
     }
 
     public String getDatasourceType() {
-        return JcrPropertyUtil.getProperty(this.node, TYPE_NAME);
+        return JcrPropertyUtil.getProperty(getNode(), TYPE_NAME);
     }
 
     public void setDatasourceType(String type) {
-        JcrPropertyUtil.setProperty(this.node, TYPE_NAME, type);
+        JcrPropertyUtil.setProperty(getNode(), TYPE_NAME, type);
     }
 
     @Nonnull
@@ -107,7 +107,7 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
      */
     private Optional<JcrGenericJsonProperties> getGenericJsonPropertiesObject() {
         try {
-            return Optional.ofNullable(JcrUtil.getOrCreateNode(this.node, GENERIC_JSON_PROPERTIES, JcrGenericJsonProperties.NODE_TYPE, JcrGenericJsonProperties.class));
+            return Optional.ofNullable(JcrUtil.getOrCreateNode(getNode(), GENERIC_JSON_PROPERTIES, JcrGenericJsonProperties.NODE_TYPE, JcrGenericJsonProperties.class));
         } catch (AccessControlException e) {
             return Optional.empty();
         }

@@ -20,10 +20,12 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IndexControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.TaggableMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
@@ -31,13 +33,11 @@ import java.util.Optional;
 
 import javax.jcr.Node;
 
-public class FeedSummary extends AbstractJcrAuditableSystemEntity {
+public class FeedSummary extends JcrObject implements SystemEntityMixin, AuditableMixin, TaggableMixin, IndexControlledMixin {
 
     public static final String NODE_TYPE = "tba:feedSummary";
 
     public static final String DETAILS = "tba:details";
-
-//    public static final String CATEGORY = "tba:category";
 
     private FeedDetails details;
     private JcrFeed feed;
@@ -49,9 +49,6 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
 
     public FeedSummary(Node node, JcrCategory category, JcrFeed feed) {
         this(node, feed);
-//        if (category != null) {
-//            setProperty(CATEGORY, category);
-//        }
     }
 
     public Optional<FeedDetails> getFeedDetails() {
@@ -66,25 +63,6 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
             return Optional.of(this.details);
         }
     }
-//
-//    protected Category getCategory(Class<? extends JcrCategory> categoryClass) {
-//        Category category = null;
-//        try {
-//            category = (Category) getProperty(CATEGORY, categoryClass);
-//        } catch (Exception e) {
-//            if (category == null) {
-//                try {
-//                    category = (Category) JcrUtil.constructNodeObject(this.feed.getNode().getParent(), categoryClass, null);
-//                } catch (Exception e2) {
-//                    throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
-//                }
-//            }
-//        }
-//        if (category == null) {
-//            throw new CategoryNotFoundException("Unable to find category on Feed ", null);
-//        }
-//        return category;
-//    }
 
     protected JcrFeed getParentFeed() {
         return this.feed;

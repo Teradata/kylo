@@ -22,8 +22,9 @@ package com.thinkbiganalytics.metadata.modeshape.datasource;
 
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +38,7 @@ import javax.jcr.RepositoryException;
 
 /**
  */
-public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity implements DatasourceDefinition {
+public class JcrDatasourceDefinition extends JcrEntity<JcrDatasourceDefinition.DatasourceDefinitionId> implements DatasourceDefinition, AuditableMixin, SystemEntityMixin {
 
     public static final String CONNECTION_TYPE = "tba:connectionType";
 
@@ -58,32 +59,32 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
 
 
     public Set<String> getDatasourcePropertyKeys() {
-        Set<String> props = JcrPropertyUtil.getSetProperty(this.node, DATASOURCE_PROPERTY_KEYS);
+        Set<String> props = JcrPropertyUtil.getSetProperty(getNode(), DATASOURCE_PROPERTY_KEYS);
         return props;
     }
 
     public void setDatasourcePropertyKeys(Set<String> propertyKeys) {
-        JcrPropertyUtil.setProperty(this.node, DATASOURCE_PROPERTY_KEYS, propertyKeys);
+        JcrPropertyUtil.setProperty(getNode(), DATASOURCE_PROPERTY_KEYS, propertyKeys);
     }
 
     @Override
     public ConnectionType getConnectionType() {
-        return JcrPropertyUtil.getEnum(this.node, CONNECTION_TYPE, DatasourceDefinition.ConnectionType.class, null);
+        return JcrPropertyUtil.getEnum(getNode(), CONNECTION_TYPE, DatasourceDefinition.ConnectionType.class, null);
     }
 
     @Override
     public void setConnectionType(ConnectionType type) {
-        JcrPropertyUtil.setProperty(this.node, CONNECTION_TYPE, type.name());
+        JcrPropertyUtil.setProperty(getNode(), CONNECTION_TYPE, type.name());
     }
 
     @Override
     public String getProcessorType() {
-        return JcrPropertyUtil.getProperty(this.node, PROCESSOR_TYPE, true);
+        return JcrPropertyUtil.getProperty(getNode(), PROCESSOR_TYPE, true);
     }
 
     @Override
     public void setProcessorType(String processorType) {
-        JcrPropertyUtil.setProperty(this.node, PROCESSOR_TYPE, processorType);
+        JcrPropertyUtil.setProperty(getNode(), PROCESSOR_TYPE, processorType);
     }
 
 
@@ -97,7 +98,7 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
 
     @Override
     public String getIdentityString() {
-        String identityString = JcrPropertyUtil.getProperty(this.node, IDENTITY_STRING, true);
+        String identityString = JcrPropertyUtil.getProperty(getNode(), IDENTITY_STRING, true);
         if (StringUtils.isBlank(identityString)) {
             identityString = getDatasourcePropertyKeys().stream().map(key -> "${" + key + "}").collect(Collectors.joining(","));
         }
@@ -106,26 +107,27 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
 
     @Override
     public void setIdentityString(String identityString) {
-        JcrPropertyUtil.setProperty(this.node, IDENTITY_STRING, identityString);
+        JcrPropertyUtil.setProperty(getNode(), IDENTITY_STRING, identityString);
     }
 
     @Override
     public String getDatasourceType() {
-        return JcrPropertyUtil.getProperty(this.node, DATASOURCE_TYPE);
+        return JcrPropertyUtil.getProperty(getNode(), DATASOURCE_TYPE);
+    }
+    
+    @Override
+    public String getSystemName() {
+        return getIdentityString();
+    }
+    
+    @Override
+    public void setSystemName(String identityString) {
+        setIdentityString(identityString);
     }
 
     @Override
     public void setDatasourceType(String dsType) {
-        JcrPropertyUtil.setProperty(this.node, DATASOURCE_TYPE, dsType);
-    }
-
-    @Override
-    public void setTile(String title) {
-        JcrPropertyUtil.setProperty(this.node, TITLE, title);
-    }
-
-    public String getTitle() {
-        return JcrPropertyUtil.getProperty(this.node, TITLE, true);
+        JcrPropertyUtil.setProperty(getNode(), DATASOURCE_TYPE, dsType);
     }
 
     public static class DatasourceDefinitionId extends JcrEntity.EntityId implements DatasourceDefinition.ID {

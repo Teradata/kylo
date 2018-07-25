@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.metadata.api.domaintype;
 
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+
+import java.io.Serializable;
+
 /*-
  * #%L
  * kylo-metadata-api
@@ -20,27 +24,15 @@ package com.thinkbiganalytics.metadata.api.domaintype;
  * #L%
  */
 
-import java.io.Serializable;
-
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
  */
-public interface DomainType extends Serializable {
+public interface DomainType extends SystemEntity {
 
     /**
      * Gets the unique identifier.
      */
     ID getId();
-
-    /**
-     * Gets a human-readable description.
-     */
-    String getDescription();
-
-    /**
-     * Sets a human-readable description.
-     */
-    void setDescription(String value);
 
     /**
      * Gets the field metadata as a JSON document.
@@ -121,16 +113,6 @@ public interface DomainType extends Serializable {
      * Sets the regular expression pattern for matching sample data.
      */
     void setRegexPattern(String value);
-
-    /**
-     * Gets a human-readable title.
-     */
-    String getTitle();
-
-    /**
-     * Sets a human-readable title.
-     */
-    void setTitle(String value);
 
     /**
      * A unique identifier for a domain type.

@@ -78,11 +78,11 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
 
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(this.node, "tba:description");
+        return JcrPropertyUtil.getString(getNode(), "tba:description");
     }
 
     public void setDescription(String description) {
-        JcrPropertyUtil.setProperty(this.node, "tba:description", description);
+        JcrPropertyUtil.setProperty(getNode(), "tba:description", description);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
     public Set<Metric> getMetrics() {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(METRICS);
+            Iterator<Node> itr = (Iterator<Node>) getNode().getNodes(METRICS);
 
             return Sets.newHashSet(Iterators.transform(itr, (metricNode) -> {
                 return JcrUtil.getGenericJson(metricNode, JSON);
@@ -111,14 +111,14 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
 
     public void setMetrics(Set<Metric> metrics) {
         try {
-            NodeIterator nodes = this.node.getNodes(METRICS);
+            NodeIterator nodes = getNode().getNodes(METRICS);
             while (nodes.hasNext()) {
                 Node metricNode = (Node) nodes.next();
                 metricNode.remove();
             }
 
             for (Metric metric : metrics) {
-                Node metricNode = this.node.addNode(METRICS, METRIC_TYPE);
+                Node metricNode = getNode().addNode(METRICS, METRIC_TYPE);
 
                 JcrPropertyUtil.setProperty(metricNode, NAME, metric.getClass().getSimpleName());
                 JcrPropertyUtil.setProperty(metricNode, DESCRIPTION, metric.getDescription());

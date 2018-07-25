@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 import org.springframework.stereotype.Service;
 
@@ -61,12 +62,12 @@ public class JcrHadoopSecurityGroupProvider extends BaseJcrProvider<HadoopSecuri
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrHadoopSecurityGroup.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrHadoopSecurityGroup.NODE_TYPE;
     }
 

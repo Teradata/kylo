@@ -23,8 +23,8 @@ package com.thinkbiganalytics.metadata.modeshape.user;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -49,7 +49,7 @@ import javax.jcr.RepositoryException;
 /**
  * A {@link User} stored in a JCR repository.
  */
-public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
+public class JcrUser extends JcrEntity<User.ID> implements User, AuditableMixin {
 
     /**
      * Encoding for properties
@@ -119,7 +119,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
     @Nonnull
     @Override
-    public UserId getId() {
+    public ID getId() {
         try {
             return new UserId(getObjectId());
         } catch (RepositoryException e) {
@@ -152,9 +152,9 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public String getSystemName() {
         try {
-            return URLDecoder.decode(JcrPropertyUtil.getName(this.node), ENCODING);
+            return URLDecoder.decode(JcrPropertyUtil.getName(getNode()), ENCODING);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of user: " + this.node, e);
+            throw new IllegalStateException("Unsupported encoding for system name of user: " + getNode(), e);
         }
     }
 
@@ -171,7 +171,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
      */
     @Override
     public Set<UserGroup> getContainingGroups() {
-        return JcrPropertyUtil.<Node>getSetProperty(this.node, JcrUserGroup.GROUPS).stream()
+        return JcrPropertyUtil.<Node>getSetProperty(getNode(), JcrUserGroup.GROUPS).stream()
             .filter(node -> node != null)
             .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
             .collect(Collectors.toSet());
@@ -214,7 +214,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     public void setGroups(@Nonnull final Set<UserGroup> groups) {
         final JcrExtensiblePropertyCollection collection = new JcrExtensiblePropertyCollection(PropertyType.WEAKREFERENCE, groups);
         try {
-            JcrPropertyUtil.setProperties(node.getSession(), node, Collections.singletonMap(GROUPS, collection));
+            JcrPropertyUtil.setProperties(getNode().getSession(), getNode(), Collections.singletonMap(GROUPS, collection));
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set groups", e);
         }
