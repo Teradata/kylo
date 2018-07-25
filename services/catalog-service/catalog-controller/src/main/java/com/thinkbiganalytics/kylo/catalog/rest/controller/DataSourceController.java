@@ -117,7 +117,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         final DataSource dataSource;
         try {
-            dataSource = metadataService.commit(() -> dataSourceProvider.createDataSource(source));
+            dataSource = metadataService.commit(() -> dataSourceProvider.createOrUpdateDataSource(source));
         } catch (final CatalogException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot create data source from request: " + source, e);

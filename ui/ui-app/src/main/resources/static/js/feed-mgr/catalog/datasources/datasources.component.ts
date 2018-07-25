@@ -103,7 +103,7 @@ export class DataSourcesComponent implements OnInit {
      */
     editDatasource(event: any, datasource: DataSource) {
         event.stopPropagation();
-        this.state.go("catalog.edit-datasource", {datasourceId: datasource.id});
+        this.state.go("catalog.new-datasource", {connectorId: datasource.connector.id, datasourceId: datasource.id});
     }
 
     /**
@@ -138,5 +138,4 @@ export class DataSourcesComponent implements OnInit {
         this.snackBarService
             .open(msg + ' ' + (err ? err : ""), 'OK', { duration: 5000 });
     }
-
 }

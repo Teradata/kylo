@@ -144,14 +144,18 @@ public class DataSourceProvider {
      * @throws CatalogException if the data source is not valid
      */
     @Nonnull
-    public DataSource createDataSource(@Nonnull final DataSource source) {
+    public DataSource createOrUpdateDataSource(@Nonnull final DataSource source) {
         // Find connector
         final Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).flatMap(connectorProvider::findConnector)
             .orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
 
-        // Create and store data source
-        final DataSource dataSource = new DataSource(source);
-        dataSource.setId(UUID.randomUUID().toString());
+        final DataSource dataSource;
+        if (StringUtils.isBlank(source.getId())) {
+            dataSource = new DataSource(source);
+            dataSource.setId(UUID.randomUUID().toString());
+        } else {
+            dataSource = source;
+        }
         final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(dataSource, SecurityContextUtil.getCurrentPrincipals());
         
         catalogDataSources.put(dataSource.getId(), updatedDataSource);

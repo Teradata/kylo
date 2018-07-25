@@ -30,6 +30,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatIconModule} from '@angular/material/icon';
+import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
 
 @NgModule({
     declarations: [
@@ -37,7 +38,8 @@ import {MatIconModule} from '@angular/material/icon';
         DatasourceComponent,
         ConnectorsComponent,
         ConnectorComponent,
-        CatalogComponent
+        CatalogComponent,
+        VisibleOnMouseOverDirective
     ],
     exports:[
         DataSourcesComponent,

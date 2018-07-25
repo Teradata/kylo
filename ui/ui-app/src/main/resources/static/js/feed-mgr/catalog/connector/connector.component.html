@@ -10,7 +10,7 @@
       </div>
       <div class="card-title-text">{{connector.title}}</div>
     </mat-card-title>
-    <mat-card-subtitle>Create new '{{connector.title}}' data source</mat-card-subtitle>
+    <mat-card-subtitle>{{datasource ? 'Edit existing' : 'Create new'}} '{{connector.title}}' data source</mat-card-subtitle>
     <mat-divider></mat-divider>
 
     <mat-card-content>
@@ -60,7 +60,15 @@
     <mat-card-actions>
       <button mat-button mat-raised-button color="primary" class="text-upper"
               [disabled]="isFormInvalid() || isLoading"
-              (click)="createDatasource()">Save</button>
+              (click)="saveDatasource()">Save</button>
+      <button mat-button mat-raised-button class="text-upper"
+              [disabled]="isLoading"
+              *ngIf="datasource"
+              (click)="cancel()">Cancel</button>
+      <button mat-button mat-raised-button class="text-upper"
+              [disabled]="isLoading"
+              *ngIf="datasource"
+              (click)="deleteDatasource()">Delete</button>
     </mat-card-actions>
   </mat-card>
 </ng-container>

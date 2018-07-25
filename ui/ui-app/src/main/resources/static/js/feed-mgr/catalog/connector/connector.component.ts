@@ -12,10 +12,12 @@ import {catchError} from 'rxjs/operators/catchError';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ValidationErrors} from '@angular/forms/src/directives/validators';
+import * as _ from "underscore";
 
 
 interface UiOptionsMapper {
     mapOptions(ds: DataSource, controls: Map<string, FormControl>): void;
+    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void;
 }
 
 class DefaultUiOptionsMapper implements UiOptionsMapper {
@@ -28,12 +30,30 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
             }
         });
     }
+    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+        controls.forEach((control: FormControl, key: string) => {
+            if (key === "path") {
+                control.setValue(ds.template.paths[0]);
+            } else {
+                control.setValue(ds.template.options[key]);
+            }
+        });
+    }
 }
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
     mapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
         ds.template.paths.push(controls.get("path").value);
         ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
+    }
+    reverseMapOptions(ds: DataSource, controls: Map<string, FormControl>): void {
+        controls.get("path").setValue(ds.template.paths[0]);
+        _.keys(ds.template.options).forEach(option => {
+            if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
+                const accountName = option.substring("spark.hadoop.fs.azure.account.key.".length);
+                controls.get("account-name").setValue(accountName);
+            }
+        });
     }
 }
 
@@ -49,6 +69,9 @@ export class ConnectorComponent {
 
     static LOADER = "ConnectorComponent.LOADER";
     private static topOfPageLoader: string = "ConnectorComponent.topOfPageLoader";
+
+    @Input("datasource")
+    public datasource: DataSource;
 
     @Input("connector")
     public connector: Connector;
@@ -96,13 +119,53 @@ export class ConnectorComponent {
     }
 
     public ngOnInit() {
+        this.createControls();
+        this.initControls();
+    }
+
+    initControls() {
+        if (this.datasource) {
+            this.titleControl.setValue(this.datasource.title);
+            const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
+            if (optionsMapper) {
+                optionsMapper.reverseMapOptions(this.datasource, this.controls);
+            } else {
+                this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
+                    + " for connector " + this.connector.title);
+                return;
+            }
+        }
+    }
+
+    createControls() {
+        for (let option of this.plugin.options) {
+            let control = this.controls.get(option.key);
+            if (!control) {
+                const validators = [];
+                if (option.required === undefined || option.required === true) {
+                    validators.push(ConnectorComponent.required);
+                }
+                for (let validator of option.validators || []) {
+                    if (this[validator.type]) {
+                        validators.push(this[validator.type](validator.params));
+                    } else {
+                        console.error('Unknown validator type ' + validator.type);
+                    }
+                }
+                control = new FormControl('', validators);
+                if (option.value) {
+                    control.setValue(option.value);
+                }
+                this.controls.set(option.key, control);
+            }
+        }
     }
 
     /**
-     * Creates a new datasource for this Connector
+     * Creates a new datasource or updates an existing one
      */
-    createDatasource() {
-        const ds = new DataSource();
+    saveDatasource() {
+        const ds = this.datasource ? this.datasource : new DataSource();
         ds.title = this.titleControl.value;
         ds.connector = this.connector;
         ds.template = new DataSourceTemplate();
@@ -125,17 +188,17 @@ export class ConnectorComponent {
                 this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
             }))
             .pipe(catchError((err) => {
-                this.showSnackBar(err.message);
+                this.showSnackBar('Failed to save. ', err.message);
                 return [];
             }))
             .subscribe((source: DataSource) => {
-                this.state.go("catalog.datasource", {datasourceId: source.id});
+                this.state.go("catalog.datasources", {datasourceId: source.id});
             });
     }
 
-    showSnackBar(err: string): void {
+    showSnackBar(msg: string, err?: string): void {
         this.snackBarService
-            .open('Failed to save. ' + (err ? err : ""), 'OK', { duration: 5000 });
+            .open(msg + ' ' + (err ? err : ""), 'OK', { duration: 5000 });
     }
 
     isInputType(option: UiOption): boolean {
@@ -156,26 +219,7 @@ export class ConnectorComponent {
     }
 
     getControl(option: UiOption) {
-        let control = this.controls.get(option.key);
-        if (!control) {
-            const validators = [];
-            if (option.required === undefined || option.required === true) {
-                validators.push(ConnectorComponent.required);
-            }
-            for (let validator of option.validators || []) {
-                if (this[validator.type]) {
-                    validators.push(this[validator.type](validator.params));
-                } else {
-                    console.error('Unknown validator type ' + validator.type);
-                }
-            }
-            control = new FormControl('', validators);
-            if (option.value) {
-                control.setValue(option.value);
-            }
-            this.controls.set(option.key, control);
-        }
-        return control;
+        return this.controls.get(option.key);
     }
 
     /**
@@ -187,5 +231,25 @@ export class ConnectorComponent {
         return (control.value || '').trim().length === 0 ? { 'required': true } : null;
     }
 
+    cancel() {
+        this.state.go("catalog.datasources");
+    }
 
+    /**
+     * Delete datasource
+     */
+    deleteDatasource() {
+        this.loadingService.register(ConnectorComponent.topOfPageLoader);
+        this.catalogService.deleteDataSource(this.datasource)
+            .pipe(finalize(() => {
+                this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
+            }))
+            .pipe(catchError((err) => {
+                this.showSnackBar('Failed to delete.', err.message);
+                return [];
+            }))
+            .subscribe(() => {
+                this.state.go("catalog.datasources", {}, {reload: true});
+            });
+    }
 }
