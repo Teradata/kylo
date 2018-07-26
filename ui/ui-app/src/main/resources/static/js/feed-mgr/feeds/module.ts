@@ -4,7 +4,7 @@ import AccessConstants from "../../constants/AccessConstants";
 import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
 //const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
 const moduleName = require('./module-name');
-const feedManager = require('kylo-feedmgr');
+import "../module"
 
 class ModuleFactory  {
 

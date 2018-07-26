@@ -77,7 +77,10 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 })
 export class KyloFeedManagerModule {
     constructor() {
-        console.log("Loading KyloFeedManagerModule")
+        console.log("Loading KyloFeedManagerModule");
+        require("./module");
+     //   injector.get("$ocLazyLoad").inject(moduleName);
+        require("./module-require");
     }
 
 }
