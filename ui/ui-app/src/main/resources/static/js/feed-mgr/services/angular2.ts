@@ -1,8 +1,6 @@
 import {FactoryProvider} from "@angular/core";
 import * as angular from "angular";
 
-import CategoriesService from "./CategoriesService";
-import {EntityAccessControlService} from "../shared/entity-access-control/EntityAccessControlService";
 import {DomainTypesService} from "./DomainTypesService";
 import {DefaultFeedPropertyService} from "./DefaultFeedPropertyService";
 import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
@@ -25,8 +23,6 @@ export class AngularServiceUpgrader {
 }
 
 export const entityAccessControlDialogServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlDialogService);
-
-export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
 
 export const domainTypesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DomainTypesService);
 

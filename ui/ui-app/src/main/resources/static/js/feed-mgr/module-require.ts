@@ -45,7 +45,6 @@ import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputForm
 import {DatasourcesService} from "./services/DatasourcesService";
 import {downgradeInjectable} from "@angular/upgrade/static";
 import {FeedSecurityGroups} from "./services/FeedSecurityGroups";
-import "./feed-mgr.module"
 
 import { FeedCreationErrorService } from './services/FeedCreationErrorService';
 import { DBCPTableSchemaService } from './services/DBCPTableSchemaService';
@@ -65,7 +64,7 @@ angular.module(moduleName)
 angular.module(moduleName).service('EntityAccessControlService', downgradeInjectable(EntityAccessControlService));
 
 angular.module(moduleName)
-    .service('FeedService',downgradeInjectable(FeedService))
+    .service('FeedService',downgradeInjectable(FeedService));
 //     .controller('FeedSavingDialogController', FeedSavingDialogController);
 
 angular.module(moduleName).factory('RestUrlService', downgradeInjectable(RestUrlService));

@@ -12,12 +12,8 @@ import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 
 import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
+import {KyloFeedManagerModule} from "./feed-mgr/feed-mgr.module";
 import {KyloServicesModule} from "./services/services.module";
-import {CategoriesModule} from "./feed-mgr/categories/categories.module";
-import { SLAModule } from "./feed-mgr/sla/sla.module";
-import { AuthModule } from "./auth/auth.module";
-import { DataSourcesModule } from "./feed-mgr/datasources/datasources.module";
-import { TemplateModule } from "./feed-mgr/templates/templates.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -39,16 +35,12 @@ const translateConfig: TranslateModuleConfig = {
         FlexLayoutModule,
         HttpClientModule,
         KyloCommonModule,
+        KyloFeedManagerModule,
         KyloServicesModule,
         TranslateModule.forRoot(translateConfig),
-        CategoriesModule,
-        SLAModule,
-        TemplateModule,
         UIRouterModule,
         UIRouterUpgradeModule,
         UpgradeModule,
-        AuthModule,
-        DataSourcesModule
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,

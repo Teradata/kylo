@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Injector, NgModule} from "@angular/core";
+import {NgModule} from "@angular/core";
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -7,11 +7,11 @@ import {MatListModule} from '@angular/material/list';
 import {MatButtonModule} from '@angular/material/button';
 import {
     domainTypesServiceProvider,
-    entityAccessControlServiceProvider, 
-    feedDetailsProcessorRenderingHelperProvider, 
+    feedDetailsProcessorRenderingHelperProvider,
     feedInputProcessorPropertiesTemplateServiceProvider,
     entityAccessControlDialogServiceProvider
 } from "./services/angular2";
+import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import {RestUrlService} from "./services/RestUrlService";
 import {FeedSavingDialogController, FeedService} from "./services/FeedService";
@@ -55,7 +55,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
     ],
     providers: [
         CategoriesService,
-        entityAccessControlServiceProvider,
+        EntityAccessControlService,
         entityAccessControlDialogServiceProvider,
         FeedService,
         VisualQueryService,
@@ -76,11 +76,4 @@ import { MatFormFieldModule } from "@angular/material/form-field";
     ]
 })
 export class KyloFeedManagerModule {
-    constructor() {
-        console.log("Loading KyloFeedManagerModule");
-        require("./module");
-     //   injector.get("$ocLazyLoad").inject(moduleName);
-        require("./module-require");
-    }
-
 }
