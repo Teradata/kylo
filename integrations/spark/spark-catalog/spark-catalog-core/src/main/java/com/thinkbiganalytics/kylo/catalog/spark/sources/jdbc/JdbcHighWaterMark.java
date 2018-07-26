@@ -27,6 +27,7 @@ import org.apache.spark.SparkContext;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +66,7 @@ public class JdbcHighWaterMark implements Serializable {
      * Name of the high water mark to be updated in the Kylo Catalog client
      */
     @Nullable
-    private transient String name;
+    private String name;
 
     /**
      * Maximum value seen
@@ -107,6 +108,11 @@ public class JdbcHighWaterMark implements Serializable {
         }
     }
 
+    @Override
+    public boolean equals(@Nullable final Object other) {
+        return other instanceof JdbcHighWaterMark && Objects.equals(name, ((JdbcHighWaterMark) other).name) && Objects.equals(value, ((JdbcHighWaterMark) other).value);
+    }
+
     /**
      * Gets the name of the high water mark.
      */
@@ -123,10 +129,20 @@ public class JdbcHighWaterMark implements Serializable {
         return value;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, value);
+    }
+
     /**
      * Sets the high water mark value formatter.
      */
     public void setFormatter(@Nullable final Function1<Long, String> formatter) {
         this.formatter = formatter;
+    }
+
+    @Override
+    public String toString() {
+        return "JdbcHighWaterMark{name='" + name + "', value=" + value + '}';
     }
 }
