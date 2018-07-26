@@ -220,7 +220,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({ 
             name: 'datasources.**', 
             url: '/datasources', 
-            loadChildren: 'feed-mgr/datasources/datasources.moule#DataSourcesModule' 
+            loadChildren: 'feed-mgr/datasources/datasources.module#DataSourcesModule'
         });
 
         $stateProvider.state('search.**', {

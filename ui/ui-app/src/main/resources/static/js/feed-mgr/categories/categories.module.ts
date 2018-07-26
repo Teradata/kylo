@@ -41,6 +41,7 @@ import {categoriesStates} from "./categories.states";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {CommonModule} from "@angular/common";
+import * as angular from "angular";
 
 @NgModule({
     declarations: [
@@ -87,7 +88,9 @@ import {CommonModule} from "@angular/common";
         UIRouterModule.forChild({states: categoriesStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: []
+    providers: [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
+    ]
 })
 export class CategoriesModule {
 }

@@ -19,7 +19,6 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatInputModule} from '@angular/material/input';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import { DatasourcesTableComponent } from "./DatasourcesTableComponent";
 import { DatasourcesService } from "../services/DatasourcesService";
 import {MatSnackBarModule} from '@angular/material/snack-bar';
@@ -27,6 +26,7 @@ import {MatButtonModule} from '@angular/material/button';
 import { DatasourcesDetailsComponent, SaveDatasourceDialogComponent } from "./DatasourcesDetailsComponent";
 import { CommonModule } from "@angular/common";
 import { KyloCommonModule } from "../../common/common.module";
+import * as angular from "angular";
 
 @NgModule({ 
     declarations: [  
@@ -58,10 +58,12 @@ import { KyloCommonModule } from "../../common/common.module";
         FormsModule,
         MatSnackBarModule,
         ReactiveFormsModule,
-        BrowserModule,
-        UIRouterModule.forChild({states: datasourcesStates}) 
+        UIRouterModule.forChild({states: datasourcesStates})
     ],
-    providers : [DatasourcesService],
+    providers : [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
+        DatasourcesService
+    ],
     schemas : [NO_ERRORS_SCHEMA],
 }) 
 export class DataSourcesModule { 

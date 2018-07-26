@@ -53,6 +53,7 @@ import { PolicyInputFormController } from "../shared/policy-input-form/policy-in
 // import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import {KyloFeedManagerModule} from "../feed-mgr.module";
+import * as angular from "angular";
 
 @NgModule({
     declarations: [
@@ -111,7 +112,12 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
         UIRouterModule.forChild({states: slaStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [EntityAccessControlService, SlaService,  SlaEmailTemplateService]
+    providers: [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
+        EntityAccessControlService,
+        SlaService,
+        SlaEmailTemplateService
+    ]
 })
 export class SLAModule {
 }
