@@ -82,6 +82,8 @@ export class ConnectorComponent {
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
     private isLoading: boolean = false;
+    private testError: String;
+    private testStatus: boolean = false;
 
     // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
     private url = (params: any): ValidatorFn => {
@@ -165,18 +167,8 @@ export class ConnectorComponent {
      * Creates a new datasource or updates an existing one
      */
     saveDatasource() {
-        const ds = this.datasource ? this.datasource : new DataSource();
-        ds.title = this.titleControl.value;
-        ds.connector = this.connector;
-        ds.template = new DataSourceTemplate();
-        ds.template.paths = [];
-        ds.template.options = {};
-        const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
-        if (optionsMapper) {
-            optionsMapper.mapFromUiToModel(ds, this.controls);
-        } else {
-            this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
-                + " for connector " + this.connector.title);
+        const ds = this.getDataSourceFromUi();
+        if (ds === undefined) {
             return;
         }
 
@@ -195,6 +187,25 @@ export class ConnectorComponent {
                 this.state.go("catalog.datasources", {datasourceId: source.id});
             });
     }
+
+    getDataSourceFromUi(): DataSource | undefined {
+        const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
+        if (!optionsMapper) {
+            this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
+                + " for connector " + this.connector.title);
+            return undefined;
+        }
+
+        const ds = this.datasource ? this.datasource : new DataSource();
+        ds.title = this.titleControl.value;
+        ds.connector = this.connector;
+        ds.template = new DataSourceTemplate();
+        ds.template.paths = [];
+        ds.template.options = {};
+        optionsMapper.mapFromUiToModel(ds, this.controls);
+        return ds;
+    }
+
 
     showSnackBar(msg: string, err?: string): void {
         this.snackBarService
@@ -250,6 +261,32 @@ export class ConnectorComponent {
             }))
             .subscribe(() => {
                 this.state.go("catalog.datasources", {}, {reload: true});
+            });
+    }
+
+    /**
+     * Validates data source connection
+     */
+    test() {
+        this.testStatus = false;
+        this.testError = undefined;
+        const ds = this.getDataSourceFromUi();
+        if (ds === undefined) {
+            return;
+        }
+
+        this.loadingService.register(ConnectorComponent.topOfPageLoader);
+        this.catalogService.testDataSource(ds)
+            .pipe(finalize(() => {
+                this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
+                this.testStatus = true;
+            }))
+            .pipe(catchError((err) => {
+                this.testError = err.error.developerMessage ? err.error.developerMessage : err.error.message;
+                return [];
+            }))
+            .subscribe(() => {
+                console.log('validated');
             });
     }
 }

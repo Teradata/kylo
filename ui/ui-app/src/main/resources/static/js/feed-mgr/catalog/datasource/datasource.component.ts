@@ -80,7 +80,6 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit() {
-        // Add tabs and register router states
         this.selectionService.reset(this.datasource.id);
         this.initTabs();
         // Go to the first tab

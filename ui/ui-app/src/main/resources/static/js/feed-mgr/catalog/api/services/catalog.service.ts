@@ -74,4 +74,8 @@ export class CatalogService {
     deleteDataSource(datasource: DataSource): Observable<any> {
         return this.http.delete<DataSource>("/proxy/v1/catalog/datasource/" + datasource.id);
     }
+
+    testDataSource(datasource: DataSource): Observable<any> {
+        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
+    }
 }

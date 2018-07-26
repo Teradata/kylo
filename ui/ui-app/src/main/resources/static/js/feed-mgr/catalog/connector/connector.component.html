@@ -54,21 +54,33 @@
             </mat-form-field>
           </ng-template>
         </div>
+        <div fxLayout="row" fxLayoutAlign="start center" class="test-section">
+          <button mat-button mat-raised-button class="text-upper"
+                  [disabled]="isFormInvalid() || isLoading"
+                  (click)="test()">Test</button>
+          <span *ngIf="testStatus && testError" class="test-status status-error">{{testError}}</span>
+          <span>
+            <ng-md-icon *ngIf="testStatus && !testError" icon="check" size="30" class="test-status status-ok"></ng-md-icon>
+          </span>
+        </div>
       </form>
     </mat-card-content>
 
     <mat-card-actions>
       <button mat-button mat-raised-button color="primary" class="text-upper"
               [disabled]="isFormInvalid() || isLoading"
-              (click)="saveDatasource()">Save</button>
+              (click)="saveDatasource()">Save
+      </button>
       <button mat-button mat-raised-button class="text-upper"
               [disabled]="isLoading"
               *ngIf="datasource"
-              (click)="cancel()">Cancel</button>
+              (click)="cancel()">Cancel
+      </button>
       <button mat-button mat-raised-button class="text-upper"
               [disabled]="isLoading"
               *ngIf="datasource"
-              (click)="deleteDatasource()">Delete</button>
+              (click)="deleteDatasource()">Delete
+      </button>
     </mat-card-actions>
   </mat-card>
 </ng-container>
