@@ -17,38 +17,38 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Feed Results"  ng-cloak>
+<div mat-dialog aria-label="Feed Results">
     <form>
-        <md-toolbar class="md-warn">
+        <mat-toolbar class="md-warn">
             <div  class="md-toolbar-tools">
-                <h4  ng-if="!isValid">
+                <h4  *ngIf="!isValid">
                     <ng-md-icon size="24" md-icon icon="error_outline" aria-label="Error creating Feed"></ng-md-icon>
-                    <span>{{"views.feed-error-dialog.Ec" | translate}} {{feedName | characters:50}}</span>
+                    <span>{{"views.feed-error-dialog.Ec" | translate}} {{feedName}}</span>
                 </h4>
                 <span flex></span>
-                <md-button class="md-icon-button" ng-click="cancel()">
+                <button mat-button class="md-icon-button" (click)="cancel()">
                     <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
-                </md-button>
+                </button>
             </div>
-            </md-toolbar>
-        <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-            <div ng-if="!isValid && feedErrorsData != null">
-                <div class="md-subhead">{{::message}}</div>
-                            <md-list class="padding-left" ng-repeat="(severity,errors)  in feedErrorsData">
-                                <md-list-item class="md-2-line" ng-repeat="error in errors track by $index" >
+        </mat-toolbar>
+        <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+            <div *ngIf="!isValid && feedErrorsData != null">
+                <div class="md-subhead">{{message}}</div>
+                            <mat-list class="padding-left" *ngFor="let errors of feedErrorsData">
+                                <mat-list-item class="md-2-line" *ngFor="let error of errors; let last = last;" >
                                     <div class="md-list-item-text" >
-                                        <div ng-if="error.processorName != null && error.processorName != '' " class="card-sub-header">Processor: {{::error.processorName}}</div>
-                                        <div class="md-warn-text">{{::error.message}}</div>
+                                        <div *ngIf="error.processorName != null && error.processorName != '' " class="card-sub-header">Processor: {{error.processorName}}</div>
+                                        <div class="md-warn-text">{{error.message}}</div>
                                     </div>
-                                    <md-divider ng-if="!$last"></md-divider>
-                                </md-list-item>
-                            </md-list>
+                                    <mat-divider *ngIf="!last"></mat-divider>
+                                </mat-list-item>
+                            </mat-list>
             </div>
-        </md-dialog-content>
-        <md-dialog-actions layout="row">
-            <md-button class="md-warn" ng-click="fixErrors()">
+        </mat-dialog-content>
+        <mat-dialog-actions layout="row">
+            <button mat-button class="md-warn" (click)="fixErrors()">
                {{"views.feed-error-dialog.Okay" | translate}}
-            </md-button>
-        </md-dialog-actions>
+            </button>
+        </mat-dialog-actions>
     </form>
-</md-dialog>
+</div>

@@ -3,6 +3,8 @@ import {Injector, NgModule} from "@angular/core";
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatListModule} from '@angular/material/list';
+import {MatButtonModule} from '@angular/material/button';
 import {
     domainTypesServiceProvider,
     entityAccessControlServiceProvider, 
@@ -47,7 +49,9 @@ import { MatFormFieldModule } from "@angular/material/form-field";
         MatFormFieldModule,
         MatToolbarModule,
         MatProgressSpinnerModule,
-        MatDialogModule
+        MatDialogModule,
+        MatListModule,
+        MatButtonModule
     ],
     providers: [
         CategoriesService,
