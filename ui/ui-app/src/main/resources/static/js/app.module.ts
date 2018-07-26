@@ -17,6 +17,7 @@ import {CategoriesModule} from "./feed-mgr/categories/categories.module";
 import { SLAModule } from "./feed-mgr/sla/sla.module";
 import { AuthModule } from "./auth/auth.module";
 import { DataSourcesModule } from "./feed-mgr/datasources/datasources.module";
+import { TemplateModule } from "./feed-mgr/templates/templates.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -42,6 +43,7 @@ const translateConfig: TranslateModuleConfig = {
         TranslateModule.forRoot(translateConfig),
         CategoriesModule,
         SLAModule,
+        TemplateModule,
         UIRouterModule,
         UIRouterUpgradeModule,
         UpgradeModule,

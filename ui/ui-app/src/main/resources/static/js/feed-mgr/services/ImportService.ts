@@ -6,7 +6,7 @@ import ImportComponentOption = Import.ImportComponentOption;
 import ImportProperty = Import.ImportProperty;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
-
+import { Injectable } from '@angular/core';
 
 export enum ImportComponentType {
     NIFI_TEMPLATE = Import.ImportComponentType.NIFI_TEMPLATE,
@@ -20,6 +20,7 @@ export enum ImportComponentType {
     FEED_USER_FIELDS = Import.ImportComponentType.FEED_USER_FIELDS
 }
 
+@Injectable()
 export class DefaultImportService implements ImportService{
 
 
@@ -34,9 +35,7 @@ export class DefaultImportService implements ImportService{
             s4() + '-' + s4() + s4() + s4();
     }
 
-    constructor() {
-
-    }
+    constructor() {}
 
     importComponentTypes(): string[] {
         return Object.keys(ImportComponentType)
@@ -152,3 +151,4 @@ export class DefaultImportService implements ImportService{
     }
 
 }
+

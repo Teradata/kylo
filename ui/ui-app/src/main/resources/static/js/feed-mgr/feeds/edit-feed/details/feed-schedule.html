@@ -59,7 +59,7 @@
                 </div>
                 <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
                     <md-list class="md-2-line">
-                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding feed-property versions-{{vm.diffCollection('/schedule/preconditions/' + $index)}}"">
+                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding feed-property versions-{{vm.diffCollection('/schedule/preconditions/' + $index)}}">
                             <div layout="row" flex>
                                 <div layout="column" flex class="md-list-item-text">
                                     <span>{{rule.propertyValuesDisplayString}}</span>

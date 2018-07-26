@@ -50,8 +50,9 @@ import { SlaEmailTemplatesController } from "./sla-email-templates/SlaEmailTempl
 import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
 import { SlaEmailTemplateController, testDialogController } from "./sla-email-templates/SlaEmailTemplateController.component";
 import { PolicyInputFormController } from "../shared/policy-input-form/policy-input-form.component";
-import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
+// import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
+import {KyloFeedManagerModule} from "../feed-mgr.module";
 
 @NgModule({
     declarations: [
@@ -64,7 +65,7 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
         SlaEmailTemplateController,
         testDialogController,
         PolicyInputFormController,
-        CronExpressionPreview
+        // CronExpressionPreview
     ],
     entryComponents: [
         ServiceLevelAgreementInitController,
@@ -76,10 +77,9 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
         SlaEmailTemplateController,
         testDialogController,
         PolicyInputFormController,
-        CronExpressionPreview
+        // CronExpressionPreview
     ],
     imports: [
-        // BrowserModule,
         CodemirrorModule,
         CovalentCommonModule,
         CovalentLoadingModule,
@@ -91,6 +91,7 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
         CovalentChipsModule,
         KyloServicesModule,
         KyloCommonModule,
+        KyloFeedManagerModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,

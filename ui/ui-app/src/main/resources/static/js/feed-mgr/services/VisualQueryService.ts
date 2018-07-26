@@ -1,7 +1,10 @@
+import "feed-mgr/module";
 import {UnderscoreStatic} from "underscore";
+import { Injectable } from "@angular/core";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
+
 /**
  * Prefix for table aliases.
  * @type {string}
@@ -537,9 +540,6 @@ angular.extend(SqlBuilder.prototype, {
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
-        if(node.dataset){
-            rangeVar.dataset = node.dataset;
-        }
         return rangeVar;
     },
 
@@ -567,8 +567,12 @@ export enum SqlDialect {
 /**
  * Manages the state of the visual query pages.
  */
-export var VisualQueryService = {
+@Injectable()
+export class VisualQueryService {
 
+    constructor() {
+        this.resetModel();
+    }
     /**
      * Type of boolean expression.
      *
@@ -576,15 +580,15 @@ export var VisualQueryService = {
      * @readonly
      * @enum {number}
      */
-    BoolExprType: {
+    static BoolExprType:  {
         AND_EXPR: 0
-    },
+    };
 
     /**
      * Identifier of the Hive datasource.
      * @type {string}
      */
-    HIVE_DATASOURCE: "HIVE",
+    static HIVE_DATASOURCE: string = "HIVE";
 
     /**
      * Enums for types of relation joins.
@@ -593,12 +597,12 @@ export var VisualQueryService = {
      * @readonly
      * @enum {number}
      */
-    JoinType: {
+    static JoinType:  {
         JOIN: 0,
         JOIN_INNER: 1,
         JOIN_LEFT: 2,
         JOIN_RIGHT: 3
-    },
+    };
 
     /**
      * Type of node.
@@ -607,27 +611,27 @@ export var VisualQueryService = {
      * @readonly
      * @enum {string}
      */
-    NodeTag: {
+    static NodeTag:  {
         A_Expr: "A_Expr",
         BoolExpr: "BoolExpr",
         JoinExpr: "JoinExpr",
         RangeVar: "RangeVar"
-    },
+    };
 
     /**
      * Stored model for the Visual Query page.
      * @type {{selectedDatasourceId: string, visualQueryModel: VisualQueryModel, visualQuerySql: string}}
      */
-    model: {},
+    model: {} = {};
 
     /**
      * Resets this model to default values.
      */
-    resetModel: function (): void {
+    resetModel = () => {
         this.model = {
-            selectedDatasourceId: this.HIVE_DATASOURCE
+            selectedDatasourceId: VisualQueryService.HIVE_DATASOURCE
         };
-    },
+    };
 
     /**
      * Creates a SQL builder from the specified model.
@@ -636,12 +640,10 @@ export var VisualQueryService = {
      * @param dialect - SQL dialect
      * @returns {SqlBuilder} the SQL builder
      */
-    sqlBuilder: function (model: VisualQueryModel, dialect: SqlDialect): any {
+    sqlBuilder=(model: VisualQueryModel, dialect: SqlDialect)=> {
         return new (SqlBuilder as any)(model, dialect);
     }
-};
-
-VisualQueryService.resetModel();
+}
 
 /**
  * Type of boolean expression.

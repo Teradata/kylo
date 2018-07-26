@@ -3,6 +3,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { RestUrlService } from '../../services/RestUrlService';
 import { Inject, Input, Component, SimpleChanges } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'cron-expression-preview',
@@ -28,12 +29,12 @@ export class CronExpressionPreview {
         
     }
     constructor(private RestUrlService:RestUrlService,
-                @Inject("$injector") private $injector: any) {}
+                private http: HttpClient) {}
 
     getNextDates() {
-        this.$injector.get("$http").get(this.RestUrlService.PREVIEW_CRON_EXPRESSION_URL,{params:{cronExpression:this.cronExpression}})
-            .then( (response:any) => {
-            this.nextDates = response.data;
+        this.http.get(this.RestUrlService.PREVIEW_CRON_EXPRESSION_URL,{params:{cronExpression:this.cronExpression}})
+            .toPromise().then( (response:any) => {
+            this.nextDates = response;
         });
     }
 }
