@@ -80,7 +80,7 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
                 Node propsNode = propsObj.getNode();
                 Map<String, Object> props = propsObj.getProperties();
                 for (Map.Entry<String, Object> prop : props.entrySet()) {
-                    if (!JcrPropertyUtil.hasProperty(propsNode.getPrimaryNodeType(), prop.getKey())) {
+                    if (!JcrPropertyUtil.hasPropertyDefinition(propsNode, prop.getKey())) {
                         try {
                             Property property = propsNode.getProperty(prop.getKey());
                             property.remove();
@@ -102,6 +102,7 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
      * All primary properties should be defined as getter/setter on the base object
      * You can call the getAllProperties to return the complete set of properties as a map
      */
+    // TODO this seems inconsistent as it behaves differently from WrappedNodeMixin but has the same name.
     default Map<String, Object> getProperties() {
         return getPropertiesObject()
                         .map(propsObj -> propsObj.getProperties())
@@ -123,6 +124,12 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
         return properties;
     }
 
+    /**
+     * Returns true if the conditions of {@link WrappedNodeMixin#hasProperty} are met or if the internal properties object
+     * contains a value for the named property. 
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.WrappedNodeMixin#hasProperty(java.lang.String)
+     */
+    @Override
     default boolean hasProperty(String name) {
         try {
             if (getNode().hasProperty(name)) {
@@ -153,7 +160,7 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
                 }
                 return item;
             } else {
-                if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
+                if (JcrPropertyUtil.hasPropertyDefinition(getNode(), name)) {
                     return WrappedNodeMixin.super.getProperty(name, type);
                 } else {
                     return getPropertiesObject()
@@ -180,7 +187,7 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
                 }
                 return item;
             } else {
-                if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
+                if (hasProperty(name)) {
                     return WrappedNodeMixin.super.getProperty(name, type, defaultValue);
                 } else {
                     return getPropertiesObject()
@@ -203,7 +210,7 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
      */
     default void setProperty(String name, Object value) {
         try {
-            if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
+            if (JcrPropertyUtil.hasPropertyDefinition(getNode(), name)) {
                 WrappedNodeMixin.super.setProperty(name, value);
             } else {
                 ensurePropertiesObject().ifPresent(obj -> obj.setProperty(name, value));
@@ -214,23 +221,6 @@ public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
             }
             else {
                 throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
-            }
-        } catch (AccessDeniedException e) {
-            if (name.toLowerCase().contains("password")) {
-                log.debug("Unable to set property: \"{}\" on node: {}", "UNKNOWN", getNode(), e);
-                throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
-            }
-            else {
-                log.debug("Unable to set property: \"{}\" on node: {}", name, getNode(), e);
-                throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
-            }
-
-        } catch (RepositoryException e) {
-            if (name.toLowerCase().contains("password")) {
-                throw new MetadataRepositoryException("Unable to set Property UNKOWN:");
-            }
-            else {
-                throw new MetadataRepositoryException("Unable to set Property " + name + ":" + value);
             }
         }
     }
