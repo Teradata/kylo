@@ -6,7 +6,14 @@ import AccessControlService from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
-
+import { Injectable, Inject, Component } from "@angular/core";
+import { RestUrlService } from "./RestUrlService";
+import StateService from "../../services/StateService";
+import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
+import { VisualQueryService } from "./VisualQueryService";
+import { FeedCreationErrorService } from "./FeedCreationErrorService";
+import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { MatSnackBar } from "@angular/material/snack-bar";
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -17,8 +24,8 @@ import { EntityAccessControlService } from "../shared/entity-access-control/Enti
 let controllerServiceDisplayCache :Common.Map<string> = {};
 let controllerServiceDisplayCachePromiseTracker: any = {};
 
+@Injectable()
 export class FeedService {
-   //data: any= {
         /**
          * The Feed model in the Create Feed Stepper
          */
@@ -300,8 +307,8 @@ export class FeedService {
              * @param fieldName
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
-            newTableFieldPolicy(fieldName: string): TableFieldPolicy {
-                return new TableFieldPolicy(fieldName);
+            newTableFieldPolicy(fieldName: any): TableFieldPolicy {
+                return TableFieldPolicy.forName(fieldName);
                 // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
             }
             /**
@@ -310,7 +317,7 @@ export class FeedService {
             setTableFields(fields: any[], policies: any[] = null) {
                 //ensure the fields are of type TableColumnDefinition
                 let newFields =  _.map(fields,(field) => {
-                    if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                    if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
                         let columnDef = new TableColumnDefinition();
                         angular.extend(columnDef,field);
                         return columnDef;
@@ -481,6 +488,10 @@ export class FeedService {
                 }
             copy.properties = properties;
 
+            //Force this feed to always be a final feed
+            //Any save through this service is not a DRAFT feed
+            copy.mode="COMPLETE";
+
             //clear the extra UI only properties
             copy.inputProcessor = null
             copy.nonInputProcessors = null
@@ -587,29 +598,19 @@ export class FeedService {
              * @param feedName
              */
             showFeedSavingDialog= (ev: any, message: any, feedName: any) => {
-                this.$mdDialog.show({
-                    controller: 'FeedSavingDialogController',
-                    templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html',
-                    parent: angular.element(document.body),
-                    targetEvent: ev,
-                    clickOutsideToClose: false,
-                    fullscreen: true,
-                    locals: {
-                        message: message,
-                        feedName: feedName
-                    }
-                })
-                    .then((answer: any) => {
-                        //do something with result
-                    }, function () {
-                        //cancelled the dialog
-                    });
+
+                let dialogRef = this.dialog.open(FeedSavingDialogController, {
+                    data: { message: message,
+                            feedName: feedName },
+                    panelClass: "full-screen-dialog"
+                  });
+    
             }
             /**
              * Hide the Feed Saving Dialog
              */
             hideFeedSavingDialog= () => {
-                this.$mdDialog.hide();
+                this.dialog.closeAll();
             }
 
         validateSchemaDidNotChange=(model:any)=>{
@@ -639,18 +640,16 @@ export class FeedService {
             //reset the sensitive properties
             this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
-                var deferred = this.$q.defer();
-                var successFn = function (response: any) {
+                var deferred = this.$injector.get("$q").defer();
+                var successFn = (response: any) => {
                     var invalidCount = 0;
                     if (response.data && response.data.success) {
                         //update the feed versionId and internal id upon save
                         model.id = response.data.feedMetadata.id;
                         model.versionName = response.data.feedMetadata.versionName;
-                        this.$mdToast.show(
-                            this.$mdToast.simple()
-                                .textContent('Feed successfully saved')
-                                .hideDelay(3000)
-                        );
+                        this.snackBar.open('Feed successfully saved',"OK",{
+                            duration : 3000
+                        });
                         deferred.resolve(response);
                     }
                     else {
@@ -663,7 +662,7 @@ export class FeedService {
                 }
 
                 //post to the server to save with a custom timeout of 7 minutes.
-                var promise = this.$http({
+                var promise = this.$injector.get("$http")({
                     url: this.RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                     method: "POST",
                     data: angular.toJson(copy),
@@ -682,7 +681,7 @@ export class FeedService {
              */
             getSystemName= (feedName: any) => {
 
-                return this.$http.get(this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
+                return this.$injector.get("$http").get(this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
 
             }
             /**
@@ -690,7 +689,7 @@ export class FeedService {
              * @returns {HttpPromise}
              */
             isKyloConfiguredForFeedHistoryDataReindexing= () => {
-                return this.$http.get(this.RestUrlService.FEED_HISTORY_CONFIGURED);
+                return this.$injector.get("$http").get(this.RestUrlService.FEED_HISTORY_CONFIGURED);
             }
             /**
              * When creating a Feed find the First Column/Field that matches the given name
@@ -714,7 +713,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
 
                 }
-                var promise = this.$http.get(this.RestUrlService.GET_FEED_NAMES_URL);
+                var promise = this.$injector.get("$http").get(this.RestUrlService.GET_FEED_NAMES_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -730,7 +729,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
 
                 }
-                var promise =this.$http.get(this.RestUrlService.OPS_MANAGER_FEED_NAMES);
+                var promise =this.$injector.get("$http").get(this.RestUrlService.OPS_MANAGER_FEED_NAMES);
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -746,7 +745,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
                     console.log('ERROR ', err)
                 }
-                var promise = this.$http.get(this.RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
+                var promise = this.$injector.get("$http").get(this.RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -774,7 +773,7 @@ export class FeedService {
              * @returns {Promise} for the user fields
              */
             getUserFields= (categoryId: string): angular.IPromise<any> => {
-                return this.$http.get(this.RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
+                return this.$injector.get("$http").get(this.RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
                     .then((response: any) =>{
                         return response.data;
                     });
@@ -787,7 +786,7 @@ export class FeedService {
              * @returns {Array}
              */
             getAvailableControllerServices= (type: string): angular.IPromise<any> => {
-                return this.$http.get(this.RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
+                return this.$injector.get("$http").get(this.RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
                     .then( (response: any) => {
                         return response.data;
                     });
@@ -852,8 +851,8 @@ export class FeedService {
             }
 
             getFeedByName= (feedName: string) => {
-                var deferred = this.$q.defer();
-                this.$http.get(this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
+                var deferred = this.$injector.get("$q").defer();
+                this.$injector.get("$http").get(this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
                     .then( (response: any) => {
                         var feedResponse = response.data;
                         return deferred.resolve(feedResponse);
@@ -867,7 +866,7 @@ export class FeedService {
              * @returns {Array.<string>} list of function names
              */
             getPartitionFunctions= () => {
-                return this.$http.get(this.RestUrlService.PARTITION_FUNCTIONS_URL)
+                return this.$injector.get("$http").get(this.RestUrlService.PARTITION_FUNCTIONS_URL)
                     .then((response: any) => {
                         return response.data;
                     });
@@ -880,7 +879,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
                     console.log('ERROR ', err)
                 }
-                return this.$http.get(this.RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+                return this.$injector.get("$http").get(this.RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
             }
 
             getFeedVersion= (feedId: string, versionId: string) => {
@@ -890,7 +889,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
                     console.log('ERROR ', err)
                 }
-                return this.$http.get(this.RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+                return this.$injector.get("$http").get(this.RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
             }
 
             diffFeedVersions= (feedId: string, versionId1: string, versionId2: string) => {
@@ -901,7 +900,7 @@ export class FeedService {
                 var errorFn = (err: any) => {
                     console.log('ERROR ', err)
                 }
-                return this.$http.get(this.RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+                return this.$injector.get("$http").get(this.RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
             }
 
             /**
@@ -984,23 +983,20 @@ export class FeedService {
                 this.versionFeedModel = {};
                 this.versionFeedModelDiff = {};
             }
-        //}
 
-static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "VisualQueryService", "FeedCreationErrorService", "FeedPropertyService", "AccessControlService",
-        "EntityAccessControlService", "StateService"];
-    constructor(private $http: angular.IHttpService,
-        private $q: angular.IQService,
-        private $mdToast: angular.material.IToastService,
-        private $mdDialog: angular.material.IDialogService,
-        private RestUrlService: any,
-        private VisualQueryService: any,
-        private FeedCreationErrorService: any,
-        private FeedPropertyService: any,
+    constructor(private RestUrlService: RestUrlService,
+        private VisualQueryService: VisualQueryService,
+        private FeedCreationErrorService: FeedCreationErrorService,
+        private FeedPropertyService: DefaultFeedPropertyService,
         private accessControlService: AccessControlService,
         private entityAccessControlService: EntityAccessControlService,
-        private StateService: any) {
-        this.init();
-        //return this.data;
+        private StateService: StateService,
+        private dialog: MatDialog,
+        private snackBar: MatSnackBar, 
+        @Inject("$injector") private $injector: any) {
+        
+            this.init();
+            
     }// constructor terminating here
 
     trim(str: string) {
@@ -1034,24 +1030,28 @@ static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "Vis
 /**
  * The Controller used for the Feed Saving Dialog
  */
+@Component({
+    selector: 'feed-saving-dialog-controller',
+    templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html'
+})
 export class FeedSavingDialogController {
-    static readonly $inject = ["$scope", "$mdDialog", "message", "feedName"];
-    constructor(private $scope: any,
-        private $mdDialog: angular.material.IDialogService,
-        private message: string,
-        private feedName: string) {
-        $scope.feedName = feedName;
-        $scope.message = message;
 
-        this.$scope.hide = () => {
-            this.$mdDialog.hide();
-        };
+    feedName: string;
+    message: string;
 
-        this.$scope.cancel = () => {
-            this.$mdDialog.cancel();
-        };
+    ngOnInit() {
+
+        this.feedName = this.data.feedName;
+        this.message = this.data.message;
     }
+    constructor(private dialogRef: MatDialogRef<FeedSavingDialogController>,
+                @Inject(MAT_DIALOG_DATA) private data: any) {}
+
+    hide = () => {
+        this.dialogRef.close();
+    };
+
+    cancel = () => {
+        this.dialogRef.close();
+    };
 }
-angular.module(require("feed-mgr/module-name"))
-.service('FeedService',FeedService)
-.controller('FeedSavingDialogController', FeedSavingDialogController);

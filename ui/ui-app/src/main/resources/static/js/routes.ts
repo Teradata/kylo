@@ -151,7 +151,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({ 
             name: 'categories.**',
             url: '/categories', 
-            loadChildren: 'feed-mgr/categories/categories.module#CategoryModule' 
+            loadChildren: 'feed-mgr/categories/categories.module#CategoriesModule' 
         }); 
 
         $stateProvider.state('registered-templates.**', {
@@ -220,7 +220,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({ 
             name: 'datasources.**', 
             url: '/datasources', 
-            loadChildren: 'feed-mgr/datasources/datasources.moule#DataSourcesModule' 
+            loadChildren: 'feed-mgr/datasources/datasources.module#DataSourcesModule'
         });
 
         $stateProvider.state('search.**', {
@@ -545,38 +545,16 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             }
         });
 
-        $stateProvider.state('sla-email-templates.**', {
-            url: '/sla-email-templates',
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module')
-                        .then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('sla-email-templates',transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading sla email templates ", err);
-                    return err;
-                });
-            }
-        });
-
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'sla-email-template.**',
             url: '/sla-email-template/:emailTemplateId',
-            params: {
-                emailTemplateId: null
-            },
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('sla-email-template',transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading sla email template ", err);
-                    return err;
-                });
-
-            }
+            loadChildren: 'feed-mgr/sla/sla.module#SLAModule' 
+        });
+        
+        $stateProvider.state({ 
+            name: 'sla-email-templates.**',
+            url: '/sla-email-templates',
+            loadChildren: 'feed-mgr/sla/sla.module#SLAModule' 
         });
 
         $stateProvider.state('cluster.**', {

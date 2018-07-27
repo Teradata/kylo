@@ -22,12 +22,12 @@ import {MatInputModule} from '@angular/material/input';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
 import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent";
 import GroupsTableComponent from "./groups/GroupsTableComponent";
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {PermissionsTableComponent} from './shared/permissions-table/permissions-table.component';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import * as angular from "angular";
 
 @NgModule({ 
     declarations: [ 
@@ -57,11 +57,13 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
         FlexLayoutModule,
         FormsModule,
         ReactiveFormsModule,
-        BrowserModule,
         MatCheckboxModule,
         UIRouterModule.forChild({states: authStates}) 
     ],
-    providers : [UserService],
+    providers : [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
+        UserService
+    ],
     schemas : [NO_ERRORS_SCHEMA]
 }) 
 export class AuthModule { 

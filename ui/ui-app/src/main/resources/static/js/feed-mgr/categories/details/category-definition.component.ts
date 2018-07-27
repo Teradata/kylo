@@ -6,7 +6,7 @@ import StateService from "../../../services/StateService";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { IconPickerDialog } from "../../../common/icon-picker-dialog/icon-picker-dialog.component";
 import CategoriesService from "../../services/CategoriesService";
-import { FeedSecurityGroups } from "../../services/FeedSecurityGroupsService";
+import { FeedSecurityGroups } from "../../services/FeedSecurityGroups";
 
 @Component({
     selector: 'thinkbig-category-definition',
@@ -84,7 +84,7 @@ export class CategoryDefinitionController {
             this.securityGroupChips.selectedItem = null;
             this.securityGroupChips.searchText = null;
 
-            this.FeedSecurityGroups.data.isEnabled().then( (isValid:any) => {
+            this.FeedSecurityGroups.isEnabled().then( (isValid:any) => {
                     this.securityGroupsEnabled = isValid;
                 }
             );
@@ -92,7 +92,7 @@ export class CategoryDefinitionController {
             this.checkAccessPermissions();
 
             // Fetch the existing categories
-            this.CategoriesService.reload().then((response:any) =>{
+            this.CategoriesService.reload().subscribe((response:any) =>{
                 if (this.editModel) {
                     this.validateDisplayName();
                     this.validateSystemName();
@@ -195,7 +195,7 @@ export class CategoryDefinitionController {
         /**
          * Returns to the category list page if creating a new category.
          */
-        onCancel = () => {
+        onCancel () {
             this.systemNameEditable = false;
             if (!angular.isString(this.model.id)) {
                 this.StateService.FeedManager().Category().navigateToCategories();
@@ -205,7 +205,7 @@ export class CategoryDefinitionController {
         /**
          * Deletes this category.
          */
-        onDelete = () => {
+        onDelete () {
             var name = this.editModel.name;
             this.CategoriesService.delete(this.editModel).then( () => {
                 this.systemNameEditable = false;
@@ -232,7 +232,7 @@ export class CategoryDefinitionController {
         /**
          * Switches to "edit" mode.
          */
-        onEdit = () => {
+        onEdit () {
             this.editModel = angular.copy(this.model);
         };
 
@@ -334,7 +334,8 @@ export class CategoryDefinitionController {
         /**
          * Saves the category definition.
          */
-        onSave = () => {
+        onSave () {
+            this.model = angular.copy(this.editModel);
             var model = angular.copy(this.CategoriesService.model);
             model.name = this.editModel.name;
             model.systemName = this.editModel.systemName;
@@ -348,7 +349,7 @@ export class CategoryDefinitionController {
             this.CategoriesService.save(model).then((response:any) =>{
                 this.systemNameEditable = false;
                 this.CategoriesService.update(response.data);
-                this.model = this.CategoriesService.model = response.data;
+                this.model = this.CategoriesService.model.response.data;
                 this.$injector.get("$mdToast").show(
                     this.$injector.get("$mdToast").simple()
                         .textContent('Saved the Category')

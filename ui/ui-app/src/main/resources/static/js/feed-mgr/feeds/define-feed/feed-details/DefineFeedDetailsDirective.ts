@@ -22,6 +22,7 @@ import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { FeedService } from '../../../services/FeedService';
 import BroadcastService from '../../../../services/broadcast-service';
+import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedDetailsController {
@@ -89,16 +90,16 @@ export class DefineFeedDetailsController {
     }
 
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
-        "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
+        "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private feedService: FeedService, private registerTemplateService: RegisterTemplateServiceFactory
-        , private FeedInputProcessorOptionsFactory: any, private broadcastService: BroadcastService, private StepperService: any,
+        ,  private broadcastService: BroadcastService, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
         this.model = this.feedService.createFeedModel;
 
         var watchers = [];
-
-        this.codemirrorRenderTypes = this.registerTemplateService.codeMirrorRenderTypes;
+            //done after scott's commit, no code mirror render types now in register template property service
+        // this.codemirrorRenderTypes = this.registerTemplatePropertyService.codeMirrorRenderTypes;
 
         var inputDatabaseType = ["com.thinkbiganalytics.nifi.GetTableData"]
 

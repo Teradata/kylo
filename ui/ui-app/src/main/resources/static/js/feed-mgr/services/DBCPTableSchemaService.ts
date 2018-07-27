@@ -1,7 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 
 
 export class DBCPTableSchemaService {
@@ -10,6 +10,8 @@ export class DBCPTableSchemaService {
     LIST_TABLES_URL:any;
     DESCRIBE_TABLE_URL:any;
    
+    static readonly $inject = ["RestUrlService"];
+
     constructor (RestUrlService:any) {
 
         this.ROOT = RestUrlService.ROOT;
@@ -23,4 +25,3 @@ export class DBCPTableSchemaService {
         };
     }
 }
-angular.module(moduleName).service('DBCPTableSchemaService', ["RestUrlService", DBCPTableSchemaService]);

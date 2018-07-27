@@ -5,7 +5,6 @@ import CategoriesService from '../services/CategoriesService';
 import AccessControlService from '../../services/AccessControlService';
 import AddButtonService from '../../services/AddButtonService';
 import StateService from '../../services/StateService';
-const moduleName = require('./module-name');
 
 @Component({
     selector: 'categories-controller',
@@ -71,11 +70,10 @@ export class CategoriesControllerComponent{
             });
 
         // Refresh list of categories
-        this.categoriesService.reload()
-            .then((categories:any) => {
-                this.loading = false;
-                this.categories = categories;
-            });
+        this.categoriesService.reload().subscribe(categories => {
+            this.loading = false;
+            this.categories = categories;
+        });
     }
 
     /**
@@ -90,14 +88,7 @@ export class CategoriesControllerComponent{
     constructor(private accessControlService: AccessControlService, 
                 private addButtonService: AddButtonService, 
                 private stateService: StateService,
-                private categoriesService: CategoriesService) {
-
-                    // this.$scope.$watchCollection(
-                    //     () => { return CategoriesService.categories },
-                    //     (newVal: any) => { this.categories = newVal }
-                    // );
-                    
-                }
+                private categoriesService: CategoriesService) {}
     /**
     * Navigates to the details page for the specified category.
     *

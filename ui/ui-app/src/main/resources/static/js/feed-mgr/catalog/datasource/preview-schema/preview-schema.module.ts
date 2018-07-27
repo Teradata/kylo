@@ -18,7 +18,6 @@ import {PolicyInputFormComponent} from "../../../shared/field-policies-angular2/
 import {InlinePolicyInputFormComponent} from "../../../shared/field-policies-angular2/inline-field-policy-form.component";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {FieldPolicyOptionsService} from "../../../shared/field-policies-angular2/field-policy-options.service";
-import {PolicyInputFormService} from "../../../shared/field-policies-angular2/policy-input-form.service";
 import {MatDialogModule} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
 import {CovalentChipsModule} from "@covalent/core/chips";

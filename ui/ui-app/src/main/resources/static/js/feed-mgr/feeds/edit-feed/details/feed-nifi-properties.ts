@@ -60,11 +60,11 @@ export class FeedNIFIController implements ng.IComponentController {
      */
     editableSection: boolean = false;
 
-    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
+    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
 
     constructor(private $scope: any, private $http: angular.IHttpService, private $q: angular.IQService, private RestUrlService: any, private accessControlService: AccessControlService
         , private entityAccessControlService: EntityAccessControlService, private FeedService: any, private EditFeedNifiPropertiesService: any
-        , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any,
+        , private FeedDetailsProcessorRenderingHelper: any,
                 private BroadcastService: any, private FeedPropertyService: any, private $filter: angular.IFilterService) {
 
         this.versions = $scope.versions;

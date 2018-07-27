@@ -1,4 +1,4 @@
-const moduleName = require('feed-mgr/module-name');
+import {moduleName} from "../module-name";;
 import * as angular from 'angular';
 import * as _ from "underscore";
 
@@ -57,8 +57,3 @@ populateCodeMirrorTablesAndColumns(tableColumns: any){
 
      
 }
-
- angular.module(moduleName).factory('CodeMirrorService', ["$q", 
-            ($q:any) => new CodeMirrorService($q)
-        ]);
- 

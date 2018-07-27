@@ -4,7 +4,6 @@ import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
-const moduleName = require('feed-mgr/module-name');
 
 @Injectable()
 export class EntityAccessControlService extends AccessConstants{
@@ -224,4 +223,3 @@ export class EntityAccessControlService extends AccessConstants{
 
 
 }
-angular.module(moduleName).service('EntityAccessControlService', EntityAccessControlService);

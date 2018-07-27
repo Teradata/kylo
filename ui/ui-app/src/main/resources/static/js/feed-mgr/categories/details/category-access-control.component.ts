@@ -4,7 +4,6 @@ import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Inject } from '@angular/core';
 import CategoriesService from '../../services/CategoriesService';
-// const moduleName = require('feed-mgr/categories/module-name');
 
 @Component({
     selector: 'thinkbig-category-access-control',
@@ -42,10 +41,12 @@ export class CategoryAccessControlController {
 
         if (this.CategoriesService.model.roleMemberships == undefined) {
             this.CategoriesService.model.roleMemberships = this.model.roleMemberships = [];
+            this.CategoriesService.setModel(this.CategoriesService.model);
         }
 
         if (this.CategoriesService.model.feedRoleMemberships == undefined) {
             this.CategoriesService.model.feedRoleMemberships = this.model.feedRoleMemberships = [];
+            this.CategoriesService.setModel(this.CategoriesService.model);
         }
 
         /**
@@ -67,14 +68,15 @@ export class CategoryAccessControlController {
                                                                                                     .then((access: any) => {
             this.allowEdit = access;
         });
+
+        this.CategoriesService.modelSubject.subscribe((newValue: any) => {
+            this.isNew = !angular.isString(newValue.id)
+        });
     }
     constructor(private CategoriesService: CategoriesService,
                 private accessControlService: AccessControlService, 
                 private entityAccessControlService: EntityAccessControlService, 
                 @Inject("$injector") private $injector: any) {
-
-
-        
 
         // $scope.$watch(
         //     () => {

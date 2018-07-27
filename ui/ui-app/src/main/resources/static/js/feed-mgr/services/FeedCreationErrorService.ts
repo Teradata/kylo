@@ -20,12 +20,27 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/module-name');
+import { Injectable, Inject, Component } from '@angular/core';
+import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
+class FeedErrorModel {
+        isValid: boolean = false;
+        hasErrors: boolean = false;
+        feedName: string = '';
+        nifiFeed: any = {};
+        message: string = '';
+        feedErrorsData: any = {};
+        feedErrorsCount: Number = 0;
+        response: any = {};
+}
+
+@Injectable()
 export class FeedCreationErrorService {
-    constructor (private $mdDialog:any, private $filter:any) {
+    constructor (@Inject("$injector") private $injector: any,
+                private dialog: MatDialog) {}
+  
 
-        function parseNifiFeedForErrors(nifiFeed:any, errorMap:any) {
+        parseNifiFeedForErrors =(nifiFeed:any, errorMap:any) => {
             var count = 0;
 
             if (nifiFeed != null) {
@@ -62,49 +77,49 @@ export class FeedCreationErrorService {
 
         }
 
-        function buildErrorMapAndSummaryMessage() {
+        buildErrorMapAndSummaryMessage=() =>{
             var count = 0;
             var errorMap:any = {"FATAL": [], "WARN": []};
-            if (data.feedError.nifiFeed != null && data.feedError.response.status < 500) {
+            if (this.feedError.nifiFeed != null && this.feedError.response.status < 500) {
 
-                count = parseNifiFeedForErrors(data.feedError.nifiFeed, errorMap);
-                data.feedError.feedErrorsData = errorMap;
-                data.feedError.feedErrorsCount = count;
+                count = this.parseNifiFeedForErrors(this.feedError.nifiFeed, errorMap);
+                this.feedError.feedErrorsData = errorMap;
+                this.feedError.feedErrorsCount = count;
 
-                if (data.feedError.feedErrorsCount == 1) {
+                if (this.feedError.feedErrorsCount == 1) {
 
-                    data.feedError.message = data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf');
-                    data.feedError.isValid = false;
+                    this.feedError.message = this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf');
+                    this.feedError.isValid = false;
                 }
-                else if (data.feedError.feedErrorsCount >=2  || data.feedError.feedErrorsCount <= 4) {
+                else if (this.feedError.feedErrorsCount >=2  || this.feedError.feedErrorsCount <= 4) {
 
-                    data.feedError.message = $filter('translate')('views.FeedCreationErrorService.Found') + data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf2');
-                    data.feedError.isValid = false;
+                    this.feedError.message = this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf2');
+                    this.feedError.isValid = false;
                 }
-                else if (data.feedError.feedErrorsCount >= 5) {
+                else if (this.feedError.feedErrorsCount >= 5) {
 
-                    data.feedError.message = $filter('translate')('views.FeedCreationErrorService.Found') + data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf2');
-                    data.feedError.isValid = false;
+                    this.feedError.message = this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf2');
+                    this.feedError.isValid = false;
                 }
                 else {
-                    data.feedError.isValid = true;
+                    this.feedError.isValid = true;
                 }
             }
-            else if (data.feedError.response.status === 502) {
-                data.feedError.message = 'Error creating feed, bad gateway'
-            } else if (data.feedError.response.status === 503) {
-                data.feedError.message = 'Error creating feed, service unavailable'
-            } else if (data.feedError.response.status === 504) {
-                data.feedError.message = 'Error creating feed, gateway timeout'
-            } else if (data.feedError.response.status === 504) {
-                data.feedError.message = 'Error creating feed, HTTP version not supported'
+            else if (this.feedError.response.status === 502) {
+                this.feedError.message = 'Error creating feed, bad gateway'
+            } else if (this.feedError.response.status === 503) {
+                this.feedError.message = 'Error creating feed, service unavailable'
+            } else if (this.feedError.response.status === 504) {
+                this.feedError.message = 'Error creating feed, gateway timeout'
+            } else if (this.feedError.response.status === 504) {
+                this.feedError.message = 'Error creating feed, HTTP version not supported'
             } else {
-                data.feedError.message = 'Error creating feed.'
+                this.feedError.message = 'Error creating feed.'
             }
 
         }
 
-        function newErrorData() {
+        newErrorData=() =>{
             return {
                 isValid: false,
                 hasErrors: false,
@@ -112,85 +127,75 @@ export class FeedCreationErrorService {
                 nifiFeed: {},
                 message: '',
                 feedErrorsData: {},
-                feedErrorsCount: 0
+                feedErrorsCount: Number,
             };
         }
 
-        var data:any = {
-            feedError: {
-                isValid: false,
-                hasErrors: false,
-                feedName: '',
-                nifiFeed: {},
-                message: '',
-                feedErrorsData: {},
-                feedErrorsCount: 0,
-            },
-            buildErrorData: function (feedName:any, response:any) {
-                this.feedError.feedName = feedName;
-                this.feedError.nifiFeed = response.data;
-                this.feedError.response = response;
-                buildErrorMapAndSummaryMessage();
-                this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
-            },
-            parseNifiFeedErrors: function (nifiFeed:any, errorMap:any) {
-                return parseNifiFeedForErrors(nifiFeed, errorMap);
-            },
-            reset: function () {
-                angular.extend(this.feedError, newErrorData());
-            },
-            hasErrors: function () {
-                return this.feedError.hasErrors;
-            },
-            showErrorDialog: function () {
+        feedError: FeedErrorModel = new FeedErrorModel();
+        buildErrorData = (feedName:any, response:any)=> {
+            this.feedError.feedName = feedName;
+            this.feedError.nifiFeed = response.data;
+            this.feedError.response = response;
+            this.buildErrorMapAndSummaryMessage();
+            this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
+        }
+        parseNifiFeedErrors= (nifiFeed:any, errorMap:any) =>{
+            return this.parseNifiFeedForErrors(nifiFeed, errorMap);
+        }
+        reset= () =>{
+            angular.extend(this.feedError, this.newErrorData());
+        }
+        hasErrors= ()=> {
+            return this.feedError.hasErrors;
+        }
+        showErrorDialog= () =>{
 
-                $mdDialog.show({
-                    controller: 'FeedErrorDialogController',
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html',
-                    parent: angular.element(document.body),
-                    clickOutsideToClose: false,
-                    fullscreen: true,
-                    locals: {}
-                }).then(function (msg:any) {
-                    //respond to action in dialog if necessary... currently dont need to do anything
-                }, function () {
+            let dialogRef = this.dialog.open(FeedErrorDialogController, {
+                data: {feedError: this.feedError},
+                panelClass: "full-screen-dialog"
+              });
+        }
 
-                });
-            }
-
-        };
-        return data;
-
-    }
-    
 }
 
+/**
+ * The Controller used for the Feed Saving Dialog
+ */
+@Component({
+    selector: 'feed-error-dialog-controller',
+    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html'
+})
+export class FeedErrorDialogController {
 
-var controller = function ($scope:any, $mdDialog:any, FeedCreationErrorService:any) {
-    var self = this;
+    feedName: string;
+    message: string;
+    createdFeed: string;
+    isValid: boolean;
+    feedErrorsData: string;
+    feedErrorsCount: Number;
 
-    var errorData = FeedCreationErrorService.feedError;
-    $scope.feedName = errorData.feedName;
-    $scope.createdFeed = errorData.nifiFeed;
-    $scope.isValid = errorData.isValid;
-    $scope.message = errorData.message;
-    $scope.feedErrorsData = errorData.feedErrorsData;
-    $scope.feedErrorsCount = errorData.feedErrorsCount;
+    ngOnInit() {
 
-    $scope.fixErrors = function () {
-        $mdDialog.hide('fixErrors');
+        var errorData = this.feedCreationErrorService.feedError;
+        this.feedName = errorData.feedName;
+        this.createdFeed = errorData.nifiFeed;
+        this.isValid = errorData.isValid;
+        this.message = errorData.message;
+        this.feedErrorsData = errorData.feedErrorsData;
+        this.feedErrorsCount = errorData.feedErrorsCount;
     }
+    constructor(private dialogRef: MatDialogRef<FeedErrorDialogController>,
+                private feedCreationErrorService: FeedCreationErrorService) {}
 
-    $scope.hide = function () {
-        $mdDialog.hide();
+    hide = () => {
+        this.dialogRef.close();
     };
 
-    $scope.cancel = function () {
-        $mdDialog.cancel();
+    cancel = () => {
+        this.dialogRef.close();
     };
 
-};
-
-angular.module(moduleName).controller('FeedErrorDialogController',["$scope","$mdDialog","FeedCreationErrorService","$filter",controller]);
-
-angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog","$filter", FeedCreationErrorService]);
+    fixErrors = function () {
+        this.dialogRef.close('fixErrors');
+    }
+}

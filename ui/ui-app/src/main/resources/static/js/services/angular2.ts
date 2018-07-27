@@ -12,6 +12,7 @@ import AccessControlService from "./AccessControlService";
 import StateService from "./StateService";
 import CommonRestUrlService from "./CommonRestUrlService";
 import UserGroupService from "./UserGroupService";
+import FileUpload from "./FileUploadService";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -64,6 +65,12 @@ export const commonRestURLServiceProvider : FactoryProvider = {
 export const userGroupServiceProvider : FactoryProvider = {
     provide : UserGroupService,
     useFactory : (i: angular.auto.IInjectorService) => i.get("UserGroupService"),
+    deps : ["$injector"]
+};
+
+export const fileUploadServiceProvider : FactoryProvider = {
+    provide : FileUpload,
+    useFactory : (i: angular.auto.IInjectorService) => i.get("FileUpload"),
     deps : ["$injector"]
 };
 

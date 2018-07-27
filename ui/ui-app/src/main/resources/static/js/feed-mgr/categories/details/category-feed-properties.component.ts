@@ -42,15 +42,6 @@ export class CategoryFeedPropertiesController {
     */
     model:any;
 
-    ngOnInit() {
-        this.model = this.CategoriesService.model;
-
-        //Apply the entity access permissions
-        this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN,this.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then((access:any) =>{
-            this.allowEdit = access;
-        });
-    }
-
     /**
      * Manages the Category Feed Properties section of the Category Details page.
      *
@@ -65,6 +56,16 @@ export class CategoryFeedPropertiesController {
 
         this.editModel = CategoriesService.newCategory();
 
+        this.model = this.CategoriesService.model;
+
+        //Apply the entity access permissions
+        this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN,this.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then((access:any) =>{
+            this.allowEdit = access;
+        });
+        
+        this.CategoriesService.modelSubject.subscribe((newValue: any) => {
+            this.isNew = !angular.isString(newValue.id)
+        });
         // $scope.$watch(
         //     () =>{
         //         return CategoriesService.model.id
@@ -92,6 +93,7 @@ export class CategoryFeedPropertiesController {
 
             this.CategoriesService.save(model).then((response:any) =>{
                 this.model = this.CategoriesService.model = response.data;
+                this.CategoriesService.setModel(this.CategoriesService.model);
                 this.CategoriesService.update(response.data);
                 this.$injector.get("$mdToast").show(
                     this.$injector.get("$mdToast").simple()

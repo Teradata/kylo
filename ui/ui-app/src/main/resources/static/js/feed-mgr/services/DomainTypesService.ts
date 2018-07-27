@@ -14,9 +14,11 @@
  * @property {string} regexPattern - regular expression pattern for matching sample values
  * @property {string} title a human-readable title
  */
-const moduleName = require('feed-mgr/module-name');
 import * as angular from 'angular';
 import * as _ from "underscore";
+import { HttpClient } from '@angular/common/http';
+import { RestUrlService } from './RestUrlService';
+import { Injectable } from '@angular/core';
 
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
@@ -92,7 +94,7 @@ export interface DomainType {
          */
     function getFieldNameRegExp(domainType: any){
             if (angular.isUndefined(domainType.$fieldNameRegexp)) {
-                domainType.$fieldNameRegexp = this.getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
+                domainType.$fieldNameRegexp = getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
             }
             return domainType.$fieldNameRegexp;
         }
@@ -102,7 +104,7 @@ export interface DomainType {
          */
     function getSampleDataRegExp(domainType: any){
             if (angular.isUndefined(domainType.$regexp)) {
-                domainType.$regexp = this.getRegExp(domainType.regexPattern, domainType.regexFlags);
+                domainType.$regexp = getRegExp(domainType.regexPattern, domainType.regexFlags);
             }
             return domainType.$regexp;
         }
@@ -114,20 +116,15 @@ export interface DomainType {
             var result = regexp.exec(value);
             return (result !== null && result.index === 0 && result[0].length === value.length);
         }
-
+@Injectable()
 export class DomainTypesService{
         /**
          * Interacts with the Domain Types REST API.
          * @constructor
          */
- constructor (private $http?: any,
-                private $q?: any,
-                private RestUrlService?: any) {
+ constructor (private httpClient : HttpClient,
+                private restUrlService : RestUrlService) {
 
-      // angular.extend(DomainTypesService.prototype, {
-
-      //  });
-        //return new DomainTypesService();
     }
            /**
              * Deletes the domain type with the specified id.
@@ -136,10 +133,7 @@ export class DomainTypesService{
              * @returns {Promise} for when the domain type is deleted
              */
             deleteById=(id: any)=>{
-                return this.$http({
-                    method: "DELETE",
-                    url: this.RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id)
-                });
+                return this.httpClient.delete(this.restUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id));
             }
 
             /**
@@ -196,9 +190,9 @@ export class DomainTypesService{
              * @returns {Promise} with the list of domain types
              */
             findAll=()=> {
-                return this.$http.get(this.RestUrlService.DOMAIN_TYPES_BASE_URL)
+                return this.httpClient.get(this.restUrlService.DOMAIN_TYPES_BASE_URL).toPromise()
                     .then((response: any)=> {
-                        return response.data;
+                        return response;
                     });
             }
 
@@ -209,9 +203,9 @@ export class DomainTypesService{
              * @returns {Promise} with the domain type
              */
             findById=(id: any)=>{
-                return this.$http.get(this.RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id))
+                return this.httpClient.get(this.restUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id)).toPromise()
                     .then((response: any)=> {
-                        return response.data;
+                        return response;
                     });
             }
 
@@ -267,9 +261,9 @@ export class DomainTypesService{
              * @returns {Promise} with the updated domain type
              */
             save=(domainType: any)=>{
-                return this.$http.post(this.RestUrlService.DOMAIN_TYPES_BASE_URL, domainType)
+                return this.httpClient.post(this.restUrlService.DOMAIN_TYPES_BASE_URL, domainType).toPromise()
                     .then((response: any)=>{
-                        return response.data;
+                        return response;
                     });
             }
     emptyArray: any[]= [];
@@ -277,10 +271,6 @@ export class DomainTypesService{
 }
 
 
-  angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
-  function($http: any,$q: any,RestUrlService:any){
-        return new DomainTypesService($http , $q, RestUrlService);
-  }
-  ]);
+
 
 

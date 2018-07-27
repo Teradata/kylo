@@ -73,15 +73,7 @@ export interface RegisteredTemplateService {
      */
     fetchRootInputPorts() : angular.IPromise<angular.IHttpResponse<any>>;
 
-
-    replaceAll(str: string, find: string, replace: string): string;
-
-
     deriveExpression(expression: string, configOnly: boolean): string;
-
-
-    getCodeMirrorTypes(): angular.IPromise<any>;
-
 
     /**
      * Do we render the incoming property with codemirror?
