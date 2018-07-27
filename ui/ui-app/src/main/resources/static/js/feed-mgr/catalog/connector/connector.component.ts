@@ -140,7 +140,11 @@ export class ConnectorComponent {
     }
 
     createControls() {
-        for (let option of this.plugin.options) {
+        const options = this.plugin.options;
+        if (!options) {
+            return;
+        }
+        for (let option of options) {
             let control = this.controls.get(option.key);
             if (!control) {
                 const validators = [];
