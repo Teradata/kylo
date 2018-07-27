@@ -98,6 +98,10 @@ export class DataSourcesComponent implements OnInit {
         this.state.go(stateRef, params);
     }
 
+    isEditable(datasource: DataSource): boolean {
+        return datasource.id !== "file-uploads" && datasource.id !== "hive";
+    }
+
     /**
      * Edit properties of datasource
      */

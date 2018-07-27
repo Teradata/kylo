@@ -15,11 +15,20 @@ export class VisibleOnMouseOverDirective {
     constructor(el: ElementRef) { this.el = el; }
 
     onMouseEnter() {
-        const elementByClass = this.el.nativeElement.getElementsByClassName(this.visibleOnMouseOver);
-        elementByClass[0].style.visibility = 'visible';
+        const element = this.getElement();
+        if (element) {
+            element.style.visibility = 'visible';
+        }
     }
+
     onMouseLeave() {
-        const elementByClass = this.el.nativeElement.getElementsByClassName(this.visibleOnMouseOver);
-        elementByClass[0].style.visibility = 'hidden';
+        const element = this.getElement();
+        if (element) {
+            element.style.visibility = 'hidden';
+        }
+    }
+
+    private getElement() {
+        return this.el.nativeElement.getElementsByClassName(this.visibleOnMouseOver)[0];
     }
 }
