@@ -34,12 +34,10 @@
     [onPageSizeChange]="onPageSizeChange"
     [allowedPageSize]="[5,10,20,50]"
 >
-    <data-table-columns-template>    
         <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
             <div layout="row">
                 <mat-icon class="ng-md-icon" size="20" *ngIf="value == 'Active'" style="color: #009933">check_circle</mat-icon>
                 <mat-icon class="ng-md-icon" size="20" *ngIf="value == 'Disabled'" color="green">block</mat-icon>
             </div>
         </ng-template>
-    </data-table-columns-template>    
 </filtered-paginated-table-view>

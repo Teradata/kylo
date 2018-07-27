@@ -1,4 +1,5 @@
 import { CommonModule } from "@angular/common";
+import {CovalentDataTableModule} from "@covalent/core/data-table";
 import { KyloCommonModule } from "../common/common.module";
 import {KyloServicesModule} from "../services/services.module";
 import { UIRouterModule } from "@uirouter/angular";
@@ -58,7 +59,8 @@ import * as angular from "angular";
         FormsModule,
         ReactiveFormsModule,
         MatCheckboxModule,
-        UIRouterModule.forChild({states: authStates}) 
+        UIRouterModule.forChild({states: authStates}),
+        CovalentDataTableModule
     ],
     providers : [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
