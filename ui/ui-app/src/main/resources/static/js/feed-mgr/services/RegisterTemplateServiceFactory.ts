@@ -47,7 +47,6 @@ import { DefaultFeedPropertyService } from './DefaultFeedPropertyService';
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
     constructor(private RestUrlService: RestUrlService, 
-                // private FeedInputProcessorOptionsFactory: any, 
                 // private FeedDetailsProcessorRenderingHelper: any,
                 private FeedPropertyService: DefaultFeedPropertyService, 
                 private accessControlService: AccessControlService,
@@ -71,7 +70,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             processor.feedPropertiesUrl = null;
         }
         if (processor.feedPropertiesUrl == null) {
-            this.$injector.get("FeedInputProcessorOptionsFactory").setFeedProcessingTemplateUrl(processor, mode);
+            this.$injector.get("FeedInputProcessorPropertiesTemplateService").setFeedProcessingTemplateUrl(processor, mode);
         }
     }
 

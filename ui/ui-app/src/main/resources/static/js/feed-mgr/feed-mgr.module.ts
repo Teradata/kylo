@@ -5,6 +5,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatListModule} from '@angular/material/list';
 import {MatButtonModule} from '@angular/material/button';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {
     feedDetailsProcessorRenderingHelperProvider,
     feedInputProcessorPropertiesTemplateServiceProvider,
@@ -51,7 +52,8 @@ import { DomainTypesService } from "./services/DomainTypesService";
         MatProgressSpinnerModule,
         MatDialogModule,
         MatListModule,
-        MatButtonModule
+        MatButtonModule,
+        MatSnackBarModule
     ],
     providers: [
         CategoriesService,

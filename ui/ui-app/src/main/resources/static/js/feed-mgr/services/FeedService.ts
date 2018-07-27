@@ -13,6 +13,7 @@ import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
 import { VisualQueryService } from "./VisualQueryService";
 import { FeedCreationErrorService } from "./FeedCreationErrorService";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { MatSnackBar } from "@angular/material/snack-bar";
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -307,7 +308,7 @@ export class FeedService {
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
             newTableFieldPolicy(fieldName: any): TableFieldPolicy {
-                return new TableFieldPolicy(fieldName);
+                return TableFieldPolicy.forName(fieldName);
                 // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
             }
             /**
@@ -316,7 +317,7 @@ export class FeedService {
             setTableFields(fields: any[], policies: any[] = null) {
                 //ensure the fields are of type TableColumnDefinition
                 let newFields =  _.map(fields,(field) => {
-                    if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                    if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
                         let columnDef = new TableColumnDefinition();
                         angular.extend(columnDef,field);
                         return columnDef;
@@ -487,6 +488,10 @@ export class FeedService {
                 }
             copy.properties = properties;
 
+            //Force this feed to always be a final feed
+            //Any save through this service is not a DRAFT feed
+            copy.mode="COMPLETE";
+
             //clear the extra UI only properties
             copy.inputProcessor = null
             copy.nonInputProcessors = null
@@ -636,17 +641,15 @@ export class FeedService {
             this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
                 var deferred = this.$injector.get("$q").defer();
-                var successFn = function (response: any) {
+                var successFn = (response: any) => {
                     var invalidCount = 0;
                     if (response.data && response.data.success) {
                         //update the feed versionId and internal id upon save
                         model.id = response.data.feedMetadata.id;
                         model.versionName = response.data.feedMetadata.versionName;
-                        this.$mdToast.show(
-                            this.$mdToast.simple()
-                                .textContent('Feed successfully saved')
-                                .hideDelay(3000)
-                        );
+                        this.snackBar.open('Feed successfully saved',"OK",{
+                            duration : 3000
+                        });
                         deferred.resolve(response);
                     }
                     else {
@@ -989,6 +992,7 @@ export class FeedService {
         private entityAccessControlService: EntityAccessControlService,
         private StateService: StateService,
         private dialog: MatDialog,
+        private snackBar: MatSnackBar, 
         @Inject("$injector") private $injector: any) {
         
             this.init();

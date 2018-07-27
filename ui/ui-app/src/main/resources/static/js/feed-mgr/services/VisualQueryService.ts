@@ -540,6 +540,9 @@ angular.extend(SqlBuilder.prototype, {
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
+        if(node.dataset){
+            rangeVar.dataset = node.dataset;
+        }
         return rangeVar;
     },
 
