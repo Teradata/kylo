@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../../module-name";;
+const moduleName = require('feed-mgr/module-name');
 
 var directive = function () {
     return {

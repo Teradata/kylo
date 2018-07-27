@@ -22,24 +22,17 @@
  */
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Templates } from "./TemplateTypes";
-import {UiComponentsService} from "./UiComponentsService";
+const moduleName = require('feed-mgr/module-name');
 
+    function FeedInputProcessorOptionsFactory ( UiComponentsService:any) {
 
-export class FeedInputProcessorPropertiesTemplateService {
+        var data = {
 
-    static $inject = ["UiComponentsService"]
+            setFeedProcessingTemplateUrl: function (processor:any, mode:any) {
 
-    constructor(private uiComponentsService: UiComponentsService) {
+                UiComponentsService.getProcessorTemplates().then(function(templates:any) {
 
-    }
-
-
-            setFeedProcessingTemplateUrl (processor:Templates.Processor, mode:string) {
-
-                this.uiComponentsService.getProcessorTemplates().then((templates:any) => {
-
-                 var matchingTemplate = _.find(templates,(processorTemplate:any)=> {
+                 var matchingTemplate = _.find(templates,function(processorTemplate:any) {
                          return _.find(processorTemplate.processorTypes, function (type) {
                                  if(processorTemplate.processorDisplayName != null && processorTemplate.processorDisplayName != undefined && processorTemplate.processorDisplayName != ""  ) {
                                      return processor.type == type && processor.name == processorTemplate.processorDisplayName;
@@ -64,8 +57,10 @@ export class FeedInputProcessorPropertiesTemplateService {
 
             }
 
-
+        };
+        return data;
 
     }
 
 
+angular.module(moduleName).factory('FeedInputProcessorOptionsFactory',['UiComponentsService', FeedInputProcessorOptionsFactory]);

@@ -22,61 +22,63 @@
  */
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Templates } from "./TemplateTypes";
+const moduleName = require('feed-mgr/module-name');
 
-export class FeedDetailsProcessorRenderingHelper {
+// export class FeedDetailsProcessorRenderingHelper {
+    function FeedDetailsProcessorRenderingHelper () {
 
-            GET_TABLE_DATA_PROCESSOR_TYPE: "com.thinkbiganalytics.nifi.GetTableData";
-            GET_TABLE_DATA_PROCESSOR_TYPE2: "com.thinkbiganalytics.nifi.v2.ingest.GetTableData";
-            WATERMARK_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark';
-            SQOOP_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop';
+        var data = {
+            GET_TABLE_DATA_PROCESSOR_TYPE: "com.thinkbiganalytics.nifi.GetTableData",
+            GET_TABLE_DATA_PROCESSOR_TYPE2: "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+            WATERMARK_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark',
+            SQOOP_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop',
 
-            isSqoopProcessor(processor:Templates.Processor) {
-                return this.SQOOP_PROCESSOR == processor.type;
-            }
+            isSqoopProcessor: function (processor:any) {
+                return data.SQOOP_PROCESSOR == processor.type;
+            },
 
-            isGetTableDataProcessor(processor:Templates.Processor) {
-                return this.GET_TABLE_DATA_PROCESSOR_TYPE == processor.type || this.GET_TABLE_DATA_PROCESSOR_TYPE2 == processor.type;
-            }
-            isWatermarkProcessor(processor:Templates.Processor) {
-                return this.WATERMARK_PROCESSOR == processor.type;
-            }
-            isRenderProcessorGetTableDataProcessor(inputProcessor:any) {
+            isGetTableDataProcessor: function (processor:any) {
+                return data.GET_TABLE_DATA_PROCESSOR_TYPE == processor.type || data.GET_TABLE_DATA_PROCESSOR_TYPE2 == processor.type;
+            },
+            isWatermarkProcessor: function (processor:any) {
+                return data.WATERMARK_PROCESSOR == processor.type;
+            },
+            isRenderProcessorGetTableDataProcessor: function (inputProcessor:any) {
                 var render = false;
                 //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
-                if (inputProcessor != undefined && (this.isGetTableDataProcessor(inputProcessor) || this.isWatermarkProcessor(inputProcessor))) {
+                if (inputProcessor != undefined && (data.isGetTableDataProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor))) {
                     render = true;
                 }
 
                 return render;
-            }
-            isRenderSqoopProcessor(inputProcessor:Templates.Processor) {
+            },
+            isRenderSqoopProcessor: function (inputProcessor:any) {
                 var render = false;
                 //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
-                if (inputProcessor != undefined && (this.isSqoopProcessor(inputProcessor) || this.isWatermarkProcessor(inputProcessor))) {
+                if (inputProcessor != undefined && (data.isSqoopProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor))) {
                     render = true;
                 }
 
                 return render;
-            }
-            updateGetTableDataRendering(inputProcessor:Templates.Processor, nonInputProcessors:Templates.Processor[]) {
-                var renderGetData = this.isRenderProcessorGetTableDataProcessor(inputProcessor);
-                var getTableDataProcessors = _.filter(nonInputProcessors,  (processor:Templates.Processor)=> {
-                    return this.isGetTableDataProcessor(processor);
+            },
+            updateGetTableDataRendering: function (inputProcessor:any, nonInputProcessors:any) {
+                var renderGetData = data.isRenderProcessorGetTableDataProcessor(inputProcessor);
+                var getTableDataProcessors = _.filter(nonInputProcessors, function (processor) {
+                    return data.isGetTableDataProcessor(processor);
                 })
                 _.each(getTableDataProcessors, function (processor:any) {
                     processor.userEditable = renderGetData;
                 });
                 //if the flow starts with the watermark and doesnt have a downstream getTableData then dont render the table
-                if( renderGetData && this.isWatermarkProcessor(inputProcessor) && getTableDataProcessors.length ==0){
+                if( renderGetData && data.isWatermarkProcessor(inputProcessor) && getTableDataProcessors.length ==0){
                     renderGetData = false;
                 }
                 return renderGetData;
-            }
-            updateSqoopProcessorRendering(inputProcessor:Templates.Processor, nonInputProcessors:Templates.Processor[]) {
-                var render = this.isRenderSqoopProcessor(inputProcessor);
-                var sqoopProcessors = _.filter(nonInputProcessors,  (processor:Templates.Processor)=> {
-                    return this.isRenderSqoopProcessor(processor);
+            },
+            updateSqoopProcessorRendering: function (inputProcessor:any, nonInputProcessors:any) {
+                var render = data.isRenderSqoopProcessor(inputProcessor);
+                var sqoopProcessors = _.filter(nonInputProcessors, function (processor) {
+                    return data.isRenderSqoopProcessor(processor);
                 })
                 _.each(sqoopProcessors, function (processor:any) {
                     processor.userEditable = render;
@@ -84,7 +86,9 @@ export class FeedDetailsProcessorRenderingHelper {
                 return render;
             }
 
-       
+        };
+        return data;
 
     }
-
+// }
+angular.module(moduleName).factory('FeedDetailsProcessorRenderingHelper', FeedDetailsProcessorRenderingHelper);

@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { Component } from '@angular/core';
-import {CategoriesService} from '../../services/CategoriesService';
+import CategoriesService from '../../services/CategoriesService';
 import StateService from '../../../services/StateService';
 // const moduleName = require('feed-mgr/categories/module-name');
 

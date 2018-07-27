@@ -2,7 +2,7 @@ import * as angular from "angular";
 
 const d3 = require('d3');
 
-import {moduleName} from "../../../module-name";;
+const moduleName = require('feed-mgr/module-name');
 
 const directive = function () {
     return {

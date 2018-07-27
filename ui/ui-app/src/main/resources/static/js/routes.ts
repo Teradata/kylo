@@ -151,7 +151,7 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         $stateProvider.state({ 
             name: 'categories.**',
             url: '/categories', 
-            loadChildren: 'feed-mgr/categories/categories.module#CategoriesModule'
+            loadChildren: 'feed-mgr/categories/categories.module#CategoryModule' 
         }); 
 
         $stateProvider.state('registered-templates.**', {

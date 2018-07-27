@@ -25,7 +25,7 @@
             <div class="card-label">Define standard properties available to feeds and categories</div>
         </header-section>
         <body-section>
-            <vertical-section-layout section-title="Category Fields" (on-save-edit)="vm.onCategorySave()" (on-edit)="vm.onCategoryEdit()" [editable]="vm.isCategoryEditable" [is-valid]="vm.isCategoryValid"
+            <vertical-section-layout section-title="Category Fields" [on-save-edit]="vm.onCategorySave" [on-edit]="vm.onCategoryEdit" [editable]="vm.isCategoryEditable" [is-valid]="vm.isCategoryValid"
                                      [allow-edit]="vm.allowCategoryEdit">
                 <readonly-section>
                     <thinkbig-properties-admin fields="vm.model.categoryFields"></thinkbig-properties-admin>
@@ -34,7 +34,7 @@
                     <thinkbig-properties-admin-editor fields="vm.editModel.categoryFields" is-valid="vm.isCategoryValid"></thinkbig-properties-admin-editor>
                 </editable-section>
             </vertical-section-layout>
-            <vertical-section-layout section-title="Feed Fields" (on-save-edit)="vm.onFeedSave" (on-edit)="vm.onFeedEdit" [editable]="vm.isFeedEditable" [is-valid]="vm.isFeedValid"
+            <vertical-section-layout section-title="Feed Fields" [on-save-edit]="vm.onFeedSave" [on-edit]="vm.onFeedEdit" [editable]="vm.isFeedEditable" [is-valid]="vm.isFeedValid"
                                      [allow-edit]="vm.allowFeedEdit">
                 <readonly-section>
                     <thinkbig-properties-admin fields="vm.model.feedFields"></thinkbig-properties-admin>

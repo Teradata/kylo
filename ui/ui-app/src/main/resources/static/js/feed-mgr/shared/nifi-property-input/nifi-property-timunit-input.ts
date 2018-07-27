@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../../module-name";;
+const moduleName = require('feed-mgr/module-name');
 
 const SECONDS_PER_YEAR: number = 31536000;
 const SECONDS_PER_MONTH: number = 2592000;

@@ -5,8 +5,8 @@ import AccessControlService from "../../../services/AccessControlService";
 import StateService from "../../../services/StateService";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { IconPickerDialog } from "../../../common/icon-picker-dialog/icon-picker-dialog.component";
-import {CategoriesService} from "../../services/CategoriesService";
-import { FeedSecurityGroups } from "../../services/FeedSecurityGroups";
+import CategoriesService from "../../services/CategoriesService";
+import { FeedSecurityGroups } from "../../services/FeedSecurityGroupsService";
 
 @Component({
     selector: 'thinkbig-category-definition',
@@ -84,7 +84,7 @@ export class CategoryDefinitionController {
             this.securityGroupChips.selectedItem = null;
             this.securityGroupChips.searchText = null;
 
-            this.FeedSecurityGroups.isEnabled().then( (isValid:any) => {
+            this.FeedSecurityGroups.data.isEnabled().then( (isValid:any) => {
                     this.securityGroupsEnabled = isValid;
                 }
             );

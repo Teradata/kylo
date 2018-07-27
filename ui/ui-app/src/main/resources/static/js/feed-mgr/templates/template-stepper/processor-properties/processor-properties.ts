@@ -4,7 +4,6 @@ import { moduleName } from "../../module-name";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { UiComponentsService } from '../../../services/UiComponentsService';
 import { FeedService } from '../../../services/FeedService';
-import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
 
 export class RegisterProcessorPropertiesController {
 
@@ -44,23 +43,22 @@ export class RegisterProcessorPropertiesController {
 
     static readonly $inject = ["$scope", "$element", "$http", "$q", "$mdToast",
         "$location", "$window", "RestUrlService", "RegisterTemplateService",
-        "FeedService", "UiComponentsService","RegisterTemplatePropertyService"];
+        "FeedService", "UiComponentsService"];
 
     constructor(private $scope: IScope, private $element: any, private $http: angular.IHttpService, private $q: angular.IQService, private $mdToast: angular.material.IToastService
         , private $location: angular.ILocationService, private $window: angular.IWindowService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory
-        , private feedService: FeedService, private uiComponentsService: UiComponentsService,
-                private registerTemplatePropertyService :RegisterTemplatePropertyService) {
+        , private feedService: FeedService, private uiComponentsService: UiComponentsService) {
 
         this.model = registerTemplateService.model;
 
 
-        this.availableExpressionProperties = registerTemplatePropertyService.propertyList;
+        this.availableExpressionProperties = registerTemplateService.propertyList;
 
 
         this.expressionProperties = this.availableExpressionProperties;
 
         $scope.$watch(() => {
-            return this.registerTemplatePropertyService.codemirrorTypes;
+            return this.registerTemplateService.codemirrorTypes;
         }, (newVal: any) => {
             this.initializeRenderTypes();
         })
@@ -76,13 +74,13 @@ export class RegisterProcessorPropertiesController {
         $scope.$watch(() => {
             return this.model.templateTableOption;
         }, () => {
-            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplatePropertyService.propertyList)) {
+            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplateService.propertyList)) {
                 this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
                     .then((tableOptionMetadataProperties: any) => {
-                        this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList.concat(tableOptionMetadataProperties);
+                        this.availableExpressionProperties = this.registerTemplateService.propertyList.concat(tableOptionMetadataProperties);
                     });
             } else {
-                this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList;
+                this.availableExpressionProperties = this.registerTemplateService.propertyList;
             }
         });
     };
@@ -206,7 +204,7 @@ export class RegisterProcessorPropertiesController {
 
 
     initializeRenderTypes = () => {
-        angular.forEach(this.registerTemplatePropertyService.codemirrorTypes, (label: any, type: any) => {
+        angular.forEach(this.registerTemplateService.codemirrorTypes, (label: any, type: any) => {
             this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
         });
     }

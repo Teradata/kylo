@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title='{{"views.feed-schedule.Schedule" | translate}}' (on-save-edit)="vm.onSave()" (on-edit)="vm.onEdit()" (on-cancel-edit)="vm.onCancelEdit()"
+<vertical-section-layout section-title='{{"views.feed-schedule.Schedule" | translate}}' [on-save-edit]="vm.onSave" [on-edit]="vm.onEdit" [on-cancel-edit]="vm.onCancelEdit"
                          [allow-edit]="!vm.model.reusableFeed && vm.allowEdit" [editable]="vm.editableSection" keep-editable-after-save="true" [is-valid]="vm.isValid"
                          [the-form]="vm.scheduleFeedForm">
 

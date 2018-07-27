@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout [allowEdit]="allowEdit && !isNew" section-title='{{"views.category-properties.CP" | translate}}' (on-save-edit)="onSave" (on-edit)="onEdit" [editable]="isEditable" [isValid]="isValid">
+<vertical-section-layout [allowEdit]="allowEdit && !isNew" sectionTitle='{{"views.category-properties.CP" | translate}}' [onSaveEdit]="onSave" [onEdit]="onEdit" [editable]="isEditable" [isValid]="isValid">
     <readonly-section>
         <thinkbig-property-list properties="model.userProperties"></thinkbig-property-list>
     </readonly-section>

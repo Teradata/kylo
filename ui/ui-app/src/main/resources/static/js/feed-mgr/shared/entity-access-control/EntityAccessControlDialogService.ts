@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from './EntityAccessControlService';
 import { FeedService } from '../../services/FeedService';
-import {moduleName} from "../../module-name";
+const moduleName = require('feed-mgr/module-name');
 
 export class EntityAccessControlDialogService {
     static readonly $inject = ["$mdDialog"];
@@ -25,9 +25,8 @@ export class EntityAccessControlDialogService {
 
         });
     }
-}
+};
 
-angular.module(moduleName).service('EntityAccessControlDialogService', EntityAccessControlDialogService);
 
 class controller {
 
@@ -122,5 +121,7 @@ class controller {
     }
 };
 
-angular.module(moduleName).controller('EntityAccessControlDialogController',controller);
+angular.module(moduleName).service('EntityAccessControlDialogService', EntityAccessControlDialogService)
+.controller('EntityAccessControlDialogController',controller);
+// angular.module(moduleName).controller('EntityAccessControlDialogController',controller);
 

@@ -1,5 +1,5 @@
 <ng-form name="categoryAccessControlForm">
-<vertical-section-layout [allowEdit]="allowEdit && !isNew" section-title='{{"views.category-access-control.AC" | translate}}' (on-save-edit)="onSave" (on-edit)="onEdit" keepEditableAfterSave="true" [editable]="isEditable" [isValid]="isValid">
+<vertical-section-layout [allowEdit]="allowEdit && !isNew" sectionTitle='{{"views.category-access-control.AC" | translate}}' [onSaveEdit]="onSave" [onEdit]="onEdit" keepEditableAfterSave="true" [editable]="isEditable" [isValid]="isValid">
   <readonly-section>
     <div>{{"views.category-access-control.CR" | translate}}</div>
     <entity-access-control entity="model" entity-type="category" the-form="categoryAccessControlForm" read-only="true"></entity-access-control>

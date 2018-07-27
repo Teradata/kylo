@@ -1,5 +1,5 @@
 import * as angular from "angular";
-import {Component, EventEmitter, Input,Output} from "@angular/core";
+import {Component, Input} from "@angular/core";
 
 @Component({
     selector: "vertical-section-layout",
@@ -22,18 +22,16 @@ export class VerticalSectionLayoutComponent {
     @Input() allowEdit: boolean;
     @Input() sectionTitle: string;
     @Input() formName: string;
-
+    @Input() onDelete: any;
     @Input() isDeleteVisible: boolean;
     @Input() allowDelete: boolean;
+    @Input() onEdit: any;
+    @Input() onSaveEdit: any;
+    @Input() onCancelEdit: any;
     @Input() editable: boolean;
     @Input() keepEditableAfterSave: boolean;
     @Input() isValid: any;
     @Input() theForm: any;
-
-    @Output() onEdit:EventEmitter<any> = new EventEmitter<any>();
-    @Output() onSaveEdit:EventEmitter<any> = new EventEmitter<any>();
-    @Output() onCancelEdit:EventEmitter<any> = new EventEmitter<any>();
-    @Output() onDelete:EventEmitter<any> = new EventEmitter<any>();
 
     ngOnInit() {
         /**
@@ -64,32 +62,26 @@ export class VerticalSectionLayoutComponent {
 
     }
 
-    edit(ev: any){
+    edit = (ev: any) => {
         this.editable = true;
-        if(this.onEdit) {
-            this.onEdit.emit(ev);
-        }
+        this.onEdit(ev);
     }
 
-    cancel(ev: any){
-        if(this.onCancelEdit) {
-            this.onCancelEdit.emit()
-        }
+    cancel = (ev: any) => {
+        this.onCancelEdit(ev);
         this.editable = false;
     }
 
-    save(ev: any){
-        if(this.onSaveEdit) {
-            this.onSaveEdit.emit()
-        }
+    save = (ev: any) => {
+        this.onSaveEdit(ev);
         if (!this.keepEditableAfterSave) {
             this.editable = false;
         }
     }
 
-    delete(ev: any){
+    delete = (ev: any) => {
         if (this.onDelete) {
-            this.onDelete.emit()
+            this.onDelete(ev);
         }
     }
 }

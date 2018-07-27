@@ -256,17 +256,14 @@ export class Controller implements ng.IComponentController {
             return field.name
         });
         _.each(fieldPolicies, (policy: any) => {
-            let fields = fieldMap[policy.name];
-            if(fields && fields.length >0) {
-                var columnDef = fieldMap[policy.name][0];
-                policy.columnDef = columnDef;
-                if (angular.isString(policy.domainTypeId) && policy.domainTypeId !== "") {
-                    policy.$currentDomainType = _.find(this.availableDomainTypes, (domainType) => {
-                        return policy.domainTypeId === domainType.id;
-                    });
-                    if (angular.isUndefined(policy.$currentDomainType)) {
-                        policy.domainTypeId = null;
-                    }
+            var columnDef = fieldMap[policy.name][0];
+            policy.columnDef = columnDef;
+            if (angular.isString(policy.domainTypeId) && policy.domainTypeId !== "") {
+                policy.$currentDomainType = _.find(this.availableDomainTypes, (domainType) => {
+                    return policy.domainTypeId === domainType.id;
+                });
+                if (angular.isUndefined(policy.$currentDomainType)) {
+                    policy.domainTypeId = null;
                 }
             }
         });

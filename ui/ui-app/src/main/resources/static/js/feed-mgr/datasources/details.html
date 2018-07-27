@@ -10,7 +10,7 @@
       </mat-card-title>
       <mat-card-body>
       <form #datasourceDetailsForm="ngForm">
-        <vertical-section-layout section-title="'Details'" (on-delete)="onDelete()" [allowDelete]="!isNew" (on-save-edit)="onDetailsSave()" (on-edit)="onEdit()" (on-cancel-edit)="onCancel()"
+        <vertical-section-layout [sectionTitle]="'Details'" [onDelete]="onDelete" [allowDelete]="!isNew" [onSaveEdit]="onDetailsSave" [onEdit]="onEdit" [onCancelEdit]="onCancel"
                                 [editable]="isDetailsEditable" [isValid]="datasourceDetailsForm.form.valid" [allowEdit]="allowEdit">
           <readonly-section>
             <div layout="row" class="layout-padding-top-bottom">
@@ -109,7 +109,7 @@
       </form>
       <!--@ToDO Ahmad Hassan when this component is converted to angular 5, use it here-->
       <!-- <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
-        <vertical-section-layout section-title="Access Control" (on-save-edit)="onAccessControlSave" (on-edit)="onEdit" [editable]="isAccessControlEditable" [is-valid]="isValid">
+        <vertical-section-layout section-title="Access Control" [onSaveEdit]="onAccessControlSave" [onEdit]="onEdit" [editable]="isAccessControlEditable" [is-valid]="isValid">
           <readonly-section>
             <entity-access-control entity="model" entity-type="datasource" the-form="datasourceAccessControlForm" read-only="true"></entity-access-control>
           </readonly-section>

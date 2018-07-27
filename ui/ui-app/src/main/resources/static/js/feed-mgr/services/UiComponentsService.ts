@@ -11,9 +11,8 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../module-name";
 
-//const moduleName = require('feed-mgr/module-name');
+const moduleName = require('feed-mgr/module-name');
 
 
 export class UiComponentsService {
@@ -192,3 +191,5 @@ export class UiComponentsService {
     }
 
 }
+
+angular.module(moduleName).service("UiComponentsService", UiComponentsService);

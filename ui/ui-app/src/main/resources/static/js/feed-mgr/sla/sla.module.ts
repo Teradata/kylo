@@ -32,7 +32,9 @@ import {KyloCommonModule} from "../../common/common.module";
 import { UIRouterModule } from "@uirouter/angular";
 import {slaStates} from "./sla.states";
 
-import {CategoriesService} from "../services/CategoriesService";
+import CategoriesService from "../services/CategoriesService";
+import { RestUrlService } from "../services/RestUrlService";
+import { FeedSecurityGroups } from "../services/FeedSecurityGroupsService";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
 import ServiceLevelAgreementInitController from "./ServiceLevelAgreementInitController.component";
 import ServiceLevelAgreements from "./service-level-agreements.component";
@@ -51,7 +53,6 @@ import { SlaEmailTemplateController, testDialogController } from "./sla-email-te
 import { PolicyInputFormController } from "../shared/policy-input-form/policy-input-form.component";
 import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import {KyloFeedManagerModule} from "../feed-mgr.module";
 
 @NgModule({
     declarations: [
@@ -80,7 +81,6 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
     ],
     imports: [
         // BrowserModule,
-        KyloFeedManagerModule,
         CodemirrorModule,
         CovalentCommonModule,
         CovalentLoadingModule,
@@ -111,7 +111,7 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
         UIRouterModule.forChild({states: slaStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [ SlaService, PolicyInputFormService, SlaEmailTemplateService]
+    providers: [EntityAccessControlService, SlaService, PolicyInputFormService, SlaEmailTemplateService]
 })
 export class SLAModule {
 }
