@@ -19,10 +19,10 @@
     <entity-access-control entity="vm.model" entity-type="feed"  the-form="vm.feedAccessControlForm"></entity-access-control>
     </div>
     <div layout="column" ng-if="vm.securityGroupsEnabled == true">
-      <div class="md-subhead">{{"views.ipmort_feed.data-access-control" | translate}}</div>
+      <div class="md-subhead">{{"views.import_feed.data-access-control" | translate}}</div>
 
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
-        <label class="label-small md-container-ignore">{{"views.ipmort_feed.hadoop-sekyriti" | translate}}</label>
+        <label class="label-small md-container-ignore">{{"views.import_feed.hadoop-sekyriti" | translate}}</label>
         <md-chips ng-model="vm.model.securityGroups" md-autocomplete-snap
                   md-transform-chip="vm.transformChip($chip)"
                   md-require-match="true" class="layout-padding-top-bottom">

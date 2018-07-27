@@ -163,19 +163,19 @@
                 <div layout="row">
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.templateDataImportOption.overwrite" aria-label="Overwrite if exists">
-                      {{"views.ipmort_feed.Replace_Feed" | translate}}
+                      {{"views.import_feed.Replace_Feed" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      {{"views.ipmort_feed.Replace_Feed2" | translate}}
+                      {{"views.import_feed.Replace_Feed2" | translate}}
                     </div>
                   </md-input-container>
 
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Replace Reusable Template">
-                      {{"views.ipmort_feed.Replace_Reusable" | translate}}
+                      {{"views.import_feed.Replace_Reusable" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      {{"views.ipmort_feed.Replace_Reusable2" | translate}}
+                      {{"views.import_feed.Replace_Reusable2" | translate}}
                     </div>
                   </md-input-container>
 
@@ -185,7 +185,7 @@
                 <!-- Feed properties required -->
 
                 <div ng-if="vm.feedDataImportOption.properties && vm.feedDataImportOption.properties.length >0" flex layout="column">
-                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                  <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.feedDataImportOption.properties" layout="column" layout-align="start start">
                     <span>Processor: {{prop.processorName}}</span>
@@ -200,7 +200,7 @@
 
                 <!-- Data source properties required -->
                 <div ng-if="vm.userDatasourcesOption.properties && vm.userDatasourcesOption.properties.length > 0" flex layout="column">
-                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                  <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.userDatasourcesOption.properties" layout="column" layout-align="start start">
                     <span>Data Source: {{prop.processorName}}</span>
@@ -218,7 +218,7 @@
 
 
                   <div ng-if="vm.templateDataImportOption.properties && vm.templateDataImportOption.properties.length >0 " flex layout="column">
-                    <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                    <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                     <div ng-repeat="prop in vm.templateDataImportOption.properties" layout="column" layout-align="start start">
                       <span>{{prop.processorName}}</span>
@@ -234,7 +234,7 @@
 
 
                   <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
-                    <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                    <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                     <div ng-repeat="prop in vm.reusableTemplateImportOption.properties" layout="column" layout-align="start start">
                       <span>{{prop.processorName}}</span>
@@ -248,7 +248,7 @@
                   </div>
 
                 <div ng-if="vm.feedUserFieldsImportOption.properties && vm.feedUserFieldsImportOption.properties.length >0 " flex layout="column">
-                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                  <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.feedUserFieldsImportOption.properties" layout="column" layout-align="start start">
                     <div layout="row" flex layout-fill>
@@ -262,7 +262,7 @@
                 </div>
 
                 <div ng-if="vm.categoryUserFieldsImportOption.properties && vm.categoryUserFieldsImportOption.properties.length >0 " flex layout="column">
-                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+                  <div class="layout-padding-bottom">{{"views.import_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.categoryUserFieldsImportOption.properties" layout="column" layout-align="start start">
                     <div layout="row" flex layout-fill>
