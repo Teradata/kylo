@@ -69,14 +69,10 @@ angular.module(moduleName)
 
 angular.module(moduleName).factory('RestUrlService', downgradeInjectable(RestUrlService));
 
-angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
-    function($http: any,$q: any,RestUrlService:any){
-        return new DomainTypesService($http , $q, RestUrlService);
-    }
-]);
+angular.module(moduleName).factory('DomainTypesService', downgradeInjectable(DomainTypesService));
 
 angular.module(moduleName).factory('CodeMirrorService', ["$q", 
-($q:any) => new CodeMirrorService($q)
+       ($q:any) => new CodeMirrorService($q)
 ]);
 
 angular.module(moduleName).factory('ImportService', downgradeInjectable(DefaultImportService));
@@ -91,7 +87,7 @@ angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDe
 
 angular.module(moduleName).service('EditFeedNifiPropertiesService', EditFeedNifiPropertiesService); 
 
-angular.module(moduleName).service('RegisterTemplateService', RegisterTemplateServiceFactory);
+angular.module(moduleName).service('RegisterTemplateService', downgradeInjectable(RegisterTemplateServiceFactory));
 
 angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);
 

@@ -6,7 +6,6 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatListModule} from '@angular/material/list';
 import {MatButtonModule} from '@angular/material/button';
 import {
-    domainTypesServiceProvider,
     feedDetailsProcessorRenderingHelperProvider,
     feedInputProcessorPropertiesTemplateServiceProvider,
     entityAccessControlDialogServiceProvider
@@ -29,6 +28,7 @@ import { CronExpressionPreview } from "./shared/cron-expression-preview/cron-exp
 
 import {TranslateModule} from "@ngx-translate/core";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { DomainTypesService } from "./services/DomainTypesService";
 
 @NgModule({
     declarations: [
@@ -59,7 +59,6 @@ import { MatFormFieldModule } from "@angular/material/form-field";
         entityAccessControlDialogServiceProvider,
         FeedService,
         VisualQueryService,
-        domainTypesServiceProvider,
         UiComponentsService,
         DefaultFeedPropertyService,
         feedInputProcessorPropertiesTemplateServiceProvider,
@@ -69,7 +68,8 @@ import { MatFormFieldModule } from "@angular/material/form-field";
         FeedSecurityGroups,
         DefaultImportService,
         RegisterTemplateServiceFactory,
-        FeedCreationErrorService
+        FeedCreationErrorService,
+        DomainTypesService
     ],
     exports:[
         CronExpressionPreview
