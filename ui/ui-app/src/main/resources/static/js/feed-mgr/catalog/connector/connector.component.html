@@ -54,7 +54,7 @@
             </mat-form-field>
           </ng-template>
         </div>
-        <div fxLayout="row" fxLayoutAlign="start center" class="test-section">
+        <div fxLayout="row" fxLayoutAlign="start center" class="test-section" *ngIf="isTestAvailable()">
           <button mat-button mat-raised-button class="text-upper"
                   [disabled]="isFormInvalid() || isLoading"
                   (click)="test()">Test</button>

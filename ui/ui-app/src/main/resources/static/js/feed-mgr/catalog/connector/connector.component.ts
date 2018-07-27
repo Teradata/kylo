@@ -289,4 +289,9 @@ export class ConnectorComponent {
                 console.log('validated');
             });
     }
+
+    isTestAvailable(): boolean {
+        const tabs = this.plugin.tabs;
+        return tabs && (".browse" === tabs[0].sref || ".connection" === tabs[0].sref);
+    }
 }
