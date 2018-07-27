@@ -114,7 +114,6 @@ import * as angular from "angular";
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
-        EntityAccessControlService,
         SlaService,
         SlaEmailTemplateService
     ]
