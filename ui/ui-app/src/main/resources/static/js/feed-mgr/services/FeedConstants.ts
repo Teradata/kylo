@@ -53,9 +53,9 @@ export class FeedConstants {
      */
    static allCompressionOptions() {
         let arr: any[] = [];
-        FeedConstants.compressionOptions.forEach((options: any) => {
+        _.each(FeedConstants.compressionOptions, (options: any) => {
             arr = _.union(arr, options);
-        })
+        });
         return arr;
     };
 }
