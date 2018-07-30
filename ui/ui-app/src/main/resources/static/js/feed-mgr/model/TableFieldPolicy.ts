@@ -3,6 +3,7 @@ import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {KyloObject} from "../../common/common.model";
 import {TableColumnDefinition} from "./TableColumnDefinition";
+import {CloneUtil} from "../../common/utils/clone-util";
 
 export class TableFieldPolicy implements KyloObject{
 
@@ -28,6 +29,12 @@ export class TableFieldPolicy implements KyloObject{
      * @type {boolean}
      */
     profile: boolean = true;
+
+    /**
+     * Should this column be indexed for global search
+     * @type {boolean}
+     */
+    index:boolean = false;
 
     /**
      * Standardization rules
@@ -63,6 +70,14 @@ export class TableFieldPolicy implements KyloObject{
             this.name = this.fieldName;
         }
 
+    }
+
+    copy() :TableFieldPolicy{
+        let field = this.field;
+        this.field = null;
+        let copy = CloneUtil.deepCopy(this);
+        copy.field = field;
+        return copy;
     }
 
 

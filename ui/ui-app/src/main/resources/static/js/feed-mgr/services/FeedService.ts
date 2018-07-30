@@ -6,6 +6,7 @@ import AccessControlService from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
+import {FeedConstants} from "./FeedConstants";
 import {moduleName} from "../module-name";
 /**
  * A cache of the controllerservice Id to its display name.
@@ -38,54 +39,32 @@ export class FeedService {
         /**
          * The initial CRON expression used when a user selects Cron for the Schedule option
          */
-        DEFAULT_CRON:any= "0 0 12 1/1 * ? *";
+        DEFAULT_CRON:string= FeedConstants.DEFAULT_CRON;
 
         /**
          * In the Data Processing section these are the available Strategies a user can choose when defining the feed
          */
-        mergeStrategies:any= [
-            { name: 'Sync', type: 'SYNC', hint: 'Replace table content', disabled: false },
-            { name: 'Rolling sync', type: 'ROLLING_SYNC', hint: 'Replace content in matching partitions' },
-            { name: 'Merge', type: 'MERGE', hint: 'Insert all rows', disabled: false },
-            { name: 'Dedupe and merge', type: 'DEDUPE_AND_MERGE', hint: 'Insert rows ignoring duplicates', disabled: false },
-            { name: 'Merge using primary key', type: 'PK_MERGE', hint: 'Upsert using primary key' }
-        ];
+        mergeStrategies:any= FeedConstants.mergeStrategies;
 
         /**
          * The available Target Format options
          */
-        targetFormatOptions:any= [{ label: "ORC", value: 'STORED AS ORC' },
-        { label: "PARQUET", value: 'STORED AS PARQUET' },
-        { label: "AVRO", value: 'STORED AS AVRO' },
-        {
-            label: "TEXTFILE",
-            value: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
-                + ' STORED AS'
-                + ' TEXTFILE'
-        },
-        { label: "RCFILE", value: 'ROW FORMAT SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" STORED AS RCFILE' }];
+        targetFormatOptions:any= FeedConstants.targetFormatOptions;
         /**
          * The available Compression options for a given targetFormat {@see this#targetFormatOptions}
          */
-        compressionOptions:any= { "ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY'], "AVRO": ['NONE'] };
+        compressionOptions:any= FeedConstants.compressionOptions;
 
         /**
          * Standard data types for column definitions
          */
-        columnDefinitionDataTypes:any= ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
-
-            /**
-             * Returns an array of all the compression options regardless of the {@code targetFormat}
-             * (i.e. ['NONE','SNAPPY','ZLIB']
-             * @returns {Array}
-             */
-            allCompressionOptions= () => {
-                let arr: any[] = [];
-                _.each(this.compressionOptions, (options: any) => {
-                    arr = _.union(arr, options);
-                });
-                return arr;
-            };
+        columnDefinitionDataTypes:any= FeedConstants.columnDefinitionDataTypes;
+        /**
+         * Returns an array of all the compression options regardless of the {@code targetFormat}
+         * (i.e. ['NONE','SNAPPY','ZLIB']
+         * @returns {Array}
+         */
+        allCompressionOptions= FeedConstants.allCompressionOptions;
             /**
              * Returns the feed object model for creating a new feed
              *

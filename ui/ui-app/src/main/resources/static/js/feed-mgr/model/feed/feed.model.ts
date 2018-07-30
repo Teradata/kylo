@@ -15,6 +15,7 @@ import {FeedTableSchema} from "./feed-table-schema.model";
 import {Step} from "./feed-step.model";
 import {KyloObject} from "../../../common/common.model";
 import {SourceTableSchema} from "./feed-source-table-schema.model";
+import {UserProperty, UserPropertyUtil} from "../user-property.model";
 
 
 export interface TableOptions {
@@ -96,11 +97,6 @@ export class Feed  implements KyloObject{
      */
     feedName: string = '';
     /**
-     * internal system name
-     */
-    systemName: string = '';
-
-    /**
      * the system name
      * TODO consolidate with systemName?
      */
@@ -181,7 +177,7 @@ export class Feed  implements KyloObject{
     /**
      * Additional properties supplied by the user
      */
-    userProperties: any[] = [];
+    userProperties: UserProperty[] = [];
     /**
      * Additional options (i.e. skipHeader
      */
@@ -302,15 +298,17 @@ export class Feed  implements KyloObject{
         //keep the internal ids saved for the table.tableSchema.fields and table.partitions
         let oldFields = <TableColumnDefinition[]>this.table.tableSchema.fields;
         let oldPartitions = this.table.partitions;
+        let oldUserProperties = this.userProperties;
         this.updateNonNullFields(model);
         this.table.update(oldFields,oldPartitions);
+        UserPropertyUtil.updatePropertyIds(oldUserProperties,this.userProperties);
     }
 
 
 
     initialize() {
         this.readonly = true;
-        this.systemName = '';
+        this.systemFeedName = '';
         this.feedName = '';
         this.mode = "DRAFT";
         this.category = {id: null, name: null, systemName: null, description: null};
@@ -379,7 +377,7 @@ export class Feed  implements KyloObject{
      * Deep copy of this object
      * @return {Feed}
      */
-    copy(): Feed {
+    copy(keepCircularReference:boolean = true): Feed {
         //steps have self references back to themselves.
         let allSteps: Step[] = [];
         this.steps.forEach(step => {let copy = step.shallowCopy();
@@ -389,7 +387,13 @@ export class Feed  implements KyloObject{
         let newFeed :Feed =  Object.create(this);
         Object.assign(newFeed,this)
         newFeed.steps = null;
-        let copy :Feed = CloneUtil.deepCopy(newFeed);
+        let copy :Feed;
+        if(keepCircularReference) {
+            copy = CloneUtil.deepCopy(newFeed);
+        }
+        else {
+            copy = CloneUtil.deepCopyWithoutCircularReferences(newFeed);
+        }
         copy.steps = allSteps;
         return copy;
     }
@@ -463,6 +467,7 @@ export class Feed  implements KyloObject{
                     if (policy) {
                         policy.feedFieldName = columnDef.name;
                         policy.name = columnDef.name;
+                        policy.field = null;
                         newPolicies.push(policy);
                     }
                 }

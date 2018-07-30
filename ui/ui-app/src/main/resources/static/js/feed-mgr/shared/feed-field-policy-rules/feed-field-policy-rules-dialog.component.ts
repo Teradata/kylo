@@ -425,15 +425,21 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         var validators = field['validation'];
 
         //add in the type so we know what we are dealing with
+        let tmpArr :any[] = [];
         if (standardizers) {
-            standardizers.forEach(item => item.type = 'standardization')
+            standardizers.forEach((item:any,i:number) => {
+                item.type = 'standardization';
+                tmpArr[i] = item;
+            })
         }
-
+        let idx = tmpArr.length>0 ? tmpArr.length-1 : 0;
         if (validators) {
-            validators.forEach(item => item.type = 'validation')
+            validators.forEach((item: any, i: number) => {
+                item.type = 'validation';
+                tmpArr[idx+i] = item;
+            });
         }
 
-        var tmpArr = _.union(standardizers, validators);
 
         var hasSequence = _.find(tmpArr, (item: any) => {
             return item.sequence != null && item.sequence != undefined;

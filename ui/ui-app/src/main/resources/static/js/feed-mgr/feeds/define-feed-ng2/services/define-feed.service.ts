@@ -76,6 +76,17 @@ export class DefineFeedService {
      */
     private beforeSaveSubject: Subject<Feed>;
 
+    /**
+     * Allow other components to listen for changes to the currentStep
+     *
+     */
+    public cancelFeedEdit$: Observable<Feed>;
+
+    /**
+     * The datasets subject for listening
+     */
+    private cancelFeedEditSubject: Subject<Feed>;
+
 
     /**
      * Allow other components to listen for changes to the currentStep
@@ -93,6 +104,7 @@ export class DefineFeedService {
     private registerTemplatePropertyService :RegisterTemplatePropertyService;
 
     private feedService :FeedService;
+
 
     /**
      * Listen for when a user chooses a new source
@@ -113,6 +125,9 @@ export class DefineFeedService {
         this.feedStateChangeSubject = new Subject<Feed>();
         this.feedStateChange$ = this.feedStateChangeSubject.asObservable();
 
+        this.cancelFeedEditSubject = new Subject<Feed>();
+        this.cancelFeedEdit$ = this.cancelFeedEditSubject.asObservable();
+
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
 
@@ -121,6 +136,8 @@ export class DefineFeedService {
         this.registerTemplatePropertyService = $$angularInjector.get("RegisterTemplatePropertyService");
 
         this.feedService = $$angularInjector.get("FeedService");
+
+
     }
 
     /**
@@ -163,7 +180,11 @@ export class DefineFeedService {
     restoreLastSavedFeed() : Feed{
         if(this.lastSavedFeed) {
             this.feed.update(this.lastSavedFeed.copy());
+            this.cancelFeedEditSubject.next(this.feed);
             return this.getFeed();
+        }
+        else {
+            this.cancelFeedEditSubject.next(this.feed);
         }
     }
 
@@ -336,22 +357,22 @@ export class DefineFeedService {
         return new StepBuilder().setNumber(1).setSystemName("General Info").setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
     }
 
-    feedDetailsStep(steps:Step[]):Step {
-        return new StepBuilder().setNumber(3).setSystemName("Feed Details").setDescription("Update NiFi processor settings").addDependsUpon("General Info").setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
+    feedDetailsStep(steps:Step[], stepNumber:number):Step {
+        return new StepBuilder().setNumber(stepNumber).setSystemName("Feed Details").setDescription("Update NiFi processor settings").addDependsUpon("General Info").setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
     }
 
     private newDefineTableFeedSteps() :Step[] {
         let steps :Step[] = []
         let generalInfoStep = this.generalInfoStep(steps);
         let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName("Source Sample").setDescription("Browse Catalog for sample").addDependsUpon("General Info").setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
-        let feedDetails = this.feedDetailsStep(steps);
-        let feedTarget = new StepBuilder().setNumber(4).setSystemName("Feed Target").setDescription("Define Target").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-target").setDisabled(true).setRequired(true).build();
-        let table = new StepBuilder().setNumber(5).setSystemName("Define Table").setDescription("Table").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
+        let table = new StepBuilder().setNumber(3).setSystemName("Define Table").setDescription("Table").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
+        let feedDetails = this.feedDetailsStep(steps,4);
+        let feedTarget = new StepBuilder().setNumber(5).setSystemName("Feed Target").setDescription("Define Target").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-target").setDisabled(true).setRequired(true).build();
         steps.push(generalInfoStep);
         steps.push(sourceSampleStep);
+        steps.push(table)
         steps.push(feedDetails);
         steps.push(feedTarget);
-        steps.push(table)
         return steps;
     }
 
@@ -359,7 +380,7 @@ export class DefineFeedService {
     private newSimpleFeedSteps() :Step[] {
         let steps :Step[] = []
         let generalInfoStep = this.generalInfoStep(steps);
-        let feedDetails = this.feedDetailsStep(steps);
+        let feedDetails = this.feedDetailsStep(steps,2);
         steps.push(generalInfoStep);
         steps.push(feedDetails);
         return steps;
@@ -373,7 +394,6 @@ export class DefineFeedService {
      * @private
      */
     private _saveFeed() : Observable<Feed>{
-        this.feed.systemFeedName = this.feed.systemName;
         let body = this.feed.copyModelForSave();
 
 
@@ -446,7 +466,12 @@ export class DefineFeedService {
             this.feed.table.sourceTableSchema.fields = sourceColumns;
             this.feed.table.feedTableSchema.fields = feedColumns;
             this.feed.table.tableSchema.fields = targetColumns;
-            this.feed.table.fieldPolicies = targetColumns.map(field => TableFieldPolicy.forName(field.name));
+            this.feed.table.fieldPolicies = targetColumns.map(field => {
+               let policy = TableFieldPolicy.forName(field.name);
+                policy.field = field;
+                field.fieldPolicy = policy;
+                return policy;
+            });
         }
     }
 

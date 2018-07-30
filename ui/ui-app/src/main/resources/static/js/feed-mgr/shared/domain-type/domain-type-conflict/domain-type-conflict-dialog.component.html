@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Data Type Conflict</h2>
+<mat-dialog-content>
+   <h2>Remove domain type from field?</h2>
+    <div>
+      <p>The {{data.columnDef.name}} field uses the {{data.domainType.title}} domain type which expects the {{data.propertyName}} to be {{data.propertyValue}}. You can keep the domain type associated with this field or
+        remove it.</p>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+
+  <span fxFlex=""></span>
+    <button mat-raised-button (click)="cancel()">Cancel</button>
+    <button mat-raised-button (click)="keep()">Keep</button>
+    <button mat-raised-button color="primary" (click)="remove()">Remove</button>
+</mat-dialog-actions>

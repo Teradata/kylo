@@ -39,8 +39,10 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(){
       this.destroy();
-      //update the feed service with any changes
-      this.updateFeedService();
+      if(!this.feed.readonly) {
+          //update the feed service with any changes
+          this.updateFeedService();
+      }
       //unsubscribe from the beforeSave call
       this.beforeSaveSubscription.unsubscribe();
       this.feedStateChangeSubscription.unsubscribe();
@@ -53,9 +55,10 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
-            console.log("changes",changes,"formStatus",formGroup.status)
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
+            console.log("changes",changes,"formStatus",formGroup.status, this.formValid,'changes',changes)
             this.step.setComplete(this.formValid);
+            this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;
         });
 

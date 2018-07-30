@@ -84,8 +84,8 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
             disableClose: true,
             viewContainerRef: this.viewContainerRef, //OPTIONAL
             title: 'Confirm Cancel Edit', //OPTIONAL, hides if not provided
-            cancelButton: 'Nah', //OPTIONAL, defaults to 'CANCEL'
-            acceptButton: 'Aight', //OPTIONAL, defaults to 'ACCEPT'
+            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
             width: '500px', //OPTIONAL, defaults to 400px
         }).afterClosed().subscribe((accept: boolean) => {
             if (accept) {
@@ -111,8 +111,8 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
             disableClose: true,
             viewContainerRef: this.viewContainerRef, //OPTIONAL
             title: 'Confirm Delete', //OPTIONAL, hides if not provided
-            cancelButton: 'Disagree', //OPTIONAL, defaults to 'CANCEL'
-            acceptButton: 'Agree', //OPTIONAL, defaults to 'ACCEPT'
+            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
             width: '500px', //OPTIONAL, defaults to 400px
         }).afterClosed().subscribe((accept: boolean) => {
             if (accept) {
@@ -145,6 +145,11 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     }
 
 
+    /**
+     * Called when the feed finished saving.
+     *
+     * @param {SaveFeedResponse} response
+     */
     onFeedFinishedSaving(response:SaveFeedResponse){
         this.resolveLoading();
         this.savingFeed = false;

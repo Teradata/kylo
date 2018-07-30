@@ -5,6 +5,7 @@ import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
 import {CloneUtil} from "../../common/utils/clone-util";
 import {KyloObject} from "../../common/common.model";
+import {TableFieldPolicy} from "./TableFieldPolicy";
 
 
 export class ColumnDefinitionHistoryRecord {
@@ -124,6 +125,8 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
      */
     $allowDomainTypeConflict:boolean;
 
+    fieldPolicy?:TableFieldPolicy;
+
 
 
     public constructor(init?:Partial<TableColumnDefinition>) {
@@ -139,6 +142,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
         this.name = '';
         this._id = _.uniqueId();
         this.validationErrors = new ColumnDefinitionValidationError();
+        this.dataTypeDisplay = this.getDataTypeDisplay();
     }
 
     initSampleValue(){
@@ -168,6 +172,10 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
         return this.precisionScale != null ? this.derivedDataType + "(" + this.precisionScale + ")" : this.derivedDataType;
     }
 
+
+    isDate():boolean{
+      return this.derivedDataType =='date' || this.derivedDataType =='timestamp';
+    }
 
     initFeedColumn() {
         if (this.origName == undefined) {
@@ -296,13 +304,22 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
         return this.dataTypeDescriptor && angular.isDefined(this.dataTypeDescriptor.complex) ? this.dataTypeDescriptor.complex : false;
     }
 
-    copy(){
-        return CloneUtil.deepCopy(this);
+    copy() :TableColumnDefinition{
+        let policy = this.fieldPolicy;
+        this.fieldPolicy = null;
+        let copy :TableColumnDefinition = CloneUtil.deepCopy(this);
+        let policyCopy = policy.copy();
+        copy.fieldPolicy= policyCopy;
+        return copy;
     }
 
     prepareForSave(){
         this.sampleValues = null;
         this.history = null;
+        if(this.fieldPolicy) {
+            this.fieldPolicy.field = null;
+            this.fieldPolicy = null;
+        }
     }
 
 }

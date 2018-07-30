@@ -47,6 +47,10 @@ export class FieldConfig<T> {
         this.pattern = options.pattern;
         this.disabled = options.disabled || false;
 
+        if(this.placeholder == '' && this.label != ''){
+            this.placeholder = this.label;
+        }
+
     }
 
     setModelValue(value:any){

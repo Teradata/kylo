@@ -79,19 +79,22 @@ import {KyloObject} from "../../../common/common.model";
                 }
             });
             this.ensureTableFieldPolicyTypes();
+
+           // this.tableSchema = ObjectUtils.getAs(this.tableSchema,FeedTableSchema);
+           // this.sourceTableSchema = ObjectUtils.getAs(this.sourceTableSchema,SourceTableSchema);
+           // this.feedTableSchema = ObjectUtils.getAs(this.feedTableSchema,FeedTableSchema);
         }
 
 
         public ensureObjectTypes() {
+
+            this.tableSchema = ObjectUtils.getAs(this.tableSchema,FeedTableSchema);
+
             //ensure the table fields are correct objects
             let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
-            let fields = this.tableSchema.fields.map((field: any) => {
-
-                let tableColumnDef = ObjectUtils.getAs(field,TableColumnDefinition, TableColumnDefinition.OBJECT_TYPE);
-                tableFieldMap[tableColumnDef.name] = tableColumnDef;
-                return tableColumnDef;
+            this.tableSchema.fields.forEach((field: TableColumnDefinition) => {
+                tableFieldMap[field.name] = field;
             });
-            this.tableSchema.fields = fields;
 
             //ensure the table partitions are correct objects
             let partitions = this.partitions.map((partition: any) => {
@@ -104,31 +107,45 @@ import {KyloObject} from "../../../common/common.model";
                 return partitionObject;
             });
             this.partitions = partitions;
+
+            this.sourceTableSchema = ObjectUtils.getAs(this.sourceTableSchema,SourceTableSchema);
+            this.feedTableSchema = ObjectUtils.getAs(this.feedTableSchema,FeedTableSchema);
             this.ensureTableFieldPolicyTypes();
 
         }
 
         ensureTableFieldPolicyTypes(){
             let fieldPolicies = this.fieldPolicies.map((policy: any) => {
-                return  ObjectUtils.getAs(policy,TableFieldPolicy, TableFieldPolicy.OBJECT_TYPE);
+                let policyObj =  ObjectUtils.getAs(policy,TableFieldPolicy, TableFieldPolicy.OBJECT_TYPE);
+                let columnDef = this.getColumnDefinitionByName(policyObj.fieldName);
+                policyObj.field = columnDef;
+               columnDef.fieldPolicy = policyObj;
+                return policyObj;
             });
             this.fieldPolicies = fieldPolicies;
 
+        }
+
+        syncFieldPolicy(columnDef: TableColumnDefinition, index: number){
+            var name = columnDef.name;
+            if (name != undefined) {
+                this.fieldPolicies[index].name = name;
+                this.fieldPolicies[index].fieldName = name;
+                this.fieldPolicies[index].field = columnDef;
+                columnDef.fieldPolicy = this.fieldPolicies[index];
+            }
+            else {
+                if (this.fieldPolicies[index].field) {
+                    this.fieldPolicies[index].field == null;
+                    columnDef.fieldPolicy = undefined;
+                }
+            }
         }
         
 
         syncTableFieldPolicyNames():void{
             this.tableSchema.fields.forEach((columnDef: TableColumnDefinition, index: number) => {
-               var name = columnDef.name;
-                    if (name != undefined) {
-                        this.fieldPolicies[index].name = name;
-                        this.fieldPolicies[index].field = columnDef;
-                    }
-                    else {
-                        if (this.fieldPolicies[index].field) {
-                            this.fieldPolicies[index].field == null;
-                        }
-                    }                
+              this.syncFieldPolicy(columnDef, index);
             });
             //remove any extra columns in the policies
             while (this.fieldPolicies.length > this.tableSchema.fields.length) {
@@ -153,7 +170,9 @@ import {KyloObject} from "../../../common/common.model";
            // when adding a new column this is also called to synchronize the field policies array with the columns
            let policy = TableFieldPolicy.forName(newColumn.name);
            this.fieldPolicies.push(policy);
-           this.sourceTableSchema.fields.push(new TableColumnDefinition({name:newColumn.name}));
+           newColumn.fieldPolicy = policy;
+           policy.field = columnDef;
+           this.sourceTableSchema.fields.push(columnDef);
            if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                this.syncTableFieldPolicyNames();
            }

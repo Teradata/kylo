@@ -52,6 +52,9 @@ import {MatRadioModule} from "@angular/material/radio";
 import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
 import {CovalentChipsModule} from "@covalent/core/chips";
 import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-policies.module";
+import {PropertyListModule} from "../../shared/property-list/property-list.module";
+import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
+import {MatDialogModule} from "@angular/material/dialog";
 
 
 @NgModule({
@@ -69,11 +72,13 @@ import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-po
         DefineFeedStepReadonlyContentComponent,
         DefineFeedStepEditContentComponent,
         DefineFeedTableComponent,
+        FeedScheduleComponent,
         FilterPartitionFormulaPipe
     ],
     providers:[
       DefineFeedService,
-      FeedLoadingService
+      FeedLoadingService,
+        FilterPartitionFormulaPipe
     ],
     imports: [
         CommonModule,
@@ -115,6 +120,8 @@ import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-po
         MatNativeDateModule,
         MatButtonModule,
         MatSnackBarModule,
+        MatDialogModule,
+        PropertyListModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

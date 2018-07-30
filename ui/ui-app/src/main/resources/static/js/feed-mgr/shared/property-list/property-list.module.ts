@@ -14,23 +14,16 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
-import {DynamicFormService} from "./services/dynamic-form.service";
-import {DynamicFormFieldComponent} from "./dynamic-form-field.component";
-import {DynamicFormComponent} from "./dynamic-form.component";
-import {TrueFalseValueDirective} from "./true-false-value.directive";
 import {MatRadioModule} from "@angular/material/radio";
+import {PropertyListComponent} from "./property-list.component";
 
 
 @NgModule({
     declarations: [
-        DynamicFormFieldComponent,
-        DynamicFormComponent,
-        TrueFalseValueDirective
+        PropertyListComponent
         ],
     exports:[
-        DynamicFormFieldComponent,
-        DynamicFormComponent,
-        TrueFalseValueDirective
+        PropertyListComponent
     ],
     imports: [
         CommonModule,
@@ -53,10 +46,9 @@ import {MatRadioModule} from "@angular/material/radio";
         ReactiveFormsModule
     ],
     providers: [
-        DynamicFormService
 
     ]
 })
-export class DynamicFormModule {
+export class PropertyListModule {
 
 }

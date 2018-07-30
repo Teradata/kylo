@@ -1,0 +1,67 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<section class="mat-typography">
+  <h1>{{title}}</h1>
+</section>
+<div *ngIf="editable" fxLayout="column" fxFlex>
+<ng-template ngFor let-property let-$index="index" [ngForOf]="properties" class="feed-user-property" >
+<div fxLayout="row" [formGroup]="userPropertyForm">
+
+  <mat-form-field fxFlex *ngIf="property.locked">
+    <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
+  </mat-form-field>
+
+  <mat-form-field fxFlex="50" *ngIf="!property.locked">
+    <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" >
+    <mat-error *ngIf="hasError(property,'systemName')">
+      {{getErrorMessage(property,'systemName')}}
+    </mat-error>
+    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field fxFlex="50" *ngIf="!property.locked">
+    <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
+    <mat-error *ngIf="hasError(property,'value')">
+      {{getErrorMessage(property,'value')}}
+    </mat-error>
+    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+  </mat-form-field>
+
+  <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
+</div>
+</ng-template>
+
+
+<button mat-button (click)="addProperty()">New Property</button>
+</div>
+
+<div *ngIf="!editable" fxLayout="column" fxFlex>
+  <div *ngFor="let property of properties" fxLayout="row" class="feed-user-property">
+    <div *ngIf="property.locked" layout="column" flex="25" class="property-name">
+      <span>{{property.displayName}}</span>
+      <span class="hint">{{property.description}}</span>
+    </div>
+    <span *ngIf="!property.locked" flex="25" class="property-name">{{property.systemName}}</span>
+
+    <div fxFlex>
+      {{property.value}}
+    </div>
+  </div>
+</div>
