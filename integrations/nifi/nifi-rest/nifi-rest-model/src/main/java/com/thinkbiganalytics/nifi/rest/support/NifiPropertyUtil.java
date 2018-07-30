@@ -431,19 +431,24 @@ public class NifiPropertyUtil {
             registrationChangeInfo.setValueFromOlderNiFiTemplate(property.getTemplateValue());
             registrationChangeInfo.setValueRegisteredInKyloTemplateFromOlderNiFiTemplate(property.getValue());
 
-            if ((!propertyToUpdate.getValue().equals(property.getValue())) && (property.getValue().equals(property.getTemplateValue()))) {
-                log.debug("Registration change info case 1: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
-                                   + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
-                                   + " and Kylo also kept the same value of " + property.getValue() + " while registering the template. "
-                                   + "(Action taken: Kylo will accept NiFi's new property value.)");
-            } else if ((!propertyToUpdate.getValue().equals(property.getValue())) && (!property.getValue().equals(property.getTemplateValue()))) {
-                log.debug("Registration change info case 2: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
-                                   + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
-                                   + " that was overridden to " + property.getKey() + "=" + property.getValue() + " while registering template in Kylo. "
-                                   + "(Action taken: Kylo will ignore NiFi's new property value.)");
-                propertyToUpdate.setValue(property.getValue());
+
+            if ((propertyToUpdate.getValue()!=null) && (property.getValue()!=null)) {
+                if ((!propertyToUpdate.getValue().equals(property.getValue())) && (property.getValue().equals(property.getTemplateValue()))) {
+                    log.debug("Registration change info case 1: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                       + " and Kylo also kept the same value of " + property.getValue() + " while registering the template. "
+                                       + "(Action taken: Kylo will accept NiFi's new property value.)");
+                } else if ((!propertyToUpdate.getValue().equals(property.getValue())) && (!property.getValue().equals(property.getTemplateValue()))) {
+                    log.debug("Registration change info case 2: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                       + " that was overridden to " + property.getKey() + "=" + property.getValue() + " while registering template in Kylo. "
+                                       + "(Action taken: Kylo will ignore NiFi's new property value.)");
+                    propertyToUpdate.setValue(property.getValue());
+                } else {
+                    log.debug("Registration change info case 3: Default");
+                }
             } else {
-                log.debug("Registration change info case 3: Default");
+                log.debug("Registration change info case 4: Default (values are null case)");
             }
 
             propertyToUpdate.setRegistrationChangeInfo(registrationChangeInfo);
