@@ -102,6 +102,20 @@
                                                 <div class="hint" thinkbig-derived-expression ng-model="property.value"
                                                      style="margin-bottom:10px;"></div>
 
+                                                <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
+                                                    <md-input-container md-no-float class="md-block layout-margin-top-minus-7">
+                                                        <div layout="row">
+                                                        <div style="color:#0288d1; background-color:#0288d126" class="layout-padding-left-4 layout-padding-right-4">
+                                                            <ng-md-icon icon="info" style="fill:#0288d1" size="20"></ng-md-icon>NiFi template has a different value: <b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
+                                                        </div>
+                                                        <div class="layout-padding-left-4">
+                                                            <ng-md-icon icon="replay" style="fill:#0288d1" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple"></ng-md-icon>
+                                                            <md-tooltip>Accept value from NiFi template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]</md-tooltip>
+                                                        </div>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
+
                                             </div>
 
                                             <div layout="row" layout-align="start-center">

@@ -301,7 +301,7 @@ export class FeedService {
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
             newTableFieldPolicy(fieldName: string): TableFieldPolicy {
-                return new TableFieldPolicy(fieldName);
+                return TableFieldPolicy.forName(fieldName);
                 // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
             }
             /**

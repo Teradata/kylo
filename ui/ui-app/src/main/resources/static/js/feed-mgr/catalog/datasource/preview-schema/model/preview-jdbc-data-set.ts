@@ -1,5 +1,6 @@
-import {PreviewDataSet, SparkDataSet} from "./preview-data-set";
+import {PreviewDataSet} from "./preview-data-set";
 import {PreviewDataSetRequest} from "./preview-data-set-request";
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
 /**
  * JDBC Data Set

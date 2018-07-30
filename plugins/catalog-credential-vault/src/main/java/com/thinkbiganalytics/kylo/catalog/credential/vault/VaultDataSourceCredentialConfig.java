@@ -31,9 +31,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.vault.authentication.ClientAuthentication;
+import org.springframework.vault.authentication.ClientCertificateAuthentication;
 import org.springframework.vault.authentication.TokenAuthentication;
 import org.springframework.vault.client.VaultEndpoint;
 import org.springframework.vault.config.AbstractVaultConfiguration;
+import org.springframework.vault.config.ClientHttpRequestFactoryFactory;
 import org.springframework.vault.support.SslConfiguration;
 
 import java.io.File;
@@ -47,40 +49,54 @@ import javax.inject.Inject;
 public class VaultDataSourceCredentialConfig extends AbstractVaultConfiguration {
 
     @Inject
-    private VaultConfiguration vaultConfiguration;
+    private VaultConfiguration vaultCfg;
 
     @Bean(name = "vaultConfiguration")
-    @ConfigurationProperties(prefix = "secret.vault")
+    @ConfigurationProperties(prefix = "vault")
     public VaultConfiguration vaultConfiguration() {
         return new VaultConfiguration();
     }
 
     @Bean
     public SecretStore secretStore() {
-        return new VaultSecretStore(vaultConfiguration.getRoot());
+        return new VaultSecretStore(vaultCfg.getRoot());
     }
 
     @Override
     @Bean
     public VaultEndpoint vaultEndpoint() {
-        VaultEndpoint vaultEndpoint = VaultEndpoint.create(vaultConfiguration.getHost(), vaultConfiguration.getPort());
-        vaultEndpoint.setScheme(vaultConfiguration.getScheme());
+        VaultEndpoint vaultEndpoint = VaultEndpoint.create(vaultCfg.getHost(), vaultCfg.getPort());
+        vaultEndpoint.setScheme(vaultCfg.getScheme());
         return vaultEndpoint;
     }
 
+    @Bean
+    public ClientFactoryWrapper clientHttpRequestFactoryWrapper() {
+        return new ClientFactoryWrapper(ClientHttpRequestFactoryFactory.create(
+            clientOptions(), sslConfiguration()));
+    }
+
+
     @Override
     public ClientAuthentication clientAuthentication() {
-        return new TokenAuthentication(vaultConfiguration.getToken());
+        if (StringUtils.isNotBlank(vaultCfg.getKeyStoreDirectory())) {
+            return new ClientCertificateAuthentication(restOperations());
+        } else {
+            return new TokenAuthentication(vaultCfg.getToken());
+        }
     }
 
     @Override
     public SslConfiguration sslConfiguration() {
-        if (StringUtils.isNotBlank(vaultConfiguration.getTrustStoreDirectory())) {
-            return SslConfiguration.forTrustStore(
-                new FileSystemResource(new File(vaultConfiguration.getTrustStoreDirectory(), vaultConfiguration.getTrustStoreName())), vaultConfiguration.getTrustStorePassword());
-        } else {
-            return SslConfiguration.NONE;
+        SslConfiguration.KeyStoreConfiguration keyStoreConfiguration = SslConfiguration.KeyStoreConfiguration.EMPTY;
+        SslConfiguration.KeyStoreConfiguration trustStoreConfiguration = SslConfiguration.KeyStoreConfiguration.EMPTY;
+        if (StringUtils.isNotBlank(vaultCfg.getKeyStoreDirectory())) {
+            keyStoreConfiguration = new SslConfiguration.KeyStoreConfiguration(new FileSystemResource(new File(vaultCfg.getKeyStoreDirectory(), vaultCfg.getKeyStoreName())), vaultCfg.getKeyStorePassword(), vaultCfg.getKeyStoreType());
         }
+        if (StringUtils.isNotBlank(vaultCfg.getTrustStoreDirectory())) {
+            trustStoreConfiguration = new SslConfiguration.KeyStoreConfiguration(new FileSystemResource(new File(vaultCfg.getTrustStoreDirectory(), vaultCfg.getTrustStoreName())), vaultCfg.getTrustStorePassword(), vaultCfg.getTrustStoreType());
+        }
+        return new SslConfiguration(keyStoreConfiguration, trustStoreConfiguration);
     }
 
     @Bean

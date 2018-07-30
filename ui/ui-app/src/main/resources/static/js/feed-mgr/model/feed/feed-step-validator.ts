@@ -1,4 +1,5 @@
-import {FeedModel, Step} from "./feed.model";
+import {Feed} from "./feed.model";
+import {Step} from "./feed-step.model";
 
 export class FeedStepValidator  {
 
@@ -14,7 +15,7 @@ export class FeedStepValidator  {
         this.step = step;
     }
 
-    public validate(feed:FeedModel) : boolean{
+    public validate(feed:Feed) : boolean{
         console.log("Validating ",this.step.name)
         this.step.setComplete(true);
         this.step.valid = true;

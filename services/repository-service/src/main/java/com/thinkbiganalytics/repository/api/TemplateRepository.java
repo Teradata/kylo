@@ -20,7 +20,9 @@ package com.thinkbiganalytics.repository.api;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -32,11 +34,29 @@ public class TemplateRepository {
     private String name;
     @NotEmpty
     private String location;
-    private String icon;
     @NotEmpty
     private RepositoryType type;
+    private String icon;
     private boolean readOnly = false;
 
+    public TemplateRepository(String name, String location, RepositoryType type) {
+        this.name = name;
+        this.location = location;
+        this.type = type;
+    }
+
+    @JsonCreator
+    public TemplateRepository(@JsonProperty("name") String name,
+                              @JsonProperty("location") String location,
+                              @JsonProperty("icon") String icon,
+                              @JsonProperty("type") RepositoryType type,
+                              @JsonProperty("readOnly") boolean readOnly) {
+        this.name = name;
+        this.location = location;
+        this.icon = icon;
+        this.type = type;
+        this.readOnly = readOnly;
+    }
 
     public String getName() {
         return name;

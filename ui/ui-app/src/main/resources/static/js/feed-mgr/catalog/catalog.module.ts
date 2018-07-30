@@ -29,6 +29,8 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatIconModule} from '@angular/material/icon';
+import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
 
 @NgModule({
     declarations: [
@@ -36,7 +38,8 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
         DatasourceComponent,
         ConnectorsComponent,
         ConnectorComponent,
-        CatalogComponent
+        CatalogComponent,
+        VisibleOnMouseOverDirective
     ],
     exports:[
         DataSourcesComponent,
@@ -59,6 +62,7 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
         MatCardModule,
         FormsModule,
         MatInputModule,
+        MatIconModule,
         MatOptionModule,
         MatSelectModule,
         ReactiveFormsModule,

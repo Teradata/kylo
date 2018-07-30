@@ -48,6 +48,7 @@ public final class NifiProperty {
     private String value;
     private List<String> expressionProperties;
     private NiFiPropertyDescriptor propertyDescriptor;
+    private NiFiPropertyRegistrationChangeInfo registrationChangeInfo;
 
 
     /**
@@ -129,6 +130,7 @@ public final class NifiProperty {
         this.sensitive = property.isSensitive();
         this.required = property.isRequired();
         this.hidden = property.isHidden();
+        this.registrationChangeInfo = property.getRegistrationChangeInfo();
     }
 
     public NifiProperty(String processGroupId, String processorId, String key, String value) {
@@ -336,5 +338,21 @@ public final class NifiProperty {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+    }
+
+    /**
+     * Get property registration change info (used to detect difference between NiFi and Kylo template's property values)
+     * @return
+     */
+    public NiFiPropertyRegistrationChangeInfo getRegistrationChangeInfo() {
+        return registrationChangeInfo;
+    }
+
+    /**
+     * Set property registration change info (used to detect difference between NiFi and Kylo template property values)
+     * @param registrationChangeInfo
+     */
+    public void setRegistrationChangeInfo(NiFiPropertyRegistrationChangeInfo registrationChangeInfo) {
+        this.registrationChangeInfo = registrationChangeInfo;
     }
 }

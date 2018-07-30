@@ -1,3 +1,5 @@
+@import '../../../../assets/theme';
+
 mat-card-title {
   font-size: 24px;
 }
@@ -13,4 +15,18 @@ mat-card-title {
 .icon-component {
   color: #607D8B;
   fill: #607D8B;
+}
+
+.test-section {
+  margin-top: 5px;
+}
+.test-status {
+  padding-left: 20px;
+}
+.status-error {
+  color: mat-color($warn);
+}
+.status-ok {
+  margin: -10px inherit inherit;
+  fill: green;
 }

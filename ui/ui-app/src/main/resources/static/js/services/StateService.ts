@@ -23,7 +23,7 @@
 */
 import * as angular from 'angular';
 import { moduleName } from './module-name';
-import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/feeds/define-feed-ng2/define-feed-states";
+import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
 export default class StateService {
     Auth: any;

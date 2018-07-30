@@ -1,7 +1,7 @@
 import {Injectable, Injector} from "@angular/core";
 import {DefineFeedService} from "./define-feed.service";
 import {TdLoadingService} from "@covalent/core/loading";
-import {FeedModel} from "../model/feed.model";
+import {Feed} from "../../../model/feed/feed.model"
 import {Observable} from "rxjs/Observable";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
@@ -16,12 +16,12 @@ export class FeedLoadingService {
 
     }
 
-    public loadFeed(feedId:string) :Observable<FeedModel> {
+    public loadFeed(feedId:string) :Observable<Feed> {
         //load it
         this.registerLoading();
         this.loadingFeed = true;
       let observable =  this.defineFeedService.loadFeed(feedId);
-      observable.subscribe((feed: FeedModel) => {
+      observable.subscribe((feed: Feed) => {
             this.loadingFeed = false;
             this.resolveLoading();
         }, (error1: any) => {

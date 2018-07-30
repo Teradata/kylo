@@ -83,7 +83,12 @@ public class DefaultDataSourceCredentialManager implements DataSourceCredentialM
         Map<String, String> creds = applyToProvider((provider,  ds) -> provider.getCredentials(ds, principals), dataSource);
         return encrypted ? encrypt(creds) : creds;
     }
-    
+
+    @Override
+    public void removeCredentials(DataSource dataSource) {
+        applyToProvider(DataSourceCredentialProvider::removeCredentials, dataSource);
+    }
+
     /**
      * @param creds unencrypted credentials
      * @return a new properties with the values encrypted
@@ -96,8 +101,9 @@ public class DefaultDataSourceCredentialManager implements DataSourceCredentialM
 
     protected <R> R applyToProvider(BiFunction<DataSourceCredentialProvider, DataSource, R> func, DataSource ds) {
         Exception firstX = null;
-        
-        for (DataSourceCredentialProvider provider : findAcceptingProviders(ds)) {
+
+        List<DataSourceCredentialProvider> acceptingProviders = findAcceptingProviders(ds);
+        for (DataSourceCredentialProvider provider : acceptingProviders) {
             try {
                 return func.apply(provider, ds);
             } catch (Exception e) {

@@ -4,6 +4,7 @@ import {Component, Injector, Input, OnDestroy, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 
 import {ConnectorTab} from "../api/models/connector-tab";
+import {ConnectorPlugin} from '../api/models/connector-plugin';
 import {DataSource} from '../api/models/datasource';
 import {SelectionService} from '../api/services/selection.service';
 import {Node} from '../api/models/node'
@@ -25,8 +26,11 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     /**
      * Data set to be configured
      */
-    @Input()
+    @Input("datasource")
     public datasource: DataSource;
+
+    @Input("connectorPlugin")
+    public plugin: ConnectorPlugin;
 
     /**
      * List of tabs
@@ -62,8 +66,8 @@ export class DatasourceComponent implements OnInit, OnDestroy {
 
     protected initTabs(statePrefix?:string ) {
         // Add tabs and register router states
-        if (this.datasource.connector.tabs) {
-            this.tabs = angular.copy(this.datasource.connector.tabs);
+        if (this.plugin.tabs) {
+            this.tabs = angular.copy(this.plugin.tabs);
             for (let tab of this.tabs) {
                 if (tab.state) {
                     this.stateRegistry.register(tab.state);
@@ -76,7 +80,6 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit() {
-        // Add tabs and register router states
         this.selectionService.reset(this.datasource.id);
         this.initTabs();
         // Go to the first tab

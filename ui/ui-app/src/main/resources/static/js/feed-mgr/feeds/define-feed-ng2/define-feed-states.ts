@@ -18,8 +18,9 @@ import {DefineFeedStepFeedTargetComponent} from "./steps/feed-target/define-feed
 import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
 import {Observable} from "rxjs/Observable";
+import {FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
 
-export const FEED_DEFINITION_STATE_NAME :string = "feed-definition";
+
 
 const resolveFeed :any =
     {
@@ -130,7 +131,13 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                         }))
                         .toPromise();
                 }
+           },
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
             }
+
         ]
     },
     {
@@ -159,6 +166,18 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                             }))
                             .toPromise();
                     }
+                }
+            },
+            {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    let datasourceId = state.transition.params().datasourceId;
+                    return catalog.getDataSourceConnectorPlugin(datasourceId)
+                        .pipe(catchError(() => {
+                            return state.go("catalog")
+                        }))
+                        .toPromise();
                 }
             },
             {

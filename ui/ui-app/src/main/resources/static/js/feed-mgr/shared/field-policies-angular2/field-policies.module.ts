@@ -16,14 +16,25 @@ import {FieldPolicyOptionsService} from "./field-policy-options.service";
 import {PolicyInputFormService} from "./policy-input-form.service";
 import {MatDialogModule} from "@angular/material/dialog";
 import {CovalentChipsModule} from "@covalent/core/chips";
+import {DynamicFormModule} from "../dynamic-form/dynamic-form.module";
+import {FeedFieldPolicyRulesDialogService} from "../feed-field-policy-rules/feed-field-policy-rules-dialog.service";
+import {FeedFieldPolicyRulesDialogComponent} from "../feed-field-policy-rules/feed-field-policy-rules-dialog.component";
+import {KyloCommonModule} from "../../../common/common.module";
+import {MatRadioModule} from "@angular/material/radio";
 
 @NgModule({
     declarations: [
         InlinePolicyInputFormComponent,
-        PolicyInputFormComponent
+        PolicyInputFormComponent,
+        FeedFieldPolicyRulesDialogComponent
+    ],
+    entryComponents: [
+        FeedFieldPolicyRulesDialogComponent
     ],
     imports: [
         CommonModule,
+        KyloCommonModule,
+        DynamicFormModule,
         FlexLayoutModule,
         FormsModule,
         MatDatepickerModule,
@@ -31,6 +42,7 @@ import {CovalentChipsModule} from "@covalent/core/chips";
         MatFormFieldModule,
         MatInputModule,
         MatProgressBarModule,
+        MatRadioModule,
         MatTabsModule,
         MatSelectModule,
         MatSlideToggleModule,
@@ -39,11 +51,13 @@ import {CovalentChipsModule} from "@covalent/core/chips";
     ],
     providers: [
         PolicyInputFormService,
-        FieldPolicyOptionsService
+        FieldPolicyOptionsService,
+        FeedFieldPolicyRulesDialogService
 
     ],
     exports:[ InlinePolicyInputFormComponent,
-        PolicyInputFormComponent]
+        PolicyInputFormComponent,
+        FeedFieldPolicyRulesDialogComponent]
 })
 export class FieldPoliciesModule {
 }

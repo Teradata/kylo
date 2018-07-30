@@ -27,7 +27,7 @@ import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {ArrayUtils} from "../../../model/utils";
-import {TableForm, TableCreateMethod} from "../../../model/feed-table";
+import {TableForm, TableCreateMethod} from "../../../model/feed/feed-table";
 
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
@@ -392,7 +392,7 @@ export class DefineFeedTableController {
      */
     addPartitionField() {
         var partitionLength = this.model.table.partitions.length;
-        var partition = new TableFieldPartition(partitionLength);
+        var partition = TableFieldPartition.atPosition(partitionLength);
         this.model.table.partitions.push(partition);
     };
 

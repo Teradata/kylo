@@ -2,7 +2,8 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import { Templates } from "../../../../services/TemplateTypes";
-import {DefaultFeedModel, FeedModel, Step} from "../../model/feed.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 import {FormControl, FormGroup} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FormsModule} from '@angular/forms'
@@ -131,7 +132,9 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 properties.push(property);})
         });
 
-        this.feed.inputProcessorName = this.inputProcessor.name;
+        if(this.inputProcessor) {
+            this.feed.inputProcessorName = this.inputProcessor.name;
+        }
         this.feed.properties = properties;
 
         this.defineFeedService.setFeed(this.feed);
@@ -155,7 +158,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         this.oldInputProcessorId = event.value;
     }
 
-    updateInputProcessorFormElements(newInput:string,oldInput?:string,) {
+
+    private updateInputProcessorFormElements(newInput:string,oldInput?:string) {
         if(oldInput) {
             let oldConfig = this.inputFieldsMap[oldInput];
             if(oldConfig != undefined) {
@@ -168,12 +172,10 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             }
         }
 
-            this.inputProcessorFields = this.inputFieldsMap[newInput];
+        this.inputProcessorFields = this.inputFieldsMap[newInput];
         if(this.inputProcessorFields != undefined) {
             this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
         }
-
-
     }
 
     initializeTemplateProperties() {
@@ -212,7 +214,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         }
     }
 
-    public mergeTemplateDataWithFeed(feed:FeedModel){
+    public mergeTemplateDataWithFeed(feed:Feed){
 
         if (!feed.propertiesInitialized) {
             let observables: Observable<any>[] = [];
@@ -223,7 +225,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             observables[1] = Observable.from(this.uiComponentsService.getProcessorTemplates());
 
                 Observable.forkJoin(observables[0], observables[1]).subscribe(results => {
-                    const updatedFeedResponse :FeedModel = results[0];
+                    const updatedFeedResponse :Feed = results[0];
                     const templateResponse:any = results[1];
                     //const [updatedFeedResponse , templateResponse] = results;
                     if (updatedFeedResponse == undefined) {
@@ -297,6 +299,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             this.inputProcessorId = this.inputProcessor.id;
         }
         this.formFieldOrder = 0
+
         this.createFormFields(this.inputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;
         });
@@ -335,6 +338,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 let fieldConfig:FieldConfig<any> = null;
                 let fieldConfigOptions = this.toFieldConfigOptions(property);
                 fieldConfigOptions.order= this.formFieldOrder;
+
                 if(this.isInputText(property)){
                     let type = property.renderType;
                     if(property.sensitive) {
@@ -361,7 +365,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                     if(!property.required){
                         options.unshift({label:"Not Set",value:""});
                     }
-
 
                     fieldConfigOptions.options = options;
                     if(property.renderType == "select") {

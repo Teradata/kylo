@@ -20,7 +20,6 @@ package com.thinkbiganalytics.repository.filesystem;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
@@ -37,12 +36,16 @@ import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.repository.api.RepositoryItem;
 import com.thinkbiganalytics.repository.api.RepositoryService;
 import com.thinkbiganalytics.repository.api.TemplateRepository;
+import com.thinkbiganalytics.repository.api.TemplateSearchFilter;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -55,6 +58,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -64,8 +68,12 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import static com.thinkbiganalytics.repository.api.TemplateRepository.RepositoryType.FILESYSTEM;
+import static com.thinkbiganalytics.repository.api.TemplateSearchFilter.TemplateComparator.NAME;
+import static com.thinkbiganalytics.repository.api.TemplateSearchFilter.TemplateComparator.valueOf;
+
 @Service
-@PropertySource("classpath:filesystem-repository.properties")
+@PropertySource(value = "classpath:application.properties")
 public class FilesystemRepositoryService implements RepositoryService {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemRepositoryService.class);
@@ -86,6 +94,9 @@ public class FilesystemRepositoryService implements RepositoryService {
     ResourceLoader resourceLoader;
 
     ObjectMapper mapper = new ObjectMapper();
+
+    @Value("${kylo.default.template.repository}")
+    String defaultKyloRepository;
 
     @Override
     public List<RepositoryItem> listTemplates() {
@@ -225,17 +236,20 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Override
     public List<TemplateRepository> listRepositories() {
-        TypeReference<List<TemplateRepository>> typeReference = new TypeReference<List<TemplateRepository>>() {};
+        TypeReference<List<TemplateRepository>> typeReference = new TypeReference<List<TemplateRepository>>() {
+        };
         try {
             InputStream is = resourceLoader.getResource("classpath:repositories.json").getInputStream();
-            List<TemplateRepository> repositories = mapper.readValue(is, typeReference);
+            List<TemplateRepository> repositories = new ArrayList<>();
+            repositories.add(new TemplateRepository("Kylo Repository", defaultKyloRepository, "", FILESYSTEM, true));
+            repositories.addAll(mapper.readValue(is, typeReference));
             Set<String> set = new HashSet<>(repositories.size());
 
             return repositories
                 .stream()
                 .filter(r -> StringUtils.isNotBlank(r.getLocation()) && //location must be provided
                              Files.exists(Paths.get(r.getLocation().trim())) && //location must be valid
-                             set.add(r.getName().trim().toLowerCase()+"_"+r.getType().getKey().trim().toLowerCase())) //unique name per repository type
+                             set.add(r.getName().trim().toLowerCase() + "_" + r.getType().getKey().trim().toLowerCase())) //unique name per repository type
                 .collect(Collectors.toList());
 
         } catch (Exception e) {
@@ -243,6 +257,32 @@ public class FilesystemRepositoryService implements RepositoryService {
         }
 
         return new ArrayList<>();
+    }
+
+    @Override
+    public SearchResult getTemplatesPage(TemplateSearchFilter filter) {
+        SearchResult<RepositoryItem> searchResult = new SearchResultImpl<>();
+        List<RepositoryItem> templates = listTemplates();
+
+        String sort = filter.getSort();
+
+        List<RepositoryItem> data = templates.stream()
+            .sorted(getComparator(sort))
+            .skip(filter.getStart())
+            .limit(filter.getLimit() > 0 ? filter.getLimit() : Integer.MAX_VALUE)
+            .collect(Collectors.toList());
+
+        Long total = new Long(templates.size());
+        searchResult.setData(data);
+        searchResult.setRecordsTotal(total);
+        searchResult.setRecordsFiltered(total);
+        return searchResult;
+    }
+
+    private Comparator<RepositoryItem> getComparator(String sort) {
+        return StringUtils.isNotBlank(sort) ?
+               (sort.startsWith("-") ? valueOf(sort.substring(1)).getComparator().reversed() : valueOf(sort).getComparator())
+                                            : NAME.getComparator();
     }
 
     private TemplateRepository getRepositoryByNameAndType(String repositoryName, String repositoryType) {

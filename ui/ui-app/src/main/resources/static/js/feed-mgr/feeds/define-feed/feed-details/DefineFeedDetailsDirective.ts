@@ -23,6 +23,7 @@ import { RegisterTemplateServiceFactory } from '../../../services/RegisterTempla
 import { FeedService } from '../../../services/FeedService';
 import BroadcastService from '../../../../services/broadcast-service';
 import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
+import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedDetailsController {
@@ -89,10 +90,10 @@ export class DefineFeedDetailsController {
     }
 
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
-        "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper","RegisterTemplatePropertyService"];
+        "FeedInputProcessorPropertiesTemplateService", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper","RegisterTemplatePropertyService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private feedService: FeedService, private registerTemplateService: RegisterTemplateServiceFactory
-        , private FeedInputProcessorOptionsFactory: any, private broadcastService: BroadcastService, private StepperService: any,
+        , private FeedInputProcessorPropertiesTemplateService: any, private broadcastService: BroadcastService, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any,
                 private registerTemplatePropertyService:RegisterTemplatePropertyService) {
         this.model = this.feedService.createFeedModel;

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
-import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
@@ -144,14 +144,18 @@ public class DataSourceProvider {
      * @throws CatalogException if the data source is not valid
      */
     @Nonnull
-    public DataSource createDataSource(@Nonnull final DataSource source) {
+    public DataSource createOrUpdateDataSource(@Nonnull final DataSource source) {
         // Find connector
         final Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).flatMap(connectorProvider::findConnector)
             .orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
 
-        // Create and store data source
-        final DataSource dataSource = new DataSource(source);
-        dataSource.setId(UUID.randomUUID().toString());
+        final DataSource dataSource;
+        if (StringUtils.isBlank(source.getId())) {
+            dataSource = new DataSource(source);
+            dataSource.setId(UUID.randomUUID().toString());
+        } else {
+            dataSource = source;
+        }
         final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(dataSource, SecurityContextUtil.getCurrentPrincipals());
         
         catalogDataSources.put(dataSource.getId(), updatedDataSource);
@@ -340,5 +344,14 @@ public class DataSourceProvider {
         dataSource.setConnector(connector);
         dataSource.setTemplate(template);
         return dataSource;
+    }
+
+    /**
+     * Deletes datasource and any credentials stored for this data source
+     * @param dataSourceId datasource to be deleted
+     */
+    public void delete(String dataSourceId) {
+        DataSource ds = catalogDataSources.remove(dataSourceId);
+        credentialManager.removeCredentials(ds);
     }
 }

@@ -72,6 +72,12 @@ public class SimpleDataSourceCredentialProvider extends AbstractDataSourceCreden
         return this.credentials.containsKey(connId);
     }
 
+    @Override
+    public Void removeCredentials(DataSource ds) {
+        this.credentials.remove(ds.getConnector().getId());
+        return null;
+    }
+
     protected Optional<Credentials> doGetCredentials(DataSource ds, Set<Principal> principals) {
         String id = ds.getConnector().getId();
         return Optional.ofNullable(this.credentials.get(id));

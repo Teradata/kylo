@@ -47,9 +47,27 @@ export const catalogStates: Ng2StateDeclaration[] = [
     },
     {
         name: "catalog.new-datasource",
-        url: "/connectors/:connectorId",
+        url: "/connectors/:connectorId?datasourceId=:ds",
         component: ConnectorComponent,
         resolve: [
+            {
+                token: "datasource",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    loading.register(ConnectorComponent.LOADER);
+                    const datasourceId = state.transition.params().datasourceId;
+                    if (datasourceId === undefined) {
+                        return undefined;
+                    }
+                    return catalog.getDataSource(datasourceId)
+                        .pipe(finalize(() => loading.resolve(ConnectorComponent.LOADER)))
+                        .pipe(catchError(() => {
+                            console.log("error getting datasource with id " + datasourceId);
+                            return state.go("catalog.connectors")
+                        }))
+                        .toPromise();
+                }
+            },
             {
                 token: "connector",
                 deps: [CatalogService, StateService, TdLoadingService],
@@ -57,6 +75,17 @@ export const catalogStates: Ng2StateDeclaration[] = [
                     loading.register(ConnectorComponent.LOADER);
                     return catalog.getConnector(state.transition.params().connectorId)
                         .pipe(finalize(() => loading.resolve(ConnectorComponent.LOADER)))
+                        .pipe(catchError(() => {
+                            return state.go("catalog.connectors")
+                        }))
+                        .toPromise();
+                }
+            },
+            {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    return catalog.getConnectorPlugin(state.transition.params().connectorId)
                         .pipe(catchError(() => {
                             return state.go("catalog.connectors")
                         }))
@@ -99,6 +128,18 @@ export const catalogStates: Ng2StateDeclaration[] = [
                     let datasourceId = state.transition.params().datasourceId;
                     return catalog.getDataSource(datasourceId)
                         .pipe(finalize(() => loading.resolve(DatasourceComponent.LOADER)))
+                        .pipe(catchError(() => {
+                            return state.go("catalog")
+                        }))
+                        .toPromise();
+                }
+            },
+            {
+                token: "connectorPlugin",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    let datasourceId = state.transition.params().datasourceId;
+                    return catalog.getDataSourceConnectorPlugin(datasourceId)
                         .pipe(catchError(() => {
                             return state.go("catalog")
                         }))

@@ -1,12 +1,22 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
+import {KyloObject} from "../../common/common.model";
+import {TableColumnDefinition} from "./TableColumnDefinition";
 
-export class TableFieldPolicy {
+export class TableFieldPolicy implements KyloObject{
+
+    public static OBJECT_TYPE:string = 'TableFieldPolicy'
+
+    public objectType:string = TableFieldPolicy.OBJECT_TYPE;
     /**
      * the name of the column defintion
      */
     name: string = '';
+
+    feedFieldName?: string;
+
+    fieldName:string = '';
 
     /**
      * is this a partition field or not
@@ -34,13 +44,27 @@ export class TableFieldPolicy {
 
     $currentDomainType: DomainType;
 
+    field?:TableColumnDefinition;
+
+    static forName(name:string) :TableFieldPolicy {
+        return new this({name:name});
+    }
+
 
 
     domainTypeId: string
 
-    constructor(name: string) {
-        this.name = name;
+    constructor(model:Partial<TableFieldPolicy>) {
+        Object.assign(this, model);
+        if((this.fieldName == undefined || this.fieldName == '') && this.name != undefined && this.name != '') {
+            this.fieldName = this.name;
+        }
+        if((this.name == undefined || this.name == '') && this.fieldName != undefined && this.fieldName != '') {
+            this.name = this.fieldName;
+        }
+
     }
+
 
 
 }

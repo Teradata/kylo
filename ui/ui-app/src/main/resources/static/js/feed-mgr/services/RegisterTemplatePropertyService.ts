@@ -47,7 +47,7 @@ import "rxjs/add/observable/of";
 
 export class RegisterTemplatePropertyService {
 
-     CONFIGURATION_PROPERTIES_URL :string =  "/proxy/v1/feedmgr/nifi/configuration/properties";
+   CONFIGURATION_PROPERTIES_URL :string =  "/proxy/v1/feedmgr/nifi/configuration/properties";
 
     METADATA_PROPERTY_NAMES_URL :string = "/proxy/v1/feedmgr/metadata-properties";
 

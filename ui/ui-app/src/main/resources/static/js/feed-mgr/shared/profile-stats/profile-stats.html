@@ -5,7 +5,7 @@
     <md-list class="list-item-table">
       <md-virtual-repeat-container browser-height browser-height-offset="20" browser-height-scroll-y="false">
         <md-list-item md-ink-ripple md-virtual-repeat="row in vm.sorted | filter:vm.hasProfile" class="md-secondary" flex>
-          <md-button flex ng-class="vm.getClass(row)" ng-click="vm.selectRowAndUpdateCharts($event, row)" class="profile column button">
+          <md-button ng-if="row[vm.columns.columnName]" flex ng-class="vm.getClass(row)" ng-click="vm.selectRowAndUpdateCharts($event, row)" class="profile column button">
             <div flex layout="row" layout-align="start end">
               {{row[vm.columns.columnName]}}
               <span flex> </span>

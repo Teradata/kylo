@@ -3,6 +3,7 @@ import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 
 import {Connector} from '../models/connector';
+import {ConnectorPlugin} from '../models/connector-plugin';
 import {DataSource} from "../models/datasource";
 import {SearchResult} from "../models/search-result";
 
@@ -10,6 +11,34 @@ import {SearchResult} from "../models/search-result";
 export class CatalogService {
 
     constructor(private http: HttpClient) {
+    }
+
+    /**
+     * Gets the list of available connector plugins.
+     */
+    getConnectorPlugins(): Observable<ConnectorPlugin[]> {
+        return this.http.get<ConnectorPlugin[]>("/proxy/v1/catalog/connector/plugin");
+    }
+
+    /**
+     * Gets connector plugin by id
+     */
+    getConnectorPlugin(pluginId: string): Observable<ConnectorPlugin> {
+        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/connector/plugin/" + pluginId);
+    }
+
+    /**
+     * Gets connector plugin by connector id
+     */
+    getPluginOfConnector(connectorId: string): Observable<ConnectorPlugin> {
+        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/connector/" + connectorId + "/plugin");
+    }
+
+    /**
+     * Gets connector plugin associated with the connector of the data source with the specified ID.
+     */
+    getDataSourceConnectorPlugin(dataSourceId: string): Observable<ConnectorPlugin> {
+        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/datasource/" + dataSourceId + "/plugin");
     }
 
     /**
@@ -40,5 +69,13 @@ export class CatalogService {
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
         return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+    }
+
+    deleteDataSource(datasource: DataSource): Observable<any> {
+        return this.http.delete<DataSource>("/proxy/v1/catalog/datasource/" + datasource.id);
+    }
+
+    testDataSource(datasource: DataSource): Observable<any> {
+        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
     }
 }

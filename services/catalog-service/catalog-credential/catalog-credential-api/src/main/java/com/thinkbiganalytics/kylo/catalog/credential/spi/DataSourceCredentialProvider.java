@@ -57,6 +57,12 @@ public interface DataSourceCredentialProvider {
     Map<String, String> getCredentials(DataSource ds, Set<Principal> principals);
     
     /**
+     * Removes credentials for given data source
+     * @param ds the data source
+     */
+    Void removeCredentials(DataSource ds);
+
+    /**
      * Creates/modifies the data source properties by inserting placeholders for the data
      * source's credentials based upon configured authentication scheme.
      * @param ds the data source

@@ -211,6 +211,39 @@ export class RegisterProcessorPropertiesController {
         });
     }
 
+
+    /**
+     * Is property registration change info available from Kylo services?
+     * @param property
+     * @returns {boolean}
+     */
+    registrationChangeInfoAvailable(property: any): boolean {
+        return ((property.registrationChangeInfo != null)
+            && (
+            (property.registrationChangeInfo.valueFromNewerNiFiTemplate != null)
+            || (property.registrationChangeInfo.valueFromOlderNiFiTemplate != null)
+            || (property.registrationChangeInfo.valueRegisteredInKyloTemplateFromOlderNiFiTemplate != null)));
+    }
+
+    /**
+     * Should option to accept property value from NiFi template be presented?
+     * @param property
+     * @returns {boolean}
+     */
+    allowUserToAcceptPropertyValueFromNiFi(property: any): boolean {
+        return ((this.registrationChangeInfoAvailable(property))
+            && (property.registrationChangeInfo.valueFromNewerNiFiTemplate != property.registrationChangeInfo.valueFromOlderNiFiTemplate)
+        && (property.registrationChangeInfo.valueFromOlderNiFiTemplate != property.registrationChangeInfo.valueRegisteredInKyloTemplateFromOlderNiFiTemplate)
+        && (property.value != property.registrationChangeInfo.valueFromNewerNiFiTemplate));
+    }
+
+    /**
+     * Update property value to match value defined in NiFi template
+     * @param property
+     */
+    acceptPropertyValueFromNiFi(property: any): void {
+        property.value = property.registrationChangeInfo.valueFromNewerNiFiTemplate;
+    }
 }
 angular.module(moduleName)
     .component('thinkbigRegisterProcessorProperties', {

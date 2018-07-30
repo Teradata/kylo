@@ -9,9 +9,9 @@ package com.thinkbiganalytics.schema;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,6 +55,8 @@ public class QueryRunner {
     @Nonnull
     private final JdbcTemplate jdbcTemplate;
 
+    private static final String COL_DLP_REJECT_REASON = "dlp_reject_reason";
+
     /**
      * Constructs a {@code QueryRunner} for the specified JDBC data source.
      */
@@ -96,7 +98,10 @@ public class QueryRunner {
                 // Add row to the result
                 final Map<String, Object> row = new LinkedHashMap<>();
                 for (final QueryResultColumn column : queryResult.getColumns()) {
-                    row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                    if (rs.getObject(column.getHiveColumnLabel()) != null
+                            && !StringUtils.equals(rs.getObject(column.getHiveColumnLabel()).toString(), COL_DLP_REJECT_REASON)) {
+                        row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                    }
                 }
                 queryResult.addRow(row);
             }
@@ -158,8 +163,8 @@ public class QueryRunner {
     private boolean validateQuery(@Nonnull final String query) {
         final String testQuery = StringUtils.trimToEmpty(query);
         return StringUtils.startsWithIgnoreCase(testQuery, "show")
-            || StringUtils.startsWithIgnoreCase(testQuery, "select")
-            || StringUtils.startsWithIgnoreCase(testQuery, "desc")
-            || StringUtils.startsWithIgnoreCase(testQuery, "describe");
+               || StringUtils.startsWithIgnoreCase(testQuery, "select")
+               || StringUtils.startsWithIgnoreCase(testQuery, "desc")
+               || StringUtils.startsWithIgnoreCase(testQuery, "describe");
     }
 }

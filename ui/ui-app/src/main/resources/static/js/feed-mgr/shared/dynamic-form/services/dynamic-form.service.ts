@@ -22,6 +22,16 @@ export class DynamicFormService {
         fields.forEach(field => {
             let control:FormControl =this.toFormControl(field);
             formGroup.registerControl(field.key,control);
+
+            control.valueChanges.debounceTime(200).subscribe(value=> {
+                if(field.model && field.modelValueProperty){
+                    console.log("update the model for ",field, 'with ',value);
+                    field.model[field.modelValueProperty] = value;
+                    if(field.onModelChange){
+                        field.onModelChange(field.model);
+                    }
+                }
+            })
         //    group[field] = control;
         });
      //   return group;
@@ -29,7 +39,17 @@ export class DynamicFormService {
     }
 
     private toFormControl(field:FieldConfig<any>) : FormControl {
-        return  field.required ? new FormControl(field.value || '', Validators.required)
-            : new FormControl(field.value || '');
+
+        let validatorOpts = field.validators || null;
+        if(field.required){
+            if(validatorOpts == null){
+                validatorOpts = [];
+            }
+            validatorOpts.push(Validators.required)
+        }
+
+        return new FormControl(field.value || '', validatorOpts)
+
+
     }
 }

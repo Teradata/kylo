@@ -24,6 +24,14 @@ export class TemplateService {
             }).pipe(catchError((error) => Observable.throw(error.error)));
     }
 
+    getTemplatePage(start: any,limit: any, sort: any): Observable<any> {
+        var params = {start: start, limit: limit, sort: sort};
+        return this.http.get("/proxy/v1/repository/template-page")
+            .map((response) => {
+                return response;
+            }).pipe(catchError((error) => Observable.throw(error.error)));
+    }
+
     getRepositories(): Observable<TemplateRepository[]> {
         return this.http.get("/proxy/v1/repository")
             .map((response) => {

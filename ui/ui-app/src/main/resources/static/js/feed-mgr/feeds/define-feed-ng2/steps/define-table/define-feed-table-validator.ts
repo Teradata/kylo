@@ -1,5 +1,6 @@
-import {FeedStepValidator} from "../../model/feed-step-validator";
-import {FeedModel} from "../../model/feed.model";
+import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 
 
 export class DefineFeedTableValidator  extends FeedStepValidator {
@@ -8,7 +9,7 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
 
 
 
-    public validate(feed:FeedModel) : boolean{
+    public validate(feed:Feed) : boolean{
         if(this.hasFormErrors){
             this.step.valid = false;
             this.step.setComplete(false);

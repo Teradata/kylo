@@ -1,19 +1,18 @@
 import {Component, Injector, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
-import {DataSource} from "../../../../catalog/api/models/datasource";
-import {FeedModel, Step} from "../../model/feed.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import { TdMediaService } from '@covalent/core/media';
 import { TdLoadingService } from '@covalent/core/loading';
-import {FEED_DEFINITION_STATE_NAME} from "../../define-feed-states";
-import {SaveFeedResponse} from "../../model/SaveFeedResponse";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {ISubscription} from "rxjs/Subscription";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
+import {FEED_DEFINITION_STATE_NAME} from "../../../../model/feed/feed-constants";
 
 @Component({
     selector: "define-feed-step-container",
@@ -79,7 +78,30 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         this.feed.readonly = false;
     }
     onCancelEdit() {
-        this.feed.readonly = true;
+
+        this.dialogService.openConfirm({
+            message: 'Are you sure you want to canel editing  '+this.feed.feedName+'?  All pending edits will be lost.',
+            disableClose: true,
+            viewContainerRef: this.viewContainerRef, //OPTIONAL
+            title: 'Confirm Cancel Edit', //OPTIONAL, hides if not provided
+            cancelButton: 'Nah', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Aight', //OPTIONAL, defaults to 'ACCEPT'
+            width: '500px', //OPTIONAL, defaults to 400px
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+                if(this.feed.isNew()){
+                    this.stateService.go('feeds')
+                }
+                else {
+                  let oldFeed = this.defineFeedService.restoreLastSavedFeed();
+                  this.feed.update(oldFeed);
+                    this.openSnackBar("Restored this feed")
+                    this.feed.readonly = true;
+                }
+            } else {
+                // DO SOMETHING ELSE
+            }
+        });
     }
     onDelete(){
       //confirm then delete

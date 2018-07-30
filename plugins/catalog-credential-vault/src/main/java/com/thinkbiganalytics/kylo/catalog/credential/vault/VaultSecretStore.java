@@ -91,12 +91,12 @@ public class VaultSecretStore implements SecretStore {
 
     VaultSecretStore(String path) {
         if (StringUtils.isBlank(path)) {
-            path = "secret/kylo/catalog/datasource/";
+            path = "secret/kylo";
         }
         if (!path.endsWith("/")) {
             path += "/";
         }
-        this.rootPath = path;
+        this.rootPath = path + "catalog/datasource/";
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
+
 /*-
  * #%L
  * kylo-catalog-controller
@@ -20,7 +22,6 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -54,12 +55,15 @@ public class ConnectorController extends AbstractCatalogController {
     private final XLogger log = XLoggerFactory.getXLogger(ConnectorController.class);
 
     public static final String BASE = "/v1/catalog/connector";
-
+    
     @Inject
     ConnectorProvider connectorProvider;
 
     @Inject
     MetadataAccess metadataService;
+    
+    @Inject
+    private ConnectorPluginController pluginController;
 
     @GET
     @ApiOperation("Gets the specified connector")
@@ -90,4 +94,21 @@ public class ConnectorController extends AbstractCatalogController {
         final List<Connector> connectors = metadataService.read(() -> connectorProvider.findAllConnectors());
         return Response.ok(log.exit(connectors)).build();
     }
-}
+
+    @GET
+    @ApiOperation("Gets the specified connector")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the connector", response = Connector.class),
+                      @ApiResponse(code = 404, message = "Connector was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("{id}/plugin")
+    public Response getConnectorPlugin(@PathParam("id") final String connectorId) {
+        log.entry(connectorId);
+        final Connector connector = metadataService.read(() -> connectorProvider.findConnector(connectorId))
+            .orElseThrow(() -> {
+                log.debug("Connector not found: {}", connectorId);
+                return new NotFoundException(getMessage("catalog.controller.notFound"));
+            });
+        return log.exit(this.pluginController.getPlugin(connector.getPluginId()));
+    }}
