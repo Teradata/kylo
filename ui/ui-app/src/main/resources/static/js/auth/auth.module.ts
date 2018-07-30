@@ -21,7 +21,7 @@ import {MatChipsModule} from '@angular/material/chips';
 import {MatInputModule} from '@angular/material/input';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {FlexLayoutModule} from "@angular/flex-layout";
-import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent";
 import GroupsTableComponent from "./groups/GroupsTableComponent";
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -58,7 +58,7 @@ import * as angular from "angular";
         FormsModule,
         ReactiveFormsModule,
         MatCheckboxModule,
-        UIRouterModule.forChild({states: authStates}) 
+        UIRouterModule.forChild({states: authStates})
     ],
     providers : [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()},

@@ -109,7 +109,8 @@ import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-
         VerticalSectionLayoutComponent,
         CardFilterHeaderComponent,
         IconPickerDialog,
-        FilteredPaginatedTableViewComponent
+        FilteredPaginatedTableViewComponent,
+        CovalentDataTableModule
     ],
     providers: [AboutKyloService, RestUrlService]
 })

@@ -11,7 +11,7 @@
                     </mat-toolbar>
                 </mat-card-title>
                 <mat-card-content>
-                    <td-data-table #dataTable 
+                    <td-data-table #dataTable
                     [data]="filteredData"
                     [columns]="columns"
                     [clickable]="true"
@@ -23,7 +23,7 @@
                         <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
                             <h3>No results to display.</h3>
                         </div>
-                        <ng-content select="data-table-columns-template"></ng-content>
+                        <ng-content></ng-content>
                     </td-data-table>
                     <!-- paging not working because of this bug in mat-select https://github.com/angular/material2/issues/11063 -->
                     <td-paging-bar #pagingBar
