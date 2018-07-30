@@ -30,6 +30,7 @@ import { CronExpressionPreview } from "./shared/cron-expression-preview/cron-exp
 import {TranslateModule} from "@ngx-translate/core";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { DomainTypesService } from "./services/DomainTypesService";
+import { DatasourcesService } from "./services/DatasourcesService";
 
 @NgModule({
     declarations: [
@@ -71,7 +72,8 @@ import { DomainTypesService } from "./services/DomainTypesService";
         DefaultImportService,
         RegisterTemplateServiceFactory,
         FeedCreationErrorService,
-        DomainTypesService
+        DomainTypesService,
+        DatasourcesService
     ],
     exports:[
         CronExpressionPreview

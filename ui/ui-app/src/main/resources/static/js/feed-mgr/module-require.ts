@@ -108,6 +108,3 @@ angular.module(moduleName).factory('FeedSecurityGroups', downgradeInjectable(Fee
 angular.module(moduleName).service('FeedCreationErrorService', downgradeInjectable(FeedCreationErrorService));
 
 angular.module(moduleName).service('DBCPTableSchemaService', DBCPTableSchemaService);
-
-angular.module(moduleName).service("DatasourcesService",DatasourcesService);
-
