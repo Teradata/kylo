@@ -34,6 +34,12 @@ import {DomainTypeConflictDialogComponent, DomainTypeConflictDialogData, DomainT
 import {ApplyDomainTypeDialogComponent, ApplyDomainTypeDialogData, ApplyDomainTypeDialogDataResponse} from "../../../../shared/domain-type/apply-domain-type/apply-domain-type-dialog.component";
 import {CheckAll} from "../../../shared/checkAll";
 import {MatDialog} from "@angular/material/dialog";
+import {
+    ApplyDomainTypesData, ApplyDomainTypesDialogComponent,
+    ApplyDomainTypesResponse, ApplyDomainTypesResponseStatus,
+    ApplyDomainTypesRow
+} from "../../../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
+import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -137,7 +143,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
    virtualScroll: TdVirtualScrollContainerComponent
 
     getStepName() {
-        return "Define Table";
+        return FeedStepConstants.STEP_FEED_TARGET;
     }
 
 
@@ -172,6 +178,11 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         //fetch the domain types
         this.domainTypesService.findAll().then((domainTypes: DomainType[]) => {
             this.availableDomainTypes = _.sortBy(domainTypes, "title");
+            //apply domain types when the schema has changed
+            if(this.feed.table.schemaChanged) {
+                this.applyDomainTypes();
+                this.feed.table.schemaChanged = false;
+            }
         });
 
         this.availableDefinitionDataTypes = FeedConstants.columnDefinitionDataTypes.slice();
@@ -189,6 +200,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         //listen when the form is valid or invalid
         this.subscribeToFormChanges(this.defineTableForm);
+
+
 
     }
 
@@ -501,14 +514,14 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     private applyDomainTypes() {
         // Detect domain types
-        var data: any = {domainTypes: [], fields: []};
+        var data: ApplyDomainTypesData = {domainTypes: [], fields: []};
 
         this.feed.table.tableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
             var domainType = this.domainTypesService.detectDomainType(field, this.availableDomainTypes);
             if (domainType !== null) {
                 if (this.domainTypesService.matchesField(domainType, field)) {
                     // Domain type can be applied immediately
-                    this.feedService.setDomainTypeForField(field, this.feed.table.fieldPolicies[index], domainType);
+                    field.applyDomainType(domainType);
                     field.history = [];
                     field.addHistoryItem();
                 } else {
@@ -518,38 +531,38 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 }
             }
         });
-
-        // Get user confirmation for domain type changes to field data types
-        /*
-        if (data.fields.length > 0) {
-            this._dialogService.openConfirm({
-                controller: "ApplyTableDomainTypesDialog",
-                escapeToClose: false,
-                fullscreen: true,
-                parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.html",
-                locals: {
-                    data: data
-                }
-            })
-                .then((selected: any) => {
-                    selected.forEach((selection: any) => {
-                        var fieldIndex = data.fields.findIndex((element: any) => {
-                            return element.name === selection.name;
-                        });
-                        var policyIndex = this.feed.table.tableSchema.fields.findIndex((element: any) => {
-                            return element.name === selection.name;
-                        });
-                        this.feedService.setDomainTypeForField(data.fields[fieldIndex], this.feed.table.fieldPolicies[policyIndex], data.domainTypes[fieldIndex]);
-                        data.fields[fieldIndex].history = [];
-                        let columnDef = <TableColumnDefinition> data.fields[fieldIndex];
-                        columnDef.addHistoryItem();
-                    });
-                }, () => {
-                    // ignore cancel
-                });
+        if(data.fields.length >0) {
+            this.confirmDomainTypes(data);
         }
-        */
+    }
+
+    private confirmDomainTypes(applyDomainTypesData:ApplyDomainTypesData){
+
+        const dialogRef = this.dialog.open(ApplyDomainTypesDialogComponent, {
+            width: '600px',
+            data: applyDomainTypesData
+        });
+
+        dialogRef.afterClosed().subscribe((response:ApplyDomainTypesResponse) => {
+            if(response.status == ApplyDomainTypesResponseStatus.APPLY) {
+                response.appliedRows.forEach((selection:ApplyDomainTypesRow) => {
+                    var fieldIndex = applyDomainTypesData.fields.findIndex((element: any) => {
+                        return element.name === selection.name;
+                    });
+                    let columnDef = <TableColumnDefinition> applyDomainTypesData.fields[fieldIndex];
+                    let domainType = applyDomainTypesData.domainTypes[fieldIndex];
+                    columnDef.applyDomainType(domainType);
+                    columnDef.history = [];
+                    columnDef.addHistoryItem();
+                });
+            }
+
+
+        });
+
+
+
+
     }
 
 

@@ -31,6 +31,7 @@ import {KyloObject} from "../../../common/common.model";
         partitions: TableFieldPartition[]
         options: TableOptions
         sourceTableIncrementalDateField: string
+        schemaChanged:boolean;
 
 
         public constructor(init?:Partial<FeedTableDefinition>) {

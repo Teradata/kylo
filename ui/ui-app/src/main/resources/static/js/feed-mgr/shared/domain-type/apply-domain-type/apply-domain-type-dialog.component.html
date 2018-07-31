@@ -1,5 +1,5 @@
 <h2 mat-dialog-title>Overwrite Field Details for {{data.column.field.name}}</h2>
-<mat-dialog-content>
+<mat-dialog-content class="mat-typography">
   Applying the domain type {{data.domainType.title}} will overwrite the current field with the following properties:
 
   <ul>
@@ -11,8 +11,8 @@
   </ul>
 </mat-dialog-content>
 
-<mat-dialog-actions>
-  <button mat-raised-button (click)="cancel()">Cancel</button>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
   <span fxFlex=""></span>
-  <button mat-raised-button  color="primary" (click)="apply()">Apply</button>
+  <button mat-button  color="primary" (click)="apply()">Apply</button>
 </mat-dialog-actions>

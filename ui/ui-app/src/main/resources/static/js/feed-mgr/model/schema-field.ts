@@ -77,4 +77,9 @@ export class SchemaField {
      * //{ name: string }
      */
     tags?: Tag[];
+
+    constructor(){
+        this.sampleValues = [];
+        this.tags = [];
+    }
 }

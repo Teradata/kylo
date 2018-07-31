@@ -22,6 +22,6 @@
 
   <div *ngFor="let ruleGroup of fieldConfigGroup" class="layout-padding-left-right" fxLayout="{{ruleGroup.group.layout}}">
 
-    <dynamic-form [fields]="ruleGroup.fields" [form]="formGroup" ></dynamic-form>
+    <dynamic-form [fields]="ruleGroup.fields" [form]="formGroup" (onFormControlsAdded)="formControlsAdded($event)" ></dynamic-form>
 
   </div>

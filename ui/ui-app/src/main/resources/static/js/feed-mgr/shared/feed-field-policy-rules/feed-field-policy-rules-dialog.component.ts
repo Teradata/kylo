@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import {FeedFieldPolicyDialogData} from "./feed-field-policy-dialog-data";
 import {FieldPolicyOptionsService} from "../field-policies-angular2/field-policy-options.service";
-import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter} from "@angular/core";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
 import {FormGroup} from "@angular/forms";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
@@ -17,6 +17,10 @@ interface ViewText {
     titleText:string;
     addText:string;
     cancelText:string;
+}
+
+enum EditMode {
+    NEW=1, EDIT=2
 }
 
 @Component({
@@ -90,7 +94,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
     editIndex :number = null;
 
-    editMode:string = 'NEW';
+    editMode:EditMode = EditMode.NEW;
 
     /**
      * Flag to indicate the options have been moved/reordered
@@ -119,7 +123,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         @Inject(MAT_DIALOG_DATA) public data: FeedFieldPolicyDialogData) {
         this.policyForm = new FormGroup({});
 
-        this.policyForm.statusChanges.subscribe(status => {
+        this.policyForm.statusChanges.debounceTime(10).subscribe(status => {
             this.policyFormIsValid = status == "VALID";
         })
     }
@@ -141,6 +145,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      */
     onRuleTypeChange(change:MatSelectChange) {
         if(this.selectedRuleTypeName && this.selectedOptionType) {
+
             let ruleType :any = this.findRuleType(this.selectedRuleTypeName, this.selectedOptionType);
 
             if(ruleType) {
@@ -160,6 +165,14 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
             }
         }
+    }
+
+    /**
+     * react to when the form controls are painted on the screen
+     * @param controls
+     */
+    onFormControlsAdded(controls:any){
+        this.policyForm.updateValueAndValidity();
     }
 
     /**
@@ -220,10 +233,10 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
             // buildDisplayString();
 
             this.editRule.ruleType = this.ruleType;
-            if (this.editMode == 'NEW') {
+            if (this.editMode == EditMode.NEW) {
                 this.policyRules.push(this.editRule);
             }
-            else if (this.editMode == 'EDIT') {
+            else if (this.editMode == EditMode.EDIT) {
                 this.policyRules[this.editIndex] = this.editRule;
             }
 
@@ -239,10 +252,10 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      * @param rule
      */
     editPolicy(index: number, rule: any) {
-        if (this.editMode == 'EDIT') {
+        if (this.editMode == EditMode.EDIT) {
             this.cancelEdit();
         }
-        this.editMode = 'EDIT';
+        this.editMode = EditMode.EDIT;
         this.viewText.addText ='SAVE EDIT';
         this.viewText.titleText='Edit the policy';
         this.editIndex = index;
@@ -276,6 +289,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
             this._changedOptionType(this.ruleType.type);
         }
         this.selectedOptionType = editRule.type;
+        this.selectedRuleTypeName = this.editRule.name;
 
     }
 
@@ -325,7 +339,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      * when canceling a pending edit
      */
     private cancelEdit() {
-        this.editMode = 'NEW';
+        this.editMode = EditMode.NEW;
         this.viewText.addText = 'ADD RULE';
         this.viewText.cancelText = 'CANCEL ADD';
         this.viewText.titleText = 'Add a new policy';

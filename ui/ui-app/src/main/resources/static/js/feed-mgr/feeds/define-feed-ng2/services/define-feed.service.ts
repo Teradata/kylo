@@ -26,6 +26,8 @@ import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplat
 import {UiComponentsService} from "../../../services/UiComponentsService";
 import {FeedService} from "../../../services/FeedService";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
+import {FeedConstants} from "../../../services/FeedConstants";
+import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 
 
 
@@ -354,25 +356,23 @@ export class DefineFeedService {
 
 
     generalInfoStep(steps:Step[]):Step{
-        return new StepBuilder().setNumber(1).setSystemName("General Info").setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
+        return new StepBuilder().setNumber(1).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
     }
 
     feedDetailsStep(steps:Step[], stepNumber:number):Step {
-        return new StepBuilder().setNumber(stepNumber).setSystemName("Feed Details").setDescription("Update NiFi processor settings").addDependsUpon("General Info").setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
+        return new StepBuilder().setNumber(stepNumber).setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
     }
 
     private newDefineTableFeedSteps() :Step[] {
         let steps :Step[] = []
         let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName("Source Sample").setDescription("Browse Catalog for sample").addDependsUpon("General Info").setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
-        let table = new StepBuilder().setNumber(3).setSystemName("Define Table").setDescription("Table").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
+        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
+        let table = new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
         let feedDetails = this.feedDetailsStep(steps,4);
-        let feedTarget = new StepBuilder().setNumber(5).setSystemName("Feed Target").setDescription("Define Target").addDependsUpon("Source Sample").setAllSteps(steps).setSref("feed-target").setDisabled(true).setRequired(true).build();
         steps.push(generalInfoStep);
         steps.push(sourceSampleStep);
         steps.push(table)
         steps.push(feedDetails);
-        steps.push(feedTarget);
         return steps;
     }
 
@@ -458,6 +458,11 @@ export class DefineFeedService {
             columns.forEach(col => {
                 let def = angular.extend({}, col);
                 def.derivedDataType = def.dataType;
+                //sample data
+                if(dataSet.preview){
+                  let sampleValues :string[] = dataSet.preview.columnData(def.name)
+                    def.sampleValues = sampleValues
+                }
                 sourceColumns.push(new TableColumnDefinition((def)));
                 targetColumns.push(new TableColumnDefinition((def)));
                 feedColumns.push(new TableColumnDefinition((def)));
@@ -472,6 +477,8 @@ export class DefineFeedService {
                 field.fieldPolicy = policy;
                 return policy;
             });
+            //flip the changed flag
+            this.feed.table.schemaChanged = true;
         }
     }
 

@@ -9,6 +9,7 @@ import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {SelectionService} from "../../../../catalog/api/services/selection.service";
 import * as angular from 'angular';
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
+import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -35,7 +36,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     }
 
     getStepName(){
-        return "Source Sample";
+        return FeedStepConstants.STEP_SOURCE_SAMPLE;
     }
 
     init(){

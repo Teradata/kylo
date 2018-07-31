@@ -1,5 +1,5 @@
-import { Component, Input, OnInit }  from '@angular/core';
-import { FormGroup }                 from '@angular/forms';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
 
 import {DynamicFormService} from "./services/dynamic-form.service";
 import {FieldConfig} from "./model/FieldConfig";
@@ -19,6 +19,10 @@ export class DynamicFormComponent implements OnInit {
     @Input()
         public readonly :boolean;
 
+    @Output()
+    onFormControlsAdded :EventEmitter<FormControl[]> = new EventEmitter<FormControl[]>();
+
+
     payLoad = '';
 
     constructor(private dynamicFormService: DynamicFormService) {  }
@@ -28,8 +32,12 @@ export class DynamicFormComponent implements OnInit {
             this.fields = [];
         }
         console.log("new Form ",this.form, this.fields)
-        this.dynamicFormService.addToFormGroup(this.fields, this.form);
+       let controls = this.dynamicFormService.addToFormGroup(this.fields, this.form);
+        if(this.onFormControlsAdded){
+            this.onFormControlsAdded.emit(controls);
+        }
     }
+
 
     onSubmit() {
         this.payLoad = JSON.stringify(this.form.value);

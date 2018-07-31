@@ -27,6 +27,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedScheduleComponent} from "../../feed-schedule/feed-schedule.component";
 import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
 import {ISubscription} from "rxjs/Subscription";
+import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -94,7 +95,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
 
     getStepName() {
-        return "General Info";
+        return FeedStepConstants.STEP_GENERAL_INFO;
     }
 
     /**

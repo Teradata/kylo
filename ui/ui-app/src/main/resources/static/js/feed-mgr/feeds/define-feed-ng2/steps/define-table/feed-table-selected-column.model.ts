@@ -115,36 +115,9 @@ export class SelectedColumn {
 
 
     applyDomainType(domainType:DomainType){
-        this.fieldPolicy.$currentDomainType = domainType;
-        this.fieldPolicy.domainTypeId = domainType.id;
-
-        if (_.isObject(domainType.field)) {
-            this.field.tags = CloneUtil.deepCopy(domainType.field.tags);
-            if (_.isString(domainType.field.name) && domainType.field.name.length > 0) {
-                this.field.name = domainType.field.name;
-            }
-            if (_.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
-                this.field.derivedDataType = domainType.field.derivedDataType;
-                this.field.precisionScale = domainType.field.precisionScale;
-                this.field.dataTypeDisplay = this.field.getDataTypeDisplay();
-            }
-        }
-
-        if (_.isObject(domainType.fieldPolicy)) {
-            this.fieldPolicy.standardization = CloneUtil.deepCopy(domainType.fieldPolicy.standardization);
-            this.fieldPolicy.validation = CloneUtil.deepCopy(domainType.fieldPolicy.validation);
-        }
-
-
-
-        // Update field properties
-        delete this.field.$allowDomainTypeConflict;
-        this.field.dataTypeDisplay = this.field.getDataTypeDisplay();
-        this.fieldPolicy.name = this.field.name;
+        this.field.applyDomainType(domainType);
         this.domainType = domainType;
         this.update();
-
-
     }
 
 
