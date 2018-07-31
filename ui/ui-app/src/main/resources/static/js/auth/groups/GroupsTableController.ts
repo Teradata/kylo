@@ -120,7 +120,7 @@ export default class GroupsTableController implements ng.IComponentController {
      * @param user the user
      */
     groupDetails=(group:any)=>{
-        this.StateService.Auth().navigateToGroupDetails(group.systemName);
+        this.StateService.Auth.navigateToGroupDetails(group.systemName);
     };
     //$inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
     static readonly $inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
@@ -151,7 +151,7 @@ export default class GroupsTableController implements ng.IComponentController {
         });
         // Register Add button
         AddButtonService.registerAddButton('groups', () => {
-            StateService.Auth().navigateToGroupDetails();
+            StateService.Auth.navigateToGroupDetails();
         });
         // Get the list of users and groups
         UserService.getGroups().then((groups:any) => {

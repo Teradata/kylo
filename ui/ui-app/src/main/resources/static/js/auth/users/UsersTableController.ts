@@ -146,7 +146,7 @@ export default class UsersTableController implements ng.IComponentController {
      * @param user the user
      */
     userDetails (user:any) {
-        this.StateService.Auth().navigateToUserDetails(user.systemName);
+        this.StateService.Auth.navigateToUserDetails(user.systemName);
     };
     static readonly $inject = ["$scope",
                                 "AddButtonService",
@@ -171,7 +171,7 @@ export default class UsersTableController implements ng.IComponentController {
 
         // Register Add button
         this.AddButtonService.registerAddButton('users', () => {
-            this.StateService.Auth().navigateToUserDetails();
+            this.StateService.Auth.navigateToUserDetails();
         });
 
         // Get the list of users and groups
