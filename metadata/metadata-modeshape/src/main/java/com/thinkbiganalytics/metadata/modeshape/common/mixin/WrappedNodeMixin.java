@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common.mixin;
 
+import java.io.UnsupportedEncodingException;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -24,17 +26,23 @@ package com.thinkbiganalytics.metadata.modeshape.common.mixin;
  */
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessControlException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
@@ -42,14 +50,16 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
- *
+ * 
  * TODO: Refactor hierarchy of JcrObject so that JCR-based entity objects implement 
  * this interface (or one or more mixin subtypes) instead.
  */
-public interface NodeEntityMixin {
+public interface WrappedNodeMixin extends Propertied {
+    
+    Logger log = LoggerFactory.getLogger(WrappedNodeMixin.class);
 
     Node getNode();
-    
+
     default String getTypeName() {
         try {
             return getNode().getPrimaryNodeType().getName();
@@ -115,6 +125,13 @@ public interface NodeEntityMixin {
         return JcrPropertyUtil.getProperties(getNode());
     }
 
+    default void setProperties(Map<String, Object> properties) {
+        //add the properties as attrs
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
     default <T> T getProperty(String name) {
         return JcrPropertyUtil.getProperty(getNode(), name);
     }
@@ -170,17 +187,40 @@ public interface NodeEntityMixin {
         return new HashSet<T>();
     }
 
+    default boolean hasProperty(String name) {
+        try {
+            return getNode().hasProperty(name);
+        } catch (AccessDeniedException e) {
+            log.debug("Unable to access property: \"{}\" from node: {}", name, getNode(), e);
+            return false;
+        } catch (AccessControlException e) {
+            return false;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check Property " + name);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    default <T> T getProperty(String name, T defValue) {
+        if (hasProperty(name)) {
+            return getProperty(name, (Class<T>) defValue.getClass(), defValue);
+        } else {
+            return defValue;
+        }
+    }
+
     default <T> T getProperty(String name, Class<T> type) {
-        return getProperty(name, type, false);
+        return getProperty(name, type, null);
     }
 
-    default <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
-        return getPropertyFromNode(getNode(), name, type, allowNotFound);
+    default <T> T getProperty(String name, Class<T> type, T defaultValue) {
+        return getPropertyFromNode(getNode(), name, type, defaultValue);
     }
 
-    default <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound) {
-        Object o = JcrPropertyUtil.getProperty(node, name, allowNotFound);
-        if (allowNotFound && o == null) {
+    default <T> T getPropertyFromNode(Node node, String name, Class<T> type, T defaultValue) {
+        Object o = JcrPropertyUtil.getProperty(node, name, defaultValue);
+        
+        if (o == null) {
             return null;
         }
         if (type.isEnum()) {
@@ -191,12 +231,21 @@ public interface NodeEntityMixin {
             }
         }
         if (!o.getClass().isAssignableFrom(type)) {
-            //if it cant be matched and it is a Node > JcrObject, do the conversion
+            // conversion for Node to JcrObject
             if (o instanceof Node && JcrObject.class.isAssignableFrom(type)) {
                 return JcrUtil.constructNodeObject((Node) o, type, null);
-            } else {
-                throw new MetadataRepositoryException("Unable to convert Property " + name + " to type " + type);
             }
+            // conversion for byte[] to String
+            if (o instanceof byte[] && String.class.equals(type)) {
+                try {
+                    return (T) new String((byte[]) o, "UTF-8");
+                } catch (final UnsupportedEncodingException e) {
+                    throw new MetadataRepositoryException("Unable to decode String property '" + name + "'", e);
+                }
+            }
+            // unable to convert
+            final String safeName = name.toLowerCase().contains("password") ? "UNKNOWN" : name;
+            throw new MetadataRepositoryException("Unable to convert Property " + safeName + " to type " + type);
         } else {
             return (T) o;
         }
@@ -204,6 +253,28 @@ public interface NodeEntityMixin {
 
     default void setProperty(String name, Object value) {
         JcrPropertyUtil.setProperty(getNode(), name, value);
+    }
+
+    default void removeProperty(String key) {
+        setProperty(key, null);
+    }
+
+    /**
+     * Merges any new properties in with the other Extra Properties
+     */
+    @Override
+    default Map<String, Object> mergeProperties(Map<String, Object> props) {
+        Map<String, Object> newProps = new HashMap<>();
+        Map<String, Object> origProps = getProperties();
+        if (origProps != null) {
+            newProps.putAll(origProps);
+        }
+        if (props != null) {
+            newProps.putAll(props);
+        }
+        
+        setProperties(newProps);
+        return newProps;
     }
 
 }

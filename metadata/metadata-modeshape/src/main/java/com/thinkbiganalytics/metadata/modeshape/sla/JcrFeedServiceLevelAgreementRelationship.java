@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -35,7 +35,7 @@ import javax.jcr.Node;
 /**
  * @see JcrFeedServiceLevelAgreementProvider#relate(ServiceLevelAgreement, Set)
  */
-public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntity implements FeedServiceLevelAgreementRelationship {
+public class JcrFeedServiceLevelAgreementRelationship extends JcrObject implements FeedServiceLevelAgreementRelationship {
 
 
     public static final String NODE_TYPE = "tba:slaFeedsRelationship";

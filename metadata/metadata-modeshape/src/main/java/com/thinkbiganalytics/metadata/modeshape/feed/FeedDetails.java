@@ -32,8 +32,10 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed.FeedId;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -61,7 +63,7 @@ import javax.jcr.Value;
 /**
  *
  */
-public class FeedDetails extends JcrPropertiesEntity {
+public class FeedDetails extends JcrObject implements PropertiedMixin {
 
     private static final Logger log = LoggerFactory.getLogger(FeedDetails.class);
 
@@ -99,16 +101,16 @@ public class FeedDetails extends JcrPropertiesEntity {
     }
 
     public List<? extends FeedSource> getSources() {
-        return JcrUtil.getJcrObjects(this.node, SOURCE_NAME, JcrFeedSource.class);
+        return JcrUtil.getJcrObjects(getNode(), SOURCE_NAME, JcrFeedSource.class);
     }
 
     public List<? extends FeedDestination> getDestinations() {
-        return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+        return JcrUtil.getJcrObjects(getNode(), DESTINATION_NAME, JcrFeedDestination.class);
     }
 
     public <C extends Category> List<Feed> getDependentFeeds() {
         List<Feed> deps = new ArrayList<>();
-        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
+        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(getNode(), DEPENDENTS);
 
         for (Node depNode : depNodes) {
             deps.add(new JcrFeed(depNode, this.summary.getParentFeed().getOpsAccessProvider().orElse(null)));
@@ -122,7 +124,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         Node depNode = dependent.getNode();
         feed.addUsedByFeed(getParentFeed());
 
-        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode, true);
+        return JcrPropertyUtil.addToSetProperty(getNode(), DEPENDENTS, depNode, true);
     }
 
     public boolean removeDependentFeed(Feed feed) {
@@ -131,7 +133,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         feed.removeUsedByFeed(getParentFeed());
 
         boolean weakRef = false;
-        Optional<Property> prop = JcrPropertyUtil.findProperty(this.node, DEPENDENTS);
+        Optional<Property> prop = JcrPropertyUtil.findProperty(getNode(), DEPENDENTS);
         if (prop.isPresent()) {
             try {
                 weakRef = PropertyType.WEAKREFERENCE == prop.get().getType();
@@ -139,19 +141,19 @@ public class FeedDetails extends JcrPropertiesEntity {
                 log.error("Error removeDependentFeed for {}.  Unable to identify if the property is a Weak Reference or not {} ", feed.getName(), e.getMessage(), e);
             }
         }
-        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode, weakRef);
+        return JcrPropertyUtil.removeFromSetProperty(getNode(), DEPENDENTS, depNode, weakRef);
     }
 
     public boolean addUsedByFeed(Feed feed) {
         JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
 
-        return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode, true);
+        return JcrPropertyUtil.addToSetProperty(getNode(), USED_BY_FEEDS, depNode, true);
     }
 
     public List<Feed> getUsedByFeeds() {
         List<Feed> deps = new ArrayList<>();
-        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, USED_BY_FEEDS);
+        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(getNode(), USED_BY_FEEDS);
 
         for (Node depNode : depNodes) {
             deps.add(new JcrFeed(depNode, this.summary.getParentFeed().getOpsAccessProvider().orElse(null)));
@@ -164,7 +166,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
         boolean weakRef = false;
-        Optional<Property> prop = JcrPropertyUtil.findProperty(this.node, USED_BY_FEEDS);
+        Optional<Property> prop = JcrPropertyUtil.findProperty(getNode(), USED_BY_FEEDS);
         if (prop.isPresent()) {
             try {
                 weakRef = PropertyType.WEAKREFERENCE == prop.get().getType();
@@ -172,7 +174,7 @@ public class FeedDetails extends JcrPropertiesEntity {
                 log.error("Error removeUsedByFeed for {}.  Unable to identify if the property is a Weak Reference or not {} ", feed.getName(), e.getMessage(), e);
             }
         }
-        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode, weakRef);
+        return JcrPropertyUtil.removeFromSetProperty(getNode(), USED_BY_FEEDS, depNode, weakRef);
     }
 
     public FeedSource getSource(final Datasource.ID id) {
@@ -193,8 +195,8 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     public FeedPrecondition getPrecondition() {
         try {
-            if (this.node.hasNode(PRECONDITION)) {
-                return new JcrFeedPrecondition(this.node.getNode(PRECONDITION), getParentFeed());
+            if (getNode().hasNode(PRECONDITION)) {
+                return new JcrFeedPrecondition(getNode().getNode(PRECONDITION), getParentFeed());
             } else {
                 return null;
             }
@@ -204,7 +206,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     }
 
     public FeedManagerTemplate getTemplate() {
-        return getProperty(TEMPLATE, JcrFeedTemplate.class, true);
+        return getProperty(TEMPLATE, JcrFeedTemplate.class);
     }
 
     public void setTemplate(FeedManagerTemplate template) {
@@ -213,7 +215,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     }
 
     public List<ServiceLevelAgreement> getServiceLevelAgreements() {
-        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, SLA);
+        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(getNode(), SLA);
         List<ServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
         if (list != null) {
             for (Node n : list) {
@@ -229,17 +231,17 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     public void removeServiceLevelAgreement(ServiceLevelAgreement.ID id) {
         try {
-            Set<Node> nodes = JcrPropertyUtil.getSetProperty(this.node, SLA);
+            Set<Node> nodes = JcrPropertyUtil.getSetProperty(getNode(), SLA);
             Set<Value> updatedSet = new HashSet<>();
             for (Node node : nodes) {
                 if (!node.getIdentifier().equalsIgnoreCase(id.toString())) {
-                    Value value = this.node.getSession().getValueFactory().createValue(node, true);
+                    Value value = getNode().getSession().getValueFactory().createValue(node, true);
                     updatedSet.add(value);
                 }
             }
-            node.setProperty(SLA, (Value[]) updatedSet.stream().toArray(size -> new Value[size]));
+            getNode().setProperty(SLA, (Value[]) updatedSet.stream().toArray(size -> new Value[size]));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to remove reference to SLA " + id + "from feed " + this.getId());
+            throw new MetadataRepositoryException("Unable to remove reference to SLA " + id + "from feed " + getParentFeed().getId());
         }
 
     }
@@ -248,7 +250,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         JcrServiceLevelAgreement jcrServiceLevelAgreement = (JcrServiceLevelAgreement) sla;
         Node node = jcrServiceLevelAgreement.getNode();
         //add a ref to this node
-        return JcrPropertyUtil.addToSetProperty(this.node, SLA, node, true);
+        return JcrPropertyUtil.addToSetProperty(getNode(), SLA, node, true);
     }
 
     public String getJson() {
@@ -354,11 +356,11 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     @Nonnull
     public Map<String, String> getUserProperties() {
-        return JcrPropertyUtil.getUserProperties(node);
+        return JcrPropertyUtil.getUserProperties(getNode());
     }
 
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+        JcrPropertyUtil.setUserProperties(getNode(), userFields, userProperties);
     }
 
 }

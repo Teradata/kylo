@@ -219,7 +219,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         if (!feed.propertiesInitialized) {
             let observables: Observable<any>[] = [];
             let steps = feed.steps;
-            let feedCopy = feed.copy();
+            let feedCopy = feed.copy(false);
             delete feedCopy.steps;
             observables[0] = this.http.post(RestUrlConstants.MERGE_FEED_WITH_TEMPLATE(feed.id), feedCopy, {headers: {'Content-Type': 'application/json; charset=UTF-8'}}),
             observables[1] = Observable.from(this.uiComponentsService.getProcessorTemplates());

@@ -118,4 +118,113 @@ public class BaseDatasource implements Datasource {
             return this.uuid.toString();
         }
     }
+
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getSystemName()
+     */
+    @Override
+    public String getSystemName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setSystemName(java.lang.String)
+     */
+    @Override
+    public void setSystemName(String name) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getTitle()
+     */
+    @Override
+    public String getTitle() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setTitle(java.lang.String)
+     */
+    @Override
+    public void setTitle(String title) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setDescription(java.lang.String)
+     */
+    @Override
+    public void setDescription(String description) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Auditable#getModifiedTime()
+     */
+    @Override
+    public DateTime getModifiedTime() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Auditable#getCreatedBy()
+     */
+    @Override
+    public String getCreatedBy() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Auditable#getModifiedBy()
+     */
+    @Override
+    public String getModifiedBy() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#hasTag(java.lang.String)
+     */
+    @Override
+    public boolean hasTag(String tag) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#getTags()
+     */
+    @Override
+    public Set<String> getTags() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#addTag(java.lang.String)
+     */
+    @Override
+    public Set<String> addTag(String tag) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#removeTag(java.lang.String)
+     */
+    @Override
+    public Set<String> removeTag(String tag) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

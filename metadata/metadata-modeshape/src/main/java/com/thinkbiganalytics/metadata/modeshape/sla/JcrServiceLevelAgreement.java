@@ -26,8 +26,8 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -36,12 +36,16 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -49,7 +53,7 @@ import javax.jcr.RepositoryException;
 /**
  *
  */
-public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreement, Serializable {
+public class JcrServiceLevelAgreement extends JcrEntity<ServiceLevelAgreement.ID> implements ServiceLevelAgreement, Serializable {
 
 
     public static final String NODE_TYPE = "tba:sla";
@@ -88,7 +92,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
      */
     @Override
     public String getName() {
-        return JcrPropertyUtil.getString(this.node, NAME);
+        return JcrPropertyUtil.getString(getNode(), NAME);
     }
 
     /* (non-Javadoc)
@@ -96,16 +100,21 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
      */
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(this.node, DESCRIPTION);
+        return JcrPropertyUtil.getString(getNode(), DESCRIPTION);
+    }
+
+    @Override
+    public DateTime getCreatedTime() {
+        return getProperty(JcrPropertyConstants.CREATED_TIME, DateTime.class);
     }
 
     @Override
     public boolean isEnabled() {
-        return JcrPropertyUtil.getBooleanOrDefault(this.node, ENABLED, true);
+        return JcrPropertyUtil.getBooleanOrDefault(getNode(), ENABLED, true);
     }
 
     public void setEnabled(boolean enabled) {
-        JcrPropertyUtil.setProperty(this.node, ENABLED, enabled);
+        JcrPropertyUtil.setProperty(getNode(), ENABLED, enabled);
     }
 
     public void enable() {
@@ -123,9 +132,9 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     public List<ObligationGroup> getObligationGroups() {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> defItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
+            Iterator<Node> defItr = (Iterator<Node>) getNode().getNodes(DEFAULT_GROUP);
             @SuppressWarnings("unchecked")
-            Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
+            Iterator<Node> grpItr = (Iterator<Node>) getNode().getNodes(GROUPS);
 
             return Lists.newArrayList(Iterators.concat(
                 Iterators.transform(defItr, (groupNode) -> {
@@ -166,12 +175,12 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     }
 
     public JcrObligationGroup getDefaultGroup() {
-        return JcrUtil.getOrCreateNode(this.node, DEFAULT_GROUP, GROUP_TYPE, JcrObligationGroup.class, JcrServiceLevelAgreement.this);
+        return JcrUtil.getOrCreateNode(getNode(), DEFAULT_GROUP, GROUP_TYPE, JcrObligationGroup.class, JcrServiceLevelAgreement.this);
     }
 
     public void addGroup(JcrObligationGroup group) {
         try {
-            this.node.addNode(GROUPS, GROUP_TYPE);
+            getNode().addNode(GROUPS, GROUP_TYPE);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the obligation group node", e);
         }
@@ -180,12 +189,12 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
     public void clear() {
         try {
-            Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
+            Iterator<Node> grpItr = (Iterator<Node>) getNode().getNodes(GROUPS);
             while (grpItr.hasNext()) {
                 Node group = grpItr.next();
                 group.remove();
             }
-            grpItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
+            grpItr = (Iterator<Node>) getNode().getNodes(DEFAULT_GROUP);
             while (grpItr.hasNext()) {
                 Node group = grpItr.next();
                 group.remove();
@@ -196,12 +205,9 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     }
 
     public List<ServiceLevelAgreementCheck> getSlaChecks() {
-
-        List<ServiceLevelAgreementCheck> list = new ArrayList<>();
-
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(SLA_CHECKS);
+            Iterator<Node> itr = (Iterator<Node>) getNode().getNodes(SLA_CHECKS);
 
             return Lists.newArrayList(
                 Iterators.transform(itr, (checkNode) -> {
@@ -210,8 +216,6 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
         }
-
-
     }
 
     public static class SlaId extends JcrEntity.EntityId implements ServiceLevelAgreement.ID {

@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.metadata.api.category;
 
+import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.IndexControlled;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -21,13 +24,13 @@ package com.thinkbiganalytics.metadata.api.category;
  */
 
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
-
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
@@ -40,7 +43,7 @@ import javax.annotation.Nonnull;
 /**
  * A category is a collection of zero or more feeds.
  */
-public interface Category extends AccessControlled {
+public interface Category extends AccessControlled, SystemEntity, Auditable, IndexControlled, Taggable {
 
     ID getId();
 
@@ -50,23 +53,7 @@ public interface Category extends AccessControlled {
 
     void setDisplayName(String displayName);
 
-    String getSystemName();
-
-    void setSystemName(String name);
-
     Integer getVersion();
-
-    String getDescription();
-
-    void setDescription(String description);
-
-    DateTime getCreatedTime();
-
-    void setCreatedTime(DateTime createdTime);
-
-    DateTime getModifiedTime();
-
-    void setModifiedTime(DateTime modifiedTime);
 
     /**
      * Gets the user-defined properties for this category.
@@ -101,10 +88,6 @@ public interface Category extends AccessControlled {
     String getIconColor();
 
     void setIconColor(String iconColor);
-
-    boolean isAllowIndexing();
-
-    void setAllowIndexing(boolean allowIndexing);
 
     Set<RoleMembership> getFeedRoleMemberships();
 

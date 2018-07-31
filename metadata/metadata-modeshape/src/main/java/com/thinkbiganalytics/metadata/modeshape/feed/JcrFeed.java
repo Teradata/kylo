@@ -1,48 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
-import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.security.role.SecurityRole;
-
-import org.joda.time.DateTime;
-
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -63,10 +20,56 @@ import javax.jcr.RepositoryException;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IndexControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.role.SecurityRole;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
  */
-public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, AccessControlledMixin {
+public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, PropertiedMixin, AuditableMixin, SystemEntityMixin, IndexControlledMixin, AccessControlledMixin {
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
@@ -75,7 +78,6 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
 
-    private Node summaryNode;
     private FeedSummary summary;
     private FeedData data;
 
@@ -101,16 +103,10 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public JcrFeed(Node node, JcrCategory category) {
         this(node, (FeedOpsAccessControlProvider) null);
-//        if (category != null) {
-//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-//        }
     }
 
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
         this(node, opsAccessProvider);
-//        if (category != null) {
-//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-//        }
     }
 
 
@@ -139,36 +135,73 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin#getPropertiesObject()
+     */
     @Override
-    public Map<String, Object> getProperties() {
+    public Optional<JcrProperties> getPropertiesObject() {
+        // Delegate to the feed details object to get the properties node that holds 
+        // dynamic properties.
+        return getFeedDetails().flatMap(d -> d.getPropertiesObject());
+    }
+    
+    // -=-=--=-=-=-=-=-=-=-=-
+
+    
+    public  void clearAdditionalProperties() {
+        getFeedData().ifPresent(d -> d.clearAdditionalProperties());
+    }
+    
+    public  Map<String, Object> getProperties() {
         return getFeedData().map(d -> d.getProperties()).orElse(Collections.emptyMap());
     }
-
-    @Override
-    public void setProperties(Map<String, Object> properties) {
+    
+    @SuppressWarnings("unchecked")
+    public  <T> T getProperty(String name) {
+        return (T) getFeedData().map(d -> d.getProperty(name)).orElse(null);
+    }
+    
+    public  void setProperties(Map<String, Object> properties) {
         getFeedData().ifPresent(d -> d.setProperties(properties));
     }
-
-    @Override
-    public void setProperty(String name, Object value) {
+    
+    public  Map<String, Object> getAllProperties() {
+        return getFeedData().map(d -> d.getAllProperties()).orElse(Collections.emptyMap());
+    }
+    
+    public  <T> T getProperty(String name, T defValue) {
+        return getFeedData().map(d -> d.getProperty(name, defValue)).orElse(defValue);
+    }
+    
+    public  boolean hasProperty(String name) {
+        return getFeedData().map(d -> d.hasProperty(name)).orElse(false);
+    }
+    
+    public  <T> T getProperty(String name, Class<T> type) {
+        return getFeedData().map(d -> d.getProperty(name, type)).orElse(null);
+    }
+    
+    public  <T> T getProperty(String name, Class<T> type, T defaultValue) {
+        return getFeedData().map(d -> d.getProperty(name, type, defaultValue)).orElse(defaultValue);
+    }
+    
+    public  void setProperty(String name, Object value) {
         getFeedData().ifPresent(d -> d.setProperty(name, value));
     }
-
-    @Override
-    public void removeProperty(String key) {
-        getFeedData().ifPresent(d -> d.removeProperty(key));
-    }
-
-    @Override
-    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+    
+    public  Map<String, Object> mergeProperties(Map<String, Object> props) {
         return getFeedData().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
     }
-
-    @Override
-    public Map<String, Object> replaceProperties(Map<String, Object> props) {
+    
+    public  Map<String, Object> replaceProperties(Map<String, Object> props) {
         return getFeedData().map(d -> d.replaceProperties(props)).orElse(Collections.emptyMap());
     }
+    
+    public  void removeProperty(String key) {
+        getFeedData().ifPresent(d -> d.removeProperty(key));
+    }
+    
 
     // -=-=--=-=- Delegate taggable methods to summary -=-=-=-=-=-
 
@@ -192,7 +225,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         return getFeedSummary().map(s -> s.hasTag(tag)).orElse(false);
     }
 
-    // -=-=--=-=- Delegate AbstractJcrAuditableSystemEntity methods to summary -=-=-=-=-=-
+    // -=-=--=-=- Delegate AuditableMixin methods to summary -=-=-=-=-=-
 
     @Override
     public DateTime getCreatedTime() {
@@ -200,18 +233,8 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     @Override
-    public void setCreatedTime(DateTime createdTime) {
-        getFeedSummary().ifPresent(s -> s.setCreatedTime(createdTime));
-    }
-
-    @Override
     public DateTime getModifiedTime() {
         return getFeedSummary().map(s -> s.getModifiedTime()).orElse(null);
-    }
-
-    @Override
-    public void setModifiedTime(DateTime modifiedTime) {
-        getFeedSummary().ifPresent(s -> s.setModifiedTime(modifiedTime));
     }
 
     @Override
@@ -224,7 +247,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         return getFeedSummary().map(s -> s.getModifiedBy()).orElse(null);
     }
 
-    // -=-=--=-=- Delegate AbstractJcrSystemEntity methods to summary -=-=-=-=-=-
+    // -=-=--=-=- Delegate methods to summary -=-=-=-=-=-
 
     @Override
     public String getDescription() {
@@ -541,7 +564,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public Optional<FeedData> getFeedData() {
         if (this.data == null) {
             if (JcrUtil.hasNode(getNode(), DATA)) {
-                this.data = JcrUtil.getJcrObject(getNode(), DATA, FeedData.class);
+                this.data = JcrUtil.getJcrObject(getNode(), DATA, FeedData.class, this);
                 return Optional.of(this.data);
             } else {
                 return Optional.empty();
@@ -593,13 +616,6 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         removeFeedDestinations();
     }
 
-    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
-
-        public FeedId(Serializable ser) {
-            super(ser);
-        }
-    }
-
     @Override
     public boolean isAllowIndexing() {
         return getFeedSummary().map(s -> s.isAllowIndexing()).orElse(true); //default is true
@@ -608,5 +624,14 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     @Override
     public void setAllowIndexing(boolean allowIndexing) {
         getFeedSummary().ifPresent(s -> s.setAllowIndexing(allowIndexing));
+    }
+    
+    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
+        
+        private static final long serialVersionUID = 1L;
+
+        public FeedId(Serializable ser) {
+            super(ser);
+        }
     }
 }

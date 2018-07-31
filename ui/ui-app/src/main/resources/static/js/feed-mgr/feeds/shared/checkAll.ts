@@ -4,9 +4,9 @@ import * as _ from 'underscore';
 export class CheckAll {
     isIndeterminate: boolean = false;
     totalChecked: number = 0;
-     model: any;
+    model: any;
 
-    constructor( private fieldName: string, private isChecked: boolean) {
+    constructor( private fieldName: string, public isChecked: boolean) {
 
     }
 

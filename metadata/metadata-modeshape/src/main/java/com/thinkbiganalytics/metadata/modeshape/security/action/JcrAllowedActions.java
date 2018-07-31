@@ -83,7 +83,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     public List<AllowableAction> getAvailableActions() {
         try {
             NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), JcrAllowableAction.NODE_TYPE);
-            return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
+            return JcrUtil.getJcrObjects(getNode(), type, JcrAllowableAction.class).stream().collect(Collectors.toList());
         } catch (Exception e) {
             throw new MetadataException("Failed to retrieve the accessible functions", e);
         }
@@ -370,7 +370,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             result &= findActionNode(action)
                 .map(node -> {
                     if (enable) {
-                        return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, GRANT_PRIVILEGES);
+                        return JcrAccessControlUtil.addHierarchyPermissions(node, principal, getNode(), GRANT_PRIVILEGES);
                     } else {
                         return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, GRANT_PRIVILEGES);
                     }

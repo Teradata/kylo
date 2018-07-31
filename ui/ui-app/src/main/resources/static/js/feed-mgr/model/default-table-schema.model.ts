@@ -2,6 +2,7 @@ import {TableSchema} from "./table-schema";
 import {Schema} from "./schema";
 import {SchemaField} from "./schema-field";
 import {TableColumnDefinition} from "./TableColumnDefinition";
+import {ObjectUtils} from "../../common/utils/object-utils";
 
 
 
@@ -56,6 +57,14 @@ export class DefaultTableSchema extends DefaultSchema implements TableSchema{
     databaseName: string;
     constructor() {
         super();
+    }
+
+    protected ensureObjectTypes() {
+        let fields = this.fields.map((field: any) => {
+            let tableColumnDef = ObjectUtils.getAs(field,TableColumnDefinition);
+            return tableColumnDef;
+        });
+        this.fields = fields;
     }
 
 }

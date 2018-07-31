@@ -436,6 +436,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-metadata-core</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>

@@ -2,8 +2,10 @@ import {DefaultTableSchema} from "../default-table-schema.model";
 import {TableColumnDefinition} from "../TableColumnDefinition";
 import {FeedTableDefinition} from "./feed-table-definition.model";
 import {TableFieldPolicy} from "../TableFieldPolicy";
+import {KyloObject} from "../../../common/common.model";
+import {ObjectUtils} from "../../../common/utils/object-utils";
 
-export class FeedTableSchema extends DefaultTableSchema {
+export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
 
     useUnderscoreInsteadOfSpaces:boolean = true;
 
@@ -11,9 +13,13 @@ export class FeedTableSchema extends DefaultTableSchema {
 
     public objectType:string = FeedTableSchema.OBJECT_TYPE;
 
-    constructor() {
-     super();
+    public constructor(init?:Partial<FeedTableSchema>) {
+        super();
+        Object.assign(this, init);
+        this.ensureObjectTypes();
+
     }
+
 
 
     addColumn(columnDef?: TableColumnDefinition) :TableColumnDefinition{
@@ -23,7 +29,7 @@ export class FeedTableSchema extends DefaultTableSchema {
             columnDef = new TableColumnDefinition();
         }
         if(!columnDef.name){
-            columnDef.name = "col_"+this.fields.length+1;
+            columnDef.name = "col_"+(this.fields.length+1);
         }
         if(!columnDef.derivedDataType){
             columnDef.derivedDataType = 'string'

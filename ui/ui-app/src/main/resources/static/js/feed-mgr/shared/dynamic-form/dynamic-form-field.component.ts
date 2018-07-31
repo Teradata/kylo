@@ -3,6 +3,7 @@ import { FormGroup }        from '@angular/forms';
 
 import { FieldConfig }     from './model/FieldConfig';
 import {SectionHeader} from "./model/SectionHeader";
+import {FormControlValidation} from "../../../common/utils/form-control-validation";
 
 @Component({
     selector: 'dynamic-form-field',
@@ -27,25 +28,8 @@ export class DynamicFormFieldComponent {
         }
     }
 
-
     getErrorMessage() {
-        let control = this.form.get(this.field.key);
-        const controlErrors = control.errors;
-        let firstError :any;
-        let errorMessage:string = "";
-        if(control && controlErrors) {
-            let firstKey = Object.keys(controlErrors)[0];
-            firstError = controlErrors[firstKey];
-            if(typeof firstError == "boolean"){
-                errorMessage = this.field.label+" is "+firstKey;
-            }
-            else if(!(typeof firstError == "string")){
-                errorMessage = this.field.label +" is invalid";
-            }
-            else {
-                errorMessage = firstError;
-            }
-        }
-        return errorMessage;
+        return FormControlValidation.getErrorMessage(this.form,this.field.key)
     }
+
 }

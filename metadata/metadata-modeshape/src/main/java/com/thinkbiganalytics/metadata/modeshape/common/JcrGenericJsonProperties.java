@@ -53,7 +53,7 @@ public class JcrGenericJsonProperties extends JcrObject {
     @Nonnull
     @Override
     public Map<String, Object> getProperties() {
-        return JcrUtil.getNodesOfType(node, "tba:genericJson").stream()
+        return JcrUtil.getNodesOfType(getNode(), "tba:genericJson").stream()
             .collect(Collectors.toMap(JcrUtil::getName, JcrUtil::getGenericJson));
     }
 
@@ -61,6 +61,6 @@ public class JcrGenericJsonProperties extends JcrObject {
      * Sets the specified generic JSON property.
      */
     public <T extends Serializable> void setProperty(@Nonnull final String name, @Nullable final T value) {
-        JcrUtil.addGenericJson(node, name, value);
+        JcrUtil.addGenericJson(getNode(), name, value);
     }
 }

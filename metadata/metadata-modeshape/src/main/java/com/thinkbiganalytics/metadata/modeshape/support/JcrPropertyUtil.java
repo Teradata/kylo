@@ -396,15 +396,30 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to test for property", e);
         }
     }
-
-    public static boolean hasProperty(NodeType type, String propName) {
-        for (PropertyDefinition propDef : type.getPropertyDefinitions()) {
-            if (propDef.getName().equals(propName)) {
-                return true;
-            }
+    
+    public static boolean hasPropertyDefinition(Node node, String propName) {
+        try {
+            return hasPropertyDefinition(node.getPrimaryNodeType(), node.getMixinNodeTypes(), propName);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve property definitions for node: " + node, e);
         }
+    }
 
-        return false;
+    public static boolean hasPropertyDefinition(NodeType type, String propName) {
+        return hasPropertyDefinition(Arrays.stream(type.getPropertyDefinitions()), propName);
+    }
+    
+    public static boolean hasPropertyDefinition(NodeType primaryType, NodeType[] mixinTypes, String propName) {
+        return hasPropertyDefinition(Stream.concat(Arrays.stream(primaryType.getPropertyDefinitions()),
+                                                   Arrays.stream(mixinTypes).flatMap(mixin -> Arrays.stream(mixin.getPropertyDefinitions()))), 
+                           propName);
+    }
+    
+    public static boolean hasPropertyDefinition(Stream<PropertyDefinition> defsStream, String propName) {
+        return defsStream
+                .filter(d -> d.getName().equals(propName))
+                .findFirst()
+                .isPresent();
     }
 
 //

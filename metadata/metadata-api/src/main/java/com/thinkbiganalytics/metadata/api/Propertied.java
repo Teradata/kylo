@@ -30,6 +30,8 @@ import java.util.Map;
  */
 public interface Propertied {
 
+    <T> T getProperty(String name);
+
     Map<String, Object> getProperties();
 
     void setProperties(Map<String, Object> props);

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
+import com.thinkbiganalytics.metadata.api.Propertied;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -24,27 +26,18 @@ package com.thinkbiganalytics.metadata.api.extension;
  */
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 /**
  *
  */
-public interface ExtensibleEntity {
+public interface ExtensibleEntity extends Propertied {
+    
+    interface ID extends Serializable { }
 
     ID getId();
 
     String getTypeName();
 
-    Map<String, Object> getProperties();
-
-    <T> T getProperty(String name);
-
-    <T> Set<T> getPropertyAsSet(String name, Class<T> objectType);
-
-    void setProperty(String name, Object value);
-
-    interface ID extends Serializable {
-
-    }
+    <T> Set<T> getPropertySet(String name, Class<T> objectType);
 }

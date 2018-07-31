@@ -26,14 +26,10 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
-
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -221,8 +217,6 @@ public class CategoryModelTransform  extends SimpleCategoryModelTransform{
         category.setIcon(feedCategory.getIcon());
         category.setIconColor(feedCategory.getIconColor());
         category.setAllowIndexing(feedCategory.isAllowIndexing());
-        category.setCreatedTime(new DateTime(feedCategory.getCreateDate()));
-        category.setModifiedTime(new DateTime(feedCategory.getUpdateDate()));
 
         // Transforms the Feed Manager user-defined properties to domain user-defined properties
         if (feedCategory.getUserProperties() != null) {

@@ -56,6 +56,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
@@ -154,7 +155,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     private MetadataEventService metadataEventService;
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
     }
 
@@ -164,7 +165,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrFeed.class;
     }
     
@@ -921,7 +922,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             StringBuilder join = new StringBuilder();
 
             if (this.name != null) {
-                cond.append(EntityUtil.asQueryProperty(JcrFeed.SYSTEM_NAME) + " = $name");
+                cond.append(EntityUtil.asQueryProperty(JcrPropertyConstants.SYSTEM_NAME) + " = $name");
                 params.put("name", this.name);
             }
 //            if (this.category != null) {

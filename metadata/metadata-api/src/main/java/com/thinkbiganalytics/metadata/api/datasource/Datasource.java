@@ -3,6 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.api.datasource;
 
+import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -26,25 +30,17 @@ package com.thinkbiganalytics.metadata.api.datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.Set;
 
 /**
  *
  */
-public interface Datasource extends Serializable {
+public interface Datasource extends SystemEntity, Auditable, Taggable {
 
     ID getId();
 
-    ;
-
     String getName();
-
-    String getDescription();
-
-    DateTime getCreatedTime();
 
     Set<? extends FeedSource> getFeedSources();
 

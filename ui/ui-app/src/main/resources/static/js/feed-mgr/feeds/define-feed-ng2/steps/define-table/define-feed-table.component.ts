@@ -25,6 +25,15 @@ import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {TdVirtualScrollContainerComponent} from "@covalent/core/virtual-scroll";
 import {FeedFieldPolicyRulesDialogService} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.service";
 import {SelectedColumn} from "./feed-table-selected-column.model";
+import {Feed} from "../../../../model/feed/feed.model";
+import {FeedConstants} from "../../../../services/FeedConstants";
+import {FeedFieldPolicyRulesDialogComponent} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.component";
+import {FeedFieldPolicyDialogData} from "../../../../shared/feed-field-policy-rules/feed-field-policy-dialog-data";
+import {Observable} from "rxjs/Observable";
+import {DomainTypeConflictDialogComponent, DomainTypeConflictDialogData, DomainTypeConflictDialogResponse} from "../../../../shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component";
+import {ApplyDomainTypeDialogComponent, ApplyDomainTypeDialogData, ApplyDomainTypeDialogDataResponse} from "../../../../shared/domain-type/apply-domain-type/apply-domain-type-dialog.component";
+import {CheckAll} from "../../../shared/checkAll";
+import {MatDialog} from "@angular/material/dialog";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -103,8 +112,28 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     private tableFormControls:TableFormControls;
 
+    /**
+     * the filter for the partition list
+     */
+    private filterPartitionFormulaPipe:FilterPartitionFormulaPipe;
 
-   @ViewChild('virtualScroll')
+
+    /**
+     * Toggle Check All/None on Profile column
+     * Default it to true
+     * @type {CheckAll}
+     */
+    profileCheckAll: CheckAll;
+
+
+    /**
+     *
+     * @type {CheckAll}
+     */
+    indexCheckAll: CheckAll;
+
+
+    @ViewChild('virtualScroll')
    virtualScroll: TdVirtualScrollContainerComponent
 
     getStepName() {
@@ -113,20 +142,28 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
 
 
+
     constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 private cdr: ChangeDetectorRef,
+                public dialog:MatDialog,
                 private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService) {
         super(defineFeedService,stateService)
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
-
+        this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
+        this.profileCheckAll = new CheckAll('profile', true);
+        this.indexCheckAll = new CheckAll( 'index', false);
 
     }
 
 
     init() {
+
+        this.profileCheckAll.setup(this.feed.table);
+        this.indexCheckAll.setup(this.feed.table);
+
         this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.feed);
         this.defineTableForm = new FormGroup({});
         this.definePartitionForm = new FormGroup({});
@@ -134,10 +171,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         //fetch the domain types
         this.domainTypesService.findAll().then((domainTypes: DomainType[]) => {
-            this.availableDomainTypes = domainTypes;
+            this.availableDomainTypes = _.sortBy(domainTypes, "title");
         });
 
-        this.availableDefinitionDataTypes = this.feedService.columnDefinitionDataTypes.slice();
+        this.availableDefinitionDataTypes = FeedConstants.columnDefinitionDataTypes.slice();
 
         //ensure the table field datatypes exist
         this.ensureTableFields();
@@ -185,9 +222,13 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * @param columnDef
      */
     addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) {
+
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
+        if(this.virtualScroll){
+            this.virtualScroll.scrollToEnd();
+        }
     }
 
     /**
@@ -212,7 +253,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         let columnDef =  this.feed.table.undoColumn(index);
         this.feedTableColumnDefinitionValidation.validateColumn(columnDef);
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
-        this.feedService.syncTableFieldPolicyNames();
+        this.feed.table.syncTableFieldPolicyNames();
         this.isValid = this.feedTableColumnDefinitionValidation.validate();
         this.tableFormControls.updateFieldState(columnDef);
     }
@@ -238,13 +279,46 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tableFormControls.removePartitionFieldFormControls(partitions[0]);
     };
 
+    onIndexCheckAllChange(){
+        this.indexCheckAll.toggleAll();
+        let checked = this.indexCheckAll.isChecked;
+            //update the form values
+            this.feed.table.fieldPolicies.forEach(fieldPolicy => {
+                let ctrl = this.tableFormControls.getFormControl(this.defineTableForm,"index",fieldPolicy.field);
+                ctrl.setValue(checked);
+                fieldPolicy.index = checked;
+            });
+    }
+
+    onProfileCheckAllChange(){
+        this.profileCheckAll.toggleAll();
+        let checked = this.profileCheckAll.isChecked;
+        //update the form values
+        this.feed.table.fieldPolicies.forEach(fieldPolicy => {
+            let ctrl = this.tableFormControls.getFormControl(this.defineTableForm,"profile",fieldPolicy.field);
+            ctrl.setValue(checked);
+            fieldPolicy.profile = checked;
+        });
+    }
+
+    onIndexChange(columnDef:TableColumnDefinition){
+        this._selectColumn(columnDef);
+        this.selectedColumn.fieldPolicy.index = !this.selectedColumn.fieldPolicy.index
+        this.indexCheckAll.clicked(!this.selectedColumn.fieldPolicy.index);
+
+    }
+    onProfileChange(columnDef:TableColumnDefinition){
+        this._selectColumn(columnDef);
+        this.selectedColumn.fieldPolicy.profile = !this.selectedColumn.fieldPolicy.profile
+        this.profileCheckAll.clicked(!this.selectedColumn.fieldPolicy.profile);
+    }
 
     /**
      *
      * @param {TableColumnDefinition} selectedColumn
      */
-    onSelectedColumn(selectedColumn: TableColumnDefinition) {
-       this._selectColumn(selectedColumn);
+    onSelectedColumn(columnDef: TableColumnDefinition) {
+       this._selectColumn(columnDef);
     };
 
     onPrecisionChange(columnDef: TableColumnDefinition) {
@@ -260,6 +334,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.defineTableForm.get("precisionScale_" + columnDef._id).disable();
         }
         this.onFieldChange(columnDef);
+        if(!columnDef.isDate()) {
+            if(columnDef.createdTracker){
+                columnDef.changeColumn()
+                columnDef.createdTracker = false;
+            }
+            if(columnDef.updatedTracker){
+                columnDef.changeColumn()
+                columnDef.updatedTracker = false;
+            }
+        }
+
     }
 
     /**
@@ -282,7 +367,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         });
         this.feedTableColumnDefinitionValidation.validateColumn(columnDef);
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
-        this.feed.table.syncTableFieldPolicyNames();
+        this.feed.table.syncFieldPolicy(columnDef,index);
 
         // Check if column data type matches domain data type
         var policy = <TableFieldPolicy>this.feed.table.fieldPolicies[index];
@@ -292,34 +377,31 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             var nameChanged = (domainType.field.name && columnDef.name !== domainType.field.name);
             var dataTypeChanged = (domainType.field.derivedDataType && columnDef.derivedDataType !== domainType.field.derivedDataType);
             if (nameChanged || dataTypeChanged) {
-                /*
-                this.$mdDialog.show({
-                    controller: "DomainTypeConflictDialog",
-                    escapeToClose: false,
-                    fullscreen: true,
-                    parent: angular.element(document.body),
-                    templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-type-conflict.component.html",
-                    locals: {
-                        data: {
-                            columnDef: columnDef,
-                            domainType: domainType
-                        }
+
+                let domainTypeDialogData:DomainTypeConflictDialogData = {columnDef:columnDef,domainType:domainType};
+
+                const dialogRef = this.dialog.open(DomainTypeConflictDialogComponent, {
+                    width: '600px',
+                    data: domainTypeDialogData
+                });
+
+                dialogRef.afterClosed().subscribe((keep:DomainTypeConflictDialogResponse) => {
+                    if (keep == DomainTypeConflictDialogResponse.Keep) {
+                        columnDef.$allowDomainTypeConflict = true;
+                    } else if(keep == DomainTypeConflictDialogResponse.Remove) {
+                        delete policy.$currentDomainType;
+                        delete policy.domainTypeId;
                     }
-                })
-                    .then((keep: any) => {
-                        if (keep) {
-                            columnDef.$allowDomainTypeConflict = true;
-                        } else {
-                            delete policy.$currentDomainType;
-                            delete policy.domainTypeId;
-                        }
-                    }, () => {
+                    else if(keep == DomainTypeConflictDialogResponse.Cancel){
                         this.undoColumn(index);
-                    });
-            }
-            */
+                    }
+
+                });
+
+
             }
         }
+
     }
 
     /**
@@ -331,7 +413,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == selectedColumn.field.name );
         if(fieldPolicy) {
             this.feedFieldPolicyRulesDialogService.openDialog(this.feed, fieldPolicy).subscribe((result:any) => {
-                this.selectedColumn.update()
+                  this.selectedColumn.update()
             });
         }
     }
@@ -345,13 +427,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      *  - attempt to prefill in the name with some default name.  if its a val formula it will default the partition name to the source field name and leave it disabled
      * @param partition
      */
-    onPartitionSourceFieldChange(partition: TableFieldPartition) {
+    onPartitionSourceFieldChange(partition: TableFieldPartition, feed:Feed) {
         //set the partition data to match the selected sourceField
         partition.syncSource();
 
         //if there is only 1 option in the formula list then auto select it
-        //TODO fix this
-        var formulas:string[] = []//this.$filter('filterPartitionFormula')(this.partitionFormulas, partition);
+        var formulas:string[] = this.filterPartitionFormulaPipe.transform(this.partitionFormulas, partition,feed);
         if (formulas.length == 1) {
             partition.formula = formulas[0];
         }
@@ -391,8 +472,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
 
     private _selectColumn(columnDef:TableColumnDefinition){
-        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == columnDef.name );
+        let fieldPolicy = columnDef.fieldPolicy;
+        if(fieldPolicy == undefined) {
+            fieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == columnDef.name);
+        }
         this.selectedColumn = new SelectedColumn(columnDef, fieldPolicy);
+        this.selectedColumn.setDomainType(this.availableDomainTypes);
     }
 
     /**
@@ -468,6 +553,52 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
+
+
+    /**
+     * Display a confirmation when the domain type of a field is changed and there are existing standardizers and validators.
+     *
+     * @param {SelectedColumn} the selected column
+     */
+    onDomainTypeChange(selectedColumn:SelectedColumn) {
+        // Check if removing domain type
+        if (selectedColumn.fieldPolicy.domainTypeId == undefined) {
+            delete selectedColumn.fieldPolicy.$currentDomainType;
+            return;
+        }
+
+        // Find domain type from id
+        let domainType = _.find(this.availableDomainTypes, (domainType: DomainType) => {
+            return (domainType.id === selectedColumn.fieldPolicy.domainTypeId);
+        });
+
+        if (domainType && selectedColumn.showDomainTypeDialog()) {
+
+
+            let dialogData: ApplyDomainTypeDialogData = {column: selectedColumn, domainType: domainType};
+
+            const dialogRef = this.dialog.open(ApplyDomainTypeDialogComponent, {
+                width: '600px',
+                data: dialogData
+            });
+
+            dialogRef.afterClosed().subscribe((response: ApplyDomainTypeDialogDataResponse) => {
+                if (response == ApplyDomainTypeDialogDataResponse.Apply) {
+                    selectedColumn.applyDomainType(domainType);
+                }
+                else {
+                    //revert it
+                    selectedColumn.fieldPolicy.domainTypeId = selectedColumn.fieldPolicy.$currentDomainType ? selectedColumn.fieldPolicy.$currentDomainType.id : null;
+                }
+
+
+            });
+        } else if(domainType){
+            //apply it
+            selectedColumn.applyDomainType(domainType);
+        }
+    }
+
     /**
      * Called when a user transitions from the Wrangler to this step
      */
@@ -505,6 +636,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 this.tableFormControls.addTableFieldFormControl(columnDef);
             });
 
+            this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
+            this.defineTableForm.registerControl("profileCheckAll",new FormControl(this.profileCheckAll.isChecked))
+
         }
         this.calcTableState();
         this.isValid = this.feedTableColumnDefinitionValidation.validate();
@@ -534,23 +668,21 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 }
 @Pipe({name: 'filterPartitionFormula'})
 export class FilterPartitionFormulaPipe implements PipeTransform{
-    private feedService: FeedService;
-    constructor(private $$angularInjector: Injector){
-        this.feedService = $$angularInjector.get("FeedService");
-    }
-    transform(formulas:string[], partition?:TableFieldPartition){
-        // Find column definition
-        var columnDef = (partition && partition.sourceField) ? this.feedService.getColumnDefinitionByName(partition.sourceField) : null;
-        if (columnDef == null) {
-            return formulas;
-        }
+   constructor() {}
 
-        // Filter formulas based on column type
-        if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-            return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
-        } else {
-            return formulas;
-        }
+    transform(formulas:string[], partition?:TableFieldPartition, feed?:Feed){
+       let formulaList = formulas;
+       if(partition && partition.sourceField && feed) {
+           let columnDef :TableColumnDefinition = feed.table.getColumnDefinitionByName(partition.sourceField)
+           if(columnDef != null && columnDef != undefined){
+
+            if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
+               formulaList = _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
+            }
+
+           }
+       }
+       return formulaList;
     }
 }
 
@@ -569,17 +701,15 @@ class TableFormControls {
     public static TABLE_COLUMN_DEF_NAME_PREFIX:string = "name";
     public static TABLE_COLUMN_DEF_DATA_TYPE_PREFIX:string = "dataType";
     public static TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX:string = "precisionScale";
-    public static TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX:string = "primaryKey";
-    public static TABLE_COLUMN_DEF_CREATED_PREFIX:string = "created";
-    public static TABLE_COLUMN_DEF_UPDATED_PREFIX:string = "updated";
+    public static TABLE_COLUMN_DEF_INDEX_PREFIX:string = "index";
+    public static TABLE_COLUMN_DEF_PROFILE_PREFIX:string = "profile";
 
 
     public static TABLE_COLUMN_DEF_PREFIXES :string[] = [TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX,
         TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX,
         TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX,
-        TableFormControls.TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX,
-        TableFormControls.TABLE_COLUMN_DEF_CREATED_PREFIX,
-        TableFormControls.TABLE_COLUMN_DEF_UPDATED_PREFIX];
+        TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX,
+        TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX];
 
     public static precisionScale(control: AbstractControl): ValidationErrors {
         let pattern = new RegExp("[0-9]+(,[0-9]+)");
@@ -613,9 +743,10 @@ class TableFormControls {
         controls[TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX+"_"+field._id] = new FormControl({value:field.derivedDataType,disabled:field.deleted },[Validators.required]);
         controls[TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX+"_" + field._id] = new FormControl({value:field.precisionScale,disabled:this.tablePermissions.dataTypeLocked || field.deleted},[TableFormControls.precisionScale]);
 
-        controls[TableFormControls.TABLE_COLUMN_DEF_PRIMARY_KEY_PREFIX+"_" + field._id] = new FormControl({value:field.primaryKey,disabled:field.isComplex() || field.deleted},[]);
-        controls[TableFormControls.TABLE_COLUMN_DEF_CREATED_PREFIX+"_" + field._id] = new FormControl({value:field.createdTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
-        controls[TableFormControls.TABLE_COLUMN_DEF_UPDATED_PREFIX+"_" + field._id] = new FormControl({value:field.updatedTracker,disabled:!(field.derivedDataType =='date' || field.derivedDataType =='timestamp') || field.deleted},[]);
+        let index = field.fieldPolicy ? field.fieldPolicy.index : false;
+        let profile = field.fieldPolicy ? field.fieldPolicy.profile: false;
+        controls[TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX+"_" + field._id] = new FormControl({value:index,disabled:field.isComplex() || field.deleted},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX+"_" + field._id] = new FormControl({value:profile,disabled:field.isComplex() || field.deleted},[]);
         return controls;
     }
 

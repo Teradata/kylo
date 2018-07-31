@@ -1,4 +1,4 @@
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnInit, ViewChild} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 import {Category} from "../../../../model/category/category.model";
@@ -24,6 +24,9 @@ import {NiFiClusterStatus} from "../../../../model/nifi-cluster-status";
 import {NiFiTimerUnit} from "../../../../model/nifi-timer-unit";
 import {NiFiExecutionNodeConfiguration} from "../../../../model/nifi-execution-node-configuration";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {FeedScheduleComponent} from "../../feed-schedule/feed-schedule.component";
+import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
+import {ISubscription} from "rxjs/Subscription";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -34,13 +37,14 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     @Input() stateParams: any;
 
-    /**
-     * Form control for categories autocomplete
-     * @type {FormControl}
-     */
-    public categoryCtrl = new FormControl();
+    formGroup:FormGroup;
 
-    public feedNameCtrl = new FormControl();
+    @ViewChild("feedSchedule")
+    feedSchedule: FeedScheduleComponent;
+
+    @ViewChild("propertyList")
+    propertyList: PropertyListComponent;
+
 
     /**
      * Aysnc autocomplete list of categories
@@ -54,155 +58,75 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     private feedService: FeedService;
 
-    /**
-     * All possible schedule strategies
-     * @type {*[]}
-     */
-    allScheduleStrategies: any = [
-        {label: 'Cron', value: "CRON_DRIVEN"},
-        {label: 'Timer', value: "TIMER_DRIVEN"},
-        {label: 'Trigger/Event', value: "TRIGGER_DRIVEN"},
-        {label: "On primary node", value: "PRIMARY_NODE_ONLY"}
-    ];
-
-    /**
-     * Array of strategies filtered for this feed
-     * @type {any[]}
-     */
-    scheduleStrategies: any[] = [];
-
-    /**
-     * Indicates that NiFi is clustered.
-     * @type {boolean}
-     */
-    isClustered: boolean = false;
-
-    /**
-     * Indicates that NiFi supports the execution node property.
-     * @type {boolean}
-     */
-    supportsExecutionNode: boolean = false;
-
-    /**
-     * The Timer amount with default
-     * @type {number}
-     */
-    timerAmount: number = 5;
-
-    /**
-     * the timer units with default
-     * @type {string}
-     */
-    timerUnits: string = "min";
-
-    /**
-     * Last known schedulingPeriod (cron)
-     * @type {string}
-     */
-    lastKnownCron: string;
-
-    /**
-     * Last known timer amount. To be used along with {@link lastKnownTimerUnits}
-     * @type {number}
-     */
-    lastKnownTimerAmount: number;
-
-    /**
-     * Last known timer units. To be used along with {@link lastKnownTimerAmount}
-     * @type {string}
-     */
-    lastKnownTimerUnits: string;
-
-    /**
-     * NiFi Timer Units
-     * @type {NiFiTimerUnit[]}
-     */
-    private nifiTimerUnits: NiFiTimerUnit[] = [
-        {value: 'days', description: 'Days'},
-        {value: 'hrs', description: 'Hours'},
-        {value: 'min', description: 'Minutes'},
-        {value: 'sec', description: 'Seconds'}
-    ];
-
-    /**
-     * NiFi Execution Node Configuration
-     * @type {NiFiExecutionNodeConfiguration[]}
-     */
-    private nifiExecutionNodeConfigurations: NiFiExecutionNodeConfiguration[] = [
-        {value: 'ALL', description: 'All nodes'},
-        {value: 'PRIMARY', description: 'Primary node'},
-    ];
-
-    /**
-     * Form control for timer amount
-     */
-    public timerAmountFormControl: FormControl;
+    private cancelFeedEditSubscription :ISubscription;
 
 
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
-                private $$angularInjector: Injector,
-                private nifiService: NiFiService,
-                private dialogService: TdDialogService) {
+                private $$angularInjector: Injector) {
         super(defineFeedService, stateService);
         this.categoriesService = $$angularInjector.get("CategoriesService");
         this.feedService = $$angularInjector.get("FeedService");
-        this.filteredCategories = this.categoryCtrl.valueChanges.flatMap(text => {
-            return <Observable<Category[]>> Observable.fromPromise(this.categoriesService.querySearch(text));
-        });
+        this.formGroup = new FormGroup({});
+        this.subscribeToFormChanges(this.formGroup);
 
-        //watch for changes on the feed name to generate the system name
-        this.feedNameCtrl.valueChanges.debounceTime(200).subscribe(text => this.generateSystemName());
+        this.cancelFeedEditSubscription = this.defineFeedService.cancelFeedEdit$.subscribe(this.cancelFeedEdit.bind(this))
     }
+
+
+
+    init() {
+        super.init();
+        this.registerFormControls();
+    }
+    destroy(){
+        this.cancelFeedEditSubscription.unsubscribe();
+    }
+
+    /**
+     * Function for the Autocomplete to display the name of the category object matched
+     * @param {Category} category
+     * @return {string | undefined}
+     */
+    categoryAutocompleteDisplay(category?: Category): string | undefined {
+        return category ? category.name : undefined;
+    }
+
 
     getStepName() {
         return "General Info";
     }
 
-    init() {
-        super.init();
-        this.updateScheduleStrategies();
-        this.detectNiFiClusterStatus();
-
-        if (this.feed.schedule.schedulingStrategy == "TIMER_DRIVEN" || this.feed.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
-            this.parseTimer();
-        } else {
-            this.parseCron();
-        }
-
-        this.timerAmountFormControl = new FormControl('', [
-            Validators.required,
-            this.timerAmountValidator(this.feed.registeredTemplate.isStream),
-            Validators.min(0)
-        ]);
-    }
-
     /**
-     * Get info on NiFi clustering
+     * register form controls for the feed
      */
-    detectNiFiClusterStatus() {
-        this.nifiService.getNiFiClusterStatus().subscribe((nifiClusterStatus: NiFiClusterStatus) => {
-            if (nifiClusterStatus.clustered != null) {
-                this.isClustered = nifiClusterStatus.clustered;
-            } else {
-                this.isClustered = false;
-            }
-
-            if (nifiClusterStatus.version != null) {
-                this.supportsExecutionNode = ((this.isClustered) && (!nifiClusterStatus.version.match(/^0\.|^1\.0/)));
-            } else {
-                this.supportsExecutionNode = false;
-            }
+    private registerFormControls(){
+        let feedNameCtrl = new FormControl(this.feed.feedName,[Validators.required])
+        feedNameCtrl.valueChanges.debounceTime(200).subscribe(value => {
+            this.generateSystemName();
         });
+        this.formGroup.registerControl("feedName",feedNameCtrl);
+
+        //TODO add in pattern validator, and unique systemFeedName validator
+        this.formGroup.registerControl("systemFeedName", new FormControl(this.feed.systemFeedName,[Validators.required]))
+
+        let categoryCtrl = new FormControl(this.feed.category,[Validators.required])
+        this.formGroup.registerControl("category",categoryCtrl);
+        this.filteredCategories = categoryCtrl.valueChanges.flatMap(text => {
+            return <Observable<Category[]>> Observable.fromPromise(this.categoriesService.querySearch(text));
+        });
+
+        this.formGroup.registerControl("description", new FormControl(this.feed.description));
+        this.formGroup.registerControl("dataOwner", new FormControl(this.feed.dataOwner));
+
+
     }
 
-    categoryAutocompleteDisplay(category?: Category): string | undefined {
-        return category ? category.name : undefined;
-    }
 
-    generateSystemName() {
+
+    private generateSystemName() {
         this.feedService.getSystemName(this.feed.feedName).then((response: any) => {
-            this.feed.systemName = response.data;
+            this.formGroup.get("systemFeedName").setValue(this.feed.systemFeedName);
             //TODO add in this validation
             //  this.model.table.tableSchema.name = this.model.systemFeedName;
             //  this.validateUniqueFeedName();
@@ -210,167 +134,30 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         });
     }
 
-    getversionFeed() {
-        return this.feedService.versionFeedModel;
+
+    /**
+     * Update the feed model with the form values
+     */
+    updateFeedService(){
+       //update the model
+     let formModel =   this.formGroup.value;
+     this.feed.feedName = formModel.feedName;
+     this.feed.systemFeedName = formModel.systemFeedName;
+     this.feed.category = formModel.category;
+     this.feed.description = formModel.description;
+     this.feed.dataOwner = formModel.dataOwner;
+     this.feedSchedule.updateModel();
+     this.propertyList.updateModel();
+     //save it back to the service
+     super.updateFeedService();
     }
 
     /**
-     * The model stores the timerAmount and timerUnits together as 1 string.
-     * This will parse that string and set each variable in the component
-     * Also, note the last value of the timer amount and timer units
+     * When a feed edit is cancelled, reset the forms
+     * @param {Feed} feed
      */
-    parseTimer() {
-        this.timerAmount = parseInt(this.feed.schedule.schedulingPeriod);
-        var startIndex = this.feed.schedule.schedulingPeriod.indexOf(" ");
-        if (startIndex != -1) {
-            this.timerUnits = this.feed.schedule.schedulingPeriod.substring(startIndex + 1);
-        }
-
-        this.lastKnownTimerAmount = this.timerAmount;
-        this.lastKnownTimerUnits = this.timerUnits;
+    private cancelFeedEdit(feed:Feed){
+        this.propertyList.reset(feed.userProperties);
+        this.feedSchedule.reset(feed);
     }
-
-    /**
-     * Note the last value of cron schedule
-     */
-    parseCron() {
-        this.lastKnownCron = this.feed.schedule.schedulingPeriod;
-    }
-
-    /**
-     * Ensure timer is not rapid for batch type feeds
-     */
-    timerChanged() {
-        this.feed.schedule.schedulingPeriod = this.timerAmount + " " + this.timerUnits;
-        this.validate();
-    }
-
-    /**
-     * Show alert for a rapid timer for batch feed.
-     * @param ev
-     */
-    showBatchTimerAlert(ev?: any) {
-        this.dialogService.openAlert({
-            message: 'Warning: This is a batch-type feed, and scheduling for a very fast timer is not permitted. Please modify the timer amount to a non-zero value.',
-            disableClose: true,
-            title: 'Warning: Rapid Timer (Batch Feed)',
-            closeButton: 'Close',
-            width: '200 px',
-        });
-    }
-
-    /**
-     * Logic to set values when schedule strategy is changed
-     */
-    onScheduleStrategyChange() {
-        if (this.feed.schedule.schedulingStrategy == "CRON_DRIVEN") {
-            if (this.feed.schedule.schedulingPeriod != this.feedService.DEFAULT_CRON) {
-                this.setCronDriven();
-            }
-        } else if (this.feed.schedule.schedulingStrategy == "TIMER_DRIVEN") {
-            this.setTimerDriven();
-        } else if (this.feed.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY") {
-            this.setPrimaryNodeOnly();
-        }
-    }
-
-    /**
-     * Force the model to be set to Cron using default or last known value
-     */
-    setCronDriven() {
-        this.feed.schedule.schedulingStrategy = 'CRON_DRIVEN';
-
-        if (this.lastKnownCron != null) {
-            this.feed.schedule.schedulingPeriod = this.lastKnownCron;
-        } else {
-            this.feed.schedule.schedulingPeriod = this.feedService.DEFAULT_CRON;
-        }
-    }
-
-    /**
-     * Force the model and timer to be set to Timer with the defaults or last known value
-     */
-    setTimerDriven() {
-        this.feed.schedule.schedulingStrategy = 'TIMER_DRIVEN';
-
-        if ((this.lastKnownTimerAmount != null) && (this.lastKnownTimerUnits != null)) {
-            this.timerAmount = this.lastKnownTimerAmount;
-            this.timerUnits = this.lastKnownTimerUnits;
-            this.feed.schedule.schedulingPeriod = this.lastKnownTimerAmount + " " + this.lastKnownTimerUnits;
-        } else {
-            this.timerAmount = 5;
-            this.timerUnits = "min";
-            this.feed.schedule.schedulingPeriod = "5 min";
-        }
-    }
-
-    /**
-     * Set the scheduling strategy to 'On primary node'.
-     */
-    setPrimaryNodeOnly() {
-        this.feed.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
-        this.timerAmount = 5;
-        this.timerUnits = "min";
-        this.feed.schedule.schedulingPeriod = "5 min";
-    }
-
-    /**
-     * Different templates have different schedule strategies.
-     * Filter out those that are not needed based upon the template
-     */
-    updateScheduleStrategies() {
-        this.scheduleStrategies = _.filter(this.allScheduleStrategies, (strategy: any) => {
-            if (this.feed && this.feed.registeredTemplate && this.feed.registeredTemplate.allowPreconditions) {
-                return (strategy.value === "TRIGGER_DRIVEN");
-            } else if (strategy.value === "PRIMARY_NODE_ONLY") {
-                return (this.isClustered && !this.supportsExecutionNode);
-            } else {
-                return (strategy.value !== "TRIGGER_DRIVEN");
-            }
-        });
-    }
-
-
-    showPreconditionDialog(index: any) {
-        //TODO: To be implemented
-        console.log("Implement me to show precondition dialog. Index is ", index);
-    }
-
-    /**
-     * Validates the inputs are good
-     */
-    validate() {
-        //TODO: To be implemented
-        console.log("Implement me to validate the form");
-    }
-
-    /**
-     * Get NiFi timer units
-     * @returns {NiFiTimerUnit[]}
-     */
-    getNiFiTimerUnits(): NiFiTimerUnit[] {
-        return this.nifiTimerUnits;
-    }
-
-    /**
-     * Get NiFi execution node configuration
-     * @returns {NiFiExecutionNodeConfiguration[]}
-     */
-    getNiFiExecutionNodeConfigurations(): NiFiExecutionNodeConfiguration[] {
-        return this.nifiExecutionNodeConfigurations;
-    }
-
-    /**
-     * Custom validator for timer amount
-     * @param {boolean} isStreamingFeed
-     * @returns {ValidatorFn}
-     */
-    timerAmountValidator(isStreamingFeed: boolean): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: boolean } | null => {
-            if (isStreamingFeed === false && control.value != null && control.value == 0) {
-                return { 'batchFeedRequiresNonZeroTimerAmount': true };
-            }
-            return null;
-        }
-    };
 }

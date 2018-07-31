@@ -24,8 +24,10 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedDestination;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -41,7 +43,7 @@ import javax.jcr.RepositoryException;
 
 /**
  */
-public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements Datasource {
+public class JcrDatasource extends JcrEntity<JcrDatasource.DatasourceId> implements Datasource, AuditableMixin, SystemEntityMixin, PropertiedMixin {
 
 
     public static final String NODE_TYPE = "tba:datasource";
@@ -66,11 +68,11 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     }
 
     public List<JcrFeedSource> getSources() {
-        return JcrUtil.getJcrObjects(this.node, SOURCE_NAME, JcrFeedSource.class);
+        return JcrUtil.getJcrObjects(getNode(), SOURCE_NAME, JcrFeedSource.class);
     }
 
     public void setSources(List<FeedSource> sources) {
-        JcrPropertyUtil.setProperty(this.node, SOURCE_NAME, null);
+        JcrPropertyUtil.setProperty(getNode(), SOURCE_NAME, null);
 
         for (FeedSource src : sources) {
             Node destNode = ((JcrFeedSource) src).getNode();
@@ -79,11 +81,11 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     }
 
     public List<JcrFeedDestination> getDestinations() {
-        return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+        return JcrUtil.getJcrObjects(getNode(), DESTINATION_NAME, JcrFeedDestination.class);
     }
 
     public void setDestinations(List<FeedDestination> destinations) {
-        JcrPropertyUtil.setProperty(this.node, DESTINATION_NAME, null);
+        JcrPropertyUtil.setProperty(getNode(), DESTINATION_NAME, null);
 
         for (FeedDestination dest : destinations) {
             Node destNode = ((JcrFeedSource) dest).getNode();
@@ -93,42 +95,37 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
 
     @Override
     public String getName() {
-        return super.getProperty(TITLE, String.class);
-    }
-
-    @Override
-    public String getDescription() {
-        return super.getProperty(DESCRIPTION, String.class);
+        return getTitle();
     }
 
     @Override
     public Set<? extends FeedSource> getFeedSources() {
-        return JcrPropertyUtil.getReferencedNodeSet(this.node, SOURCE_NAME).stream()
+        return JcrPropertyUtil.getReferencedNodeSet(getNode(), SOURCE_NAME).stream()
             .map(n -> JcrUtil.createJcrObject(n, JcrFeedSource.class))
             .collect(Collectors.toSet());
     }
 
     @Override
     public Set<? extends FeedDestination> getFeedDestinations() {
-        return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
+        return JcrPropertyUtil.getReferencedNodeSet(getNode(), DESTINATION_NAME).stream()
             .map(n -> JcrUtil.createJcrObject(n, JcrFeedDestination.class))
             .collect(Collectors.toSet());
     }
 
     public void addSourceNode(Node node) {
-        JcrPropertyUtil.addToSetProperty(this.node, SOURCE_NAME, node, true);
+        JcrPropertyUtil.addToSetProperty(getNode(), SOURCE_NAME, node, true);
     }
 
     public void removeSourceNode(Node node) {
-        JcrPropertyUtil.removeFromSetProperty(this.node, SOURCE_NAME, node);
+        JcrPropertyUtil.removeFromSetProperty(getNode(), SOURCE_NAME, node);
     }
 
     public void addDestinationNode(Node node) {
-        JcrPropertyUtil.addToSetProperty(this.node, DESTINATION_NAME, node, true);
+        JcrPropertyUtil.addToSetProperty(getNode(), DESTINATION_NAME, node, true);
     }
 
     public void removeDestinationNode(Node node) {
-        JcrPropertyUtil.removeFromSetProperty(this.node, DESTINATION_NAME, node);
+        JcrPropertyUtil.removeFromSetProperty(getNode(), DESTINATION_NAME, node);
     }
 
     public static class DatasourceId extends JcrEntity.EntityId implements Datasource.ID {

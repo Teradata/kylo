@@ -391,7 +391,8 @@
 	- tba:regexFlags (STRING)
 	- tba:regexPattern (STRING)
 
-[tba:project] > tba:entity, tba:accessControlled, tba:propertied
+[tba:project] > tba:entity, mix:title, tba:accessControlled, tba:propertied
+    - tba:systemName (STRING)
     - tba:icon (STRING)
     - tba:iconColor (STRING)
     - tba:containerImage (STRING)
