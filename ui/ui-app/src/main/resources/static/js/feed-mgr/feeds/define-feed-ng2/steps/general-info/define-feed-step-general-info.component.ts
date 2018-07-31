@@ -59,9 +59,6 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     private feedService: FeedService;
 
-    private cancelFeedEditSubscription :ISubscription;
-
-
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private $$angularInjector: Injector) {
