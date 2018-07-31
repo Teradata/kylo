@@ -205,6 +205,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     }
 
+    protected feedEdit(feed:Feed){
+        this.ensureTableFields();
+    }
+
     /**
      * Helper method called from the html to see if the field control has an error
      * @param {string} prefix

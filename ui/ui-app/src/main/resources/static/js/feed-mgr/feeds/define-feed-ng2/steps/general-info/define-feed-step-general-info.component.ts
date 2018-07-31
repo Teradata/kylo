@@ -71,7 +71,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         this.formGroup = new FormGroup({});
         this.subscribeToFormChanges(this.formGroup);
 
-        this.cancelFeedEditSubscription = this.defineFeedService.cancelFeedEdit$.subscribe(this.cancelFeedEdit.bind(this))
+
     }
 
 
@@ -81,7 +81,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         this.registerFormControls();
     }
     destroy(){
-        this.cancelFeedEditSubscription.unsubscribe();
+
     }
 
     /**
@@ -157,7 +157,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    private cancelFeedEdit(feed:Feed){
+    protected cancelFeedEdit(feed:Feed){
         this.propertyList.reset(feed.userProperties);
         this.feedSchedule.reset(feed);
     }

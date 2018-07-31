@@ -24,12 +24,19 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     private beforeSaveSubscription : ISubscription;
 
     private feedStateChangeSubscription:ISubscription;
+
+    private cancelFeedEditSubscription :ISubscription;
+
+    private feedEditSubscription :ISubscription;
+
    // private feedSavedSubscription : ISubscription;
 
     constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService) {
         //subscribe to the beforeSave call so the step can update the service with the latest feed information
         this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
         this.feedStateChangeSubscription = this.defineFeedService.feedStateChange$.subscribe(this.feedStateChanged.bind(this))
+        this.cancelFeedEditSubscription = this.defineFeedService.cancelFeedEdit$.subscribe(this.cancelFeedEdit.bind(this))
+        this.feedEditSubscription = this.defineFeedService.feedEdit$.subscribe(this.feedEdit.bind(this))
       //  this.feedSavedSubscription = this.defineFeedService.savedFeed$.subscribe(this.onFeedFinishedSaving.bind(this))
     }
     ngOnInit() {
@@ -38,7 +45,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(){
-      this.destroy();
+        try {
+            this.destroy();
+        }catch(err){
+            console.error("error in destroy",err);
+        }
       if(!this.feed.readonly) {
           //update the feed service with any changes
           this.updateFeedService();
@@ -46,6 +57,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
       //unsubscribe from the beforeSave call
       this.beforeSaveSubscription.unsubscribe();
       this.feedStateChangeSubscription.unsubscribe();
+      this.cancelFeedEditSubscription.unsubscribe();
+      this.feedEditSubscription.unsubscribe();
   //    this.feedSavedSubscription.unsubscribe();
     }
 
@@ -83,6 +96,22 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     private feedStateChanged(feed:Feed){
         this.feed.readonly = feed.readonly;
+    }
+
+    /**
+     * When a feed edit is cancelled, reset the forms
+     * @param {Feed} feed
+     */
+    protected cancelFeedEdit(feed:Feed){
+
+    }
+
+    /**
+     * When a feed is in edit mode
+     * @param {Feed} feed
+     */
+    protected feedEdit(feed:Feed){
+
     }
 
 

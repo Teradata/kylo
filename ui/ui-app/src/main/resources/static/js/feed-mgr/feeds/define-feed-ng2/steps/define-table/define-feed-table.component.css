@@ -14,3 +14,8 @@
 .mat-card-header .mat-card-subtitle{
   font-size: 14px;
 }
+
+.unchecked-text {
+  padding-top: 4px;
+  padding-left: 4px;
+}

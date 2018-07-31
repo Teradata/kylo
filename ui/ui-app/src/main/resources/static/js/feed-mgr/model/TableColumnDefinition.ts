@@ -180,7 +180,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     }
 
     initFeedColumn() {
-        if (this.origName == undefined) {
+        if (this.origName == undefined || this.history.length == 0) {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;

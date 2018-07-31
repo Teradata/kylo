@@ -89,6 +89,17 @@ export class DefineFeedService {
      */
     private cancelFeedEditSubject: Subject<Feed>;
 
+    /**
+     * Allow other components to listen for changes to the currentStep
+     *
+     */
+    public feedEdit$: Observable<Feed>;
+
+    /**
+     * The datasets subject for listening
+     */
+    private feedEditSubject: Subject<Feed>;
+
 
     /**
      * Allow other components to listen for changes to the currentStep
@@ -129,6 +140,9 @@ export class DefineFeedService {
 
         this.cancelFeedEditSubject = new Subject<Feed>();
         this.cancelFeedEdit$ = this.cancelFeedEditSubject.asObservable();
+
+        this.feedEditSubject = new Subject<Feed>();
+        this.feedEdit$ = this.feedEditSubject.asObservable();
 
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
@@ -176,6 +190,12 @@ export class DefineFeedService {
         }
     }
 
+    onFeedEdit(){
+        this.feed.readonly = false;
+        this.feedEditSubject.next(this.feed);
+        this.feedStateChangeSubject.next(this.feed)
+    }
+
     /**
      * Restore the last saved feed effectively removing all edits done on the current feed
      */
@@ -183,10 +203,12 @@ export class DefineFeedService {
         if(this.lastSavedFeed) {
             this.feed.update(this.lastSavedFeed.copy());
             this.cancelFeedEditSubject.next(this.feed);
+            this.feedStateChangeSubject.next(this.feed)
             return this.getFeed();
         }
         else {
             this.cancelFeedEditSubject.next(this.feed);
+            this.feedStateChangeSubject.next(this.feed)
         }
     }
 
