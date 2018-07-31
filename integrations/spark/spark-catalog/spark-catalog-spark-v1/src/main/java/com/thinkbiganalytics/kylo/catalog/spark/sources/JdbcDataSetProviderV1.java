@@ -21,7 +21,6 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
-import com.thinkbiganalytics.kylo.catalog.spark.KyloCatalogClientV1;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 
 import org.apache.spark.Accumulable;
@@ -30,15 +29,12 @@ import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
-import org.apache.spark.sql.UserDefinedFunction;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructType;
 
 import javax.annotation.Nonnull;
 
 import scala.Function1;
-import scala.collection.Seq;
-import scala.collection.Seq$;
 
 /**
  * A data set provider that can read from and write to JDBC tables using Spark 1.
@@ -49,7 +45,7 @@ public class JdbcDataSetProviderV1 extends AbstractJdbcDataSetProvider<DataFrame
     @Override
     protected <R, P1> Accumulable<R, P1> accumulable(@Nonnull final R initialValue, @Nonnull final String name, @Nonnull final AccumulableParam<R, P1> param,
                                                      @Nonnull final KyloCatalogClient<DataFrame> client) {
-        return ((KyloCatalogClientV1) client).getSQLContext().sparkContext().accumulable(initialValue, name, param);
+        return DataSetProviderUtilV1.accumulable(initialValue, name, param, client);
     }
 
     @Nonnull
@@ -60,33 +56,32 @@ public class JdbcDataSetProviderV1 extends AbstractJdbcDataSetProvider<DataFrame
 
     @Nonnull
     @Override
-    protected DataFrameReader getDataFrameReader(@Nonnull final KyloCatalogClient client, @Nonnull final DataSetOptions options) {
-        return ((KyloCatalogClientV1) client).getSQLContext().read();
+    protected DataFrameReader getDataFrameReader(@Nonnull final KyloCatalogClient<DataFrame> client, @Nonnull final DataSetOptions options) {
+        return DataSetProviderUtilV1.getDataFrameReader(client);
     }
 
     @Nonnull
     @Override
     protected DataFrameWriter getDataFrameWriter(@Nonnull final DataFrame dataSet, @Nonnull final DataSetOptions options) {
-        return dataSet.write();
+        return DataSetProviderUtilV1.getDataFrameWriter(dataSet);
     }
 
     @Nonnull
     @Override
     protected DataFrame load(@Nonnull final DataFrameReader reader) {
-        return reader.load();
+        return DataSetProviderUtilV1.load(reader, null);
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
     protected DataFrame map(@Nonnull final DataFrame dataSet, @Nonnull final String fieldName, @Nonnull final Function1 function, @Nonnull final DataType returnType) {
-        final Seq<Column> inputs = Seq$.MODULE$.<Column>newBuilder().$plus$eq(dataSet.col(fieldName)).result();
-        final UserDefinedFunction udf = new UserDefinedFunction(function, returnType, (Seq<DataType>) Seq$.MODULE$.<DataType>empty());
-        return dataSet.withColumn(fieldName, udf.apply(inputs));
+        return DataSetProviderUtilV1.map(dataSet, fieldName, function, returnType);
     }
 
+    @Nonnull
     @Override
     protected StructType schema(@Nonnull final DataFrame dataSet) {
-        return dataSet.schema();
+        return DataSetProviderUtilV1.schema(dataSet);
     }
 }

@@ -133,6 +133,9 @@ public abstract class AbstractJdbcDataSetProvider<T> implements DataSetProvider<
         writer.jdbc(url, table, properties);
     }
 
+    /**
+     * Creates an {@link Accumulable} shared variable with a name for display in the Spark UI.
+     */
     @Nonnull
     protected abstract <R, P1> Accumulable<R, P1> accumulable(@Nonnull R initialValue, @Nonnull String name, @Nonnull AccumulableParam<R, P1> param, @Nonnull KyloCatalogClient<T> client);
 
@@ -173,6 +176,7 @@ public abstract class AbstractJdbcDataSetProvider<T> implements DataSetProvider<
     /**
      * Returns the schema of the specified data set.
      */
+    @Nonnull
     protected abstract StructType schema(@Nonnull T dataSet);
 
     /**

@@ -21,38 +21,36 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
-import com.thinkbiganalytics.kylo.catalog.spark.sources.spark.HighWaterMarkInputFormat;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.spark.Accumulable;
+import org.apache.spark.AccumulableParam;
+import org.apache.spark.scheduler.SparkListenerJobEnd;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
-import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.catalyst.expressions.ScalaUDF;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructType;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import scala.Function1;
+import scala.Unit;
 import scala.collection.Seq;
 
 public class AbstractSparkDataSetProviderTest {
-
-    /**
-     * Temporary folder for listing files
-     */
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Hadoop configuration for {@link AbstractSparkDataSetProvider#getHadoopConfiguration(KyloCatalogClient)}
@@ -60,121 +58,67 @@ public class AbstractSparkDataSetProviderTest {
     private final Configuration conf = new Configuration(false);
 
     /**
+     * Spark data frame
+     */
+    private DataFrame dataSet;
+
+    /**
      * File format indicator for {@link AbstractSparkDataSetProvider#isFileFormat(Class)}
      */
     private boolean isFileFormat = false;
 
     /**
-     * Verify resolving High Water Mark paths.
+     * Verify reading a data set.
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void resolveHighWaterMarkPaths() throws IOException {
-        final long currentTime = System.currentTimeMillis();
-
-        // Mock client
-        final KyloCatalogClient client = Mockito.mock(KyloCatalogClient.class);
-        Mockito.when(client.getHighWaterMarks()).thenReturn(Collections.singletonMap("water.mark", Long.toString(currentTime - 60000)));
-
-        // Mock files
-        final List<String> inputPaths = new ArrayList<>();
-
-        final File file1 = tempFolder.newFile("file1");
-        Assert.assertTrue(file1.setLastModified(currentTime - 60000));
-        inputPaths.add(file1.getAbsolutePath());
-
-        final File file2 = tempFolder.newFile("file2");
-        Assert.assertTrue(file2.setLastModified(currentTime - 30000));
-        inputPaths.add(file2.getAbsolutePath());
-
-        final File file3 = tempFolder.newFile("file3");
-        Assert.assertTrue(file3.setLastModified(currentTime));
-        inputPaths.add(file3.getAbsolutePath());
+    public void read() {
+        // Mock data set
+        dataSet = Mockito.mock(DataFrame.class);
 
         // Mock options
         final DataSetOptions options = new DataSetOptions();
-        options.setFormat("mock");
-        options.setOption(HighWaterMarkInputFormat.HIGH_WATER_MARK, "water.mark");
-        options.setOption(HighWaterMarkInputFormat.MAX_FILE_AGE, "300000");
-        options.setOption(HighWaterMarkInputFormat.MIN_FILE_AGE, "15000");
+        options.setFormat("text");
+        options.setOption(KyloCatalogConstants.PATH_OPTION, "/mock/path/file.txt");
 
-        // Test resolving paths
+        // Test reading
         final MockSparkDataSetProvider provider = new MockSparkDataSetProvider();
-        final List<String> paths = provider.resolveHighWaterMarkPaths(inputPaths, options, client);
-
-        Assert.assertEquals(file2.toURI().toString(), paths.get(0));
-        Assert.assertEquals(1, paths.size());
-        Mockito.verify(client).setHighWaterMarks(Collections.singletonMap("water.mark", Long.toString(file2.lastModified())));
+        final DataFrame df = provider.read(Mockito.mock(KyloCatalogClient.class), options);
+        Mockito.verifyZeroInteractions(df);
     }
 
     /**
-     * Verify resolving file format paths.
+     * Verify reading a data set and deleting the source file.
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void resolvePaths() throws IOException {
+    public void readDeleteSourceFile() {
         isFileFormat = true;
 
-        // Mock files
-        final File file1 = tempFolder.newFile("file1");
-        final File file2 = tempFolder.newFile("file2");
+        // Mock data set
+        dataSet = Mockito.mock(DataFrame.class);
+        Mockito.when(dataSet.col("value")).thenReturn(new Column("value"));
+
+        final StructType schema = DataTypes.createStructType(Collections.singletonList(DataTypes.createStructField("value", DataTypes.StringType, true)));
+        Mockito.when(dataSet.schema()).thenReturn(schema);
+
+        final DataFrame mapDataSet = Mockito.mock(DataFrame.class);
+        Mockito.when(dataSet.withColumn(Mockito.eq("value"), Mockito.any(Column.class))).thenReturn(mapDataSet);
 
         // Mock options
         final DataSetOptions options = new DataSetOptions();
-        options.setFormat("mock");
-        options.setOption("path", file1.getAbsolutePath());
-        options.setPaths(Collections.singletonList(file2.getAbsolutePath()));
+        options.setFormat("text");
+        options.setOption(KyloCatalogConstants.PATH_OPTION, "/mock/path/file.txt");
+        options.setOption("keepSourceFile", "FALSE");
 
-        // Test resolving paths
-        final KyloCatalogClient client = Mockito.mock(KyloCatalogClient.class);
+        // Test reading
         final MockSparkDataSetProvider provider = new MockSparkDataSetProvider();
-        provider.resolvePaths(options, client);
+        final DataFrame df = provider.read(Mockito.mock(KyloCatalogClient.class), options);
+        Assert.assertEquals(mapDataSet, df);
 
-        final List<String> paths = options.getPaths();
-        Assert.assertTrue("Expected path option to be empty", options.getOption("path").isEmpty());
-        Assert.assertNotNull("Expected paths to be non-null", paths);
-        Assert.assertEquals(file1.getAbsolutePath(), paths.get(0));
-        Assert.assertEquals(file2.getAbsolutePath(), paths.get(1));
-        Assert.assertEquals(2, paths.size());
-    }
-
-    /**
-     * Verify resolving {@code null} paths.
-     */
-    @Test
-    @SuppressWarnings("unchecked")
-    public void resolvePathsEmpty() {
-        isFileFormat = true;
-
-        // Mock options
-        final DataSetOptions options = new DataSetOptions();
-        options.setFormat("mock");
-
-        // Test resolving paths
-        final KyloCatalogClient client = Mockito.mock(KyloCatalogClient.class);
-        final MockSparkDataSetProvider provider = new MockSparkDataSetProvider();
-        provider.resolvePaths(options, client);
-
-        Assert.assertNull(options.getPaths());
-    }
-
-    /**
-     * Verify resolving paths for non-file-format data sources.
-     */
-    @Test
-    @SuppressWarnings("unchecked")
-    public void resolvePathsNotFileFormat() {
-        // Mock options
-        final DataSetOptions options = new DataSetOptions();
-        options.setFormat("mock");
-        options.setOption("path", tempFolder.getRoot().getAbsolutePath());
-
-        // Test resolving path for non-file-format data sources
-        final KyloCatalogClient client = Mockito.mock(KyloCatalogClient.class);
-        final MockSparkDataSetProvider provider = new MockSparkDataSetProvider();
-        provider.resolvePaths(options, client);
-
-        Assert.assertEquals(tempFolder.getRoot().getAbsolutePath(), options.getOption("path").get());
+        final ArgumentCaptor<Column> newColumn = ArgumentCaptor.forClass(Column.class);
+        Mockito.verify(dataSet).withColumn(Mockito.eq("value"), newColumn.capture());
+        Assert.assertTrue("Expected new column to be a UDF", newColumn.getValue().expr() instanceof ScalaUDF);
     }
 
     /**
@@ -184,31 +128,55 @@ public class AbstractSparkDataSetProviderTest {
 
         @Nonnull
         @Override
+        protected <R, P1> Accumulable<R, P1> accumulable(@Nonnull final R initialValue, @Nonnull final String name, @Nonnull final AccumulableParam<R, P1> param,
+                                                         @Nonnull final KyloCatalogClient<DataFrame> client) {
+            return DataSetProviderUtil.accumulable(initialValue, name, param);
+        }
+
+        @Nonnull
+        @Override
         protected DataFrameReader getDataFrameReader(@Nonnull final KyloCatalogClient<DataFrame> client, @Nonnull final DataSetOptions options) {
-            return new DataFrameReader(Mockito.mock(SQLContext.class));
+            return Mockito.mock(DataFrameReader.class);
         }
 
         @Nonnull
         @Override
         protected DataFrameWriter getDataFrameWriter(@Nonnull final DataFrame dataSet, @Nonnull final DataSetOptions options) {
-            return new DataFrameWriter(Mockito.mock(DataFrame.class));
+            return new DataFrameWriter(dataSet);
         }
 
         @Nonnull
         @Override
-        protected Configuration getHadoopConfiguration(@Nonnull final KyloCatalogClient<DataFrame> client) {
+        public Configuration getHadoopConfiguration(@Nonnull final KyloCatalogClient<DataFrame> client) {
             return conf;
         }
 
         @Override
-        protected boolean isFileFormat(@Nonnull final Class<?> formatClass) {
+        public boolean isFileFormat(@Nonnull final Class<?> formatClass) {
             return isFileFormat;
         }
 
         @Nonnull
         @Override
         protected DataFrame load(@Nonnull final DataFrameReader reader, @Nullable final Seq<String> paths) {
-            return Mockito.mock(DataFrame.class);
+            return dataSet;
+        }
+
+        @Nonnull
+        @Override
+        protected DataFrame map(@Nonnull final DataFrame dataSet, @Nonnull final String fieldName, @Nonnull final Function1 function, @Nonnull final DataType returnType) {
+            return DataSetProviderUtil.map(dataSet, fieldName, function, returnType);
+        }
+
+        @Override
+        protected void onJobEnd(@Nonnull final Function1<SparkListenerJobEnd, Unit> function, @Nonnull final KyloCatalogClient<DataFrame> client) {
+            // ignored
+        }
+
+        @Nonnull
+        @Override
+        protected StructType schema(@Nonnull final DataFrame dataSet) {
+            return DataSetProviderUtil.schema(dataSet);
         }
     }
 }

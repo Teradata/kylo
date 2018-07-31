@@ -21,8 +21,6 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
-import com.thinkbiganalytics.kylo.catalog.spark.KyloCatalogClientV2;
-import com.thinkbiganalytics.kylo.catalog.spark.SparkSqlUtilV2;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 
 import org.apache.spark.Accumulable;
@@ -32,16 +30,12 @@ import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructType;
 
 import javax.annotation.Nonnull;
 
 import scala.Function1;
-import scala.Option$;
-import scala.collection.Seq;
-import scala.collection.Seq$;
 
 /**
  * A data set provider that can read from and write to JDBC tables using Spark 2.
@@ -52,7 +46,7 @@ public class JdbcDataSetProviderV2 extends AbstractJdbcDataSetProvider<Dataset<R
     @Override
     protected <R, P1> Accumulable<R, P1> accumulable(@Nonnull final R initialValue, @Nonnull final String name, @Nonnull final AccumulableParam<R, P1> param,
                                                      @Nonnull final KyloCatalogClient<Dataset<Row>> client) {
-        return ((KyloCatalogClientV2) client).getSparkSession().sparkContext().accumulable(initialValue, name, param);
+        return DataSetProviderUtilV2.accumulable(initialValue, name, param, client);
     }
 
     @Nonnull
@@ -64,31 +58,30 @@ public class JdbcDataSetProviderV2 extends AbstractJdbcDataSetProvider<Dataset<R
     @Nonnull
     @Override
     protected DataFrameReader getDataFrameReader(@Nonnull final KyloCatalogClient<Dataset<Row>> client, @Nonnull final DataSetOptions options) {
-        return ((KyloCatalogClientV2) client).getSparkSession().read();
+        return DataSetProviderUtilV2.getDataFrameReader(client);
     }
 
     @Nonnull
     @Override
     protected DataFrameWriter getDataFrameWriter(@Nonnull final Dataset<Row> dataSet, @Nonnull final DataSetOptions options) {
-        return SparkSqlUtilV2.prepareDataFrameWriter(dataSet.write(), options);
+        return DataSetProviderUtilV2.getDataFrameWriter(dataSet, options);
     }
 
     @Nonnull
     @Override
     protected Dataset<Row> load(@Nonnull final DataFrameReader reader) {
-        return reader.load();
+        return DataSetProviderUtilV2.load(reader, null);
     }
 
     @Nonnull
     @Override
-    protected Dataset<Row> map(@Nonnull Dataset<Row> dataSet, @Nonnull String fieldName, @Nonnull Function1 function, @Nonnull DataType returnType) {
-        final Seq<Column> inputs = Seq$.MODULE$.<Column>newBuilder().$plus$eq(dataSet.col(fieldName)).result();
-        final UserDefinedFunction udf = new UserDefinedFunction(function, returnType, Option$.MODULE$.<Seq<DataType>>empty());
-        return dataSet.withColumn(fieldName, udf.apply(inputs));
+    protected Dataset<Row> map(@Nonnull final Dataset<Row> dataSet, @Nonnull final String fieldName, @Nonnull final Function1 function, @Nonnull final DataType returnType) {
+        return DataSetProviderUtilV2.map(dataSet, fieldName, function, returnType);
     }
 
+    @Nonnull
     @Override
     protected StructType schema(@Nonnull final Dataset<Row> dataSet) {
-        return dataSet.schema();
+        return DataSetProviderUtilV2.schema(dataSet);
     }
 }
