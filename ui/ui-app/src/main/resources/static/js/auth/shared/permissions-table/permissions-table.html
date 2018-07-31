@@ -19,7 +19,7 @@
   -->
 <mat-list>
     <mat-list-item *ngFor="let action of available" style="height: auto;min-height: 72px;">
-        <mat-checkbox class="permissions-indent-{{action.$$level}} permissionCheckbox"  [checked]="action.$$allowed" (change)="toggle(action)" [disabled]="readOnly"></mat-checkbox>
+        <mat-checkbox class="mat-checkbox mat-accent permissions-indent-{{action.$$level}} permissionCheckbox" [checked]="action.$$allowed" (change)="toggle(action)" [disabled]="readOnly"></mat-checkbox>
         <div class="mat-list-item-text" layout="column">
             <h3 style="margin: 0px;">{{action.title}}</h3>
             <p style="margin: 0px;">{{action.description}}</p>

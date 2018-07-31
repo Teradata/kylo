@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import AccessControlService from "../../../services/AccessControlService";
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 
 @Component({
     templateUrl: "js/auth/shared/permissions-table/permissions-table.html",
@@ -29,6 +29,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
 
 
     @Input() model: any;
+    @Output() modelChange = new EventEmitter();
     @Input() readOnly: any;
 
     ngOnInit(): void {
@@ -160,6 +161,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
             var model: any = [];
             this.addAllowed(this.roots, model);
             this.model = this.lastModel = model;
+            this.modelChange.emit(this.model);
         }
     };
 }
