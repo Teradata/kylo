@@ -28,6 +28,7 @@ import {FeedScheduleComponent} from "../../feed-schedule/feed-schedule.component
 import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
 import {ISubscription} from "rxjs/Subscription";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -61,6 +62,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
+                private _translateService: TranslateService,
                 private $$angularInjector: Injector) {
         super(defineFeedService, stateService);
         this.categoriesService = $$angularInjector.get("CategoriesService");

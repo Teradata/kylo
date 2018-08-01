@@ -28,6 +28,7 @@ import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {ArrayUtils} from "../../../model/utils";
 import {TableForm, TableCreateMethod} from "../../../model/feed/feed-table";
+import {ObjectUtils} from "../../../../common/utils/object-utils";
 
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
@@ -760,6 +761,15 @@ export class DefineFeedTableController {
     Create columns for tracking changes between original source and the target table schema
      */
     private syncFeedsColumns() {
+        let convertFieldsToObjects = false;
+        if(this.model.table.tableSchema.fields.length >0){
+          convertFieldsToObjects = !ObjectUtils.isType(this.model.table.tableSchema.fields[0],TableColumnDefinition.OBJECT_TYPE);
+        }
+        if(convertFieldsToObjects){
+          let convertedFields:TableColumnDefinition[] = this.model.table.tableSchema.fields.map(columnDef => ObjectUtils.getAs(columnDef,TableColumnDefinition));
+            this.model.table.tableSchema.fields = convertedFields;
+        }
+
         _.each(this.model.table.tableSchema.fields, (columnDef: TableColumnDefinition) => {
             columnDef.initFeedColumn()
         });

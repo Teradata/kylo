@@ -54,6 +54,7 @@ import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-po
 import {PropertyListModule} from "../../shared/property-list/property-list.module";
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
+import {TranslateModule} from "@ngx-translate/core";
 
 
 @NgModule({
@@ -120,6 +121,7 @@ import {MatDialogModule} from "@angular/material/dialog";
         MatSnackBarModule,
         MatDialogModule,
         PropertyListModule,
+        TranslateModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

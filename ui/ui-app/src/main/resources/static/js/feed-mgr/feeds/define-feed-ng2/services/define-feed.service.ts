@@ -28,6 +28,7 @@ import {FeedService} from "../../../services/FeedService";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {FeedConstants} from "../../../services/FeedConstants";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
+import {TranslateService} from "@ngx-translate/core";
 
 
 
@@ -124,7 +125,7 @@ export class DefineFeedService {
      */
     private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
-    constructor(private http:HttpClient,private $$angularInjector: Injector){
+    constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector){
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
 
@@ -378,11 +379,13 @@ export class DefineFeedService {
 
 
     generalInfoStep(steps:Step[]):Step{
-        return new StepBuilder().setNumber(1).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
+        let name = this._translateService.instant("views.define-feed-stepper.GeneralInfo")
+        return new StepBuilder().setNumber(1).setName(name).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
     }
 
     feedDetailsStep(steps:Step[], stepNumber:number):Step {
-        return new StepBuilder().setNumber(stepNumber).setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
+        let name = this._translateService.instant("views.define-feed-stepper.FeedDetails")
+        return new StepBuilder().setNumber(stepNumber).setName(name).setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
     }
 
     private newDefineTableFeedSteps() :Step[] {
