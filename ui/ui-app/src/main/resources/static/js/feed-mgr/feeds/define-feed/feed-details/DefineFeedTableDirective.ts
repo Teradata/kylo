@@ -766,7 +766,7 @@ export class DefineFeedTableController {
           convertFieldsToObjects = !ObjectUtils.isType(this.model.table.tableSchema.fields[0],TableColumnDefinition.OBJECT_TYPE);
         }
         if(convertFieldsToObjects){
-          let convertedFields:TableColumnDefinition[] = this.model.table.tableSchema.fields.map(columnDef => ObjectUtils.getAs(columnDef,TableColumnDefinition));
+          let convertedFields:TableColumnDefinition[] = this.model.table.tableSchema.fields.map((columnDef:any) => ObjectUtils.getAs(columnDef,TableColumnDefinition));
             this.model.table.tableSchema.fields = convertedFields;
         }
 
