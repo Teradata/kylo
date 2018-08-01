@@ -727,6 +727,40 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
         }
     }
+    
+    public static <E> List<E> getPropertyValuesList(Node node, String propName) {
+        try {
+            Property prop;
+            try {
+                prop = node.getProperty(propName);
+            } catch (PathNotFoundException e) {
+                prop = node.setProperty(propName, new Value[0]);
+            }
+            return new MultiValuePropertyList<>(prop);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + propName, e);
+        }
+    }
+    
+    public static <E> Set<E> getPropertyValuesSet(Node node, String propName) {
+        try {
+            Property prop;
+            try {
+                prop = node.getProperty(propName);
+            } catch (PathNotFoundException e) {
+                prop = node.setProperty(propName, new Value[0]);
+            }
+            return new MultiValuePropertySet<>(prop);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + propName, e);
+        }
+    }
 
     public static boolean removeAllFromSetProperty(Node node, String name) {
         try {
