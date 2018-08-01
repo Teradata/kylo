@@ -20,6 +20,8 @@ package com.thinkbiganalytics.kylo.spark.file.metadata;
  * #L%
  */
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class FileMetadataScalaScriptGenerator {
         sb.append("var kyloClient = kyloClientBuilder.build()\n");
         sb.append("var kyloClientReader = kyloClient.read.format(\"com.thinkbiganalytics.spark.file.metadata\")\n");
         for (String path : paths) {
-            sb.append("listBuffer += kyloClientReader.load(\"" + path + "\")\n");
+            sb.append("listBuffer += kyloClientReader.load(\"").append(StringEscapeUtils.escapeJava(path)).append("\")\n");
         }
 
         sb.append("val dataFrameList = listBuffer.toList\n");

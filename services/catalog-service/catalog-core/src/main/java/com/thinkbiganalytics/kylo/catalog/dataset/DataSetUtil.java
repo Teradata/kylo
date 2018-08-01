@@ -22,8 +22,10 @@ package com.thinkbiganalytics.kylo.catalog.dataset;
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +62,38 @@ public class DataSetUtil {
         }
 
         return conf;
+    }
+
+    /**
+     * Gets the paths for the specified data set.
+     */
+    @Nonnull
+    public static Optional<List<String>> getPaths(@Nonnull final DataSet dataSet) {
+        final DataSetTemplate connectorTemplate = Optional.of(dataSet).map(DataSet::getDataSource).map(DataSource::getConnector).map(Connector::getTemplate).orElse(null);
+        final DataSetTemplate dataSetTemplate = Optional.of(dataSet).map(DataSet::getDataSource).map(DataSource::getTemplate).orElse(null);
+        List<String> paths = new ArrayList<>();
+
+        // Add "path" option
+        if (dataSet.getOptions() != null && dataSet.getOptions().get("path") != null) {
+            paths.add(dataSet.getOptions().get("path"));
+        } else if (dataSetTemplate != null && dataSetTemplate.getOptions() != null && dataSetTemplate.getOptions().get("path") != null) {
+            paths.add(dataSetTemplate.getOptions().get("path"));
+        } else if (connectorTemplate != null && connectorTemplate.getOptions() != null && connectorTemplate.getOptions().get("path") != null) {
+            paths.add(connectorTemplate.getOptions().get("path"));
+        }
+
+        // Add paths list
+        if (dataSet.getPaths() != null) {
+            paths.addAll(dataSet.getPaths());
+        } else if (dataSetTemplate != null && dataSetTemplate.getPaths() != null) {
+            paths.addAll(dataSetTemplate.getPaths());
+        } else if (connectorTemplate != null && connectorTemplate.getPaths() != null) {
+            paths.addAll(connectorTemplate.getPaths());
+        } else if (paths.isEmpty()) {
+            paths = null;
+        }
+
+        return Optional.ofNullable(paths);
     }
 
     /**
