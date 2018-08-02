@@ -114,6 +114,8 @@ public final class RegisteredTemplate extends EntityAccessControl {
      */
     private Long timeBetweenStartingBatchJobs = 1000L;
 
+    private boolean updateAvailable = false;
+
     public RegisteredTemplate() {
 
     }
@@ -627,5 +629,13 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     public void setTimeBetweenStartingBatchJobs(Long timeBetweenStartingBatchJobs) {
         this.timeBetweenStartingBatchJobs = timeBetweenStartingBatchJobs;
+    }
+
+    public boolean isUpdateAvailable() {
+        return updateAvailable;
+    }
+
+    public void setUpdateAvailable(boolean updateAvailable) {
+        this.updateAvailable = updateAvailable;
     }
 }

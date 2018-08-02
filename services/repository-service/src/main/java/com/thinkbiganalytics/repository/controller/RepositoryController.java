@@ -21,8 +21,9 @@ package com.thinkbiganalytics.repository.controller;
  */
 
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
-import com.thinkbiganalytics.repository.api.RepositoryItem;
+import com.thinkbiganalytics.repository.api.TemplateMetadata;
 import com.thinkbiganalytics.repository.api.RepositoryService;
+import com.thinkbiganalytics.repository.api.TemplateMetadataWrapper;
 import com.thinkbiganalytics.repository.api.TemplateRepository;
 import com.thinkbiganalytics.repository.api.TemplateSearchFilter;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -78,7 +79,7 @@ public class RepositoryController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Lists all templates available in all repositories.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
-    public List<RepositoryItem> listTemplates() throws Exception {
+    public List<TemplateMetadataWrapper> listTemplates() throws Exception {
         return repositoryService.listTemplates();
     }
 
@@ -119,12 +120,12 @@ public class RepositoryController {
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response publishTemplate(@Valid PublishTemplateRequest req) throws Exception {
 
-        RepositoryItem repositoryItem = repositoryService
+        TemplateMetadataWrapper templateMetadata = repositoryService
             .publishTemplate(req.getRepositoryName(),
                              req.getRepositoryType(),
                              req.getTemplateId(),
                              req.isOverwrite());
-        return Response.ok(repositoryItem).build();
+        return Response.ok(templateMetadata).build();
     }
 
     @GET

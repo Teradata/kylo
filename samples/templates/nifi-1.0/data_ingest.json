@@ -1,6 +1,9 @@
 {
-  "templateName": "Data Ingest",
-  "description": "Standard Data Ingest",
-  "fileName": "data_ingest.zip",
-  "stream": false
+  "templateName" : "Data Ingest",
+  "description" : "Standard Data Ingest",
+  "fileName" : "data_ingest.zip",
+  "checksum" : "6a841872d809769e9b265f0951f6fb18",
+  "stream" : false,
+  "updateAvailable" : false,
+  "lastModified" : 1533200489000
 }

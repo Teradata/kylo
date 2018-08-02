@@ -23,24 +23,23 @@ package com.thinkbiganalytics.repository.api;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RepositoryItem {
+public class TemplateMetadata {
 
     private String templateName;
     private String description;
     private String fileName;
+    private String checksum;
     private boolean stream;
-    private boolean installed;
-    private TemplateRepository repository;
+    private boolean updateAvailable;
+    private long lastModified;
 
-    public RepositoryItem() {
-    }
+    public TemplateMetadata() {}
 
-    public boolean isInstalled() {
-        return installed;
-    }
-
-    public void setInstalled(boolean installed) {
-        this.installed = installed;
+    public TemplateMetadata(String templateName, String description, String fileName, boolean stream) {
+        this.templateName = templateName;
+        this.description = description;
+        this.fileName = fileName;
+        this.stream = stream;
     }
 
     public String getTemplateName() {
@@ -71,33 +70,42 @@ public class RepositoryItem {
         return stream;
     }
 
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
     @Override
     public String toString() {
-        return "RepositoryItem{" +
+        return "TemplateMetadata{" +
                "templateName='" + templateName + '\'' +
                ", description='" + description + '\'' +
                ", fileName='" + fileName + '\'' +
                ", stream=" + stream +
-               ", installed=" + installed +
+               ", checksum=" + checksum +
                "]}";
-    }
-
-    public RepositoryItem(String templateName, String description, String fileName, boolean stream) {
-        this.templateName = templateName;
-        this.description = description;
-        this.fileName = fileName;
-        this.stream = stream;
     }
 
     public void setStream(boolean stream) {
         this.stream = stream;
     }
 
-    public TemplateRepository getRepository() {
-        return repository;
+    public long getLastModified() {
+        return lastModified;
     }
 
-    public void setRepository(TemplateRepository repository) {
-        this.repository = repository;
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public boolean isUpdateAvailable() {
+        return updateAvailable;
+    }
+
+    public void setUpdateAvailable(boolean updateAvailable) {
+        this.updateAvailable = updateAvailable;
     }
 }

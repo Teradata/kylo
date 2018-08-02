@@ -1,6 +1,9 @@
 {
-  "templateName": "Data Transformation",
-  "description": "Teradata Data Ingest",
-  "fileName": "data_transformation.template.zip",
-  "stream": false
+  "templateName" : "Data Transformation",
+  "description" : "Teradata Data Ingest",
+  "fileName" : "data_transformation.template.zip",
+  "checksum" : "8efd02aad7279e8e6889ffb0c6ff3345",
+  "stream" : false,
+  "updateAvailable" : false,
+  "lastModified" : 0
 }

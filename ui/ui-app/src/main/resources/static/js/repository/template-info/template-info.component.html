@@ -18,11 +18,12 @@
   #L%
   -->
 
-<div>
-  <mat-card class="centered">
-    <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
+<div fxLayout="row" class="centered">
+  <mat-card fxFlex="65%">
     <!--<mat-spinner *ngIf="loading" aria-label="Loading template"></mat-spinner>-->
-    <mat-card-content *ngIf="!loading">
+    <mat-card-content>
+      <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
+      <div *ngIf="!loading">
       <div class="card-title" flex>{{template.templateName}}
         <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" icon="{{template.icon.title}}" size="20" style="fill:green"></ng-md-icon>
 
@@ -57,6 +58,7 @@
           <div class="hint">Feeds</div>
           <div>  {{template.feedsCount}}</div>
         </div>
+      </div>
       </div>
     </mat-card-content>
   </mat-card>

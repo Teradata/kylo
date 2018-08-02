@@ -24,12 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
-import com.thinkbiganalytics.repository.RepositoryConfig;
-import com.thinkbiganalytics.repository.api.RepositoryItem;
+import com.thinkbiganalytics.repository.api.TemplateMetadata;
+import com.thinkbiganalytics.repository.api.TemplateMetadataWrapper;
 import com.thinkbiganalytics.repository.api.TemplateRepository;
 
 import org.apache.commons.io.FilenameUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +43,6 @@ import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -53,7 +51,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -64,7 +61,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -109,12 +105,12 @@ public class FilesystemRepositoryServiceTest {
         FilesystemRepositoryService spy = PowerMockito.spy(filesystemRepositoryService);
 
         doReturn(repository).when(spy, "getRepositoryByNameAndType", anyString(), anyString());
-        doReturn(new ArrayList<RepositoryItem>()).when(spy, "getAllTemplatesInRepository", repository);
+        doReturn(new ArrayList<TemplateMetadata>()).when(spy, "getAllTemplatesInRepository", repository);
         PowerMockito.when(FilenameUtils.getBaseName(anyString())).thenReturn("testName");
         PowerMockito.when(Paths.get(anyString())).thenReturn(mock(Path.class));
         Mockito.doNothing().when(mapper).writeValue(any(File.class), any());
 
-        RepositoryItem newTemplate = spy.publishTemplate("test", "test", "test",false);
+        TemplateMetadataWrapper newTemplate = spy.publishTemplate("test", "test", "test", false);
 
         assertNotNull(newTemplate);
         assertTrue(newTemplate.getTemplateName().equals("testTemplate"));
@@ -123,8 +119,8 @@ public class FilesystemRepositoryServiceTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testPublishTemplate_ExistingTemplate_OverwriteFalse() throws Exception {
         ExportTemplate template = new ExportTemplate("testFile", "testTemplate", "testDesc", false, new byte[0]);
-        RepositoryItem existingTemplate = new RepositoryItem("testTemplate", "testDesc", "xyz.zip", false);
-        List<RepositoryItem> templates = new ArrayList<>();
+        TemplateMetadata existingTemplate = new TemplateMetadata("testTemplate", "testDesc", "xyz.zip", false);
+        List<TemplateMetadata> templates = new ArrayList<>();
         templates.add(existingTemplate);
         when(templateExporter.exportTemplate(anyString())).thenReturn(template);
         FilesystemRepositoryService spy = PowerMockito.spy(filesystemRepositoryService);
