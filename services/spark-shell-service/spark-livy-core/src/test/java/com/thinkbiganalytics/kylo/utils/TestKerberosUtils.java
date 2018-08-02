@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kylo.utils;
  */
 
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +39,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,6 +58,10 @@ public class TestKerberosUtils {
     @Resource
     private KerberosSparkProperties kerberosSparkProperties;
 
+    @Resource
+    private ProcessRunner processRunner;
+
+
     @Before
     public void beforeMethod() {
         // only run tests if this system contains kinit in the expected location
@@ -70,12 +76,19 @@ public class TestKerberosUtils {
         assertThat(foundScript).isEqualTo(DEFAULT_KINIT_PATH);
         logger.info("'/usr/bin/kinit' found by getKinitPath");
 
-        foundScript = kerberosUtils.getKinitPath(null);
-        assertThat(foundScript).isEqualTo(DEFAULT_KINIT_PATH);
-        logger.info("kinit was found using which");
+        // on systems that support the which command we make sure it is the chosen result from getKinitPath when no property 'kerberos.spark.kinitPath' is set
+        if( processRunner.runScript("which", Arrays.asList("kinit") ) ) {
+            String pathFromWhich = StringUtils.chomp(processRunner.getOutputFromLastCommand());
+            File actualResultOfWhich = new File(pathFromWhich);
+            logger.debug("actualResultOfWhich='{}'", actualResultOfWhich);
 
-        // our config file will have the kerberos.spark.kinitPath property missing, ensure /usr/bin/kinit comes back from scanning system path
-        assertThat(kerberosSparkProperties.getKinitPath()).isEqualTo(DEFAULT_KINIT_PATH);
+            foundScript = kerberosUtils.getKinitPath(null);
+            assertThat(foundScript).isEqualTo(actualResultOfWhich);
+            logger.info("kinit was found using which");
+
+            // our config file will have the kerberos.spark.kinitPath property missing, ensure /usr/bin/kinit comes back from scanning system path
+            assertThat(kerberosSparkProperties.getKinitPath()).isEqualTo(actualResultOfWhich);
+        }
     }
 
 
@@ -86,11 +99,6 @@ public class TestKerberosUtils {
         @ConfigurationProperties("kerberos.spark")
         public KerberosSparkProperties kerberosSparkProperties() {
             KerberosSparkProperties ksp = new KerberosSparkProperties();
-             /*if( ksp.isKerberosEnabled() ) {
-                 // if configuration doesn't specify a path for kinit, let's try to set a default.
-                 Path actualKinitPath = kerberosUtils().getKinitPath(ksp.getKinitPath().toPath());
-                 ksp.setKinitPath(actualKinitPath.toFile());
-             }*/
             return ksp;
         }
 
