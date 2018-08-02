@@ -83,7 +83,7 @@ public class FileMetadataScalaScriptGenerator {
                   + ",when(col(\"properties\")(\"rowTag\").isNotNull,col(\"properties\")(\"rowTag\")).otherwise(lit(\"\")).as(\"rowTag\")"
                   + ",col(\"properties\").as(\"properties\")"
                   + ",col(\"resource\"))\n");
-        sb.append("val df = fileMetadataDf\n");
+        sb.append("var df = fileMetadataDf\n");
         sb.append("df\n");
 
         return sb.toString();

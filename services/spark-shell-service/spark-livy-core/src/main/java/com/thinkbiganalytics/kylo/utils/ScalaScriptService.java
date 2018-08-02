@@ -87,7 +87,7 @@ public class ScalaScriptService {
         String transformId = ScalaScriptService.newTableName();
         transformCache.put(request,transformId);
         script = dfPattern.matcher(script).replaceAll(/*"var df" + counter + " = df.cache(); "df" + counter*/
-                "df = df.cache(); df.count(); df.registerTempTable( \"" + transformId + "\" )\n");
+                "df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
 
         sb.append(wrapScriptWithPaging(script, request.getPageSpec()));
 
