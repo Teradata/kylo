@@ -1,5 +1,3 @@
-import * as angular from "angular";
-
 import {Common} from "../../common/CommonTypes";
 
 declare namespace Templates {

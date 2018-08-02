@@ -4,7 +4,7 @@ import AccessControlService from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import { Transition, StateService } from '@uirouter/core';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-import { Component, ViewContainerRef, Inject } from '@angular/core';
+import { Component, ViewContainerRef, Inject, OnInit } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {IconPickerDialog} from '../../common/icon-picker-dialog/icon-picker-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
@@ -17,7 +17,7 @@ const PASSWORD_PLACEHOLDER = "******";
     templateUrl: "js/feed-mgr/datasources/details.html",
     styles: [' .block { display : block; margin: 18px;}']
 })
-export class DatasourcesDetailsComponent {
+export class DatasourcesDetailsComponent implements OnInit{
 
     /**
     * Indicates that changing permissions is allowed.
@@ -124,7 +124,7 @@ export class DatasourcesDetailsComponent {
     /**
      * Shows the icon picker dialog.
      */
-    showIconPicker = () => {
+    showIconPicker () {
         this._dialogService.open(IconPickerDialog,{
             viewContainerRef : this._viewContainerRef,
             disableClose : true,
@@ -145,14 +145,14 @@ export class DatasourcesDetailsComponent {
      *
      * @returns {boolean} {@code true} if the data source is new, or {@code false} otherwise
      */
-    isNew = () => {
+    isNew () {
         return (!angular.isString(this.model.id) || this.model.id.length === 0);
     };
 
     /**
      * Cancels the current edit operation. If a new data source is being created then redirects to the data sources page.
      */
-    onCancel = () => {
+    onCancel () {
         if (!angular.isString(this.model.id)) {
             this.stateService.go("datasources");
         }
@@ -198,7 +198,7 @@ export class DatasourcesDetailsComponent {
     /**
      * Creates a copy of the data source model for editing.
      */
-    onEdit = () => {
+    onEdit () {
         this.editModel = angular.copy(this.model);
 
         if (this.isNew()) {
@@ -209,14 +209,14 @@ export class DatasourcesDetailsComponent {
         }
     };
 
-    onPasswordChange = () => {
+    onPasswordChange () {
         this.editModel.hasPasswordChanged = true;
     };
 
     /**
      * Saves the Access Controls for the current data source.
      */
-    onAccessControlSave = () => {
+    onAccessControlSave () {
         // Prepare model
         var model = angular.copy(this.model);
         model.roleMemberships = this.editModel.roleMemberships;
@@ -236,7 +236,7 @@ export class DatasourcesDetailsComponent {
     /**
      * Saves the Details for the current data source.
      */
-    onDetailsSave = () => {
+    onDetailsSave () {
         // Prepare model
         var model = _.pick(this.editModel, (value: any, key: any) => {
             return (key !== "owner" && key !== "roleMemberships");
@@ -266,7 +266,7 @@ export class DatasourcesDetailsComponent {
      *
      * @param {JdbcDatasource} model the datasource to be saved
      */
-    saveModel = (model: any) => {
+    saveModel (model: any) {
         return this.datasourcesService.save(model)
             .then((savedModel: any) => {
                 savedModel.owner = this.model.owner;
@@ -298,7 +298,7 @@ export class DatasourcesDetailsComponent {
     /**
      * Validates the edit form.
      */
-    validate = () => {
+    validate () {
         if (angular.isDefined(this.editModel.name) && !this.gettingDataSources && this.editModel.name != '') {
             let isNew = angular.isUndefined(this.model) || angular.isUndefined(this.model.id);
             let unique = true;
@@ -311,11 +311,11 @@ export class DatasourcesDetailsComponent {
         }
     };
 
-    isDataSourceNameEmpty = () => {
+    isDataSourceNameEmpty () {
         return !angular.isString(this.editModel.name) || this.editModel.name.length === 0;
     }
 
-    isDataSourceNameDuplicate = () => {
+    isDataSourceNameDuplicate () {
         if (!this.gettingDataSources && _.isEmpty(this.existingDatasourceNames)){
             this.gettingDataSources = true;
             this.datasourcesService.findAll()
@@ -331,9 +331,9 @@ export class DatasourcesDetailsComponent {
         }
     }
 
-    testConnection = () => {
+    testConnection () {
 
-        var model = _.pick(this.editModel, function (value:any, key:any) {
+        var model = _.pick(this.editModel, (value:any, key:any) => {
             return (key !== "owner" && key !== "roleMemberships");
         });
 

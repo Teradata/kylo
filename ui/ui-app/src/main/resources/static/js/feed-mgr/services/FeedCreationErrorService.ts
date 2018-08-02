@@ -18,7 +18,6 @@
  * #L%
  */
 
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Injectable, Inject, Component } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
@@ -40,25 +39,23 @@ export class FeedCreationErrorService {
                 private dialog: MatDialog) {}
   
 
-        parseNifiFeedForErrors =(nifiFeed:any, errorMap:any) => {
+        parseNifiFeedForErrors (nifiFeed:any, errorMap:any) {
             var count = 0;
 
             if (nifiFeed != null) {
 
                 if (nifiFeed.errorMessages != null && nifiFeed.errorMessages.length > 0) {
-                    angular.forEach(nifiFeed.errorMessages, function (msg:any) {
+                    nifiFeed.errorMessages.array.forEach((msg : any) => {
                         errorMap['FATAL'].push({category: 'General', message: msg});
                         count++;
-                    })
+                    });
                 }
 
                 if (nifiFeed.feedProcessGroup != null) {
-                    angular.forEach(nifiFeed.feedProcessGroup.errors, function (processor:any) {
+                    nifiFeed.feedProcessGroup.errors.forEach((processor:any) => {
                         if (processor.validationErrors) {
-                            angular.forEach(processor.validationErrors, function (error:any) {
-                                var copy:any = {};
-                                angular.extend(copy, error);
-                                angular.extend(copy, processor);
+                            processor.validationErrors.forEach((error:any) => {
+                                let copy:any = {...error,...processor};
                                 copy.validationErrors = null;
                                 errorMap[error.severity].push(copy);
                                 count++;
@@ -77,7 +74,7 @@ export class FeedCreationErrorService {
 
         }
 
-        buildErrorMapAndSummaryMessage=() =>{
+        buildErrorMapAndSummaryMessage () {
             var count = 0;
             var errorMap:any = {"FATAL": [], "WARN": []};
             if (this.feedError.nifiFeed != null && this.feedError.response.status < 500) {
@@ -119,33 +116,22 @@ export class FeedCreationErrorService {
 
         }
 
-        newErrorData=() =>{
-            return {
-                isValid: false,
-                hasErrors: false,
-                feedName: '',
-                nifiFeed: {},
-                message: '',
-                feedErrorsData: {},
-                feedErrorsCount: Number,
-            };
-        }
 
         feedError: FeedErrorModel = new FeedErrorModel();
-        buildErrorData = (feedName:any, response:any)=> {
+        buildErrorData (feedName:any, response:any) {
             this.feedError.feedName = feedName;
             this.feedError.nifiFeed = response.data;
             this.feedError.response = response;
             this.buildErrorMapAndSummaryMessage();
             this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
         }
-        parseNifiFeedErrors= (nifiFeed:any, errorMap:any) =>{
+        parseNifiFeedErrors (nifiFeed:any, errorMap:any) {
             return this.parseNifiFeedForErrors(nifiFeed, errorMap);
         }
-        reset= () =>{
-            angular.extend(this.feedError, this.newErrorData());
+        reset () {
+            this.feedError = new FeedErrorModel();
         }
-        hasErrors= ()=> {
+        hasErrors () {
             return this.feedError.hasErrors;
         }
         showErrorDialog= () =>{
@@ -187,15 +173,15 @@ export class FeedErrorDialogController {
     constructor(private dialogRef: MatDialogRef<FeedErrorDialogController>,
                 private feedCreationErrorService: FeedCreationErrorService) {}
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 
-    cancel = () => {
+    cancel () {
         this.dialogRef.close();
     };
 
-    fixErrors = function () {
+    fixErrors () {
         this.dialogRef.close('fixErrors');
     }
 }

@@ -17,10 +17,6 @@
  * limitations under the License.
  * #L%
  */
-
- 
-import * as angular from 'angular';
-import * as _ from "underscore";
 import {RestUrlConstants} from "./RestUrlConstants"
 import {Injectable} from "@angular/core";
  @Injectable()

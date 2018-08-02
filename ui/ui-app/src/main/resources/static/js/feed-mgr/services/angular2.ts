@@ -25,13 +25,3 @@ export class AngularServiceUpgrader {
 }
 
 export const entityAccessControlDialogServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlDialogService);
-
-export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
-
-export const feedPropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DefaultFeedPropertyService,"FeedPropertyService");
-
-export const registerTemplatePropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(RegisterTemplatePropertyService);
-
-export const feedInputProcessorPropertiesTemplateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedInputProcessorPropertiesTemplateService);
-
-export const feedDetailsProcessorRenderingHelperProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedDetailsProcessorRenderingHelper);

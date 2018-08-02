@@ -13,7 +13,6 @@
  * @property {string} databaseUser database user name
  * @property {string} password password to use when connecting to this data source
  */
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -62,7 +61,7 @@ import {  RestUrlService } from './RestUrlService';
              * data sources supporting icons
              * @returns {string} default icon name
              */
-            defaultIconName= () =>{
+            defaultIconName () {
                 return this.ICON;
             }
 
@@ -71,7 +70,7 @@ import {  RestUrlService } from './RestUrlService';
              * data sources supporting icons
              * @returns {string} default icon color
              */
-            defaultIconColor= () => {
+            defaultIconColor () {
                 return this.ICON_COLOR;
             }
 
@@ -80,7 +79,7 @@ import {  RestUrlService } from './RestUrlService';
              * @param {string} id the data source id
              * @returns {Promise} for when the data source is deleted
              */
-            deleteById= (id:any) => {
+            deleteById (id:any) {
                 return this.http.delete(this.restUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)).toPromise();
             }
 
@@ -91,8 +90,8 @@ import {  RestUrlService } from './RestUrlService';
              * @param {Array.<JdbcDatasource>} array the data sources to filter
              * @return {Array.<JdbcDatasource>} the array of matching data sources
              */
-            filterArrayByIds= (ids:any, array:any) => {
-                var idList = angular.isArray(ids) ? ids : [ids];
+            filterArrayByIds (ids:any, array:any) {
+                var idList = Array.isArray(ids) ? ids : [ids];
                 return array.filter((datasource:any) => {
                     return (idList.indexOf(datasource.id) > -1);
                 });
@@ -102,7 +101,7 @@ import {  RestUrlService } from './RestUrlService';
              * Finds all user data sources.
              * @returns {Promise} with the list of data sources
              */
-            findAll= () => {
+            findAll () {
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}}).toPromise()
                     .then((response:any) => {
                         _.each(response, this.ensureDefaultIcon);
@@ -115,21 +114,21 @@ import {  RestUrlService } from './RestUrlService';
              * @param {string} id the data source id
              * @returns {Promise} with the data source
              */
-            findById= (id:any) => {
+            findById (id:any) {
                 if (this.HIVE_DATASOURCE.id === id) {
                     return Promise.resolve(this.HIVE_DATASOURCE);
                 }
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id).toPromise()
                     .then((response:any) => {
-                        this.ensureDefaultIcon(response.data);
-                        return response.data;
+                        this.ensureDefaultIcon(response);
+                        return response;
                     });
             }
 
-            findControllerServiceReferences= (controllerServiceId:any) => {
+            findControllerServiceReferences (controllerServiceId:any) {
                 return this.http.get(this.restUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId)).toPromise()
                     .then((response:any) => {
-                        return response.data;
+                        return response;
                     });
             }
 
@@ -139,15 +138,15 @@ import {  RestUrlService } from './RestUrlService';
              * @param {string} table the table name
              * @param {string} [opt_schema] the schema name
              */
-            getTableSchema= (id:any, table:any, opt_schema:any) => {
+            getTableSchema (id:any, table:any, opt_schema:any) {
                 var options:any = {params: {}};
-                if (angular.isString(opt_schema)) {
+                if (typeof opt_schema === 'string') {
                     options.params.schema = opt_schema;
                 }
 
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options).toPromise()
                     .then((response:any) => {
-                        return response.data;
+                        return response;
                     });
             }
 
@@ -156,18 +155,18 @@ import {  RestUrlService } from './RestUrlService';
              * @param {string} id the data source id
              * @param {string} [opt_query] the table name query
              */
-            listTables= (id:any, opt_query:any) => {
+            listTables (id:any, opt_query:any) {
                 var options:any = {params: {}};
-                if (angular.isString(opt_query) && opt_query.length > 0) {
+                if (typeof opt_query === 'string' && opt_query.length > 0) {
                     options.params.tableName = "%" + opt_query + "%";
                 }
 
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options).toPromise()
                     .then((response:any) => {
                         // Get the list of tables
-                        var tables = [];
-                        if (angular.isArray(response.data)) {
-                            tables = response.data.map((table:any) => {
+                        let tables : any[] = [];
+                        if (Array.isArray(response)) {
+                            tables = response.map((table:any) => {
                                 var schema = table.substr(0, table.indexOf("."));
                                 var tableName = table.substr(table.indexOf(".") + 1);
                                 return {schema: schema, tableName: tableName, fullName: table, fullNameLower: table.toLowerCase()};
@@ -175,7 +174,7 @@ import {  RestUrlService } from './RestUrlService';
                         }
 
                         // Search for tables matching the query
-                        if (angular.isString(opt_query) && opt_query.length > 0) {
+                        if (typeof opt_query === 'string' && opt_query.length > 0) {
                             var lowercaseQuery = opt_query.toLowerCase();
                             return tables.filter((table:any) => {
                                 return table.fullNameLower.indexOf(lowercaseQuery) !== -1;
@@ -188,7 +187,7 @@ import {  RestUrlService } from './RestUrlService';
                        });
             }
 
-            query= (datasourceId:any, sql:any) => {
+            query (datasourceId:any, sql:any) {
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql).toPromise()
                     .then((response:any) => {
                         return response;
@@ -197,7 +196,7 @@ import {  RestUrlService } from './RestUrlService';
                     });
             }
 
-            preview= (datasourceId:any, schema:string, table:string, limit:number) => {
+            preview (datasourceId:any, schema:string, table:string, limit:number) {
                 return this.http.post(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit),"").toPromise()
                     .then((response:any) => {
                         return response;
@@ -206,16 +205,16 @@ import {  RestUrlService } from './RestUrlService';
                     });
             }
 
-           getPreviewSql= (datasourceId:any, schema:string, table:string, limit:number) => {
+           getPreviewSql (datasourceId:any, schema:string, table:string, limit:number) {
                 return this.http.get(this.restUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit)).toPromise()
                     .then((response:any) => {
-                        return response.data;
+                        return response;
                     }).catch((e:any) => {
                         throw e;
                     });
             }
 
-            getTablesAndColumns= (datasourceId:any, schema:any) => {
+            getTablesAndColumns (datasourceId:any, schema:any) {
                 var params = {schema: schema};
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
             }
@@ -224,7 +223,7 @@ import {  RestUrlService } from './RestUrlService';
              * Creates a new JDBC data source.
              * @returns {JdbcDatasource} the JDBC data source
              */
-            newJdbcDatasource= () => {
+            newJdbcDatasource () {
                 let d:any = {
                     "@type": this.JDBC_TYPE,
                     name: "",
@@ -242,7 +241,7 @@ import {  RestUrlService } from './RestUrlService';
                 return d;
             }
 
-            saveRoles= (datasource:any) => {
+            saveRoles (datasource:any) {
 
                return this.entityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
 
@@ -253,14 +252,14 @@ import {  RestUrlService } from './RestUrlService';
              * @param {JdbcDatasource} datasource the data source to be saved
              * @returns {Promise} with the updated data source
              */
-            save= (datasource:any) => {
+            save (datasource:any) {
                 return this.http.post(this.restUrlService.GET_DATASOURCES_URL, datasource).toPromise()
                     .then((response:any) => {
-                        return response.data;
+                        return response;
                     });
             }
 
-           testConnection= (datasource: any) => {
+           testConnection (datasource: any) {
                 return this.http.post(this.restUrlService.GET_DATASOURCES_URL + "/test", datasource,{headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})}).toPromise();
             }
 }

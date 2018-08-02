@@ -145,23 +145,23 @@ export default class GroupDetailsComponent {
     /**
     //  * Creates a copy of the user model for editing.
      */
-    onEdit = () => {
+    onEdit () {
         this.editModel = angular.copy(this.model);
     };
 
-    onCancelEditPermissions = () => {
+    onCancelEditPermissions () {
         this.editActions = [];
     }
     /**
         * Creates a copy of the permissions for editing.
         */
-    onEditPermissions = () => {
+    onEditPermissions () {
         this.editActions = angular.copy(this.actions);
     };
     /**
      * Loads the user details.
      */
-    onLoad = () => {
+    onLoad () {
         this.groupId = this.stateService.params.groupId;
         // Load allowed permissions
         this.accessControlService.getUserAllowedActions()
@@ -200,7 +200,7 @@ export default class GroupDetailsComponent {
     /**
          * Saves the current group.
          */
-    onSave = () => {
+    onSave () {
         var model = angular.copy(this.editModel);
         this.UserService.saveGroup(model)
             .then(() => {
@@ -211,7 +211,7 @@ export default class GroupDetailsComponent {
     /**
     * Saves the current permissions.
     */
-    onSavePermissions = () => {
+    onSavePermissions () {
         var actions = angular.copy(this.editActions);
         this.accessControlService.setAllowedActions(null, null, this.model.systemName, actions)
             .then((actionSet: any) => {
@@ -223,7 +223,7 @@ export default class GroupDetailsComponent {
      *
      * @param user the user
      */
-    onUserClick = (user: any) => {
+    onUserClick (user: any) {
         var safeUserId: any = angular.isString(user.systemName) ? encodeURIComponent(user.systemName) : null;
         this.stateService.go("user-details", { userId: safeUserId });
     };

@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from './RestUrlService';
@@ -86,7 +85,7 @@ import { Subject } from 'rxjs/Subject';
          */
         update= (savedCategory:any) => {
             var self = this;
-            if(angular.isDefined(savedCategory.id)) {
+            if(typeof savedCategory.id !== 'undefined') {
                 var category:any = _.find(self.categories, (category: any)=>{
                     return category.id == savedCategory.id;
                 });
@@ -103,7 +102,7 @@ import { Subject } from 'rxjs/Subject';
                     savedCategory.createFeed = true;
                 }
 
-                if(angular.isDefined(category)) {
+                if(typeof category !== 'undefined') {
                     var idx = _.indexOf(self.categories, category);
                     self.categories[idx] = savedCategory;
                 }
@@ -131,7 +130,7 @@ import { Subject } from 'rxjs/Subject';
             var promise = this.$injector.get("$http")({
                 url: this.RestUrlService.CATEGORIES_URL,
                 method: "POST",
-                data: angular.toJson(category),
+                data: JSON.stringify(category),
                 headers: {
                     'Content-Type': 'application/json; charset=UTF-8'
                 }
@@ -287,7 +286,7 @@ import { Subject } from 'rxjs/Subject';
         loadingRequest:any = null;
         loading = false;
         createFilterFor(query:any) {
-            var lowercaseQuery = angular.lowercase(query);
+            var lowercaseQuery = typeof query === 'string' ? query.toLowerCase() : query;
             return function filterFn(tag:any) {
                 return (tag._lowername.indexOf(lowercaseQuery) === 0);
             };

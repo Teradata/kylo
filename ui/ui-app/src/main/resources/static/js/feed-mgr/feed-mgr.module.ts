@@ -3,12 +3,11 @@ import {NgModule} from "@angular/core";
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
+import { CovalentDialogsModule } from '@covalent/core/dialogs';
 import {MatListModule} from '@angular/material/list';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {
-    feedDetailsProcessorRenderingHelperProvider,
-    feedInputProcessorPropertiesTemplateServiceProvider,
     entityAccessControlDialogServiceProvider
 } from "./services/angular2";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
@@ -31,6 +30,16 @@ import {TranslateModule} from "@ngx-translate/core";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { DomainTypesService } from "./services/DomainTypesService";
 import { DatasourcesService } from "./services/DatasourcesService";
+import { HiveService } from "./services/HiveService";
+import { CodeMirrorService } from "./services/CodeMirrorService";
+import { DBCPTableSchemaService } from "./services/DBCPTableSchemaService";
+import { EditFeedNifiPropertiesService } from "./services/EditFeedNifiPropertiesService";
+import { FeedDetailsProcessorRenderingHelper } from "./services/FeedDetailsProcessorRenderingHelper";
+import { FeedInputProcessorPropertiesTemplateService } from "./services/FeedInputProcessorPropertiesTemplateService";
+import { FeedTagService } from "./services/FeedTagService";
+import { SlaService } from "./services/SlaService";
+import { RegisterTemplatePropertyService } from "./services/RegisterTemplatePropertyService";
+import { FattableService } from "./services/fattable/FattableService";
 
 @NgModule({
     declarations: [
@@ -51,6 +60,7 @@ import { DatasourcesService } from "./services/DatasourcesService";
         MatFormFieldModule,
         MatToolbarModule,
         MatProgressSpinnerModule,
+        CovalentDialogsModule,
         MatDialogModule,
         MatListModule,
         MatButtonModule,
@@ -58,22 +68,30 @@ import { DatasourcesService } from "./services/DatasourcesService";
     ],
     providers: [
         CategoriesService,
+        CodeMirrorService,
+        DatasourcesService,
+        DBCPTableSchemaService,
+        DefaultFeedPropertyService,
+        DomainTypesService,
+        EditFeedNifiPropertiesService,
         EntityAccessControlService,
         entityAccessControlDialogServiceProvider,
-        FeedService,
-        VisualQueryService,
-        UiComponentsService,
-        DefaultFeedPropertyService,
-        feedInputProcessorPropertiesTemplateServiceProvider,
-        feedDetailsProcessorRenderingHelperProvider,
-        PolicyInputFormService,
-        RestUrlService,
+        FattableService,
+        FeedCreationErrorService,
+        FeedDetailsProcessorRenderingHelper,
+        FeedInputProcessorPropertiesTemplateService,
         FeedSecurityGroups,
+        FeedService,
+        FeedTagService,
+        HiveService,
         DefaultImportService,
         RegisterTemplateServiceFactory,
-        FeedCreationErrorService,
-        DomainTypesService,
-        DatasourcesService
+        RegisterTemplatePropertyService,
+        RestUrlService,
+        SlaService,
+        UiComponentsService,
+        VisualQueryService,
+        PolicyInputFormService,
     ],
     exports:[
         CronExpressionPreview

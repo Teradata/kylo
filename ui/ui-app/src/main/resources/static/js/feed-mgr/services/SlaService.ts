@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlConstants } from './RestUrlConstants';
@@ -7,12 +6,12 @@ import { RestUrlConstants } from './RestUrlConstants';
 export class SlaService {
     constructor (@Inject("$injector") private $injector: any) {}
 
-    getPossibleSlaMetricOptions= () => {
+    getPossibleSlaMetricOptions () {
 
-        var successFn = function (response:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL);
@@ -21,11 +20,11 @@ export class SlaService {
 
     }
 
-    validateSlaActionClass= (actionClass:any) => {
-        var successFn = function (response:any) {
+    validateSlaActionClass (actionClass:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": actionClass}});
@@ -33,13 +32,13 @@ export class SlaService {
         return promise;
 
     }
-    validateSlaActionRule= (rule:any) => {
+    validateSlaActionRule (rule:any) {
         rule.validConfiguration = true;
         rule.validationMessage = '';
-        var successFn = function (response:any) {
+        var successFn = (response:any) => {
             if (response.data && response.data.length) {
                 var validationMessage = "";
-                _.each(response.data, function (validation:any) {
+                _.each(response.data, (validation:any) => {
                     if (!validation.valid) {
                         if (validationMessage != "") {
                             validationMessage += ", ";
@@ -55,40 +54,37 @@ export class SlaService {
             ;
 
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": rule.objectClassType}});
         promise.then(successFn, errorFn);
         return promise;
-
     }
 
-    getPossibleSlaActionOptions= () => {
-
-        var successFn = function (response:any) {
+    getPossibleSlaActionOptions () {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL);
         promise.then(successFn, errorFn);
         return promise;
-
     }
 
-    saveFeedSla= (feedId:any, serviceLevelAgreement:any)=>  {
-        var successFn = function (response:any) {
+    saveFeedSla (feedId:any, serviceLevelAgreement:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http")({
             url: RestUrlConstants.SAVE_FEED_SLA_URL(feedId),
             method: "POST",
-            data: angular.toJson(serviceLevelAgreement),
+            data: JSON.stringify(serviceLevelAgreement),
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }
@@ -96,17 +92,17 @@ export class SlaService {
         return promise;
 
     }
-    saveSla= (serviceLevelAgreement:any) => {
-        var successFn = function (response:any) {
+    saveSla (serviceLevelAgreement:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http")({
             url: RestUrlConstants.SAVE_SLA_URL,
             method: "POST",
-            data: angular.toJson(serviceLevelAgreement),
+            data: JSON.stringify(serviceLevelAgreement),
             headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }
@@ -114,11 +110,11 @@ export class SlaService {
         return promise;
 
     }
-    deleteSla= (slaId:any) => {
-        var successFn = function (response:any) {
+    deleteSla (slaId:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http")({
@@ -131,11 +127,11 @@ export class SlaService {
         return promise;
 
     }
-    getSlaById= (slaId:any) =>  {
-        var successFn = function (response:any) {
+    getSlaById (slaId:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_SLA_BY_ID_URL(slaId));
@@ -143,11 +139,11 @@ export class SlaService {
         return promise;
 
     }
-    getSlaForEditForm= (slaId:any) => {
-        var successFn = function (response:any) {
+    getSlaForEditForm (slaId:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_SLA_AS_EDIT_FORM(slaId));
@@ -155,11 +151,11 @@ export class SlaService {
         return promise;
 
     }
-    getFeedSlas= (feedId:any) => {
-        var successFn = function (response:any) {
+    getFeedSlas (feedId:any) {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_FEED_SLA_URL(feedId));
@@ -167,11 +163,11 @@ export class SlaService {
         return promise;
 
     }
-    getAllSlas= () => {
-        var successFn = function (response:any) {
+    getAllSlas () {
+        var successFn = (response:any) => {
             return response.data;
         }
-        var errorFn = function (err:any) {
+        var errorFn = (err:any) => {
             console.log('ERROR ', err)
         }
         var promise = this.$injector.get("$http").get(RestUrlConstants.GET_SLAS_URL);
@@ -179,5 +175,4 @@ export class SlaService {
         return promise;
 
     }
-    
 }

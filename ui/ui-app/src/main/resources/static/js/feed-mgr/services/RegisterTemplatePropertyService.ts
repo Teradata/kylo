@@ -17,13 +17,10 @@
  * limitations under the License.
  * #L%
  */
-
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Dictionary } from "underscore";
 import 'pascalprecht.translate';
 import { Templates } from "./TemplateTypes";
-import { FeedPropertyService } from "./FeedPropertyService";
 import { Common } from "../../common/CommonTypes";
 import { AccessControl } from "../../services/AccessControl";
 import { RegisteredTemplateService } from "./RegisterTemplateService";
@@ -44,7 +41,11 @@ import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderi
 import {Observable} from "rxjs/Observable";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
+import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class RegisterTemplatePropertyService {
 
    CONFIGURATION_PROPERTIES_URL :string =  "/proxy/v1/feedmgr/nifi/configuration/properties";
@@ -55,14 +56,9 @@ export class RegisterTemplatePropertyService {
 
     GET_REGISTERED_TEMPLATES_URL :string = "/proxy/v1/feedmgr/templates/registered"
 
-
-    static $inject = ["$http",
-         "FeedInputProcessorPropertiesTemplateService", "FeedDetailsProcessorRenderingHelper",
-         "FeedPropertyService"]
-
-    constructor(private $http: angular.IHttpService,private feedInputProcessorPropertiesTemplateService :FeedInputProcessorPropertiesTemplateService,
+    constructor(private http: HttpClient,private feedInputProcessorPropertiesTemplateService :FeedInputProcessorPropertiesTemplateService,
                 private feedDetailsProcessorRenderingHelper:FeedDetailsProcessorRenderingHelper,
-                private feedPropertyService: FeedPropertyService) {
+                private feedPropertyService: DefaultFeedPropertyService) {
         this.init();
 
     }
@@ -168,7 +164,7 @@ export class RegisterTemplatePropertyService {
         //set the initial processor flag for the heading to print
         var lastProcessorId: string = null;
         _.each(arr, (property, i) => {
-            if ((angular.isUndefined(property.hidden) || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
+            if ((typeof property.hidden === 'undefined' || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
                 property.firstProperty = true;
                 propertiesAndProcessors.processors.push(property.processor);
                 property.processor.topIndex = i;
@@ -187,16 +183,16 @@ export class RegisterTemplatePropertyService {
 
     /**
      *
-     * @param {(response: angular.IHttpResponse<any>) => any} successFn
+     * @param {(response: any) => any} successFn
      * @param {(err: any) => any} errorFn
      */
-    fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<Common.Map<string>>> | undefined {
+    fetchConfigurationProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any) {
 
 
         if (Object.keys(this.configurationProperties).length == 0) {
-            let _successFn = (response: angular.IHttpResponse<Common.Map<string>>) => {
+            let _successFn = (response: any) => {
                 this.configurationProperties = response.data;
-                angular.forEach(response.data, (value: any, key: any) => {
+                response.forEach((value: any, key: any) => {
                     this.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
                     this.configurationPropertyMap[key] = value;
                 })
@@ -210,7 +206,7 @@ export class RegisterTemplatePropertyService {
                 }
             }
 
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.CONFIGURATION_PROPERTIES_URL);
+            var promise = this.http.get(this.CONFIGURATION_PROPERTIES_URL).toPromise();
             promise.then(_successFn, _errorFn);
             return promise;
         }
@@ -224,12 +220,12 @@ export class RegisterTemplatePropertyService {
      * @param {(err: any) => any} errorFn
      * @return {angular.IPromise<any> | undefined}
      */
-    fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<any>> | undefined {
+    fetchMetadataProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any) {
 
         if (this.metadataProperties.length == 0) {
-            let _successFn = (response: angular.IHttpResponse<any>) => {
-                this.metadataProperties = response.data;
-                angular.forEach(response.data, (annotatedProperty: MetadataProperty, i: any) => {
+            let _successFn = (response: any) => {
+                this.metadataProperties = response;
+                response.forEach((annotatedProperty: MetadataProperty, i: any) => {
                     this.propertyList.push({
                         key: annotatedProperty.name,
                         value: '',
@@ -248,7 +244,7 @@ export class RegisterTemplatePropertyService {
                 }
             }
 
-            var promise = this.$http.get(this.METADATA_PROPERTY_NAMES_URL);
+            var promise = this.http.get(this.METADATA_PROPERTY_NAMES_URL).toPromise();
             promise.then(_successFn, _errorFn);
             return promise;
         }
@@ -269,7 +265,7 @@ export class RegisterTemplatePropertyService {
         if (expression != null && expression != '') {
             var variables = expression.match(/\$\{(.*?)\}/gi);
             if (variables && variables.length) {
-                angular.forEach(variables, (variable: any) => {
+                variables.forEach((variable: any) => {
                     var varNameMatches = variable.match(/\$\{(.*)\}/);
                     var varName = null;
                     if (varNameMatches.length > 1) {
@@ -296,16 +292,16 @@ export class RegisterTemplatePropertyService {
     getCodeMirrorTypes(): void {
 
         if (this.codemirrorTypes == null) {
-            let successFn = (response: angular.IHttpResponse<any>) => {
-                this.codemirrorTypes = response.data;
-                angular.forEach(this.codemirrorTypes, (label: string, type: string) => {
-                    this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
+            let successFn = (response: any) => {
+                this.codemirrorTypes = response;
+                Object.keys(this.codemirrorTypes).forEach( (label: string) => {
+                    this.propertyRenderTypes.push({ type: this.codemirrorTypes[label], label: label, codemirror: true });
                 });
             }
             var errorFn = (err: angular.IHttpResponse<any>) => {
 
             }
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.CODE_MIRROR_TYPES_URL);
+            var promise = this.http.get(this.CODE_MIRROR_TYPES_URL).toPromise();
             promise.then(successFn, errorFn);
           //  return promise;
         }

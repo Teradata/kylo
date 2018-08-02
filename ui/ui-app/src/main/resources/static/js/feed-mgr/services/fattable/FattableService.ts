@@ -8,8 +8,8 @@
  * JS:
  *   FattableService.setupTable({
  *      tableContainerId:"table-id",
- *      headers: self.headers,
- *      rows: self.rows
+ *      headers: this.headers,
+ *      rows: this.rows
  *  });
  *
  *  Default implementation expects each header to have "displayName" property and each row to have a property matching display name, e.g.
@@ -19,8 +19,8 @@
  *  Default behaviour can be overridden by implementing headerText, cellText, fillCell, getCellSync, fillHeader, getHeaderSync methods on options passed to setupTable method, e.g.
  *   FattableService.setupTable({
  *      tableContainerId:"table-id",
- *      headers: self.headers,
- *      rows: self.rows,
+ *      headers: this.headers,
+ *      rows: this.rows,
  *      headerText: function(header) {...},
  *      cellText: function(row, column) {...}
  *      ...
@@ -29,64 +29,70 @@
  */
 
 
-import * as angular from 'angular';
 import * as _ from "underscore";
-import {VisualQueryPainterService} from '../../visual-query/transform-data/visual-query-table/visual-query-painter.service';
+import { VisualQueryPainterService } from '../../visual-query/transform-data/visual-query-table/visual-query-painter.service';
+import { Injectable } from "@angular/core";
 
-import {moduleName} from "../../module-name";
 
-function FattableService($window: any) {
-    const self = this;
-
-    const ATTR_DATA_COLUMN_ID = "data-column-id";
-
-    const optionDefaults: any = {
-        tableContainerId: "",
-        headers: [],
-        rows: [],
-        minColumnWidth: 50,
-        maxColumnWidth: 300,
-        rowHeight: 27,
-        headerHeight: 40,
-        headerPadding: 5,
-        padding: 50,
-        firstColumnPaddingLeft: 24,
-        headerFontFamily: "Roboto, \"Helvetica Neue\", sans-serif",
-        headerFontSize: "13px",
-        headerFontWeight: "500",
-        rowFontFamily: "sans-serif",
-        rowFontSize: "13px",
-        rowFontWeight: "normal",
-        setupRefreshDebounce: 300,
-        headerText: function (header: any) {
-            return header.displayName;
-        },
-        cellText: function (row: any, column: any) {
-            return row[column.displayName];
-        },
-        fillCell: function (cellDiv: any, data: any) {
-            cellDiv.innerHTML = _.escape(data.value);
-        },
-        getCellSync: function (i: any, j: any) {
-            const displayName = this.headers[j].displayName;
-            const row = this.rows[i];
-            if (row === undefined) {
-                //occurs when filtering table
-                return undefined;
-            }
-            return {
-                "value": row[displayName]
-            }
-        },
-        fillHeader: function (headerDiv: any, header: any) {
-            headerDiv.innerHTML = _.escape(header.value);
-        },
-        getHeaderSync: function (j: any) {
-            return this.headers[j].displayName;
+const ATTR_DATA_COLUMN_ID = "data-column-id";
+const optionDefaults: any = {
+    tableContainerId: "",
+    headers: [],
+    rows: [],
+    minColumnWidth: 50,
+    maxColumnWidth: 300,
+    rowHeight: 27,
+    headerHeight: 40,
+    headerPadding: 5,
+    padding: 50,
+    firstColumnPaddingLeft: 24,
+    headerFontFamily: "Roboto, \"Helvetica Neue\", sans-serif",
+    headerFontSize: "13px",
+    headerFontWeight: "500",
+    rowFontFamily: "sans-serif",
+    rowFontSize: "13px",
+    rowFontWeight: "normal",
+    setupRefreshDebounce: 300,
+    headerText (header: any) {
+        return header.displayName;
+    },
+    cellText (row: any, column: any) {
+        return row[column.displayName];
+    },
+    fillCell (cellDiv: any, data: any) {
+        cellDiv.innerHTML = _.escape(data.value);
+    },
+    getCellSync (i: any, j: any) {
+        const displayName = this.headers[j].displayName;
+        const row = this.rows[i];
+        if (row === undefined) {
+            //occurs when filtering table
+            return undefined;
         }
-    };
+        return {
+            "value": row[displayName]
+        }
+    },
+    fillHeader (headerDiv: any, header: any) {
+        headerDiv.innerHTML = _.escape(header.value);
+    },
+    getHeaderSync (j: any) {
+        return this.headers[j].displayName;
+    }
+};
+// @TODO Ahmad Hassan Fix angular.element references and figure out the type of table and constructor issue
+@Injectable()
+export class FattableService {
 
-    self.setupTable = function (options: any) {
+    table : any;
+    // constructor($window: any) {
+
+    // }
+    constructor() {
+
+    }
+
+    setupTable (options: any) {
         // console.log('setupTable');
         let scrollXY: number[] = [];
 
@@ -99,7 +105,7 @@ function FattableService($window: any) {
         const headers = settings.headers;
         const rows = settings.rows;
 
-        function get2dContext(font: any) {
+        let get2dContext = (font: any) => {
             const canvas = document.createElement("canvas");
             document.createDocumentFragment().appendChild(canvas);
             const context = canvas.getContext("2d");
@@ -112,10 +118,10 @@ function FattableService($window: any) {
 
         tableData.columnHeaders = [];
         const columnWidths: number[] = [];
-        _.each(headers, function (column) {
+        _.each(headers, (column) => {
             const headerText = settings.headerText(column);
             const headerTextWidth = headerContext.measureText(headerText).width;
-            const longestColumnText = _.reduce(rows, function (previousMax, row) {
+            const longestColumnText = _.reduce(rows, (previousMax, row) => {
                 const cellText = settings.cellText(row, column);
                 const cellTextLength = cellText === undefined || cellText === null ? 0 : cellText.length;
                 return previousMax.length < cellTextLength ? cellText : previousMax;
@@ -126,19 +132,19 @@ function FattableService($window: any) {
             tableData.columnHeaders.push(headerText);
         });
 
-        painter.setupHeader = function (div) {
+        painter.setupHeader = (div) => {
             // console.log("setupHeader");
-            const separator = angular.element('<div class="header-separator"></div>');
-            separator.on("mousedown", event => mousedown(separator, event));
+            // const separator = angular.element('<div class="header-separator"></div>');
+            // separator.on("mousedown", event => mousedown(separator, event));
 
-            const heading = angular.element('<div class="header-value ui-grid-header-cell-title"></div>');
+            // const heading = angular.element('<div class="header-value ui-grid-header-cell-title"></div>');
 
-            const headerDiv = angular.element(div);
+            // const headerDiv = angular.element(div);
 
-            headerDiv.append(heading).append(separator);
+            // headerDiv.append(heading).append(separator);
         };
 
-        painter.fillCell = function (div:any, data:any) {
+        painter.fillCell = (div: any, data: any) => {
             if (data === undefined) {
                 return;
             }
@@ -157,22 +163,22 @@ function FattableService($window: any) {
             settings.fillCell(div, data);
         };
 
-        painter.fillHeader = function (div: any, header: any) {
+        painter.fillHeader = (div: any, header: any) => {
             // console.log('fill header', header);
             div.style.fontSize = settings.headerFontSize;
             div.style.fontFamily = settings.headerFontFamily;
             div.style.fontWeight = settings.headerFontWeight;
-            const children = angular.element(div).children();
+            // const children = angular.element(div).children();
 
-            setColumnId(children.last(), header.id);
+            // setColumnId(children.last(), header.id);
 
-            const valueDiv = children.first();
-            valueDiv.css("width", (self.table.columnWidths[header.id] - settings.headerPadding - 2) + "px"); //leave 2 pixels for column separator
-            const valueSpan = valueDiv.get(0);
-            settings.fillHeader(valueSpan, header);
+            // const valueDiv = children.first();
+            // valueDiv.css("width", (this.table.columnWidths[header.id] - settings.headerPadding - 2) + "px"); //leave 2 pixels for column separator
+            // const valueSpan = valueDiv.get(0);
+            // settings.fillHeader(valueSpan, header);
         };
 
-        tableData.getCellSync = function (i: any, j: any) {
+        tableData.getCellSync = (i: any, j: any) => {
             const data = settings.getCellSync(i, j);
             if (data !== undefined) {
                 //add row id so that we can add odd/even classes to rows
@@ -182,7 +188,7 @@ function FattableService($window: any) {
             return data;
         };
 
-        tableData.getHeaderSync = function (j: any) {
+        tableData.getHeaderSync = (j: any) => {
             const header = settings.getHeaderSync(j);
             return {
                 value: header,
@@ -201,24 +207,24 @@ function FattableService($window: any) {
             "columnWidths": columnWidths
         };
 
-        function onScroll(x: number, y: number) {
+        let onScroll = (x: number, y: number) => {
             scrollXY[0] = x;
             scrollXY[1] = y;
-        }
+        };
 
-        self.table = fattable(parameters);
-        self.table.onScroll = onScroll;
-        self.table.setup();
+        this.table = fattable(parameters);
+        this.table.onScroll = onScroll;
+        this.table.setup();
 
-        function getColumnId(separatorSpan: any) {
+        let getColumnId = (separatorSpan: any) => {
             return separatorSpan.attr(ATTR_DATA_COLUMN_ID);
         }
 
-        function setColumnId(separatorSpan: any, id: any) {
+        let setColumnId = (separatorSpan: any, id: any) => {
             separatorSpan.attr(ATTR_DATA_COLUMN_ID, id);
         }
 
-        function mousedown(separator: any, e: any) {
+        let mousedown = (separator: any, e: any) => {
             e.preventDefault(); //prevent default action of selecting text
 
             const columnId = getColumnId(separator);
@@ -235,7 +241,7 @@ function FattableService($window: any) {
             const headerElem = headerDiv.get(0);
             const initialHeaderWidth = headerElem.offsetWidth;
             document.body.style.cursor = "col-resize";
-            document.body.onmousemove = function (e: any) {
+            document.body.onmousemove = (e: any) => {
                 e = e || window.event;
                 let end = 0;
                 if (e.pageX) {
@@ -249,7 +255,7 @@ function FattableService($window: any) {
                 newWidth = width < settings.minColumnWidth ? settings.minColumnWidth : width;
                 headerElem.style.width = newWidth + "px";
             };
-            document.body.onmouseup = function () {
+            document.body.onmouseup = () => {
                 document.body.onmousemove = document.body.onmouseup = null;
                 headerDiv.css("z-index", "unset");
                 document.body.style.cursor = null;
@@ -257,36 +263,34 @@ function FattableService($window: any) {
             };
         }
 
-        function resizeColumn(columnId: number, columnWidth: number) {
+        let resizeColumn = (columnId: number, columnWidth: number) => {
             const x = scrollXY[0];
             const y = scrollXY[1];
             // console.log('resize to new width', columnWidth);
-            self.table.columnWidths[columnId] = columnWidth;
-            const columnOffset = _.reduce((self.table.columnWidths as number[]), function (memo, width) {
+            this.table.columnWidths[columnId] = columnWidth;
+            const columnOffset = _.reduce((this.table.columnWidths as number[]), (memo, width) => {
                 memo.push(memo[memo.length - 1] + width);
                 return memo;
             }, [0]);
             // console.log('columnWidths, columnOffset', columnWidths, columnOffset);
-            self.table.columnOffset = columnOffset;
-            self.table.W = columnOffset[columnOffset.length - 1];
-            self.table.setup();
+            this.table.columnOffset = columnOffset;
+            this.table.W = columnOffset[columnOffset.length - 1];
+            this.table.setup();
 
             // console.log('displaying cells', scrolledCellX, scrolledCellY);
-            self.table.scroll.setScrollXY(x, y); //table.setup() scrolls to 0,0, here we scroll back to were we were while resizing column
+            this.table.scroll.setScrollXY(x, y); //table.setup() scrolls to 0,0, here we scroll back to were we were while resizing column
         }
 
         const eventId = "resize.fattable." + settings.tableContainerId;
-        angular.element($window).unbind(eventId);
-        const debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
-        angular.element($window).on(eventId, function () {
-            debounced(settings);
-        });
+        // angular.element($window).unbind(eventId);
+        // const debounced = _.debounce(this.setupTable, settings.setupRefreshDebounce);
+        // angular.element($window).on(eventId, () => {
+        //     debounced(settings);
+        // });
 
-        angular.element(selector).on('$destroy', function () {
-            angular.element($window).unbind(eventId);
-        });
+        // angular.element(selector).on('$destroy', () => {
+        //     angular.element($window).unbind(eventId);
+        // });
     }
 
 }
-
-angular.module(moduleName).service('FattableService', ["$window", FattableService]);

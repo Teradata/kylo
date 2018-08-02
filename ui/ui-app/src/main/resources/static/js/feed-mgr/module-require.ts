@@ -1,20 +1,8 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
-import "./services/VisualQueryService";
-import "./services/FeedCreationErrorService";
-import "./services/RegisterTemplateServiceFactory";
 
-import "./services/FeedInputProcessorPropertiesTemplateService";
-import "./services/FeedDetailsProcessorRenderingHelper";
-import "./services/ImportService";
 import "./shared/policy-input-form/policy-input-form.component";
-import "./services/HiveService";
 import "./shared/hql-editor/hql-editor";
-import "./services/DBCPTableSchemaService";
-import "./services/EditFeedNifiPropertiesService";
-import "./services/FeedTagService";
-import "./services/fattable/FattableService";
-import "./services/CodeMirrorService";
 import "./shared/properties-admin/properties-admin";
 import "./shared/property-list/property-list";
 import "./shared/feed-field-policy-rules/FeedFieldPolicyRuleDialog";
@@ -53,58 +41,59 @@ import { VisualQueryService } from './services/VisualQueryService';
 import { FeedTagService } from './services/FeedTagService';
 import { EditFeedNifiPropertiesService } from './services/EditFeedNifiPropertiesService';
 import { RegisterTemplateServiceFactory } from './services/RegisterTemplateServiceFactory';
-import CodeMirrorService from './services/CodeMirrorService';
+import {CodeMirrorService} from './services/CodeMirrorService';
 import { EntityAccessControlDialogService, EntityAccessControlDialogController } from './shared/entity-access-control/EntityAccessControlDialogService';
+import { HiveService } from './services/HiveService';
+import { FattableService } from './services/fattable/FattableService';
 
 
-angular.module(moduleName)
-    .service('EntityAccessControlDialogService', EntityAccessControlDialogService)
+angular.module(moduleName).service('EntityAccessControlDialogService', EntityAccessControlDialogService)
     .controller('EntityAccessControlDialogController',EntityAccessControlDialogController);
 
 angular.module(moduleName).service('EntityAccessControlService', downgradeInjectable(EntityAccessControlService));
 
-angular.module(moduleName)
-    .service('FeedService',downgradeInjectable(FeedService));
-//     .controller('FeedSavingDialogController', FeedSavingDialogController);
+angular.module(moduleName) .service('FeedService',downgradeInjectable(FeedService));
 
-angular.module(moduleName).factory('RestUrlService', downgradeInjectable(RestUrlService));
+angular.module(moduleName).service('RestUrlService', downgradeInjectable(RestUrlService));
 
-angular.module(moduleName).factory('DomainTypesService', downgradeInjectable(DomainTypesService));
+angular.module(moduleName).service('DomainTypesService', downgradeInjectable(DomainTypesService));
 
-angular.module(moduleName).factory('CodeMirrorService', ["$q", 
-       ($q:any) => new CodeMirrorService($q)
-]);
+angular.module(moduleName).service('CodeMirrorService', downgradeInjectable(CodeMirrorService));
 
-angular.module(moduleName).factory('ImportService', downgradeInjectable(DefaultImportService));
+angular.module(moduleName).service('ImportService', downgradeInjectable(DefaultImportService));
 
-angular.module(moduleName).factory("VisualQueryService", downgradeInjectable(VisualQueryService));
+angular.module(moduleName).service("VisualQueryService", downgradeInjectable(VisualQueryService));
 
-angular.module(moduleName).factory('FeedTagService', FeedTagService);
+angular.module(moduleName).service('FeedTagService', downgradeInjectable(FeedTagService));
 
-angular.module(moduleName).service('FeedInputProcessorPropertiesTemplateService',FeedInputProcessorPropertiesTemplateService);
+angular.module(moduleName).service('FeedInputProcessorPropertiesTemplateService',downgradeInjectable(FeedInputProcessorPropertiesTemplateService));
 
-angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDetailsProcessorRenderingHelper);
+angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', downgradeInjectable(FeedDetailsProcessorRenderingHelper));
 
-angular.module(moduleName).service('EditFeedNifiPropertiesService', EditFeedNifiPropertiesService); 
+angular.module(moduleName).service('EditFeedNifiPropertiesService', downgradeInjectable(EditFeedNifiPropertiesService)); 
+
+angular.module(moduleName).service('HiveService',downgradeInjectable(HiveService));
 
 angular.module(moduleName).service('RegisterTemplateService', downgradeInjectable(RegisterTemplateServiceFactory));
 
-angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);
+angular.module(moduleName).service('RegisterTemplatePropertyService', downgradeInjectable(RegisterTemplatePropertyService));
 
-angular.module(moduleName).factory('FeedPropertyService', downgradeInjectable(DefaultFeedPropertyService));
+angular.module(moduleName).service('FeedPropertyService', downgradeInjectable(DefaultFeedPropertyService));
 
-angular.module(moduleName).factory('UiComponentsService', downgradeInjectable(UiComponentsService));
+angular.module(moduleName).service('UiComponentsService', downgradeInjectable(UiComponentsService));
 
-angular.module(moduleName).factory('SlaService', downgradeInjectable(SlaService));
+angular.module(moduleName).service('SlaService', downgradeInjectable(SlaService));
 
-angular.module(moduleName).factory('CategoriesService', downgradeInjectable(CategoriesService));
+angular.module(moduleName).service('CategoriesService', downgradeInjectable(CategoriesService));
 
-angular.module(moduleName).factory('DatasourcesService', downgradeInjectable(DatasourcesService));
+angular.module(moduleName).service('DatasourcesService', downgradeInjectable(DatasourcesService));
 
-angular.module(moduleName).factory('PolicyInputFormService', downgradeInjectable(PolicyInputFormService));
+angular.module(moduleName).service('PolicyInputFormService', downgradeInjectable(PolicyInputFormService));
 
-angular.module(moduleName).factory('FeedSecurityGroups', downgradeInjectable(FeedSecurityGroups));
+angular.module(moduleName).service('FeedSecurityGroups', downgradeInjectable(FeedSecurityGroups));
 
 angular.module(moduleName).service('FeedCreationErrorService', downgradeInjectable(FeedCreationErrorService));
 
-angular.module(moduleName).service('DBCPTableSchemaService', DBCPTableSchemaService);
+angular.module(moduleName).service('DBCPTableSchemaService', downgradeInjectable(DBCPTableSchemaService));
+
+angular.module(moduleName).service('FattableService', downgradeInjectable(FattableService));

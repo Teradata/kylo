@@ -1,5 +1,3 @@
-import * as angular from "angular";
-
 import {Common} from "../../common/CommonTypes";
 import {AccessControl} from "../../services/AccessControl";
 import {Templates} from "./TemplateTypes";

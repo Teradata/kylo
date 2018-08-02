@@ -21,7 +21,7 @@
     <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
     <mat-card flex="70">
         <mat-card-title>
-            <mat-toolbar>
+            <mat-toolbar style="background: none;">
                 <div class="card-title">Group Details</div>
                 <span flex></span>
                 <mat-icon style="padding-right: 16px" size="30">group</mat-icon>
@@ -79,7 +79,7 @@
                     </editable-section>
                 </vertical-section-layout>
             </form>
-            <vertical-section-layout section-title="'Permissions'" (on-save-edit)="onSavePermissions()" (on-edit)="onEditPermissions()"
+            <vertical-section-layout section-title="Permissions" (on-save-edit)="onSavePermissions()" (on-edit)="onEditPermissions()"
              (on-cancel-edit)="onCancelEditPermissions()" [editable]="isPermissionsEditable" [allowEdit]="!loading && model.systemName !== null && allowAdmin" *ngIf="groupId">
                 <readonly-section>
                     <thinkbig-permissions-table [model]="actions" [readOnly]="true"></thinkbig-permissions-table>

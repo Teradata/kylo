@@ -1,6 +1,6 @@
-import * as angular from 'angular';
-import * as _ from "underscore";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class FeedTagService {
 
     constructor() {
@@ -10,8 +10,8 @@ export class FeedTagService {
      * Create filter function for a query string
      */
     createFilterFor(query: any) {
-        var lowercaseQuery = angular.lowercase(query);
-        return function filterFn(tag: any) {
+        var lowercaseQuery = typeof query === 'string' ? query.toLowerCase() : query;
+        return (tag: any) => {
             return (tag._lowername.indexOf(lowercaseQuery) === 0);
         };
     }

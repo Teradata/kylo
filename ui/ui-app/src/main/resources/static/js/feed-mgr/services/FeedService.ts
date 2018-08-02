@@ -1,4 +1,4 @@
-import * as angular from "angular";
+import * as angular from 'angular';
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
@@ -221,11 +221,11 @@ export class FeedService {
                 this.editFeedModel.usedByFeeds = [];
                 this.editFeedModel.description = '';
                 this.editFeedModel.inputProcessor = null;
-                angular.extend(this.editFeedModel, feedModel);
+                this.editFeedModel = {...this.editFeedModel,...feedModel};
 
                 //set the field name to the policy name attribute
                 if (this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
-                    angular.forEach(this.editFeedModel.table.fieldPolicies, (policy: any, i: any) =>{
+                    this.editFeedModel.table.fieldPolicies.forEach((policy: any, i: any) =>{
                         var field = this.editFeedModel.table.tableSchema.fields[i];
                         if (field != null && field != undefined) {
                             policy.name = field.name;
@@ -271,7 +271,7 @@ export class FeedService {
                 //get the new model and its keys
                 var newFeedObj = this.getNewCreateFeedModel();
                 var keys = _.keys(newFeedObj)
-                var createFeedModel = angular.extend(this.createFeedModel, newFeedObj);
+                var createFeedModel = {...this.createFeedModel, ...newFeedObj};
 
                 //get the create model and its keys
                 var modelKeys = _.keys(this.createFeedModel);
@@ -319,7 +319,7 @@ export class FeedService {
                 let newFields =  _.map(fields,(field) => {
                     if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
                         let columnDef = new TableColumnDefinition();
-                        angular.extend(columnDef,field);
+                        columnDef = {...columnDef,...field};
                         return columnDef;
                     }
                     else {
@@ -335,27 +335,26 @@ export class FeedService {
              * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
              */
             syncTableFieldPolicyNames= () => {
-                var self = this;
-                angular.forEach(self.createFeedModel.table.tableSchema.fields, (columnDef: any, index: any) => {
+                this.createFeedModel.table.tableSchema.fields.forEach((columnDef: any, index: any) => {
                     //update the the policy
-                    var inArray = index < self.createFeedModel.table.tableSchema.fields.length && index >= 0;
+                    var inArray = index < this.createFeedModel.table.tableSchema.fields.length && index >= 0;
                     if (inArray) {
-                        var name = self.createFeedModel.table.tableSchema.fields[index].name;
+                        var name = this.createFeedModel.table.tableSchema.fields[index].name;
                         if (name != undefined) {
-                            self.createFeedModel.table.fieldPolicies[index].name = name;
+                            this.createFeedModel.table.fieldPolicies[index].name = name;
                             //assign pointer to the field?
-                            self.createFeedModel.table.fieldPolicies[index].field = columnDef;
+                            this.createFeedModel.table.fieldPolicies[index].field = columnDef;
                         }
                         else {
-                            if (self.createFeedModel.table.fieldPolicies[index].field) {
-                                self.createFeedModel.table.fieldPolicies[index].field == null;
+                            if (this.createFeedModel.table.fieldPolicies[index].field) {
+                                this.createFeedModel.table.fieldPolicies[index].field == null;
                             }
                         }
                     }
                 });
                 //remove any extra columns in the policies
-                while (self.createFeedModel.table.fieldPolicies.length > self.createFeedModel.table.tableSchema.fields.length) {
-                    self.createFeedModel.table.fieldPolicies.splice(self.createFeedModel.table.tableSchema.fields.length, 1);
+                while (this.createFeedModel.table.fieldPolicies.length > this.createFeedModel.table.tableSchema.fields.length) {
+                    this.createFeedModel.table.fieldPolicies.splice(this.createFeedModel.table.tableSchema.fields.length, 1);
                 }
             }
             /**
@@ -471,14 +470,14 @@ export class FeedService {
                 var copy = angular.copy(model);
 
             if (copy.inputProcessor != null) {
-                angular.forEach(copy.inputProcessor.properties, (property: any) => {
+                copy.inputProcessor.properties.forEach((property: any) => {
                         this.FeedPropertyService.initSensitivePropertyForSaving(property)
                         properties.push(property);
                     });
                 }
 
-            angular.forEach(copy.nonInputProcessors, (processor: any) => {
-                    angular.forEach(processor.properties, (property: any) => {
+                copy.nonInputProcessors.forEach((processor: any) => {
+                    processor.properties.forEach((property: any) => {
                         this.FeedPropertyService.initSensitivePropertyForSaving(property)
                         properties.push(property);
                     });
@@ -515,8 +514,8 @@ export class FeedService {
                     var newPolicies: any[] = [];
                     var feedFields: any[] = [];
                     var sourceFields: any[] = [];
-                angular.forEach(copy.table.tableSchema.fields, (columnDef, idx) => {
-                    var policy = copy.table.fieldPolicies[idx];
+                    copy.table.tableSchema.fields.forEach((columnDef:any, idx:any) => {
+                        var policy = copy.table.fieldPolicies[idx];
                         var policy = model.table.fieldPolicies[idx];
                         var sourceField = angular.copy(columnDef);
                         var feedField = angular.copy(columnDef);
@@ -530,7 +529,7 @@ export class FeedService {
                         } else if (copy.table.method == 'EXISTING_TABLE') {
                             sourceField.name = columnDef.origName;
                         }
-                        if (angular.isDefined(policy)) {
+                        if (typeof policy !== 'undefined') {
                             policy.feedFieldName = feedField.name;
                             policy.name = columnDef.name;
                         }
@@ -540,7 +539,7 @@ export class FeedService {
                         columnDef.sampleValues = null;
                         columnDef.history = null;
                             newFields.push(columnDef);
-                            if (angular.isDefined(policy)) {
+                            if (typeof policy !== 'undefined') {
                                 newPolicies.push(policy);
                             }
                         sourceField.sampleValues = null;
@@ -665,7 +664,7 @@ export class FeedService {
                 var promise = this.$injector.get("$http")({
                     url: this.RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                     method: "POST",
-                    data: angular.toJson(copy),
+                    data: JSON.stringify(copy),
                     headers: {
                         'Content-Type': 'application/json; charset=UTF-8'
                     },
@@ -758,7 +757,7 @@ export class FeedService {
              */
             getUserPropertyList= (model: any): { key: string, value: string }[] => {
                 var userPropertyList: any[] = [];
-                angular.forEach(model.userProperties, (value: any, key: string) => {
+                model.userProperties.forEach((value: any, key: string) => {
                     if (!key.startsWith("jcr:")) {
                         userPropertyList.push({ key: key, value: value });
                     }
@@ -802,7 +801,7 @@ export class FeedService {
                 return false;
             }
 
-            if(angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService)) {
+            if(property.propertyDescriptor !== null && typeof property.propertyDescriptor === 'object'  && typeof property.propertyDescriptor.identifiesControllerService === "string") {
                 if (!setDisplayValue(property)) {
 
                     let entry: any = controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
@@ -927,19 +926,19 @@ export class FeedService {
                 policy.$currentDomainType = domainType;
                 policy.domainTypeId = domainType.id;
 
-                if (angular.isObject(domainType.field)) {
+                if (domainType.field !== null && typeof domainType.field === 'object') {
                     field.tags = angular.copy(domainType.field.tags);
-                    if (angular.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                    if (typeof domainType.field.name === 'string' && domainType.field.name.length > 0) {
                         field.name = domainType.field.name;
                     }
-                    if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
+                    if (typeof domainType.field.derivedDataType === 'string' && domainType.field.derivedDataType.length > 0) {
                         field.derivedDataType = domainType.field.derivedDataType;
                         field.precisionScale = domainType.field.precisionScale;
                         field.dataTypeDisplay = this.getDataTypeDisplay(field);
                     }
                 }
 
-                if (angular.isObject(domainType.fieldPolicy)) {
+                if (domainType.fieldPolicy !== null && typeof domainType.fieldPolicy === 'object') {
                     policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
                     policy.validation = angular.copy(domainType.fieldPolicy.validation);
                 }

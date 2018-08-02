@@ -1,20 +1,17 @@
-
-import * as angular from 'angular';
-import * as _ from "underscore";
-import {moduleName} from "../module-name";;
+import { Injectable } from '@angular/core';
+import { RestUrlConstants } from './RestUrlConstants';
 
 
+@Injectable()
 export class DBCPTableSchemaService {
    
     ROOT:any;
     LIST_TABLES_URL:any;
     DESCRIBE_TABLE_URL:any;
    
-    static readonly $inject = ["RestUrlService"];
+    constructor () {
 
-    constructor (RestUrlService:any) {
-
-        this.ROOT = RestUrlService.ROOT;
+        this.ROOT = RestUrlConstants.ROOT;
 
         this.LIST_TABLES_URL = function (serviceId:any) {
             return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + serviceId + "/tables";

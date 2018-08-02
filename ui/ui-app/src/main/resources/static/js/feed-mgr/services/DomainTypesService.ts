@@ -117,7 +117,7 @@ export interface DomainType {
             return (result !== null && result.index === 0 && result[0].length === value.length);
         }
 @Injectable()
-export class DomainTypesService{
+export class DomainTypesService {
         /**
          * Interacts with the Domain Types REST API.
          * @constructor
@@ -132,7 +132,7 @@ export class DomainTypesService{
              * @param {string} id the domain type id
              * @returns {Promise} for when the domain type is deleted
              */
-            deleteById=(id: any)=>{
+            deleteById (id: any) {
                 return this.httpClient.delete(this.restUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id));
             }
 
@@ -143,7 +143,7 @@ export class DomainTypesService{
              * @param {DomainType[]} domainTypes - the list of domain types
              * @returns {DomainType|null} - the matching domain type or null if none match
              */
-            detectDomainType=(columnDef: any, domainTypes: any)=>{
+            detectDomainType (columnDef: any, domainTypes: any) {
                 // Remove empty values
                 var valueArray: any;
                 if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
@@ -189,7 +189,7 @@ export class DomainTypesService{
              *
              * @returns {Promise} with the list of domain types
              */
-            findAll=()=> {
+            findAll () {
                 return this.httpClient.get(this.restUrlService.DOMAIN_TYPES_BASE_URL).toPromise()
                     .then((response: any)=> {
                         return response;
@@ -202,7 +202,7 @@ export class DomainTypesService{
              * @param {string} id the domain type id
              * @returns {Promise} with the domain type
              */
-            findById=(id: any)=>{
+            findById (id: any) {
                 return this.httpClient.get(this.restUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id)).toPromise()
                     .then((response: any)=> {
                         return response;
@@ -224,7 +224,7 @@ export class DomainTypesService{
              * @param field - the field
              * @returns {boolean} true if the field and domain type match, otherwise false
              */
-            matchesField=(domainType: any, field: any)=>{
+            matchesField (domainType: any, field: any) {
                 if (domainType.field == null) {
                     return true;
                 }
@@ -237,7 +237,7 @@ export class DomainTypesService{
              *
              * @returns {DomainType} the domain type
              */
-            newDomainType= ()=>{
+            newDomainType () {
                 return {
                     description: "",
                     field: {
@@ -260,7 +260,7 @@ export class DomainTypesService{
              * @param {DomainType} domainType the domain type to be saved
              * @returns {Promise} with the updated domain type
              */
-            save=(domainType: any)=>{
+            save (domainType: any) {
                 return this.httpClient.post(this.restUrlService.DOMAIN_TYPES_BASE_URL, domainType).toPromise()
                     .then((response: any)=>{
                         return response;

@@ -39,7 +39,7 @@ export class FeedAdditionalPropertiesController {
         editModel:any = {};
         editableSection:boolean = false;
 
-        feedTagService:any = this.FeedTagService;
+        feedTagService:any;
         tagChips:any = {};
         securityGroupChips:any = {};
         isValid:boolean = true;
@@ -118,6 +118,8 @@ export class FeedAdditionalPropertiesController {
         this.tagChips.searchText = null;
         this.securityGroupChips.selectedItem = null;
         this.securityGroupChips.searchText = null;
+
+        this.feedTagService = FeedTagService;
 
         FeedSecurityGroups.isEnabled().then((isValid:any) => {
                 this.securityGroupsEnabled = isValid;

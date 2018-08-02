@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { Dictionary } from "underscore";
@@ -119,11 +118,11 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     modelNifiTemplateIdObserver = new Subject<any>();
 
     newModel() {
-        this.model = angular.extend(new EmptyTemplate());
+        this.model = {...this.model,...new EmptyTemplate()};
     }
 
     resetModel() {
-        angular.extend(this.model, new EmptyTemplate());
+        this.model = {...this.model,...new EmptyTemplate()};
         this.model.icon = { title: null, color: null }
     }
 
@@ -194,7 +193,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     getSelectedProperties(): Property[] {
         let selectedProperties: Property[] = [];
 
-        angular.forEach(this.model.inputProperties, (property: Property) => {
+        this.model.inputProperties.forEach((property: Property) => {
             if (this.isSelectedProperty(property)) {
                 selectedProperties.push(property)
                 if (property.processor && property.processor.topIndex != undefined) {
@@ -208,7 +207,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             }
         });
 
-        angular.forEach(this.model.additionalProperties, (property: Property) => {
+        this.model.additionalProperties.forEach((property: Property) => {
             if (this.isSelectedProperty(property)) {
                 selectedProperties.push(property);
                 if (property.processor && property.processor.topIndex != undefined) {
@@ -233,7 +232,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         //set the initial processor flag for the heading to print
         var lastProcessorId: string = null;
         _.each(arr, (property, i) => {
-            if ((angular.isUndefined(property.hidden) || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
+            if ((typeof property.hidden === 'undefined' || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
                 property.firstProperty = true;
                 propertiesAndProcessors.processors.push(property.processor);
                 property.processor.topIndex = i;
@@ -353,7 +352,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         if (expression != null && expression != '') {
             var variables = expression.match(/\$\{(.*?)\}/gi);
             if (variables && variables.length) {
-                angular.forEach(variables, (variable: any) => {
+                variables.forEach((variable: any) => {
                     var varNameMatches = variable.match(/\$\{(.*)\}/);
                     var varName = null;
                     if (varNameMatches.length > 1) {
@@ -826,7 +825,9 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 // convert the saved Select options store as JSON to the array for the chips to work.
                 if (property.renderOptions['selectCustom'] == 'true') {
                     if (property.renderOptions['selectOptions']) {
-                        property.selectOptions = angular.fromJson(property.renderOptions['selectOptions']);
+                        if(typeof property.renderOptions['selectOptions'] === 'undefined' && property.renderOptions['selectOptions'] !== null && typeof property.renderOptions['selectOptions'] === 'string'){
+                            property.selectOptions = JSON.parse(property.renderOptions['selectOptions']);
+                        }
                     }
                     else {
                         property.selectOptions = [];

@@ -630,7 +630,7 @@ export class VisualQueryService {
     /**
      * Resets this model to default values.
      */
-    resetModel = () => {
+    resetModel () {
         this.model = {
             selectedDatasourceId: VisualQueryService.HIVE_DATASOURCE
         };
@@ -643,7 +643,7 @@ export class VisualQueryService {
      * @param dialect - SQL dialect
      * @returns {SqlBuilder} the SQL builder
      */
-    sqlBuilder=(model: VisualQueryModel, dialect: SqlDialect)=> {
+    sqlBuilder (model: VisualQueryModel, dialect: SqlDialect) {
         return new (SqlBuilder as any)(model, dialect);
     }
 }

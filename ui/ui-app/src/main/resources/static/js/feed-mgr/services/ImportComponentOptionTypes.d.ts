@@ -1,5 +1,3 @@
-import * as angular from "angular";
-import * as _ from "underscore";
 import {Common} from "../../common/CommonTypes";
 import {Templates} from "./TemplateTypes";
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;

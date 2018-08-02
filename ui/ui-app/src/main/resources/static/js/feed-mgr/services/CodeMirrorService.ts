@@ -1,10 +1,9 @@
-import {moduleName} from "../module-name";;
-import * as angular from 'angular';
-import * as _ from "underscore";
+import { Injectable } from "@angular/core";
 
-export default class CodeMirrorService{
+@Injectable()
+export class CodeMirrorService{
 
- constructor (private $q: any){
+ constructor (){
  }
  
 transformToCodeMirrorData(response: any) {

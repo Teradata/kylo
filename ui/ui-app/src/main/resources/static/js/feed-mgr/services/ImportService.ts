@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import {Import} from "./ImportComponentOptionTypes";
 import {Common} from "../../common/CommonTypes";

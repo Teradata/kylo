@@ -20,44 +20,42 @@
 /**
  * Return a custom Property input template for a given Processor
  */
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Templates } from "./TemplateTypes";
-import {UiComponentsService} from "./UiComponentsService";
+import { UiComponentsService } from "./UiComponentsService";
+import { Injectable } from "@angular/core";
 
-
+@Injectable()
 export class FeedInputProcessorPropertiesTemplateService {
-
-    static $inject = ["UiComponentsService"]
 
     constructor(private uiComponentsService: UiComponentsService) {
 
     }
-            setFeedProcessingTemplateUrl (processor:Templates.Processor, mode:string) {
+    setFeedProcessingTemplateUrl(processor: Templates.Processor, mode: string) {
 
-                this.uiComponentsService.getProcessorTemplates().then((templates:any) => {
+        this.uiComponentsService.getProcessorTemplates().then((templates: any) => {
 
-                 var matchingTemplate = _.find(templates,(processorTemplate:any)=> {
-                         return _.find(processorTemplate.processorTypes, function (type) {
-                                 if(processorTemplate.processorDisplayName != null && processorTemplate.processorDisplayName != undefined && processorTemplate.processorDisplayName != ""  ) {
-                                     return processor.type == type && processor.name == processorTemplate.processorDisplayName;
-                                 }
-                                 else {
-                                     return processor.type == type;
-                                 }
-                             }) != null;
-                    });
-                 if(matchingTemplate != null) {
-                     if(mode == 'create') {
-                         processor.feedPropertiesUrl = matchingTemplate.stepperTemplateUrl;
-                     }
-                     else {
-                         processor.feedPropertiesUrl = matchingTemplate.feedDetailsTemplateUrl;
-                     }
-                 }
-
-                });
+            var matchingTemplate = _.find(templates, (processorTemplate: any) => {
+                return _.find(processorTemplate.processorTypes, function (type) {
+                    if (processorTemplate.processorDisplayName != null && processorTemplate.processorDisplayName != undefined && processorTemplate.processorDisplayName != "") {
+                        return processor.type == type && processor.name == processorTemplate.processorDisplayName;
+                    }
+                    else {
+                        return processor.type == type;
+                    }
+                }) != null;
+            });
+            if (matchingTemplate != null) {
+                if (mode == 'create') {
+                    processor.feedPropertiesUrl = matchingTemplate.stepperTemplateUrl;
+                }
+                else {
+                    processor.feedPropertiesUrl = matchingTemplate.feedDetailsTemplateUrl;
+                }
             }
+
+        });
     }
+}
 
 

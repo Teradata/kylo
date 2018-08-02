@@ -9,7 +9,6 @@
  * @property {string} type - a unique identifier for this option
  */
 
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from './RestUrlService';
@@ -63,11 +62,11 @@ export class UiComponentsService {
 
     completeStepperTemplateRender(type: any) {
         var complete = true;
-        if (angular.isDefined(this.stepperTemplateRenderProgress[type])) {
+        if (typeof this.stepperTemplateRenderProgress[type] !== 'undefined') {
             var progress = this.stepperTemplateRenderProgress[type];
             progress.complete += 1;
             complete = progress.complete == progress.total;
-            if (complete && angular.isDefined(progress.callback) && angular.isFunction(progress.callback)) {
+            if (complete && typeof progress.callback !== 'undefined' && typeof progress.callback === 'function') {
                 progress.callback(type);
             }
         }
@@ -88,7 +87,7 @@ export class UiComponentsService {
                 });
 
                 var result = this.$injector.get("$q").defer();
-                if (angular.isDefined(selected)) {
+                if (typeof selected !== 'undefined') {
                     result.resolve(selected);
                 } else {
                     result.reject();
@@ -104,10 +103,10 @@ export class UiComponentsService {
             .then((tableOption: any) => {
 
                 var requests = {};
-                if (angular.isDefined(tableOption.stepperTemplateUrl) && tableOption.stepperTemplateUrl) {
+                if (typeof tableOption.stepperTemplateUrl !== 'undefined' && tableOption.stepperTemplateUrl) {
                     requests['stepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.stepperTemplateUrl);
                 }
-                if (angular.isDefined(tableOption.preStepperTemplateUrl) && tableOption.preStepperTemplateUrl != null) {
+                if (typeof tableOption.preStepperTemplateUrl !== 'undefined' && tableOption.preStepperTemplateUrl != null) {
                     requests['preStepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.preStepperTemplateUrl);
                 }
 

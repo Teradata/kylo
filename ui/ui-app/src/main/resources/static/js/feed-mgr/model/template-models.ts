@@ -147,11 +147,11 @@ export class ExtendedTemplate implements Template {
     needsReusableTemplate: boolean = false;
     ports: any[];
     reusableTemplateConnections: ReusableTemplateConnectionInfo[];  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-    icon: { title: null, color: null };
+    icon: { title: string, color: string };
     state: string;
     stateIcon: string;
     updateDate: any = null;
-    feedsCount: 0;
+    feedsCount: number =0;
     registeredDatasources: any[];
     isStream: boolean = false;
     validTemplateProcessorNames: boolean = true;
