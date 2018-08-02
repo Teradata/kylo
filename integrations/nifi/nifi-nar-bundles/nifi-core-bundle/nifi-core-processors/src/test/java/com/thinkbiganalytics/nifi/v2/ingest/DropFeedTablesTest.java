@@ -21,6 +21,11 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
+import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 import org.apache.nifi.components.ValidationResult;
@@ -33,10 +38,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Properties;
 
 public class DropFeedTablesTest {
 
@@ -44,6 +53,8 @@ public class DropFeedTablesTest {
      * Identifier for thrift service
      */
     private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
+
+    private static final String METADATA_SERVICE_IDENTIFIER = "MockMetadataProviderService";
 
     /**
      * Test runner
@@ -67,6 +78,14 @@ public class DropFeedTablesTest {
         runner.addControllerService(THRIFT_SERVICE_IDENTIFIER, thriftService);
         runner.enableControllerService(thriftService);
         runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
+
+        // Setup services
+        final MetadataProviderService metadataService = new MockMetadataProviderService();
+
+        // Setup test runner
+        runner.addControllerService(METADATA_SERVICE_IDENTIFIER, metadataService);
+        runner.enableControllerService(metadataService);
+        runner.setProperty(IngestProperties.METADATA_SERVICE, METADATA_SERVICE_IDENTIFIER);
     }
 
     /**
@@ -95,7 +114,12 @@ public class DropFeedTablesTest {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        runner.run();
+        try {
+            runner.run();
+        }catch (Exception e) {
+            System.out.println("lbya0");
+            e.printStackTrace();
+        }
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
@@ -118,7 +142,12 @@ public class DropFeedTablesTest {
         runner.setProperty(DropFeedTables.ADDITIONAL_TABLES, "test.sample_07,test.sample_08");
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        runner.run();
+        try {
+            runner.run();
+        }catch (Exception e) {
+            System.out.println("lbya");
+            e.printStackTrace();
+        }
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
@@ -164,7 +193,11 @@ public class DropFeedTablesTest {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        runner.run();
+        try {
+            runner.run();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
@@ -187,6 +220,57 @@ public class DropFeedTablesTest {
         @Override
         public Connection getConnection() throws ProcessException {
             return connection;
+        }
+    }
+
+    private static class MockMetadataProviderService extends AbstractControllerService implements MetadataProviderService {
+
+        @Override
+        public MetadataProvider getProvider() {
+            final MetadataProvider provider = Mockito.mock(MetadataProvider.class);
+            Mockito.when(provider.getFeedId(Mockito.anyString(), Mockito.anyString())).then(invocation -> {
+                if ("invalid".equals(invocation.getArgumentAt(0, String.class))) {
+                    throw new IllegalArgumentException();
+                }
+                return invocation.getArgumentAt(1, String.class);
+            });
+            Mockito.when(provider.updateFeedProperties(Mockito.anyString(), Mockito.any(Properties.class))).then(invocation -> {
+                Properties properties = new Properties();
+                properties.setProperty("TestUpdate", "worked");
+                return properties;
+            });
+            Mockito.when(provider.getFeedProperties(Mockito.anyString())).then(invocation -> {
+                final String feedId = invocation.getArgumentAt(0, String.class);
+                if ("disabled".equals(feedId)) {
+                    return new Properties();
+                }
+                if ("unavailable".equals(feedId)) {
+                    return null;
+                }
+                Properties properties = new Properties();
+                properties.setProperty(FeedProperties.CLEANUP_ENABLED, "true");
+                return properties;
+            });
+            return provider;
+        }
+
+        @Override
+        public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
+            return null;
+        }
+
+        @Override
+        public MetadataRecorder getRecorder() {
+            final MetadataRecorder recorder = Mockito.mock(MetadataRecorder.class);
+            Mockito.doAnswer(new Answer<Void> () {
+                @Override
+                public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    Object[] args = invocationOnMock.getArguments();
+                    System.out.println("called with args:" + Arrays.toString(args));
+                    return null;
+                }
+            }).when(recorder).removeFeedInitialization(Mockito.anyString());
+            return recorder;
         }
     }
 }

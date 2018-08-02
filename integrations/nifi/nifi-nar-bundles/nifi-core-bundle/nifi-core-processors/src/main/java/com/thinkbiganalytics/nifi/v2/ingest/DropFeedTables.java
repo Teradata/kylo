@@ -23,7 +23,11 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.TableType;
 
@@ -86,8 +90,8 @@ public class DropFeedTables extends AbstractNiFiProcessor {
     /**
      * Configuration fields
      */
-    private static final List<PropertyDescriptor> properties = ImmutableList.of(IngestProperties.THRIFT_SERVICE, IngestProperties.FEED_CATEGORY, IngestProperties.FEED_NAME, TABLE_TYPE,
-                                                                                ADDITIONAL_TABLES);
+    private static final List<PropertyDescriptor> properties = ImmutableList.of(IngestProperties.THRIFT_SERVICE, IngestProperties.METADATA_SERVICE,
+            IngestProperties.FEED_CATEGORY, IngestProperties.FEED_NAME, TABLE_TYPE, ADDITIONAL_TABLES);
 
     /**
      * Output paths to other NiFi processors
@@ -131,6 +135,13 @@ public class DropFeedTables extends AbstractNiFiProcessor {
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
+
+        MetadataProviderService providerService = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class);
+        MetadataProvider provider = providerService.getProvider();
+        String feedId = provider.getFeedId(source, entity);
+        MetadataRecorder recorder = providerService.getRecorder();
+        recorder.removeFeedInitialization(feedId);
+        getLog().info("The feed " + source + "." + entity + "(" + feedId + ") is removed from the cache");
 
         Set<TableType> tableTypes;
         String tableTypesValue = context.getProperty(TABLE_TYPE).getValue();
