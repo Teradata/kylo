@@ -323,7 +323,12 @@ public class MetadataClientRecorder implements MetadataRecorder {
             return status;
         }
     }
-    
+
+    @Override
+    public void removeFeedInitialization(String feedId) {
+        getInitStatusCache().invalidate(feedId);
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#initializationStatusChanged(java.lang.String, com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus)
      */

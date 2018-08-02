@@ -702,6 +702,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         // Remove destinations and sources
         ((JcrFeed) feed).removeFeedDestinations();
         ((JcrFeed) feed).removeFeedSources();
+        ((JcrFeed) feed).removeInitStatus();
 
         // Delete feed
         FeedManagerTemplate template = feed.getTemplate();

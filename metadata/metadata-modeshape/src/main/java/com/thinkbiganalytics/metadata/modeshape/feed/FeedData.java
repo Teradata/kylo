@@ -145,6 +145,18 @@ public class FeedData extends JcrObject implements PropertiedMixin {
         }
     }
 
+    public void removeInitStatus() {
+        if (JcrUtil.hasNode(getNode(), INITIALIZATION)) {
+            Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
+            try {
+                initNode.remove();
+            }catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to delete initializations statuses", e);
+            }
+        }
+    }
+
+
     public void updateInitStatus(InitializationStatus status) {
         try {
             Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION);
