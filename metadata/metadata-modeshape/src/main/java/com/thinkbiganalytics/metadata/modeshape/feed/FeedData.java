@@ -156,7 +156,6 @@ public class FeedData extends JcrObject implements PropertiedMixin {
         }
     }
 
-
     public void updateInitStatus(InitializationStatus status) {
         try {
             Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION);

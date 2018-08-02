@@ -183,11 +183,7 @@ public class DropFeedTablesTest {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        try {
-            runner.run();
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
+        runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
@@ -224,6 +220,7 @@ public class DropFeedTablesTest {
                 }
                 return invocation.getArgumentAt(1, String.class);
             });
+            /*
             Mockito.when(provider.updateFeedProperties(Mockito.anyString(), Mockito.any(Properties.class))).then(invocation -> {
                 Properties properties = new Properties();
                 properties.setProperty("TestUpdate", "worked");
@@ -241,6 +238,7 @@ public class DropFeedTablesTest {
                 properties.setProperty(FeedProperties.CLEANUP_ENABLED, "true");
                 return properties;
             });
+            */
             return provider;
         }
 
