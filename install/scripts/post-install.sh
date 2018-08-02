@@ -245,7 +245,7 @@ then
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
-java \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -cp \$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
+java -Dorg.springframework.boot.logging.LoggingSystem=none \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -cp $INSTALL_HOME/kylo-services/conf:\$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
@@ -271,7 +271,7 @@ then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
-java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp \$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
+java -Dorg.springframework.boot.logging.LoggingSystem=none \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:\$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
