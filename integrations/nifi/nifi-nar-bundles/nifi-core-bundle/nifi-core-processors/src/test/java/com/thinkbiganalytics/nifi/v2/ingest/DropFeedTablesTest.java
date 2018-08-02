@@ -114,12 +114,7 @@ public class DropFeedTablesTest {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        try {
-            runner.run();
-        }catch (Exception e) {
-            System.out.println("lbya0");
-            e.printStackTrace();
-        }
+        runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
@@ -142,12 +137,7 @@ public class DropFeedTablesTest {
         runner.setProperty(DropFeedTables.ADDITIONAL_TABLES, "test.sample_07,test.sample_08");
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
-        try {
-            runner.run();
-        }catch (Exception e) {
-            System.out.println("lbya");
-            e.printStackTrace();
-        }
+        runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
