@@ -37,3 +37,7 @@ spark.livy.port=8998
 EOF
 
 service kylo-services start
+
+# Steps to Revert to using Kylo Spark Shell
+mv /opt/kylo/kylo-services/lib/kylo-spark-livy-core-0.9.2-SNAPSHOT.jar /opt/kylo/setup/plugins
+cp -r /opt/kylo/setup/plugins/spark-shell/* /opt/kylo/kylo-services/lib

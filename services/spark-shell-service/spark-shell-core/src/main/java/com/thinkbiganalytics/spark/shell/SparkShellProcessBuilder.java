@@ -214,7 +214,7 @@ public class SparkShellProcessBuilder {
             .setConf("spark.driver.userClassPathFirst", "true")
             .setConf("spark.yarn.appMasterEnv." + CLIENT_ID, clientId)
             .setConf("spark.yarn.appMasterEnv." + CLIENT_SECRET, clientSecret)
-            .setMainClass("com.thinkbiganalytics.spark.SparkShellApp");
+            .setMainClass("com.thinkbiganalytics.spark2.SparkShellApp");
     }
 
     /**
