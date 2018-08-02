@@ -23,7 +23,6 @@ package com.thinkbiganalytics.kylo.spark.livy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.thinkbiganalytics.kylo.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementsPost;
@@ -215,6 +214,18 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     }
 
 
+    private String toJsonInScalaString(Object obj) {
+        String objAsJson = "{}";
+        try {
+            objAsJson = mapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to serialize '{}' to string: {}", obj.getClass(), obj);
+        }
+
+        return scalaStr(objAsJson);
+    }
+
+
     @Nonnull
     @Override
     public SaveResponse saveTransform(@Nonnull SparkShellProcess process, @Nonnull String
@@ -223,12 +234,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
-        String format = scalaStr(request.getFormat());
-        String mode = scalaStr(request.getMode());
-        String tableName = scalaStr(request.getTableName());
-        String makeRequest = scriptGenerator.wrappedScript("newSaveRequest", "", "\n", format,
-                mode, tableName);
-        String script = scriptGenerator.wrappedScript("submitSaveJob", makeRequest, "\n", transformId);
+        String script = scriptGenerator.wrappedScript("submitSaveJob", "", "\n", toJsonInScalaString(request), transformId);
 
         Statement statement = submitCode(client, script, process);
 
@@ -280,17 +286,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request) {
         logger.debug("kyloCatalogTransform(process,kyloCatalogReadRequest) called");
 
-        String kyloCatalogReadRequestJson = "{}";
-        try {
-            kyloCatalogReadRequestJson = mapper.writeValueAsString(request);
-        } catch (JsonProcessingException e) {
-            logger.error("Unable to serialize KyloCatalogReadRequest to string: {}", request);
-        }
-
-        String jsonLit = scalaStr(kyloCatalogReadRequestJson);
-
-        String script = scriptGenerator.wrappedScript("kyloCatalogTransform", "", "\n", jsonLit);
-        logger.debug("scala str\n{}", script );
+        String script = scriptGenerator.wrappedScript("kyloCatalogTransform", "", "\n", toJsonInScalaString(request));
+        logger.debug("scala str\n{}", script);
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
@@ -310,11 +307,12 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     // TODO: is there a better way to wait for a response than synchronous?  UI could poll?
     @VisibleForTesting
     Statement getStatement(JerseyRestClient jerseyClient, Integer sessionId, Integer stmtId) {
-        return LivyUtils.getStatement(jerseyClient,sessionId,stmtId);
+        return LivyUtils.getStatement(jerseyClient, sessionId, stmtId);
     }
 
     /**
      * Creates a scala string literal of the given object
+     *
      * @param obj
      * @return a literal that can be placed in a scala code snippet
      */

@@ -51,22 +51,10 @@ val logger = Logger.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
                         ]]>
                     </value>
                 </entry>
-                <entry key="newSaveRequest">
-                    <value>
-                        <![CDATA[                        
-val saveRequest: com.thinkbiganalytics.spark.rest.model.SaveRequest = new
-com.thinkbiganalytics.spark.rest.model.SaveRequest()
-saveRequest.setFormat(%s)
-saveRequest.setJdbc(null)
-saveRequest.setMode(%s)
-saveRequest.setOptions(new java.util.HashMap[String,String])
-saveRequest.setTableName(%s)
-                        ]]>
-                    </value>
-                </entry>
                 <entry key="submitSaveJob">
                     <value>
                         <![CDATA[
+val saveRequest: com.thinkbiganalytics.spark.rest.model.SaveRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.SaveRequest]);
 val dataSet = sparkContextService.toDataSet(sqlContext.sql("select * from %s"))
 val saveResponse = transformService.submitSaveJob(transformService.createSaveTask(saveRequest,
     new com.thinkbiganalytics.spark.metadata.ShellTransformStage(dataSet, converterService)))
@@ -121,32 +109,6 @@ LivyLogger.time {
                     </value>
                 </entry>
 
-
-                <entry key="OLDpagedDataFrame">
-                    <value>
-                        <![CDATA[
-LivyLogger.time {
-  val (startCol, stopCol) = (%s, %s);
-  val lastCol = df.columns.length - 1
-  val dfStartCol = if( lastCol >= startCol ) startCol else lastCol
-  val dfStopCol = if( lastCol >= stopCol) stopCol else lastCol
-  df = df.select( dfStartCol to dfStopCol map df.columns map col: _*)
-}
-
-var dz : org.apache.spark.rdd.RDD[(org.apache.spark.sql.Row, Long)] = null;
-LivyLogger.time {
-   dz = df.rdd.zipWithIndex
-}
-
-var dfRows : List[Object] = List()
-LivyLogger.time {
-  dfRows = List( df.schema.json, dz.filter( pair => pair._2>= %s  && pair._2<= %s)
-    .map(_._1).collect.map(x => x.toSeq) )
-}
-                        ]]>
-                    </value>
-                </entry>
-
                 <entry key="getDataSources">
                     <value>
                         <![CDATA[
@@ -168,7 +130,7 @@ val respAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
                 </entry>
                 <entry key="kyloCatalogTransform">
                     <value> <!-- takes a JSON string escaped for scala -->
-            <![CDATA[
+                        <![CDATA[
 val kyloCatalogReadRequest: com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest]);
 val kyloReadResponse = transformService.kyloReaderResponse(kyloCatalogReadRequest);
 val respAsStr = mapper.writeValueAsString(kyloReadResponse)

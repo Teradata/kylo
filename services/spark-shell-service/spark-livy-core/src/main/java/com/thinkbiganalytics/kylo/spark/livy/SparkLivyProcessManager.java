@@ -209,9 +209,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         logger.debug("statement={}", statement);
 
         setLastStatementId(sparkProcess,statement.getId());
-        // TODO:  this should be tied to HTTP session
-        /*ScalaScriptService.counter = 0;
-        ScalaScriptService.scriptCache = new HashMap<>();*/
     }
 
     public Optional<Session> getLivySession(SparkShellProcess sparkProcess) {
