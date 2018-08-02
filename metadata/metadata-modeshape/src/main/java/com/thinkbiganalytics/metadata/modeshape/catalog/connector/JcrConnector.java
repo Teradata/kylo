@@ -25,14 +25,18 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
-import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParams;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin;
+import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
@@ -41,14 +45,18 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  *
  */
-public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, AccessControlledMixin {
+public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
     
     public static final String NODE_TYPE = "tba:Connector";
+    public static final String IS_ACTIVE = "tba:isActive";
     public static final String PLUGIN_ID = "tba:pluginId";
+    public static final String ICON = "tba:icon";
+    public static final String ICON_COLOR = "tba:iconColor";
     public static final String DATASOURCES = "datasources";
 
     /**
@@ -63,32 +71,16 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public ConnectorId getId() {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            return new ConnectorId(getObjectId());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
+        }
     }
 
     @Override
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParamsSupplier#getSparkParameters()
-     */
-    @Override
-    public DataSetSparkParameters getSparkParameters() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParamsSupplier#getEffectiveSparkParameters()
-     */
-    @Override
-    public DataSetSparkParameters getEffectiveSparkParameters() {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrConnectorAllowedActions.class;
     }
 
     /* (non-Javadoc)
@@ -96,8 +88,7 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public boolean isActive() {
-        // TODO Auto-generated method stub
-        return false;
+        return getProperty(IS_ACTIVE);
     }
 
     /* (non-Javadoc)
@@ -105,8 +96,7 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public String getPluginId() {
-        // TODO Auto-generated method stub
-        return null;
+        return getProperty(PLUGIN_ID);
     }
 
     /* (non-Javadoc)
@@ -114,8 +104,7 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public String getIcon() {
-        // TODO Auto-generated method stub
-        return null;
+        return getProperty(ICON);
     }
 
     /* (non-Javadoc)
@@ -123,17 +112,16 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public String getColor() {
-        // TODO Auto-generated method stub
-        return null;
+        return getProperty(ICON_COLOR);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getDataSources()
      */
     @Override
-    public List<DataSource> getDataSources() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<? extends DataSource> getDataSources() {
+        Node dsNode = JcrUtil.getNode(getNode(), DATASOURCES);
+        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.NODE_TYPE, JcrDataSource.class);
     }
     
     public static class ConnectorId extends JcrEntity.EntityId implements Connector.ID {

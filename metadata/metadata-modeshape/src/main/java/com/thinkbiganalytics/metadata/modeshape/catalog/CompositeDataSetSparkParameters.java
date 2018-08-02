@@ -24,33 +24,27 @@ package com.thinkbiganalytics.metadata.modeshape.catalog;
  */
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import javax.jcr.Node;
-
 /**
- *
+ * A composite of multiple DataSetSparkParameters provided in precedence order.
  */
-public class JcrDataSetSparkParameters extends JcrObject implements DataSetSparkParameters, PropertiedMixin {
+public class CompositeDataSetSparkParameters implements DataSetSparkParameters {
     
-    public static final String NODE_TYPE = "tba:DataSetSparkParams";
-    public static final String FORMAT = "tba:format";
-    public static final String PATHS = "tba:paths";
-    public static final String FILES = "tba:files";
-    public static final String JARS = "tba:jars";
-
+    private List<DataSetSparkParameters> paramsChain = new ArrayList<>();
+    
     /**
-     * @param node
+     * Constructs an instance from a chain of DataSetSparkParameters.  The precedence
+     * of any parameter is based on the order of the provided list from index 0..n.
+     * @param chain the DataSetSparkParameters
      */
-    public JcrDataSetSparkParameters(Node node) {
-        super(node);
+    public CompositeDataSetSparkParameters(List<DataSetSparkParameters> chain) {
+        this.paramsChain.addAll(chain);
     }
 
     /* (non-Javadoc)
@@ -58,7 +52,11 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String getFormat() {
-        return getProperty(FORMAT);
+        return this.paramsChain.stream()
+                .filter(params -> params.getFormat() != null)
+                .map(params -> params.getFormat())
+                .findFirst()
+                .orElse(null);
     }
 
     /* (non-Javadoc)
@@ -66,7 +64,7 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public List<String> getFiles() {
-        return JcrPropertyUtil.getPropertyValuesList(getNode(), FILES);
+        return new ArrayList<>(this.paramsChain.stream().flatMap(params -> params.getFiles().stream()).collect(Collectors.toSet()));
     }
 
     /* (non-Javadoc)
@@ -74,7 +72,7 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public List<String> getJars() {
-        return JcrPropertyUtil.getPropertyValuesList(getNode(), JARS);
+        return new ArrayList<>(this.paramsChain.stream().flatMap(params -> params.getJars().stream()).collect(Collectors.toSet()));
     }
 
     /* (non-Javadoc)
@@ -82,16 +80,17 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public List<String> getPaths() {
-        return JcrPropertyUtil.getPropertyValuesList(getNode(), PATHS);
+        return new ArrayList<>(this.paramsChain.stream().flatMap(params -> params.getPaths().stream()).collect(Collectors.toSet()));
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#getOptions()
      */
     @Override
     public Map<String, String> getOptions() {
-        return getProperties().entrySet().stream()
-                        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toString()));
+        return this.paramsChain.stream()
+                .flatMap(params -> params.getOptions().entrySet().stream())
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (existingVal, newVal) -> existingVal));  // existing values in the map take precedence.
     }
 
     /* (non-Javadoc)
@@ -99,9 +98,8 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public boolean addOption(String name, String value) {
-        String existing = getProperty(name);
-        setProperty(name, value);
-        return existing == null || ! existing.equals(value);
+        // Updates not supported
+        throw new UnsupportedOperationException("Updates not supported");
     }
 
     /* (non-Javadoc)
@@ -109,9 +107,8 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String removeOption(String name) {
-        String existing = getProperty(name);
-        removeProperty(name);
-        return existing;
+        // Updates not supported
+        throw new UnsupportedOperationException("Updates not supported");
     }
 
 }

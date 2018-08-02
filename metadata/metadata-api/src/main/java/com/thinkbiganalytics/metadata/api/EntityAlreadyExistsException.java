@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.catalog;
+package com.thinkbiganalytics.metadata.api;
 
 /*-
  * #%L
@@ -23,29 +23,27 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.Auditable;
-import com.thinkbiganalytics.metadata.api.SystemEntity;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-
-import java.io.Serializable;
-import java.util.List;
-
 /**
- *
+ * Thrown when an attempt to create an entity of some kind fails because it already exists.
  */
-public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Auditable, AccessControlled {
+public class EntityAlreadyExistsException extends MetadataException {
+
+    private static final long serialVersionUID = 1L;
     
-    interface ID extends Serializable { }
+    private final String systemName;
     
-    ID getId();
-    
-    boolean isActive();
-    
-    String getPluginId();
-    
-    String getIcon();
-    
-    String getColor();
-    
-    List<? extends DataSource> getDataSources();
+    /**
+     * @param message
+     */
+    public EntityAlreadyExistsException(String message, String systemName) {
+        super(message);
+        this.systemName = systemName;
+    }
+
+    /**
+     * @return the entity's systemName
+     */
+    public String getSystemName() {
+        return systemName;
+    }
 }

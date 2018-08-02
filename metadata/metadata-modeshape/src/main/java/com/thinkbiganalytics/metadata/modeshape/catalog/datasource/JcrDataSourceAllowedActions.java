@@ -1,11 +1,11 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.catalog;
+package com.thinkbiganalytics.metadata.modeshape.catalog.datasource;
 
 /*-
  * #%L
- * kylo-metadata-api
+ * kylo-metadata-modeshape
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -23,29 +23,20 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.Auditable;
-import com.thinkbiganalytics.metadata.api.SystemEntity;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 
-import java.io.Serializable;
-import java.util.List;
+import javax.jcr.Node;
 
 /**
  *
  */
-public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Auditable, AccessControlled {
-    
-    interface ID extends Serializable { }
-    
-    ID getId();
-    
-    boolean isActive();
-    
-    String getPluginId();
-    
-    String getIcon();
-    
-    String getColor();
-    
-    List<? extends DataSource> getDataSources();
+public class JcrDataSourceAllowedActions extends JcrAllowedActions {
+
+    /**
+     * @param allowedActionsNode
+     */
+    public JcrDataSourceAllowedActions(Node allowedActionsNode) {
+        super(allowedActionsNode);
+    }
+
 }

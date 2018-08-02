@@ -23,8 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
 import java.nio.file.Path;
 
 /**
@@ -34,8 +32,7 @@ public interface SecurityPaths {
     
     String ENTITY_ACCESS_CONTROL_ENABLED = "tba:entityAccessControlled";
 
-    Path METADATA = JcrUtil.path("metadata");
-    Path SECURITY = METADATA.resolve("security");
+    Path SECURITY = MetadataPaths.METADATA.resolve("security");
     Path PROTOTYPES = SECURITY.resolve("prototypes");
     Path ROLES = SECURITY.resolve("roles");
     

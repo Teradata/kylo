@@ -25,45 +25,58 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.Connector.ID;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
-import java.util.List;
+import java.nio.file.Path;
 import java.util.Optional;
+
+import javax.jcr.Node;
 
 /**
  *
  */
 public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.ID> implements ConnectorProvider {
 
+    public static final Path CATALOG_PATH = JcrUtil.path("metadata", "catalog");
+    public static final Path CONNECTORS_PATH = CATALOG_PATH.resolve("connectors");
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
      */
     @Override
     public ID resolveId(Serializable fid) {
-        // TODO Auto-generated method stub
-        return null;
+        return new JcrConnector.ConnectorId(fid);
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#findConnectorByPluginId(java.lang.String)
+     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#create(java.lang.String, java.lang.String)
      */
     @Override
-    public Optional<Connector> findByPluginId(String pluginId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Connector create(String pluginId, String systemName) {
+        Path connPath = MetadataPaths.connectorPath(systemName);
+        
+        if (JcrUtil.hasNode(getSession(), connPath)) {
+            throw ConnectorAlreadyExistsException.fromSystemName(systemName);
+        } else {
+            Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
+            return JcrUtil.createJcrObject(connNode, JcrConnector.class);
+        }
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getEntityClass()
+     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#findByPlugin(java.lang.String)
      */
     @Override
-    public Class<? extends Connector> getEntityClass() {
-        // TODO Auto-generated method stub
-        return null;
+    public Optional<Connector> findByPlugin(String pluginId) {
+        String query = startBaseQuery().append(" WHERE [").append(JcrConnector.PLUGIN_ID).append("] = '").append(pluginId).append("'").toString();
+        return Optional.ofNullable(findFirst(query));
     }
 
     /* (non-Javadoc)
@@ -71,8 +84,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
      */
     @Override
     public Class<? extends JcrEntity<?>> getJcrEntityClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrConnector.class;
     }
 
     /* (non-Javadoc)
@@ -80,8 +92,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
      */
     @Override
     public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrConnector.NODE_TYPE;
     }
 
 }

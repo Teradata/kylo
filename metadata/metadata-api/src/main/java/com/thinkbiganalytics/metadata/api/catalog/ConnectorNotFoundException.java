@@ -1,13 +1,13 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.catalog;
 
 /*-
  * #%L
- * kylo-metadata-api
+ * thinkbig-metadata-api
  * %%
- * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
+ * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,28 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import com.thinkbiganalytics.metadata.api.MetadataException;
 
 /**
  *
  */
-public interface DataSourceProvider extends BaseProvider<DataSource, DataSource.ID> {
-    
-    DataSource create(Connector.ID connId, String systemName);
+public class ConnectorNotFoundException extends MetadataException {
 
-    List<DataSource> findByConnector(Connector.ID connId, Connector.ID... moreIds);
-    
-    List<DataSource> findByConnector(Collection<Connector.ID> connIds);
-    
-    Optional<DataSource> find(DataSource.ID id);
+    private static final long serialVersionUID = 3867336790441208367L;
+
+    private final Connector.ID id;
+
+    public ConnectorNotFoundException(Connector.ID id) {
+        super("No connector exists with ID: " + id);
+        this.id = id;
+    }
+
+    public ConnectorNotFoundException(String message, Connector.ID id) {
+        super(message);
+        this.id = id;
+    }
+
+    public Connector.ID getId() {
+        return id;
+    }
 }

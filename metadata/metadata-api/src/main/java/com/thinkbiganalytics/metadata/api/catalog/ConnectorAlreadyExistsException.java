@@ -23,29 +23,26 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.Auditable;
-import com.thinkbiganalytics.metadata.api.SystemEntity;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-
-import java.io.Serializable;
-import java.util.List;
+import com.thinkbiganalytics.metadata.api.EntityAlreadyExistsException;
 
 /**
- *
+ * Thrown when a attempt to create a connector fails because one already exists with
+ * the same system name.
  */
-public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Auditable, AccessControlled {
+public class ConnectorAlreadyExistsException extends EntityAlreadyExistsException {
+
+    private static final long serialVersionUID = 1L;
     
-    interface ID extends Serializable { }
+    /**
+     * @param systemName
+     * @return the exception
+     */
+    public static ConnectorAlreadyExistsException fromSystemName(String systemName) {
+        return new ConnectorAlreadyExistsException("A conector already exists with the name: " + systemName, systemName);
+    }
     
-    ID getId();
-    
-    boolean isActive();
-    
-    String getPluginId();
-    
-    String getIcon();
-    
-    String getColor();
-    
-    List<? extends DataSource> getDataSources();
+    public ConnectorAlreadyExistsException(String message, String systemName) {
+        super(message, systemName);
+    }
+
 }

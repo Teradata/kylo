@@ -19,6 +19,13 @@
  *                 datasourceDefinition
  *          "templates"
  *             template
+ *          "catalog"
+ *              "connectors"
+ *                  tba:Connector*
+ *                      "dataSources"
+ *                          tba:DataSource*
+ *                              "dataSets"
+ *                                  tba:DataSet*
  *          "sla"
  *              sla*
  *          "extensions"
@@ -206,7 +213,7 @@
     - usr:mandatory (BOOLEAN)
     - usr:order (LONG)
     
-[tba:iconed] mixin
+[tba:Iconed] mixin
     - tba:icon (STRING)
     - tba:iconColor (STRING)
 
@@ -239,7 +246,7 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:iconed, mix:referenceable, tba:accessControlled
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconed, mix:referenceable, tba:accessControlled
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -392,7 +399,7 @@
  	- tba:controlerServiceId (STRING)
  	- tba:password (STRING)
 
-[tba:domainType] > mix:referenceable, mix:title, tba:iconed
+[tba:domainType] > mix:referenceable, mix:title, tba:Iconed
 	- tba:fieldJson (STRING)
 	- tba:fieldNameFlags (STRING)
 	- tba:fieldNamePattern (STRING)
@@ -412,9 +419,10 @@
 [tba:DataSetSparkParamsSupplier] mixin
     + tba:sparkParams (tba:DataSetSparkParams) = tba:sparkSettings autocreated mandatory
 
-[tba:Connector] > mix:title, tba:entity, mix:title, tba:iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
-    - tba:pluginId (STRING)
-    + datasources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
+[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
+    - tba:isActive (BOOLEAN) = true
+    - tba:pluginId (STRING) mandatory
+    + dataSources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
     
 [tba:ConnectorDataSources]
     + * (tba:DataSource) 
