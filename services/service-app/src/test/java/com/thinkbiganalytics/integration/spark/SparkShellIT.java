@@ -35,6 +35,7 @@ import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -52,6 +53,7 @@ import javax.annotation.Nullable;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+@Ignore("KYLO-2389: ignore until jira issue is done")
 public class SparkShellIT extends IntegrationTestBase {
 
     /**
