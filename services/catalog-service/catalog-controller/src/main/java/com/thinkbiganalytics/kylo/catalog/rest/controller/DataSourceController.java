@@ -24,6 +24,7 @@ import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
@@ -162,7 +163,7 @@ public class DataSourceController extends AbstractCatalogController {
         ConnectorTab connectorTab = tabs.get(0);
         String sref = connectorTab.getSref();
         if (".browse".equals(sref)) {
-            doListFiles(dataSource.getTemplate().getPaths().get(0), dataSource);
+            doListFiles(DataSourceUtil.getPaths(dataSource).orElseThrow(IllegalStateException::new).get(0), dataSource);
         } else if (".connection".equals(sref)) {
             doListTables(null, null, dataSource);
         } else {

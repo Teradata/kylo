@@ -30,6 +30,7 @@ import {RestUrlConstants} from "../../../../services/RestUrlConstants";
 import {UiComponentsService} from "../../../../services/UiComponentsService";
 import {RadioButton} from "../../../../shared/dynamic-form/model/RadioButton";
 import {Textarea} from "../../../../shared/dynamic-form/model/Textarea";
+import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -99,7 +100,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     }
 
     getStepName() {
-        return "Feed Details";
+        return FeedStepConstants.STEP_FEED_DETAILS;
     }
 
     init(){

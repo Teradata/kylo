@@ -68,6 +68,10 @@ export class ListTemplatesComponent implements OnInit {
         });
     }
 
+    updateTemplate(template: TemplateMetadata) {
+        this.importTemplate(template);
+    }
+
     importTemplate(template: TemplateMetadata) {
         this.selectedTemplate = template;
         let param = {"template": template};

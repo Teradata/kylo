@@ -27,6 +27,8 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedScheduleComponent} from "../../feed-schedule/feed-schedule.component";
 import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
 import {ISubscription} from "rxjs/Subscription";
+import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -58,11 +60,9 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     private feedService: FeedService;
 
-    private cancelFeedEditSubscription :ISubscription;
-
-
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
+                private _translateService: TranslateService,
                 private $$angularInjector: Injector) {
         super(defineFeedService, stateService);
         this.categoriesService = $$angularInjector.get("CategoriesService");
@@ -70,7 +70,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         this.formGroup = new FormGroup({});
         this.subscribeToFormChanges(this.formGroup);
 
-        this.cancelFeedEditSubscription = this.defineFeedService.cancelFeedEdit$.subscribe(this.cancelFeedEdit.bind(this))
+
     }
 
 
@@ -80,7 +80,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         this.registerFormControls();
     }
     destroy(){
-        this.cancelFeedEditSubscription.unsubscribe();
+
     }
 
     /**
@@ -94,7 +94,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
 
     getStepName() {
-        return "General Info";
+        return FeedStepConstants.STEP_GENERAL_INFO;
     }
 
     /**
@@ -156,7 +156,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    private cancelFeedEdit(feed:Feed){
+    protected cancelFeedEdit(feed:Feed){
         this.propertyList.reset(feed.userProperties);
         this.feedSchedule.reset(feed);
     }

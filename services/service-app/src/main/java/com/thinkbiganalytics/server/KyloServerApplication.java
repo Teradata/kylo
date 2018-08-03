@@ -56,7 +56,11 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
+        // Configure java.util.logging for Kylo Spark Shell
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
+
+        // Run upgrader
         KyloUpgrader upgrader = new KyloUpgrader();
 
         if (upgrader.isUpgradeRequired()) {
@@ -70,9 +74,9 @@ public class KyloServerApplication implements SchedulingConfigurer {
             log.info("Kylo v{} is up to date.  Starting the application.",KyloVersionUtil.getBuildVersion());
         }
 
+        // Run services
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
-
     }
 
     @Bean(destroyMethod = "shutdown")

@@ -17,6 +17,11 @@ import {PropertyListComponent} from "./shared/property-list/property-list.compon
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {DomainTypeConflictDialogComponent} from "./shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component";
 import {ApplyDomainTypeDialogComponent} from "./shared/domain-type/apply-domain-type/apply-domain-type-dialog.component";
+import {ApplyDomainTypesDialogComponent} from "./shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
+import {CovalentDataTableModule} from "@covalent/core/data-table";
+import {FlexLayoutModule} from "@angular/flex-layout";
+import {KyloCommonModule} from "../common/common.module";
+import {MatButtonModule} from "@angular/material/button";
 
 
 @NgModule({
@@ -24,15 +29,21 @@ import {ApplyDomainTypeDialogComponent} from "./shared/domain-type/apply-domain-
         CommonModule,
         DynamicFormModule,
         PropertyListModule,
-        MatDialogModule
+        MatDialogModule,
+        FlexLayoutModule,
+        KyloCommonModule,
+        MatButtonModule,
+        CovalentDataTableModule
     ],
     declarations:[
         DomainTypeConflictDialogComponent,
-        ApplyDomainTypeDialogComponent
+        ApplyDomainTypeDialogComponent,
+        ApplyDomainTypesDialogComponent
     ],
     entryComponents:[
         DomainTypeConflictDialogComponent,
-        ApplyDomainTypeDialogComponent
+        ApplyDomainTypeDialogComponent,
+        ApplyDomainTypesDialogComponent
     ],
     providers: [
         categoriesServiceProvider,

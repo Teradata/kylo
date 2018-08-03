@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType, DomainTypesService} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
@@ -136,6 +135,9 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
         if(this.tags == null || this.tags == undefined){
             this.tags = []
         }
+        if(this.sampleValues == null || this.sampleValues == undefined){
+            this.sampleValues = []
+        }
 
     }
     initialize() {
@@ -178,7 +180,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     }
 
     initFeedColumn() {
-        if (this.origName == undefined) {
+        if (this.origName == undefined || this.history.length == 0) {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;
@@ -223,6 +225,38 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
         this.updatedTracker = historyRecord.updatedTracker;
     }
 
+
+    applyDomainType(domainType:DomainType){
+        this.fieldPolicy.$currentDomainType = domainType;
+        this.fieldPolicy.domainTypeId = domainType.id;
+
+        if (_.isObject(domainType.field)) {
+            this.tags = CloneUtil.deepCopy(domainType.field.tags);
+            if (_.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                this.name = domainType.field.name;
+            }
+            if (_.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
+                this.derivedDataType = domainType.field.derivedDataType;
+                this.precisionScale = domainType.field.precisionScale;
+                this.dataTypeDisplay = this.getDataTypeDisplay();
+            }
+        }
+
+        if (_.isObject(domainType.fieldPolicy)) {
+            this.fieldPolicy.standardization = CloneUtil.deepCopy(domainType.fieldPolicy.standardization);
+            this.fieldPolicy.validation = CloneUtil.deepCopy(domainType.fieldPolicy.validation);
+        }
+
+
+
+        // Update field properties
+        delete this.$allowDomainTypeConflict;
+        this.dataTypeDisplay = this.getDataTypeDisplay();
+        this.fieldPolicy.name = this.name;
+    }
+
+
+
     /**
      * is the column definition invalid
      * @return {boolean}
@@ -240,7 +274,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
 
 
     initializeValidationErrors() {
-        if (angular.isUndefined(this.validationErrors)) {
+        if (_.isUndefined(this.validationErrors)) {
             this.validationErrors = new ColumnDefinitionValidationError();
         }
     }
@@ -301,7 +335,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     }
 
     isComplex(){
-        return this.dataTypeDescriptor && angular.isDefined(this.dataTypeDescriptor.complex) ? this.dataTypeDescriptor.complex : false;
+        return this.dataTypeDescriptor && !_.isUndefined(this.dataTypeDescriptor.complex) ? this.dataTypeDescriptor.complex : false;
     }
 
     copy() :TableColumnDefinition{

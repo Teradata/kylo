@@ -9,9 +9,9 @@ package com.thinkbiganalytics.rest;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -140,31 +140,31 @@ public class JerseyRestClient {
                 }
             }
 
-            if( config.getTruststorePassword()==null && config.getKeystorePassword() == null ) {
+            if (config.getTruststorePassword() == null && config.getKeystorePassword() == null) {
                 log.warn("keystorePassword and truststorePassword should not both be null, check application.properties");
             }
 
             if (keyStoreFile != null) {
                 sslConfig = SslConfigurator.newInstance()
-                    .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
-                    .trustStorePassword(config.getTruststorePassword() != null ? String.valueOf(config.getTruststorePassword()) : String.valueOf(config.getKeystorePassword()))
-                    .trustStoreType(config.getTrustStoreType())
-                    .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
-                    .keyStorePassword(config.getKeystorePassword());
+                        .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
+                        .trustStorePassword(config.getTruststorePassword() != null ? String.valueOf(config.getTruststorePassword()) : String.valueOf(config.getKeystorePassword()))
+                        .trustStoreType(config.getTrustStoreType())
+                        .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
+                        .keyStorePassword(config.getKeystorePassword());
             } else {
                 sslConfig = SslConfigurator.newInstance()
-                    .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
-                    .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
-                    .trustStoreFile(config.getTruststorePath() == null ? config.getKeystorePath() : config.getTruststorePath())
-                    .trustStorePassword(config.getTruststorePassword() == null ? String.valueOf(config.getKeystorePassword()) : String.valueOf(config.getTruststorePassword()))
-                    .trustStoreType(config.getTrustStoreType());
+                        .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
+                        .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
+                        .trustStoreFile(config.getTruststorePath() == null ? config.getKeystorePath() : config.getTruststorePath())
+                        .trustStorePassword(config.getTruststorePassword() == null ? String.valueOf(config.getKeystorePassword()) : String.valueOf(config.getTruststorePassword()))
+                        .trustStoreType(config.getTrustStoreType());
             }
 
             try {
                 sslContext = sslConfig.createSSLContext();
             } catch (Exception e) {
                 log.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to Jersey Client without SSL.  Rest Integration with '" + config.getUrl()
-                          + "'  will probably not work until this is fixed!");
+                        + "'  will probably not work until this is fixed!");
             }
         }
 
@@ -186,13 +186,13 @@ public class JerseyRestClient {
                 HostnameVerifier defaultHostnameVerifier = new DefaultHostnameVerifier();
 
                 LayeredConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
-                    sslContext,
-                    defaultHostnameVerifier);
+                        sslContext,
+                        defaultHostnameVerifier);
 
                 final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", sslSocketFactory)
-                    .build();
+                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                        .register("https", sslSocketFactory)
+                        .build();
 
                 connectionManager = new PoolingHttpClientConnectionManager(registry);
             } else {
@@ -245,6 +245,7 @@ public class JerseyRestClient {
     /**
      * Allows custom clients to override and register custom features to the client.
      * Default does standard Jackson JSON mapping
+     *
      * @param client the Rest Client
      */
     protected void registerClientFeatures(Client client) {
@@ -257,7 +258,7 @@ public class JerseyRestClient {
      * Allows derived classes to make modifications to the clientConfig before it is used to construct the client.
      *
      * @param clientConfig the Rest Client Configuration
-     * NOTE:  this method should never be final.  Some plugin classes may extend this method.
+     *                     NOTE:  this method should never be final.  Some plugin classes may extend this method.
      */
     protected void extendClientConfig(ClientConfig clientConfig) {
 
@@ -327,8 +328,8 @@ public class JerseyRestClient {
 
     /**
      * Begins a request for a specified path and parameters.
-     * 
-     * @param path the request path
+     *
+     * @param path   the request path
      * @param params the request parameters
      * @return a builder with which to continue constructing the request
      */
@@ -338,8 +339,8 @@ public class JerseyRestClient {
 
     /**
      * Builds a target for for a specified path and parameters.
-     * 
-     * @param path the request path
+     *
+     * @param path   the request path
      * @param params the request parameters
      * @return a WebTarget instance
      */
@@ -374,13 +375,13 @@ public class JerseyRestClient {
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
 
     }
-    
+
     /**
      * Perform a GET request using the current state of the supplied builder.
      *
      * @param builder the Invokation.Builder
-     * @param clazz the type of result
-     * @param <T>    the returned class type
+     * @param clazz   the type of result
+     * @param <T>     the returned class type
      * @return the returned object of the specified Class
      */
     public <T> T get(Invocation.Builder builder, Class<T> clazz) {
@@ -391,26 +392,26 @@ public class JerseyRestClient {
      * Perform a GET request against the supplied web target.
      *
      * @param target the WebTarget
-     * @param clazz the type of result
+     * @param clazz  the type of result
      * @param <T>    the returned class type
      * @return the returned object of the specified Class
      */
     public <T> T get(WebTarget target, Class<T> clazz) {
         return get(target, clazz, true);
     }
-    
+
     /**
      * Perform a GET request using the current state of the supplied builder.
      *
-     * @param builder the Invokation.Builder
-     * @param clazz the type of result
-     * @param <T>    the returned class type
+     * @param builder  the Invokation.Builder
+     * @param clazz    the type of result
+     * @param <T>      the returned class type
      * @param logError true to log an exceptions, false to not
      * @return the returned object of the specified Class
      */
     public <T> T get(Invocation.Builder builder, Class<T> clazz, boolean logError) {
         T obj = null;
-        
+
         try {
             obj = builder.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
@@ -424,13 +425,13 @@ public class JerseyRestClient {
         }
         return obj;
     }
-    
+
     /**
      * Perform a GET request against the supplied web target.
      *
-     * @param builder the WebTarget
-     * @param clazz the type of result
-     * @param <T>    the returned class type
+     * @param builder  the WebTarget
+     * @param clazz    the type of result
+     * @param <T>      the returned class type
      * @param logError true to log an exceptions, false to not
      * @return the returned object of the specified Class
      */
@@ -480,8 +481,8 @@ public class JerseyRestClient {
         WebTarget target = buildTarget(path, params);
 
         Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
-            .headers(headers)
-            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+                .headers(headers)
+                .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
 
         return builder.get(clazz);
     }
@@ -581,7 +582,7 @@ public class JerseyRestClient {
      * Below is a sample on how to create a Multipart from a string and post it
      * String xml = "some  string";
      * final FormDataBodyPart templatePart = new FormDataBodyPart("template", xml, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-     *
+     * <p>
      * FormDataContentDisposition.FormDataContentDispositionBuilder disposition = FormDataContentDisposition.name(templatePart.getName());
      * disposition.fileName("fileName");
      * templatePart.setFormDataContentDisposition(disposition.build());
@@ -621,7 +622,7 @@ public class JerseyRestClient {
         MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
         contentType = Boundary.addBoundary(contentType);
         return target.request().post(
-            Entity.entity(multiPart, contentType), returnType);
+                Entity.entity(multiPart, contentType), returnType);
     }
 
 
@@ -679,8 +680,8 @@ public class JerseyRestClient {
         WebTarget target = buildTarget(path, params);
 
         Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
-            .headers(headers)
-            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+                .headers(headers)
+                .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
 
         return builder.delete(clazz);
     }
@@ -710,13 +711,13 @@ public class JerseyRestClient {
         WebTarget target = buildTarget(path, null);
         return target.request().async().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
-    
+
     /**
      * If a request doesn't like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
      * This can be called in the Exception of a particular GET request which will attempt to resolve the correct object from the Response string.
      *
      * @param builder the Invocation.Builder
-     * @param clazz  the class to return
+     * @param clazz   the class to return
      * @return the response of type T
      * @see JerseyRestClient#get(String, Map, Class)
      * @see JerseyRestClient#getFromPathString(String, Class)

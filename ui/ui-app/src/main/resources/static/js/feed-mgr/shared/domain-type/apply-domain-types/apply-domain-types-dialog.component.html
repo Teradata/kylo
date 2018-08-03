@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>Apply Domain Types</h2>
+
+<mat-dialog-content class="mat-typography">
+    <div style="padding-bottom: 12px;">The detected domain type will overwrite the name or data type of one or more columns. Please deselect any column that should be not changed:</div>
+
+    <td-data-table
+        #dataTable
+        [data]="filteredData"
+        [columns]="columns"
+        [selectable]="true"
+        [clickable]="false"
+        [(value)]="selectedRows"
+        [multiple]="false"
+        [sortable]="true"
+        [sortBy]="sortBy"
+        [sortOrder]="sortOrder"
+        (sortChange)="sort($event)"
+        (rowSelect)="onRowSelected($event)"
+        [style.height.px]="200">
+      <ng-template tdDataTableTemplate="domainType" let-value="value">
+        <span><ng-md-icon [icon]="value.icon" [ngStyle]="{'fill':value.iconColor}"></ng-md-icon> {{value.title}}</span>
+      </ng-template>
+
+    </td-data-table>
+    <div  *ngIf="!dataTable.hasData" fxLayout="row" fxLayoutAlign="center center">
+      <h3>No results to display.</h3>
+    </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button  mat-raised-button  (click)="cancel()">Cancel</button>
+  <button  mat-raised-button color="primary" (click)="hide()">Apply</button>
+</mat-dialog-actions>

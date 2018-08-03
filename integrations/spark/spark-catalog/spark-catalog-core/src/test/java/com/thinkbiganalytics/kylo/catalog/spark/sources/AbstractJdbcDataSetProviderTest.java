@@ -35,7 +35,6 @@ import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.SQLConf;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.UserDefinedFunction;
 import org.apache.spark.sql.catalyst.expressions.ScalaUDF;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
@@ -58,9 +57,6 @@ import java.util.Collections;
 import javax.annotation.Nonnull;
 
 import scala.Function1;
-import scala.Option$;
-import scala.collection.Seq;
-import scala.collection.Seq$;
 
 @SuppressWarnings("unchecked")
 public class AbstractJdbcDataSetProviderTest {
@@ -388,7 +384,7 @@ public class AbstractJdbcDataSetProviderTest {
         @Override
         protected <R, P1> Accumulable<R, P1> accumulable(@Nonnull final R initialValue, @Nonnull final String name, @Nonnull final AccumulableParam<R, P1> param,
                                                          @Nonnull final KyloCatalogClient<DataFrame> client) {
-            return new Accumulable<>(initialValue, param, Option$.MODULE$.apply(name));
+            return DataSetProviderUtil.accumulable(initialValue, name, param);
         }
 
         @Nonnull
@@ -413,20 +409,19 @@ public class AbstractJdbcDataSetProviderTest {
         @Nonnull
         @Override
         protected DataFrame load(@Nonnull final DataFrameReader reader) {
-            return Mockito.mock(DataFrame.class);
+            return DataSetProviderUtil.load();
         }
 
         @Nonnull
         @Override
         protected DataFrame map(@Nonnull final DataFrame dataSet, @Nonnull final String fieldName, @Nonnull final Function1 function, @Nonnull final DataType returnType) {
-            final Seq<Column> inputs = Seq$.MODULE$.<Column>newBuilder().$plus$eq(dataSet.col(fieldName)).result();
-            final UserDefinedFunction udf = new UserDefinedFunction(function, returnType, (Seq<DataType>) Seq$.MODULE$.<DataType>empty());
-            return dataSet.withColumn(fieldName, udf.apply(inputs));
+            return DataSetProviderUtil.map(dataSet, fieldName, function, returnType);
         }
 
+        @Nonnull
         @Override
         protected StructType schema(@Nonnull final DataFrame dataSet) {
-            return dataSet.schema();
+            return DataSetProviderUtil.schema(dataSet);
         }
     }
 }

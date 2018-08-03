@@ -14,7 +14,6 @@ import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {DefineFeedService} from "./services/define-feed.service";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
-import {DefineFeedStepFeedTargetComponent} from "./steps/feed-target/define-feed-step-feed-target.component";
 import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
 import {Observable} from "rxjs/Observable";
@@ -102,11 +101,6 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-details",
         url: "/:feedId/feed-details",
         component: DefineFeedStepFeedDetailsComponent
-    },
-    {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-target",
-        url: "/:feedId/feed-target",
-        component: DefineFeedStepFeedTargetComponent
     },
     {
         name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-table",

@@ -77,6 +77,7 @@ public class SaveResponse {
     }
 
     public enum Status {
+        LIVY_PENDING,
         ERROR,
         PENDING,
         SUCCESS

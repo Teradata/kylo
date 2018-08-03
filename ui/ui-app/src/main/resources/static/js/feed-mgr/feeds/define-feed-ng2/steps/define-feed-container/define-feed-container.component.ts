@@ -76,6 +76,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     }
     onEdit(){
         this.feed.readonly = false;
+        this.defineFeedService.onFeedEdit();
     }
     onCancelEdit() {
 

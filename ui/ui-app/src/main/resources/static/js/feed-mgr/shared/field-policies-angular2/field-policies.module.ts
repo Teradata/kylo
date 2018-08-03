@@ -21,6 +21,7 @@ import {FeedFieldPolicyRulesDialogService} from "../feed-field-policy-rules/feed
 import {FeedFieldPolicyRulesDialogComponent} from "../feed-field-policy-rules/feed-field-policy-rules-dialog.component";
 import {KyloCommonModule} from "../../../common/common.module";
 import {MatRadioModule} from "@angular/material/radio";
+import {MatButtonModule} from "@angular/material/button";
 
 @NgModule({
     declarations: [
@@ -47,7 +48,8 @@ import {MatRadioModule} from "@angular/material/radio";
         MatSelectModule,
         MatSlideToggleModule,
         ReactiveFormsModule,
-        CovalentChipsModule
+        CovalentChipsModule,
+        MatButtonModule
     ],
     providers: [
         PolicyInputFormService,

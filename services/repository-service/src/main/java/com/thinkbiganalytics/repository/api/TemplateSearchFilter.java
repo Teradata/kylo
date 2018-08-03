@@ -58,20 +58,20 @@ public class TemplateSearchFilter {
     }
 
     public static enum TemplateComparator {
-        NAME("name", Comparator.comparing(RepositoryItem::getTemplateName)),
+        NAME("name", Comparator.comparing((w) -> w.getTemplateName())),
         REPOSITORY_TYPE("repositoryType", Comparator
-            .comparing(r -> r.getRepository().getType().getKey()));
+            .comparing((r) -> r.getRepository().getType().getKey()));
 
-        private Comparator<RepositoryItem> comparator;
+        private Comparator<TemplateMetadataWrapper> comparator;
         private String key;
 
-        TemplateComparator(String key, Comparator<RepositoryItem> comparator){
+        TemplateComparator(String key, Comparator<TemplateMetadataWrapper> comparator){
             this.key = key;
             this.comparator = comparator;
         }
 
         public String getKey() { return this.key; }
 
-        public Comparator<RepositoryItem> getComparator() { return this.comparator; }
+        public Comparator<TemplateMetadataWrapper> getComparator() { return this.comparator; }
     }
 }

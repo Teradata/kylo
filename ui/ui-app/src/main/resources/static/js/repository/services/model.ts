@@ -12,6 +12,7 @@ export class TemplateMetadata {
     description: string;
     templateName: string;
     installed: boolean;
+    updateAvailable: boolean;
     repository: TemplateRepository;
 }
 

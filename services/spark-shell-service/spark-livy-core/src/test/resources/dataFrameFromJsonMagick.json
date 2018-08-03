@@ -1,0 +1,138 @@
+{
+  "data": {
+    "application/json": [
+      {
+        "schema": [
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venueid",
+            "nullable": true
+          },
+          {
+            "dataType": {
+            },
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuename",
+            "nullable": true
+          },
+          {
+            "dataType": {
+            },
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuecity",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuestate",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venueseats",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venues_processing_dttm",
+            "nullable": true
+          }
+        ],
+        "values": [
+          1,
+          "Toyota Park",
+          "Bridgeview",
+          "IL",
+          0,
+          "1520786524754"
+        ]
+      },
+      {
+        "schema": [
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venueid",
+            "nullable": true
+          },
+          {
+            "dataType": {
+            },
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuename",
+            "nullable": true
+          },
+          {
+            "dataType": {
+            },
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuecity",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {}
+            },
+            "name": "venuestate",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venueseats",
+            "nullable": true
+          },
+          {
+            "dataType": {},
+            "metadata": {
+              "map": {
+              }
+            },
+            "name": "venues_processing_dttm",
+            "nullable": true
+          }
+        ],
+        "values": [
+          5,
+          "Gillette Stadium",
+          "Foxborough",
+          "MA",
+          68756,
+          "1520786524754"
+        ]
+      }
+    ]
+  },
+  "execution_count": 1,
+  "status": "ok"
+}

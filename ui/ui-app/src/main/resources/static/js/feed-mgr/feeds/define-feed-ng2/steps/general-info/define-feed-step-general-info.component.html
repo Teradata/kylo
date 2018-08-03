@@ -1,31 +1,30 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step">
 
   <feed-step-readonly-content>
-
     <div fxLayout="column">
       <div fxLayout="row" fxLayoutAlign="start" class="read-only-row">
         <div fxFlex="50">
-          <span fxFlex="25">Name</span>
+          <span fxFlex="25" translate>views.define-feed-general-info.DN</span>
           <span>{{feed.feedName}}</span>
         </div>
         <div fxFlex="50">
-          <span fxFlex="25">System Name</span>
+          <span fxFlex="25" translate>views.define-feed-general-info.SN</span>
           <span>{{feed.systemFeedName}}</span>
         </div>
       </div>
 
       <div class="read-only-row">
-        <span fxFlex="25">Category</span>
+        <span fxFlex="25" translate>views.define-feed-general-info.Category</span>
         <span>{{feed.category.name}}</span>
       </div>
 
       <div class="read-only-row">
-        <span fxFlex="25">Description</span>
+        <span fxFlex="25" translate>views.define-feed-general-info.Description</span>
         <span>{{feed.description}}</span>
       </div>
 
       <div class="read-only-row">
-        <span fxFlex="25">Data Owner</span>
+        <span fxFlex="25" translate>views.feed-details.DO</span>
         <span>{{feed.dataOwner}}</span>
       </div>
 

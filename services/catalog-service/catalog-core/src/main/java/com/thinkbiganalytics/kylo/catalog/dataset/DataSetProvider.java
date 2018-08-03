@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,10 +87,11 @@ public class DataSetProvider {
             .orElseThrow(() -> new CatalogException("catalog.dataset.datasource.invalid"));
 
         // Validate paths
-        if (source.getPaths() != null) {
+        final List<String> paths = DataSetUtil.getPaths(source).orElse(null);
+        if (paths != null) {
             final DataSet dataSet = new DataSet(source);
             dataSet.setDataSource(dataSource);
-            source.getPaths().stream()
+            paths.stream()
                 .map(pathString -> {
                     try {
                         return new Path(pathString);

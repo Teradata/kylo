@@ -37,7 +37,7 @@ public class HiveDataSetProviderV1 extends AbstractHiveDataSetProvider<DataFrame
     @Nonnull
     @Override
     protected DataFrameWriter getDataFrameWriter(@Nonnull final DataFrame dataSet, @Nonnull final DataSetOptions options) {
-        return dataSet.write();
+        return DataSetProviderUtilV1.getDataFrameWriter(dataSet);
     }
 
     @Nonnull

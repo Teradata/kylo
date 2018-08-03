@@ -37,7 +37,6 @@ import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-samp
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
 import {PreviewSchemaModule} from "../../catalog/datasource/preview-schema/preview-schema.module";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
-import {DefineFeedStepFeedTargetComponent} from "./steps/feed-target/define-feed-step-feed-target.component";
 import {CovalentMediaModule} from "@covalent/core/media";
 import {DefineFeedStepCardComponent} from "./steps/define-feed-step-card/define-feed-step-card.component";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
@@ -55,6 +54,7 @@ import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-po
 import {PropertyListModule} from "../../shared/property-list/property-list.module";
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
+import {TranslateModule} from "@ngx-translate/core";
 
 
 @NgModule({
@@ -67,7 +67,6 @@ import {MatDialogModule} from "@angular/material/dialog";
         DefineFeedStepSourceSampleComponent,
         DefineFeedStepSourceSampleDatasourceComponent,
         DefineFeedStepFeedDetailsComponent,
-        DefineFeedStepFeedTargetComponent,
         DefineFeedStepCardComponent,
         DefineFeedStepReadonlyContentComponent,
         DefineFeedStepEditContentComponent,
@@ -78,7 +77,7 @@ import {MatDialogModule} from "@angular/material/dialog";
     providers:[
       DefineFeedService,
       FeedLoadingService,
-        FilterPartitionFormulaPipe
+      FilterPartitionFormulaPipe
     ],
     imports: [
         CommonModule,
@@ -122,6 +121,7 @@ import {MatDialogModule} from "@angular/material/dialog";
         MatSnackBarModule,
         MatDialogModule,
         PropertyListModule,
+        TranslateModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

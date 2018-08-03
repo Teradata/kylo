@@ -66,8 +66,8 @@ export interface SaveResponse {
  * Status of a save.
  */
 export enum SaveResponseStatus {
-
     ERROR = "ERROR",
     PENDING = "PENDING",
-    SUCCESS = "SUCCESS"
+    SUCCESS = "SUCCESS",
+    LIVY_PENDING = "LIVY_PENDING"
 }

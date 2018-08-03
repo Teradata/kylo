@@ -52,6 +52,29 @@ public class DataSetOptions {
     private StructType schema;
     private List<String> sortColumnNames;
 
+    /**
+     * Constructs a {@code DataSetOptions}.
+     */
+    public DataSetOptions() {
+        // use defaults
+    }
+
+    /**
+     * Constructs a {@code DataSetOptions} by copying values from another.
+     */
+    public DataSetOptions(@Nonnull final DataSetOptions other) {
+        bucketColumnNames = (other.bucketColumnNames != null) ? new ArrayList<>(other.bucketColumnNames) : null;
+        format = other.format;
+        jars.addAll(other.jars);
+        mode = other.mode;
+        numBuckets = other.numBuckets;
+        options.putAll(other.options);
+        paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
+        partitioningColumns = (other.partitioningColumns != null) ? new ArrayList<>(other.partitioningColumns) : null;
+        schema = other.schema;
+        sortColumnNames = (other.sortColumnNames != null) ? new ArrayList<>(other.sortColumnNames) : null;
+    }
+
     @Nullable
     public List<String> getBucketColumnNames() {
         return bucketColumnNames;

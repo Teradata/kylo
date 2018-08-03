@@ -1,6 +1,8 @@
 {
-  "templateName": "Data Confidence Invalid Records",
-  "description": "Data Confidence Check - Invalid record count percentage",
-  "stream": false,
-  "fileName": "data_confidence_invalid_records.zip"
+  "templateName" : "Data Confidence Invalid Records",
+  "description" : "Data Confidence Check - Invalid record count percentage",
+  "fileName" : "data_confidence_invalid_records.zip",
+  "checksum" : "6d118447670a12d8c4eb565785275e28",
+  "stream" : false,
+  "lastModified" : 1530345002000
 }

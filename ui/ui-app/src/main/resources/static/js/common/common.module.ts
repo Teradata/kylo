@@ -13,6 +13,7 @@ import {KyloServicesModule} from "../services/services.module";
 import {AddButtonComponent} from "./add-button/add-button.component";
 import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
+import {TranslateModule} from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
@@ -23,6 +24,8 @@ import {NotificationMenuComponent} from "./notifications/notification-menu.compo
     entryComponents: [
         AddButtonComponent,
         NotificationMenuComponent
+    ],
+    providers:[
     ],
     imports: [
         CommonModule,

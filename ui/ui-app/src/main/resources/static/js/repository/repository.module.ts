@@ -36,6 +36,7 @@ import {CovalentCommonModule} from "@covalent/core/common";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatSortModule} from "@angular/material/sort";
 import {MatInputModule} from "@angular/material/input";
+import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 const moduleName: string = require("feed-mgr/templates/module-name");
 
@@ -58,6 +59,7 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         CovalentLoadingModule,
         CovalentSearchModule,
         CovalentPagingModule,
+        CovalentNotificationsModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatCardModule,

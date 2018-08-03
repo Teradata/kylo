@@ -22,7 +22,6 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.spark.KyloCatalogClientV2;
-import com.thinkbiganalytics.kylo.catalog.spark.SparkSqlUtilV2;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 
 import org.apache.spark.sql.DataFrameWriter;
@@ -39,7 +38,7 @@ public class HiveDataSetProviderV2 extends AbstractHiveDataSetProvider<Dataset<R
     @Nonnull
     @Override
     protected DataFrameWriter getDataFrameWriter(@Nonnull final Dataset<Row> dataSet, @Nonnull final DataSetOptions options) {
-        return SparkSqlUtilV2.prepareDataFrameWriter(dataSet.write(), options);
+        return DataSetProviderUtilV2.getDataFrameWriter(dataSet, options);
     }
 
     @Nonnull

@@ -57,6 +57,9 @@ export class PolicyInputFormComponent implements OnInit {
     @Output()
     onPropertyChange :EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
 
+    @Output()
+    onFormControlsAdded :EventEmitter<any> = new EventEmitter<any>();
+
     editChips:any;
 
     fieldConfigGroup:RuleGroupWithFieldConfig[] = []
@@ -100,17 +103,27 @@ export class PolicyInputFormComponent implements OnInit {
             setTimeout(() => {
             //clear old controls
             Object.keys(this.formGroup.controls).forEach(controlName => this.formGroup.removeControl(controlName));
-            console.log("CHANGED RULE ",changes.rule)
-            this.createFormFieldConfig();
+           let fieldConfigList = this.createFormFieldConfig();
+            if(fieldConfigList.length == 0){
+                //force the call to emit the formControlsAdded
+                this.formControlsAdded([]);
+            }
             })
         }
     }
 
+    formControlsAdded(controls:FormControl[]){
+     if(this.onFormControlsAdded){
+         this.onFormControlsAdded.emit(controls);
+     }
+    }
 
-    private createFormFieldConfig()
+
+    private createFormFieldConfig() :FieldConfig<any>[]
     {
         let order = 0;
         this.fieldConfigGroup = [];
+        let allFields:FieldConfig<any>[] = [];
         this.rule.groups.forEach((group:any, idx:number) => {
             if(group.properties){
                 let fieldConfigList :FieldConfig<any>[] = [];
@@ -118,12 +131,14 @@ export class PolicyInputFormComponent implements OnInit {
                     if(property.hidden == false) {
                         let fieldConfig = this.toFieldConfig(property, order);
                         fieldConfigList.push(fieldConfig);
+                        allFields.push(fieldConfig);
                         order++;
                     }
                 });
                 this.fieldConfigGroup[idx] = {fields:fieldConfigList, group:group};
             }
         });
+        return allFields;
     }
 
 
