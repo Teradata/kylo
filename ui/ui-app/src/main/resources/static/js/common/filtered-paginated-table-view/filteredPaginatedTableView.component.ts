@@ -27,7 +27,9 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     @ViewChild(TdDataTableComponent) dataTable: TdDataTableComponent;
 
     pageSizeChange(pagingEvent: IPageChangeEvent): void {
-        this.onPageSizeChange(pagingEvent);
+        if(pagingEvent){
+            this.onPageSizeChange(pagingEvent);
+        }
     }
 
     search(searchTerm: string): void {
@@ -35,11 +37,15 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     }
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
-        this.onSortChange(sortEvent);
+        if(sortEvent){
+            this.onSortChange(sortEvent);
+        }
     }
 
     rowClicked(clickEvent: any) {
-        this.onRowClick(clickEvent);
+        if(clickEvent){
+            this.onRowClick(clickEvent);
+        }
     }
 
     ngAfterViewInit() {

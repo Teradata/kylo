@@ -41,16 +41,23 @@ import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from './RestUrlService';
 import { Subject } from 'rxjs/Subject';
 import { DefaultFeedPropertyService } from './DefaultFeedPropertyService';
+import { FeedInputProcessorPropertiesTemplateService } from "./FeedInputProcessorPropertiesTemplateService";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import { FeedDetailsProcessorRenderingHelper } from "./FeedDetailsProcessorRenderingHelper";
+import { TdDialogService } from "@covalent/core/dialogs";
 
 @Injectable()
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
-    constructor(private RestUrlService: RestUrlService, 
-                // private FeedDetailsProcessorRenderingHelper: any,
+    constructor(
+                private http: HttpClient,
+                private RestUrlService: RestUrlService, 
                 private FeedPropertyService: DefaultFeedPropertyService, 
                 private accessControlService: AccessControlService,
-                private entityAccessControlService: EntityAccessControlService, 
-                @Inject("$injector") private $injector: any) {
+                private entityAccessControlService: EntityAccessControlService,
+                private feedInputProcessorPropertiesTemplateService: FeedInputProcessorPropertiesTemplateService,
+                private feedDetailsProcessorRenderingHelper: FeedDetailsProcessorRenderingHelper,
+                private _dialogService: TdDialogService) {
 
         this.init();
 
@@ -69,7 +76,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             processor.feedPropertiesUrl = null;
         }
         if (processor.feedPropertiesUrl == null) {
-            this.$injector.get("FeedInputProcessorPropertiesTemplateService").setFeedProcessingTemplateUrl(processor, mode);
+            this.feedInputProcessorPropertiesTemplateService.setFeedProcessingTemplateUrl(processor, mode);
         }
     }
 
@@ -249,18 +256,18 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     /**
      *
-     * @param {(response: angular.IHttpResponse<any>) => any} successFn
+     * @param {(response:any) => any} successFn
      * @param {(err: any) => any} errorFn
      */
-    fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<Common.Map<string>>> | undefined {
+    fetchConfigurationProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any): Promise<any> {
 
 
         if (Object.keys(this.configurationProperties).length == 0) {
-            let _successFn = (response: angular.IHttpResponse<Common.Map<string>>) => {
-                this.configurationProperties = response.data;
-                angular.forEach(response.data, (value: any, key: any) => {
-                    this.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
-                    this.configurationPropertyMap[key] = value;
+            let _successFn = (response: any) => {
+                this.configurationProperties = response;
+                Object.keys(response).forEach( (key: any) => {
+                    this.propertyList.push({ key: key, value: response[key], description: null, dataType: null, type: 'configuration' });
+                    this.configurationPropertyMap[key] = response[key];
                 })
                 if (successFn) {
                     successFn(response);
@@ -272,7 +279,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 }
             }
 
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$injector.get("$http").get(this.RestUrlService.CONFIGURATION_PROPERTIES_URL);
+            var promise = this.http.get(this.RestUrlService.CONFIGURATION_PROPERTIES_URL).toPromise();
             promise.then(_successFn, _errorFn);
             return promise;
         }
@@ -282,16 +289,16 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     /**
      * If the propertyList is empty, then find the metadata properties available.
      * If the propertyList has already been populated this will result in a noop.
-     * @param {(response: angular.IHttpResponse<any>) => any} successFn
+     * @param {(response: any) => any} successFn
      * @param {(err: any) => any} errorFn
-     * @return {angular.IPromise<any> | undefined}
+     * @return {Promise<any>}
      */
-    fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<any>> | undefined {
+    fetchMetadataProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any): any {
 
         if (this.metadataProperties.length == 0) {
-            let _successFn = (response: angular.IHttpResponse<any>) => {
-                this.metadataProperties = response.data;
-                angular.forEach(response.data, (annotatedProperty: MetadataProperty, i: any) => {
+            let _successFn = (response: any) => {
+                this.metadataProperties = response;
+                response.forEach((annotatedProperty: MetadataProperty) => {
                     this.propertyList.push({
                         key: annotatedProperty.name,
                         value: '',
@@ -310,7 +317,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 }
             }
 
-            var promise = this.$injector.get("$http").get(this.RestUrlService.METADATA_PROPERTY_NAMES_URL);
+            var promise = this.http.get(this.RestUrlService.METADATA_PROPERTY_NAMES_URL).toPromise();
             promise.then(_successFn, _errorFn);
             return promise;
         }
@@ -319,26 +326,26 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     /**
      * Find the input ports associated with the reusable templates to make connections
-     * @return {angular.IPromise<any>}
+     * @return {Promise<any>}
      */
-    fetchRegisteredReusableFeedInputPorts(): angular.IPromise<angular.IHttpResponse<any>> {
+    fetchRegisteredReusableFeedInputPorts(): any{
 
-        let successFn = (response: angular.IHttpResponse<any>) => {
+        let successFn = (response: any) => {
         }
         var errorFn = (err: any) => {
 
         }
-        var promise = this.$injector.get("$http").get(this.RestUrlService.ALL_REUSABLE_FEED_INPUT_PORTS);
+        var promise = this.http.get(this.RestUrlService.ALL_REUSABLE_FEED_INPUT_PORTS).toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }
 
     /**
      * Fetch the input PortDTO objects on the Root process group
-     * @return {angular.IPromise<angular.IHttpResponse<any>>}
+     * @return {any}
      */
-    fetchRootInputPorts(): angular.IPromise<angular.IHttpResponse<any>> {
-        return this.$injector.get("$http").get(this.RestUrlService.ROOT_INPUT_PORTS);
+    fetchRootInputPorts(): Promise<any> {
+        return this.http.get(this.RestUrlService.ROOT_INPUT_PORTS).toPromise();
     }
 
     replaceAll(str: string, find: string, replace: string): string {
@@ -376,24 +383,24 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     }
 
 
-    getCodeMirrorTypes(): angular.IPromise<any> {
+    getCodeMirrorTypes(): Promise<any> {
 
         if (this.codemirrorTypes == null) {
-            let successFn = (response: angular.IHttpResponse<any>) => {
-                this.codemirrorTypes = response.data;
+            let successFn = (response: any) => {
+                this.codemirrorTypes = response;
                 this.codeMirrorTypesObserver.next(this.codemirrorTypes);
-                angular.forEach(this.codemirrorTypes, (label: string, type: string) => {
-                    this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
+                Object.keys(this.codemirrorTypes).forEach( (key: string) => {
+                    this.propertyRenderTypes.push({ type: key, label: this.codemirrorTypes[key], codemirror: true });
                 });
             }
             var errorFn = (err: angular.IHttpResponse<any>) => {
 
             }
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$injector.get("$http").get(this.RestUrlService.CODE_MIRROR_TYPES_URL);
+            var promise = this.http.get(this.RestUrlService.CODE_MIRROR_TYPES_URL).toPromise();
             promise.then(successFn, errorFn);
             return promise;
         }
-        return this.$injector.get("$q").when(this.codemirrorTypes);
+        return Promise.resolve(this.codemirrorTypes);
     }
 
 
@@ -425,17 +432,17 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * Gets all templates registered or not.  (looks at Nifi)
      * id property will ref NiFi id
      * registeredTemplateId property will be populated if registered
-     * @returns {HttpPromise}
+     * @returns {Promise}
      */
-    getTemplates(): angular.IPromise<any> {
-        let successFn = (response: angular.IHttpResponse<any>) => {
+    getTemplates(): Promise<any> {
+        let successFn = (response: any) => {
 
         }
-        let errorFn = (err: angular.IHttpResponse<any>) => {
+        let errorFn = (err: any) => {
 
         }
 
-        var promise = this.$injector.get("$http").get(this.RestUrlService.GET_TEMPLATES_URL);
+        var promise = this.http.get(this.RestUrlService.GET_TEMPLATES_URL).toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }
@@ -444,15 +451,15 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * Gets the Registered Templates
      * @returns {HttpPromise}
      */
-    getRegisteredTemplates(): angular.IPromise<any> {
-        let successFn = (response: angular.IHttpResponse<any>) => {
+    getRegisteredTemplates(): Promise<any> {
+        let successFn = (response: Promise<any>) => {
 
         }
-        let errorFn = (err: angular.IHttpResponse<any>) => {
+        let errorFn = (err: Promise<any>) => {
 
         }
 
-        var promise = this.$injector.get("$http").get(this.RestUrlService.GET_REGISTERED_TEMPLATES_URL);
+        var promise = this.http.get(this.RestUrlService.GET_REGISTERED_TEMPLATES_URL).toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }
@@ -481,7 +488,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             if (validProperties != null && validProperties.length > 0) {
                 validProcessors.push(processor);
             }
-            if (this.$injector.get("FeedDetailsProcessorRenderingHelper").isGetTableDataProcessor(processor) || this.$injector.get("FeedDetailsProcessorRenderingHelper").isWatermarkProcessor(processor)) {
+            if (this.feedDetailsProcessorRenderingHelper.isGetTableDataProcessor(processor) || this.feedDetailsProcessorRenderingHelper.isWatermarkProcessor(processor)) {
                 processor.sortIndex = 0;
             }
             else {
@@ -592,11 +599,11 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     }
 
-    disableTemplate(templateId: string): angular.IHttpPromise<any> {
+    disableTemplate(templateId: string): Promise<any> {
 
-        var promise = this.$injector.get("$http").post(this.RestUrlService.DISABLE_REGISTERED_TEMPLATE_URL(templateId), null);
-        promise.then((response: angular.IHttpResponse<any>) => {
-            this.model.state = response.data.state
+        var promise = this.http.post(this.RestUrlService.DISABLE_REGISTERED_TEMPLATE_URL(templateId), null).toPromise();
+        promise.then((response: any) => {
+            this.model.state = response.state
             if (this.model.state == 'ENABLED') {
                 this.model.stateIcon = 'check_circle'
             }
@@ -613,11 +620,11 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param templateId
      * @returns {*}
      */
-    enableTemplate(templateId: any): angular.IHttpPromise<any> {
+    enableTemplate(templateId: any): Promise<any> {
 
-        var promise = this.$injector.get("$http").post(this.RestUrlService.ENABLE_REGISTERED_TEMPLATE_URL(templateId), null);
-        promise.then((response: angular.IHttpResponse<any>) => {
-            this.model.state = response.data.state
+        var promise = this.http.post(this.RestUrlService.ENABLE_REGISTERED_TEMPLATE_URL(templateId), null).toPromise();
+        promise.then((response: any) => {
+            this.model.state = response.state
             if (this.model.state == 'ENABLED') {
                 this.model.stateIcon = 'check_circle'
             }
@@ -629,14 +636,14 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     }
 
-    deleteTemplate(templateId: string): angular.IPromise<any> {
-        var deferred = this.$injector.get("$q").defer();
-        this.$injector.get("$http").delete(this.RestUrlService.DELETE_REGISTERED_TEMPLATE_URL(templateId)).then((response: angular.IHttpResponse<any>) => {
-            deferred.resolve(response);
+    deleteTemplate(templateId: string): Promise<any> {
+        var promise = this.http.delete(this.RestUrlService.DELETE_REGISTERED_TEMPLATE_URL(templateId)).toPromise();
+        promise.then((response: any) => {
+            // promise.resolve(response);
         }, (response: any) => {
-            deferred.reject(response);
+            // promise.reject(response);
         });
-        return deferred.promise;
+        return promise;
     }
 
     /*
@@ -667,23 +674,22 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
              *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
              *            request:{connectionInfo:reusableTemplateConnections}}
      */
-    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: ReusableTemplateConnectionInfo[]): angular.IPromise<any> {
-        var deferred = this.$injector.get("$q").defer();
+    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: ReusableTemplateConnectionInfo[]): Promise<any> {
+        var promise : Promise<any>;
         if (nifiTemplateId != null) {
             //build the request
             var flowRequest: any = {};
             flowRequest.connectionInfo = reusableTemplateConnections;
 
-            this.$injector.get("$http").post(this.RestUrlService.TEMPLATE_FLOW_INFORMATION(nifiTemplateId), flowRequest).then((response: angular.IHttpResponse<any>) => {
-                deferred.resolve(response);
+            promise = this.http.post(this.RestUrlService.TEMPLATE_FLOW_INFORMATION(nifiTemplateId), flowRequest).toPromise();
+            promise.then((response: any) => {
             }, (response: any) => {
-                deferred.reject(response);
             });
         }
         else {
-            deferred.resolve({ data: [] });
+            promise.then(() => { return { data: [] } },()=>{});
         }
-        return deferred.promise;
+        return promise;
 
     }
 
@@ -692,27 +698,28 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      */
     warnInvalidProcessorNames(): void {
         if (!this.model.validTemplateProcessorNames) {
-            this.$injector.get("$mdDialog").hide();
-            this.$injector.get("$mdDialog").show(
-                this.$injector.get("$mdDialog").alert()
-                    .ariaLabel("Template processor name warning")
-                    .clickOutsideToClose(true)
-                    .htmlContent("Warning the template contains multiple processors with the same name.  It is advised you fix this template in NiFi before registering")
-                    .ok("Got it!")
-                    .parent(document.body)
-                    .title("Template processor name warning"));
+            this._dialogService.closeAll();
+            this._dialogService.openAlert({
+                ariaLabel : "Template processor name warning",
+                disableClose : false,
+                message : "Warning the template contains multiple processors with the same name.  It is advised you fix this template in NiFi before registering",
+                closeButton : "Got it!",
+                title : "Template processor name warning"
+            });
         }
     }
 
     accessDeniedDialog(): void {
-        this.$injector.get("$mdDialog").show(
-            this.$injector.get("$mdDialog").alert()
-                .clickOutsideToClose(true)
-                .title(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied'))
-                .textContent(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied2'))
-                .ariaLabel(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied3'))
-                .ok("OK")
-        );
+        this._dialogService.openAlert({
+            disableClose : false,
+            title : "",
+            ariaLabel : "",
+            closeButton : "ok",
+            message : ""
+        });
+        // .title(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied'))
+        // .textContent(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied2'))
+        // .ariaLabel(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied3'))
     }
 
 
@@ -770,7 +777,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * Returns a promise
      * @returns {*}
      */
-    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName?: string): angular.IPromise<any> {
+    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName?: string): Promise<any> {
         var isValid = true;
 
 
@@ -810,7 +817,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             var additionalProperties: any = [];
             var inputProcessors = [];
             var additionalProcessors = [];
-            angular.forEach(properties, (property: Property, i: any) => {
+            angular.forEach(properties, (property: Property, i:any) => {
                 if (property.processor == undefined) {
                     property.processor = {
                         processorId: property.processorId,
@@ -937,14 +944,12 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 this.model.valid = false;
                 var errorMessage =
                     "This is a reusable template and cannot be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
-                this.$injector.get("$mdDialog").show(
-                    this.$injector.get("$mdDialog").alert()
-                        .ariaLabel("Error loading the template")
-                        .clickOutsideToClose(true)
-                        .htmlContent(errorMessage)
-                        .ok("Got it!")
-                        .parent(document.body)
-                        .title("Error loading the template"));
+                this._dialogService.openAlert({
+                    message : errorMessage,
+                    disableClose : false,
+                    closeButton : "Got it!",
+                    title : "Error loading the template"
+                });
                 return false;
             }
             else {
@@ -965,8 +970,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         if (this.model.nifiTemplateId != null) {
             this.model.loading = true;
             this.modelLoadingObserver.next(true);
-            let successFn = (response: angular.IHttpResponse<any>) => {
-                var templateData = response.data;
+            let successFn = (response: any) => {
+                var templateData = response;
                 transformPropertiesToArray(templateData.properties);
                 this.model.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;
                 var nifiTemplateId = templateData.nifiTemplateId != null ? templateData.nifiTemplateId : this.model.nifiTemplateId;
@@ -1016,14 +1021,17 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 this.modelLoadingObserver.next(false);
             }
             var id = registeredTemplateId != undefined && registeredTemplateId != null ? registeredTemplateId : this.model.nifiTemplateId;
-            var promise = this.$injector.get("$http").get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), { params: { allProperties: true, templateName: templateName } });
+            
+            let params = new HttpParams();
+            params = params.append('allProperties', "true");
+            params = params.append('templateName', templateName);
+
+            var promise = this.http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params : params}).toPromise();
             promise.then(successFn, errorFn);
             return promise;
         }
         else {
-            var deferred = this.$injector.get("$q").defer();
-            deferred.resolve([]);
-            return deferred.promise;
+            return Promise.resolve([]);
         }
 
     }

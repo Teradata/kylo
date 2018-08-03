@@ -1,7 +1,6 @@
 import * as angular from 'angular';
 import 'pascalprecht.translate';
 import * as _ from 'underscore';
-import {FeedServiceTypes} from "../../../services/FeedServiceTypes";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
 import {CheckAll} from "../../shared/checkAll";

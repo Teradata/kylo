@@ -45,31 +45,31 @@ export interface RegisteredTemplateService {
 
     /**
      *
-     * @param {(response: angular.IHttpResponse<any>) => any} successFn
+     * @param {(response: any) => any} successFn
      * @param {(err: any) => any} errorFn
      */
-    fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<Common.Map<string>>> | undefined;
+    fetchConfigurationProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any): Promise<any>;
 
     /**
      * If the propertyList is empty, then find the metadata properties available.
      * If the propertyList has already been populated this will result in a noop.
-     * @param {(response: angular.IHttpResponse<any>) => any} successFn
+     * @param {(response: any) => any} successFn
      * @param {(err: any) => any} errorFn
-     * @return {angular.IPromise<any> | undefined}
+     * @return {Promise<any>}
      */
-    fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<any>> | undefined;
+    fetchMetadataProperties(successFn?: (response: any) => any, errorFn?: (err: any) => any): Promise<any>;
 
     /**
      * Find the input ports associated with the reusable templates to make connections
-     * @return {angular.IPromise<any>}
+     * @return {Promise<any>}
      */
-    fetchRegisteredReusableFeedInputPorts(): angular.IPromise<angular.IHttpResponse<any>>;
+    fetchRegisteredReusableFeedInputPorts(): Promise<any>;
 
     /**
      * Fetch the input PortDTO objects on the Root process group
-     * @return {angular.IPromise<angular.IHttpResponse<any>>}
+     * @return {any}
      */
-    fetchRootInputPorts() : angular.IPromise<angular.IHttpResponse<any>>;
+    fetchRootInputPorts() : any;
 
     deriveExpression(expression: string, configOnly: boolean): string;
 
@@ -95,13 +95,13 @@ export interface RegisteredTemplateService {
      * registeredTemplateId property will be populated if registered
      * @returns {HttpPromise}
      */
-    getTemplates(): angular.IPromise<any>;
+    getTemplates(): Promise<any>;
 
     /**
      * Gets the Registered Templates
      * @returns {HttpPromise}
      */
-    getRegisteredTemplates(): angular.IPromise<any>;
+    getRegisteredTemplates(): Promise<any>;
 
     /**
      * Remove any processor properties that are not 'userEditable = true'
@@ -126,7 +126,7 @@ export interface RegisteredTemplateService {
     initializeProperties(template: any, mode: any, feedProperties: Property[]): void;
 
 
-    disableTemplate(templateId: string): angular.IHttpPromise<any>;
+    disableTemplate(templateId: string): Promise<any>;
 
 
     /**
@@ -134,9 +134,9 @@ export interface RegisteredTemplateService {
      * @param templateId
      * @returns {*}
      */
-    enableTemplate(templateId: any): angular.IHttpPromise<any>;
+    enableTemplate(templateId: any): Promise<any>;
 
-    deleteTemplate(templateId: string): angular.IPromise<any>;
+    deleteTemplate(templateId: string): Promise<any>;
 
     /**
      * Walks the NiFi template and its related connections(if any) to the reusable flow and returns data about the graph, its processors, and any Datasource definitions
@@ -148,7 +148,7 @@ export interface RegisteredTemplateService {
              *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
              *            request:{connectionInfo:reusableTemplateConnections}}
      */
-    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: any): angular.IPromise<any>;
+    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: any): Promise<any>;
 
     /**
      * Warn if the model has multiple processors with the same name
@@ -161,14 +161,14 @@ export interface RegisteredTemplateService {
     /**
      * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
      */
-    checkTemplateAccess(model: any): Promise<any>;
+    checkTemplateAccess(model: any): Promise<AccessControl.EntityAccessCheck>;
 
     /**
      * Assigns the model properties and render types
      * Returns a promise
      * @returns {*}
      */
-    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName: string): angular.IPromise<any>;
+    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName: string): Promise<any>;
 
 
     /**
