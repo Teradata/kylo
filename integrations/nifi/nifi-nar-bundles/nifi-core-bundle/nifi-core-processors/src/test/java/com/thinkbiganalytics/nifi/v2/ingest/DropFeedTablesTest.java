@@ -214,31 +214,11 @@ public class DropFeedTablesTest {
         @Override
         public MetadataProvider getProvider() {
             final MetadataProvider provider = Mockito.mock(MetadataProvider.class);
+
             Mockito.when(provider.getFeedId(Mockito.anyString(), Mockito.anyString())).then(invocation -> {
-                if ("invalid".equals(invocation.getArgumentAt(0, String.class))) {
-                    throw new IllegalArgumentException();
-                }
                 return invocation.getArgumentAt(1, String.class);
             });
-            /*
-            Mockito.when(provider.updateFeedProperties(Mockito.anyString(), Mockito.any(Properties.class))).then(invocation -> {
-                Properties properties = new Properties();
-                properties.setProperty("TestUpdate", "worked");
-                return properties;
-            });
-            Mockito.when(provider.getFeedProperties(Mockito.anyString())).then(invocation -> {
-                final String feedId = invocation.getArgumentAt(0, String.class);
-                if ("disabled".equals(feedId)) {
-                    return new Properties();
-                }
-                if ("unavailable".equals(feedId)) {
-                    return null;
-                }
-                Properties properties = new Properties();
-                properties.setProperty(FeedProperties.CLEANUP_ENABLED, "true");
-                return properties;
-            });
-            */
+
             return provider;
         }
 
@@ -250,6 +230,7 @@ public class DropFeedTablesTest {
         @Override
         public MetadataRecorder getRecorder() {
             final MetadataRecorder recorder = Mockito.mock(MetadataRecorder.class);
+
             Mockito.doAnswer(new Answer<Void> () {
                 @Override
                 public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -258,6 +239,7 @@ public class DropFeedTablesTest {
                     return null;
                 }
             }).when(recorder).removeFeedInitialization(Mockito.anyString());
+
             return recorder;
         }
     }
