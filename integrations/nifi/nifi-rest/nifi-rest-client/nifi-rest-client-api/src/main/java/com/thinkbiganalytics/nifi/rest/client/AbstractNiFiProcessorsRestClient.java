@@ -94,7 +94,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
         
         // Stop the processor if it is disabled or running.
         if (state == PROCESS_STATE.DISABLED || state == PROCESS_STATE.RUNNING) {
-            sequence.add(proc -> {
+            sequence.add((proc) -> {
                 proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
@@ -111,13 +111,13 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
 
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 delay(2000);
                 proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
 
-            sequence.add((proc) -> {
+            sequence.add(proc -> {
                 delay(2000);
                 proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
