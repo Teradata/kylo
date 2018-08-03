@@ -36,6 +36,7 @@ import java.util.Optional;
 
 public class AbstractNiFiProcessorsRestClientTest {
 
+
     private ProcessorDTO newProcessor(String id, String state, String scheduleStrategy, String schedule) {
         final ProcessorDTO dto = new ProcessorDTO();
         dto.setId(id);
@@ -85,5 +86,7 @@ public class AbstractNiFiProcessorsRestClientTest {
                 }
             }
         });
+
+
     }
 }
