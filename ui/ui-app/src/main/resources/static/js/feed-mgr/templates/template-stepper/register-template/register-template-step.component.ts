@@ -1,13 +1,38 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "../../module-name";
 import { Common } from "../../../../common/CommonTypes";
 import LabelValue = Common.LabelValue;
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import StateService from '../../../../services/StateService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import { Component, Input, Inject } from '@angular/core';
+import { RestUrlService } from '../../../services/RestUrlService';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { RegisterTemplateInprogressDialog } from './register-template-inprogress.component';
+import { RegisterTemplateErrorDialog } from './register-template-error.component';
+import {IconPickerDialog} from '../../../../common/icon-picker-dialog/icon-picker-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 
+export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
 
+    return (control: AbstractControl): {[key: string]: any} | null => {
+        if (!angular.isDefined(connectionMap[connection.inputPortDisplayName])) {
+            connection.inputPortDisplayName = null;
+            //mark as invalid
+            return {invalidConnection: true};
+        }
+        else {
+            return null;
+        }
+    };
+}
+
+@Component({
+    selector: 'thinkbig-register-complete-registration',
+    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html'
+})
 export class RegisterCompleteRegistrationController {
 
 
@@ -53,7 +78,7 @@ export class RegisterCompleteRegistrationController {
     /*
     Passed in step index
      */
-    stepIndex: string;
+    @Input() stepIndex: string;
     /**
      * The Step number  (1 plus the index)
      * @type {number}
@@ -74,12 +99,19 @@ export class RegisterCompleteRegistrationController {
 
     remoteProcessGroupValidation: any = { validatingPorts: true, valid: false, invalidMessage: null };
 
+    @Input() formGroup: FormGroup;
 
-    static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
+    loaded: boolean = false;
 
-    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private stateService: StateService, private registerTemplateService: RegisterTemplateServiceFactory, private entityAccessControlService: EntityAccessControlService) {
+    constructor(private RestUrlService: RestUrlService,
+                private stateService: StateService, 
+                private registerTemplateService: RegisterTemplateServiceFactory, 
+                private entityAccessControlService: EntityAccessControlService,
+                private dialog: MatDialog,
+                private snackBar: MatSnackBar,
+                private http: HttpClient) {}
 
+    ngOnInit() {
 
         /**
          * The Template Model
@@ -87,10 +119,7 @@ export class RegisterCompleteRegistrationController {
         this.model = this.registerTemplateService.model;
 
         //set the step number
-        this.stepNumber = parseInt(this.stepIndex) + 1
-    }
-
-    ngOnInit() {
+        this.stepNumber = parseInt(this.stepIndex) + 1;
         /**
          * Initialize the connections and flow data
          */
@@ -100,17 +129,18 @@ export class RegisterCompleteRegistrationController {
          */
         this.validateRemoteInputPort();
 
-        this.$scope.$watch(() => {
-            return this.model.nifiTemplateId;
-        }, (newVal: any) => {
-            if (newVal != null) {
+        this.registerTemplateService.modelNifiTemplateIdObserver.subscribe((nifiTemplateId)=>{
+            if (nifiTemplateId != null) {
                 this.registrationSuccess = false;
             }
         });
-    }
-
-    $onInit() {
-        this.ngOnInit();
+        // this.$scope.$watch(() => {
+        //     return this.model.nifiTemplateId;
+        // }, (newVal: any) => {
+        //     if (newVal != null) {
+        //         this.registrationSuccess = false;
+        //     }
+        // });
     }
 
     /**
@@ -240,16 +270,14 @@ export class RegisterCompleteRegistrationController {
                     });
                 }
 
-                // Check for invalid connections
+                // Check for invalid and required connections
                 angular.forEach(this.model.reusableTemplateConnections, (connection) => {
                     //initially mark as valid
-                    this.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
-                    if (!angular.isDefined(this.connectionMap[connection.inputPortDisplayName])) {
-                        connection.inputPortDisplayName = null;
-                        //mark as invalid
-                        this.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
-                    }
+                    this.formGroup.addControl("port-" + connection.feedOutputPortName,
+                                new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
+                    
                 });
+                this.loaded = true;
 
                 this.buildTemplateFlowData();
             });
@@ -259,6 +287,7 @@ export class RegisterCompleteRegistrationController {
         }
     }
 
+    
 
     /**
      * Called when the user changes the output port connections
@@ -268,7 +297,7 @@ export class RegisterCompleteRegistrationController {
         var port = this.connectionMap[connection.inputPortDisplayName];
         connection.reusableTemplateInputPortName = port.name;
         //mark as valid
-        this.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+        // this.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
         this.buildTemplateFlowData();
     };
 
@@ -279,23 +308,16 @@ export class RegisterCompleteRegistrationController {
         var iconModel: any = { icon: this.model.icon.title, iconColor: this.model.icon.color };
         iconModel.name = this.model.templateName;
 
-        this.$mdDialog.show({
-            controller: 'IconPickerDialog',
-            templateUrl: 'js/common/icon-picker-dialog/icon-picker-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: true,
-            locals: {
-                iconModel: iconModel
-            }
-        }).then((msg: any) => {
+        let dialogRef = this.dialog.open(IconPickerDialog, {
+            data: { iconModel: iconModel },
+            panelClass: "full-screen-dialog"
+          });
+      
+        dialogRef.afterClosed().subscribe(msg => {
             if (msg) {
                 this.model.icon.title = msg.icon;
                 this.model.icon.color = msg.color;
             }
-
-        }, function () {
-
         });
     };
 
@@ -306,27 +328,20 @@ export class RegisterCompleteRegistrationController {
     registerTemplate() {
 
         this.showRegistrationInProgressDialog();
+
         let successFn = (response: any) => {
-            this.$mdDialog.hide();
-            var message = 'Template Registered with ' + response.data.properties.length + ' properties';
+            this.dialog.closeAll();
+            var message = 'Template Registered with ' + response.properties.length + ' properties';
             this.registrationSuccess = true;
 
-            this.$mdToast.show(
-                this.$mdToast.simple()
-                    .textContent(message)
-                    .hideDelay(3000)
-            );
+            this.snackBar.open(message, "OK", {duration: 3000});
             this.stateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, this.model, null);
         }
         let errorFn = (response: any) => {
-            this.$mdDialog.hide();
-            var message = 'Error Registering Template ' + response.data.message;
+            this.dialog.closeAll();
+            var message = 'Error Registering Template ' + response.message;
             this.registrationSuccess = false;
-            this.$mdToast.show(
-                this.$mdToast.simple()
-                    .textContent(message)
-                    .hideDelay(3000)
-            );
+            this.snackBar.open(message, "OK", {duration: 3000});
             this.showErrorDialog(message);
         }
 
@@ -359,14 +374,11 @@ export class RegisterCompleteRegistrationController {
 
         savedTemplate.registeredDatasourceDefinitions = selectedDatasourceDefinitions;
 
-        var promise = this.$http({
-            url: this.RestUrlService.REGISTER_TEMPLATE_URL(),
-            method: "POST",
-            data: angular.toJson(savedTemplate),
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            }
-        }).then(successFn, errorFn);
+        var promise = this.http.post(this.RestUrlService.REGISTER_TEMPLATE_URL(),
+            angular.toJson(savedTemplate),
+            {headers :new HttpHeaders({'Content-Type':'application/json; charset=utf-8'}) })
+            .toPromise().then(successFn, errorFn);
+
         return promise;
     }
 
@@ -375,21 +387,11 @@ export class RegisterCompleteRegistrationController {
      * Shows a dialog with a progress when the registration is in progress
      */
     showRegistrationInProgressDialog() {
-        //hide any dialogs
-        this.$mdDialog.hide();
-        this.$mdDialog.show({
-            controller: ["$scope", "templateName", ($scope, templateName) => {
-                $scope.templateName = templateName;
-            }],
-            templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-inprogress-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: true,
-            locals: {
-                templateName: this.model.templateName
-            }
-        })
-
+        //hide any dialogs  
+        let dialogRef = this.dialog.open(RegisterTemplateInprogressDialog, {
+            data: { templateName: this.model.templateName },
+            panelClass: "full-screen-dialog"
+          });
     }
 
     /**
@@ -398,55 +400,26 @@ export class RegisterCompleteRegistrationController {
      */
     showErrorDialog(message: any) {
 
-        this.$mdDialog.show({
-            controller: ["$scope", "$mdDialog", "nifiTemplateId", "templateName", "message",
-                ($scope: any, $mdDialog: any, nifiTemplateId: any, templateName: any, message: any) => {
-                    $scope.nifiTemplateId = nifiTemplateId;
-                    $scope.templateName = templateName;
-                    $scope.message = message;
-
-                    $scope.gotIt = function () {
-                        $mdDialog.cancel();
-                    };
-                }],
-            templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: true,
-            fullscreen: true,
-            locals: {
-                nifiTemplateId: this.model.nifiTemplateId,
-                templateName: this.model.templateName,
-                message: message
-            }
-        });
-    };
-
+        let dialogRef = this.dialog.open(RegisterTemplateErrorDialog, {
+            data: { templateName: this.model.templateName,
+                    nifiTemplateId: this.model.nifiTemplateId,
+                    message: message },
+            panelClass: "full-screen-dialog"
+          });
+    }
 
 }
 
-angular.module(moduleName).component("thinkbigRegisterCompleteRegistration", {
-    bindings: {
-        stepIndex: '@'
-    },
-    controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html',
-    controller: RegisterCompleteRegistrationController,
 
-});
-
+@Component({
+    selector: 'register-template-complete-controller',
+    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html'
+})
 export class RegisterTemplateCompleteController {
 
-    static readonly $inject = ["StateService"];
-    constructor(private StateService: any) {
+    constructor(private StateService: StateService) {}
 
-    }
     gotIt() {
         this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
     }
 }
-
-angular.module(moduleName).component("registerTemplateCompleteController", {
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
-    controller: RegisterTemplateCompleteController,
-    controllerAs: 'vm'
-});

@@ -17,22 +17,21 @@
   limitations under the License.
   #L%
   -->
-<div layout="column">
-  <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
-  <span class="hint">Drag the templates below to adjust their order at feed creation time. </span>
-  <ul dnd-list="vm.model" class="simple-dnd-list">
-    <li ng-repeat="item in vm.model"
-        dnd-draggable="item"
-        dnd-moved="vm.model.splice($index, 1)"
-        dnd-effect-allowed="move"
-        ng-class="{'selected': item.currentTemplate == true}"
-        style="height:26px;"
-        >
-      {{$index+1}}. {{item.templateName}}
-    </li>
-
-  </ul>
-  <div layout-align="start start">
-    <md-button class="md-raised md-primary" ng-click="vm.saveOrder()" ng-if="vm.addSaveBtn">Save Order</md-button>
+  <div layout="column">
+    <div class="md-subhead left-aligned">Change Template Order</div>
+    <span class="hint">Drag the templates below to adjust their order at feed creation time. </span>
+    <ul dnd-list="model" class="simple-dnd-list">
+      <li *ngFor="let item of model; let i=index"
+          dnd-draggable="item"
+          dnd-moved="model.splice(i, 1)"
+          dnd-effect-allowed="move"
+          [ngClass]="{'selected': item.currentTemplate == true}"
+          style="height:26px;">
+        {{i+1}}. {{item.templateName}}
+      </li>
+    </ul>
+    <div layout-align="start start">
+      <button class="md-raised md-primary" (click)="saveOrder()" *ngIf="addSaveBtn">Save Order</button>
+    </div>
   </div>
-</div>
+  

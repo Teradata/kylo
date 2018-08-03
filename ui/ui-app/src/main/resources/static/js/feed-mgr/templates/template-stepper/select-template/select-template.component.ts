@@ -1,26 +1,37 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "../../module-name";
 import AccessControlService from '../../../../services/AccessControlService';
-import { StateService } from '@uirouter/core';
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import BroadcastService from '../../../../services/broadcast-service';
 import { UiComponentsService } from '../../../services/UiComponentsService';
+import { Component, Input, Inject, OnInit, Output, EventEmitter, ViewContainerRef } from '@angular/core';
+import { RestUrlService } from '../../../services/RestUrlService';
+import StateService from '../../../../services/StateService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import AngularModuleExtensionService from '../../../../services/AngularModuleExtensionService';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog} from '@angular/material/dialog';
+import { TdDialogService } from '@covalent/core/dialogs';
+import { TemplateDeleteDialog } from './template-delete-dialog.component';
 
 
-export class RegisterSelectTemplateController {
+@Component({
+    selector: 'thinkbig-register-select-template',
+    templateUrl: 'js/feed-mgr/templates/template-stepper/select-template/select-template.html'
+})
+export class RegisterSelectTemplateController implements OnInit {
 
-
+    @Input() registeredTemplateId: string;
+    @Input() nifiTemplateId: string;
+    @Input() $new: any;
 
     templates: any = [];
     model: any;
-    stepNumber: any;
-    stepIndex: any;
+    stepNumber: string;
     template: any = null;
-    stepperController: any = null;
-    registeredTemplateId: any;
-    nifiTemplateId: any;
-    isValid: any;
+    isValid: boolean = false;
+
     /**
     * Error message to be displayed if {@code isValid} is false
     * @type {null}
@@ -52,13 +63,11 @@ export class RegisterSelectTemplateController {
     allowExport: any;
     templateNavigationLinks: any;
 
-    static readonly $inject = ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "$state", "RestUrlService", "RegisterTemplateService", "StateService",
-        "AccessControlService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "BroadcastService"];
-    constructor(private $scope: any, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $mdToast: angular.material.IToastService, private $timeout: angular.ITimeoutService
-        , private $q: angular.IQService, private $state: StateService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory, private StateService: any
-        , private accessControlService: AccessControlService, private EntityAccesControlService: any, private uiComponentsService: UiComponentsService
-        , private AngularModuleExtensionService: any, private broadcastService: BroadcastService) {
+    @Input() formGroup: FormGroup;
 
+    ngOnInit() {
+
+        this.formGroup.addControl("template", new FormControl(null,Validators.required));
 
         this.model = this.registerTemplateService.model;
 
@@ -67,8 +76,7 @@ export class RegisterSelectTemplateController {
 
         this.isValid = this.registeredTemplateId !== null;
 
-
-        this.templateNavigationLinks = AngularModuleExtensionService.getTemplateNavigation();
+        this.templateNavigationLinks = this.AngularModuleExtensionService.getTemplateNavigation();
 
         /**
          * The possible options to choose how this template should be displayed in the Feed Stepper
@@ -83,26 +91,42 @@ export class RegisterSelectTemplateController {
         /**
          * Get notified when a already registered template is selected and loaded from the previous screen
          */
-        this.broadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
+        this.broadcastService.subscribe(null, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
 
-        $scope.$watch(() => {
-            return this.model.loading;
-        }, (newVal: any) => {
-            if (newVal === false) {
+        // TODO: line should be removed once error in service response success function is fixed
+        // this.initTemplateTableOptions();
+        this.registerTemplateService.modelLoadingObserver.subscribe((loading: boolean)=>{
+            if(!loading) {
                 this.initTemplateTableOptions();
-                this.hideProgress();
             }
         });
 
         this.getTemplates();
 
-        accessControlService.getUserAllowedActions()
+        this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowEdit = accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                this.allowAdmin = accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
-                this.allowExport = accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                this.allowEdit = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
+                this.allowAdmin = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
+                this.allowExport = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
-    };
+
+    }
+
+    constructor(private $state: StateService, 
+                private RestUrlService: RestUrlService, 
+                private registerTemplateService: RegisterTemplateServiceFactory, 
+                private StateService: StateService, 
+                private accessControlService: AccessControlService, 
+                private EntityAccesControlService: EntityAccessControlService, 
+                private uiComponentsService: UiComponentsService,
+                private AngularModuleExtensionService: AngularModuleExtensionService, 
+                private broadcastService: BroadcastService,
+                private dialog: MatDialog,
+                private snackBar: MatSnackBar,
+                private _dialogService: TdDialogService,
+                private _viewContainerRef: ViewContainerRef
+    /*@Inject("$injector") private $injector: any*/) {}
+
     // setup the Stepper types
     initTemplateTableOptions = () => {
         if (this.model.templateTableOption == null) {
@@ -131,8 +155,9 @@ export class RegisterSelectTemplateController {
         }
         this.registerTemplateService.loadTemplateWithProperties(null, this.nifiTemplateId, templateName).then((response: any) => {
             this.registerTemplateService.warnInvalidProcessorNames();
-            this.$q.when(this.registerTemplateService.checkTemplateAccess()).then((accessResponse: any) => {
+            this.registerTemplateService.checkTemplateAccess().then((accessResponse: any) => {
                 this.isValid = accessResponse.isValid;
+
                 this.allowAdmin = accessResponse.allowAdmin;
                 this.allowEdit = accessResponse.allowEdit;
                 this.allowAccessControl = accessResponse.allowAccessControl;
@@ -143,10 +168,10 @@ export class RegisterSelectTemplateController {
                 else {
                     if (!this.allowAccessControl) {
                         //deactivate the access control step
-                        this.stepperController.deactivateStep(3);
+                        // this.stepperController.deactivateStep(3);
                     }
                     else {
-                        this.stepperController.activateStep(3);
+                        // this.stepperController.activateStep(3);
                     }
                 }
                 this.loadingTemplate = false;
@@ -180,15 +205,16 @@ export class RegisterSelectTemplateController {
         msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
         msg += "</p>";
 
-        this.$mdDialog.hide();
-        this.$mdDialog.show(
-            this.$mdDialog.alert()
-                .ariaLabel("Error deleting the template")
-                .clickOutsideToClose(true)
-                .htmlContent(msg)
-                .ok("Got it!")
-                .parent(document.body)
-                .title("Error deleting the template"));
+            this._dialogService.closeAll();
+            this._dialogService.openAlert({
+                message: msg,
+                viewContainerRef: this._viewContainerRef,
+                title: "Error deleting the template",
+                closeButton: 'Got it!',
+                ariaLabel: "Error deleting the template",
+                closeOnNavigation: true,
+                disableClose: false
+            });
     }
 
     deleteTemplate = () => {
@@ -198,11 +224,7 @@ export class RegisterSelectTemplateController {
                 if (response.data && response.data.status == 'success') {
                     this.model.state = "DELETED";
 
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Successfully deleted the template ')
-                            .hideDelay(3000)
-                    );
+                    this.snackBar.open("Successfully deleted the template ", "OK", {duration: 3000});
                     this.registerTemplateService.resetModel();
                     this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
                 }
@@ -220,17 +242,17 @@ export class RegisterSelectTemplateController {
      * Displays a confirmation dialog for deleting the feed.
      */
     confirmDeleteTemplate = () => {
-        var $dialogScope = this.$scope.$new();
-        $dialogScope.dialog = this.$mdDialog;
-        $dialogScope.vm = self;
 
-        this.$mdDialog.show({
-            escapeToClose: false,
-            fullscreen: true,
-            parent: angular.element(document.body),
-            scope: $dialogScope,
-            templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html"
+        let dialogRef = this.dialog.open(TemplateDeleteDialog, {
+            data: { model: this.model },
+            panelClass: "full-screen-dialog"
+          });
+
+        let dialogRefObserver = dialogRef.componentInstance.onDeleteTemplate.subscribe(() => {
+            this.deleteTemplate();
+            dialogRef.close();
         });
+        
     };
 
     /**
@@ -251,16 +273,16 @@ export class RegisterSelectTemplateController {
 
 
     showProgress() {
-        if (this.stepperController) {
-            this.stepperController.showProgress = true;
-        }
+        // if (this.stepperController) {
+        //     this.stepperController.showProgress = true;
+        // }
     }
 
 
     hideProgress() {
-        if (this.stepperController && !this.isLoading()) {
-            this.stepperController.showProgress = false;
-        }
+        // if (this.stepperController && !this.isLoading()) {
+        //     this.stepperController.showProgress = false;
+        // }
     }
 
     findSelectedTemplate() {
@@ -329,29 +351,4 @@ export class RegisterSelectTemplateController {
         this.matchNiFiTemplateIdWithModel();
     }
 
-
-    $onInit(){
-        this.ngOnInit();
-    }
-    ngOnInit(){
-        this.stepNumber = parseInt(this.stepIndex)+1;
-        if (this.isLoading()) {
-            this.stepperController.showProgress = true;
-        }
-    }
-
 }
-
-angular.module(moduleName).component('thinkbigRegisterSelectTemplate', {
-    bindings: {
-        stepIndex: '@',
-        nifiTemplateId: '=?',
-        registeredTemplateId: "=?"
-    },
-    controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/select-template/select-template.html',
-    controller: RegisterSelectTemplateController,
-    require: {
-        stepperController: "^thinkbigStepper"
-    }
-});

@@ -154,50 +154,23 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             loadChildren: 'feed-mgr/categories/categories.module#CategoriesModule' 
         }); 
 
-        $stateProvider.state('registered-templates.**', {
-            url: '/registered-templates',
-            lazyLoad: (transition: any) =>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('registered-templates')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading registered-templates ", err);
-                    return err;
-                });
-            }
-        })
+        $stateProvider.state({ 
+            name: 'registered-templates.**',
+            url: '/registered-templates', 
+            loadChildren: 'feed-mgr/templates/templates.module#TemplateModule' 
+        }); 
 
-        $stateProvider.state('register-template.**', {
-            url: '/register-template',
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('register-template')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading register-template ", err);
-                    return err;
-                });
-            }
-        })
+        $stateProvider.state({ 
+            name: 'register-template.**',
+            url: '/registered-template', 
+            loadChildren: 'feed-mgr/templates/templates.module#TemplateModule' 
+        }); 
 
-        $stateProvider.state('import-template.**', {
-            url: '/import-template',
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('import-template', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading import-template ", err);
-                    return err;
-                });
-            },
-            params: {
-                "template": null
-            }
-        })
+        $stateProvider.state({ 
+            name: 'import-template.**',
+            url: '/import-template', 
+            loadChildren: 'feed-mgr/templates/templates.module#TemplateModule' 
+        }); 
 
         $stateProvider.state({ 
             name: 'service-level-agreements.**',

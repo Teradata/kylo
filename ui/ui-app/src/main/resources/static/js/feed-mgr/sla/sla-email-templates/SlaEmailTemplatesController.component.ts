@@ -109,7 +109,7 @@ export class SlaEmailTemplatesController {
             this.loading = false;
         }
         var promise = this.slaEmailTemplateService.getExistingTemplates()
-        promise.then(successFn, errorFn);
+        promise.toPromise().then(successFn, errorFn);
         return promise;
     }
 

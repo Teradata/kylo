@@ -1,80 +1,81 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "../../module-name";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { UiComponentsService } from '../../../services/UiComponentsService';
 import { FeedService } from '../../../services/FeedService';
+import { Component, Input, Inject, OnInit, SimpleChanges } from '@angular/core';
+import { RestUrlService } from '../../../services/RestUrlService';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
 
-export class RegisterProcessorPropertiesController {
+@Component({
+    selector: 'thinkbig-register-processor-properties',
+    templateUrl:'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html'
+})
+export class RegisterProcessorPropertiesController implements OnInit {
 
     model: any;
     isValid: boolean = true;
     /**
-         * List of available expression properties.
-         * @type {Object[]}
-         */
+     * List of available expression properties.
+     * @type {Object[]}
+     */
     availableExpressionProperties: any;
     /**
-         * Expression properties for auto-complete.
-         * @type {Object[]}
-         */
+     * Expression properties for auto-complete.
+     * @type {Object[]}
+     */
     expressionProperties: any;
-    stepNumber: any;
-    stepIndex: any;
+    stepNumber: number;
     propertiesThatNeedAttention: boolean = false;
     showOnlySelected: boolean = false;
-    filterString: any = null;
+    filterString: string = null;
     propertyRenderTypes: any[] = [];
     processors: any[] = [];
     visiblePropertyCount: number = 0;
     allProperties: any[] = [];
-    processorPropertiesFieldName: any;
     selectedProperties: any;
-    topIndex: any;
-    propertiesForm: any;
+    topIndex: number;
+
+    @Input() cardTitle: string;
+    @Input() stepIndex: string;
+    @Input() processorPropertiesFieldName: string;
+
+    @Input() formGroup: FormGroup;
+
+    private createFormControls(property:any) {
+        if(property.propertyDescriptor.allowableValues == null && property.selected == true 
+            && property.required && !property.userEditable) {
+            this.formGroup.addControl(property.key,new FormControl(null,Validators.required));
+        }
+    }
+
 
     ngOnInit() {
+        
         //Filter attrs
-        this.stepNumber = parseInt(this.stepIndex) + 1
-    }
-    $onInit() {
-        this.ngOnInit();
-    }
+        this.stepNumber = parseInt(this.stepIndex) + 1;
 
-    static readonly $inject = ["$scope", "$element", "$http", "$q", "$mdToast",
-        "$location", "$window", "RestUrlService", "RegisterTemplateService",
-        "FeedService", "UiComponentsService","RegisterTemplatePropertyService"];
+        this.model = this.registerTemplateService.model;
 
-    constructor(private $scope: IScope, private $element: any, private $http: angular.IHttpService, private $q: angular.IQService, private $mdToast: angular.material.IToastService
-        , private $location: angular.ILocationService, private $window: angular.IWindowService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory
-        , private feedService: FeedService, private uiComponentsService: UiComponentsService, private registerTemplatePropertyService : RegisterTemplatePropertyService) {
-
-        this.model = registerTemplateService.model;
-
-
-        this.availableExpressionProperties = registerTemplatePropertyService.propertyList;
-
+        this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList;
 
         this.expressionProperties = this.availableExpressionProperties;
 
-        $scope.$watch(() => {
-            return this.registerTemplatePropertyService.codemirrorTypes;
-        }, (newVal: any) => {
+        this.registerTemplatePropertyService.codeMirrorTypesObserver.subscribe((codemirrorTypes)=>{
+            this.registerTemplatePropertyService.codemirrorTypes = codemirrorTypes;
             this.initializeRenderTypes();
         })
 
-        $scope.$watchCollection(() => {
-            return this.model[this.processorPropertiesFieldName]
-        }, () => {
+        if (this.allProperties.length == 0 && this.model[this.processorPropertiesFieldName + "Properties"]) {
             this.transformPropertiesToArray();
-            //  this.processors = filterProcessors(this.propertiesThatNeedAttention, this.showOnlySelected);
-            //  countVisibleProperties();
+        }
+
+        this.registerTemplateService.modelInputObserver.subscribe(()=>{
+            this.transformPropertiesToArray();
         })
-        // Update expression properties when table option changes
-        $scope.$watch(() => {
-            return this.model.templateTableOption;
-        }, () => {
+
+        this.registerTemplateService.modelTemplateTableOptionObserver.subscribe((model)=>{
             if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplatePropertyService.propertyList)) {
                 this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
                     .then((tableOptionMetadataProperties: any) => {
@@ -82,16 +83,20 @@ export class RegisterProcessorPropertiesController {
                     });
             } else {
                 this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList;
-            }
-        });
-    };
+            }   
+        })
+    }
+    
+    constructor(private RestUrlService: RestUrlService, 
+                private registerTemplateService: RegisterTemplateServiceFactory,
+                private registerTemplatePropertyService: RegisterTemplatePropertyService,
+                private feedService: FeedService, 
+                private uiComponentsService: UiComponentsService) {}
 
-    // $anchorScroll.yOffset = 200;
     searchExpressionProperties = (term: any) => {
-        this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
+         return this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
             return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
         });
-        return this.$q.when(this.expressionProperties);
     };
 
     getExpressionPropertyTextRaw = (item: any) => {
@@ -114,34 +119,35 @@ export class RegisterProcessorPropertiesController {
     }
 
     minProcessorItems = () => {
-        var windowHeight = angular.element(this.$window).height();
+        var windowHeight = angular.element(window).height();
         var newHeight = windowHeight - 450;
         var processorHeight = 48;
         var minItems = Math.round(newHeight / processorHeight);
         return minItems;
     }
 
-
     scrollToProcessor = (processor: any) => {
         var topIndex = processor.topIndex;
         this.topIndex = topIndex;
     }
+
     transformPropertiesToArray = () => {
         var propertiesKey = this.processorPropertiesFieldName + "Properties";
         var processorsKey = this.processorPropertiesFieldName + "Processors";
         this.allProperties = _.filter(this.model[propertiesKey], (prop: any) => { return prop.hidden == undefined || prop.hidden == false });
 
-        // Find controller services
-        _.chain(this.allProperties).filter((property: any) => {
-            return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-        })
-            .each(this.feedService.findControllerServicesForProperty);
-
+        _.each(this.allProperties,(property) => this.createFormControls(property));
 
         this.processors = this.model[processorsKey];
         if (this.showOnlySelected) {
             this.showSelected();
         }
+        
+        // Find controller services
+        _.chain(this.allProperties).filter((property: any) => {
+            return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+        }).each(this.feedService.findControllerServicesForProperty);
+
     }
 
     showSelected = () => {
@@ -188,21 +194,20 @@ export class RegisterProcessorPropertiesController {
         }
     }
 
-        toggleSetAsEmptyString(property:any){
-            if(property.value == ''){
-                property.value = null;
-            }
-            else {
-                property.value = '';
-            }
+    toggleSetAsEmptyString(property:any){
+        if(property.value == ''){
+            property.value = null;
         }
+        else {
+            property.value = '';
+        }
+    }
 
     customSelectOptionChanged = (property: any) => {
         var str = JSON.stringify(property.selectOptions);
         property.renderOptions['selectOptions'] = str;
 
     }
-
 
     initializeRenderTypes = () => {
         angular.forEach(this.registerTemplatePropertyService.codemirrorTypes, (label: any, type: any) => {
@@ -211,14 +216,3 @@ export class RegisterProcessorPropertiesController {
     }
 
 }
-angular.module(moduleName)
-    .component('thinkbigRegisterProcessorProperties', {
-        bindings: {
-            stepIndex: '@',
-            cardTitle: '@',
-            processorPropertiesFieldName: '@'
-        },
-        controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html',
-        controller: RegisterProcessorPropertiesController,
-    });

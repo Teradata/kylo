@@ -17,120 +17,46 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" layout-align="center start">
+<filtered-paginated-table-view 
+    [columns]="columns"
+    [sortable]="true"
+    [sortBy]="sortBy"
+    [sortOrder]="sortOrder"
+    [clickable]="true"
+    [cardTitle]="cardTitle"
+    [onSearchDebounce]="search"
+    [filteredData]="filteredData"
+    [onSortChange]="sort"
+    [firstLast]="false"
+    [pageSize]="pageSize"
+    [filteredTotal]="filteredTotal"
+    [onPageSizeChange]="onPageSizeChange"
+    [allowedPageSize]="[5,10,20,50]">
 
-  <card-layout header-css="filter-header" class="centered" style="max-width:980px;width:980px;">
-
-        <header-section>
-            <tba-card-filter-header transclude-to="head" flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions" [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
-            </tba-card-filter-header>
-        </header-section>
-
-
-        <body-section>
-          <div ng-if="vm.loading">
-            <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-            <span class="md-body-2 layout-padding-left">Loading templates</span>
-          </div>
-
-        <div  ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
-           <md-list flex layout-fill class="list-item-table registered-templates">
-                        <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="registered-templates"  current-page="vm.currentPage" >
-                            <div layout="row" layout-fill>
-                              <div flex="40" layout="column" class="item-column md-list-item-text " ng-class="{'disabled':template.state == 'DISABLED'}"
-                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
-                                             <span class="item-title" title="{{template.templateName}}">
-                                              {{template.templateName}}
-                                           </span>
-
-                                <div layout="row" class="column-title column-title-bottom">
-                                  <!--<ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
-                                  </ng-md-icon>-->
-                                  <span>Template Name</span>
-                                  <span ng-if="template.state == 'DISABLED'">DISABLED</span>
-                                </div>
-                                </div>
-                              <div flex="25" layout="column" class="item-column md-list-item-text ">
-                                           <span  class="item-title" title="{{feed.active}}" >
-                                             {{template.feedsCount}}</span>
-                                             <span class="column-title column-title-bottom">
-                                             Feeds
-                                           </span>
-                              </div>
-                              <div flex="15" layout="column" class="item-column md-list-item-text ">
-
-                                           <span class="item-title">
-                                             {{template.updateDate | date: 'MM/dd/yyyy'}}</span>
-                                             <span class="column-title column-title-bottom">
-                                             Last Updated
-                                           </span>
-                                </div>
-                                <div flex="20" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
-                                    <md-button href="{{template.exportUrl}}"  layout-align="center" ng-disabled="!template.allowExport">
-                                        <ng-md-icon icon="launch" size="20" style="fill:#F08C38"> </ng-md-icon>
-                                        <span style="padding-left:10px;">Export</span>
-                                    </md-button>
-                                </div>
-
-                            </div>
-                            <md-divider ng-if="!$last"></md-divider>
-                        </md-list-item>
-                        <md-list-item  ng-show="vm.loading == false && vm.feedData.length ==0">
-                            No results found
-                        </md-list-item >
-                        <md-divider></md-divider>
-                        <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                            <dir-pagination-controls pagination-id="registered-templates"
-                                                     auto-hide="false"
-                                                     max-size="5"
-                                                     direction-links="true"
-                                                     boundary-links="false"
-                                                     template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                     on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                     label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                     rows-per-page="vm.paginationData.rowsPerPage"
-                                                     rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                     class="pagination-row">
-                            </dir-pagination-controls>
-                        </md-list-item>
-                    </md-list>
-        </div>
-            <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table' && !vm.loading">
-                <md-table-container>
-                    <table md-table md-progress="vm.deferred.promise">
-                        <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                        <tr md-row>
-                            <th md-column name="Template" md-order-by="templateName">Template</th>
-                            <th md-column name="# of Properties" md-order-by="template.properties.length"># of Properties</th>
-                            <th md-column name="Last Updated" md-order-by="updateDate" >Last Updated</th>
-                        </tr>
-                        </thead>
-                        <tbody md-body>
-                        <tr md-row ng-repeat="template in vm.registeredTemplates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"  >
-                            <td md-cell ng-click="vm.templateDetails($event,template)">
-                                <ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
-                                </ng-md-icon>
-                                {{template.templateName}}</td>
-
-                            <td md-cell ng-click="vm.templateDetails($event,feed)">
-                                {{template.properties.length}}
-                            </td>
-                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa' }}</td>
-                            <td md-cell>
-                                <md-button href="{{template.exportUrl}}"  layout-align="center">
-                                    <ng-md-icon icon="launch" size="20" style="fill:#F08C38"> </ng-md-icon>
-                                    <span style="padding-left:10px;">Export</span>
-                                </md-button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </md-table-container>
-
-                <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.registeredTemplates.length}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50]"></md-table-pagination>
-
+        <ng-template tdDataTableTemplate="templateName" let-value="value" let-row="row" let-column="column">
+            <div (click)="templateDetails(row)" style="display:flex">
+                <ng-md-icon icon="{{row.icon}}" size="20" hide-xs [ngStyle]="{'fill':row.iconColor}" style="margin: 0 5px 0 0;">
+                </ng-md-icon>
+                <span>
+                    {{value}}
+                </span>
             </div>
-        </body-section>
+        </ng-template>
+        <ng-template tdDataTableTemplate="properties" let-value="value" let-row="row" let-column="column">
+            <span (click)="templateDetails(row)">
+                {{value.length}}
+            </span>
+        </ng-template>
+        <ng-template tdDataTableTemplate="updateDate" let-value="value" let-row="row" let-column="column">
+                <span (click)="templateDetails(row)">
+                    {{value | date: 'MM/dd/yyyy' }}
+                </span>
+            </ng-template>
+        <ng-template tdDataTableTemplate="export" let-value="value" let-row="row" let-column="column">
+            <a href="{{row.exportUrl}}" style="display:flex;" class="md-button md-kylo-theme md-ink-ripple layout-align-center-stretch" layout-align="center">
+                <mat-icon size="20" style="color:#F08C38; margin-top:5px;">launch</mat-icon>
+                <div style="padding-left:10px;">Export</div>
+            </a>
+        </ng-template>
 
-    </card-layout>
-</div>
+</filtered-paginated-table-view>

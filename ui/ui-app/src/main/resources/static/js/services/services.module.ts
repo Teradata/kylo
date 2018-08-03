@@ -7,6 +7,7 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         stateServiceProvider,
         commonRestURLServiceProvider,
         userGroupServiceProvider,
+        angularModuleExtensionServiceProvider,
         fileUploadServiceProvider} from "./angular2";
 
 @NgModule({
@@ -24,7 +25,8 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         stateServiceProvider,
         commonRestURLServiceProvider,
         userGroupServiceProvider,
-        fileUploadServiceProvider
+        fileUploadServiceProvider,
+        angularModuleExtensionServiceProvider
     ]
 })
 export class KyloServicesModule {

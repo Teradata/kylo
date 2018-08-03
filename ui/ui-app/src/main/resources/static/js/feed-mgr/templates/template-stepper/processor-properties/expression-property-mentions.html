@@ -31,13 +31,15 @@
 -->
 
 <div class="expression-properties">
-    <div mentio-menu-item="property" ng-repeat="property in items" layout-column
+    <div mentio-menu-item="property" *ngFor="let property of items" layout-column
          class="expression-property" flex>
         <div layout="row">
-            <span ng-bind-html="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
-            <span style="padding-left:15px;color:#cccccc" ng-bind="property.dataType"></span>
-            <span style="padding-left:15px;" ng-bind="property.value"></span>
+            <span [innerHtml]="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
+            <span style="padding-left:15px;color:#cccccc" [innerHtml]="property.dataType"></span>
+            <span style="padding-left:15px;" [innerHtml]="property.value"></span>
         </div>
-        <span class="hint">{{property.description}}</span>
+        <mat-hint>
+            {{property.description}}
+        </mat-hint>
     </div>
 </div>

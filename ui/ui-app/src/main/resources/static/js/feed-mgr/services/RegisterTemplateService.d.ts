@@ -161,7 +161,7 @@ export interface RegisteredTemplateService {
     /**
      * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
      */
-    checkTemplateAccess(model: any): angular.IPromise<AccessControl.EntityAccessCheck>;
+    checkTemplateAccess(model: any): Promise<any>;
 
     /**
      * Assigns the model properties and render types

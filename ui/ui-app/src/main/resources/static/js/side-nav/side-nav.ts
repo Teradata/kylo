@@ -9,8 +9,8 @@ import {TransitionService} from "@uirouter/core";
 import AccessControlService from "../services/AccessControlService";
 import SideNavService from  "../services/SideNavService";
 import StateService from "../services/StateService";
-import AngularModuleExtensionService from "../services/AngularModuleExtensionService";
 import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuService";
+import AngularModuleExtensionService from '../services/AngularModuleExtensionService';
 
 export default class SideNav implements ng.IComponentController {
 
@@ -81,7 +81,6 @@ export default class SideNav implements ng.IComponentController {
         
         this.AngularModuleExtensionService.onInitialized(this.onAngularExtensionsInitialized);
 
-    
         if(this.AngularModuleExtensionService.isInitialized()){
             this.buildSideNavMenu();
         }
@@ -140,7 +139,7 @@ export default class SideNav implements ng.IComponentController {
                 private AccessControlService: AccessControlService,
                 private StateService: StateService,
                 private AccordionMenuService: AccordionMenuService,
-                private AngularModuleExtensionService: any,
+                private AngularModuleExtensionService: AngularModuleExtensionService,
                 private $filter: angular.IFilterService,
                 private $scope: IScope,
                 private $element: JQuery) {}

@@ -719,28 +719,35 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     /**
      * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
      */
-    checkTemplateAccess(model?: any): angular.IPromise<AccessControl.EntityAccessCheck> {
+    checkTemplateAccess(model?: any): Promise<any> {
         if (model == undefined) {
             model = this.model;
         }
         model.errorMessage = '';
 
-        var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
-        var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>>this.$injector.get("$q").defer();
-        var requests = {
-            entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
-            entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
-            functionalAccess: this.accessControlService.getUserAllowedActions()
-        }
+        
+        // var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>>this.$injector.get("$q").defer();
+        // var requests = {
+        //     entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
+        //     entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
+        //     functionalAccess: this.accessControlService.getUserAllowedActions()
+        // }
+        return new Promise((resolve, reject) => { 
+            
+        this.accessControlService.getUserAllowedActions().then((functionalAccess: any) => {
 
-        this.$injector.get("$q").all(requests).then((response: any) => {
+            let allowEditAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, functionalAccess.actions);
+            let allowAdminAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, functionalAccess.actions);
 
-            let allowEditAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
-            let allowAdminAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+            var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
 
-            let allowEdit = response.entityEditAccess && allowEditAccess
-            let allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
-            let allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
+            let entityEditAccess = entityAccessControlled == true ? this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true;
+            let entityAdminAccess = entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true;
+            
+
+            let allowEdit = entityEditAccess && allowEditAccess
+            let allowAdmin = entityEditAccess && entityAdminAccess && allowAdminAccess;
+            let allowAccessControl = entityEditAccess && entityAdminAccess && allowEdit;
             let accessAllowed = allowEdit || allowAdmin;
             let result: AccessControl.EntityAccessCheck = { allowEdit: allowEdit, allowAdmin: allowAdmin, isValid: model.valid && accessAllowed, allowAccessControl: allowAccessControl };
             if (!result.isValid) {
@@ -752,10 +759,10 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                     model.errorMessage = "Unable to proceed";
                 }
             }
-            deferred.resolve(result);
+            resolve(result);
 
         });
-        return deferred.promise;
+        });
     }
 
     /**

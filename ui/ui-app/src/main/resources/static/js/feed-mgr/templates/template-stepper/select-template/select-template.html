@@ -17,104 +17,112 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" layout-align="center start">
+  <div layout="row" layout-align="center start">
 
-    <card-layout body-css="md-padding" style="max-width:980px;width:980px;" flex="initial">
+    <mat-card style="max-width:980px;width:980px;" flex="initial">
 
-        <header-section>
-        <div layout="row" layout-align="space-between-center" flex>
-            <div class="card-title" flex>Select Template</div><h2 class="card-sub-header">1 of 5</h2>
-        </div>
-    </header-section >
+        <mat-card-title>
+            <div layout="row" layout-align="space-between-center" flex>
+                <div class="card-title" flex>Select Template</div>
+                <h2 class="card-sub-header">1 of 5</h2>
+            </div>
+        </mat-card-title>
 
-    <body-section>
-        <md-input-container>
-            <label>Template</label>
-            <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
-                <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">
-                    {{template.name}}
-                </md-option>
-            </md-select>
-        </md-input-container>
-        <div ng-if="vm.errorMessage != null && !vm.isValid" layout="row">
+    <mat-card-content class="card-layout-body mat-padding">
+        
+        <ng-container [formGroup]="formGroup">
+            <mat-form-field>
+                <mat-select placeholder="Template" [(ngModel)]="nifiTemplateId"
+                            formControlName="template" [disabled]="templateSelectionDisabled" 
+                            (change)="changeTemplate()" required>
+                    <mat-option test="test" *ngFor="let template of templates" value="{{template.id}}">
+                        {{template.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </ng-container>
+
+        <div *ngIf="errorMessage != null && !isValid" layout="row">
             <ng-md-icon icon="error" size="20" class="error"></ng-md-icon>
-            <div flex class="error layout-padding" >{{vm.errorMessage}}</div>
+            <div flex class="error layout-padding" >{{errorMessage}}</div>
         </div>
 
+        <div layout="column" *ngIf="!model.reusableTemplate">
+            <div class="md-subhead left-aligned">Target Table Options</div>
 
-        <div layout="column" ng-if="!vm.model.reusableTemplate">
-            <md-subheader class="md-subhead left-aligned">Target Table Options</md-subheader>
-            <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
-                <md-radio-group ng-model="vm.model.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()" required="true">
-                    <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="30">
-                        {{tableOption.displayName}}
-                        <div class="hint">{{tableOption.description}}</div>
-                    </md-radio-button>
-                </md-radio-group>
-            </md-input-container>
+            <div class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
+                <div [(ngModel)]="model.templateTableOption" flex layout="row" (change)="onTableOptionChange()" required="true" ngDefaultControl>
+                    <mat-radio-group *ngFor="let tableOption of templateTableOptions" flex="30">
+                        <input type="radio" id="tableOptions" name="contact" value="{{tableOption.type}}" [checked]="model.templateTableOption == tableOption.type">
+                        <label for="tableOptions">{{tableOption.displayName}}</label>
+                        <mat-hint>{{tableOption.description}}</mat-hint>
+                    </mat-radio-group>
+                </div>
+            </div>
         </div>
 
         <br/><br/><br/>
-        <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
-    </body-section>
+    </mat-card-content>
 
-</card-layout>
+</mat-card>
 
-    <card-layout offsetleftfromprevious top="8" card-css="layout-fill" body-css="md-padding"
+    <mat-card offsetleftfromprevious top="8" class="layout-fill"
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-        <header-section>
+        <mat-card-title>
             <div class="card-title">Template</div>
             <div layout="column" class="layout-padding-top-bottom">
-            <span class="item-title" ng-if="!vm.model.loading">
-                 <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs ng-style="{'fill':vm.model.icon.color}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
+            <span class="item-title" *ngIf="!model.loading">
+                 <ng-md-icon icon="{{model.icon.title}}" size="20" hide-xs ng-style="{'fill':model.icon.color}" *ngIf="model.icon && model.state != 'NOT REGISTERED'">
                  </ng-md-icon>
-                {{vm.model.templateName}}</span>
+                {{model.templateName}}</span>
             </div>
-        </header-section>
+        </mat-card-title>
 
-        <body-section>
-            <div layout="column" class="layout-padding-top" ng-if="vm.model.loading">
+        <mat-card-content class="card-layout-body mat-padding">
+            <div layout="column" class="layout-padding-top" *ngIf="model.loading">
                 Loading Template ...
             </div>
-            <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
-                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableTemplate()" class="border-btn">
+            <div layout="column" class="layout-padding-top" *ngIf="!model.loading">
+                <button class="border-btn md-button md-kylo-theme" *ngIf="model.state == 'ENABLED' && allowAdmin" [disabled]="disabling" (click)="disableTemplate()" class="border-btn">
                     DISABLE TEMPLATE
-                </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableTemplate()" class="border-btn">
+                </button>
+                <button class="border-btn md-button md-kylo-theme" *ngIf="model.state == 'DISABLED' && allowAdmin" [disabled]="enabling" (click)="enableTemplate()" class="border-btn">
                     ENABLE TEMPLATE
-                </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin && vm.model.feedsCount ==0" ng-click="vm.confirmDeleteTemplate()" class="border-btn-warn">
+                </button>
+                <button class="border-btn-warn md-button md-kylo-theme" *ngIf="model.state == 'DISABLED' && allowAdmin && model.feedsCount ==0" (click)="confirmDeleteTemplate()" class="border-btn-warn">
                     DELETE TEMPLATE
-                </md-button>
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+                </button>
+                <mat-progress-linear mode="indeterminate" *ngIf="enabling || disabling"></mat-progress-linear>
+                
                 <div layout="column" class="layout-padding-top-bottom" >
-                <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state != 'ENABLED'}">
-                    <ng-md-icon icon="{{vm.model.stateIcon}}" size="20" ng-if="vm.model.state != 'NOT REGISTERED'"></ng-md-icon> {{vm.model.state}}</span>
-                    <span class="hint">State</span>
+                    <span [ngClass]="{'enabled':model.state == 'ENABLED','disabled':model.state != 'ENABLED'}">
+                        <ng-md-icon icon="{{model.stateIcon}}" size="20" *ngIf="model.state != 'NOT REGISTERED'"></ng-md-icon> {{model.state}}</span>
+                        <mat-hint>State</mat-hint>
                 </div>
 
                 <div layout="column" class="layout-padding-top-bottom">
-                    <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
-                                             <span class="hint">
-                                             Last Updated
-                                           </span>
-                </div>
-                <div layout="column" class="layout-padding-top-bottom">
-                    <span>  {{vm.model.feedsCount}}</span>
-                    <span class="hint">Feeds</span>
+                    <span>{{model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+                    <mat-hint>Last Updated</mat-hint>
                 </div>
 
-                <div layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport && vm.model.id != null">
-                    <md-button style="text-align:left" ng-if="vm.registeredTemplateId != null" ng-repeat="item in vm.templateNavigationLinks" ng-click="vm.templateNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
-                    <md-button href="{{vm.model.exportUrl}}">
+                <div layout="column" class="layout-padding-top-bottom">
+                    <span>{{model.feedsCount}}</span>
+                    <mat-hint>Feeds</mat-hint>
+                </div>
+
+                <div layout="column" class="item-column md-list-item-text" *ngIf="allowExport && model.id != null">
+                    <ng-template *ngFor="let item of templateNavigationLinks">
+                        <button style="text-align:left" *ngIf="registeredTemplateId != null" (click)="templateNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</button>
+                    </ng-template>
+                    <a href="{{model.exportUrl}}" class="md-button md-kylo-theme">
                         <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
                         <span style="padding-left:10px;">Export</span>
-                    </md-button>
+                    </a>
                 </div>
             </div>
 
-        </body-section>
+        </mat-card-content>
 
-    </card-layout>
+    </mat-card>
 
 </div>

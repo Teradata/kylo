@@ -17,21 +17,21 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Registering Template Error" ng-cloak>
-  <md-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
-    <div class="md-toolbar-tools">
-      <h4>
-        <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template Error" style="fill:#3483BA"></ng-md-icon>
-        <span>Error registering {{templateName | characters:50}}</span>
-      </h4>
-      <span flex></span>
-    </div>
-  </md-toolbar>
-  <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-    <div class="md-subhead">{{message}}</div>
-    <div>
-      <md-button class="md-primary md-raised" ng-click="gotIt()">Got It</md-button>
-    </div>
-
-  </md-dialog-content>
-</md-dialog>
+  <div mat-dialog aria-label="Registering Template Error">
+    <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
+      <div class="md-toolbar-tools">
+        <h4>
+          <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template Error" style="fill:#3483BA"></ng-md-icon>
+          <span>Error registering {{templateName | truncate:50}}</span>
+        </h4>
+        <span flex></span>
+      </div>
+    </mat-toolbar>
+    <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+      <div class="md-subhead">{{message}}</div>
+      <div>
+        <md-button class="md-primary md-raised" (click)="gotIt">Got It</md-button>
+      </div>
+    </mat-dialog-content>
+  </div>
+  

@@ -44,6 +44,7 @@ import "rxjs/add/observable/of";
 import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { Subject } from "rxjs/Subject";
 
 @Injectable()
 export class RegisterTemplatePropertyService {
@@ -92,6 +93,8 @@ export class RegisterTemplatePropertyService {
      * @type {null}
      */
     public codemirrorTypes: Common.Map<string> = null;
+
+    public codeMirrorTypesObserver = new Subject<Common.Map<string>>();
 
     /**
      * Map of all configuration properties
@@ -192,9 +195,9 @@ export class RegisterTemplatePropertyService {
         if (Object.keys(this.configurationProperties).length == 0) {
             let _successFn = (response: any) => {
                 this.configurationProperties = response.data;
-                response.forEach((value: any, key: any) => {
-                    this.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
-                    this.configurationPropertyMap[key] = value;
+                Object.keys(response).forEach((key: any) => {
+                    this.propertyList.push({ key: key, value: response[key], description: null, dataType: null, type: 'configuration' });
+                    this.configurationPropertyMap[key] = response[key];
                 })
                 if (successFn) {
                     successFn(response);
@@ -225,7 +228,7 @@ export class RegisterTemplatePropertyService {
         if (this.metadataProperties.length == 0) {
             let _successFn = (response: any) => {
                 this.metadataProperties = response;
-                response.forEach((annotatedProperty: MetadataProperty, i: any) => {
+                response.forEach((annotatedProperty: MetadataProperty) => {
                     this.propertyList.push({
                         key: annotatedProperty.name,
                         value: '',
@@ -294,6 +297,7 @@ export class RegisterTemplatePropertyService {
         if (this.codemirrorTypes == null) {
             let successFn = (response: any) => {
                 this.codemirrorTypes = response;
+                this.codeMirrorTypesObserver.next(this.codemirrorTypes);
                 Object.keys(this.codemirrorTypes).forEach( (label: string) => {
                     this.propertyRenderTypes.push({ type: this.codemirrorTypes[label], label: label, codemirror: true });
                 });

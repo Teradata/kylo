@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable()
 export default class SlaEmailTemplateService {
@@ -12,6 +13,7 @@ export default class SlaEmailTemplateService {
     availableActions: any[];
     
     constructor(private RestUrlService: RestUrlService,
+                private http: HttpClient,
                 @Inject("$injector") private $injector: any) {
         
         this.data = {
@@ -33,8 +35,8 @@ export default class SlaEmailTemplateService {
         return injectables;
     }
     getExistingTemplates = () => {
-        var promise = this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/email-template");
-        promise.then((response: any) => {
+        var promise = this.http.get("/proxy/v1/feedmgr/sla/email-template");
+        promise.toPromise().then((response: any) => {
             if (response.data) {
                 this.data.templates = response.data;
                 this.data.templateMap = {};
@@ -47,7 +49,7 @@ export default class SlaEmailTemplateService {
     };
 
     getRelatedSlas = (id: any) => {
-        return this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
+        return this.http.get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
     };
     getTemplate = (id: any) => {
         return this.data.templateMap[id];
@@ -55,7 +57,7 @@ export default class SlaEmailTemplateService {
     getAvailableActionItems = () => {
         var def = this.$injector.get("$q").defer();
         if (this.data.availableActions == undefined || this.data.availableActions == null || this.data.availableActions.length == 0) {
-            this.$injector.get("$http").get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any) => {
+            this.http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").toPromise().then((response: any) => {
                 if (response.data) {
                     this.data.availableActions = response.data;
                     def.resolve(this.data.availableActions);
@@ -75,13 +77,9 @@ export default class SlaEmailTemplateService {
             templateString = this.template.template;
         }
         var testTemplate = { subject: subject, body: templateString };
-        return this.$injector.get("$http")({
-            url: "/proxy/v1/feedmgr/sla/test-email-template",
-            method: "POST",
-            data: angular.toJson(testTemplate),
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            }
+        return this.http.post("/proxy/v1/feedmgr/sla/test-email-template",
+            angular.toJson(testTemplate),
+            {headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})
         });
     };
     sendTestEmail = (address: any, subject: any, templateString: any) => {
@@ -92,13 +90,9 @@ export default class SlaEmailTemplateService {
             templateString = this.template.template;
         }
         var testTemplate = { emailAddress: address, subject: subject, body: templateString };
-        return this.$injector.get("$http")({
-            url: "/proxy/v1/feedmgr/sla/send-test-email-template",
-            method: "POST",
-            data: angular.toJson(testTemplate),
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            }
+        return this.http.post("/proxy/v1/feedmgr/sla/send-test-email-template",
+           angular.toJson(testTemplate),
+            {headers: new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'})
         });
     };
     save = (template: any) => {
@@ -106,13 +100,9 @@ export default class SlaEmailTemplateService {
             template = this.data.template;
         }
         if (template != null) {
-            return this.$injector.get("$http")({
-                url: "/proxy/v1/feedmgr/sla/email-template",
-                method: "POST",
-                data: angular.toJson(template),
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
+            return this.http.post("/proxy/v1/feedmgr/sla/email-template",
+                angular.toJson(template),
+                {headers: new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'})
             });
         }
     };

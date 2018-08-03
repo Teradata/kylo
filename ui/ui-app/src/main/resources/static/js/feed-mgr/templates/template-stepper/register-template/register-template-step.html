@@ -17,127 +17,128 @@
   limitations under the License.
   #L%
   -->
-<card-layout body-css="md-padding">
+  <mat-card>
 
-    <header-section>
+    <mat-card-title>
         <div layout="row" layout-align="space-between-center" flex>
             <div class="card-title" flex>Complete & Register</div>
             <h2 class="card-sub-header">5 of 5</h2>
         </div>
-    </header-section>
+    </mat-card-title>
 
-    <body-section>
-        <ng-form name="vm.registerTemplateForm">
+    <mat-card-content class="md-padding">
+        <ng-container [formGroup]="formGroup">
             <div layout="column">
 
-                <md-input-container class="md-block condensed">
-                    <label>Description</label>
-                    <textarea ng-model="vm.model.description"></textarea>
-                </md-input-container>
+                <mat-form-field class="md-block condensed">
+                    <textarea matInput name="description" [(ngModel)]="model.description" [ngModelOptions]="{standalone: true}" placeholder="Description"></textarea>
+                </mat-form-field>
 
                 <div layout="column">
-                    <md-subheader class="md-subhead left-aligned">Streaming template</md-subheader>
+                    <div class="md-subhead left-aligned md-subheader md-kylo-theme">Streaming template</div>
 
                     <div layout="row" layout-align="start start">
-                        <md-checkbox ng-model="vm.model.isStream" aria-label="Streaming Template">
+                        <mat-checkbox name="isStream" [(ngModel)]="model.isStream" [ngModelOptions]="{standalone: true}" aria-label="Streaming Template">
                             Streaming template
-                        </md-checkbox>
+                        </mat-checkbox>
                         <span>If checked individual jobs and steps will not be tracked in Operations Manager.  Summary statistics and critical failures will be tracked</span>
                     </div>
                 </div>
 
-                <div layout="column" ng-if="!vm.model.isStream">
-                    <md-subheader class="md-subhead left-aligned">Batch template</md-subheader>
+                <div layout="column" *ngIf="!model.isStream">
+                    <div class="md-subhead left-aligned">Batch template</div>
 
                     <div layout="column">
-                        <md-input-container class="md-block" flex="100">
-                            <label>Job creation flow rate interval (millis) </label>
-                            <input name="timeBetweenStartingBatchJobs" ng-model="vm.model.timeBetweenStartingBatchJobs" type="number"  />
+                        <mat-form-field class="md-block" flex="100">
+                            <mat-label>Job creation flow rate interval (millis) </mat-label>
+                            <input matInput name="timeBetweenStartingBatchJobs" [(ngModel)]="model.timeBetweenStartingBatchJobs" [ngModelOptions]="{standalone: true}" type="number"  />
                             <div class="hint">
                                 If Operations Manager receives more than 1 starting event within this given interval it will suppress the creation of the next job<br/>
                                 Set this to -1L or 0L to always create a job instance for each starting flow.
                             </div>
-                        </md-input-container>
+                        </mat-form-field>
 
                     </div>
                 </div>
 
-                <div layout="column" ng-if="vm.model.reusableTemplate">
-                    <md-subheader class="md-subhead left-aligned">Reusable Template</md-subheader>
+                <div layout="column" *ngIf="model.reusableTemplate">
+                    <div class="md-subhead left-aligned">Reusable Template</div>
                     <span>This template is to be used as a reusable component. It cannot be used to create a new feed, but rather other feed templates can be registered to reference this template.
                     </span>
                 </div>
 
-                <div layout="column" ng-if="!vm.model.reusableTemplate && vm.model.allowPreconditions">
-                    <md-subheader class="md-subhead left-aligned">Feed Scheduling Options</md-subheader>
+                <div layout="column" *ngIf="!model.reusableTemplate && model.allowPreconditions">
+                    <div class="md-subhead left-aligned">Feed Scheduling Options</div>
                     <div layout="row" layout-align="start start">
                         <div><ng-md-icon icon="check" style="fill:green" size="20"></ng-md-icon></div>
                         <span>This template allows for the feed to be triggered on a pre condition (i.e. the completion of another feed)</span>
                     </div>
                 </div>
 
-                <div layout="column" ng-if="vm.model.needsReusableTemplate">
-                    <md-subheader class="md-subhead left-aligned">Connection Options</md-subheader>
-                    <div layout="row" ng-repeat="connection in vm.model.reusableTemplateConnections">
+                <div layout="column" *ngIf="model.needsReusableTemplate && loaded">
+                    <div class="md-subhead left-aligned">Connection Options</div>
+                    <div layout="row" *ngFor="let connection of model.reusableTemplateConnections">
                         <div layout="column" flex="50">
                             <span>Connect From: {{connection.feedOutputPortName}}</span>
                         </div>
                         <div layout="column" flex="50">
-                            <md-input-container class="md-block condensed">
-                                <md-select name="port-{{connection.feedOutputPortName}}" ng-model="connection.inputPortDisplayName" ng-change="vm.onReusableTemplateConnectionChange(connection)"
-                                           required>
-                                    <md-option ng-repeat="inputPort in vm.inputPortList" value="{{inputPort.value}}">
-                                        <span>{{inputPort.label}}</span> <span class="hint" ng-if="inputPort.description"> ({{inputPort.description | characters:50}})</span>
-                                    </md-option>
-                                </md-select>
-                                <div ng-messages="vm.registerTemplateForm['port-'+connection.feedOutputPortName].$error " md-auto-hide="false">
-                                    <div ng-message="required">This field is required.</div>
-                                    <div ng-message="invalidConnection">The selected input port is no longer available.</div>
-                                </div>
-                            </md-input-container>
+                            <mat-form-field class="md-block condensed">
+                                <mat-select name="port-{{connection.feedOutputPortName}}" [(ngModel)]="connection.inputPortDisplayName" (change)="onReusableTemplateConnectionChange(connection)"
+                                            formControlName="port-{{connection.feedOutputPortName}}" required>
+                                    <mat-option *ngFor="let inputPort of inputPortList" value="{{inputPort.value}}">
+                                        <span>{{inputPort.label}}</span> <span class="hint" *ngIf="inputPort.description"> ({{inputPort.description | truncate:50}})</span>
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="formGroup.controls['port-'+connection.feedOutputPortName] && formGroup.controls['port-'+connection.feedOutputPortName].errors?.required" >
+                                    This field is required.
+                                </mat-error>
+                                <mat-error *ngIf="formGroup.controls['port-'+connection.feedOutputPortName] && formGroup.controls['port-'+connection.feedOutputPortName].errors?.invalidConnection" >
+                                    The selected input port is no longer available.
+                                </mat-error>
+                            </mat-form-field>
                         </div>
                     </div>
                 </div>
 
                 <div layout="column">
-                    <md-subheader class="md-subhead left-aligned">Display Options</md-subheader>
+                    <div class="md-subhead left-aligned">Display Options</div>
                     <div layout="column" class="layout-padding-top-bottom">
                         <span class="md-input-label" style="font-size: 11px;">Icon </span>
                         <div layout="row">
-                            <ng-md-icon icon="{{vm.model.icon.title}}" size="45" style="margin:inherit" ng-style="{'fill':vm.model.icon.color}"></ng-md-icon>
-                            <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
+                            <ng-md-icon icon="{{model.icon.title}}" size="45" style="margin:inherit" [ngStyle]="{'fill':model.icon.color}"></ng-md-icon>
+                            <button class="md-primary md-button md-kylo-theme" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
+            <thinkbig-template-order [model]="templateOrder" [templateId]="model.id" [templateName]="model.templateName" [addAsNew]="true" [addSaveBtn]="false"></thinkbig-template-order>
 
             <div layout="row" layout-align="space-between start" layout-fill>
               <div flex="100" layout="column">
-                <md-subheader class="md-subhead left-aligned">Feed Lineage Datasources</md-subheader>
+                <div class="md-subhead left-aligned">Feed Lineage Datasources</div>
                 <span class="hint">Select datasources that should track feed lineage</span>
 
-                    <div ng-if="vm.loadingFlowData" layout="column" layout-align="start center" class="layout-padding-top-bottom">
-                    <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+                    <div *ngIf="loadingFlowData" layout="column" layout-align="start center" class="layout-padding-top-bottom">
+                    <mat-spinner mode="indeterminate"></mat-spinner>
                     <span>Loading ...</span>
                 </div>
 
-                    <div layout="row" layout-fill layout-align="space-between center" ng-if="!vm.loadingFlowData" class="layout-padding-top-bottom">
+                    <div layout="row" layout-fill layout-align="space-between center" *ngIf="!loadingFlowData" class="layout-padding-top-bottom">
                     <div layout="column">
 
-                        <div ng-repeat="dsDef in vm.processorDatasourceDefinitions" layout="column">
+                        <div *ngFor="let dsDef of processorDatasourceDefinitions" layout="column">
 
                             <div layout="row">
-                                <md-checkbox ng-model="dsDef.selectedDatasource"
+                                <mat-checkbox name="selectedDatasource" [(ngModel)]="dsDef.selectedDatasource" [ngModelOptions]="{standalone: true}"
                                              aria-label="Processor Datasource Definition">{{dsDef.processorName}} - {{dsDef.datasourceDefinition.datasourceType}} -
                                     {{dsDef.datasourceDefinition.connectionType}}
-                                </md-checkbox>
+                                </mat-checkbox>
                             </div>
 
                         </div>
 
-                        <div ng-if="vm.processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
+                        <div *ngIf="processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
                             No processors were found in the flow matching the configured datasource definitions
                         </div>
 
@@ -149,21 +150,21 @@
 
             </div>
 
-            <div layout="column" ng-if="!vm.remoteProcessGroupValidation.validatingPorts && !vm.remoteProcessGroupValidation.valid">
-                <md-subheader class="md-subhead left-aligned">Remote Process Group Issues</md-subheader>
+            <div layout="column" *ngIf="!remoteProcessGroupValidation.validatingPorts && !remoteProcessGroupValidation.valid">
+                <div class="md-subhead left-aligned">Remote Process Group Issues</div>
                 <div layout="row" class="layout-padding-top-bottom">
                         <span>
                           <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
                         </span>
-                    <span ng-bind-html="vm.remoteProcessGroupValidation.invalidMessage"></span>
+                    <span [innerHtml]="remoteProcessGroupValidation.invalidMessage"></span>
                 </div>
             </div>
 
-            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.remoteProcessGroupValidation.valid && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
+            <!-- <thinkbig-step-buttons can-continue="registerTemplateForm.$valid &&!loadingFlowData && remoteProcessGroupValidation.valid && model.reusableTemplate == false" step-index="{{::stepIndex}}"
                                    final-step="Register"
-                                   on-click-final-button="vm.registerTemplate()">
-            </thinkbig-step-buttons>
+                                   on-click-final-button="registerTemplate()">
+            </thinkbig-step-buttons> -->
 
-        </ng-form>
-    </body-section>
-</card-layout>
+        </ng-container>
+    </mat-card-content>
+</mat-card>

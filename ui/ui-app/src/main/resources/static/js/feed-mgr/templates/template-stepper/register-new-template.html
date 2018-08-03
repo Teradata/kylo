@@ -1,4 +1,4 @@
-<div  flex style="width:100%" ng-controller="RegisterNewTemplateController as vm">
+<div flex style="width:100%">
 
   <div layout="column" flex class="md-padding " layout-align="start start" >
     <div layout="column" flex layout-fill layout-align="center center">
@@ -6,21 +6,16 @@
     </div>
     <div layout="column" flex layout-fill layout-align="center center">
 
-      <md-card style="width:450px;max-width:450px;max-height:121px;height:121px" ng-repeat="method in vm.registrationMethods track by $index" flex="initial" flex-md="initial" flex-sm="50" ng-click="method.onClick()">
-        <md-card-title>
-          <md-card-title-text>
+      <mat-card style="width:450px;max-width:450px;max-height:121px;height:121px" *ngFor="let method of registrationMethods" flex="initial" flex-md="initial" flex-sm="50" (click)="method.onClick()">
+        <mat-card-title>
+          <mat-card-title-text>
             <span style="font-size: 20px;font-weight:400;letter-spacing: .005em;">{{method.name}}</span>
-          </md-card-title-text>
-          <!--
-          <md-card-title-media>
-                <ng-md-icon icon="{{method.icon}}" size="40" ng-style="{'fill':method.iconColor}" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
-            </md-card-title-media>
-            -->
-        </md-card-title>
-        <md-card-content>
-          <div style="word-wrap:break-word;">{{method.description | characters:100}}</div>
-        </md-card-content>
-      </md-card>
+          </mat-card-title-text>
+        </mat-card-title>
+        <mat-card-content>
+          <div style="word-wrap:break-word;">{{method.description | truncate: 100}}</div>
+        </mat-card-content>
+      </mat-card>
     </div>
 
 

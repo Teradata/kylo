@@ -2,23 +2,30 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from './EntityAccessControlService';
-import {moduleName} from "../../module-name";
+import { Component, Input, Inject, OnInit, SimpleChanges } from '@angular/core';
+import UserGroupService from '../../../services/UserGroupService';
 
-export class EntityAccessControlController {
+@Component({
+    selector: 'entity-access-control',
+    templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control.html'
+})
+export class EntityAccessControlController implements OnInit {
 
     /**
     * are we using Entity access control
     * @type {boolean}
     */
+
+    @Input() readOnly: boolean;
+    @Input() theForm: any;
+    @Input() roleMembershipsProperty: string;
+    @Input() entityType:string;
+    @Input() allowOwnerChange: boolean;
+    @Input() entity: any;
+    @Input() queryForEntityAccess: any;
+
     enabled: boolean = false;
-    readOnly: boolean;
-    theForm: any;
-    roleMembershipsProperty: string;
-    entityType:string;
-    allowOwnerChange: boolean;
-    entity: any;
     entityRoleMemberships: any;
-    queryForEntityAccess: any;
     rolesInitialized: any;
     ownerAutoComplete: any;
     /**
@@ -34,12 +41,8 @@ export class EntityAccessControlController {
 
     roles: any = null;
 
-    static readonly $inject = ["$q", "$http", "UserGroupService",
-        "EntityAccessControlService", "AccessControlService"];
-
-    constructor(private $q: angular.IQService, private $http: angular.IHttpService, private UserGroupService: any,
-        private entityAccessControlService: EntityAccessControlService, private accessControlService: AccessControlService) {
-
+    ngOnInit() {
+        
         if(angular.isUndefined(this.readOnly)){
             this.readOnly = false;
         }
@@ -56,8 +59,8 @@ export class EntityAccessControlController {
             this.allowOwnerChange = true;
         }
 
-        this.$q.when(accessControlService.checkEntityAccessControlled()).then(() => {
-            this.enabled = accessControlService.isEntityAccessControlled();
+        this.$injector.get("$q").when(this.accessControlService.checkEntityAccessControlled()).then(() => {
+            this.enabled = this.accessControlService.isEntityAccessControlled();
         });
 
 
@@ -75,8 +78,8 @@ export class EntityAccessControlController {
         if (angular.isUndefined(this.entity.owner) || this.entity.owner == null) {
             this.entity.owner = null;
             //assign it the current user
-            var requests = { currentUser: UserGroupService.getCurrentUser(), allUsers: this.getAllUsers() };
-            this.$q.all(requests).then((response: any) => {
+            var requests = { currentUser: this.UserGroupService.getCurrentUser(), allUsers: this.getAllUsers() };
+            this.$injector.get("$q").all(requests).then((response: any) => {
                 var matchingUsers = this.filterCollection(response.allUsers, response.currentUser.systemName, ['_lowerDisplayName', '_lowerSystemName']);
                 if (matchingUsers) {
                     this.entity.owner = matchingUsers[0];
@@ -116,13 +119,19 @@ export class EntityAccessControlController {
             }
         }
         this.init();
-    };
+    }
+
+    constructor(private UserGroupService: UserGroupService,
+                private entityAccessControlService: EntityAccessControlService, 
+                private accessControlService: AccessControlService,
+                @Inject("$injector") private $injector: any) {}
+
     /**
-         * Filter the groups or users based upon the supplied query
-         * @param collection
-         * @param query
-         * @returns {Array}
-         */
+     * Filter the groups or users based upon the supplied query
+     * @param collection
+     * @param query
+     * @returns {Array}
+     */
     filterCollection = (collection: any, query: any, keys: any) => {
         return query ? _.filter(collection, (item) => {
             var lowercaseQuery = angular.lowercase(query);
@@ -144,9 +153,9 @@ export class EntityAccessControlController {
      */
     queryUsersAndGroups = (query: any) => {
         this.entity.roleMembershipsUpdated = true;
-        var df = this.$q.defer();
+        var df = this.$injector.get("$q").defer();
         var request = { groups: this.getAllGroups(), users: this.getAllUsers() };
-        this.$q.all(request).then((results: any) => {
+        this.$injector.get("$q").all(request).then((results: any) => {
             var groups = results.groups;
             var users = results.users;
             var matchingGroups = this.filterCollection(groups, query, ['_lowername']);
@@ -172,7 +181,7 @@ export class EntityAccessControlController {
      * @param query
      */
     queryUsers = (query: any) => {
-        var df = this.$q.defer();
+        var df = this.$injector.get("$q").defer();
         this.getAllUsers().then((users: any) => {
             var matchingUsers = this.filterCollection(users, query, ['_lowerDisplayName', '_lowerSystemName']);
             df.resolve(matchingUsers);
@@ -182,7 +191,7 @@ export class EntityAccessControlController {
 
 
     getAllGroups = () => {
-        var df = this.$q.defer();
+        var df = this.$injector.get("$q").defer();
         if (this.allGroups == null) {
             // Get the list of groups
             this.UserGroupService.getGroups()
@@ -202,7 +211,7 @@ export class EntityAccessControlController {
     };
 
     getAllUsers = () => {
-        var df = this.$q.defer();
+        var df = this.$injector.get("$q").defer();
         if (this.allUsers == null) {
             // Get the list of groups
             this.UserGroupService.getUsers()
@@ -230,7 +239,7 @@ export class EntityAccessControlController {
 
     init = () => {
         if (this.rolesInitialized == false) {
-            this.$q.when(this.entityAccessControlService.mergeRoleAssignments(this.entity, this.entityType, this.entity[this.roleMembershipsProperty]))
+            this.$injector.get("$q").when(this.entityAccessControlService.mergeRoleAssignments(this.entity, this.entityType, this.entity[this.roleMembershipsProperty]))
                 .then(() => {
                     this.rolesInitialized = true;
                     this.entityRoleMemberships = this.entity[this.roleMembershipsProperty];
@@ -238,18 +247,4 @@ export class EntityAccessControlController {
         }
     };
 }
-angular.module(moduleName).component('entityAccessControl', {
-    bindings: {
-        entity: '=',
-        roleMembershipsProperty: '@?',
-        allowOwnerChange: '=?',
-        entityType: '@',
-        theForm: '=?',
-        readOnly: '=?',
-        queryForEntityAccess: '=?'
-    }, 
-    controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control.html',
-    controller: EntityAccessControlController
-});
 

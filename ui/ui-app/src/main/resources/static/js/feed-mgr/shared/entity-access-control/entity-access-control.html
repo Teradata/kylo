@@ -1,18 +1,18 @@
-<div ng-if="!vm.enabled">
+<div *ngIf="!enabled">
   <span>Entity access control is not enabled for Kylo.</span>
 </div>
-<div layout-padding ng-if="vm.enabled">
-  <div layout="row" ng-if="vm.allowOwnerChange">
+<div layout-padding *ngIf="enabled">
+  <div layout="row" *ngIf="allowOwnerChange">
     <div flex>
       <!-- for 0.8.1 disable access to change the owner -->
       <md-autocomplete flex="45"
                        md-input-name="owner"
                        ng-disabled="true"
-                       md-selected-item="vm.entity.owner"
-                       md-search-text-change="vm.ownerAutoComplete.searchTextChanged(vm.ownerAutoComplete.searchText)"
-                       md-search-text="vm.ownerAutoComplete.searchText"
-                       md-selected-item-change="vm.ownerAutoComplete.selectedItemChange(item)"
-                       md-items="item in vm.queryUsers(vm.ownerAutoComplete.searchText)"
+                       md-selected-item="entity.owner"
+                       md-search-text-change="ownerAutoComplete.searchTextChanged(ownerAutoComplete.searchText)"
+                       md-search-text="ownerAutoComplete.searchText"
+                       md-selected-item-change="ownerAutoComplete.selectedItemChange(item)"
+                       md-items="item in queryUsers(ownerAutoComplete.searchText)"
                        md-item-text="item.displayName"
                        md-min-length="1"
                        md-floating-label='{{"views.entity-access-control.Owner" | translate}}'>
@@ -22,10 +22,10 @@
                   </span>
         </md-item-template>
         <md-not-found>
-          No users matching "{{vm.ownerAutoComplete.searchText}}" were found.
+          No users matching "{{ownerAutoComplete.searchText}}" were found.
         </md-not-found>
         <div class="hint"> {{"views.entity-access-control.DefAUser" | translate}} </div>
-        <div ng-messages="vm.theForm.owner.$error">
+        <div ng-messages="theForm.owner.$error">
           <div ng-message="required">Required.</div>
         </div>
       </md-autocomplete>
@@ -43,11 +43,11 @@
       <span class="item-title" style="color:grey"> {{"views.entity-access-control.Members" | translate}} </span>
     </div>
   </div>
-  <div layout="column" ng-repeat="roleMembership in vm.entityRoleMemberships">
+  <div layout="column" *ngFor="let roleMembership of entityRoleMemberships">
     <div layout="row">
       <div flex="40" style="align-self:center;" layout="column">
         <span>{{roleMembership.role.title | translate}}</span>
-        <div class="hint" ng-if="roleMembership.role.description" class="layout-padding-top" ng-bind-html="roleMembership.role.description">
+        <div class="hint" *ngIf="roleMembership.role.description" class="layout-padding-top" ng-bind-html="roleMembership.role.description">
         </div>
 
 
@@ -56,15 +56,15 @@
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
         <md-chips ng-model="roleMembership.members" 
                   md-autocomplete-snap
-                  readonly="vm.readOnly"
+                  readonly="readOnly"
                   md-require-match="true" 
-                  md-on-remove="vm.onRemovedMember($chip, roleMembership.members)"
+                  md-on-remove="onRemovedMember($chip, roleMembership.members)"
                   class="layout-padding-top-bottom">
           <md-autocomplete
               md-min-length="0"
               md-selected-item="roleMembership.ui.members.selectedItem"
               md-search-text="roleMembership.ui.members.searchText"
-              md-items="item in vm.queryUsersAndGroups(roleMembership.ui.members.searchText)"
+              md-items="item in queryUsersAndGroups(roleMembership.ui.members.searchText)"
               md-item-text="item.title"
               md-no-cache="true"
               md-clear-button="true"
@@ -72,14 +72,14 @@
             <span md-highlight-text="roleMembership.ui.members.searchText">{{item.title}}</span>
             <md-item-template>
                   <span class="item-title">
-                     <ng-md-icon icon="group" style="fill:orange;" ng-if="item.type=='group'"></ng-md-icon>
-                     <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="item.type=='user'"></ng-md-icon>
+                     <ng-md-icon icon="group" style="fill:orange;" *ngIf="item.type=='group'"></ng-md-icon>
+                     <ng-md-icon icon="account_circle" style="fill:blue;" *ngIf="item.type=='user'"></ng-md-icon>
                      <span> {{item.title}} </span>
                   </span>
             </md-item-template>
           </md-autocomplete>
           <button 
-                  ng-if="$chip.editable == undefined || $chip.editable == true"
+                  *ngIf="$chip.editable == undefined || $chip.editable == true"
                   class="md-chip-remove ng-scope"
                   md-chip-remove 
                   type="button"
@@ -90,8 +90,8 @@
           </button>
           <md-chip-template>
             <span>
-               <ng-md-icon icon="group" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:orange" ng-if="$chip.type=='group'"></ng-md-icon>
-               <ng-md-icon icon="account_circle" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:blue" ng-if="$chip.type=='user'"></ng-md-icon>
+               <ng-md-icon icon="group" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:orange" *ngIf="$chip.type=='group'"></ng-md-icon>
+               <ng-md-icon icon="account_circle" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:blue" *ngIf="$chip.type=='user'"></ng-md-icon>
                <span ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="font-weight:bold">{{$chip.title}}</span>
             </span>
           </md-chip-template>
@@ -99,7 +99,7 @@
       </md-input-container>
 
     </div>
-    <md-divider></md-divider>
+    <mat-divider></mat-divider>
 
   </div>
     <br/>

@@ -1,19 +1,19 @@
-<md-dialog aria-label="Access Control" ng-cloak style="min-width:700px;max-width:700px;">
+<div mat-dialog aria-label="Access Control" style="min-width:700px;max-width:700px;">
 
   <form name="theForm">
-    <md-toolbar>
+    <mat-toolbar>
       <div class="md-toolbar-tools">
         <h2>Access Control for {{entityTitle}}</h2>
         <span flex></span>
-        <md-button class="md-icon-button" ng-click="onCancel()">
+        <button class="md-icon-button" (click)="onCancel()">
           <ng-md-icon icon="close" size="20"></ng-md-icon>
-        </md-button>
+        </button>
       </div>
-    </md-toolbar>
+    </mat-toolbar>
 
-    <md-dialog-content>
+    <mat-dialog-content>
       <div class="md-dialog-content" >
-        <entity-access-control entity="entity" entity-type="{{entityType}}" model="model" the-form="theForm" query-for-entity-access="true"></entity-access-control>
+        <entity-access-control entity="entity" [entityType]="{{entityType}}" model="model" [theForm]="theForm" [queryForEntityAccess]="true"></entity-access-control>
         <div layout="row" layout-padding>
           <div flex="40" style="align-self:center;">
             <span>Index feed metadata and schema</span>
@@ -22,27 +22,27 @@
             </div>
           </div>
           <div flex class="">
-            <md-checkbox
-                ng-model="allowIndexing"
+            <mat-checkbox
+                [(ngModel)]="allowIndexing"
                 aria-label="Indexing Allowed"
                 ng-true-value=true
-              ng-false-value=false
-                ng-disabled="false"
+                ng-false-value=false
+                [disabled]="false"
                 class="md-primary md-align-top-left" flex>
-            </md-checkbox>
+            </mat-checkbox>
           </div>
         </div>
       </div>
-    </md-dialog-content>
-    <md-dialog-actions layout="row" layout-align="start stretch" flex>
+    </mat-dialog-content>
+    <mat-dialog-actions layout="row" layout-align="start stretch" flex>
       <span flex></span>
-      <md-button ng-click="onCancel($event)">
+      <button (click)="onCancel($event)">
         Cancel
-      </md-button>
-      <md-button class="md-raised md-primary" ng-click="onSave($event)" ng-disabled="preconditionForm.$invalid">
+      </button>
+      <button class="md-raised md-primary" (click)="onSave($event)" [disabled]="preconditionForm.$invalid">
         Done
-      </md-button>
-    </md-dialog-actions>
+      </button>
+    </mat-dialog-actions>
   </form>
 
-</md-dialog>
+</div>

@@ -17,15 +17,16 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Delete Template" ng-cloak>
-  <md-dialog-content class="md-dialog-content">
-    <h2 class="md-title">Delete {{vm.model.templateName}}?</h2>
-
-    <div>This template will be permanently deleted.</div>
-  </md-dialog-content>
-  <md-dialog-actions>
-    <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'"></md-progress-circular>
-    <md-button class="md-warn" ng-click="vm.deleteTemplate()" aria-label="Delete" ng-if="vm.model.state == 'DISABLED'">Delete</md-button>
-    <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">Cancel</md-button>
-  </md-dialog-actions>
-</md-dialog>
+  <div mat-dialog aria-label="Delete Template">
+    <mat-dialog-content class="md-dialog-content">
+      <h2 class="md-title">Delete {{model.templateName}}?</h2>
+  
+      <div>This template will be permanently deleted.</div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <mat-spinner [diameter]="36" *ngIf="model.state == 'DELETED'"></mat-spinner>
+      <button class="md-warn" (click)="deleteTemplate()" aria-label="Delete" *ngIf="model.state == 'DISABLED'">Delete</button>
+      <button class="md-primary" aria-label="Cancel" (click)="hide()" [disabled]="model.state == 'DELETED'">Cancel</button>
+    </mat-dialog-actions>
+  </div>
+  

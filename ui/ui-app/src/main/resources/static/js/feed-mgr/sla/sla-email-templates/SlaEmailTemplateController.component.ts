@@ -79,7 +79,7 @@ export class SlaEmailTemplateController {
      * Validate and preview
      */
     validate() {
-        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).then((response: angular.IHttpResponse<any>) => {
+        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).toPromise().then((response: angular.IHttpResponse<any>) => {
             response.data.sendTest = false;
             this.showTestDialog(response.data);
         });
@@ -89,7 +89,7 @@ export class SlaEmailTemplateController {
      * Test the email
      */
     sendTestEmail() {
-        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then((response: angular.IHttpResponse<any>) => {
+        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).toPromise().then((response: angular.IHttpResponse<any>) => {
             response.data.sendTest = true;
             if (response.data.success) {
                 this.$injector.get("$mdToast").show(
@@ -134,7 +134,7 @@ export class SlaEmailTemplateController {
             );
         }
 
-        this.slaEmailTemplateService.save(this.template).then(successFn, errorFn);
+        this.slaEmailTemplateService.save(this.template).toPromise().then(successFn, errorFn);
     }
 
     /**
@@ -185,7 +185,7 @@ export class SlaEmailTemplateController {
     private loadTemplate() {
         if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
             this.queriedTemplate = null;
-            this.slaEmailTemplateService.getExistingTemplates().then(() => {
+            this.slaEmailTemplateService.getExistingTemplates().toPromise().then(() => {
                 this.template = this.slaEmailTemplateService.getTemplate(this.templateId);
                 if (angular.isUndefined(this.template)) {
                     ///WARN UNABLE TO FNID TEMPLATE
@@ -228,7 +228,7 @@ export class SlaEmailTemplateController {
     private getRelatedSlas() {
         this.relatedSlas = [];
         if (this.template != null && angular.isDefined(this.template) && angular.isDefined(this.template.id)) {
-            this.slaEmailTemplateService.getRelatedSlas(this.template.id).then((response: any) => {
+            this.slaEmailTemplateService.getRelatedSlas(this.template.id).toPromise().then((response: any) => {
                 _.each(response.data, (sla: any) => {
                     this.relatedSlas.push(sla)
                     this.template.enabled = true;

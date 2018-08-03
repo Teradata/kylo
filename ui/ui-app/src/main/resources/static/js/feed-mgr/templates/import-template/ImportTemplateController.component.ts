@@ -1,12 +1,11 @@
-import { moduleName } from "../module-name";
 import * as angular from "angular";
 
 import * as _ from "underscore";
-import { ImportComponentType } from "../../services/ImportService";
+import { ImportComponentType, DefaultImportService } from "../../services/ImportService";
 import { Import } from "../../services/ImportComponentOptionTypes";
 import { Common } from "../../../common/CommonTypes";
 import {StateService} from "@uirouter/angular";
-import { OnInit } from "@angular/core";
+import { OnInit, Component, Inject } from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
@@ -14,14 +13,37 @@ import InputPortListItem = Import.InputPortListItem;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
 import { RegisterTemplateServiceFactory } from "../../services/RegisterTemplateServiceFactory";
+import FileUpload from "../../../services/FileUploadService";
+import { RestUrlService } from "../../services/RestUrlService";
+import { AbstractControl, ValidatorFn, FormControl, FormGroup, Validators } from "@angular/forms";
+import { HttpClient } from "@angular/common/http";
+import "rxjs/add/operator/timeout";
 
-export class ImportTemplateController implements ng.IController, OnInit {
+export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
+
+    return (control: AbstractControl): {[key: string]: any} | null => {
+        if (!angular.isDefined(connectionMap[connection.inputPortDisplayName])) {
+            connection.inputPortDisplayName = null;
+            //mark as invalid
+            return {invalidConnection: true};
+        }
+        else {
+            return null;
+        }
+    };
+}
+
+@Component({
+    selector: 'import-template-controller',
+    templateUrl: 'js/feed-mgr/templates/import-template/import-template.html'
+})
+export class ImportTemplateController {
 
     /**
      * the angular ng-form for validity checks
      * @type {{}}
      */
-    importTemplateForm = {};
+    importTemplateForm = new FormGroup({});
 
     /**
      * The file to upload
@@ -68,7 +90,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * handle on the $interval object to cancel later
      * @type {null}
      */
-    uploadStatusCheck: angular.IPromise<any> = undefined;
+    uploadStatusCheck: number = undefined;
 
     /**
      * Percent upload complete
@@ -202,15 +224,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      */
     remoteProcessGroupAware: boolean = false;
 
-    templateParam: any;
-
-
-    /**
-     * When the controller is ready, initialize
-     */
-    $onInit() {
-        this.ngOnInit();
-    }
+    templateParam: any = null;
 
     /**
      * Initialize the controller and properties
@@ -222,28 +236,22 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.checkRemoteProcessGroupAware();
     }
 
-    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
-
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
-        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private registerTemplateService: RegisterTemplateServiceFactory, private $state: StateService) {
-
-
-
-        /**
-         * Watch when the file changes
-         */
-        this.$scope.$watch(() => {
-            return this.templateFile;
-        }, (newVal: any, oldValue: any) => {
-            if (newVal != null)
-                this.checkFileName(newVal.name);
-            //reset them if changed
-            if (newVal != oldValue) {
+    changeFileModel = (fileModel: any) => {
+        
+            if (fileModel != null)
+                this.checkFileName(fileModel.name);
+            if (this.templateFile != fileModel) {
                 this.resetImportOptions();
             }
+    }
 
-        });
+    constructor(private FileUpload: FileUpload, 
+                private RestUrlService: RestUrlService, 
+                private ImportService: DefaultImportService,
+                private registerTemplateService: RegisterTemplateServiceFactory, 
+                private $state: StateService,
+                private http: HttpClient,
+                @Inject("$injector") private $injector: any) {
 
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
@@ -371,6 +379,12 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
             }
 
+            angular.forEach(this.importResult.reusableTemplateConnections, (connection) => {
+                //initially mark as valid
+                this.importTemplateForm.addControl("port-" + connection.feedOutputPortName,
+                            new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
+                
+            });
 
             if (responseData.templateResults.errors) {
                 angular.forEach(responseData.templateResults.errors, (processor) => {
@@ -457,16 +471,15 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
     }
 
-    importTemplateFromMarketplace(params: any, successFn: any, errorFn: any) {
+    importTemplateFromMarketplace = (params: any, successFn: any, errorFn: any) => {
         console.log(params);
-        this.$http.post("/proxy/v1/marketplace/templates/import", params, {
+        this.http.post("/proxy/v1/marketplace/templates/import", params, {
             headers: {'Content-Type': 'application/json'}
-        })
-            .then(function (data) {
+        }).toPromise().then(function (data: any) {
                 if (successFn) {
                     successFn(data)
                 }
-            }, function (err) {
+            }, function (err: any) {
                 if (errorFn) {
                     errorFn(err)
                 }
@@ -482,15 +495,16 @@ export class ImportTemplateController implements ng.IController, OnInit {
         let stopStatusCheck = () => {
             this.uploadProgress = 0;
             if (angular.isDefined(this.uploadStatusCheck)) {
-                this.$interval.cancel(this.uploadStatusCheck);
+                clearInterval(this.uploadStatusCheck);
                 this.uploadStatusCheck = undefined;
             }
         }
 
         if (delay != null && delay != undefined) {
-            this.$timeout(() => {
-                stopStatusCheck();
-            }, delay)
+            // this.$injector.get("$timeout")(() => {
+            //     stopStatusCheck();
+            // }, delay)
+            setTimeout(() => { stopStatusCheck() }, 5000);
         }
         else {
             stopStatusCheck();
@@ -504,9 +518,9 @@ export class ImportTemplateController implements ng.IController, OnInit {
     startUploadStatus() {
         this.stopUploadStatus(null);
         this.uploadStatusMessages = [];
-        this.uploadStatusCheck = this.$interval(() => {
+        this.uploadStatusCheck = setInterval(() => {
             //poll for status
-            this.$http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).then((response: angular.IHttpResponse<any>) => {
+            this.http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).toPromise().then((response: angular.IHttpResponse<any>) => {
                 if (response && response.data && response.data != null) {
                     this.uploadStatusMessages = response.data.messages;
                     this.uploadProgress = response.data.percentComplete;
@@ -514,6 +528,17 @@ export class ImportTemplateController implements ng.IController, OnInit {
             }, (err: any) => {
             });
         }, 500);
+
+        // this.uploadStatusCheck = this.$injector.get("$interval")(() => {
+        //     //poll for status
+        //     this.http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).toPromise().then((response: angular.IHttpResponse<any>) => {
+        //         if (response && response.data && response.data != null) {
+        //             this.uploadStatusMessages = response.data.messages;
+        //             this.uploadProgress = response.data.percentComplete;
+        //         }
+        //     }, (err: any) => {
+        //     });
+        // }, 500);
     }
 
 
@@ -556,7 +581,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
     onReusableTemplateConnectionChange(connection: any) {
         var port = this.connectionMap[connection.inputPortDisplayName];
         connection.reusableTemplateInputPortName = port.name;
-        this.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+
+        // this.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
     };
 
     /**
@@ -607,7 +633,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
                 return port.inputPortName
             }).join(",");
 
-            var confirm = this.$mdDialog.confirm()
+            var confirm = this.$injector.get("$mdDialog").confirm()
                 .title('Warning You are about to delete template items.')
                 .htmlContent('The following \'remote input ports\' exist, but are not selected to be imported:<br/><br/> <b>' + names
                     + '</b>. <br/><br/>Continuing will result in these remote input ports being \ndeleted from the parent NiFi canvas. <br/><br/>Are you sure you want to continue?<br/>')
@@ -615,7 +641,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
                 .ok('Please do it!')
                 .cancel('Cancel and Review');
 
-            this.$mdDialog.show(confirm).then(() => {
+            this.$injector.get("$mdDialog").show(confirm).then(() => {
                 let option = ImportComponentType.REMOTE_INPUT_PORT
                 this.importComponentOptions[ImportComponentType[option]].userAcknowledged = true;
                 this.importTemplate();
@@ -626,14 +652,14 @@ export class ImportTemplateController implements ng.IController, OnInit {
         }
         else {
             if (this.importResult.remoteProcessGroupInputPortNames.length == 0) {
-                var confirm = this.$mdDialog.confirm()
+                var confirm = this.$injector.get("$mdDialog").confirm()
                     .title('No remote input ports selected')
                     .htmlContent('You have not selected any input ports to be exposed as \'remote input ports\'.<br/> Are you sure you want to continue?<br/>')
                     .ariaLabel('No Remote Input Ports Selected')
                     .ok('Please do it!')
                     .cancel('Cancel and Review');
 
-                this.$mdDialog.show(confirm).then(() => {
+                this.$injector.get("$mdDialog").show(confirm).then(() => {
                     let option = ImportComponentType.REMOTE_INPUT_PORT
                     this.importComponentOptions[ImportComponentType[option]].userAcknowledged = true;
                     this.importTemplate();
@@ -686,7 +712,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
     private checkRemoteProcessGroupAware(): void {
-        this.$http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).then((response: angular.IHttpResponse<any>) => {
+        this.http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).toPromise().then((response: angular.IHttpResponse<any>) => {
             this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
         });
     }
@@ -729,8 +755,3 @@ export class ImportTemplateController implements ng.IController, OnInit {
     }
 }
 
-angular.module(moduleName).component('importTemplateController', {
-    templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
-    controller: ImportTemplateController,
-    controllerAs: 'vm'
-});

@@ -17,180 +17,226 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" class="centered">
+  <div layout="row" class="centered">
 
-    <card-layout class="not-centered" card-css="layout-fill" style="max-width:980px;width:980px;overflow-x:inherit"
-                 flex="initial">
+    <mat-card class="not-centered" card-css="layout-fill" style="max-width:980px;width:980px;overflow-x:inherit" flex="initial">
 
-        <header-section>
-            <div layout="row" layout-align="space-between-center">
-                <div class="card-title">{{::vm.cardTitle}}</div>
-
-                <div class="card-sub-header">{{::vm.stepNumber}} of 5</div>
+        <mat-card-title>
+            <div layout="row" layout-align="space-between-center" flex>
+                <div flex class="card-title">{{cardTitle}}</div>
+                <div class="card-sub-header">{{stepNumber}} of 5</div>
             </div>
-        </header-section>
+        </mat-card-title>
 
-        <body-section>
-            <md-content>
-                <ng-form name="vm.propertiesForm" layout-fill>
+        <mat-card-content>
+
+            <!-- <ng-form name="vm.propertiesForm" layout-fill>
                     <md-virtual-repeat-container browser-height browser-height-offset="300"
                                                  browser-height-scroll-y="false" style="width:100%;"
                                                  md-top-index="vm.topIndex">
+                        <ng-template let-row="row" let-last="last" let-index="index" tdVirtualScrollRow> -->
 
-                        <div md-virtual-repeat="property in vm.allProperties " layout="column" layout-fill>
-                            <div ng-if="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
+            <ng-container [formGroup]="formGroup" layout-fill>
+                    <!-- <td-virtual-scroll-container #virtualScroll [style.height.px]="300" [data]="allProperties">
+
+                        <ng-template let-row="row" let-last="last" let-index="index" tdVirtualScrollRow> -->
+                                             
+                    <md-virtual-repeat-container browser-height browser-height-offset="300"
+                                                    browser-height-scroll-y="false" style="width:100%;"
+                                                    md-top-index="topIndex">
+
+                        <div *ngFor="let property of allProperties " layout="column" layout-fill>
+
+                            <div *ngIf="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
                                 <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
                                 <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
                             </div>
                             <div layout="row" style="padding-left:30px;">
-                                <md-input-container style="height:30px;margin-bottom:5px;"
-                                                    class="md-block">
-                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                        <md-checkbox aria-label="Select" ng-model="property.selected" ng-click="vm.updateSize()"></md-checkbox>
+                                <div style="height:30px;margin-bottom:5px;padding-top: 16px;" class="md-block">
+                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                        <mat-checkbox name="selectedProperty" aria-label="Select" [ngModelOptions]="{standalone: true}" [(ngModel)]="property.selected"></mat-checkbox>
                                     </div>
-                                </md-input-container>
+                                </div>
                                 <div class="register-template-property md-padding" layout="column" layout-fill>
-                                    <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
-                                    <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</span>
-                                    <span class="hint" ng-show="property.propertyDescriptor.required">This is a NiFi required field.  You need to either allow the user to input data, or supply a default value.</span>
-                                    <div class="hint">{{property.propertyDescriptor.description}}</div>
+                                    <h3 [ngClass]="{'md-warn':property.sensitive}">{{property.key}}</h3>
+                                    
+                                    <mat-hint *ngIf="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</mat-hint>
+                                    <mat-hint *ngIf="property.propertyDescriptor.required">
+                                        This is a NiFi required field. You need to either allow the user to input data, or supply a default value.
+                                    </mat-hint>
+                                    <mat-hint>
+                                        {{property.propertyDescriptor.description}}
+                                    </mat-hint>
 
-                                    <div ng-if="property.selected == true" style="padding-top:10px;" class="fade">
-                                        <ng-form name="innerForm">
+                                    <div *ngIf="property.selected == true" style="padding-top:10px;" class="fade">
+                                        <form name="innerForm">
 
-                                            <div ng-if="property.propertyDescriptor.allowableValues != null">
-                                                <md-input-container md-no-float class="md-block">
-                                                    <label>Default Value</label>
-                                                    <md-select ng-model="property.value" name="property"
+                                            <div *ngIf="property.propertyDescriptor.allowableValues != null">
+                                                <mat-form-field md-no-float class="md-block">
+                                                    <mat-label>Default Value</mat-label>
+                                                    <mat-select [(ngModel)]="property.value" name="property"
                                                                placeholder="Default Value">
-                                                        <md-option
-                                                                ng-repeat="allowableValue in property.propertyDescriptor.allowableValues  | orderBy:'value' track by allowableValue.value"
+                                                        <!--  | orderBy:'value' track by allowableValue.value-->
+                                                        <mat-option *ngFor="let allowableValue of property.propertyDescriptor.allowableValues"
                                                                 value="{{allowableValue.value}}">
-                                                            {{allowableValue.displayName}}
-                                                        </md-option>
-                                                    </md-select>
-                                                </md-input-container>
+                                                            {{allowableValue.displayName }}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
                                             </div>
 
 
-                                            <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true">
+                                            <div *ngIf="property.propertyDescriptor.allowableValues == null && property.selected == true">
 
-
-                                                <md-input-container style="height:30px;margin-bottom:5px;" class="md-block">
-                                                    <label>Default Value (Supports Expressions)</label>
-                                                    <input name="propertyInput"
+                                                <mat-form-field style="height:30px;margin-bottom:5px;" class="md-block">
+                                                    <mat-label>Default Value (Supports Expressions)</mat-label>
+                                                    <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
+                                                           matInput 
+                                                           name="propertyInput"
                                                            placeholder="Enter a string or ${expression})" mentio
                                                            type="text"
                                                            mentio-id="property.mentioId"
                                                            mentio-typed-text="typedTerm"
-                                                           ng-model="property.value"
+                                                           [(ngModel)]="property.value"
                                                            size="100"
-                                                           ng-required="!property.userEditable && property.propertyDescriptor.required"
-                                                           ng-change="vm.changedPropertyInput(property)"
-                                                           ng-keydown="vm.keydownPropertyInput(property)"
-                                                    ng-init="property.changed=false"/>
-                                                </md-input-container>
+                                                           formControlName="{{property.key}}"
+                                                           (change)="changedPropertyInput(property)"
+                                                           (keydown)="keydownPropertyInput(property)"
+                                                            ng-init="property.changed=false"
+                                                            required/>
+
+                                                        <input *ngIf="property.userEditable || !property.propertyDescriptor.required"
+                                                           matInput 
+                                                           name="propertyInput"
+                                                           placeholder="Enter a string or ${expression})" mentio
+                                                           type="text"
+                                                           mentio-id="property.mentioId"
+                                                           mentio-typed-text="typedTerm"
+                                                           [(ngModel)]="property.value"
+                                                           size="100"
+                                                           (change)="changedPropertyInput(property)"
+                                                           (keydown)="keydownPropertyInput(property)"
+                                                            ng-init="property.changed=false"/>
+                                                </mat-form-field>
 
                                                 <mentio-menu style="display:none;"
                                                              mentio-for="property.mentioId"
                                                              mentio-trigger-char="'$'"
-                                                             mentio-items="vm.expressionProperties"
+                                                             mentio-items="expressionProperties"
                                                              mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
-                                                             mentio-search="vm.searchExpressionProperties(term)"
-                                                             mentio-select="vm.getExpressionPropertyTextRaw(item)"></mentio-menu>
+                                                             mentio-search="searchExpressionProperties(term)"
+                                                             mentio-select="getExpressionPropertyTextRaw(item)"></mentio-menu>
 
-                                                <div class="hint" thinkbig-derived-expression ng-model="property.value"
+                                                <div class="hint" thinkbig-derived-expression [model]="property.value"
                                                      style="margin-bottom:10px;"></div>
 
                                             </div>
 
                                             <div layout="row" layout-align="start-center">
 
-                                                <md-input-container style="height:30px;margin-bottom:5px;"
-                                                                    class="md-block" ng-if="property.value == null || property.value == ''">
-                                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                        <md-checkbox aria-label="Set as empty string"
-                                                                     ng-checked="property.value == ''"
-                                                                     ng-click="vm.toggleSetAsEmptyString(property)">
+                                                <div style="height:30px;margin-bottom:5px;"
+                                                                    class="md-block" *ngIf="property.value == null || property.value == ''">
+                                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                                        <mat-checkbox aria-label="Set as empty string"
+                                                                     [checked]="property.value == ''"
+                                                                     (click)="toggleSetAsEmptyString(property)">
                                                             Set as empty string
-                                                        </md-checkbox>
+                                                        </mat-checkbox>
                                                     </div>
-                                                </md-input-container>
-                                                <md-input-container style="height:30px;margin-bottom:5px;padding-left:10px;"
+                                                </div>
+                                                <div style="height:30px;margin-bottom:5px;padding-left:10px;"
                                                                     class="md-block">
-                                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                        <md-checkbox aria-label="User can supply input"
-                                                                     ng-model="property.userEditable">
+                                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                                        <mat-checkbox aria-label="User can supply input"
+                                                                     [(ngModel)]="property.userEditable"
+                                                                     name="userEditable">
                                                           Allow user input
-                                                        </md-checkbox>
+                                                        </mat-checkbox>
                                                     </div>
-                                                </md-input-container>
-                                                <md-input-container
-                                                        style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                        class="md-block" ng-if="property.userEditable">
-                                                    <label>Render as</label>
-                                                    <md-select ng-model="property.renderType" name="renderType" ng-change="vm.onRenderTypeChange(property)"
-                                                               placeholder="Render Input As...">
-                                                        <md-option
-                                                                ng-repeat="renderType in property.renderTypes  | orderBy:'label' track by renderType.type"
+                                                </div>
+                                                <mat-form-field style="height:30px;margin-bottom:5px; padding-left:10px;"
+                                                        class="md-block" *ngIf="property.userEditable">
+                                                    <mat-label>Render as</mat-label>
+                                                    <mat-select [(ngModel)]="property.renderType" 
+                                                                name="renderType" 
+                                                                (change)="onRenderTypeChange(property)"
+                                                                placeholder="Render Input As...">
+                                                        <!--  | orderBy:'label' track by renderType.type-->
+                                                        <mat-option
+                                                                *ngFor="let renderType of property.renderTypes"
                                                                 value="{{renderType.type}}">
                                                             {{renderType.label}}
-                                                        </md-option>
-                                                    </md-select>
-                                                </md-input-container>
-                                              <md-input-container
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+
+                                                <mat-form-field
                                                   style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <label>True Value</label>
-                                                <input name="property"
+                                                  class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                <mat-label>True Value</mat-label>
+                                                <input matIput
+                                                       name="property"
                                                        placeholder="true"
                                                        type="text"
-                                                       ng-model="property.renderOptions['trueValue']" size="20"/>
-                                                </md-input-container>
+                                                       [(ngModel)]="property.renderOptions['trueValue']" size="20"/>
+                                                </mat-form-field>
 
-                                              <md-input-container
+                                              <mat-form-field
                                                   style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <label>False Value</label>
-                                                <input name="property"
+                                                  class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                <mat-label>False Value</mat-label>
+                                                <input matInput
+                                                       name="property"
                                                        placeholder="false"
                                                        type="text"
-                                                       ng-model="property.renderOptions['falseValue']" size="20"/>
-                                              </md-input-container>
+                                                       [(ngModel)]="property.renderOptions['falseValue']" size="20"/>
+                                              </mat-form-field>
 
                                               <div style="padding-left:10px;">
-                                                <md-chips md-on-add="vm.customSelectOptionChanged(property)" md-on-remove="vm.customSelectOptionChanged(property)" placeholder="Add Select Options"
-                                                          ng-model="property.selectOptions"
-                                                          ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
-                                                </md-chips>
+
+                                                <td-chips [chipAddition]="true"
+                                                        [chipRemoval]="true"
+                                                        [items]="property.selectOptions"
+                                                        [(ngModel)]="property.selectOptions"
+                                                        placeholder="Add Select Options"
+                                                        [disabled]="disabled"
+                                                        [inputPosition]="before ? 'before' : 'after'"
+                                                        (inputChange)="filterStrings($event)"
+                                                        (add)="customSelectOptionChanged(row)"
+                                                        (remove)="customSelectOptionChanged(row)"
+                                                        *ngIf="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
+                                                </td-chips>
+
                                               </div>
                                                 <div>
-                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                    <div style="height:30px;margin-bottom:5px;"
                                                                         class="md-block">
-                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                            <md-checkbox aria-label="Sensitive"
-                                                                         ng-model="property.sensitive"
-                                                                         ng-disabled="property.propertyDescriptor.sensitive">
+                                                        <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                                            <mat-checkbox aria-label="Sensitive"
+                                                                         name = "sensitiveProperty"
+                                                                         [(ngModel)]="property.sensitive"
+                                                                         [disabled]="property.propertyDescriptor.sensitive">
                                                                 Sensitive
-                                                            </md-checkbox>
+                                                            </mat-checkbox>
                                                         </div>
-                                                    </md-input-container>
+                                                    </div>
                                                 </div>
-                                                <div ng-if="property.userEditable">
-                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                <div *ngIf="property.userEditable">
+                                                    <div style="height:30px;margin-bottom:5px;"
                                                                         class="md-block">
-                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                            <md-checkbox aria-label="Required"
-                                                                         ng-model="property.required"
-                                                                         ng-disabled="property.propertyDescriptor.required">
+                                                        <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                                            <mat-checkbox aria-label="Required"
+                                                                         name="requiredProperty"
+                                                                         [(ngModel)]="property.required"
+                                                                         [disabled]="property.propertyDescriptor.required">
                                                                 Required
-                                                            </md-checkbox>
+                                                            </mat-checkbox>
                                                         </div>
-                                                    </md-input-container>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                        </ng-form>
+                                        </form>
 
                                     </div>
 
@@ -198,49 +244,47 @@
                                 </div>
 
                             </div>
-                            <md-divider ng-if="!$last"></md-divider>
+                            <mat-divider *ngIf="!last"></mat-divider>
                         </div>
 
 
                     </md-virtual-repeat-container>
 
 
-                    <thinkbig-step-buttons can-continue="vm.isValid && vm.propertiesForm.$valid"
-                                           step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
-                </ng-form>
+                    <!-- <thinkbig-step-buttons can-continue="isValid && propertiesForm.$valid"
+                                           step-index="{{stepIndex}}"></thinkbig-step-buttons> -->
+            </ng-container>
 
-            </md-content>
+        </mat-card-content>
 
-        </body-section>
+    </mat-card>
 
-    </card-layout>
-
-    <card-layout offsetleftfromprevious top="8" card-css="layout-fill"
-                 id="property-legend-{{::vm.processorPropertiesFieldName}}"
+    <mat-card offsetleftfromprevious top="8" card-css="layout-fill"
+                 id="property-legend-{{processorPropertiesFieldName}}"
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-        <header-section>
+        <mat-card-title>
             <div class="card-title">Filter</div>
-            <div class="hint">Showing {{vm.allProperties.length}} properties</div>
-        </header-section>
+            <mat-hint>Showing {{allProperties.length}} properties</mat-hint>
+        </mat-card-title>
 
-        <body-section style="padding-left:25px;">
-            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()" style="margin-left:-9px">
+        <mat-card-content style="padding-left:25px;">
+            <mat-checkbox name="selectedItems" [(ngModel)]="showOnlySelected" aria-label="Show Selected" (change)="onShowOnlySelected()" style="margin-left:-9px">
                 Show only selected
-            </md-checkbox>
-            <md-subheader class="md-primary left-aligned layout-padding-left">Jump to a group</md-subheader>
+            </mat-checkbox>
+            <div class="md-primary left-aligned md-subheader md-kylo-theme layout-padding-left">Jump to a group</div>
 
-            <md-virtual-repeat-container md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
+            <div md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
                      layout-align="start start" layout="column" md-item-size="30">
 
-                <div md-virtual-repeat="processor in vm.processors " >
-                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >
-                    {{processor.name}}
-                    </md-button>
-                    <md-divider ng-if="!$last"></md-divider>
-                </div>
-            </md-virtual-repeat-container>
+                <ng-template *ngFor="let processor of processors; let last=last" >
+                    <button (click)="scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >
+                        {{processor.name}}
+                    </button>
+                    <mat-divider *ngIf="!last"></mat-divider>
+                </ng-template>
+            </div>
 
-        </body-section>
+        </mat-card-content>
 
-    </card-layout>
+    </mat-card>
 </div>
