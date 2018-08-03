@@ -347,16 +347,16 @@ public class FilesystemRepositoryService implements RepositoryService {
                     String checksum = DigestUtils.md5DigestAsHex(Files.readAllBytes(templatePath));
 
                     //capturing checksum first time or it has actually changed?
-                    boolean updated = StringUtils.isNotBlank(tmpltMetaData.getChecksum()) && !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
+                    boolean templateModified = StringUtils.isNotBlank(tmpltMetaData.getChecksum()) && !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
                     //update cache if needed
-                    if(updated) {
+                    if(templateModified) {
                         templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), latest);
                     }
 
                     if (StringUtils.isBlank(tmpltMetaData.getChecksum())) {
                         tmpltMetaData.setChecksum(checksum);
                     }
-                    tmpltMetaData.setUpdateAvailable(updated);
+                    tmpltMetaData.setUpdateAvailable(templateModified);
 
                     mapper.writer(new DefaultPrettyPrinter()).writeValue(path.toFile(), tmpltMetaData);
                     wrapper = new TemplateMetadataWrapper(tmpltMetaData);

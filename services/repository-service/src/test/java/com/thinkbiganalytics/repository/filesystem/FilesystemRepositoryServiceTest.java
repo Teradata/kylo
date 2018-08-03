@@ -107,7 +107,9 @@ public class FilesystemRepositoryServiceTest {
         doReturn(repository).when(spy, "getRepositoryByNameAndType", anyString(), anyString());
         doReturn(new ArrayList<TemplateMetadata>()).when(spy, "getAllTemplatesInRepository", repository);
         PowerMockito.when(FilenameUtils.getBaseName(anyString())).thenReturn("testName");
-        PowerMockito.when(Paths.get(anyString())).thenReturn(mock(Path.class));
+        Path pathMock = mock(Path.class);
+        PowerMockito.when(Paths.get(anyString())).thenReturn(pathMock);
+        Mockito.when(pathMock.toFile()).thenReturn(mock(File.class));
         Mockito.doNothing().when(mapper).writeValue(any(File.class), any());
 
         TemplateMetadataWrapper newTemplate = spy.publishTemplate("test", "test", "test", false);
@@ -120,8 +122,8 @@ public class FilesystemRepositoryServiceTest {
     public void testPublishTemplate_ExistingTemplate_OverwriteFalse() throws Exception {
         ExportTemplate template = new ExportTemplate("testFile", "testTemplate", "testDesc", false, new byte[0]);
         TemplateMetadata existingTemplate = new TemplateMetadata("testTemplate", "testDesc", "xyz.zip", false);
-        List<TemplateMetadata> templates = new ArrayList<>();
-        templates.add(existingTemplate);
+        List<TemplateMetadataWrapper> templates = new ArrayList<>();
+        templates.add(new TemplateMetadataWrapper(existingTemplate));
         when(templateExporter.exportTemplate(anyString())).thenReturn(template);
         FilesystemRepositoryService spy = PowerMockito.spy(filesystemRepositoryService);
 

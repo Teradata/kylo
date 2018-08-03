@@ -20,6 +20,7 @@ package com.thinkbiganalytics.repository.filesystem;
  * #L%
  */
 
+import com.google.common.cache.Cache;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
@@ -103,5 +104,8 @@ public class RepositoryTestConfiguration {
 
     @Bean
     public NiFiObjectCache niFiObjectCache() {return Mockito.mock(NiFiObjectCache.class); }
+
+    @Bean
+    public Cache<String, Long> templateUpldateInfoCache() {return Mockito.mock(Cache.class); }
 
 }
