@@ -3,19 +3,20 @@
   <div fxLayout="row" fxLayoutAlign="space-between start" fxFill>
     <div  fxLayout="row" *ngIf="datasets != undefined" fxFill>
 
-    <div fxFlex="30" class="dataset-list">
+    <div fxFlex="200px" class="dataset-list">
 
       <mat-nav-list dense >
         <h3 matSubheader>Data sets</h3>
         <ng-container *ngFor="let dataset of datasets">
-        <mat-list-item  (click)="onDatasetSelected(dataset.key)" [ngClass]="{'selected-dataset': dataset.key == selectedDataSet.key}">
+        <mat-list-item  (click)="onDatasetSelected(dataset.key)"  [ngClass]="{'selected-dataset': dataset.key == selectedDataSet.key}">
 
-          <h3 matLine>{{dataset.displayKey}}</h3>
-          <p mat-line> {{dataset.mimeType}} </p>
+          <h3 matLine [class.strike]="!dataset.isCollected()">{{dataset.displayKey}}</h3>
+          <p mat-line [class.strike]="!dataset.isCollected()"> {{dataset.mimeType}} </p>
           <span></span>
           <td-notification-count color="accent" [notifications]="dataset.items.length">
           </td-notification-count>
-          <mat-icon color="accent" *ngIf="dataset.collected">check</mat-icon>
+          <button mat-icon-button  *ngIf="showRemoveFromCollectionButton(dataset)" (click)="removeFromCollection(dataset)"><mat-icon>remove</mat-icon></button>
+          <mat-icon color="accent" *ngIf="!editable && dataset.isCollected()">check</mat-icon>
 
         </mat-list-item>
           <mat-divider [inset]="true"></mat-divider>
@@ -25,14 +26,14 @@
 
 
     </div>
-      <div fxLayout="column" fxLayoutAlign="start start">
-        <div fxLayout="column" fxFill *ngIf="selectedDataSet">
+      <div  fxFlex fxLayout="column" fxLayoutAlign="start start">
+        <div fxLayout="column"  *ngIf="selectedDataSet">
 
           <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.loading"></mat-progress-bar>
           <mat-tab-group>
             <mat-tab label="Data">
 
-              <div fxLayout="column" fxFill >
+              <div fxLayout="column"  >
                 <p *ngIf="message">
                   <mat-icon>warning</mat-icon> {{message}}
                 </p>
@@ -46,7 +47,7 @@
 
                   </div>
 
-                  <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
+                  <dataset-simple-table [(columns)]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
                 </div>
 
                 <div *ngIf="!selectedDataSet.hasPreviewError()" fxLayout="column">
@@ -57,12 +58,15 @@
                     </mat-slide-toggle>
                     <span fxFlex="5" ></span>
                     <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
+                    <span fxFlex="5" ></span>
+                    <button mat-raised-button   *ngIf="showAddToCollectionButton(selectedDataSet)"  (click)="addToCollection(selectedDataSet)"><mat-icon>add</mat-icon>{{addToCollectionButtonName}}</button>
+                    <button mat-raised-button  *ngIf="showRemoveFromCollectionButton(selectedDataSet)" (click)="removeFromCollection(selectedDataSet)"><mat-icon>remove</mat-icon>{{removeFromCollectionButtonName}}</button>
 
                   </div>
 
                   <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
 
-                  <dataset-simple-table [columns]="selectedDataSet.preview.columns" [rows]="selectedDataSet.preview.rows" *ngIf="selectedDataSetViewRaw == false && selectedDataSet.hasPreview()"></dataset-simple-table>
+                  <dataset-simple-table [(columns)]="selectedDataSet.preview.columns" [rows]="selectedDataSet.preview.rows" *ngIf="selectedDataSetViewRaw == false && selectedDataSet.hasPreview()"></dataset-simple-table>
 
                 </div>
 
@@ -72,17 +76,11 @@
 
             <mat-tab label="Schema">
 
-              <dataset-schema-definition [columns]="selectedDataSet.schema"></dataset-schema-definition>
+              <dataset-schema-definition  [(columns)]="selectedDataSet.schema"></dataset-schema-definition>
 
             </mat-tab>
 
-            <mat-tab label="Save">
-              <button mat-raised-button  mat-button *ngIf="!selectedDataSet.collected"  (click)="addToCollection(selectedDataSet)">Add To Collection</button>
-              <button mat-raised-button  mat-button *ngIf="selectedDataSet.collected" (click)="removeFromCollection(selectedDataSet)">Remove From Collection</button>
 
-
-
-            </mat-tab>
 
           </mat-tab-group>
 

@@ -24,6 +24,7 @@ export class FileMetadataTransformService  {
      */
    private detectionResult:DetectionResult;
 
+    cache:  {[key: string]: DetectionResult} = {}
 
     constructor(private http: HttpClient) {
 
@@ -41,10 +42,21 @@ export class FileMetadataTransformService  {
         }
 
         return this.detectFormat(paths, datasource);
-
-
-
     }
+
+    detectFormatForPaths(paths:string[], datasource:DataSource): Observable<FileMetadataTransformResponse> {
+        //return if the paths are the same
+        if (this.detectionResult && this.detectionResult.filePaths != undefined) {
+            let selectedFilePathsString = this.detectionResult.filePaths.toString();
+            let pathsString = paths.toString();
+            if (selectedFilePathsString == pathsString) {
+                return Observable.of(this.detectionResult.result);
+            }
+        }
+        return this.detectFormat(paths, datasource);
+    }
+
+
     getSelectedItems(node:Node, datasource:DataSource) :string[] {
         let paths = node.getSelectedDescendants().map((node) => {
             let path = node.getBrowserObject().getPath();
@@ -61,68 +73,74 @@ export class FileMetadataTransformService  {
 
 
     detectFormat(paths:string[], datasource:DataSource) :Observable<FileMetadataTransformResponse>{
+        let observable =null;
+        let cacheKey = datasource.id+"_"+paths.sort().toString();
+        if(this.cache[cacheKey]){
+            observable = Observable.of(this.cache[cacheKey]);
+            console.log("returning cached result of file metadata transform for ",paths);
+        }
+        else {
+            observable = new Observable<FileMetadataTransformResponse>((observer) => {
 
-        let observable = new Observable<FileMetadataTransformResponse>((observer) => {
+                let request: any = {
+                    paths: paths
+                }
+                let statusCheckTime = 300
 
-            let request: any = {
-                paths: paths
-            }
-            let statusCheckTime = 300
+                let formatDetected = (data: FileMetadataTransformResponse): void => {
+                    console.log('FORMAT DETECTED ', data,);
+                    this.detectionResult = {}
 
-            let formatDetected = (data: FileMetadataTransformResponse):void => {
-                console.log('FORMAT DETECTED ', data,);
-                this.detectionResult = {}
+                    this.detectionResult.filePaths = paths;
+                    this.detectionResult.result = new FileMetadataTransformResponse(data)
+                    if (this.detectionResult.result.results) {
+                        _.each(this.detectionResult.result.results.datasets, (dataset: PreviewFileDataSet, key: string) => {
+                            dataset.dataSource = datasource;
+                        })
+                    }
+                    this.cache[cacheKey] = this.detectionResult.result
+                    observer.next(this.detectionResult.result);
+                }
 
-                this.detectionResult.filePaths = paths;
-                this.detectionResult.result = new FileMetadataTransformResponse(data)
-                if(this.detectionResult.result.results){
-                    _.each(this.detectionResult.result.results.datasets,(dataset :PreviewFileDataSet, key:string) => {
-                        dataset.dataSource = datasource;
+                let formatError = (data: FileMetadataTransformResponse): void => {
+                    console.log('FORMAT ERROR ', data);
+                    observer.error(data)
+                }
+
+                formatError.bind(this)
+                formatDetected.bind(this)
+
+
+                let checkProgress = (data: FileMetadataTransformResponse): void => {
+
+                    if (data.status == "PENDING") {
+                        setTimeout(() => fileMetadataProgress(data.table), statusCheckTime)
+                    }
+                    else if (data.status == "SUCCESS") {
+                        formatDetected(data);
+                    }
+                    else if (data.status == "ERROR") {
+                        formatError(data);
+                    }
+                }
+
+                let fileMetadataProgress = (id: string) => {
+                    console.log('PROGRESS FOR ', id)
+                    this.http.get("/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
+                        checkProgress(data);
                     })
                 }
-                observer.next(this.detectionResult.result);
-            }
-
-            let formatError = (data: FileMetadataTransformResponse) :void=> {
-                console.log('FORMAT ERROR ', data);
-                observer.error(data)
-            }
-
-            formatError.bind(this)
-            formatDetected.bind(this)
 
 
-            let checkProgress = (data: FileMetadataTransformResponse) : void => {
-
-                if (data.status == "PENDING") {
-                    setTimeout(() => fileMetadataProgress(data.table), statusCheckTime)
-                }
-                else if (data.status == "SUCCESS") {
-                    formatDetected(data);
-                }
-                else if (data.status == "ERROR") {
-                    formatError(data);
-                }
-            }
-
-            let fileMetadataProgress = (id: string) => {
-                console.log('PROGRESS FOR ', id)
-                this.http.get("/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
-                    checkProgress(data);
-                })
-            }
+                this.http.post("/proxy/v1/spark/shell/file-metadata", request)
+                    .subscribe((data: any) => {
+                        console.log('DATA', data)
+                        checkProgress(data);
+                    });
 
 
-            this.http.post("/proxy/v1/spark/shell/file-metadata", request)
-                .subscribe((data: any) => {
-                    console.log('DATA', data)
-                    checkProgress(data);
-                });
-
-
-
-
-        })
+            });
+        }
         return observable;
 
     }

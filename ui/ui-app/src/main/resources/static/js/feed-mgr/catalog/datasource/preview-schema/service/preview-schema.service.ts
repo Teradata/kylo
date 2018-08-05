@@ -24,12 +24,30 @@ import {TransformResponseTableBuilder} from "./transform-response-table-builder"
 export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
 
+    cache:  {[key: string]: PreviewDataSet} = {}
+
+    public cacheKey(datasourceId:string, datasetKey:string){
+        return datasourceId+"_"+datasetKey;
+    }
+
+
 
 
     constructor(http: HttpClient, transformResponeTableBuilder:TransformResponseTableBuilder) {
         super(http,transformResponeTableBuilder)
     }
 
+    public updateDataSetsWithCachedPreview(datasets:PreviewDataSet[]){
+        datasets.filter(dataset => !dataset.hasPreview()).forEach(dataset => {
+            let cachedPreview = this.cache[this.cacheKey(dataset.dataSource.id, dataset.key)];
+            if(cachedPreview){
+                dataset.clearPreviewError();
+                dataset.preview = cachedPreview.preview;
+                dataset.schema = cachedPreview.schema;
+                console.log("Updated dataset",dataset," with cached preview")
+            }
+        })
+    }
 
     /**
      *
@@ -43,6 +61,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
 
         if (!previewDataSet.hasPreview()) {
+
             //Show Progress Bar
             previewDataSet.loading = true;
 
@@ -56,6 +75,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSet.schema = preview.columns;
                 previewDataSet.preview =preview;
 
+                this.cache[this.cacheKey(previewDataSet.dataSource.id, previewDataSet.key)] = previewDataSet;
                 previewDataSetSource.next(previewDataSet)
             }, error1 => {
                 previewDataSet.finishedLoading()

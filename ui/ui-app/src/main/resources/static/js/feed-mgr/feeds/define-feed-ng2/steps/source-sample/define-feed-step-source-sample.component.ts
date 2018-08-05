@@ -6,10 +6,12 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 import {FormBuilder,FormGroup} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {SelectionService} from "../../../../catalog/api/services/selection.service";
+import {SelectionService, SingleSelectionPolicy} from "../../../../catalog/api/services/selection.service";
 import * as angular from 'angular';
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -28,8 +30,17 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     @Input()
     public stateParams : any;
 
+    public paths:string[] = [];
 
-    constructor(defineFeedService:DefineFeedService,stateService: StateService, private selectionService: SelectionService, ) {
+    /**
+     * Flag that is toggled when a user is looking at a feed with a source already defined and they choose to browse the catalog to change the source
+     * this will render the catalog selection/browse dialog
+     */
+    public showCatalog:boolean = false;
+
+
+    constructor(defineFeedService:DefineFeedService,stateService: StateService, private selectionService: SelectionService,
+                private _dialogService: TdDialogService) {
         super(defineFeedService,stateService);
         this.sourceSample = new FormGroup({})
 
@@ -40,15 +51,33 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     }
 
     init(){
-        if(this.stateParams == undefined){
-            this.stateParams = {};
+        this.paths = this.feed.getSourcePaths();
+
+        console.log("using paths ",this.paths);
+        //always show the catalog if no paths are available to preview
+        if(this.paths == undefined || this.paths.length ==0) {
+            this.showCatalog = true;
         }
 
-        if(this.stateParams.feedId == undefined) {
-            this.stateParams.feedId = this.feed.id;
-        }
-        if(this.stateParams.jumpToSource && this.feed.sourceDataSets && this.feed.sourceDataSets.length>0){
-            this.goToDataSet(this.feed.sourceDataSets[0]);
+
+    }
+
+    browseCatalog(){
+        if(this.feed.sourceDataSets && this.feed.sourceDataSets.length >0){
+            this._dialogService.openConfirm({
+                message: 'You already have a dataset defined for this feed. Switching the source will result in a new target schema. Are you sure you want to browse for a new dataset? ',
+                disableClose: true,
+                title: 'Source dataset already defined', //OPTIONAL, hides if not provided
+                cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                width: '500px', //OPTIONAL, defaults to 400px
+            }).afterClosed().subscribe((accept: boolean) => {
+                if (accept) {
+                    this.showCatalog = true;
+                } else {
+                    // no op
+                }
+            });
         }
     }
 

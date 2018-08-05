@@ -29,8 +29,12 @@ import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {FeedConstants} from "../../../services/FeedConstants";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {TranslateService} from "@ngx-translate/core";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 
+export enum TableSchemaUpdateMode {
+    UPDATE_SOURCE=1, UPDATE_TARGET=2, UPDATE_SOURCE_AND_TARGET=3
+}
 
 @Injectable()
 export class DefineFeedService {
@@ -125,7 +129,8 @@ export class DefineFeedService {
      */
     private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
-    constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector){
+    constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
+                private _dialogService: TdDialogService){
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
 
@@ -166,11 +171,13 @@ export class DefineFeedService {
     loadFeed(id:string, force?:boolean) :Observable<Feed> {
 
         let feed = this.getFeed();
-        if((feed && feed.id != id) || (feed == undefined && id != undefined)) {
+        if((feed && feed.id != id) || (feed == undefined && id != undefined) || force == true) {
 
             let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
             observable.subscribe((feed) => {
                 console.log("LOADED ", feed)
+                //reset the collection service
+                this.previewDatasetCollectionService.reset();
                 //convert it to our needed class
                 let feedModel = new Feed(feed)
                 //reset the propertiesInitalized flag
@@ -180,6 +187,8 @@ export class DefineFeedService {
                 feedModel.validate(true);
                 this.setFeed(feedModel)
                 this.lastSavedFeed = feedModel.copy();
+                //reset the dataset collection service
+                this.previewDatasetCollectionService.reset();
             });
             return observable;
         }
@@ -463,48 +472,115 @@ export class DefineFeedService {
     }
 
     /**
+     * Update the feed table schemas for a given dataset previewed
+     * @param {PreviewDataSet} dataSet
+     * @param {TableSchemaUpdateMode} mode
+     * @private
+     */
+    private _updateTableSchemas(dataSet:PreviewDataSet,mode:TableSchemaUpdateMode){
+        if(dataSet){
+            let sourceColumns: TableColumnDefinition[] = [];
+            let targetColumns: TableColumnDefinition[] = [];
+            let feedColumns: TableColumnDefinition[] = [];
+
+            let columns: TableColumn[] = dataSet.schema
+            if(columns) {
+                columns.forEach(col => {
+                    let def = angular.extend({}, col);
+                    def.derivedDataType = def.dataType;
+                    //sample data
+                    if (dataSet.preview) {
+                        let sampleValues: string[] = dataSet.preview.columnData(def.name)
+                        def.sampleValues = sampleValues
+                    }
+                    sourceColumns.push(new TableColumnDefinition((def)));
+                    targetColumns.push(new TableColumnDefinition((def)));
+                    feedColumns.push(new TableColumnDefinition((def)));
+                });
+            }
+            else {
+                //WARN Columns are empty.
+                console.log("EMPTY columns for ",dataSet);
+            }
+            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+                this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
+                this.feed.table.sourceTableSchema.fields = sourceColumns;
+            }
+            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+                this.feed.table.feedTableSchema.fields = feedColumns;
+                this.feed.table.tableSchema.fields = targetColumns;
+                this.feed.table.fieldPolicies = targetColumns.map(field => {
+                    let policy = TableFieldPolicy.forName(field.name);
+                    policy.field = field;
+                    field.fieldPolicy = policy;
+                    return policy;
+                });
+                //flip the changed flag
+                this.feed.table.schemaChanged = true;
+            }
+
+
+        }
+        else {
+            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+                this.feed.table.sourceDataSets = [];
+                this.feed.table.sourceTableSchema.fields = [];
+            }
+            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+                this.feed.table.feedTableSchema.fields = [];
+                this.feed.table.tableSchema.fields = [];
+                this.feed.table.fieldPolicies = [];
+            }
+        }
+    }
+
+
+    /**
      * Listener for changes from the collection service
      * @param {PreviewDataSet[]} dataSets
      */
     onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
-        if(dataSets.length == 0){
-            this.feed.table.sourceTableSchema.fields =[];
-            this.feed.table.feedTableSchema.fields = [];
-            this.feed.table.tableSchema.fields = [];
+        let dataSet :PreviewDataSet = dataSets[0];
+        //compare existing source against this source
+    //    let existingSourceColumns = this.feed.table.sourceTableSchema.fields.map(col => col.name+" "+col.derivedDataType).toString();
+     //   let dataSetColumns = dataSet.schema.map(col => col.name+" "+col.dataType).toString();
+
+        // check if the dataset source and item name match the feed
+        let previewSparkDataSet = dataSet.toSparkDataSet();
+        let key = previewSparkDataSet.id
+        let dataSourceId = previewSparkDataSet.dataSource.id;
+        let matchingFeedDataSet =this.feed.sourceDataSets.find(sparkDataset => sparkDataset.id == key && sparkDataset.dataSource.id == dataSourceId);
+
+        if(matchingFeedDataSet == undefined ){
+            //the source differs from the feed source and if we have a target defined.... confirm change
+            if(this.feed.table.tableSchema.fields.length >0){
+                this._dialogService.openConfirm({
+                    message: 'The source schema has changed.  A target schema already exists for this feed.  Do you wish to reset the target schema to match the new source schema? ',
+                    disableClose: true,
+                    title: 'Source dataset already defined', //OPTIONAL, hides if not provided
+                    cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                    acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                    width: '500px', //OPTIONAL, defaults to 400px
+                }).afterClosed().subscribe((accept: boolean) => {
+
+                    if (accept) {
+                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET)
+                    } else {
+                        // no op
+                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE);
+                    }
+                });
+            }
+            else {
+                //this will be if its the first time a source is selected for a feed
+                this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET);
+            }
+
         }
         else {
-            let dataSet :PreviewDataSet = dataSets[0];
-            let columns: TableColumn[] = dataSet.schema
-            //convert to TableColumnDefintion objects
-            //set the source and target to the same
-            let sourceColumns: TableColumnDefinition[] = [];
-            let targetColumns: TableColumnDefinition[] = [];
-            let feedColumns: TableColumnDefinition[] = [];
-            columns.forEach(col => {
-                let def = angular.extend({}, col);
-                def.derivedDataType = def.dataType;
-                //sample data
-                if(dataSet.preview){
-                  let sampleValues :string[] = dataSet.preview.columnData(def.name)
-                    def.sampleValues = sampleValues
-                }
-                sourceColumns.push(new TableColumnDefinition((def)));
-                targetColumns.push(new TableColumnDefinition((def)));
-                feedColumns.push(new TableColumnDefinition((def)));
-            });
-            this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
-            this.feed.table.sourceTableSchema.fields = sourceColumns;
-            this.feed.table.feedTableSchema.fields = feedColumns;
-            this.feed.table.tableSchema.fields = targetColumns;
-            this.feed.table.fieldPolicies = targetColumns.map(field => {
-               let policy = TableFieldPolicy.forName(field.name);
-                policy.field = field;
-                field.fieldPolicy = policy;
-                return policy;
-            });
-            //flip the changed flag
-            this.feed.table.schemaChanged = true;
+            console.log("No change to source schema found.  ");
         }
+
     }
 
 

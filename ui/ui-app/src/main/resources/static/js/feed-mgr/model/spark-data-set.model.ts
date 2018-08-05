@@ -46,4 +46,25 @@ export class SparkDataSet {
         }
     }
 
+    /**
+     * return an array of all the paths used for this dataset.
+     * for file based it will return the files used.
+     * for database it will return the schema.table
+     *
+     * @return {string[]}
+     */
+    resolvePaths():string[]{
+        let paths = [];
+        if(this.paths){
+            paths = this.paths;
+        }
+        else if(this.options && this.options["path"]){
+            paths = [this.options["path"]];
+        }
+        else if(this.options['dbtable']) {
+            paths = [this.options["dbtable"]];
+        }
+        return paths;
+    }
+
 }
