@@ -60,7 +60,13 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
     }
 
     limitSparkScript(sparkScript:string) {
-        let sparkScriptWithLimit = "import org.apache.spark.sql._\n" + sparkScript + "\ndf=df.limit(20)\n df";
+        //LIVY doesnt like the trailing df variable.
+        //Spark Shell needs it
+        let appendTrailingDf = false;
+        let sparkScriptWithLimit = "import org.apache.spark.sql._\n" + sparkScript + "\ndf=df.limit(20)\n";
+        if(appendTrailingDf) {
+            sparkScriptWithLimit+="df";
+        }
         return sparkScriptWithLimit;
     }
 
@@ -69,7 +75,7 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
     transform(script:string) :Observable<TransformResponse>{
         let request: TransformRequest = {
             script:script,
-            pageSpec:new PageSpec(),
+            pageSpec:new PageSpec({firstRow : 0,numRows : 20, firstCol : 0, numCols : 100}),
             doProfile:false,
             doValidate:false
         }
