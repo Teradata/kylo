@@ -247,7 +247,7 @@ public class FileMetadataTest {
                process = false;
             }
             retryCount +=1;
-            if(retryCount >20){
+            if(retryCount >40){
                 process = false;
             }
         }
