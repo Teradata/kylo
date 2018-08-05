@@ -24,7 +24,7 @@ export class FileMetadataTransformService  {
      */
    private detectionResult:DetectionResult;
 
-    cache:  {[key: string]: DetectionResult} = {}
+    cache:  {[key: string]: FileMetadataTransformResponse} = {}
 
     constructor(private http: HttpClient) {
 

@@ -99,7 +99,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     }
 
     setPreviewPaths(){
-        let paths = [];
+        let paths :string[] = [];
         let feedPaths = this.feed.getSourcePaths().concat(paths);
         //add in the node selection
         //attempt to get the paths from the selectionService and selected node

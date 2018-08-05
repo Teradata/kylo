@@ -523,7 +523,7 @@ export class DefineFeedService {
         }
         else {
             if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
-                this.feed.table.sourceDataSets = [];
+                this.feed.sourceDataSets = [];
                 this.feed.table.sourceTableSchema.fields = [];
             }
             if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {

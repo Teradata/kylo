@@ -382,7 +382,7 @@ export class Feed  implements KyloObject{
      * @return {string[]}
      */
     getSourcePaths():string[]{
-        let paths = [];
+        let paths :string[] = [];
         if(this.sourceDataSets && this.sourceDataSets.length >0){
             //get the array of paths to use
             paths = this.sourceDataSets.map((dataset:SparkDataSet) => {

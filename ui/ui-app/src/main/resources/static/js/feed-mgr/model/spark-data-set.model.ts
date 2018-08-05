@@ -54,7 +54,7 @@ export class SparkDataSet {
      * @return {string[]}
      */
     resolvePaths():string[]{
-        let paths = [];
+        let paths :string[] = [];
         if(this.paths){
             paths = this.paths;
         }
