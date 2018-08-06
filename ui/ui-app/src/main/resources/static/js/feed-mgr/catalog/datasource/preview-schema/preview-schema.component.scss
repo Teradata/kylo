@@ -5,3 +5,8 @@ border-right:2px solid #607D8B;
 .selected-dataset {
   background-color:#CCC;
 }
+
+.removed-dataset {
+  text-decoration: line-through;
+  background-color:lightgrey;
+}

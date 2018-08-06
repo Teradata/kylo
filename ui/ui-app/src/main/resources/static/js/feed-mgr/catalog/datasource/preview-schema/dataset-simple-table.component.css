@@ -1,0 +1,3 @@
+:host ::ng-deep td-data-table .td-data-table-cell-content-wrapper > span {
+  overflow:hidden; text-overflow: ellipsis; white-space: nowrap;
+}

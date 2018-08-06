@@ -20,7 +20,7 @@ export class RemoteFilesComponent extends BrowserComponent {
             }
         }
         else {
-            this.initData();
+            this.initData(true);
         }
     }
 

@@ -8,6 +8,10 @@ import {Common} from "../../../../../common/CommonTypes";
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
 
+export enum DatasetCollectionStatus {
+    NEW =1, COLLECTED =2, REMOVED =3
+}
+
 /**
  * Core Dataset used for previewing
  * There are other concrete types of data sets used for specialize options
@@ -63,10 +67,8 @@ export class PreviewDataSet {
      */
     public type:string = 'PreviewDataSet';
 
-    /**
-     * is this dataset in the preview-dataset-collection.service?
-     */
-    public collected?:boolean;
+
+    public collectionStatus:DatasetCollectionStatus = DatasetCollectionStatus.NEW;
 
 
     /**
@@ -95,7 +97,16 @@ export class PreviewDataSet {
 
 
     public constructor(init?:Partial<PreviewDataSet>) {
+        this.collectionStatus = DatasetCollectionStatus.NEW;
         Object.assign(this, init);
+    }
+
+    public isCollected(){
+        return this.collectionStatus == DatasetCollectionStatus.COLLECTED;
+    }
+
+    public isRemoved(){
+        return this.collectionStatus == DatasetCollectionStatus.REMOVED;
     }
 
     public hasPreview():boolean {
@@ -106,10 +117,10 @@ export class PreviewDataSet {
         return this.raw != undefined && this.raw.hasColumns();
     }
     public hasPreviewError():boolean {
-        return this.hasPreview() && this.preview.error;
+        return this.hasPreview() && this.preview.error != undefined && this.preview.error == true;
     }
     public hasRawError():boolean {
-        return this.hasRaw() && this.raw.error;
+        return this.hasRaw()&& this.raw.error != undefined && this.raw.error == true;;
     }
     public clearRawError(){
         if(this.raw){

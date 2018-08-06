@@ -1,4 +1,4 @@
-import {TableViewModel} from "../model/table-view-model";
+import {TableColumn, TableViewModel} from "../model/table-view-model";
 import {TransformResponse} from "../../../../visual-query/wrangler/model/transform-response";
 import {Injectable} from "@angular/core";
 
@@ -11,9 +11,11 @@ export class TransformResponseTableBuilder {
 
     }
 
+
+
     buildTable(data:TransformResponse) : TableViewModel{
         let columns = data.results.columns.map((column: any) => {
-            return {name: column.field, label: column.displayName, dataType:column.dataType}
+            return {name: column.field, label: column.displayName,numeric:TableViewModel.isNumeric(column.dataType), dataType:column.dataType, sortable:true}
         });
         let rows = data.results.rows.map((row: any) => {
             const data1 = {};

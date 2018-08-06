@@ -350,6 +350,10 @@ export class Feed  implements KyloObject{
         return this.id == undefined;
     }
 
+    getStepBySystemName(stepName:string){
+        return  this.steps.find(step => step.systemName == stepName);
+    }
+
     validate(updateStepState?: boolean): boolean {
         let valid = true;
         let model = this;
@@ -370,6 +374,24 @@ export class Feed  implements KyloObject{
         let complete = true;
         this.steps.forEach(step => complete = complete && step.complete);
         return complete;
+    }
+
+    /**
+     * returns the array of paths used for the source sample preview
+     * will return an empty array of no paths are used
+     * @return {string[]}
+     */
+    getSourcePaths():string[]{
+        let paths :string[] = [];
+        if(this.sourceDataSets && this.sourceDataSets.length >0){
+            //get the array of paths to use
+            paths = this.sourceDataSets.map((dataset:SparkDataSet) => {
+                return dataset.resolvePaths();
+            }).reduce( (a:string[],b:string[]) =>{
+                return a.concat(b);
+            },[]);
+        }
+        return paths;
     }
 
 

@@ -81,9 +81,11 @@
                 <version>${plugin.antrun.version}</version>
                 <executions>
                     <execution>
-                        <id>process-test-classes</id>
+                        <id>make-script-executable</id>
                         <phase>process-test-classes</phase>
                         <configuration>
+                            <!-- Skip running this goal if surefire plugin was instructed to skip process-test-classes phase -->
+                            <skip>${maven.test.skip}</skip>
                             <target>
                                 <chmod file="target/test-classes/setup/echoTest.sh" perm="755"/>
                             </target>
