@@ -37,7 +37,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
@@ -108,7 +110,7 @@ public abstract class AbstractTransformController {
         // Get result
         final SaveResult result;
         if (job != null && job.isDone()) {
-                result = job.get();
+            result = job.get();
         } else {
             result = null;
         }
@@ -135,7 +137,7 @@ public abstract class AbstractTransformController {
     @Nonnull
     public Response getSave(@Nonnull @PathParam("save") final String id) {
         try {
-            logger.info("getSave('{}') called", id );
+            logger.info("getSave('{}') called", id);
 
             final SaveJob job = transformService.getSaveJob(id, false);
             final SaveResponse response = new SaveResponse();
@@ -187,21 +189,26 @@ public abstract class AbstractTransformController {
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
         try {
-            TransformJob job = transformService.getTransformJob(id);
-
-            if (job.isDone()) {
-                return Response.ok(job.get()).build();
-            } else {
-                TransformResponse response = new TransformResponse();
-                response.setProgress(job.progress());
-                response.setStatus(TransformResponse.Status.PENDING);
-                response.setTable(job.getGroupId());
-                return Response.ok(response).build();
-            }
+            TransformResponse transformResponse = getTableTransformResponse(id);
+            return Response.ok(transformResponse).build();
         } catch (final IllegalArgumentException e) {
             return error(Response.Status.NOT_FOUND, "getTable.notFound");
         } catch (final Exception e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+
+    public TransformResponse getTableTransformResponse(final String id) throws ExecutionException, InterruptedException {
+        TransformJob job = transformService.getTransformJob(id);
+
+        if (job.isDone()) {
+            return job.get();
+        } else {
+            TransformResponse response = new TransformResponse();
+            response.setProgress(job.progress());
+            response.setStatus(TransformResponse.Status.PENDING);
+            response.setTable(job.getGroupId());
+            return response;
         }
     }
 
