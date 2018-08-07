@@ -96,7 +96,7 @@ import scala.tools.nsc.interpreter.NamedParamClass;
 /**
  * A scheduled service that manages cached results of Spark jobs.
  */
-@Component
+// @Component  :: Removing @Component here because TransformService is built by SparkShellApp or initSession of SparkLivy
 public class TransformService {
 
     private static final XLogger log = XLoggerFactory.getXLogger(TransformService.class);

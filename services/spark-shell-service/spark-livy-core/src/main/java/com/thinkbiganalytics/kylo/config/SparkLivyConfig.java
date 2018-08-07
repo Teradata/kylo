@@ -31,10 +31,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -42,6 +39,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Profile("kylo-livy")
 @Configuration
 @PropertySource("classpath:spark.properties")
 @ImportResource("classpath:/config/applicationContext-livy.xml")

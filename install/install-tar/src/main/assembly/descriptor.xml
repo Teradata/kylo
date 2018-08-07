@@ -416,7 +416,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/services/spark-shell-service/spark-shell-core/target/lib</directory>
-      <outputDirectory>setup/plugins/spark-shell</outputDirectory>
+      <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>spark-launcher_${scala.binary.version}-${spark.version}.jar</include>
@@ -425,7 +425,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/services/spark-shell-service/spark-shell-core/target</directory>
-      <outputDirectory>setup/plugins/spark-shell</outputDirectory>
+      <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>kylo-spark-shell-core-${project.version}.jar</include>
@@ -585,12 +585,12 @@
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-v1/target/kylo-spark-shell-client-v1-${project.version}.jar</source>
-      <outputDirectory>setup/plugins/spark-shell/app</outputDirectory>
+      <outputDirectory>kylo-services/plugin/app</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-v2/target/kylo-spark-shell-client-v2-${project.version}.jar</source>
-      <outputDirectory>setup/plugins/spark-shell/app</outputDirectory>
+      <outputDirectory>kylo-services/plugin/app</outputDirectory>
       <fileMode>755</fileMode>
     </file>
 
