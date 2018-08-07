@@ -4,7 +4,7 @@ import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateS
 import { Component, Inject, Input } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'thinkbig-template-order',
@@ -12,9 +12,9 @@ import { MatSnackBar } from '@angular/material';
 })
 export class TemplateOrderController {
 
-    @Input() addSaveBtn: any;
+    @Input() addSaveBtn: boolean = false;
     @Input() model: any = [];
-    @Input() addAsNew: any;
+    @Input() addAsNew: boolean = false;
     @Input() templateId: string;
     @Input() templateName: string;
     
@@ -23,15 +23,15 @@ export class TemplateOrderController {
 
     ngOnInit() {
         //order list
-        this.registerTemplateService.getRegisteredTemplates().then(function (response: any) {
+        this.registerTemplateService.getRegisteredTemplates().then((response: any)=> {
             //order by .order
-            var templates = _.sortBy(response.data, 'order');
+            var templates = _.sortBy(response, 'order');
             if (this.addAsNew && (this.templateId == null || this.templateId == undefined)) {
                 //append to bottom
                 templates.push({ id: 'NEW', templateName: this.templateName, currentTemplate: true });
             }
             else {
-                var currentTemplate = _.filter(templates, function (template: any) {
+                var currentTemplate = _.filter(templates, (template: any)=> {
                     return template.id == this.templateId;
                 });
                 if (currentTemplate && currentTemplate.length == 1) {

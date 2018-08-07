@@ -58,6 +58,9 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
 import * as angular from "angular";
 import { TemplateDeleteDialog } from "./template-stepper/select-template/template-delete-dialog.component";
 
+import { DndModule } from 'ng2-dnd';
+import { TemplateOrderController } from "./template-order/template-order.component";
+
 @NgModule({
     declarations: [
         RegisteredTemplatesController,
@@ -72,6 +75,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
         EntityAccessControlController,
         RegisterTemplateCompleteController,
         RegisterCompleteRegistrationController,
+        TemplateOrderController,
         DerivedExpression,
         TemplateDeleteDialog
     ],
@@ -79,7 +83,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
         RegisteredTemplatesController,
         RegisterTemplateController,
         RegisterNewTemplateController,
-        ImportTemplateController ,
+        ImportTemplateController,
         RegisterSelectTemplateController,
         TemplateAccessControlController,
         RegisterProcessorPropertiesController,
@@ -88,7 +92,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
         EntityAccessControlController,
         RegisterTemplateCompleteController,
         RegisterCompleteRegistrationController,
-        TemplateDeleteDialog
+        TemplateDeleteDialog,
     ],
     imports: [
         CodemirrorModule,
@@ -123,6 +127,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
         CovalentVirtualScrollModule,
         MatSnackBarModule,
         CovalentDialogsModule,
+        DndModule.forRoot(),
         UIRouterModule.forChild({states: templateStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

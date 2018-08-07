@@ -178,7 +178,8 @@ System.config({
         "ui-grid": "angular-ui-grid",
         "underscore":"bower:underscore/underscore-min",
         "vis":"bower:vis/dist/vis.min",
-        "mdPickers":"bower:mdPickers/dist/mdPickers.min"
+        "mdPickers":"bower:mdPickers/dist/mdPickers.min",
+        "ng2-dnd": "npm:ng2-dnd/bundles/ng2-dnd.umd.js"
     },
     meta: {
         "@angular/core": {deps:["angular"]},

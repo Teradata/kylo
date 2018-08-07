@@ -5,7 +5,6 @@ import StateService from '../../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { Component } from '@angular/core';
 
-//registerNewTemplateController
 @Component({
     selector:'register-new-template-controller',
     templateUrl: 'js/feed-mgr/templates/new-template/register-new-template.html'

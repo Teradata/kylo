@@ -108,27 +108,27 @@ export class EmptyTemplate implements Template {
     nifiTemplateId: string = null;
     templateName: string = '';
     description: string = '';
-    processors: any[];
-    inputProperties: any[];
-    additionalProperties: any[];
-    inputProcessors: any[];
-    nonInputProcessors: any[];
+    processors: any[] = [];
+    inputProperties: any[] = [];
+    additionalProperties: any[] = [];
+    inputProcessors: any[] = [];
+    nonInputProcessors: any[] = [];
     defineTable: boolean = true;
     allowPreconditions: boolean = false;
     dataTransformation: boolean = false;
     reusableTemplate: boolean = false;
     needsReusableTemplate: boolean = false;
-    ports: any[];
-    reusableTemplateConnections: ReusableTemplateConnectionInfo[];
-    icon: { title: string; color: string; };
+    ports: any[] = [];
+    reusableTemplateConnections: ReusableTemplateConnectionInfo[] = [];
+    icon: { title: string; color: string; } = {title: "", color: ""};
     state: string = 'NOT REGISTERED';
     updateDate: any = null;
     feedsCount: number = 0;
-    registeredDatasources: any[];
+    registeredDatasources: any[] = [];
     isStream: boolean = false;
     validTemplateProcessorNames: boolean = true;
-    roleMemberships: any[];
-    owner: any;
+    roleMemberships: any[] = [];
+    owner: any = null;
     roleMembershipsUpdated: boolean = false;
 }
 export class ExtendedTemplate implements Template {
