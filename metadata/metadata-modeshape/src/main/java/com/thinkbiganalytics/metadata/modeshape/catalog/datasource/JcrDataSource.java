@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
@@ -51,6 +52,7 @@ import javax.jcr.RepositoryException;
 public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> implements DataSource, AuditableMixin, SystemEntityMixin, AccessControlledMixin, DataSetSparkParamsSupplierMixin {
 
     public static final String NODE_TYPE = "tba:DataSource";
+    public static final String DATA_SETS_NODE_TYPE = "tba:DataSets";
     public static final String DATA_SETS = "dataSets";
 
     /**
@@ -71,7 +73,24 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getSystemName()
+     */
+    @Override
+    public String getSystemName() {
+        // System name is just the node name.
+        return JcrPropertyUtil.getName(getNode());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setSystemName(java.lang.String)
+     */
+    @Override
+    public void setSystemName(String name) {
+        JcrUtil.rename(getNode(), name);
+    }
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin#getSparkParametersChain()
      */
@@ -104,7 +123,8 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
      */
     @Override
     public List<? extends DataSet> getDataSets() {
-        return JcrUtil.getJcrObjects(getNode(), DATA_SETS, JcrDataSet.class);
+        Node setsNode = JcrUtil.getNode(getNode(), DATA_SETS);
+        return JcrUtil.getJcrObjects(setsNode, JcrDataSet.class);
     }
     
     public static class DataSourceId extends JcrEntity.EntityId implements DataSource.ID {

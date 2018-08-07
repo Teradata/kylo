@@ -36,7 +36,7 @@ import java.util.List;
  */
 public interface DataSetSparkParamsSupplierMixin extends WrappedNodeMixin, DataSetSparkParamsSupplier {
 
-    public static final String NODE_TYPE = "tba:DataSetSparkParams";
+    public static final String NODE_TYPE = "tba:DataSet";
     public static final String SPARK_PARAMS = "tba:sparkParams";
     
     @Override

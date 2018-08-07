@@ -25,18 +25,33 @@ package com.thinkbiganalytics.metadata.api.catalog;
 
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
  */
 public interface DataSetProvider extends BaseProvider<DataSet, DataSet.ID> {
     
+    DataSet.ID resolveId(Serializable id);
+
     DataSet create(DataSource.ID dataSourceId, String systemName);
 
     List<DataSet> findByDataSource(DataSource.ID dsId, DataSource.ID... otherIds);
     
     List<DataSet> findByDataSource(Collection<DataSource.ID> dsIds);
     
+    List<DataSet> findAll();
+    
+    Page<DataSet> findPage(Pageable page, String filter);
+
+    Optional<DataSet> find(DataSet.ID id);
+    
+    void deleteById(DataSet.ID id);
+
 }

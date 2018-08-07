@@ -23,12 +23,11 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.datasource;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.Connector.ID;
-import com.thinkbiganalytics.metadata.api.catalog.ConnectorAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
@@ -39,9 +38,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
@@ -66,21 +68,18 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider#create(com.thinkbiganalytics.metadata.api.catalog.Connector.ID, java.lang.String)
      */
     @Override
-    public DataSource create(ID connIdStr, String systemName) {
-        Connector.ID connId = this.connectorProvider.resolveId(connIdStr);
-        Connector conn = this.connectorProvider.findById(connId);
-        
-        if (conn != null) {
-            Path dsPath = MetadataPaths.connectorPath(systemName);
-            if (JcrUtil.hasNode(getSession(), dsPath)) {
-                throw ConnectorAlreadyExistsException.fromSystemName(systemName);
-            } else {
-                Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrConnector.NODE_TYPE);
-                return JcrUtil.createJcrObject(connNode, JcrDataSource.class);
-            } 
-        } else {
-            throw new ConnectorNotFoundException(connId);
-        }
+    public DataSource create(ID connId, String systemName) {
+        return this.connectorProvider.find(connId)
+                .map(conn -> {
+                    Path dsPath = MetadataPaths.dataSourcePath(conn.getSystemName(), systemName);
+                    if (JcrUtil.hasNode(getSession(), dsPath)) {
+                        throw DataSourceAlreadyExistsException.fromSystemName(systemName);
+                    } else {
+                        Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
+                        return JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                    } 
+                })
+                .orElseThrow(() -> new ConnectorNotFoundException(connId));
     }
 
     /* (non-Javadoc)
@@ -88,8 +87,9 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      */
     @Override
     public List<DataSource> findByConnector(ID connId, ID... moreIds) {
-        // TODO Auto-generated method stub
-        return null;
+        return findByConnector(Stream.concat(Stream.of(connId), 
+                                             Arrays.asList(moreIds).stream())
+                                   .collect(Collectors.toSet()));
     }
 
     /* (non-Javadoc)
@@ -97,8 +97,14 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      */
     @Override
     public List<DataSource> findByConnector(Collection<ID> connIds) {
-        // TODO Auto-generated method stub
-        return null;
+        String ids = connIds.stream()
+                .map(id -> "'" + id.toString() + "'")
+                .collect(Collectors.joining(",", "(", ")"));
+        String query = startBaseQuery()
+                .append(" JOIN [").append(JcrConnector.DATASOURCES_NODE_TYPE).append("] AS cds ON ISCHILDNODE(e, cds) ")
+                .append(" JOIN [").append(JcrConnector.NODE_TYPE).append("] AS c ON ISCHILDNODE(cds, c) ")
+                .append(" WHERE c.[mode:id] IN ").append(ids).toString();
+        return find(query);
     }
 
     /* (non-Javadoc)
@@ -106,26 +112,24 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      */
     @Override
     public Optional<DataSource> find(com.thinkbiganalytics.metadata.api.catalog.DataSource.ID id) {
-        // TODO Auto-generated method stub
-        return null;
+        return Optional.ofNullable(findById(id));
     }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getEntityClass()
-     */
-    @Override
-    public Class<? extends DataSource> getEntityClass() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+//
+//    /* (non-Javadoc)
+//     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getEntityClass()
+//     */
+//    @Override
+//    public Class<? extends DataSource> getEntityClass() {
+//        // TODO Auto-generated method stub
+//        return null;
+//    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getJcrEntityClass()
      */
     @Override
     public Class<? extends JcrEntity<?>> getJcrEntityClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrDataSource.class;
     }
 
     /* (non-Javadoc)
@@ -133,8 +137,7 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      */
     @Override
     public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrDataSource.NODE_TYPE;
     }
 
 

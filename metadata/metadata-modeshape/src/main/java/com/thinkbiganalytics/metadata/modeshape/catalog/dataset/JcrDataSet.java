@@ -33,6 +33,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
@@ -60,6 +61,23 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getSystemName()
+     */
+    @Override
+    public String getSystemName() {
+        // System name is just the node name.
+        return JcrPropertyUtil.getName(getNode());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setSystemName(java.lang.String)
+     */
+    @Override
+    public void setSystemName(String name) {
+        JcrUtil.rename(getNode(), name);
     }
 
     /* (non-Javadoc)

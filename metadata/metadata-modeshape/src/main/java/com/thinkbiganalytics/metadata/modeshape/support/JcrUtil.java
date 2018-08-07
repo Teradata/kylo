@@ -141,6 +141,26 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Unable to get name of Node " + node, e);
         }
     }
+    
+    public static Node rename(Node node, String newName) {
+        Path currentPath = path(node);
+        Path newPath = currentPath.getParent().resolve(newName);
+        return moveNode(node, newPath);
+    }
+
+    public static Node moveNode(Node node, Path newPath) {
+        try {
+            Session session = node.getSession();
+            String path = newPath.toAbsolutePath().toString();
+            session.move(node.getPath(), path);
+            return session.getNode(path);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to move node to path: " + newPath, e);
+        }
+    }
 
     public static String getPath(Node node) {
         try {
@@ -216,9 +236,9 @@ public class JcrUtil {
     public static boolean hasNode(Session session, Path path) {
         try {
             if (path.isAbsolute()) {
-                return session.getRootNode().hasNode(path.toString());
-            } else {
                 return session.itemExists(path.toString());
+            } else {
+                return session.getRootNode().hasNode(path.toString());
             }
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);

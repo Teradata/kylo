@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -53,17 +54,21 @@ import javax.jcr.RepositoryException;
 public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
     
     public static final String NODE_TYPE = "tba:Connector";
+    public static final String DATASOURCES_NODE_TYPE = "tba:ConnectorDataSources";
+    
     public static final String IS_ACTIVE = "tba:isActive";
     public static final String PLUGIN_ID = "tba:pluginId";
     public static final String ICON = "tba:icon";
     public static final String ICON_COLOR = "tba:iconColor";
-    public static final String DATASOURCES = "datasources";
-
-    /**
-     * @param node
-     */
+    public static final String DATASOURCES = "dataSources";
+    
     public JcrConnector(Node node) {
         super(node);
+    }
+
+    public JcrConnector(Node node, String pluginId) {
+        super(node);
+        setProperty(PLUGIN_ID, pluginId);
     }
 
     /* (non-Javadoc)
@@ -76,6 +81,23 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getSystemName()
+     */
+    @Override
+    public String getSystemName() {
+        // System name is just the node name.
+        return JcrPropertyUtil.getName(getNode());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setSystemName(java.lang.String)
+     */
+    @Override
+    public void setSystemName(String name) {
+        JcrUtil.rename(getNode(), name);
     }
 
     @Override
@@ -121,7 +143,7 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     @Override
     public List<? extends DataSource> getDataSources() {
         Node dsNode = JcrUtil.getNode(getNode(), DATASOURCES);
-        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.NODE_TYPE, JcrDataSource.class);
+        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.class);
     }
     
     public static class ConnectorId extends JcrEntity.EntityId implements Connector.ID {

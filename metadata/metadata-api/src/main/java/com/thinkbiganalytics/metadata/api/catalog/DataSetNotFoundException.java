@@ -3,11 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.api.catalog;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.io.Serializable;
-
 /*-
  * #%L
  * kylo-metadata-api
@@ -28,26 +23,31 @@ import java.io.Serializable;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
+import com.thinkbiganalytics.metadata.api.MetadataException;
 
 /**
  *
  */
-//public interface ConnectorProvider extends BaseProvider<Connector, Connector.ID> {
-public interface ConnectorProvider {
+public class DataSetNotFoundException extends MetadataException {
+
+    private static final long serialVersionUID = 1L;
+
+    private final DataSet.ID id;
     
-    Connector.ID resolveId(Serializable id);
+    public DataSetNotFoundException(DataSet.ID id) {
+        super("No data set exists with ID: " + id);
+        this.id = id;
+    }
+
+    public DataSetNotFoundException(String message, DataSet.ID id) {
+        super(message);
+        this.id = id;
+    }
     
-    Connector create(String pluginId, String systemName);
-    
-    List<Connector> findAll();
-    
-    Page<Connector> findPage(Pageable page, String filter);
-    
-    Optional<Connector> find(Connector.ID id);
-    
-    Optional<Connector> findByPlugin(String pluginId);
-    
-    void deleteById(Connector.ID id);
+    /**
+     * @return the id
+     */
+    public DataSet.ID getId() {
+        return id;
+    }
 }

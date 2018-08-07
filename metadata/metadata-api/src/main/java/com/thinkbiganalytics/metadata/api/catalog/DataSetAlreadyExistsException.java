@@ -3,11 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.api.catalog;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.io.Serializable;
-
 /*-
  * #%L
  * kylo-metadata-api
@@ -28,26 +23,26 @@ import java.io.Serializable;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
+import com.thinkbiganalytics.metadata.api.EntityAlreadyExistsException;
 
 /**
- *
+ * Thrown when a attempt to create a data set fails because one already exists with
+ * the same system name.
  */
-//public interface ConnectorProvider extends BaseProvider<Connector, Connector.ID> {
-public interface ConnectorProvider {
+public class DataSetAlreadyExistsException extends EntityAlreadyExistsException {
+
+    private static final long serialVersionUID = 1L;
     
-    Connector.ID resolveId(Serializable id);
+    /**
+     * @param systemName
+     * @return the exception
+     */
+    public static DataSetAlreadyExistsException fromSystemName(String systemName) {
+        return new DataSetAlreadyExistsException("A data set already exists with the name: " + systemName, systemName);
+    }
     
-    Connector create(String pluginId, String systemName);
-    
-    List<Connector> findAll();
-    
-    Page<Connector> findPage(Pageable page, String filter);
-    
-    Optional<Connector> find(Connector.ID id);
-    
-    Optional<Connector> findByPlugin(String pluginId);
-    
-    void deleteById(Connector.ID id);
+    public DataSetAlreadyExistsException(String message, String systemName) {
+        super(message, systemName);
+    }
+
 }

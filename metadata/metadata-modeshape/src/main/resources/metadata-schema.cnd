@@ -417,7 +417,7 @@
 /* -=-=-=-=-=--=-=-  Catalog types  -=-=-=-=-=-=-=-=- */
 
 [tba:DataSetSparkParamsSupplier] mixin
-    + tba:sparkParams (tba:DataSetSparkParams) = tba:sparkSettings autocreated mandatory
+    + tba:sparkParams (tba:DataSetSparkParams) = tba:DataSetSparkParams autocreated mandatory
 
 [tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
     - tba:isActive (BOOLEAN) = true
@@ -434,8 +434,6 @@
     + * (tba:DataSet) 
 
 [tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
-//    - hash (INTEGER)
-//    - alias (WEAKREFERENCE) multiple
     - mimeType (STRING)
 
 [tba:DataSetSparkParams] > tba:propertied

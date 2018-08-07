@@ -30,7 +30,7 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
  */
 public class ConnectorNotFoundException extends MetadataException {
 
-    private static final long serialVersionUID = 3867336790441208367L;
+    private static final long serialVersionUID = 1L;
 
     private final Connector.ID id;
 

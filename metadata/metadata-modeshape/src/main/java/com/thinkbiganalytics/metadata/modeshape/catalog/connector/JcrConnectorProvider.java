@@ -66,8 +66,16 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
             throw ConnectorAlreadyExistsException.fromSystemName(systemName);
         } else {
             Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
-            return JcrUtil.createJcrObject(connNode, JcrConnector.class);
+            return JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#find(com.thinkbiganalytics.metadata.api.catalog.Connector.ID)
+     */
+    @Override
+    public Optional<Connector> find(ID id) {
+        return Optional.ofNullable(findById(id));
     }
 
     /* (non-Javadoc)

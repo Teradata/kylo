@@ -34,7 +34,7 @@ public interface MetadataPaths {
 
     Path METADATA = JcrUtil.path("metadata");
     Path CATALOG = METADATA.resolve("catalog");
-    Path CONNECTORS = METADATA.resolve("connectors");
+    Path CONNECTORS = CATALOG.resolve("connectors");
     Path FEEDS = METADATA.resolve("feeds");
     Path TEMPLATES = METADATA.resolve("templates");
     Path SLA = METADATA.resolve("sla");
@@ -53,7 +53,7 @@ public interface MetadataPaths {
     }
     
     static Path dataSourcesPath(String connSystemName) {
-        return connectorPath(connSystemName).resolve("datasources");
+        return connectorPath(connSystemName).resolve("dataSources");
     }
     
     static Path dataSourcePath(String connSystemName, String dsSystemName) {

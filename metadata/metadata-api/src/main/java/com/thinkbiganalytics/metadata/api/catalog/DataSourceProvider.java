@@ -3,6 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.api.catalog;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.io.Serializable;
+
 /*-
  * #%L
  * kylo-metadata-api
@@ -23,8 +28,6 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +35,9 @@ import java.util.Optional;
 /**
  *
  */
-public interface DataSourceProvider extends BaseProvider<DataSource, DataSource.ID> {
+public interface DataSourceProvider {
+    
+    DataSource.ID resolveId(Serializable id);
     
     DataSource create(Connector.ID connId, String systemName);
 
@@ -40,5 +45,11 @@ public interface DataSourceProvider extends BaseProvider<DataSource, DataSource.
     
     List<DataSource> findByConnector(Collection<Connector.ID> connIds);
     
+    List<DataSource> findAll();
+    
+    Page<DataSource> findPage(Pageable page, String filter);
+
     Optional<DataSource> find(DataSource.ID id);
+    
+    void deleteById(DataSource.ID id);
 }
