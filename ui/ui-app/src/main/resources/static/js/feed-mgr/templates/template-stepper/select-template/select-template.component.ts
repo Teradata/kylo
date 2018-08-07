@@ -318,7 +318,7 @@ export class RegisterSelectTemplateController implements OnInit {
         this.fetchingTemplateList = true;
         this.showProgress();
         this.registerTemplateService.getTemplates().then((response: any) => {
-            this.templates = response.data;
+            this.templates = response;
             this.fetchingTemplateList = false;
             this.matchNiFiTemplateIdWithModel();
             this.hideProgress();

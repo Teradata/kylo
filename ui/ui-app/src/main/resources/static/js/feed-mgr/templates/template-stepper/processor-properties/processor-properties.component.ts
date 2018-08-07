@@ -7,6 +7,7 @@ import { Component, Input, Inject, OnInit, SimpleChanges } from '@angular/core';
 import { RestUrlService } from '../../../services/RestUrlService';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
+import { TdDataTableService, TdDataTableSortingOrder } from '@covalent/core/data-table';
 
 @Component({
     selector: 'thinkbig-register-processor-properties',
@@ -91,7 +92,8 @@ export class RegisterProcessorPropertiesController implements OnInit {
                 private registerTemplateService: RegisterTemplateServiceFactory,
                 private registerTemplatePropertyService: RegisterTemplatePropertyService,
                 private feedService: FeedService, 
-                private uiComponentsService: UiComponentsService) {}
+                private uiComponentsService: UiComponentsService,
+                private _dataTableService: TdDataTableService) {}
 
     searchExpressionProperties = (term: any) => {
          return this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
@@ -142,7 +144,16 @@ export class RegisterProcessorPropertiesController implements OnInit {
         if (this.showOnlySelected) {
             this.showSelected();
         }
-        
+        _.each(this.allProperties, (property) => {
+            if(property.propertyDescriptor.allowableValues !== null){
+                this._dataTableService.sortData(property.propertyDescriptor.allowableValues,
+                    "value",TdDataTableSortingOrder.Ascending);
+            }
+            if(property.renderTypes !== null){
+                this._dataTableService.sortData(property.renderTypes,
+                    "label",TdDataTableSortingOrder.Ascending);
+            }     
+        });
         // Find controller services
         _.chain(this.allProperties).filter((property: any) => {
             return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);

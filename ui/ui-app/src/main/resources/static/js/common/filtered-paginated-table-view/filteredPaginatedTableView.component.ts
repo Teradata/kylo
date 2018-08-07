@@ -27,7 +27,7 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     @ViewChild(TdDataTableComponent) dataTable: TdDataTableComponent;
 
     pageSizeChange(pagingEvent: IPageChangeEvent): void {
-        if(pagingEvent){
+        if(typeof this.onPageSizeChange === 'function' && pagingEvent){
             this.onPageSizeChange(pagingEvent);
         }
     }
@@ -37,13 +37,13 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     }
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
-        if(sortEvent){
+        if(typeof this.onSortChange === 'function' && sortEvent){
             this.onSortChange(sortEvent);
         }
     }
 
     rowClicked(clickEvent: any) {
-        if(clickEvent){
+        if(typeof this.onRowClick === 'function' && clickEvent){
             this.onRowClick(clickEvent);
         }
     }
