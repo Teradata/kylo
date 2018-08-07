@@ -105,7 +105,7 @@ else
       curl -O "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}"
     else
       echo "WARNING... Downloading Vault WITHOUT certs verification"
-      curl -O "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}" --no-check-certificate
+      curl -O "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}" --insecure
     fi
 
     if [[ $? != 0 ]] ; then
