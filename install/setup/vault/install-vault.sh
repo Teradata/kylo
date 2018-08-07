@@ -79,6 +79,12 @@ fi
 echo "The Vault home folder is $VAULT_INSTALL_HOME"
 echo "Using permissions $VAULT_USER:$VAULT_GROUP"
 
+if ! id -u ${VAULT_USER} >/dev/null 2>&1; then
+        echo "Vault user '${VAULT_USER}' does not exist, aborting..."
+        exit 1
+fi
+
+
 echo "Installing Vault"
 mkdir ${VAULT_INSTALL_HOME}
 mkdir ${VAULT_CURRENT_HOME}
