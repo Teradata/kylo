@@ -36,12 +36,16 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 
 import org.assertj.core.groups.Tuple;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +54,7 @@ import javax.inject.Inject;
 /**
  *
  */
-@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, CatalogMetadataConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, CatalogMetadataConfig.class, JcrConnectorProviderTest.TestConfig.class})
 public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
 
     private static final int COUNT = 10;
@@ -62,6 +66,17 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
     private ConnectorProvider connectorProvider;
     
     private Connector.ID testId;
+
+
+    @Configuration
+    public static class TestConfig {
+        @Bean(name="repositoryConfiguationResource")
+        @Primary
+        public Resource repositoryConfigurationResource() {
+            return new ClassPathResource("/JcrConnectorProviderTest-metadata-repository.json");
+        }
+    }
+
     
     @Test
     public void testCreate() {

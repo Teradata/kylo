@@ -38,6 +38,11 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 
 import org.assertj.core.groups.Tuple;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -52,7 +57,7 @@ import javax.inject.Inject;
 /**
  *
  */
-@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, CatalogMetadataConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, CatalogMetadataConfig.class, JcrDataSourceProviderTest.TestConfig.class})
 public class JcrDataSourceProviderTest extends AbstractTestNGSpringContextTests {
 
     private static final int COUNT = 10;
@@ -68,7 +73,17 @@ public class JcrDataSourceProviderTest extends AbstractTestNGSpringContextTests 
     
     private Connector.ID connId;
     private DataSource.ID dsId;
-    
+
+
+    @Configuration
+    public static class TestConfig {
+        @Bean(name="repositoryConfiguationResource")
+        @Primary
+        public Resource repositoryConfigurationResource() {
+            return new ClassPathResource("/JcrDataSourceProviderTest-metadata-repository.json");
+        }
+    }
+
     @BeforeClass
     public void setup() {
         this.connId = metadata.commit(() -> {
@@ -76,6 +91,7 @@ public class JcrDataSourceProviderTest extends AbstractTestNGSpringContextTests 
             return conn.getId();
         }, MetadataAccess.SERVICE);
     }
+    
     
     @Test
     public void testCreate() {
