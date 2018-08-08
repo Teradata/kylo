@@ -119,7 +119,7 @@ export class BrowserComponent implements OnInit {
                 });
                 if(selectLastPath){
                     let lastPath = this.selectionService.getLastPathNodeName(this.datasource.id);
-                    if(lastPath) {
+                    if(lastPath && this.node) {
                         this.selectionStrategy.toggleChild(this.node, lastPath, true);
                     }
                 }
