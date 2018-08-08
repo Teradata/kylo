@@ -6,6 +6,7 @@ import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -113,6 +114,7 @@ import { TemplateOrderController } from "./template-order/template-order.compone
         MatMenuModule,
         MatInputModule,
         MatSelectModule,
+        MatProgressBarModule,
         MatProgressSpinnerModule,
         MatGridListModule,
         MatDialogModule,

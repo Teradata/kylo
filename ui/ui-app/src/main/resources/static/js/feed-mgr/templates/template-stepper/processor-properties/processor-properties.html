@@ -30,20 +30,7 @@
 
         <mat-card-content>
 
-            <!-- <ng-form name="vm.propertiesForm" layout-fill>
-                    <md-virtual-repeat-container browser-height browser-height-offset="300"
-                                                 browser-height-scroll-y="false" style="width:100%;"
-                                                 md-top-index="vm.topIndex">
-                        <ng-template let-row="row" let-last="last" let-index="index" tdVirtualScrollRow> -->
-
-            <ng-container [formGroup]="formGroup" layout-fill>
-                    <!-- <td-virtual-scroll-container #virtualScroll [style.height.px]="300" [data]="allProperties">
-
-                        <ng-template let-row="row" let-last="last" let-index="index" tdVirtualScrollRow> -->
-                                             
-                    <md-virtual-repeat-container browser-height browser-height-offset="300"
-                                                    browser-height-scroll-y="false" style="width:100%;"
-                                                    md-top-index="topIndex">
+            <ng-container layout-fill>
 
                         <div *ngFor="let property of allProperties " layout="column" layout-fill>
 
@@ -69,14 +56,14 @@
                                     </mat-hint>
 
                                     <div *ngIf="property.selected == true" style="padding-top:10px;" class="fade">
-                                        <form name="innerForm">
+                                        <form [formGroup]="formGroup">
 
                                             <div *ngIf="property.propertyDescriptor.allowableValues != null">
                                                 <mat-form-field md-no-float class="md-block">
                                                     <mat-label>Default Value</mat-label>
                                                     <mat-select [(ngModel)]="property.value" name="property"
-                                                               placeholder="Default Value">
-                                                        <!--  | orderBy:'value' track by allowableValue.value-->
+                                                               placeholder="Default Value"
+                                                               [ngModelOptions]="{standalone: true}">
                                                         <mat-option *ngFor="let allowableValue of property.propertyDescriptor.allowableValues"
                                                                 value="{{allowableValue.value}}">
                                                             {{allowableValue.displayName }}
@@ -87,7 +74,7 @@
 
 
                                             <div *ngIf="property.propertyDescriptor.allowableValues == null && property.selected == true">
-
+ 
                                                 <mat-form-field style="height:30px;margin-bottom:5px;" class="md-block">
                                                     <mat-label>Default Value (Supports Expressions)</mat-label>
                                                     <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
@@ -116,7 +103,8 @@
                                                            size="100"
                                                            (change)="changedPropertyInput(property)"
                                                            (keydown)="keydownPropertyInput(property)"
-                                                            ng-init="property.changed=false"/>
+                                                            ng-init="property.changed=false"
+                                                            [ngModelOptions]="{standalone: true}"/>
                                                 </mat-form-field>
 
                                                 <mentio-menu style="display:none;"
@@ -149,7 +137,8 @@
                                                     <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
                                                         <mat-checkbox aria-label="User can supply input"
                                                                      [(ngModel)]="property.userEditable"
-                                                                     name="userEditable">
+                                                                     name="userEditable"
+                                                                     [ngModelOptions]="{standalone: true}">
                                                           Allow user input
                                                         </mat-checkbox>
                                                     </div>
@@ -160,8 +149,8 @@
                                                     <mat-select [(ngModel)]="property.renderType" 
                                                                 name="renderType" 
                                                                 (change)="onRenderTypeChange(property)"
-                                                                placeholder="Render Input As...">
-                                                        <!--  | orderBy:'label' track by renderType.type-->
+                                                                placeholder="Render Input As..."
+                                                                [ngModelOptions]="{standalone: true}">
                                                         <mat-option
                                                                 *ngFor="let renderType of property.renderTypes"
                                                                 value="{{renderType.type}}">
@@ -170,26 +159,29 @@
                                                     </mat-select>
                                                 </mat-form-field>
 
-                                                <mat-form-field
-                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <mat-label>True Value</mat-label>
-                                                <input matIput
-                                                       name="property"
-                                                       placeholder="true"
-                                                       type="text"
-                                                       [(ngModel)]="property.renderOptions['trueValue']" size="20"/>
+                                                <mat-form-field style="height:30px;margin-bottom:5px; padding-left:10px;"
+                                                    class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                    <mat-label>True Value</mat-label>
+                                                    <input matInput 
+                                                        name="property"
+                                                        placeholder="true"
+                                                        type="text"
+                                                        [(ngModel)]="property.renderOptions['trueValue']" 
+                                                        size="20"
+                                                        [ngModelOptions]="{standalone: true}"/>
                                                 </mat-form-field>
 
                                               <mat-form-field
-                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <mat-label>False Value</mat-label>
-                                                <input matInput
-                                                       name="property"
-                                                       placeholder="false"
-                                                       type="text"
-                                                       [(ngModel)]="property.renderOptions['falseValue']" size="20"/>
+                                                    style="height:30px;margin-bottom:5px; padding-left:10px;"
+                                                    class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                    <mat-label>False Value</mat-label>
+                                                    <input matInput 
+                                                        name="property"
+                                                        placeholder="false"
+                                                        type="text"
+                                                        [(ngModel)]="property.renderOptions['falseValue']" 
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        size="20"/>
                                               </mat-form-field>
 
                                               <div style="padding-left:10px;">
@@ -215,7 +207,8 @@
                                                             <mat-checkbox aria-label="Sensitive"
                                                                          name = "sensitiveProperty"
                                                                          [(ngModel)]="property.sensitive"
-                                                                         [disabled]="property.propertyDescriptor.sensitive">
+                                                                         [disabled]="property.propertyDescriptor.sensitive"
+                                                                         [ngModelOptions]="{standalone: true}">
                                                                 Sensitive
                                                             </mat-checkbox>
                                                         </div>
@@ -228,6 +221,7 @@
                                                             <mat-checkbox aria-label="Required"
                                                                          name="requiredProperty"
                                                                          [(ngModel)]="property.required"
+                                                                         [ngModelOptions]="{standalone: true}"
                                                                          [disabled]="property.propertyDescriptor.required">
                                                                 Required
                                                             </mat-checkbox>
@@ -247,12 +241,6 @@
                             <mat-divider *ngIf="!last"></mat-divider>
                         </div>
 
-
-                    </md-virtual-repeat-container>
-
-
-                    <!-- <thinkbig-step-buttons can-continue="isValid && propertiesForm.$valid"
-                                           step-index="{{stepIndex}}"></thinkbig-step-buttons> -->
             </ng-container>
 
         </mat-card-content>

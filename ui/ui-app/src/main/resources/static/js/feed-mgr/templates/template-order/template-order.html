@@ -20,7 +20,7 @@
   <div layout="column">
       <div class="md-subhead left-aligned">Change Template Order</div>
       <span class="hint">Drag the templates below to adjust their order at feed creation time. </span>
-      <ul class="list-group" dnd-sortable-container [sortableData]="model">
+      <ul class="list-group" dnd-sortable-container [sortableData]="model" style="list-style-type: none;">
         <li *ngFor="let item of model; 
                     let i = index" 
                     class="list-group-item" 

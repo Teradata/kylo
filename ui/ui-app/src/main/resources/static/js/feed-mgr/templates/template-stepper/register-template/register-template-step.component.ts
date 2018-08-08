@@ -165,12 +165,12 @@ export class RegisterCompleteRegistrationController {
         //only attempt to query if we have connections set
         var hasPortConnections = (this.model.reusableTemplateConnections == null || this.model.reusableTemplateConnections.length == 0) || (this.model.reusableTemplateConnections != null && this.model.reusableTemplateConnections.length > 0 && assignedPortIds.length == this.model.reusableTemplateConnections.length);
         if (hasPortConnections) {
-            this.registerTemplateService.getNiFiTemplateFlowInformation(this.model.nifiTemplateId, this.model.reusableTemplateConnections).then((response: angular.IHttpResponse<any>) => {
+            this.registerTemplateService.getNiFiTemplateFlowInformation(this.model.nifiTemplateId, this.model.reusableTemplateConnections).then((response: any) => {
                 var map = {};
 
-                if (response && response.data) {
+                if (response) {
 
-                    var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
+                    var datasourceDefinitions = response.templateProcessorDatasourceDefinitions;
 
                     //merge in those already selected/saved on this template
                     _.each(datasourceDefinitions, (def: any) => {
@@ -220,9 +220,9 @@ export class RegisterCompleteRegistrationController {
             });
             if (remoteInputPortProperty != undefined) {
                 //validate it against the possible remote input ports
-                this.registerTemplateService.fetchRootInputPorts().then((response: angular.IHttpResponse<any>) => {
-                    if (response && response.data) {
-                        let matchingPort = _.find(response.data, function (port: any) {
+                this.registerTemplateService.fetchRootInputPorts().then((response: any) => {
+                    if (response) {
+                        let matchingPort = _.find(response, (port: any) => {
                             return port.name == remoteInputPortProperty.value;
                         });
                         if (matchingPort != undefined) {
@@ -263,8 +263,8 @@ export class RegisterCompleteRegistrationController {
             this.registerTemplateService.fetchRegisteredReusableFeedInputPorts().then((response: any) => {
                 // Update connectionMap and inputPortList
                 this.inputPortList = [];
-                if (response.data) {
-                    angular.forEach(response.data, (port, i) => {
+                if (response) {
+                    angular.forEach(response, (port, i) => {
                         this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName });
                         this.connectionMap[port.name] = port;
                     });
