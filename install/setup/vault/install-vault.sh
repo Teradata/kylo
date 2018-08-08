@@ -87,7 +87,7 @@ fi
 PROPS=${KYLO_HOME}/kylo-services/conf/application.properties
 if ! grep "vault.host" ${PROPS} > /dev/null
 then
-   echo "ERROR: Vault properties not found in ${PROPS}. Follow upgrade instructions at https://kylo.readthedocs.io/en/latest/release-notes/ReleaseNotes9.2.html#vault"
+   echo "ERROR: Vault properties not found in ${PROPS}. Follow upgrade instructions at https://kylo.readthedocs.io/en/latest/release-notes/ReleaseNotes9.2.html"
    exit 1
 fi
 
