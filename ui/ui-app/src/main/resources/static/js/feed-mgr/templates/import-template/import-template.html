@@ -115,7 +115,7 @@
               </div>
             </md-input-container>
               <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
-                <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Overwrite if exists" >
+                <md-checkbox ng-model="vm.reusableTemplateImportOption.shouldImport" aria-label="Import reusable template" >
                   Import the reusable template
                 </md-checkbox>
 
@@ -173,6 +173,21 @@
               </div>
             </div>
 
+            <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length > 0" flex layout="column">
+              <div class="layout-padding-bottom">
+                The following properties (total count: {{ vm.reusableTemplateImportOption.properties.length }}) need to be supplied before importing this reusable template.
+              </div>
+
+              <div ng-repeat="prop in vm.reusableTemplateImportOption.properties" layout="column" layout-align="start start">
+                <span>{{ prop.processorName }}</span>
+                <div layout="row" flex layout-fill>
+                  <md-input-container>
+                    <label>{{ prop.propertyKey }}</label>
+                    <input type="text" ng-model="prop.propertyValue" autocomplete="new-password" name="{{prop.inputName}}">
+                  </md-input-container>
+                </div>
+              </div>
+            </div>
 
             <div layout="row">
             <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
