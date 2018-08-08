@@ -137,9 +137,11 @@ export class DefaultSelectionStrategy implements SelectionStrategy {
     }
 
     private toggleNode(node: Node, checked: boolean) {
-        node.setSelected(checked);
-        for (let policy of this.policies) {
-            policy.toggleNode(node, checked);
+        if(node) {
+            node.setSelected(checked);
+            for (let policy of this.policies) {
+                policy.toggleNode(node, checked);
+            }
         }
     }
 

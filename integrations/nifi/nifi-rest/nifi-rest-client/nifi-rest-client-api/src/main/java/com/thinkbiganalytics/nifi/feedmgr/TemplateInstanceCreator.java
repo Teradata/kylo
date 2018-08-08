@@ -235,19 +235,31 @@ public class TemplateInstanceCreator {
                         log.info("Reusable flow.  Successfully marked the ports as running.");
                     }
 
-                    newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
-                    newProcessGroup.setVersionedProcessGroup(versionedProcessGroup);
-                    newProcessGroup.setReusableFlowInstance(isCreateReusableFlow());
-
                     if (isCreateReusableFlow()) {
                         //call listeners notify of before mark as running  processing
                         if (creationCallback != null) {
                             try {
                                 creationCallback.beforeMarkAsRunning(template.getName(), entity);
+                                //refetch the data for errors
+                                entity = restClient.getProcessGroup(processGroupId, true, true);
+                                nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
+
+                                inputProcessors = NifiProcessUtil.getInputProcessors(entity);
+                                if (inputProcessors != null && !inputProcessors.isEmpty()) {
+                                    input = inputProcessors.get(0);
+                                }
                             } catch (Exception e) {
                                 log.error("Error calling callback beforeMarkAsRunning ", e);
                             }
                         }
+                    }
+
+                    //create the new process group object that will extract the validation errors from the nifi entity
+                    newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
+                    newProcessGroup.setVersionedProcessGroup(versionedProcessGroup);
+                    newProcessGroup.setReusableFlowInstance(isCreateReusableFlow());
+
+                    if (isCreateReusableFlow()) {
                         log.info("Reusable flow, attempt to mark the Processors as running.");
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
                         log.info("Reusable flow.  Successfully marked the Processors as running.");
