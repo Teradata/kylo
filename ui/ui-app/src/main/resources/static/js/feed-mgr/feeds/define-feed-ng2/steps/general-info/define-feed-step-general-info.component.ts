@@ -29,6 +29,7 @@ import {PropertyListComponent} from "../../../../shared/property-list/property-l
 import {ISubscription} from "rxjs/Subscription";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import { TranslateService } from '@ngx-translate/core';
+import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/preview-dataset-collection.service";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -60,6 +61,12 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     private feedService: FeedService;
 
+    /**
+     * Shared service with the Visual Query to store the datasets
+     * Shared with Angular 1 component
+     */
+    previewDatasetCollectionService : PreviewDatasetCollectionService
+
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private _translateService: TranslateService,
@@ -67,6 +74,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
         super(defineFeedService, stateService);
         this.categoriesService = $$angularInjector.get("CategoriesService");
         this.feedService = $$angularInjector.get("FeedService");
+        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.formGroup = new FormGroup({});
         this.subscribeToFormChanges(this.formGroup);
 
@@ -77,6 +85,10 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     init() {
         super.init();
+        if(this.feed.isNew()){
+            //clear the selections
+            this.previewDatasetCollectionService.reset();
+        }
         this.registerFormControls();
     }
     destroy(){
@@ -146,8 +158,12 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      this.feed.category = formModel.category;
      this.feed.description = formModel.description;
      this.feed.dataOwner = formModel.dataOwner;
-     this.feedSchedule.updateModel();
-     this.propertyList.updateModel();
+     if(this.feedSchedule) {
+         this.feedSchedule.updateModel();
+     }
+     if(this.propertyList) {
+         this.propertyList.updateModel();
+     }
      //save it back to the service
      super.updateFeedService();
     }

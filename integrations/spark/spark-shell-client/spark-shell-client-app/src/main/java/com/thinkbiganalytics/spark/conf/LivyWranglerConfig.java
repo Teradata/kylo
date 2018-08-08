@@ -64,6 +64,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Profile("kylo-livy")
 @Configuration
 @ComponentScan(
         basePackages = {"com.thinkbiganalytics.spark",

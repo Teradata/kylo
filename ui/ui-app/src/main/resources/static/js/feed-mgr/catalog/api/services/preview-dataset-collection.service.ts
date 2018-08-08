@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import {PreviewDataSet} from "../../datasource/preview-schema/model/preview-data-set";
+import {DatasetCollectionStatus, PreviewDataSet} from "../../datasource/preview-schema/model/preview-data-set";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
@@ -37,6 +37,7 @@ export class PreviewDatasetCollectionService {
     }
 
     public reset(){
+        this.datasets.forEach(dataset => dataset.collectionStatus = DatasetCollectionStatus.REMOVED);
         this.datasets = [];
     }
 
@@ -48,7 +49,7 @@ export class PreviewDatasetCollectionService {
         //only add if it doesnt exist yet
         if(!this.exists(dataset)) {
             this.datasets.push(dataset);
-            dataset.collected = true;
+            dataset.collectionStatus = DatasetCollectionStatus.COLLECTED;
             //notify the observers of the change
             this.datasetsSubject.next(this.datasets);
           }
@@ -85,12 +86,16 @@ export class PreviewDatasetCollectionService {
             var index = this.datasets.indexOf(collectedDataSet);
             if (index >= 0) {
                 this.datasets.splice(index, 1)
-                dataset.collected = false
+                dataset.collectionStatus = DatasetCollectionStatus.REMOVED;
                 //notify the observers of the change
                 this.datasetsSubject.next(this.datasets);
             }
         }
 
+    }
+
+    public datasetCount():number {
+        return this.datasets.length;
     }
 
     /**

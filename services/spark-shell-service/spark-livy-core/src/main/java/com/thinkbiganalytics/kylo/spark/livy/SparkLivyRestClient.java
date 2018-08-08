@@ -23,6 +23,8 @@ package com.thinkbiganalytics.kylo.spark.livy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.kylo.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementsPost;
@@ -46,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class SparkLivyRestClient implements SparkShellRestClient {
     private static final Logger logger = LoggerFactory.getLogger(SparkLivyRestClient.class);
@@ -65,6 +68,14 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Resource
     public FileSystem fileSystem;
 
+    /**
+     * Cache of transformIds
+     */
+    @Nonnull
+    public final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build();
 
     @Nonnull
     @Override
@@ -173,14 +184,26 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
-        Integer stmtId = sparkLivyProcessManager.getLastStatementId(process);
+        Integer stmtId = sparkLivyProcessManager.getStatementId(transformId);
 
         Statement statement = client.get(String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), stmtId),
                 Statement.class);
 
-        sparkLivyProcessManager.setLastStatementId(process, statement.getId());
-        logger.debug("getStatement id={}, spr={}", stmtId, statement);
+        sparkLivyProcessManager.setStatementId(transformId, statement.getId());
+        logger.debug("getStatement id={}, spr={}", statement.getId(), statement);
         TransformResponse response = LivyRestModelTransformer.toTransformResponse(statement, transformId);
+
+        if( statement.getState() == StatementState.available && response.getStatus() == TransformResponse.Status.PENDING ) {
+            // TODO:: change this so that if transformId is a livyQueryID it knows what to do.  similiar to saveResponse
+
+            // The result came back from Livy, but the transform result still needs to be fetched
+            String script = scriptGenerator.script("getTransform", scalaStr(transformId));
+            statement = submitCode(client,script,process);
+            // associate transformId to this new query and get results on subsequent call
+            sparkLivyProcessManager.setStatementId(transformId,statement.getId());
+        } else if( response.getStatus() == TransformResponse.Status.ERROR){
+            throw new LivyException(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
+        } // end if
         return Optional.of(response);
     }
 
@@ -199,7 +222,6 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             statement = client.get(
                     String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), stmtId),
                     Statement.class);
-            sparkLivyProcessManager.setLastStatementId(process, statement.getId());
             logger.debug("getStatement id={}, spr={}", stmtId, statement);
             response = LivyRestModelTransformer.toSaveResponse(statement);
         } catch (NumberFormatException nfe) {
@@ -266,20 +288,23 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
         // a tablename will be calculated for the request
-        String script = scalaScriptService.wrapScriptForLivy(request);
+        String transformId = ScalaScriptService.newTableName();
+        transformCache.put(request, transformId);
+
+        String script = scalaScriptService.wrapScriptForLivy(request, transformId);
 
         Statement statement = submitCode(client, script, process);
 
-        sparkLivyProcessManager.setLastStatementId(process, statement.getId());
+        sparkLivyProcessManager.setStatementId(transformId,statement.getId());
 
         TransformResponse response = new TransformResponse();
         response.setStatus(StatementStateTranslator.translate(statement.getState()));
         response.setProgress(statement.getProgress());
-
-        response.setTable(scalaScriptService.transformCache.getIfPresent(request));
+        response.setTable(transformId);
 
         return response;
     }
+
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -301,7 +326,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             throw new LivyException("Unexpected error");
         }
 
-        return LivyRestModelTransformer.toTransformResponse(statement);
+        // call with null so a transformId will be generated for this query
+        return LivyRestModelTransformer.toTransformResponse(statement, null);
     }
 
     // TODO: is there a better way to wait for a response than synchronous?  UI could poll?

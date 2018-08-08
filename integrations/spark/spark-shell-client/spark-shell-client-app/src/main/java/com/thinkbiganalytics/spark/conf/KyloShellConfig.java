@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark2;
+package com.thinkbiganalytics.spark.conf;
 
 /*-
  * #%L
@@ -24,11 +24,9 @@ import com.beust.jcommander.JCommander;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
-import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.RemoteClientRunner;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.SparkShellOptions;
@@ -36,19 +34,15 @@ import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.service.DataSetConverterService;
-import com.thinkbiganalytics.spark.service.IdleMonitorService;
-import com.thinkbiganalytics.spark.service.JobTrackerService;
-import com.thinkbiganalytics.spark.service.SparkListenerService;
-import com.thinkbiganalytics.spark.service.SparkLocatorService;
-import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.service.*;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
-
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -57,27 +51,23 @@ import org.apache.spark.sql.jdbc.JdbcDialect;
 import org.apache.spark.sql.jdbc.JdbcDialects;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
-import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
-import org.springframework.boot.logging.LoggingApplicationListener;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.ResourcePropertySource;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Arrays;
@@ -86,46 +76,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
-
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-@ComponentScan(basePackages = {"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"},
-               excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
-@PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
-@SpringBootApplication(exclude = {WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
-public class SparkShellApp {
 
-    /**
-     * Instantiates the REST server with the specified arguments.
-     *
-     * @param args the command-line arguments
-     */
-    public static void main(String[] args) {
-        final SpringApplication app = new SpringApplication(SparkShellApp.class);
-
-        // Ignore application listeners that will load kylo-services configuration
-        final List<ApplicationListener<?>> listeners = FluentIterable.from(app.getListeners())
-            .filter(Predicates.not(
-                Predicates.or(
-                    Predicates.instanceOf(ConfigFileApplicationListener.class),
-                    Predicates.instanceOf(LoggingApplicationListener.class)
-                )
-            ))
-            .toList();
-        app.setListeners(listeners);
-
-        // Start app
-        final ApplicationContext context = app.run(args);
-
-        // Keep main thread running until the idle timeout
-        context.getBean(IdleMonitorService.class).awaitIdleTimeout();
-    }
+@Profile("kylo-shell")
+@Configuration
+// ignore auto-configuration classes outside Spark Shell
+public class KyloShellConfig {
+    private static final Logger logger = LoggerFactory.getLogger(KyloShellConfig.class);
 
     /**
      * Gets the factory for the embedded web server.
@@ -162,7 +121,7 @@ public class SparkShellApp {
      */
     @Bean
     public FileSystem fileSystem() throws IOException {
-        return FileSystem.get(new Configuration());
+        return FileSystem.get(new org.apache.hadoop.conf.Configuration());
     }
 
     /**
@@ -181,7 +140,14 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem, final SparkLocatorService sparkLocatorService) {
+    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem,
+                                       final SparkLocatorService sparkLocatorService,
+                                       final SparkUtilityService sparkUtilityService) {
+        Validate.notNull(fileSystem);
+        Validate.notNull(transformService);
+        Validate.notNull(sparkLocatorService);
+        Validate.notNull(sparkUtilityService);
+
         final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
         config.packages("com.thinkbiganalytics.spark.rest");
         config.register(new AbstractBinder() {
@@ -190,6 +156,7 @@ public class SparkShellApp {
                 bind(fileSystem).to(FileSystem.class);
                 bind(transformService).to(TransformService.class);
                 bind(sparkLocatorService).to(SparkLocatorService.class);
+                bind(sparkUtilityService).to(SparkUtilityService.class);
             }
         });
 
@@ -281,35 +248,35 @@ public class SparkShellApp {
         final SparkConf conf = new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", Integer.toString(serverPort + 1));
 
         final Iterable<Map.Entry<String, Object>> properties = FluentIterable.from(Collections.singleton(env))
-            .filter(AbstractEnvironment.class)
-            .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
-                @Nullable
-                @Override
-                public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
-                    return (input != null) ? input.getPropertySources() : null;
-                }
-            })
-            .filter(ResourcePropertySource.class)
-            .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
-                @Nullable
-                @Override
-                public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
-                    return (input != null) ? input.getSource() : null;
-                }
-            })
-            .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
-                @Nullable
-                @Override
-                public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
-                    return (input != null) ? input.entrySet() : null;
-                }
-            })
-            .filter(new Predicate<Map.Entry<String, Object>>() {
-                @Override
-                public boolean apply(@Nullable final Map.Entry<String, Object> input) {
-                    return (input != null && input.getKey().startsWith("spark."));
-                }
-            });
+                .filter(AbstractEnvironment.class)
+                .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
+                    @Nullable
+                    @Override
+                    public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
+                        return (input != null) ? input.getPropertySources() : null;
+                    }
+                })
+                .filter(ResourcePropertySource.class)
+                .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
+                    @Nullable
+                    @Override
+                    public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
+                        return (input != null) ? input.getSource() : null;
+                    }
+                })
+                .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
+                    @Nullable
+                    @Override
+                    public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
+                        return (input != null) ? input.entrySet() : null;
+                    }
+                })
+                .filter(new Predicate<Map.Entry<String, Object>>() {
+                    @Override
+                    public boolean apply(@Nullable final Map.Entry<String, Object> input) {
+                        return (input != null && input.getKey().startsWith("spark."));
+                    }
+                });
         for (final Map.Entry<String, Object> entry : properties) {
             conf.set(entry.getKey(), entry.getValue().toString());
         }
@@ -403,4 +370,8 @@ public class SparkShellApp {
         return excludes;
     }
 
+    @Bean
+    public SparkUtilityService sparkUtilityService() {
+        return new SparkUtilityService();
+    }
 }

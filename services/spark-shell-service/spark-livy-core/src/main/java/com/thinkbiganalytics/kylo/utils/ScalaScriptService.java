@@ -20,39 +20,19 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class ScalaScriptService {
-
-    // TODO: put elsewhere, cache correctly per user
-    //public static Map<String, Integer> scriptCache = new HashMap<String /*script*/, Integer /*varname*/>();
-    //public static Integer counter = 0;  // gets reset if user comes back to wrangler
-
-    private static Pattern dfPattern = Pattern.compile("^df$", Pattern.MULTILINE);
+    private static Pattern dfPattern = Pattern.compile("^\\s*df\\s*$", Pattern.MULTILINE);
 
     @Resource
     private ScriptGenerator scriptGenerator;
-
-    /**
-     * Cache of transformIds
-     */
-    @Nonnull
-    public final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(1, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build();
 
 
     /**
@@ -64,28 +44,29 @@ public class ScalaScriptService {
      * @param request
      * @return
      */
-    public String wrapScriptForLivy(TransformRequest request) {
+    public String wrapScriptForLivy(TransformRequest request, String transformId) {
 
         String newScript;
-        if( request.isDoProfile() ) {
-            newScript = scriptGenerator.script("profileDataFrame", setParentVar(request) );
+        if (request.isDoProfile()) {
+            newScript = scriptGenerator.script("profileDataFrame", setParentVar(request));
         } else {
-            newScript = dataFrameWithSchema(request);
+            newScript = dataFrameWithSchema(request, transformId);
         }
 
         return newScript;
     }
 
-    private String dataFrameWithSchema(TransformRequest request) {
+    private String dataFrameWithSchema(TransformRequest request, String transformId) {
         String script = request.getScript();
 
         StringBuilder sb = new StringBuilder();
         if (request.getParent() != null) {
-            sb.append( setParentVar(request) );
+            sb.append(setParentVar(request));
         } // end if
 
-        String transformId = ScalaScriptService.newTableName();
-        transformCache.put(request,transformId);
+        // String transformId = ScalaScriptService.newTableName();
+        // transformCache.put(request, transformId);
+
         script = dfPattern.matcher(script).replaceAll(/*"var df" + counter + " = df.cache(); "df" + counter*/
                 "df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
 
@@ -98,7 +79,6 @@ public class ScalaScriptService {
     }
 
 
-
     /**
      * Modifies the script passed in (assumed it contains a dataframe named df), and creates a List(schema,dataRows)
      * object.  schema is a scala string of json representing the schema.  dataRows is a List of Lists of the row data.
@@ -109,14 +89,14 @@ public class ScalaScriptService {
      * @return
      */
     private String wrapScriptWithPaging(String script, PageSpec pageSpec) {
-        if( pageSpec != null ) {
+        if (pageSpec != null) {
             Integer startCol = pageSpec.getFirstCol();
-            Integer stopCol = pageSpec.getFirstCol() + pageSpec.getNumCols();
+            Integer stopCol = startCol + pageSpec.getNumCols();
             Integer startRow = pageSpec.getFirstRow();
-            Integer stopRow = pageSpec.getFirstRow() + pageSpec.getNumRows();
+            Integer stopRow = startRow + pageSpec.getNumRows();
 
             return scriptGenerator.wrappedScript("pagedDataFrame", script, "\n",
-                    startCol,stopCol,startRow,stopRow);
+                    startCol, stopCol, startRow, stopRow);
         } else {
             // No Pagespec so simply return all results
             return script.concat("val dfRows = List( df.schema.json, df.rdd.collect.map(x => x.toSeq) )\n");
@@ -142,22 +122,11 @@ public class ScalaScriptService {
 
 
     private static String setParentVar(TransformRequest request) {
-        /*
-        String parentScript = request.getParent().getScript();
-        Integer varCount;
-        if (scriptCache.containsKey(parentScript)) {
-            varCount = scriptCache.get(parentScript);
-        } else {
-            scriptCache.put(parentScript, counter);
-            varCount = counter++;
-        }
-        */
-
         String table = request.getParent().getTable();
-        if(StringUtils.isEmpty(table) ) {
-                return request.getParent().getScript();
+        if (StringUtils.isEmpty(table)) {
+            return request.getParent().getScript();
         } else {
-                return String.format( "var parent = sqlContext.sql(\"SELECT * FROM %s\")\n", request.getParent().getTable() );
+            return String.format("var parent = sqlContext.sql(\"SELECT * FROM %s\")\n", request.getParent().getTable());
         }
     }
 }

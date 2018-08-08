@@ -9,8 +9,8 @@
                 </nav>
         </div>
 
-        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params"  [showCatalogButton]="true" *ngIf="selectedTab && selectedTab.sref =='.browse'"   ></remote-files>
-        <preview-schema [datasource]="datasource" *ngIf="selectedTab && selectedTab.sref =='.preview'"></preview-schema>
+        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params"  *ngIf="selectedTab && selectedTab.sref =='.browse'"   ></remote-files>
+        <preview-schema [paths]="paths" [datasource]="datasource" *ngIf="selectedTab && selectedTab.sref =='.preview'" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" (customDatasetAddition)="onDatasetAdd($event)" (customDatasetRemoval)="onDatasetRemoval($event)"></preview-schema>
 
 </div>
         </mat-card-content>

@@ -154,7 +154,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
        if(!this.checkAndSetValue("timerAmount",timerAmountValue)) {
             let timerAmountFormControl = new FormControl(timerAmountValue, [
                 Validators.required,
-                this.timerAmountValidator(this.feed.registeredTemplate.isStream),
+                this.timerAmountValidator(this.feed.registeredTemplate != undefined ? this.feed.registeredTemplate.isStream : false), //TODO pass in the 'isStream' flag when selecting a template for a new feed and populate or push it on the feed object for this check
                 Validators.min(0)
             ]);
 

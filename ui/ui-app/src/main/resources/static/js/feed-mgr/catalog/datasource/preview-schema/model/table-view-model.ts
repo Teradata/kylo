@@ -3,7 +3,9 @@ export interface TableColumn {
     name:string;
     label:string;
     dataType:string;
-    uuid?:string
+    uuid?:string;
+    numeric?:boolean;
+    sortable?:boolean;
 }
 
 
@@ -28,8 +30,17 @@ export class TableViewModel{
      */
     rows:any[];
 
+    public static numberTypes: string[] = ["int","bigint","integer","float","double","decimal","long"];
+
+    public static isNumeric(dataType:string){
+        return TableViewModel.numberTypes.indexOf(dataType) >=0;
+    }
+
     public constructor(init?:Partial<TableViewModel>) {
+        this.error = false;
+        this.errorMessage = "";
         Object.assign(this, init);
+
     }
 
     hasColumns(){
@@ -46,6 +57,8 @@ export class TableViewModel{
         this.error = false;
         this.errorMessage = null;
     }
+
+
 
     columnData(colName:string) :string[]{
         if(this.columns && this.columns.filter(col => col.name == colName).length >0) {
