@@ -7,7 +7,7 @@ export class CodeMirrorService{
  }
  
 transformToCodeMirrorData(response: any) {
-    return this.populateCodeMirrorTablesAndColumns(response.data);
+    return this.populateCodeMirrorTablesAndColumns(response);
 }
  
 populateCodeMirrorTablesAndColumns(tableColumns: any){

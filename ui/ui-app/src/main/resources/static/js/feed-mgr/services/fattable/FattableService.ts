@@ -80,14 +80,11 @@ const optionDefaults: any = {
         return this.headers[j].displayName;
     }
 };
-// @TODO Ahmad Hassan Fix angular.element references and figure out the type of table and constructor issue
+// @TODO Ahmad Hassan Fix angular.element references and figure out the type of table
 @Injectable()
 export class FattableService {
 
     table : any;
-    // constructor($window: any) {
-
-    // }
     constructor() {
 
     }
@@ -133,6 +130,7 @@ export class FattableService {
         });
 
         painter.setupHeader = (div) => {
+            //@TODO Ahmad Hassan usage of element
             // console.log("setupHeader");
             // const separator = angular.element('<div class="header-separator"></div>');
             // separator.on("mousedown", event => mousedown(separator, event));
@@ -282,6 +280,7 @@ export class FattableService {
         }
 
         const eventId = "resize.fattable." + settings.tableContainerId;
+        //@TODO Ahmad Hassan usage of element
         // angular.element($window).unbind(eventId);
         // const debounced = _.debounce(this.setupTable, settings.setupRefreshDebounce);
         // angular.element($window).on(eventId, () => {

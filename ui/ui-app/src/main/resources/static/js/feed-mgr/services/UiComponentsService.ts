@@ -12,6 +12,7 @@
 import * as _ from "underscore";
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from './RestUrlService';
+import { HttpClient } from "@angular/common/http";
 
 @Injectable()
 export class UiComponentsService {
@@ -37,20 +38,18 @@ export class UiComponentsService {
     /**
      * Flag to indicate if we are already fetching
      */
-    initialProcesorTemplatePromise: angular.IPromise<any> = null;
+    initialProcesorTemplatePromise: Promise<any> = null;
 
 
     /**
      * Flag to indicate we are already fetching the table options
      * @type {null}
      */
-    initialTemplateTableOptionsPromise: angular.IPromise<any> = null;
+    initialTemplateTableOptionsPromise: Promise<any> = null;
 
-
-    static $inject = ["$http", "$q", "$templateRequest", "RestUrlService"];
 
     constructor(private RestUrlService: RestUrlService,
-                @Inject("$injector") private $injector: any) {
+                private http: HttpClient) {
 
     }
 
@@ -85,37 +84,36 @@ export class UiComponentsService {
                 var selected = _.find(tableOptions, (tableOption: any) => {
                     return tableOption.type === type;
                 });
-
-                var result = this.$injector.get("$q").defer();
-                if (typeof selected !== 'undefined') {
-                    result.resolve(selected);
-                } else {
-                    result.reject();
-                }
-                return result.promise;
+                return new Promise((resolve,reject) => {
+                    if (typeof selected !== 'undefined') {
+                        resolve(selected);
+                    } else {
+                        reject();
+                    }
+                });
             });
     }
-
+//@TODO Ahmad Hassan convert this method after taking care of $templateRequest
     getTableOptionAndCacheTemplates(type: any) {
-        var defer = this.$injector.get("$q").defer();
-        // Loads the table option template
-        this.getTemplateTableOption(type)
-            .then((tableOption: any) => {
+        // var defer = this.$injector.get("$q").defer();
+        // // Loads the table option template
+        // this.getTemplateTableOption(type)
+        //     .then((tableOption: any) => {
 
-                var requests = {};
-                if (typeof tableOption.stepperTemplateUrl !== 'undefined' && tableOption.stepperTemplateUrl) {
-                    requests['stepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.stepperTemplateUrl);
-                }
-                if (typeof tableOption.preStepperTemplateUrl !== 'undefined' && tableOption.preStepperTemplateUrl != null) {
-                    requests['preStepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.preStepperTemplateUrl);
-                }
+        //         var requests = {};
+        //         if (typeof tableOption.stepperTemplateUrl !== 'undefined' && tableOption.stepperTemplateUrl) {
+        //             requests['stepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.stepperTemplateUrl);
+        //         }
+        //         if (typeof tableOption.preStepperTemplateUrl !== 'undefined' && tableOption.preStepperTemplateUrl != null) {
+        //             requests['preStepperTemplateUrl'] = this.$injector.get("$templateRequest")(tableOption.preStepperTemplateUrl);
+        //         }
 
-                this.$injector.get("$q").when(requests).then((response: any) => {
-                    defer.resolve(tableOption);
-                });
-            })
+        //         this.$injector.get("$q").when(requests).then((response: any) => {
+        //             defer.resolve(tableOption);
+        //         });
+        //     })
 
-        return defer.promise;
+        // return defer.promise;
     }
 
     /**
@@ -144,23 +142,23 @@ export class UiComponentsService {
      * @returns {Promise} resolves to the list of TemplateTableOption objects
      */
     getTemplateTableOptions() {
-        var result: angular.IDeferred<any> = null;
         if (this.TEMPLATE_TABLE_OPTIONS === null) {
             if (this.initialTemplateTableOptionsPromise == null) {
-                result = this.$injector.get("$q").defer();
-                this.initialTemplateTableOptionsPromise = result.promise;
-                this.$injector.get("$http").get(this.RestUrlService.UI_TEMPLATE_TABLE_OPTIONS)
-                    .then((response: angular.IHttpResponse<any>) => {
-                        this.TEMPLATE_TABLE_OPTIONS = response.data;
-                        result.resolve(this.TEMPLATE_TABLE_OPTIONS);
+                this.initialTemplateTableOptionsPromise = new Promise((resolve,reject) => {
+                    this.http.get(this.RestUrlService.UI_TEMPLATE_TABLE_OPTIONS).toPromise()
+                    .then((response: any) => {
+                        this.TEMPLATE_TABLE_OPTIONS = response;
+                        resolve(this.TEMPLATE_TABLE_OPTIONS);
                     });
+                });
+                
             }
             return this.initialTemplateTableOptionsPromise;
 
         } else {
-            result = this.$injector.get("$q").defer();
-            result.resolve(this.TEMPLATE_TABLE_OPTIONS);
-            return result.promise;
+            return new Promise((resolve,reject) => {
+                resolve(this.TEMPLATE_TABLE_OPTIONS);
+            });
         }
     }
 
@@ -168,24 +166,23 @@ export class UiComponentsService {
      * Gets the list of template table option plugins.
      * @returns {Promise} resolves to the list of TemplateTableOption objects
      */
-    getProcessorTemplates(): angular.IPromise<any> {
-        var result: angular.IDeferred<any> = null;
+    getProcessorTemplates(): Promise<any> {
         if (this.PROCESSOR_TEMPLATES === null) {
             if (this.initialProcesorTemplatePromise == null) {
-                result = this.$injector.get("$q").defer();
-                this.initialProcesorTemplatePromise = result.promise;
-                this.$injector.get("$http").get(this.RestUrlService.UI_PROCESSOR_TEMPLATES)
-                    .then((response: angular.IHttpResponse<any>) => {
-                        this.PROCESSOR_TEMPLATES = response.data;
-                        result.resolve(this.PROCESSOR_TEMPLATES);
+                this.initialProcesorTemplatePromise = new Promise((resolve,reject) => {
+                    this.http.get(this.RestUrlService.UI_PROCESSOR_TEMPLATES).toPromise()
+                    .then((response: any) => {
+                        this.PROCESSOR_TEMPLATES = response;
+                        resolve(this.PROCESSOR_TEMPLATES);
                     });
+                });
             }
             return this.initialProcesorTemplatePromise;
 
         } else {
-            result = this.$injector.get("$q").defer();
-            result.resolve(this.PROCESSOR_TEMPLATES);
-            return result.promise;
+            return new Promise((resolve,reject) => {
+                resolve(this.PROCESSOR_TEMPLATES);
+            });
         }
 
     }

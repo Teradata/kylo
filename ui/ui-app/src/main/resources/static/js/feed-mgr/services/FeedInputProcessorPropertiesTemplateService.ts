@@ -36,7 +36,7 @@ export class FeedInputProcessorPropertiesTemplateService {
         this.uiComponentsService.getProcessorTemplates().then((templates: any) => {
 
             var matchingTemplate = _.find(templates, (processorTemplate: any) => {
-                return _.find(processorTemplate.processorTypes, function (type) {
+                return _.find(processorTemplate.processorTypes, (type) => {
                     if (processorTemplate.processorDisplayName != null && processorTemplate.processorDisplayName != undefined && processorTemplate.processorDisplayName != "") {
                         return processor.type == type && processor.name == processorTemplate.processorDisplayName;
                     }

@@ -194,7 +194,7 @@ export class RegisterTemplatePropertyService {
 
         if (Object.keys(this.configurationProperties).length == 0) {
             let _successFn = (response: any) => {
-                this.configurationProperties = response.data;
+                this.configurationProperties = response;
                 Object.keys(response).forEach((key: any) => {
                     this.propertyList.push({ key: key, value: response[key], description: null, dataType: null, type: 'configuration' });
                     this.configurationPropertyMap[key] = response[key];

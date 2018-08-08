@@ -123,7 +123,7 @@ export class DomainTypesService {
          * @constructor
          */
  constructor (private httpClient : HttpClient,
-                private restUrlService : RestUrlService) {
+              private restUrlService : RestUrlService) {
 
     }
            /**

@@ -18,11 +18,6 @@ export class HiveService {
         return this.http.get(RestUrlConstants.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache");
     };
     queryTablesSearch(query: any) {
-        // var deferred = this.$q.defer();
-        // this.getTables(null, query).then( (response: any) => {
-        //     deferred.resolve(this.parseTableResponse(response.data));
-        // });
-        // return deferred.promise;
         return this.getTables(null,query);
     };
     parseTableResponse(response: any) {
@@ -66,7 +61,7 @@ export class HiveService {
     queryResult(query: any) {
         if (this.query != null) {
             var successFn = (response: any) => {
-                var tableData = response.data;
+                var tableData = response;
                 return tableData;
             }
             var errorFn = (err: any) => {
@@ -87,7 +82,7 @@ export class HiveService {
     query(query: any) {
         if (this.query != null) {
             var successFn = (response: any) => {
-                var tableData = response.data;
+                var tableData = response;
                 return tableData;
 
             }

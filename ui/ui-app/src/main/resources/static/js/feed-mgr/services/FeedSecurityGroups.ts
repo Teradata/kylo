@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 export class FeedSecurityGroups {
 
     constructor(private restUrlService:RestUrlService,
-        private http: HttpClient) {
+                private http: HttpClient) {
     }
 
     querySearch (query:any) {
