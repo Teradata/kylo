@@ -114,6 +114,7 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         UploadProgressMessage statusMessage = null;
         //Get information about the import
         RegisteredTemplate template = importTemplate.getTemplateToImport();
+        log.info("Template lastUpldated at {}", template.getUpdateDate().getTime());
         //  validateTemplateProperties(template, importTemplate, importOptions);
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
