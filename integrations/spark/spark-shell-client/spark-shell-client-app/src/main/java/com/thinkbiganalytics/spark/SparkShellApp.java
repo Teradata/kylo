@@ -35,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
@@ -42,6 +43,7 @@ import java.util.List;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
+@Profile("kylo-shell")
 // ignore auto-configuration classes outside Spark Shell
 @ComponentScan(basePackages = {"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"},
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
