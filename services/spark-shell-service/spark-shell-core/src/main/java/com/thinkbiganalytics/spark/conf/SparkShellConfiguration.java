@@ -50,7 +50,7 @@ import java.util.Properties;
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
  */
 
-@PropertySource("classpath:spark.properties")
+@PropertySource(value = {"classpath:spark.properties"}, ignoreResourceNotFound = true)
 @Configuration
 public class SparkShellConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SparkShellConfiguration.class);

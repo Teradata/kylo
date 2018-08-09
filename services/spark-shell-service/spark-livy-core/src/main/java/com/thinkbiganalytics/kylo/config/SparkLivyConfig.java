@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 @Profile("kylo-livy")
 @Configuration
-@PropertySource("classpath:spark.properties")
+@PropertySource(value = {"classpath:spark.properties"}, ignoreResourceNotFound = true)
 @ImportResource("classpath:/config/applicationContext-livy.xml")
 @EnableAutoConfiguration  // needed for populating configuration POJOs
 public class SparkLivyConfig {
