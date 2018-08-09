@@ -157,7 +157,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
         // Find controller services
         _.chain(this.allProperties).filter((property: any) => {
             return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-        }).each(this.feedService.findControllerServicesForProperty);
+        }).each((property : any) => {this.feedService.findControllerServicesForProperty(property)});
 
     }
 

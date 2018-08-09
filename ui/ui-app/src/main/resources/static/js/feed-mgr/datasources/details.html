@@ -107,17 +107,16 @@
           </editable-section>
         </vertical-section-layout>
       </form>
-      <!--@ToDO Ahmad Hassan when this component is converted to angular 5, use it here-->
-      <!-- <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
+      <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
         <vertical-section-layout section-title="Access Control" (on-save-edit)="onAccessControlSave()" (on-edit)="onEdit()" [editable]="isAccessControlEditable" [is-valid]="isValid">
           <readonly-section>
-            <entity-access-control entity="model" entity-type="datasource" the-form="datasourceAccessControlForm" read-only="true"></entity-access-control>
+            <entity-access-control (entity)="model" (entityType)="datasource" (theForm)="datasourceAccessControlForm" (readOnly)="true"></entity-access-control>
           </readonly-section>
           <editable-section>
-            <entity-access-control entity="editModel" entity-type="datasource" the-form="datasourceAccessControlForm"></entity-access-control>
+            <entity-access-control (entity)="editModel" (entityType)="datasource" (theForm)="datasourceAccessControlForm"></entity-access-control>
           </editable-section>
         </vertical-section-layout>
-      </ng-form> -->
+      </ng-form>
 
       <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" *ngIf="!isNew()">
         <readonly-section>

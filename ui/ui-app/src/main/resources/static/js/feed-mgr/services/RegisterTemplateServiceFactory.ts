@@ -687,7 +687,9 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             });
         }
         else {
-            promise.then(() => { return { data: [] } },()=>{});
+            promise = new Promise<any>((resolve,reject) => {
+                resolve();
+            }).then(() => { return { data: [] } },()=>{});
         }
         return promise;
 

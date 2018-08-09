@@ -28,6 +28,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {PermissionsTableComponent} from './shared/permissions-table/permissions-table.component';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import * as angular from "angular";
+import { TemplateModule } from "../feed-mgr/templates/templates.module";
 
 @NgModule({ 
     declarations: [ 
@@ -41,6 +42,7 @@ import * as angular from "angular";
         CommonModule, 
         KyloCommonModule, 
         KyloServicesModule,
+        TemplateModule,
         MatProgressBarModule,
         MatDividerModule,
         MatListModule,

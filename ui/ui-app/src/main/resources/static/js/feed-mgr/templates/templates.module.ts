@@ -50,7 +50,7 @@ import { TemplateAccessControlController } from "./template-stepper/access-contr
 import { RegisterProcessorPropertiesController } from "./template-stepper/processor-properties/processor-properties.component";
 import { RegisterTemplateInprogressDialog } from "./template-stepper/register-template/register-template-inprogress.component";
 import { RegisterTemplateErrorDialog } from "./template-stepper/register-template/register-template-error.component";
-import { EntityAccessControlController } from "../shared/entity-access-control/entity-access.component";
+import { EntityAccessControlComponent } from "../shared/entity-access-control/entity-access.component";
 import { RegisterTemplateCompleteController, RegisterCompleteRegistrationController } from "./template-stepper/register-template/register-template-step.component";
 import { CovalentVirtualScrollModule } from '@covalent/core/virtual-scroll';
 import { DerivedExpression } from "./template-stepper/processor-properties/derived-expression";
@@ -73,7 +73,7 @@ import { TemplateOrderController } from "./template-order/template-order.compone
         RegisterProcessorPropertiesController,
         RegisterTemplateInprogressDialog,
         RegisterTemplateErrorDialog,
-        EntityAccessControlController,
+        EntityAccessControlComponent,
         RegisterTemplateCompleteController,
         RegisterCompleteRegistrationController,
         TemplateOrderController,
@@ -90,7 +90,7 @@ import { TemplateOrderController } from "./template-order/template-order.compone
         RegisterProcessorPropertiesController,
         RegisterTemplateInprogressDialog,
         RegisterTemplateErrorDialog,
-        EntityAccessControlController,
+        EntityAccessControlComponent,
         RegisterTemplateCompleteController,
         RegisterCompleteRegistrationController,
         TemplateDeleteDialog,

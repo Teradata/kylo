@@ -9,7 +9,7 @@ import UserGroupService from '../../../services/UserGroupService';
     selector: 'entity-access-control',
     templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control.html'
 })
-export class EntityAccessControlController implements OnInit {
+export class EntityAccessControlComponent implements OnInit {
 
     /**
     * are we using Entity access control
