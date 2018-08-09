@@ -147,7 +147,7 @@ public class FilesystemRepositoryService implements RepositoryService {
     private Stream<? extends TemplateMetadataWrapper> fileToTemplateConversion(Set<String> registeredTemplates, TemplateRepository r) {
         try {
             return Files.find(Paths.get(r.getLocation()),
-                              Integer.MAX_VALUE,
+                              1,
                               (path, attrs) -> attrs.isRegularFile()
                                                && path.toString().endsWith(".json"))
                 .map(p -> jsonToMetadata(p, r, Optional.of(registeredTemplates)));
@@ -247,7 +247,6 @@ public class FilesystemRepositoryService implements RepositoryService {
             : new TemplateMetadataWrapper(metadata);
         String baseName = FilenameUtils.getBaseName(templateMetadata.getFileName());
         //write file in first of templateLocations
-        log.info("Now publishing template {} to repository {}.", templateMetadata.getTemplateName(), repository.getName());
 
         Path templatePath = Paths.get(repository.getLocation() + "/" + templateMetadata.getFileName());
         Files.write(templatePath, zipFile.getFile());
@@ -258,10 +257,8 @@ public class FilesystemRepositoryService implements RepositoryService {
 
         log.info("Writing metadata for {} template.", templateMetadata.getTemplateName());
         File newFile = Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile();
-        mapper.writeValue(Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile(), templateMetadata);
-        log.info("Generated checksum for {} - {}", templateMetadata.getTemplateName(), digest);
+        mapper.writeValue(Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile(), metadata);
 
-        templateUpdateInfoCache.put(templateMetadata.getTemplateName(), newFile.lastModified());
         return new TemplateMetadataWrapper(metadata);
     }
 
@@ -349,7 +346,7 @@ public class FilesystemRepositoryService implements RepositoryService {
     private List<Path> getMetadataFilesInRepository(TemplateRepository repository) {
         try {
             return Files.find(Paths.get(repository.getLocation()),
-                              Integer.MAX_VALUE,
+                              1,
                               (path, attrs) -> attrs.isRegularFile()
                                                && path.toString().endsWith(".json")).collect(Collectors.toList());
         } catch (Exception e) {
@@ -376,15 +373,13 @@ public class FilesystemRepositoryService implements RepositoryService {
 
                     //capturing checksum first time or it has actually changed?
                     boolean templateModified = StringUtils.isNotBlank(tmpltMetaData.getChecksum()) && !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
-                    //update cache if needed
-                    if (templateModified) {
-                        templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), latest);
-                    }
 
                     if (StringUtils.isBlank(tmpltMetaData.getChecksum())) {
                         tmpltMetaData.setChecksum(checksum);
                     }
                     tmpltMetaData.setUpdateAvailable(templateModified);
+                    tmpltMetaData.setLastModified(latest);
+                    templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), latest);
 
                     mapper.writer(new DefaultPrettyPrinter()).writeValue(path.toFile(), tmpltMetaData);
                     wrapper = new TemplateMetadataWrapper(tmpltMetaData);

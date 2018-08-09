@@ -16,13 +16,12 @@ import {MatTableDataSource} from "@angular/material/table";
 })
 export class ListTemplatesComponent implements OnInit {
 
-    static readonly LOADER = "ListTemplatesComponent.LOADER";
-
     constructor(private templateService: TemplateService,
                 private dataTableService: TdDataTableService,
                 private state: StateService) {
     }
 
+    loading:boolean = true;
     selectedTemplate: TemplateMetadata;
     errorMsg: string = "";
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -45,6 +44,7 @@ export class ListTemplatesComponent implements OnInit {
             (data: TemplateMetadata[]) => {
                 this.templates = data;
                 this.dataSource.data = data;
+                this.loading = false;
             },
             (error: any) => {
                 console.log(error);
@@ -52,6 +52,7 @@ export class ListTemplatesComponent implements OnInit {
                     this.errorMsg += error.developerMessage;
 
                 console.log(this.errorMsg);
+                this.loading = false;
             }
         );
     }
