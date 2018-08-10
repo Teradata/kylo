@@ -61,6 +61,7 @@ public class SparkShellApp {
      */
     public static void main(String[] args) {
         logger.info("Starting Kylo Spark Shell");
+
         final SpringApplication app = new SpringApplication(SparkShellApp.class);
         app.setAdditionalProfiles("kylo-shell");
 
@@ -78,7 +79,9 @@ public class SparkShellApp {
         // Start app
         final ApplicationContext context = app.run(args);
 
-        logger.info("SparkLauncher Active Profiles = '{}'", Arrays.toString(context.getEnvironment().getActiveProfiles()) );
+        if( logger.isInfoEnabled() ) {
+            logger.info("SparkLauncher Active Profiles = '{}'", Arrays.toString(context.getEnvironment().getActiveProfiles()));
+        }
 
         // Keep main thread running until the idle timeout
         context.getBean(IdleMonitorService.class).awaitIdleTimeout();
