@@ -44,6 +44,16 @@ This issue will be addressed by TBK-85
 
     service kylo-services start
 
-# Steps to Revert to using Kylo Spark Shell
+# Steps to change the shell
 
+## Use LIVY
+    
+    service kylo-services stop
     sed -i.bak 's/kylo-livy/kylo-shell/' /opt/kylo/kylo-services/conf/application.properties
+    service kylo-services start
+
+## Use Spark Shell
+
+    service kylo-services stop
+    sed -i.bak 's/kylo-shell/kylo-livy/' /opt/kylo/kylo-services/conf/application.properties
+    service kylo-services start
