@@ -21,11 +21,6 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  */
 
 import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
-import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 import org.apache.nifi.components.ValidationResult;
@@ -38,14 +33,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Properties;
 
 public class DropFeedTablesTest {
 
@@ -53,8 +44,6 @@ public class DropFeedTablesTest {
      * Identifier for thrift service
      */
     private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
-
-    private static final String METADATA_SERVICE_IDENTIFIER = "MockMetadataProviderService";
 
     /**
      * Test runner
@@ -78,14 +67,6 @@ public class DropFeedTablesTest {
         runner.addControllerService(THRIFT_SERVICE_IDENTIFIER, thriftService);
         runner.enableControllerService(thriftService);
         runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
-
-        // Setup services
-        final MetadataProviderService metadataService = new MockMetadataProviderService();
-
-        // Setup test runner
-        runner.addControllerService(METADATA_SERVICE_IDENTIFIER, metadataService);
-        runner.enableControllerService(metadataService);
-        runner.setProperty(IngestProperties.METADATA_SERVICE, METADATA_SERVICE_IDENTIFIER);
     }
 
     /**
@@ -206,41 +187,6 @@ public class DropFeedTablesTest {
         @Override
         public Connection getConnection() throws ProcessException {
             return connection;
-        }
-    }
-
-    private static class MockMetadataProviderService extends AbstractControllerService implements MetadataProviderService {
-
-        @Override
-        public MetadataProvider getProvider() {
-            final MetadataProvider provider = Mockito.mock(MetadataProvider.class);
-
-            Mockito.when(provider.getFeedId(Mockito.anyString(), Mockito.anyString())).then(invocation -> {
-                return invocation.getArgumentAt(1, String.class);
-            });
-
-            return provider;
-        }
-
-        @Override
-        public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
-            return null;
-        }
-
-        @Override
-        public MetadataRecorder getRecorder() {
-            final MetadataRecorder recorder = Mockito.mock(MetadataRecorder.class);
-
-            Mockito.doAnswer(new Answer<Void> () {
-                @Override
-                public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-                    Object[] args = invocationOnMock.getArguments();
-                    System.out.println("called with args:" + Arrays.toString(args));
-                    return null;
-                }
-            }).when(recorder).removeFeedInitialization(Mockito.anyString());
-
-            return recorder;
         }
     }
 }

@@ -365,10 +365,6 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         getFeedData().ifPresent(d -> d.updateInitStatus(status));
     }
 
-    public void removeInitStatus() {
-        getFeedData().ifPresent(d -> d.removeInitStatus());
-    }
-
     @Override
     public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {
         return getFeedData().map(d -> d.getCurrentHistoryReindexingStatus()).orElse(null);

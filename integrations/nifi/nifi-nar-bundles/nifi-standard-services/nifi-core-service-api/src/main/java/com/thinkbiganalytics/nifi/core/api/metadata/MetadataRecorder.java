@@ -42,11 +42,11 @@ public interface MetadataRecorder {
                            String parameterName,
                            String initialValue) throws WaterMarkActiveException;
 
-    FlowFile cancelAndLoadWaterMark(ProcessSession session, 
-                                    FlowFile outputFF, 
-                                    String feedId, 
-                                    String waterMark, 
-                                    String parameterName, 
+    FlowFile cancelAndLoadWaterMark(ProcessSession session,
+                                    FlowFile outputFF,
+                                    String feedId,
+                                    String waterMark,
+                                    String parameterName,
                                     String initialValue) throws WaterMarkActiveException;
 
     FlowFile recordWaterMark(ProcessSession session,
@@ -63,7 +63,7 @@ public interface MetadataRecorder {
     FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
 
     FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
-    
+
     boolean cancelWaterMark(String feedId, String waterMark);
 
 
@@ -81,6 +81,7 @@ public interface MetadataRecorder {
 
     /**
      * Update the history reindexing status of a feed
+     *
      * @param feedId feed id for which status should be updated
      * @param historyReindexingStatus The new {@link HistoryReindexingStatus}
      * @returns {@link FeedDataHistoryReindexParams} updated status of feed and columns to index
@@ -94,4 +95,10 @@ public interface MetadataRecorder {
      */
     void initializationStatusChanged(String feedId, InitializationStatus status);
 
+    /**
+     * Invalid initializationStatus in the NiFi side
+     *
+     * @param feedId the feed's ID
+     */
+    void invalidInitializationStatus(String feedId);
 }
