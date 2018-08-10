@@ -47,6 +47,7 @@ val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
 import org.apache.log4j.{Level, Logger}
+import com.thinkbiganalytics.spark.logger.LivyLogger
 val logger = Logger.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
                         ]]>
                     </value>
