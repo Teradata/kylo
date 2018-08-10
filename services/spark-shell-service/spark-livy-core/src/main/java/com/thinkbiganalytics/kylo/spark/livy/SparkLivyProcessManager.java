@@ -26,7 +26,11 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.config.LivyProperties;
 import com.thinkbiganalytics.kylo.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.exceptions.LivyServerNotReachableException;
-import com.thinkbiganalytics.kylo.model.*;
+import com.thinkbiganalytics.kylo.model.Session;
+import com.thinkbiganalytics.kylo.model.SessionsGetResponse;
+import com.thinkbiganalytics.kylo.model.SessionsPost;
+import com.thinkbiganalytics.kylo.model.Statement;
+import com.thinkbiganalytics.kylo.model.StatementsPost;
 import com.thinkbiganalytics.kylo.model.enums.SessionState;
 import com.thinkbiganalytics.kylo.spark.client.LivyRestClient;
 import com.thinkbiganalytics.kylo.utils.LivyUtils;
@@ -39,15 +43,21 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessListener;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.*;
 
 public class SparkLivyProcessManager implements SparkShellProcessManager {
-    private static final Logger logger = LoggerFactory.getLogger(SparkLivyProcessManager.class);
+
+    private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyProcessManager.class);
 
     List<SparkShellProcessListener> listeners = Lists.newArrayList();
 
@@ -107,7 +117,14 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
     @Nonnull
     @Override
     public SparkShellProcess getSystemProcess() {
-        throw new UnsupportedOperationException();
+        if (processCache.containsKey(null)) {
+            return processCache.get(null);
+        } else {
+            final SparkLivyProcess process = SparkLivyProcess.newInstance(livyProperties.getHostname(), livyProperties.getPort());
+            processCache.put(null, process);
+            start(process);
+            return process;
+        }
     }
 
     @Override
@@ -142,12 +159,17 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
     }
 
 
-
     @Override
     public void start(@Nonnull String username) {
         logger.debug("JerseyClient='{}'", restClient);
 
         SparkShellProcess sparkProcess = getProcessForUser(username);
+        start(sparkProcess);
+    }
+
+    public void start(@Nonnull final SparkShellProcess sparkProcess) {
+        logger.debug("JerseyClient='{}'", restClient);
+
         JerseyRestClient jerseyClient = getClient(sparkProcess);
 
         // fetch or create new server session
@@ -183,8 +205,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         }
     }
 
-
-
     public Optional<Session> getLivySession(SparkShellProcess sparkProcess) {
         JerseyRestClient jerseyClient = getClient(sparkProcess);
         SessionsGetResponse sessions = jerseyClient.get("/sessions", null, SessionsGetResponse.class);
@@ -208,22 +228,23 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
 
         Map<String, String> sparkProps = livyProperties.getSparkProperties();
         SessionsPost.Builder builder = new SessionsPost.Builder()
-                .kind(livyProperties.getLivySessionKind().toString())
-                //.jars(Lists.newArrayList(""))
-                .conf(
-                        // "spark.driver.extraJavaOptions", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8990"
-                        sparkProps
-                );
+            .kind(livyProperties.getLivySessionKind().toString())
+            //.jars(Lists.newArrayList(""))
+            .conf(
+                // "spark.driver.extraJavaOptions", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8990"
+                sparkProps
+            );
 
         logger.debug("LivyProperties={}", livyProperties);
 
         if (livyProperties.getProxyUser()) {
             String user = processCache.inverse().get(sparkProcess);
-            builder.proxyUser(user);
+            if (user != null) {
+                builder.proxyUser(user);
+            }
         }
         SessionsPost sessionsPost = builder.build();
         logger.info("sessionsPost={}", sessionsPost);
-
 
         Session currentSession;
         try {
@@ -280,13 +301,13 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         Integer sessionId = getLivySessionId(sparkProcess);
 
         StatementsPost sp = new StatementsPost.Builder()
-                .kind("spark")
-                .code(script)
-                .build();
+            .kind("spark")
+            .code(script)
+            .build();
 
         Statement statement = jerseyClient.post(String.format("/sessions/%s/statements", sessionId),
-                sp,
-                Statement.class);
+                                                sp,
+                                                Statement.class);
 
         statement = LivyUtils.getStatement(jerseyClient, sessionId, statement.getId());
 
@@ -298,10 +319,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
 
     /**
      * returns true is session becomes idle; false if it fails to start
-     *
-     * @param jerseyClient
-     * @param id
-     * @return
      */
     private boolean waitForSessionToBecomeIdle(JerseyRestClient jerseyClient, Integer id) {
         Optional<Session> optSession;
@@ -317,7 +334,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
             logger.debug("poll server for session with id='{}'", id);
             optSession = sessions.getSessionWithId(id);
             if (optSession.isPresent() &&
-                    (optSession.get().getState() == SessionState.dead || optSession.get().getState() == SessionState.shutting_down)) {
+                (optSession.get().getState() == SessionState.dead || optSession.get().getState() == SessionState.shutting_down)) {
                 return false;
             }
         } while (!(optSession.isPresent() && optSession.get().getState().equals(SessionState.idle)));

@@ -20,14 +20,18 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +60,11 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     private static final Logger log = LoggerFactory.getLogger(JerseySparkShellRestClient.class);
 
     /**
+     * Path of the job endpoint.
+     */
+    private static final String JOB_PATH = "/api/v1/spark/shell/job";
+
+    /**
      * Path to the query endpoint.
      */
     private static final String QUERY_PATH = "/api/v1/spark/shell/query";
@@ -82,6 +91,15 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     @Nonnull
     private final Map<SparkShellProcess, JerseyRestClient> clients = new WeakHashMap<>();
 
+    @Override
+    public SparkJobResponse createJob(@Nonnull final SparkShellProcess process, @Nonnull final SparkJobRequest request) {
+        try {
+            return getClient(process).post(JOB_PATH, request, SparkJobResponse.class);
+        } catch (final InternalServerErrorException e) {
+            throw propagate(e);
+        }
+    }
+
     @Nonnull
     @Override
     public Optional<Response> downloadQuery(@Nonnull final SparkShellProcess process, @Nonnull final String queryId, @Nonnull final String saveId) {
@@ -106,8 +124,14 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
     @Nonnull
     @Override
+    public Optional<SparkJobResponse> getJobResult(@Nonnull final SparkShellProcess process, @Nonnull final String id) {
+        return getResult(process, id, JOB_PATH, SparkJobResponse.class);
+    }
+
+    @Nonnull
+    @Override
     public Optional<TransformResponse> getQueryResult(@Nonnull final SparkShellProcess process, @Nonnull final String table) {
-        return getResult(process, table, QUERY_PATH);
+        return getResult(process, table, QUERY_PATH, TransformResponse.class);
     }
 
     @Nonnull
@@ -119,7 +143,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public Optional<TransformResponse> getTransformResult(@Nonnull final SparkShellProcess process, @Nonnull final String table) {
-        return getResult(process, table, TRANSFORM_PATH);
+        return getResult(process, table, TRANSFORM_PATH, TransformResponse.class);
     }
 
     @Nonnull
@@ -134,7 +158,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return getClient(process).post(QUERY_PATH, request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
-            throw propagateTransform(e);
+            throw propagate(e);
         }
     }
 
@@ -146,7 +170,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return getClient(process).post(fullPath, request, SaveResponse.class);
         } catch (final InternalServerErrorException e) {
-            throw propagateSave(e);
+            throw propagate(e, SaveResponse.class);
         } catch (final NotFoundException e) {
             throw new IllegalArgumentException();
         }
@@ -160,7 +184,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return getClient(process).post(fullPath, request, SaveResponse.class);
         } catch (final InternalServerErrorException e) {
-            throw propagateSave(e);
+            throw propagate(e, SaveResponse.class);
         } catch (final NotFoundException e) {
             throw new IllegalArgumentException();
         }
@@ -172,7 +196,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return getClient(process).post(TRANSFORM_PATH, request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
-            throw propagateTransform(e);
+            throw propagate(e);
         }
     }
 
@@ -182,7 +206,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return getClient(process).post(KYLO_CATALOG_TRANSFORM_PATH, request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
-            throw propagateTransform(e);
+            throw propagate(e);
         }
     }
 
@@ -237,7 +261,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
      * @return the transform response
      */
     @Nonnull
-    private Optional<TransformResponse> getResult(@Nonnull final SparkShellProcess process, @Nonnull final String table, @Nonnull final String path) {
+    private <T> Optional<T> getResult(@Nonnull final SparkShellProcess process, @Nonnull final String table, @Nonnull final String path, @Nonnull final Class<T> type) {
         // Validate arguments
         if (!TABLE_PATTERN.matcher(table).matches()) {
             return Optional.empty();
@@ -245,13 +269,10 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
         // Query Spark Shell process
         final String fullPath = String.format("%s/%s", path, table);
-        final GenericType<TransformResponse> type = new GenericType<TransformResponse>() {
-        };
-
         try {
             return Optional.of(getClient(process).get(fullPath, Collections.emptyMap(), type));
         } catch (final InternalServerErrorException e) {
-            throw propagateTransform(e);
+            throw propagate(e);
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
@@ -281,7 +302,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         try {
             return Optional.of(getClient(process).get(fullPath, Collections.emptyMap(), type));
         } catch (final InternalServerErrorException e) {
-            throw propagateSave(e);
+            throw propagate(e);
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
@@ -291,31 +312,35 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
      * Propagates the cause of the specified internal server error.
      */
     @Nonnull
-    private SparkShellSaveException propagateSave(@Nonnull final InternalServerErrorException e) {
-        final SaveResponse response;
-        try {
-            response = e.getResponse().readEntity(SaveResponse.class);
-        } catch (final Exception decodeEx) {
-            log.debug("Failed to decode transform response: {}", e.getResponse().readEntity(String.class));
-            throw new SparkShellSaveException(decodeEx);
-        }
-
-        throw new SparkShellSaveException(response.getMessage(), response.getId());
+    private SparkException propagate(@Nonnull final InternalServerErrorException e) {
+        return propagate(e, SimpleResponse.class);
     }
 
     /**
      * Propagates the cause of the specified internal server error.
      */
     @Nonnull
-    private SparkShellTransformException propagateTransform(@Nonnull final InternalServerErrorException e) {
-        final TransformResponse response;
+    private SparkException propagate(@Nonnull final InternalServerErrorException e, @Nonnull final Class<? extends SimpleResponse> entityType) {
+        final SimpleResponse response;
         try {
-            response = e.getResponse().readEntity(TransformResponse.class);
+            response = e.getResponse().readEntity(entityType);
         } catch (final Exception decodeEx) {
-            log.debug("Failed to decode transform response: {}", e.getResponse().readEntity(String.class));
-            throw new SparkShellTransformException(decodeEx);
+            log.debug("Failed to read response: {}", e.getResponse().readEntity(String.class));
+            if (TransformResponse.class.isAssignableFrom(entityType)) {
+                throw new SparkShellTransformException(decodeEx);
+            } else if (SaveResponse.class.isAssignableFrom(entityType)) {
+                throw new SparkShellSaveException(decodeEx);
+            } else {
+                throw new SparkException(decodeEx);
+            }
         }
 
-        throw new SparkShellTransformException(response.getMessage());
+        if (TransformResponse.class.isAssignableFrom(entityType)) {
+            throw new SparkShellTransformException(response.getMessage());
+        } else if (SaveResponse.class.isAssignableFrom(entityType)) {
+            throw new SparkShellSaveException(response.getMessage(), ((SaveResponse) response).getId());
+        } else {
+            throw new SparkException(response.getMessage());
+        }
     }
 }
