@@ -30,7 +30,7 @@ This issue will be addressed by TBK-85
 
 ## On sandbox
 
-    ln -s /opt/kylo/setup/plugins/spark-shell/app/kylo-spark-shell-client-v1-0.9.2-SNAPSHOT.jar repl_2.10-jars/
+    ln -s /opt/kylo/kylo-services/plugin/app/kylo-spark-shell-client-v1-0.9.2-SNAPSHOT.jar repl_2.10-jars/
     bin/livy-server (runs in foreground of terminal/writes logs to stdout)
     bin/livy-server start (runs in background/writes logs to log dir)
 
