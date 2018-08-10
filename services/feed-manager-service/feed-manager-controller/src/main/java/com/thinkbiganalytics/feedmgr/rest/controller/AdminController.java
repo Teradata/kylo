@@ -25,27 +25,30 @@ import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
-import com.thinkbiganalytics.metadata.api.feed.export.ExportFeed;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
-import com.thinkbiganalytics.metadata.api.feed.export.FeedExporter;
-import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
-import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.feed.export.ExportFeed;
+import com.thinkbiganalytics.metadata.api.feed.export.FeedExporter;
+import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
+import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,6 +82,8 @@ import io.swagger.annotations.Tag;
 @Path(AdminController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminController {
+
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     public static final String BASE = "/v1/feedmgr/admin";
     public static final String IMPORT_TEMPLATE = "/import-template";
@@ -282,7 +287,13 @@ public class AdminController {
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
         TemplateImporter templateImporter = templateImporterFactory.apply(fileMetaData.getFileName(), content, options);
+
         ImportTemplate importTemplate = templateImporter.validateAndImport();
+
+        if(importTemplate.isSuccess()) {
+            RegisteredTemplate t = importTemplate.getTemplateToImport();
+            log.info("Template update time {}",t.getUpdateDate().getTime());
+        }
 
         return Response.ok(importTemplate).build();
     }

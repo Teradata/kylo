@@ -26,20 +26,6 @@
       <div *ngIf="!loading">
       <div class="card-title" flex>{{template.templateName}}
         <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" icon="{{template.icon.title}}" size="20" style="fill:green"></ng-md-icon>
-
-        <span style="float:right;">
-        <button mat-mini-fab aria-label="Options" class="md-icon-button" color="" [matMenuTriggerFor]="menu">
-          <ng-md-icon icon="more_vert"></ng-md-icon>
-        </button>
-        <mat-menu #menu="matMenu" style="float: right; margin-top: -10px;">
-            <div>
-              <button mat-menu-item *ngIf="allowEdit" (click)="editTemplate()">Edit</button>
-              <button mat-menu-item *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">Enable</button>
-              <button mat-menu-item *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">Disable</button>
-              <button mat-menu-item *ngIf="allowExport" (click)="confirmPublish()">Publish</button>
-            </div>
-        </mat-menu>
-        </span>
       </div>
       <h2 class="card-sub-header">{{template.description}}</h2>
       <div layout="column" class="layout-padding-top">
@@ -53,10 +39,31 @@
           <div class="hint">Last Updated</div>
           <div>{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
         </div>
-        <div style="float:right"><button mat-button color="primary" (click)="cancel()">Back</button></div>
         <div layout="column" class="layout-padding-top-bottom">
           <div class="hint">Feeds</div>
           <div>  {{template.feedsCount}}</div>
+        </div>
+        <div fxLayout="row" fxLayoutAlign="end center">
+          <button mat-button color="primary" *ngIf="allowEdit" (click)="editTemplate()">
+            <ng-md-icon icon="edit" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Edit</span>
+          </button>
+          <button mat-button color="primary" *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
+            <ng-md-icon icon="check_circle" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Enable</span>
+          </button>
+          <button mat-button color="primary" *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
+            <ng-md-icon icon="block" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Disable</span>
+          </button>
+          <button mat-button color="primary" *ngIf="allowExport" (click)="confirmPublish()">
+            <ng-md-icon icon="publish" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Publish</span>
+          </button>
+          <button mat-button color="primary" (click)="cancel()">
+            <ng-md-icon icon="arrow_back" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Back</span>
+          </button>
         </div>
       </div>
       </div>

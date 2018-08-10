@@ -275,6 +275,16 @@
                 <include>org/slf4j/ext/**</include>
               </includes>
             </filter>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>org/slf4j/*Logger*</exclude>
+                <exclude>org/slf4j/*M*</exclude>
+                <exclude>org/slf4j/helpers/**</exclude>
+                <exclude>org/slf4j/impl/**</exclude>
+                <exclude>org/slf4j/spi/**</exclude>
+              </excludes>
+            </filter>
           </filters>
         </configuration>
       </plugin>

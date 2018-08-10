@@ -21,6 +21,7 @@ package com.thinkbiganalytics.repository.filesystem;
  */
 
 import com.google.common.cache.Cache;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
@@ -29,6 +30,8 @@ import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
@@ -107,5 +110,8 @@ public class RepositoryTestConfiguration {
 
     @Bean
     public Cache<String, Long> templateUpldateInfoCache() {return Mockito.mock(Cache.class); }
+
+    @Bean
+    public MetadataEventService eventService() {return Mockito.mock(MetadataEventService.class);}
 
 }

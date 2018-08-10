@@ -23,24 +23,36 @@ package com.thinkbiganalytics.spark;
 import com.thinkbiganalytics.spark.conf.LivyWranglerConfig;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.net.URISyntaxException;
 
 /**
  */
 public class LivyWrangler {
+    private static final Logger logger = LoggerFactory.getLogger(LivyWrangler.class);
+
 
     /**
      * Livy will initialize each session by calling this method
      *
-     * @param sc the spark context that was created by Livy
-     * @param sqlContext  the sqlContext as created by Livy
+     * @param sc         the spark context that was created by Livy
+     * @param sqlContext the sqlContext as created by Livy
      * @return a spring application context with services needed for wrangling
      */
-    public static ApplicationContext createSpringContext(SparkContext sc, SQLContext sqlContext) {
+    public static ApplicationContext createSpringContext(SparkContext sc, SQLContext sqlContext) throws URISyntaxException {
+        logger.info("Creating Spring application context for Livy");
+
         LivyWranglerConfig.setSparkContext(sc);
         LivyWranglerConfig.setSqlContext(sqlContext);
-        ApplicationContext context = new AnnotationConfigApplicationContext(new Class[]{LivyWranglerConfig.class});
+
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+        context.getEnvironment().setActiveProfiles("kylo-livy");
+        context.register(LivyWranglerConfig.class);
+        context.refresh();
 
         return context;
     }

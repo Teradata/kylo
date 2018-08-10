@@ -17,6 +17,8 @@ export class TemplatePublishDialog implements OnInit {
     repositories: TemplateRepository[] = [];
     selectedRepository: TemplateRepository;
     errorMsg: string;
+    overwrite: boolean = true;
+    loading:boolean = true;
 
     constructor(private dialog: MatDialog,
                 private dialogRef: MatDialogRef<TemplatePublishDialog>,
@@ -28,10 +30,12 @@ export class TemplatePublishDialog implements OnInit {
         this.templateService.getRepositories()
             .subscribe((data: TemplateRepository[]) => {
                 this.repositories = data;
+                this.loading = false;
             }, (errorRsp: any) => {
                 this.error = true;
                 this.errorMsg = errorRsp.error.message;
                 console.log(errorRsp.error.message);
+                this.loading = false;
             });
     }
 
@@ -39,20 +43,23 @@ export class TemplatePublishDialog implements OnInit {
         this.dialogRef.close();
     }
 
-    publishTemplate(overwrite: boolean) {
-        console.log(this.data.templateId, this.selectedRepository);
+    publishTemplate() {
+        this.loading = true;
+        console.log(this.data.templateId, this.selectedRepository, this.overwrite);
         if (this.selectedRepository) {
             this.templateService
                 .publishTemplate({ "repositoryName": this.selectedRepository.name,
                     "repositoryType": this.selectedRepository.type,
                     "templateId": this.data.templateId,
-                    "overwrite": overwrite})
+                    "overwrite": this.overwrite})
                 .subscribe((response: any) => {
                     this.success = true;
+                    this.loading = false;
                 }, (errorRsp: any) => {
                     console.log("Error publishing template to repository", errorRsp.error.message);
                     this.errorMsg = errorRsp.error.message;
                     this.error = true;
+                    this.loading = false;
                 });
         }
     }

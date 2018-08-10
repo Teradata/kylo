@@ -79,6 +79,19 @@ fi
 echo "The Vault home folder is $VAULT_INSTALL_HOME"
 echo "Using permissions $VAULT_USER:$VAULT_GROUP"
 
+if ! id -u ${VAULT_USER} >/dev/null 2>&1; then
+        echo "Vault user '${VAULT_USER}' does not exist, aborting..."
+        exit 1
+fi
+
+PROPS=${KYLO_HOME}/kylo-services/conf/application.properties
+if ! grep "vault.host" ${PROPS} > /dev/null
+then
+   echo "ERROR: Vault properties not found in ${PROPS}. Follow upgrade instructions at https://kylo.readthedocs.io/en/latest/release-notes/ReleaseNotes9.2.html"
+   exit 1
+fi
+
+
 echo "Installing Vault"
 mkdir ${VAULT_INSTALL_HOME}
 mkdir ${VAULT_CURRENT_HOME}
@@ -93,13 +106,14 @@ then
     echo "pwd: $(pwd)"
     cp ${WORKING_DIR}/vault/${VAULT_ZIP} .
 else
-    echo "Downloading Vault ${VAULT_VERSION}"
+    URL="https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}"
+    echo "Downloading Vault ${VAULT_VERSION} from ${URL}"
     if [[ "${IGNORE_CERTS}" == "no" ]] ; then
-      echo "Downloading Vault with certs verification"
-      curl -O "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}"
+      echo "Downloading Vault with certs verification, to download without cert verification 'export IGNORE_CERTS=yes' before running this script"
+      curl -O ${URL}
     else
       echo "WARNING... Downloading Vault WITHOUT certs verification"
-      curl -O "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}" --no-check-certificate
+      curl -O ${URL} --insecure
     fi
 
     if [[ $? != 0 ]] ; then
@@ -400,8 +414,7 @@ su - ${VAULT_USER} -c "${VAULT_BIN_SETUP} ${ROOT_TOKEN}"
 service vault stop
 echo "Vault initialised"
 
-echo "Updating Kylo configuration"
-PROPS=${KYLO_HOME}/kylo-services/conf/application.properties
+echo "Updating Kylo configuration in ${PROPS}"
 sed -i -r "s|^vault\.keyStorePassword=.*|vault\.keyStorePassword=${KPW}|" ${PROPS}
 sed -i -r "s|^vault\.keyStoreDirectory=.*|vault\.keyStoreDirectory=${KYLO_SSL}|" ${PROPS}
 sed -i -r "s|^vault\.trustStorePassword=.*|vault\.trustStorePassword=${KPW}|" ${PROPS}

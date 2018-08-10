@@ -20,21 +20,11 @@ package com.thinkbiganalytics.spark.rest;
  * #L%
  */
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.spark.service.SparkLocatorService;
-
 import com.thinkbiganalytics.spark.service.SparkUtilityService;
-import org.apache.spark.sql.sources.DataSourceRegister;
-import org.springframework.context.ApplicationContext;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import org.apache.commons.lang3.Validate;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.annotation.Resource;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -42,18 +32,15 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-
 /**
  * Utility endpoints for Spark Shell.
  */
 @Path("/api/v1/spark/shell")
 public class SparkUtilityController {
     /**
-     * Spark locator service
+     * Spark utility service
      */
-    @Resource
+    @Context
     private SparkUtilityService sparkUtilityService;
 
 
@@ -66,7 +53,8 @@ public class SparkUtilityController {
     @ApiOperation("Finds Spark data sources")
     @ApiResponse(code = 200, message = "List of Spark data sources.", response = String.class, responseContainer = "List")
     public Response getDataSources() {
-        return Response.ok(sparkUtilityService).build();
+        Validate.notNull(sparkUtilityService); // can be null if not bound to ResourceConfig
+        return Response.ok(sparkUtilityService.getDataSources()).build();
     }
 
 }

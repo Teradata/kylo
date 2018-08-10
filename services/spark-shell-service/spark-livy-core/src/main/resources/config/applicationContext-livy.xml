@@ -58,8 +58,8 @@ val saveRequest: com.thinkbiganalytics.spark.rest.model.SaveRequest = mapper.rea
 val dataSet = sparkContextService.toDataSet(sqlContext.sql("select * from %s"))
 val saveResponse = transformService.submitSaveJob(transformService.createSaveTask(saveRequest,
     new com.thinkbiganalytics.spark.metadata.ShellTransformStage(dataSet, converterService)))
-val respAsStr = mapper.writeValueAsString(saveResponse)
-%%json respAsStr
+val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
+%%json saveResponseAsStr
                         ]]>
                     </value>
                 </entry>
@@ -69,8 +69,8 @@ val respAsStr = mapper.writeValueAsString(saveResponse)
 val response = sparkShellTransformController.getSave("%s")
 val saveResponse =
 response.getEntity().asInstanceOf[com.thinkbiganalytics.spark.rest.model.SaveResponse]
-val respAsStr = mapper.writeValueAsString(saveResponse)
-%%json respAsStr
+val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
+%%json saveResponseAsStr
                         ]]>
                     </value>
                 </entry>
@@ -114,8 +114,8 @@ LivyLogger.time {
                         <![CDATA[
 val dataSources = sparkUtilityService.getDataSources()
 
-val respAsStr = mapper.writeValueAsString(dataSources)
-%%json respAsStr
+val dataSourcesAsStr = mapper.writeValueAsString(dataSources)
+%%json dataSourcesAsStr
                         ]]>
                     </value>
                 </entry>
@@ -123,8 +123,8 @@ val respAsStr = mapper.writeValueAsString(dataSources)
                     <value>
                         <![CDATA[
 val saveResult = sparkShellTransformController.getSaveResult(%s)
-val respAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
-%%json respAsStr
+val saveResultAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
+%%json saveResultAsStr
                         ]]>
                     </value>
                 </entry>
@@ -133,8 +133,17 @@ val respAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
                         <![CDATA[
 val kyloCatalogReadRequest: com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest]);
 val kyloReadResponse = transformService.kyloReaderResponse(kyloCatalogReadRequest);
-val respAsStr = mapper.writeValueAsString(kyloReadResponse)
-%%json respAsStr
+val transformAsStr = mapper.writeValueAsString(kyloReadResponse)
+%%json transformAsStr
+]]>
+                    </value>
+                </entry>
+                <entry key="getTransform">
+                    <value> <!-- takes a JSON string escaped for scala -->
+                        <![CDATA[
+val response = sparkShellTransformController.getTableTransformResponse(%s)
+val transformAsStr = mapper.writeValueAsString(response)
+%%json transformAsStr
 ]]>
                     </value>
                 </entry>

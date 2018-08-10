@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Provides an endpoint for proxying to the actual Spark Shell service.
@@ -79,8 +80,8 @@ public class SparkShellProxyController {
      * Pattern for matching exceptions in messages.
      */
     private static final Pattern EXCEPTION = Pattern.compile(
-        "^(\\s*[a-zA-Z0-9_$.]+:(?=\\s*[a-zA-Z0-9_$.]+:))*"               // matches all but last "package.Class: package.Class: package.Class:"
-        + "\\s*([a-zA-Z_$][a-zA-Z0-9_$.]+($|\\.))?(?=[a-zA-Z0-9_]+:)");  // matches last "package.Class:"
+            "^(\\s*[a-zA-Z0-9_$.]+:(?=\\s*[a-zA-Z0-9_$.]+:))*"               // matches all but last "package.Class: package.Class: package.Class:"
+                    + "\\s*([a-zA-Z_$][a-zA-Z0-9_$.]+($|\\.))?(?=[a-zA-Z0-9_]+:)");  // matches last "package.Class:"
 
     /**
      * Resources for error messages
@@ -100,7 +101,7 @@ public class SparkShellProxyController {
     private DatasourceProvider datasourceProvider;
 
     @Inject
-   private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider kyloCatalogDataSourceProvider;
+    private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider kyloCatalogDataSourceProvider;
 
     /**
      * The {@code Datasource} transformer
@@ -141,10 +142,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads the saved results in a ZIP file")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the saved file."),
-                      @ApiResponse(code = 404, message = "The save does not exist."),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.")
-                  })
+            @ApiResponse(code = 200, message = "Returns the saved file."),
+            @ApiResponse(code = 404, message = "The save does not exist."),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.")
+    })
     @Nonnull
     public Response downloadQuery(@Nonnull @PathParam("query") final String queryId, @Nonnull @PathParam("save") final String saveId) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -163,10 +164,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads the saved results in a ZIP file")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the saved file."),
-                      @ApiResponse(code = 404, message = "The save does not exist."),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.")
-                  })
+            @ApiResponse(code = 200, message = "Returns the saved file."),
+            @ApiResponse(code = 404, message = "The save does not exist."),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.")
+    })
     @Nonnull
     public Response downloadTransform(@Nonnull @PathParam("transform") final String transformId, @Nonnull @PathParam("save") final String saveId) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -198,10 +199,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a query.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
-                      @ApiResponse(code = 404, message = "The query does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
+            @ApiResponse(code = 404, message = "The query does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response getQueryResult(@Nonnull @PathParam("table") final String id) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -220,10 +221,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a save")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+            @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
+    })
     @Nonnull
     public Response getQuerySave(@Nonnull @PathParam("query") final String queryId, @Nonnull @PathParam("save") final String saveId) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -242,10 +243,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response getTransformResult(@Nonnull @PathParam("table") final String id) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -264,10 +265,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a save")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+            @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
+    })
     @Nonnull
     public Response getTransformSave(@Nonnull @PathParam("transform") final String transformId, @Nonnull @PathParam("save") final String saveId) {
         final SparkShellProcess process = getSparkShellProcess();
@@ -286,10 +287,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a data source table.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
-                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
+            @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response query(@ApiParam(value = "The request indicates the query to execute. Exactly one source must be specified.", required = true) @Nullable final TransformRequest request) {
         // Validate request
@@ -317,9 +318,9 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the results of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = SaveResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = SaveResponse.class)
+    })
     @Nonnull
     public Response saveQuery(@Nonnull @PathParam("query") final String queryId,
                               @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
@@ -345,13 +346,12 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the results of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = SaveResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = SaveResponse.class)
+    })
     @Nonnull
     public Response saveTransform(@Nonnull @PathParam("transform") final String transformId,
-                                  @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable
-                                  final SaveRequest request) {
+                                  @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
         // Validate request
         if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
@@ -374,9 +374,9 @@ public class SparkShellProxyController {
     @Path("/start")
     @ApiOperation("Starts a new Spark Shell process for the current user if one is not already running.")
     @ApiResponses({
-                      @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
-                      @ApiResponse(code = 500, message = "The Spark Shell process could not be started.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be started.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response start() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -401,11 +401,11 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Registers a new Spark Shell process with Kylo.")
     @ApiResponses({
-                      @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
-                      @ApiResponse(code = 401, message = "The provided credentials are invalid.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
+            @ApiResponse(code = 401, message = "The provided credentials are invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response register(@Nonnull final RegistrationRequest registration) {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -429,14 +429,14 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+    })
     @Nonnull
     @SuppressWarnings("squid:S1845")
     public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"
-                                                + " source must be specified.", required = true)
+            + " source must be specified.", required = true)
                               @Nullable final TransformRequest request) {
         // Validate request
         if (request == null || request.getScript() == null) {
@@ -448,6 +448,14 @@ public class SparkShellProxyController {
             }
             if (request.getParent().getTable() == null) {
                 throw transformError(Response.Status.BAD_REQUEST, "transform.missingParentTable", null);
+            }
+        }
+
+        PageSpec ps = request.getPageSpec();
+        if (ps != null) {
+            if (Stream.of(ps.getFirstCol(), ps.getNumCols(), ps.getFirstRow(), ps.getNumRows())
+                    .allMatch(Objects::isNull)) {
+                throw transformError(Response.Status.BAD_REQUEST, "transform.badPageSpec", null);
             }
         }
 
@@ -466,10 +474,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("returns filemetadata based upon the list of file paths in the dataset.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
-                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+            @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+    })
     public Response fileMetadata(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         TransformRequest request = new TransformRequest();
         request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(dataSet).orElseGet(Collections::emptyList)));
@@ -485,16 +493,16 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response getFileMetadataTransformResult(@Nonnull @PathParam("table") final String id) {
         //first look at the cache to see if its there
         FileMetadataCompletionTask result = fileMetadataTrackerService.get(id);
         if (result != null) {
-            if(result.getModifiedTransformResponse().getStatus() != TransformResponse.Status.PENDING){
+            if (result.getModifiedTransformResponse().getStatus() != TransformResponse.Status.PENDING) {
                 fileMetadataTrackerService.removeFromCache(id);
             }
             return Response.ok(result.getModifiedTransformResponse()).build();
@@ -512,11 +520,11 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the dataset preview")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
-                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
-                  })
-    public Response preview(PreviewDataSetRequest previewRequest){
+            @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+            @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+    })
+    public Response preview(PreviewDataSetRequest previewRequest) {
         //todo pull from request
         int previewLimit = 20;
 
@@ -528,8 +536,7 @@ public class SparkShellProxyController {
         // return getTransformResponse(() -> restClient.transform(process,r));
 
         final SparkShellProcess process = getSparkShellProcess();
-        return getTransformResponse(() -> restClient.kyloCatalogTransform(process,request));
-
+        return getTransformResponse(() -> restClient.kyloCatalogTransform(process, request));
 
 
     }
@@ -581,22 +588,22 @@ public class SparkShellProxyController {
     }
 
     private void addCatalogDataSets(@Nonnull final TransformRequest request) {
-        if(request.getCatalogDatasets() != null  || request.getCatalogDatasets().isEmpty()){
+        if (request.getCatalogDatasets() != null || request.getCatalogDatasets().isEmpty()) {
             return;
         }
 
-     request.getCatalogDatasets().stream().forEach((dataSet) -> {
-           DataSource catalogDataSource = metadata.read(() -> {
+        request.getCatalogDatasets().stream().forEach((dataSet) -> {
+            DataSource catalogDataSource = metadata.read(() -> {
                 Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(dataSet.getDataSource().getId());
-                if(optionalDataSource.isPresent()){
+                if (optionalDataSource.isPresent()) {
                     return optionalDataSource.get();
-                }else {
+                } else {
                     throw new BadRequestException("No Catalog datasource exists with the given ID: " + dataSet.getId());
                 }
             });
-          dataSet.setDataSource(catalogDataSource);
-          DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
-          dataSet.getDataSource().setTemplate(template);
+            dataSet.setDataSource(catalogDataSource);
+            DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
+            dataSet.getDataSource().setTemplate(template);
         });
 
         //pass on the updated DataSet with the dataSource.template populated to the request
@@ -780,40 +787,40 @@ public class SparkShellProxyController {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
         final List<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> datasourceIds = metadata.read(
-            () -> sources.stream()
-                .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
-                .map(datasourceProvider::resolve)
-                .map(id -> {
-                    final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
-                    if (datasource != null) {
-                        return datasource.getId();
-                    } else {
-                        throw new BadRequestException("No datasource exists with the given ID: " + id);
-                    }
-                })
-                .collect(Collectors.toList())
+                () -> sources.stream()
+                        .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
+                        .map(datasourceProvider::resolve)
+                        .map(id -> {
+                            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
+                            if (datasource != null) {
+                                return datasource.getId();
+                            } else {
+                                throw new BadRequestException("No datasource exists with the given ID: " + id);
+                            }
+                        })
+                        .collect(Collectors.toList())
         );
 
         // Retrieve admin-level details
         return metadata.read(
-            () -> datasourceIds.stream()
-                .map(datasourceProvider::getDatasource)
-                .map(datasource -> {
-                    if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
-                        return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
-                    } else {
-                        throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
-                    }
-                })
-                .map(datasource -> {
-                    if (datasource instanceof com.thinkbiganalytics.metadata.datasource.JdbcDatasource) {
-                        return new JdbcDatasource((com.thinkbiganalytics.metadata.datasource.JdbcDatasource) datasource);
-                    } else {
-                        throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
-                    }
-                })
-                .collect(Collectors.toList()),
-            MetadataAccess.SERVICE);
+                () -> datasourceIds.stream()
+                        .map(datasourceProvider::getDatasource)
+                        .map(datasource -> {
+                            if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+                                return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
+                            } else {
+                                throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
+                            }
+                        })
+                        .map(datasource -> {
+                            if (datasource instanceof com.thinkbiganalytics.metadata.datasource.JdbcDatasource) {
+                                return new JdbcDatasource((com.thinkbiganalytics.metadata.datasource.JdbcDatasource) datasource);
+                            } else {
+                                throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
+                            }
+                        })
+                        .collect(Collectors.toList()),
+                MetadataAccess.SERVICE);
     }
 
 }

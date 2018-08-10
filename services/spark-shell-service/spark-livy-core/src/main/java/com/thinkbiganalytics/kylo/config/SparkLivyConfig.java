@@ -20,28 +20,28 @@ package com.thinkbiganalytics.kylo.config;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
-import com.thinkbiganalytics.kylo.utils.KerberosUtils;
-import com.thinkbiganalytics.kylo.utils.ProcessRunner;
-import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
-import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
+import com.thinkbiganalytics.kylo.utils.*;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
+import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+@Profile("kylo-livy")
 @Configuration
-@PropertySource("classpath:spark.properties")
+@PropertySource(value = {"classpath:spark.properties"}, ignoreResourceNotFound = true)
 @ImportResource("classpath:/config/applicationContext-livy.xml")
 @EnableAutoConfiguration  // needed for populating configuration POJOs
 public class SparkLivyConfig {
@@ -109,6 +109,13 @@ public class SparkLivyConfig {
     @Bean
     public KerberosUtils kerberosUtils() {
         return new KerberosUtils();
+    }
+
+
+    @Bean
+    public Map<String /* transformId */, Integer /* stmntId */> statementIdCache() {
+         Cache<String,Integer> cache = LivyRestModelTransformer.statementIdCache;
+         return cache.asMap();
     }
 
     /* Do any property validation/manipulation here */

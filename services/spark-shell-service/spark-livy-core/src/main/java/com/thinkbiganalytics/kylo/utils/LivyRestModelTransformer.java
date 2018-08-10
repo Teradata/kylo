@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
@@ -34,6 +36,8 @@ import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementOutputResponse;
 import com.thinkbiganalytics.kylo.model.enums.StatementOutputStatus;
 import com.thinkbiganalytics.kylo.model.enums.StatementState;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
@@ -44,16 +48,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class LivyRestModelTransformer {
     private static final Logger logger = LoggerFactory.getLogger(LivyRestModelTransformer.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    // time based expiry to clear out ids not cleared because the UI failed to fetch results
+    public static Cache<String,Integer> statementIdCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(24, TimeUnit.HOURS)
+            .maximumSize(100)
+            .build();
 
     private LivyRestModelTransformer() {
     } // static methods only
@@ -62,8 +75,8 @@ public class LivyRestModelTransformer {
         TransformResponse response = prepTransformResponse(statement, transformId);
 
         if (response.getStatus() == TransformResponse.Status.SUCCESS) {
-            String code = statement.getCode();
-            if (code.endsWith("dfRowsAsJson\n")) {
+            String code = statement.getCode().trim();
+            if (code.endsWith("dfRowsAsJson")) {
                 response.setResults(toTransformQueryResultWithSchema(statement.getOutput()));
             } else if (code.endsWith("dfProf")) {
                 List<OutputRow> rows = toTransformResponseProfileStats(statement.getOutput());
@@ -75,30 +88,17 @@ public class LivyRestModelTransformer {
                         .findFirst().orElse(1);
                 response.setActualRows(actualRows);
                 response.setResults(emptyResult());
+            } else if( code.endsWith("transformAsStr")) {
+                /* expects that 'statement' contains a payload of TransformResponse in JSON format */
+                TransformResponse tr = serializeStatementOutputResponse(checkCodeWasWellFormed(statement.getOutput()), TransformResponse.class);
+                statementIdCache.put(tr.getTable(), statement.getId());
+                return tr;
             } else {
                 throw new LivyException("Unsupported result type requested of Livy.  Results not recognized");
             } // end if
         }
 
         return response;
-    }
-
-    /**
-     * expects that 'statement' contains a payload of TransformResponse in JSON format
-     * @param statement
-     * @return
-     */
-    public static TransformResponse toTransformResponse(Statement statement) {
-        StatementOutputResponse sor = statement.getOutput();
-
-        checkCodeWasWellFormed(sor);
-
-        if (statement.getState() != StatementState.available) {
-            TransformResponse response = prepTransformResponse(statement,null);
-            return response;
-        }
-
-        return serializeStatementOutputResponse(sor, TransformResponse.class);
     }
 
 
@@ -328,6 +328,9 @@ public class LivyRestModelTransformer {
         response.setProgress(statement.getProgress());
         if(StringUtils.isNotEmpty(transformId)) {
             response.setTable(transformId);
+        } else {
+            // generate a new id if we don't have one yet...
+            statementIdCache.put(ScalaScriptService.newTableName(),statement.getId());
         }
         return response;
     }
@@ -373,7 +376,7 @@ public class LivyRestModelTransformer {
         }
     }
 
-    private static void checkCodeWasWellFormed(StatementOutputResponse statementOutputResponse) {
+    private static StatementOutputResponse checkCodeWasWellFormed(StatementOutputResponse statementOutputResponse) {
         if (statementOutputResponse != null && statementOutputResponse.getStatus() != StatementOutputStatus.ok) {
             String msg = String.format("Malformed code sent to Livy.  ErrorType='%s', Error='%s', Traceback='%s'",
                     statementOutputResponse.getEname(),
@@ -381,6 +384,7 @@ public class LivyRestModelTransformer {
                     statementOutputResponse.getTraceback());
             throw new LivyCodeException(msg);
         }
+        return statementOutputResponse;
     }
 
 }
