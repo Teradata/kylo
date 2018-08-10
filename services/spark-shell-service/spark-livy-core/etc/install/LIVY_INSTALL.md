@@ -46,4 +46,4 @@ This issue will be addressed by TBK-85
 
 # Steps to Revert to using Kylo Spark Shell
 
-    sed -i.bak 's/kylo-livy/kylo-shell/' /opt/kylo/kylo-services/conf/application.properties /opt/kylo/kylo-services/conf/spark.properties
+    sed -i.bak 's/kylo-livy/kylo-shell/' /opt/kylo/kylo-services/conf/application.properties

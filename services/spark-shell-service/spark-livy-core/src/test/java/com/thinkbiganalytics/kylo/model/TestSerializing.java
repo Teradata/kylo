@@ -40,8 +40,6 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = SparkLivyConfig.class, loader = AnnotationConfigContextLoader.class)
 public class TestSerializing {
     private static final Logger logger = LoggerFactory.getLogger(TestSerializing.class);
 

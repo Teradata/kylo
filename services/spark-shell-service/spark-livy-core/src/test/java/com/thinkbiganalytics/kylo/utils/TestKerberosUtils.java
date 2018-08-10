@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -47,6 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = {TestKerberosUtils.Config.class},
         loader = AnnotationConfigContextLoader.class)
 @TestPropertySource("classpath:kerberos-client.properties")
+@ActiveProfiles("kylo-livy")
 public class TestKerberosUtils {
     private static final Logger logger = LoggerFactory.getLogger(TestKerberosUtils.class);
 
@@ -60,7 +62,6 @@ public class TestKerberosUtils {
 
     @Resource
     private ProcessRunner processRunner;
-
 
     @Before
     public void beforeMethod() {

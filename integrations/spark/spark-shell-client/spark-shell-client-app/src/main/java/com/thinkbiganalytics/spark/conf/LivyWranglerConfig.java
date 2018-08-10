@@ -88,9 +88,7 @@ public class LivyWranglerConfig {
     private static SparkContext sparkContext;
     private static SQLContext sqlContext;
 
-    public LivyWranglerConfig() {
-
-    }
+    public LivyWranglerConfig() {}
 
     public static void setSparkContext(SparkContext sparkContext) {
         LivyWranglerConfig.sparkContext = sparkContext;
@@ -120,12 +118,6 @@ public class LivyWranglerConfig {
         return sqlContext;
     }
 
-/*
-    @Bean
-    public EmbeddedServletContainerFactory embeddedServletContainer(final ServerProperties serverProperties, @Qualifier("sparkShellPort") final int serverPort) {
-        serverProperties.setPort(serverPort);
-        return new TomcatEmbeddedServletContainerFactory();
-    }*/
 
     /**
      * Gets the Hadoop File System.
@@ -136,41 +128,6 @@ public class LivyWranglerConfig {
         return FileSystem.get(new org.apache.hadoop.conf.Configuration());
     }
 
-    /**
-     * Creates a service to stop this app after a period of inactivity.
-     */
-    /*
-    @Bean
-    @Primary
-    public IdleMonitorService idleMonitorService(final SparkShellOptions parameters) {
-        final IdleMonitorService idleMonitorService = new IdleMonitorService(parameters.getIdleTimeout(), TimeUnit.SECONDS);
-        idleMonitorService.startAsync();
-        return idleMonitorService;
-    }
-    */
-
-    /**
-     * Gets the resource configuration for setting up Jersey.
-     *
-     * @return the Jersey configuration
-     */
-    /*
-    @Bean
-    @Primary
-    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem, final SparkLocatorService sparkLocatorService) {
-        final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
-        config.packages("com.thinkbiganalytics.spark.rest");
-        config.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(fileSystem).to(FileSystem.class);
-                bind(transformService).to(TransformService.class);
-                bind(sparkLocatorService).to(SparkLocatorService.class);
-            }
-        });
-
-        return config;
-    } */
 
     /**
      * Creates the job tracker service.
@@ -197,63 +154,6 @@ public class LivyWranglerConfig {
         return parameters;
     }
 
-    /**
-     * Gets the application runner that communicates with Kylo services.
-     *
-     * @param parameters the command-line options
-     * @param serverPort the Spark Shell port number
-     * @return an remote client runner
-     */
-    /*
-    @Bean
-    @Primary
-    public RemoteClientRunner remoteClientRunner(@Nonnull final SparkShellOptions parameters, @Qualifier("sparkShellPort") final int serverPort) {
-        return new RemoteClientRunner(parameters, serverPort);
-    }
-*/
-
-    /**
-     * Determines the Spark Shell port number.
-     *
-     * @param serverPort Spring server port
-     * @param parameters command-line options
-     * @return the Spark Shell port number
-     */
-    /*
-    @Bean(name = "sparkShellPort")
-    @Primary
-    public int serverPort(@Nonnull @Value("${server.port}") final String serverPort, @Nonnull final SparkShellOptions parameters) {
-        // First check for command-line options
-        if (parameters.getPortMin() != SparkShellOptions.NO_PORT || parameters.getPortMax() != SparkShellOptions.NO_PORT) {
-            Preconditions.checkArgument(parameters.getPortMin() != SparkShellOptions.NO_PORT, "port-min is required when port-max is specified");
-            Preconditions.checkArgument(parameters.getPortMax() != SparkShellOptions.NO_PORT, "port-max is required when port-min is specified");
-            Preconditions.checkArgument(parameters.getPortMin() <= parameters.getPortMax(), "port-min must be less than or equal to port-max");
-
-            // Look for an open port
-            int port = parameters.getPortMin();
-            boolean valid = false;
-
-            do {
-                try {
-                    new ServerSocket(port).close();
-                    valid = true;
-                } catch (final IOException e) {
-                    ++port;
-                }
-            } while (!valid && port <= parameters.getPortMax());
-
-            // Return if valid
-            if (valid) {
-                return port;
-            } else {
-                throw new IllegalStateException("No open ports available: " + parameters.getPortMin() + "-" + parameters.getPortMax());
-            }
-        }
-
-        // Second use Spring server port
-        return Integer.parseInt(serverPort);
-    }
-    */
 
     /**
      * Creates the Spark configuration.
@@ -303,19 +203,6 @@ public class LivyWranglerConfig {
         return conf;
     }
 
-
-
-
-    /**
-     * Gets the Spark context.
-     */
-    /*
-    @Bean
-    public SparkContext sparkContext(@Nonnull final SparkScriptEngine engine) {
-        return engine.getSparkContext();
-    }
-    */
-
     /**
      * Creates a Spark locator service.
      */
@@ -334,48 +221,6 @@ public class LivyWranglerConfig {
         return service;
     }
 
-    /**
-     * Gets the Spark SQL context.
-     *
-     * @param engine the Spark script engine
-     * @return the Spark SQL context
-     */
-    /*
-    @Bean
-    public SQLContext sqlContext(final SparkScriptEngine engine, @Nonnull final List<JdbcDialect> jdbcDialects) {
-        // Register JDBC dialects
-        for (final JdbcDialect dialect : jdbcDialects) {
-            JdbcDialects.registerDialect(dialect);
-        }
-
-        // Create SQL Context
-        return engine.getSQLContext();
-    }
-*/
-    /**
-     * Gets the transform service.
-     *
-     * @param transformScriptClass      the transform script class
-     * @param engine                    the Spark script engine
-     * @param sparkContextService       the Spark context service
-     * @param tracker                   the transform job tracker
-     * @param datasourceProviderFactory the data source provider factory
-     * @param profiler                  the profiler
-     * @return the transform service
-     */
-    /* TJH: pre merge with master
-    @Bean
-    public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
-                                             final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem, final DataSetConverterService converterService) {
-        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService);
-        service.setDatasourceProviderFactory(datasourceProviderFactory);
-        service.setFileSystem(fileSystem);
-        service.setProfiler(profiler);
-        service.setValidator(validator);
-        return service;
-    }
-    */
 
     /**
      * Gets the transform service.

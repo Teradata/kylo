@@ -42,13 +42,11 @@
             <artifactId>kylo-commons-spark-shell-plugin-shared</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- CAN BE INCLUDED FOR TESTING, NOT PROD.  COMMENT livy-core IF THIS IS INCLUDED
         <dependency>
             <groupId>com.thinkbiganalytics.kylo</groupId>
             <artifactId>kylo-spark-shell-core</artifactId>
             <version>${project.version}</version>
-        </dependency> -->
-        <!--  BY DEFAULT THIS IS INCLUDED IN KYLO PROD.  EXCHANGE WITH spark-shell TESTING IN IDE -->
+        </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.kylo</groupId>
             <artifactId>kylo-spark-livy-core</artifactId>

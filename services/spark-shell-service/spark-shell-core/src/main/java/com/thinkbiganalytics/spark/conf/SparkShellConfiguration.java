@@ -55,12 +55,8 @@ import java.util.Properties;
 public class SparkShellConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SparkShellConfiguration.class);
 
-    @Bean
-    @Profile("kyloUpgrade")
-    public SparkShellProcessManager processManagerForUpgrade() {
-        return new ServerProcessManager(new SparkShellProperties());
-    }
 
+    // TODO: should be possible to eliminate this static class now
     @Profile("kylo-shell")
     @Configuration
     public static class KyloShellConfig {
