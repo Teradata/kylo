@@ -211,7 +211,6 @@ public class InitializeFeed extends FeedProcessor implements CleanupListener {
             }
 
             List<FlowFile> batch = map.get(feedId);
-
             batch.add(inputFF);
         });
         

@@ -135,7 +135,6 @@ public abstract class FeedProcessor extends BaseProcessor {
         
         try {
             log.debug("Resolving ID for feed {}/{} from cache", category, feedName);
-
             return this.feedIdCache.get(feedKey, supplyMetadataFeedId(category, feedName));
         } catch (ExecutionException e) {
             Throwables.propagateIfPossible(e.getCause());
