@@ -23,8 +23,11 @@ package com.thinkbiganalytics.nifi.v2.init;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus.State;
+import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventService;
+import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
 
@@ -33,6 +36,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
+import org.apache.nifi.annotation.lifecycle.OnUnscheduled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.expression.AttributeExpression;
@@ -47,6 +51,7 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,13 +62,16 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+
 /**
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "initialize", "initialization", "thinkbig"})
 @CapabilityDescription("Controls setup of a feed by routing to an initialization or re-initialization flow.")
-public class InitializeFeed extends FeedProcessor {
+public class InitializeFeed extends FeedProcessor implements CleanupListener {
 
     public static final String REINITIALIZING_FLAG = "reinitializing";
 
@@ -127,6 +135,13 @@ public class InitializeFeed extends FeedProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    public static final PropertyDescriptor CLEANUP_SERVICE = new PropertyDescriptor.Builder()
+        .name("Feed Cleanup Event Service")
+        .description("Service that manages the cleanup of feeds.")
+        .identifiesControllerService(CleanupEventService.class)
+        .required(true)
+        .build();
+
     Relationship REL_INITIALIZE = new Relationship.Builder()
         .name("Initialize")
         .description("Begin initialization")
@@ -140,10 +155,13 @@ public class InitializeFeed extends FeedProcessor {
 
     private Map<String, AtomicInteger> retryCounts = Collections.synchronizedMap(new HashMap<>());
 
+    private CleanupEventService cleanupEventService;
+
     @OnScheduled
     public void scheduled(ProcessContext context) {
         super.scheduled(context);
         this.retryCounts.clear();
+        cleanupEventService = getCleanupService(context);
     }
 
     @Override
@@ -178,7 +196,21 @@ public class InitializeFeed extends FeedProcessor {
         
         allFiles.forEach(ff -> {
             FlowFile inputFF = ensureFeedId(context, session, ff);
-            List<FlowFile> batch = map.computeIfAbsent(getFeedId(context, inputFF), k -> new ArrayList<>());
+            String feedId = getFeedId(context, inputFF);
+
+            if (!map.containsKey(feedId)) {
+                // Get the feed id
+                final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(ff).getValue();
+                final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(ff).getValue();
+
+                getLog().info("Register cleanup event listener for {}.{}", new Object[]{category, feedName});
+
+                // Listen for cleanup events
+                getCleanupService(context).addListener(category, feedName, this);
+                map.put(feedId, new ArrayList());
+            }
+
+            List<FlowFile> batch = map.get(feedId);
             batch.add(inputFF);
         });
         
@@ -221,6 +253,7 @@ public class InitializeFeed extends FeedProcessor {
         list.add(CLONE_INIT_FLOWFILE);
         list.add(MAX_FLOW_FILES_COUNT);
         list.add(MAX_FLOW_FILES_SIZE);
+        list.add(CLEANUP_SERVICE);
     }
 
     @Override
@@ -311,4 +344,29 @@ public class InitializeFeed extends FeedProcessor {
         return this.retryCounts.computeIfAbsent(getFeedId(context, inputFF), k -> new AtomicInteger(0));
     }
 
+    @Nonnull
+    private CleanupEventService getCleanupService(@Nonnull final ProcessContext context) {
+        return context.getProperty(CLEANUP_SERVICE).asControllerService(CleanupEventService.class);
+    }
+
+    @Override
+    public void triggered(@Nonnull final FeedCleanupTriggerEvent event) {
+        String category = event.getCategoryName();
+        String feedName = event.getFeedName();
+        invalidFeedCache(category, feedName);
+
+        getLog().info("The feed {}.{} is removed from cache", new Object[] {category, feedName});
+    }
+
+    /**
+     * Clean up resources used by this processor.
+     *
+     * @param context the process context
+     */
+    @OnUnscheduled
+    public void onUnscheduled(@Nonnull final ProcessContext context) {
+        // Remove listener
+        getLog().info("Remove cleanup listener");
+        cleanupEventService.removeListener(this);
+    }
 }

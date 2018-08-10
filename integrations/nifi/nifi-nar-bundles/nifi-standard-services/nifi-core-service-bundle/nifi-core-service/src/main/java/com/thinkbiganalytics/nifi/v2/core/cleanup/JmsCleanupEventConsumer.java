@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,7 +47,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      * Map of feed category and name to listener
      */
     @Nonnull
-    private final ConcurrentMap<String, CleanupListener> listeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<CleanupListener>> listeners = new ConcurrentHashMap<>();
 
     /**
      * adds a listener to be notified on receipt of cleanup events
@@ -59,7 +60,11 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
         String key = generateKey(category, feedName);
         LOG.debug("Adding listener for {}, consumer {}", key, this);
-        listeners.put(key, listener);
+
+        listeners.putIfAbsent(key, new HashSet<CleanupListener>());
+
+        Set<CleanupListener> feedListeners = listeners.get(key);
+        feedListeners.add(listener);
     }
 
     /**
@@ -74,12 +79,16 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
 
         String key = generateKey(event.getCategoryName(), event.getFeedName());
         LOG.debug("Looking up listener for {}", key);
-        CleanupListener listener = listeners.get(key);
-        if (listener != null) {
+
+        Set<CleanupListener> feedListeners = listeners.get(key);
+        if (feedListeners == null) {
+            LOG.info("Found no listener for {}", key);
+            return;
+        }
+
+        for (CleanupListener listener : feedListeners) {
             LOG.debug("Found listener for {}, triggering event {}", key, event);
             listener.triggered(event);
-        } else {
-            LOG.debug("Found no listener for {}", key);
         }
     }
 
@@ -91,7 +100,11 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     @Override
     public void removeListener(@Nonnull CleanupListener listener) {
         LOG.debug("Remove listener {}", listener);
-        listeners.values().remove(listener);
+
+        Collection<Set<CleanupListener>> allListeners = listeners.values();
+        for (Set<CleanupListener> listenersSet : allListeners) {
+            listenersSet.remove(listener);
+        }
     }
 
     /**
