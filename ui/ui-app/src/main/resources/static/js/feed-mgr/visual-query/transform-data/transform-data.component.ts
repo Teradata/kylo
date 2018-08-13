@@ -12,6 +12,9 @@ import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
+import {ProfileOutputRow, ScriptState} from "../wrangler";
+import {SparkConstants} from "../services/spark/spark-constants";
+import {ProfileHelper} from "../wrangler/api/profile-helper";
 import {ScriptState, StringUtils} from "../wrangler/index";
 
 import BroadcastService from '../../../services/broadcast-service';
@@ -955,6 +958,44 @@ export class TransformDataComponent implements OnInit {
     };
 
     /**
+     * Executes a formula, gathers the value and reverses
+     * @param {string} fieldName
+     * @param {string} formula
+     * @returns {angular.IPromise<ProfileHelper>}
+     */
+    extractFormulaResult(formula:string, sample:number) : IPromise<any> {
+        const self = this;
+        const deferred : IDeferred<any>  = self.$q.defer();
+        self.pushFormulaToEngine(formula, {});
+        let limit : number = self.engine.limit();
+        self.engine.limit(sample)
+        let page = PageSpec.emptyPage();
+        page.numRows = page.numCols = 1;
+        page.firstRow=0;
+        self.query(false, page).then( function() {
+            let result = self.engine.getRows();
+            deferred.resolve(result[0][0]);
+            self.engine.limit(limit);
+            self.engine.pop();
+        }).catch(reason => {
+            self.engine.limit(limit);
+        })
+        return deferred.promise;
+    }
+
+    extractColumnStatistics(fieldName: string) : IPromise<ProfileHelper> {
+        const self = this;
+        const deferred : IDeferred<ProfileHelper>  = self.$q.defer();
+        self.pushFormulaToEngine(`select(${fieldName})`, {});
+        self.query(false, PageSpec.emptyPage(), true, true).then( function() {
+            let profileStats = self.engine.getProfile();
+            self.engine.pop();
+            deferred.resolve(new ProfileHelper(fieldName, profileStats));
+        });
+        return deferred.promise;
+   }
+
+    /**
      * Generates and displays a categorical histogram
      *
      * @return {Promise} a promise for when the query completes
@@ -1105,6 +1146,28 @@ export class TransformDataComponent implements OnInit {
     isUsingSampleFile(){
         //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
         return this.model.$selectedDatasourceId == "FILE"
+    }
+
+    removeItem(index:number) : void {
+        this.engine.remove(index+1);
+        this.functionHistory = this.engine.getHistory();
+    }
+
+    /**
+     * Remove step item from history
+     * @param {number} index
+     */
+    toggleItem(index:number) : void {
+        // Adjust for difference between visible history and actual history which contains the 1st query
+        this.engine.toggle(index+1);
+        this.functionHistory = this.engine.getHistory();
+        let self = this;
+        this.query().catch(reason => {
+            // reverse impact
+            self.engine.restoreLastKnownState();
+            this.query();
+            this.functionHistory = this.engine.getHistory();
+        });
     }
 
     isSampleFileChanged(){

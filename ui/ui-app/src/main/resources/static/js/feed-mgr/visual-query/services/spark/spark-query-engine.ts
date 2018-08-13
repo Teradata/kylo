@@ -227,7 +227,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
         }
 
         for (let i = start; i < end; ++i) {
-            sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
+            if (!this.states_[i].inactive) {
+                sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
+            }
         }
 
         sparkScript += SparkConstants.DATA_FRAME_VARIABLE + "\n";
@@ -366,11 +368,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
         if (msg != null) {
 
             if (msg.indexOf("Cannot read property") > -1) {
-                msg = "Please ensure field names are correct.";
+                msg = "Please ensure fieldnames are correct.";
             } else if (msg.indexOf("Program is too long") > -1) {
                 msg = "Please check parenthesis align."
             } else if (msg.indexOf("MatchError: ") > -1) {
                 msg = "Please remove, impute, or replace all empty values and try again."
+            } else if (msg.indexOf("AnalysisException: Can't extract value from ") > -1) {
+                msg = "Action would invalidate downstream transformations or requires an upstream transformation that has been disabled.";
             }
         }
         return msg;
@@ -399,7 +403,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         if (index > -1) {
             // Find last cached state
             let last = index - 1;
-            while (last >= 0 && this.states_[last].table === null) {
+            while (last >= 0 && (this.states_[last].table === null)) {
                 --last;
             }
 

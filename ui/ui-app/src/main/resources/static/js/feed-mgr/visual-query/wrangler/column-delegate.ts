@@ -5,6 +5,7 @@ import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
 import * as $ from "jquery";
 import * as _ from "underscore";
+import {ProfileHelper} from "./api/profile-helper";
 
 /**
  * Categories for data types.
@@ -91,6 +92,23 @@ export class ChainedOperation {
     }
 }
 
+export class MenuItem {
+    description: string = "";
+    icon: string = "";
+    name: string;
+    operation:any;
+}
+
+export class MenuItems {
+    math: MenuItem[] = [];
+    replace:MenuItem[] = [];
+    ml:MenuItem[] = [];
+    extract:MenuItem[] = [];
+    other:MenuItem[] = [];
+    format:MenuItem[] = [];
+    defaults:MenuItem[] = [];
+}
+
 /**
  * Handles operations on columns.
  */
@@ -109,7 +127,7 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * List of column transformations.
      */
-    transforms: object[];
+    transforms: MenuItems;
 
     /**
      * Constructs a column delegate.
@@ -154,7 +172,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
     clearRowsEquals(value: string, column: any, grid: any) {
         const fieldName = this.getColumnFieldName(column);
-        const formula = this.toFormula("when(equal(" + fieldName + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise(" + fieldName + ").as(\"" + fieldName + "\")", column, grid);
+        const formula = this.toFormula(`when(equal(${fieldName}, '${value}'),null).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
     }
 
@@ -164,7 +182,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column
      * @param grid
      */
-    replaceValueEqualTo(value: string, column:any, grid:any) {
+    replaceValueEqualTo(value: string, column: any, grid: any) {
         const fieldName = this.getColumnFieldName(column);
         const dataType = column.dataType;
         const dataCategory = this.fromDataType(dataType);
@@ -173,19 +191,23 @@ export class ColumnDelegate implements IColumnDelegate {
         self.$mdDialog.show({
             clickOutsideToClose: true,
             controller: class {
-                replaceValue : any = "";
+                replaceValue: any = "";
                 static readonly $inject = ["$mdDialog"];
+
                 constructor(private $mdDialog: angular.material.IDialogService) {
                 }
-                valid() : boolean {
+
+                valid(): boolean {
                     if (dataCategory == DataCategory.NUMERIC) {
                         return (!isNaN(this.replaceValue));
                     }
                     return true;
                 }
+
                 cancel() {
                     this.$mdDialog.hide();
                 }
+
                 apply() {
                     this.$mdDialog.hide();
                     let formula = '';
@@ -205,7 +227,7 @@ export class ColumnDelegate implements IColumnDelegate {
             template: `
                   <md-dialog arial-label="" style="max-width: 640px;">
                     <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">${value}</h2>
+                      <h2 class="md-title">Replace ${value}</h2>
                       <md-input-container>
                         <label>Replace with:</label>
                         <input ng-model="dialog.replaceValue" >
@@ -233,19 +255,24 @@ export class ColumnDelegate implements IColumnDelegate {
         self.$mdDialog.show({
             clickOutsideToClose: true,
             controller: class {
-                bins : any = "5";
+                bins: number = 5;
+                sample: number = 10000;
                 static readonly $inject = ["$mdDialog"];
+
                 constructor(private $mdDialog: angular.material.IDialogService) {
                 }
-                valid() : boolean {
+
+                valid(): boolean {
                     if (dataCategory == DataCategory.NUMERIC) {
                         return (!isNaN(this.bins));
                     }
                     return true;
                 }
+
                 cancel() {
                     this.$mdDialog.hide();
                 }
+
                 apply() {
                     this.$mdDialog.hide();
                     const tempField = self.createTempField();
@@ -270,7 +297,18 @@ export class ColumnDelegate implements IColumnDelegate {
                       <h2 class="md-title">Bin</h2>
                       <md-input-container>
                         <label># of bins:</label>
-                        <input ng-model="dialog.bins" >
+                        <input type="number" ng-model="dialog.bins" aria-label="# of bins">
+                        </input>
+                      </md-input-container>
+                      <md-input-container>                        
+                        <label># sample rows:</label>
+                        <input type="number" ng-model="dialog.sample" aria-label="# sample rows">
+                        </input>
+                      </md-input-container>
+                      <md-input-container>                        
+                        <md-checkbox ng-model="dialog.persist" aria-label="Always apply same fit params?">
+                          Persist fit params?
+                        </md-checkbox>
                         </input>
                       </md-input-container>
                     </md-dialog-content>
@@ -283,6 +321,7 @@ export class ColumnDelegate implements IColumnDelegate {
         });
 
     }
+
 
     /**
      * Filters for rows where the specified column is not null.
@@ -299,7 +338,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsContaining(value: string, column: any) {
-        const formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "')))";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(not(contains(${fieldName}, '${value}')))`;
         this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
@@ -310,7 +350,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsEqualTo(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} != '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value});
     }
 
@@ -321,7 +362,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsGreaterThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} <= '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value});
     }
 
@@ -332,7 +374,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsLessThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} >= '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value});
     }
 
@@ -340,7 +383,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * Filters for rows where the specified column is null.
      */
     findNullRows(column: any) {
-        const formula = "filter(isnull(" + this.getColumnFieldName(column) + "))";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(isnull(${fieldName}))`;
         this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find where " + this.getColumnDisplayName(column) + " is null"});
     }
 
@@ -351,7 +395,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsContaining(value: string, column: any) {
-        const formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'))";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(contains(${fieldName}, '${value}'))`;
         this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
@@ -362,7 +407,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsEqualTo(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} == '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value});
     }
 
@@ -373,7 +419,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsGreaterThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} > '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value});
     }
 
@@ -384,7 +431,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsLessThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.singleQuote(value) + "')";
+        let fieldName = this.getColumnFieldName(column);
+        const formula = `filter(${fieldName} < '${value}')`;
         this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value});
     }
 
@@ -696,6 +744,23 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Apply logit transform
+     *
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    logitTransform(self: any, column: any, grid: any) {
+
+        const fieldName = self.getColumnFieldName(column);
+        const script = `ln(${fieldName}/(1-${fieldName}))`;
+        const formula = self.toFormula(script, column, grid);
+        self.controller.addFunction(formula, {
+            formula: formula, icon: "functions",
+            name: "Logit transform " + self.getColumnDisplayName(column)
+        });
+    }
+
+    /**
      * Rescale the vector column
      *
      * @param {ui.grid.GridColumn} column the column to be hidden
@@ -718,6 +783,197 @@ export class ColumnDelegate implements IColumnDelegate {
                 chainedOp.nextStep();
                 self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName});
             })
+    }
+
+    /**
+     * Calculate outliers 1 (outlier) or 0 (not outlier)
+     * @param self
+     * @param column
+     * @param grid
+     * @returns {any}
+     */
+    identifyOutliers(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+        let quantileStats = self.approxQuantileFormula(fieldName, 4);
+        self.controller.extractFormulaResult(quantileStats, 10000)
+            .then(function (value: any) {
+                const Q1 = value[0];
+                const Q3 = value[2];
+                const IQR = Q3 - Q1;
+
+                let lower = (Q1 - (1.5 * IQR));
+                let upper = (Q3 + (1.5 * IQR));
+                let script = `when(or(${fieldName} < ${lower},${fieldName}>${upper}),1).otherwise(0)`
+                const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_outlier`);
+                self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Find outliers ${fieldName}`});
+            });
+    }
+
+    approxQuantileFormula(fieldName:string, bins:number) {
+        let binSize = 1 / bins;
+        let arr = []
+        for (let i = 1; i < bins; i++) {
+            arr.push(i * binSize)
+        }
+        return `select(approxQuantile("${fieldName}", [${arr}], 0.0).as("data"))`
+
+    }
+
+    binValues2(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                bins: number = 4;
+                sample: number = 10000;
+                persist: boolean = true;
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+
+                valid(): boolean {
+                    return (!isNaN(this.bins) && !isNaN(this.sample) && this.bins > 1 && this.sample > 0);
+                }
+
+                cancel() {
+                    this.$mdDialog.hide();
+                }
+
+                apply() {
+                    this.$mdDialog.hide();
+
+                    const bins = this.bins;
+
+                    let binSize = 1 / bins;
+                    let arr = []
+                    for (let i = 1; i < bins; i++) {
+                        arr.push(i * binSize)
+                    }
+                    let quantileStats = self.approxQuantileFormula(fieldName, bins);
+                    self.controller.extractFormulaResult(quantileStats, this.sample)
+                        .then(function (value: any) {
+                            let formulaArray = [];
+                            for (let i = 1; i < bins; i++) {
+                                let val = value[i-1];
+                                formulaArray.push(`when(${fieldName}<${val},${i})`);
+                            }
+                            formulaArray.push(`otherwise(${bins}).as("${fieldName}")`);
+                            let script = formulaArray.join(".");
+                            const formula = self.toFormula(script, column, grid);
+                            self.controller.addFunction(formula, {
+                                formula: formula, icon: "functions",
+                                name: "Bin " + self.getColumnDisplayName(column)
+                            });
+                        })
+
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="Bin" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">Bin</h2>
+                      <md-input-container>
+                        <label># of bins:</label>
+                        <input type="number" ng-model="dialog.bins" matTooltip="Specify the number of bins">
+                        </input>
+                        <span style="color:red" ng-show="myForm.pin.$error.pattern">Invalid Input</span>                        
+                      </md-input-container>
+                      <md-input-container>                        
+                        <label># sample rows:</label>
+                        <input type="number" ng-model="dialog.sample" aria-label="# sample rows">
+                        </input>
+                      </md-input-container>
+                      <md-input-container>                        
+                        <md-checkbox ng-model="dialog.persist" aria-label="Always apply same fit params?">
+                          Persist fit params?
+                        </md-checkbox>
+                        </input>
+                      </md-input-container>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
+                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
+
+    }
+
+
+    rescaleMinMax2(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+                minScale: number = 0;
+                maxScale: number = 1;
+
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+
+                valid(): boolean {
+                    return (this.minScale != null && this.maxScale != null && this.minScale < this.maxScale)
+                }
+
+                cancel() {
+                    this.$mdDialog.hide();
+                }
+
+                apply() {
+                    this.$mdDialog.hide();
+                    let minScale = this.minScale;
+                    let maxScale = this.maxScale;
+                    self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+                        let min = profileData.min;
+                        let max = profileData.max;
+                        var algo: string;
+                        if (min === max) {
+                            algo = `(0.5*((${minScale})+(${maxScale})))`
+                        } else {
+                            algo = `(((${fieldName}-(${min}))/((${max})-(${min})))*((${maxScale})-(${minScale})+(${minScale})))`
+                        }
+                        let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
+
+                        const formula = self.toFormula(script, column, grid);
+                        self.controller.addFunction(formula, {
+                            formula: formula, icon: "functions",
+                            name: "Rescale " + self.getColumnDisplayName(column)
+                        });
+                    });
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="Select crosstab field" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">Rescale Options</h2>
+                      <md-input-container>
+                        <label>Min:</label>
+                        <input ng-model="dialog.minScale" type="number">
+                        </input> 
+                      </md-input-container>
+                      <md-input-container>
+                        <label>Max:</label>
+                        <input ng-model="dialog.maxScale" type="number">
+                        </input> 
+                      </md-input-container>
+
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
+                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
     }
 
     /**
@@ -1317,55 +1573,68 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param dataCategory - the category for the column
      * @returns the transformations for the column
      */
-    protected getTransforms(dataCategory: DataCategory) {
-        const transforms = [];
+    protected getTransforms(dataCategory: DataCategory) : MenuItems {
+
+        let transforms = new MenuItems();
+
         const self = this;
 
         if (dataCategory === DataCategory.NUMERIC) {
-            transforms.push(
-                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn},
-                {description: 'Replace null/nan with a specified value', icon: 'find_replace', name: 'Replace null/nan...', operation: self.replaceEmptyWithValue},
-                {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn},
+            transforms.ml.push(
+                {description: 'Replace null/nan with a specified value', icon: 'find_replace', name: 'Replace empty/NAN...', operation: self.replaceEmptyWithValue},
+                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean', operation: self.imputeMeanColumn},
+                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operation: self.rescaleMinMax2},
+                {description: 'Identify outliers', icon: 'functions', name: 'Identify outliers', operation: self.identifyOutliers},
+                {description: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues2}
+            );
+            transforms.math.push(
+                // {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn},
+                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
                 {description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil'},
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
-                {icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
-                {descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
-                {descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
-                {descriptions: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues});
+                {description: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
+                {description: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
+                {description: 'Log', icon: 'functions', name: 'Log10', operation: 'log10'},
+                {description: 'Logit transform', icon: 'functions', name: 'Logit', operation: self.logitTransform}
+            );
+            transforms.other.push(
+                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn}
+            );
         }
         else if (dataCategory === DataCategory.STRING) {
-            transforms.push({description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower'},
-                {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'},
-                {description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap'},
-                {description: 'Extract numeric', icon: 'filter_2', name: 'Extract numeric', operation: self.extractNumeric},
-                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn},
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace empty...', operation: self.replaceEmptyWithValue},
+
+            transforms.format.push({description: 'Lowercase', icon: 'arrow_downward', name: 'lowercase', operation: 'lower'},
+                {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
+                {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
+                {description: 'Trim whitespace', icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
+                {description: 'Extract numeric', icon: 'filter_2', name: 'Extract numeric', operation: self.extractNumeric}
+                );
+
+            transforms.ml.push(
                 {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn},
                 {description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn},
-                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn});
-        } else if (dataCategory == DataCategory.ARRAY_DOUBLE) {
-            transforms.push(
-                {description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std dev', operation: self.rescaleStdDevColumn},
-                {description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean', operation: self.rescaleMeanColumn},
-                {description: 'Rescale using mean and std dev', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn},
-                {description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax}
-            );
+                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn},
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace empty...', operation: self.replaceEmptyWithValue});
+
+            transforms.other.push(
+                {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operation: self.crosstabColumn});
+
         } else if (dataCategory === DataCategory.ARRAY) {
-            transforms.push({icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
-                {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'},
+            transforms.defaults.push(
                 {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems},
-                {description: 'Extract item to column', icon: 'call_split', name: 'Extract item...', operation: self.extractArrayItem}
+                {description: 'Extract item to column', icon: 'call_split', name: 'Extract item...', operation: self.extractArrayItem},
+                {description: 'Convert array elements to rows', icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
+                {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'}
             );
         }
         else if (dataCategory === DataCategory.BINARY) {
-            transforms.push({icon: '#', name: 'CRC32', operation: 'crc32'},
-                {icon: '#', name: 'MD5', operation: 'md5'},
-                {icon: '#', name: 'SHA1', operation: 'sha1'},
-                {icon: '#', name: 'SHA2', operation: 'sha2'});
+            transforms.defaults.push({'description': 'crc32 hash', icon: '#', name: 'CRC32', operation: 'crc32'},
+                {'description': 'md5 hash', icon: '#', name: 'MD5', operation: 'md5'},
+                {'description': 'sha1 hash', icon: '#', name: 'SHA1', operation: 'sha1'},
+                {'description': 'sha2 hash', icon: '#', name: 'SHA2', operation: 'sha2'});
         }
         else if (dataCategory === DataCategory.DATETIME) {
-            transforms.push({description: 'Day of month for', icon: 'today', name: 'Day of Month', operation: 'dayofmonth'},
+            transforms.other.push({description: 'Day of month for', icon: 'today', name: 'Day of Month', operation: 'dayofmonth'},
                 {description: 'Day of year for', icon: 'today', name: 'Day of Year', operation: 'dayofyear'},
                 {description: 'Hour of', icon: 'access_time', name: 'Hour', operation: 'hour'},
                 {description: 'Last day of month for', icon: 'today', name: 'Last Day of Month', operation: 'last_day'},
@@ -1377,15 +1646,13 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
         }
         else if (dataCategory == DataCategory.STRUCT) {
-            transforms.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operation: self.flattenStructColumn});
+            transforms.defaults.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operation: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
-            transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'});
+            transforms.defaults.push({description: 'Explode array to rows', icon: 'call_split', name: 'Explode', operation: 'explode'});
         } else if (dataCategory === DataCategory.BOOLEAN) {
-            transforms.push({icon: 'exposure', name: 'Negate boolean', operation: self.negateBoolean});
+            transforms.defaults.push({description: 'Flip boolean', icon: 'exposure', name: 'Negate boolean', operation: self.negateBoolean});
         }
-
-
         return transforms;
     }
 
@@ -1394,7 +1661,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param columns column list
      * @returns {string} a unique fieldname
      */
-    protected toAliasClause(name:string): string {
+    protected toAliasClause(name: string): string {
         return ".as(\"" + name + "\")"
     }
 
@@ -1434,7 +1701,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const self = this;
         const columnFieldName = self.getColumnFieldName(column);
         const uniqueName = self.toUniqueColumnName(grid.columns, columnFieldName);
-        return self.createAppendColumnFormula(script,column,grid,uniqueName);
+        return self.createAppendColumnFormula(script, column, grid, uniqueName);
     }
 
     /**
@@ -1464,6 +1731,7 @@ export class ColumnDelegate implements IColumnDelegate {
         formula += ")";
         return formula;
     }
+
     /**
      * Creates a formula that replaces the specified column with the specified script.
      *

@@ -199,6 +199,12 @@ thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indete
   background-color: transparent !important;
   opacity: 1;
 }
+thinkbig-visual-query-transform span.ws-text {
+  color: coral;
+  margin-right: 2px;
+  margin-left: 2px;
+  font-weight: bold;
+}
 
 /**
   Override toolbar buttons

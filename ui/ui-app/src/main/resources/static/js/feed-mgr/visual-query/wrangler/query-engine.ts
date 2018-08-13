@@ -86,6 +86,12 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     protected redo_: ScriptState<T>[] = [];
 
     /**
+     * State prior to a modification to the transform history. This can be reverted
+     * if the state becomes inconsistent
+     */
+    protected backup_: ScriptState<T>[] = [];
+
+    /**
      * Fraction of rows to include when sampling.
      */
     protected sample_: number = 1.0;
@@ -347,7 +353,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     getHistory(): any[] {
         return this.states_.slice(1).map(function (state) {
-            return state.context;
+            let historyItem = angular.copy(state.context);
+            historyItem.inactive = state.inactive;
+            return historyItem;
         });
     }
 
@@ -505,6 +513,56 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         // Clear redo states
         this.redo_ = [];
     }
+
+    toggle(index: number): void {
+        let states = this.states_;
+        this.resetHistoryCache(index);
+        states[index].inactive = !states[index].inactive;
+    }
+
+    /**
+     * Reverts the state of history prior to the execution of a step modification
+     */
+    restoreLastKnownState() : void {
+        if (this.backup_ != null && this.backup_.length > 0) {
+            this.states_ = this.backup_;
+            this.backup_ = [];
+        }
+    }
+
+    /**
+     * Remove the item from the history
+     * @param {number} index
+     */
+    remove(index: number) : void {
+        let states = this.states_;
+        if (!states[index].inactive) {
+            throw new Error('Item not deactivated');
+        }
+        this.states_.splice(index, 1);
+
+    }
+
+    /**
+     * Reset history cache from index forward, forcing Spark to recalculate
+     * @param {number} index
+     */
+    resetHistoryCache(index: number) : void {
+        let states = this.states_;
+        angular.copy(states, this.backup_);
+        let len = states.length;
+        if (len > index - 1) {
+            let state = states[index];
+            // Reset any caching
+            for (var i =index; i < len; i++) {
+                states[i].table = null;
+                // Guarantee unique state
+                states[i].tableState = (i*1024000) + (new Date()).getTime();
+            }
+            this.stateChanged = true;
+        }
+    }
+
 
     /**
      * Restores the last transformation that was undone.
@@ -719,7 +777,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, tableState:(new Date()).getTime(), sort: null};
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, inactive:false, tableState:(new Date()).getTime(), sort: null};
     }
 
 

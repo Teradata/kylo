@@ -20,10 +20,10 @@ const SparkDataType = {
     // Numeric types
     BYTE: new DataType("byte", "Byte"),
     SHORT: new DataType("short", "Short"),
-    INT: new DataType("int", "Int", "exposure_zero"),
-    BIGINT: new DataType("bigint", "Bigint", "exposure_zero"),
+    INT: new DataType("int", "Int"),
+    BIGINT: new DataType("bigint", "Bigint"),
     FLOAT: new DataType("float", "Float"),
-    DOUBLE: new DataType("double", "Double", "exposure_zero"),
+    DOUBLE: new DataType("double", "Double"),
     DECIMAL: new DataType("decimal", "Decimal"),
 
     // Date/time types
@@ -84,18 +84,18 @@ export class SparkColumnDelegate extends ColumnDelegate {
     castTo(dataType: DataType): void {
         if (dataType === SparkDataType.BIGINT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to bigint"});
+            this.controller.addFunction(formula, {formula: formula, name: "Cast " + this.displayName + " to bigint"});
         }
         if (dataType === SparkDataType.DATE) {
             return this.castToDate();
         }
         if (dataType === SparkDataType.DOUBLE) {
             const formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to double"});
+            this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to double"});
         }
         if (dataType === SparkDataType.INT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to int"});
+            this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to int"});
         }
         if (dataType === SparkDataType.STRING) {
             return this.castToString();
@@ -112,15 +112,15 @@ export class SparkColumnDelegate extends ColumnDelegate {
         switch (this.dataType) {
             case SparkDataType.BIGINT.value:
             case SparkDataType.INT.value:
-                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.FLOAT, SparkDataType.DOUBLE];
+                return [SparkDataType.DATE, SparkDataType.DOUBLE, SparkDataType.FLOAT, SparkDataType.STRING];
             case SparkDataType.FLOAT.value:
-                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.INT, SparkDataType.DOUBLE];
+                return [SparkDataType.DATE,  SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.STRING];
             case SparkDataType.DOUBLE.value:
-                return [SparkDataType.DATE, SparkDataType.STRING, SparkDataType.FLOAT, SparkDataType.INT];
+                return [SparkDataType.DATE, SparkDataType.FLOAT, SparkDataType.INT, SparkDataType.STRING];
             case SparkDataType.DATE.value:
                 return [SparkDataType.STRING, SparkDataType.TIMESTAMP];
             case SparkDataType.STRING.value:
-                return [SparkDataType.BIGINT, SparkDataType.DATE, SparkDataType.FLOAT, SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.TIMESTAMP];
+                return [SparkDataType.BIGINT, SparkDataType.DATE,  SparkDataType.DOUBLE, SparkDataType.FLOAT, SparkDataType.INT, SparkDataType.TIMESTAMP];
 
             default:
                 return [SparkDataType.STRING];
