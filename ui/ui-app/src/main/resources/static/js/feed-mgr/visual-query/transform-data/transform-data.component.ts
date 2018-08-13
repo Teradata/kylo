@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Input, OnInit} from "@angular/core";
 import * as angular from "angular";
 import {IDeferred, IPromise} from "angular";
 import * as $ from "jquery";
@@ -12,8 +12,6 @@ import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
-import {ProfileOutputRow, ScriptState} from "../wrangler";
-import {SparkConstants} from "../services/spark/spark-constants";
 import {ProfileHelper} from "../wrangler/api/profile-helper";
 import {ScriptState, StringUtils} from "../wrangler/index";
 
@@ -1186,9 +1184,9 @@ export class TransformDataComponent implements OnInit {
         if (changedSteps.oldStep === thisIndex) {
             this.saveToFeedModel().then( () => {
                 // notify those that the data is loaded/updated
-                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+                this.broadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             },function(){
-                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+                this.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
         } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
             this.ngOnInit();
@@ -1205,7 +1203,7 @@ export class TransformDataComponent implements OnInit {
         // Add unsaved filters
 
         // Check if updates are necessary
-        let feedModel = this.FeedService.createFeedModel;
+        let feedModel = this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
             let result = this.$q.defer();
@@ -1226,14 +1224,14 @@ export class TransformDataComponent implements OnInit {
         let fields = this.engine.getFields();
 
         if (fields !== null) {
-            this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
-            this.FeedService.syncTableFieldPolicyNames();
+            this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
+            this.feedService.syncTableFieldPolicyNames();
             this.engine.save();
             deferred.resolve(true);
         } else {
             this.query().then(() => {
-                this.FeedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
-                this.FeedService.syncTableFieldPolicyNames();
+                this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+                this.feedService.syncTableFieldPolicyNames();
                 this.engine.save();
                 deferred.resolve(true);
             });
@@ -1268,13 +1266,13 @@ export class TransformDataComponent implements OnInit {
                 if (index < fieldPolicies.length) {
                     fieldPolicy = fieldPolicies[index];
                 } else {
-                    fieldPolicy = this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy = this.feedService.newTableFieldPolicy(column.hiveColumnLabel);
                     fieldPolicy.fieldName = column.hiveColumnLabel;
                     fieldPolicy.feedFieldName = column.hiveColumnLabel;
                 }
 
                 if (index === columnIndex) {
-                    this.FeedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
+                    this.feedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
                 }
                 return fieldPolicy;
             });
