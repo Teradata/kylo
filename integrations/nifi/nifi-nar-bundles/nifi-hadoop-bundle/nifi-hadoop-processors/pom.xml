@@ -31,6 +31,12 @@
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-hadoop-properties-v1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Apache Commons -->
     <dependency>
       <groupId>org.apache.commons</groupId>

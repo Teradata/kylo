@@ -17,7 +17,6 @@
 package com.thinkbiganalytics.nifi.v2.hdfs;
 
 
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
@@ -58,7 +57,7 @@ import javax.net.SocketFactory;
 /**
  * This is a base class that is helpful when building processors interacting with HDFS.
  */
-public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
+public abstract class AbstractHadoopProcessor extends AbstractHadoopNiFiVersionAwareProcessor {
 
     // properties
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder().name("Hadoop Configuration Resources")
@@ -155,9 +154,19 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         kerberosKeytab = kerberosProperties.createKerberosKeytabProperty();
         kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
 
+        final PropertyDescriptor ADDITIONAL_CLASSPATH_RESOURCES = AdditionalProperties.getHdfsAdditionalClasspathResources();
+
         // Create list of properties
         final List<PropertyDescriptor> props = new ArrayList<>();
         props.add(HADOOP_CONFIGURATION_RESOURCES);
+
+        if (ADDITIONAL_CLASSPATH_RESOURCES != null) {
+            getLog().debug("ADDITIONAL_CLASSPATH_RESOURCES obtained");
+            props.add(ADDITIONAL_CLASSPATH_RESOURCES);
+        } else {
+            getLog().debug("ADDITIONAL_CLASSPATH_RESOURCES is null!");
+        }
+
         props.add(kerberosPrincipal);
         props.add(kerberosKeytab);
         props.add(KerberosProperties.KERBEROS_RELOGIN_PERIOD);
