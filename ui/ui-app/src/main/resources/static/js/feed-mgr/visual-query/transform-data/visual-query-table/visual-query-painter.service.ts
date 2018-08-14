@@ -246,7 +246,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         } else if (cell.value !== null && cell.value.sqltypeName && cell.value.sqltypeName.startsWith("PERIOD")) {
             cellDiv.textContent = "(" + cell.value.attributes.join(", ") + ")";
         } else {
-            cellDiv.textContent = cell.value;
+            cellDiv.textContent = cell.value
         }
 
         if (cell !== null) {
@@ -254,8 +254,11 @@ export class VisualQueryPainterService extends fattable.Painter {
 
             angular.element(cellDiv)
                 .data("column", cell.column)
-                .data("validation", cell.validation);
+                .data("validation", cell.validation)
+                .data("realValue", cell.value);
         }
+
+        $(cellDiv).html(cellDiv.textContent.replace(/\s/g,"<span class='ws-text'>·</span>"))
     }
 
     /**
@@ -411,6 +414,22 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 
     /**
+     * Create the display string for a selection
+     */
+    private niceSelection(selection:string) : string {
+        switch (selection) {
+            case ' ':
+                return '(space)';
+            case '':
+                return '(empty)';
+            case null:
+                return '(empty)';
+            default:
+                return selection;
+        }
+    }
+
+    /**
      * Shows the cell menu on the specified cell.
      */
     private showMenu(cellDiv: HTMLElement, event: JQueryEventObject) {
@@ -420,6 +439,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         const header = this.delegate.columns[column];
         const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
+        const range = selection.getRangeAt(0)
 
         if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
             return;  // ignore dragging between elements
@@ -436,9 +456,11 @@ export class VisualQueryPainterService extends fattable.Painter {
         const $scope: IScope = (this.menuPanel.config as any).scope;
         $scope.DataCategory = DataCategory;
         $scope.header = header;
-        $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
+        $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·"," ") : null;
+        $scope.selectionDisplay = this.niceSelection($scope.selection)
+        $scope.range = range;
         $scope.table = this.delegate;
-        $scope.value = isNull ? null : cellDiv.innerText;
+        $scope.value = isNull ? null : $(cellDiv).data('realValue');
         $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
 
         // Update position

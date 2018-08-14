@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.net.URISyntaxException;
-
 /**
  */
 public class LivyWrangler {
@@ -43,7 +41,7 @@ public class LivyWrangler {
      * @param sqlContext the sqlContext as created by Livy
      * @return a spring application context with services needed for wrangling
      */
-    public static ApplicationContext createSpringContext(SparkContext sc, SQLContext sqlContext) throws URISyntaxException {
+    public static ApplicationContext createSpringContext(SparkContext sc, SQLContext sqlContext) {
         logger.info("Creating Spring application context for Livy");
 
         LivyWranglerConfig.setSparkContext(sc);

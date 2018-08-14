@@ -101,9 +101,11 @@ public class KyloUpgrader {
             Properties properties = new Properties();
             ClassLoader classLoader = this.getClass().getClassLoader();
             try (InputStream inputStream = classLoader.getResourceAsStream("application-" + p + ".properties")) {
-                properties.load(inputStream);
-                PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(p, properties);
-                ctx.getEnvironment().getPropertySources().addLast(propertiesPropertySource);
+                if(inputStream != null) {
+                    properties.load(inputStream);
+                    PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(p, properties);
+                    ctx.getEnvironment().getPropertySources().addLast(propertiesPropertySource);
+                }
             } catch(Exception e) {
                 log.error("Error loading properties for profile " + p, e);
             }

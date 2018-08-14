@@ -39,11 +39,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Profile("kylo-livy")
 @Configuration
 @PropertySource(value = {"classpath:spark.properties"}, ignoreResourceNotFound = true)
 @ImportResource("classpath:/config/applicationContext-livy.xml")
 @EnableAutoConfiguration  // needed for populating configuration POJOs
+@AllProfiles( { "kylo-livy", "!kyloUpgrade" })
 public class SparkLivyConfig {
     /**
      * Loads the properties for acquiring a Kerberos ticket.

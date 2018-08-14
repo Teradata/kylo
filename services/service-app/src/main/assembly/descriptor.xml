@@ -27,6 +27,9 @@
     <dependencySet>
       <excludes>
         <exclude>org.apache.nifi:*</exclude>
+        <!-- these will get placed in the plugin directory -->
+        <exclude>com.thinkbiganalytics.kylo:kylo-spark-livy-core</exclude>
+        <exclude>com.thinkbiganalytics.kylo:kylo-spark-shell-core</exclude>
       </excludes>
       <outputDirectory>lib</outputDirectory>
     </dependencySet>

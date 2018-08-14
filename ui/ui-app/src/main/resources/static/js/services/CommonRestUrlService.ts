@@ -30,6 +30,7 @@ export default class CommonRestUrlService{
     SECURITY_ENTITY_ROLES_URL: any;
     ENTITY_ACCESS_CONTROLLED_CHECK: any;
     ANGULAR_EXTENSION_MODULES_URL: any;
+    CONFIGURATION_PROPERTIES_URL: any;
 
    constructor(){
         this.ROOT = "";
@@ -37,6 +38,8 @@ export default class CommonRestUrlService{
         this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
         this.SECURITY_GROUPS_URL = this.SECURITY_BASE_URL + "/groups";
         this.SECURITY_USERS_URL = this.SECURITY_BASE_URL + "/users";
+        this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/configuration/properties";
+
         /**
          * get all roles
          * @type {string}

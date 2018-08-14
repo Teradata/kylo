@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -51,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = {TestLivyClient.Config.class, SparkLivyConfig.class},
         loader = AnnotationConfigContextLoader.class)
 @TestPropertySource("classpath:kerberos-client.properties")
+@ActiveProfiles("kylo-livy")
 public class TestLivyClient {
     private static final Logger logger = LoggerFactory.getLogger(TestLivyClient.class);
 

@@ -1901,6 +1901,38 @@
         "!sparkType": "QuantileDiscretizer"
       }
     },
+    "Bucketizer": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Maps a column of continuous features to a column of feature buckets.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setHandleInvalid": {
+        "!type": "fn(value: string) -> Bucketizer",
+        "!doc": "Param for how to handle invalid entries. (Spark 2.1)",
+        "!spark": ".setHandleInvalid(%s)",
+        "!sparkType": "Bucketizer"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> Bucketizer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "Bucketizer"
+      },
+      "setSplits": {
+        "!type": "fn(value: [number]) -> Bucketizer",
+        "!doc": "Parameter for mapping continuous features into buckets. With n+1 splits, there are n buckets. A bucket defined by splits x,y holds values in the range [x,y) except the last bucket, which also includes y. Splits should be of length greater than or equal to 3 and strictly increasing. Values at -inf, inf must be explicitly provided to cover all Double values; otherwise, values outside the splits specified will be treated as errors.",
+        "!spark": ".setSplits(%@f)",
+        "!sparkType": "Bucketizer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> Bucketizer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "Bucketizer"
+      }
+    },
     "RandomForestClassifier": {
       "run": {
         "!type": "fn(dataset: DataFrame) -> DataFrame",

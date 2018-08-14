@@ -7,7 +7,7 @@ import AddButtonService from "./AddButtonService";
 import BroadcastService from "./broadcast-service";
 import {NotificationService} from "./notification.service";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
-import {downgradeInjectable} from "@angular/upgrade/static";
+import {TemplateService} from "../repository/services/template.service";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -35,5 +35,15 @@ export function previewDatasetCollectionServiceFactory(i: any) {
 export const previewDatasetCollectionServiceProvider: FactoryProvider = {
     provide: PreviewDatasetCollectionService,
     useFactory: previewDatasetCollectionServiceFactory,
+    deps: ["$injector"]
+}
+
+export function templateServiceFactory(i: any) {
+    return i.get("templateService");
+}
+
+export const templateServiceProvider: FactoryProvider = {
+    provide: TemplateService,
+    useFactory: templateServiceFactory,
     deps: ["$injector"]
 }

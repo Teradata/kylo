@@ -1,4 +1,4 @@
-//package com.thinkbiganalytics.spark.logger
+package com.thinkbiganalytics.spark.logger
 
 import org.apache.log4j.Logger
 import org.joda.time.format.PeriodFormatterBuilder

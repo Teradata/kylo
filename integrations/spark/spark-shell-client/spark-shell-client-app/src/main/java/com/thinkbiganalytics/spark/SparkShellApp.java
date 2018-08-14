@@ -37,7 +37,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.AbstractEnvironment;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,7 +61,9 @@ public class SparkShellApp {
      */
     public static void main(String[] args) {
         logger.info("Starting Kylo Spark Shell");
+
         final SpringApplication app = new SpringApplication(SparkShellApp.class);
+        app.setAdditionalProfiles("kylo-shell");
 
         // Ignore application listeners that will load kylo-services configuration
         final List<ApplicationListener<?>> listeners = FluentIterable.from(app.getListeners())
@@ -74,6 +78,10 @@ public class SparkShellApp {
 
         // Start app
         final ApplicationContext context = app.run(args);
+
+        if( logger.isInfoEnabled() ) {
+            logger.info("SparkLauncher Active Profiles = '{}'", Arrays.toString(context.getEnvironment().getActiveProfiles()));
+        }
 
         // Keep main thread running until the idle timeout
         context.getBean(IdleMonitorService.class).awaitIdleTimeout();

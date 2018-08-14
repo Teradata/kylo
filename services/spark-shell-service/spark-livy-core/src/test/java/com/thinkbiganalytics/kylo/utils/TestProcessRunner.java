@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.utils;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,58 +20,43 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.config.SparkLivyConfig;
-import com.thinkbiganalytics.kylo.spark.livy.TestLivyClient;
-import junit.framework.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import javax.annotation.Resource;
-
-import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.io.File;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = TestProcessRunner.Config.class,
-        loader = AnnotationConfigContextLoader.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class TestProcessRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(TestProcessRunner.class);
 
-    @Resource
-    private ProcessRunner processRunner;
+    private static String testScript = FileUtils.getFilePathFromResource(TestProcessRunner.class, "/setup/echoTest.sh");
+
+    @Before
+    public void beforeMethod() {
+        // only run tests if the test script can be run  ;; maven-ant-plugin will have chmod the needed perms, but if not, just skip the test
+        org.junit.Assume.assumeTrue(new File(testScript).canExecute());
+    }
 
     @Test
     public void testExecute() {
+        ProcessRunner processRunner = new ProcessRunner();
+
         logger.debug("CWD = {} ", FileUtils.getCwd());
 
-        String script = FileUtils.getFilePathFromResource(getClass(), "/setup/echoTest.sh");
-        logger.info("Using script found on classpath: '{}'", script);
+        logger.info("Using script found on classpath: '{}'", testScript);
 
-        List<String> args =Arrays.asList("xyz", "/setup/echoTest.sh");
-        boolean succeeded = processRunner.runScript(script, args);
+        List<String> args = Arrays.asList("xyz", "/setup/echoTest.sh");
+        boolean succeeded = processRunner.runScript(testScript, args);
 
         assertThat(succeeded).isTrue();
-        assertThat(processRunner.getOutputFromLastCommand()).startsWith( String.join(" ",args));
-        assertThat(processRunner.getErrorFromLastCommand()).startsWith( "This line goes to standard error");
+        assertThat(processRunner.getOutputFromLastCommand()).startsWith(String.join(" ", args));
+        assertThat(processRunner.getErrorFromLastCommand()).startsWith("This line goes to standard error");
     }
 
-    @Configuration
-    static class Config {
-        @Bean
-        public ProcessRunner processRunner() {
-            return new ProcessRunner();
-        }
-    }
 }

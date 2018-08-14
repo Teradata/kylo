@@ -113,7 +113,7 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    @Value("${kylo.default.template.repository}")
+    @Value("${kylo.template.repository.default}")
     String defaultKyloRepository;
 
     private final MetadataEventListener<TemplateChangeEvent> templateChangedListener = new TemplateChangeRepositoryListener();

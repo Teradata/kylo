@@ -1,5 +1,7 @@
 import {IPromise} from "angular";
 import {PageSpec} from "./index";
+import {ProfileOutputRow} from "./model/profile-output-row";
+import {ProfileHelper} from "./api/profile-helper";
 
 export interface ColumnController {
 
@@ -43,7 +45,26 @@ export interface ColumnController {
     addColumnSort(direction:string,column:any,query?:boolean) : IPromise<{}>;
 
 
+    /**
+     * Generates column statistics
+     * @param {string} fieldName the fieldname
+     * @returns {angular.IPromise<ProfileHelper>} profile data
+     */
+    extractColumnStatistics(fieldName: string) : IPromise<ProfileHelper>;
 
+    /**
+     * Executes a query returning a single value
+     * @param {string} formula
+     * @param {number} sample number of sample rows
+     * @returns {angular.IPromise<any>}
+     */
+    extractFormulaResult(formula: string, sample:number): IPromise<any>;
+
+    /**
+     * Show column statistics for provided field
+     * @param {string} fieldName the fieldname
+     * @returns {any}
+     */
     showAnalyzeColumn(fieldName: string) : any;
 
     /**
