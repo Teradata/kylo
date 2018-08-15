@@ -71,6 +71,15 @@ public class StripHeader extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    public static final PropertyDescriptor SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED = new PropertyDescriptor.Builder()
+        .name("Route Original Even If Disabled")
+        .description("Whether to send original input file to original relationship even if stripping the header is disabled via this processor's [Enable processing] property?")
+        .required(false)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("true")
+        .expressionLanguageSupported(true)
+        .build();
+
     public static final Relationship REL_ORIGINAL = new Relationship.Builder()
         .name("original")
         .description("The original input file will be routed to this destination")
@@ -98,6 +107,7 @@ public class StripHeader extends AbstractNiFiProcessor {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(ENABLED);
         properties.add(HEADER_LINE_COUNT);
+        properties.add(SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED);
 
         this.properties = Collections.unmodifiableList(properties);
 
@@ -129,13 +139,22 @@ public class StripHeader extends AbstractNiFiProcessor {
 
         final boolean isEnabled = context.getProperty(ENABLED).evaluateAttributeExpressions(flowFile).asBoolean();
         final int headerCount = context.getProperty(HEADER_LINE_COUNT).evaluateAttributeExpressions(flowFile).asInteger();
+        final boolean sendToOriginalRelationshipEvenIfDisabledFlag = context.getProperty(SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED).evaluateAttributeExpressions(flowFile).asBoolean();
 
         // Empty files and no work to do will simply pass along content
         if (!isEnabled || headerCount == 0 || flowFile.getSize() == 0L) {
-            final FlowFile contentFlowFile = session.clone(flowFile);
-            session.transfer(contentFlowFile, REL_CONTENT);
-            session.transfer(flowFile, REL_ORIGINAL);
-            return;
+            getLog().debug("Either strip header is disabled, or there is no work to do.");
+            if (sendToOriginalRelationshipEvenIfDisabledFlag) {
+                getLog().debug("Both content and original relationships will be used.");
+                final FlowFile contentFlowFile = session.clone(flowFile);
+                session.transfer(contentFlowFile, REL_CONTENT);
+                session.transfer(flowFile, REL_ORIGINAL);
+                return;
+            } else {
+                getLog().debug("Only content relationship will be used.");
+                session.transfer(flowFile, REL_CONTENT);
+                return;
+            }
         }
 
         final MutableLong headerBoundaryInBytes = new MutableLong(-1);
