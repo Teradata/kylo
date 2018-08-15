@@ -20,11 +20,11 @@ package com.thinkbiganalytics.spark.rest;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.spark.metadata.SparkJob;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.slf4j.Logger;

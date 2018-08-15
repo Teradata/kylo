@@ -21,9 +21,9 @@ package com.thinkbiganalytics.kylo.utils;
  */
 
 import com.thinkbiganalytics.kylo.spark.SparkException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -21,8 +21,8 @@ package com.thinkbiganalytics.spark.metadata;
  */
 
 import com.google.common.base.Supplier;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.ext.XLogger;

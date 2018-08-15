@@ -37,14 +37,14 @@ import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementOutputResponse;
 import com.thinkbiganalytics.kylo.model.enums.StatementOutputStatus;
 import com.thinkbiganalytics.kylo.model.enums.StatementState;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

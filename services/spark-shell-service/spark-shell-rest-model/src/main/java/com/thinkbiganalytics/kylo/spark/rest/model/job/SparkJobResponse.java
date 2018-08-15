@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.rest.model.job;
+package com.thinkbiganalytics.kylo.spark.rest.model.job;
 
 /*-
  * #%L
@@ -20,11 +20,23 @@ package com.thinkbiganalytics.spark.rest.model.job;
  * #L%
  */
 
-public class SparkJobParent {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
+
+/**
+ * The status and result of a Spark job.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SparkJobResponse extends SimpleResponse {
 
     private String id;
-    private String script;
+    private SparkJobResult result;
 
+    /**
+     * Gets the identifier of the job.
+     */
     public String getId() {
         return id;
     }
@@ -33,11 +45,14 @@ public class SparkJobParent {
         this.id = id;
     }
 
-    public String getScript() {
-        return script;
+    /**
+     * Gets the result of the job.
+     */
+    public SparkJobResult getResult() {
+        return result;
     }
 
-    public void setScript(String script) {
-        this.script = script;
+    public void setResult(SparkJobResult result) {
+        this.result = result;
     }
 }

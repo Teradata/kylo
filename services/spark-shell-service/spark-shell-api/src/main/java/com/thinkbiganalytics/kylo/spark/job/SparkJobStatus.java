@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.spark.job;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 
 import javax.annotation.Nullable;
 

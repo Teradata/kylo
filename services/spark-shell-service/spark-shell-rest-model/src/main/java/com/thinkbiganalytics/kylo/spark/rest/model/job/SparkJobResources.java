@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.rest.model.job;
+package com.thinkbiganalytics.kylo.spark.rest.model.job;
 
 /*-
  * #%L
@@ -20,24 +20,36 @@ package com.thinkbiganalytics.spark.rest.model.job;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains the resources or references to resources required by a Spark job.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkJobResources {
 
-    private List<DataSet> dataSets;
+    private List<DataSetReference> dataSets;
     private Map<String, String> highWaterMarks;
 
-    public List<DataSet> getDataSets() {
+    /**
+     * Data sets required by the job.
+     */
+    public List<DataSetReference> getDataSets() {
         return dataSets;
     }
 
-    public void setDataSets(List<DataSet> dataSets) {
+    public void setDataSets(List<DataSetReference> dataSets) {
         this.dataSets = dataSets;
     }
 
+    /**
+     * Current high water marks for the job.
+     */
     public Map<String, String> getHighWaterMarks() {
         return highWaterMarks;
     }

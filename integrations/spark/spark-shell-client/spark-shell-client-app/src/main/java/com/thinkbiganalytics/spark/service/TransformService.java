@@ -32,6 +32,9 @@ import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
@@ -62,10 +65,6 @@ import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResources;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
@@ -463,8 +462,8 @@ public class TransformService {
 
 
     public TransformResponse kyloReaderResponse(KyloCatalogReadRequest request) throws ScriptException {
-        KyloCatalogClient client = kyloCatalogClientBuilder.build();
-        KyloCatalogReader reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
+        KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();
+        KyloCatalogReader<?> reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
         final Object dataFrame;
         if (!request.getPaths().isEmpty()) {
             if (request.getPaths().size() > 1) {
@@ -502,25 +501,13 @@ public class TransformService {
      * Creates a new Spark job.
      */
     @Nonnull
+    @SuppressWarnings("RedundantThrows")
     private Supplier<SparkJobResult> createJobTask(@Nonnull final SparkJobRequest request) throws ScriptException {
         log.entry(request);
 
         // Build bindings list
         final List<NamedParam> bindings = new ArrayList<>();
         bindings.add(new NamedParamClass("sparkContextService", SparkContextService.class.getName(), sparkContextService));
-
-        final SparkJobResources resources = request.getResources();
-        if (resources != null) {
-            if (resources.getDataSets() != null && !resources.getDataSets().isEmpty()) {
-                if (catalogDataSetProviderFactory != null) {
-                    log.info("Creating new Shell task with {} data sets ", resources.getDataSets().size());
-                    final CatalogDataSetProvider catalogDataSetProvider = catalogDataSetProviderFactory.getDataSetProvider(resources.getDataSets());
-                    bindings.add(new NamedParamClass("catalogDataSetProvider", CatalogDataSetProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", catalogDataSetProvider));
-                } else {
-                    throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
-                }
-            }
-        }
 
         // Return task
         return new SparkJobResultSupplier(engine, request.getScript(), bindings);

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.spark.metadata;
  */
 
 import com.google.common.base.Supplier;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 
 import org.apache.spark.SparkContext;
 

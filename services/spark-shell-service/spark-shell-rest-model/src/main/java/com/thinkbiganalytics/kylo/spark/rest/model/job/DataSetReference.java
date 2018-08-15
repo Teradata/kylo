@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.rest.model.job;
+package com.thinkbiganalytics.kylo.spark.rest.model.job;
 
 /*-
  * #%L
@@ -20,26 +20,26 @@ package com.thinkbiganalytics.spark.rest.model.job;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-public class SparkJobResponse extends SimpleResponse {
+/**
+ * Reference to a data set.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DataSetReference {
 
-    private String id;
-    private SparkJobResult result;
+    private String dataSetId;
 
-    public String getId() {
-        return id;
+    /**
+     * Identifier for the data set.
+     */
+    public String getDataSetId() {
+        return dataSetId;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public SparkJobResult getResult() {
-        return result;
-    }
-
-    public void setResult(SparkJobResult result) {
-        this.result = result;
+    public void setDataSetId(String dataSetId) {
+        this.dataSetId = dataSetId;
     }
 }

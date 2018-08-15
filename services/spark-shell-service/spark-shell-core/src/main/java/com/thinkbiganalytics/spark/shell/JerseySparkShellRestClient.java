@@ -21,6 +21,8 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 import com.thinkbiganalytics.kylo.spark.SparkException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
@@ -30,8 +32,6 @@ import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

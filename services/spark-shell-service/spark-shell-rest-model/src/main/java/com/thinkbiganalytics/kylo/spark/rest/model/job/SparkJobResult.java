@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.rest.model.job;
+package com.thinkbiganalytics.kylo.spark.rest.model.job;
 
 /*-
  * #%L
@@ -20,12 +20,23 @@ package com.thinkbiganalytics.spark.rest.model.job;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.Map;
 
+/**
+ * The result of a Spark job.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkJobResult {
 
     private Map<String, String> highWaterMarks;
 
+    /**
+     * Gets the updated high water marks.
+     */
     public Map<String, String> getHighWaterMarks() {
         return highWaterMarks;
     }

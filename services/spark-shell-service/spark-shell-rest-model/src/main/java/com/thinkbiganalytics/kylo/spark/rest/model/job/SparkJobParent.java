@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.rest.model.job;
+package com.thinkbiganalytics.kylo.spark.rest.model.job;
 
 /*-
  * #%L
@@ -20,51 +20,33 @@ package com.thinkbiganalytics.spark.rest.model.job;
  * #L%
  */
 
-public class SparkJobRequest {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-    public enum Mode {
-        BATCH,
-        INTERACTIVE
-    }
+/**
+ * Reference to an existing Spark job.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SparkJobParent {
 
-    private String lang;
-    private Mode mode;
-    private SparkJobParent parent;
-    private SparkJobResources resources;
+    private String id;
     private String script;
 
-    public String getLang() {
-        return lang;
+    /**
+     * Gets the Spark job identifier.
+     */
+    public String getId() {
+        return id;
     }
 
-    public void setLang(String lang) {
-        this.lang = lang;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public SparkJobParent getParent() {
-        return parent;
-    }
-
-    public void setParent(SparkJobParent parent) {
-        this.parent = parent;
-    }
-
-    public SparkJobResources getResources() {
-        return resources;
-    }
-
-    public void setResources(SparkJobResources resources) {
-        this.resources = resources;
-    }
-
+    /**
+     * Gets the script for recreating the Spark job.
+     */
     public String getScript() {
         return script;
     }

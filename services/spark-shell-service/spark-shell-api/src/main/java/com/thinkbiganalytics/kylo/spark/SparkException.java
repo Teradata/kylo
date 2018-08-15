@@ -120,7 +120,13 @@ public class SparkException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return (super.getMessage() != null) ? super.getMessage() : code;
+        if (super.getMessage() != null) {
+            return super.getMessage();
+        } else if (code != null) {
+            return code + (args != null ? " " + Arrays.toString(args) : "");
+        } else {
+            return null;
+        }
     }
 
     @Override

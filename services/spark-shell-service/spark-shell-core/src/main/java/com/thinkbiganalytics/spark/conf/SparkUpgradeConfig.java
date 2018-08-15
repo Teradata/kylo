@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.conf;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
@@ -27,8 +29,6 @@ import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.shell.ServerProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;

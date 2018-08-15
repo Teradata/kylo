@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.spark.job;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 
 import java.util.Optional;
 

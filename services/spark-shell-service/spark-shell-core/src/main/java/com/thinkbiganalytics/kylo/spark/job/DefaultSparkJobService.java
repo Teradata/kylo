@@ -23,13 +23,19 @@ package com.thinkbiganalytics.kylo.spark.job;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.kylo.spark.job.tasks.BatchJobSupplier;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResources;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +45,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -49,6 +56,12 @@ import javax.annotation.PreDestroy;
  */
 @Service
 public class DefaultSparkJobService implements SparkJobService {
+
+    /**
+     * Data set provider
+     */
+    @Nonnull
+    private final DataSetProvider dataSetProvider;
 
     /**
      * Spark job cache service
@@ -93,7 +106,9 @@ public class DefaultSparkJobService implements SparkJobService {
      * Construct a {@code DefaultSparkJobService}.
      */
     @Autowired
-    public DefaultSparkJobService(@Nonnull final SparkShellProcessManager processManager, @Nonnull final SparkShellRestClient restClient, @Nonnull final SparkJobCacheService cache) {
+    public DefaultSparkJobService(@Nonnull final DataSetProvider dataSetProvider, @Nonnull final SparkShellProcessManager processManager, @Nonnull final SparkShellRestClient restClient,
+                                  @Nonnull final SparkJobCacheService cache) {
+        this.dataSetProvider = dataSetProvider;
         this.processManager = processManager;
         this.restClient = restClient;
         this.cache = cache;
@@ -111,6 +126,58 @@ public class DefaultSparkJobService implements SparkJobService {
                 throw new SparkException("job.parentExpired");
             }
         }
+
+        // Generate script
+        final StringBuilder script = new StringBuilder()
+            .append("import com.thinkbiganalytics.kylo.catalog.KyloCatalog\n");
+
+        if (request.getResources() != null) {
+            final SparkJobResources resources = request.getResources();
+            script.append("KyloCatalog.builder\n");
+
+            if (resources.getDataSets() != null) {
+                resources.getDataSets().forEach(dataSetReference -> {
+                    final DataSet dataSet = dataSetProvider.findDataSet(dataSetReference.getDataSetId())
+                        .orElseThrow(() -> new SparkException("job.resources.invalid-dataset", dataSetReference.getDataSetId()));
+                    final DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);
+
+                    script.append(".addDataSet(\"").append(StringEscapeUtils.escapeJava(dataSet.getId())).append("\")");
+                    if (template.getFiles() != null) {
+                        template.getFiles().forEach(file -> script.append(".addFile(\"").append(StringEscapeUtils.escapeJava(file)).append("\")"));
+                    }
+                    if (template.getFormat() != null) {
+                        script.append(".format(\"").append(StringEscapeUtils.escapeJava(template.getFormat())).append(')');
+                    }
+                    if (template.getJars() != null && !template.getJars().isEmpty()) {
+                        script.append(".addJars(Seq(")
+                            .append(template.getJars().stream().map(StringEscapeUtils::escapeJava).collect(Collectors.joining("\", \"", "\"", "\"")))
+                            .append("))");
+                    }
+                    if (template.getOptions() != null) {
+                        template.getOptions().forEach((name, value) -> script.append(".option(\"").append(StringEscapeUtils.escapeJava(name)).append("\", \"")
+                            .append(StringEscapeUtils.escapeJava(value)).append("\")"));
+                    }
+                    if (template.getPaths() != null) {
+                        script.append(".paths(Seq(")
+                            .append(template.getPaths().stream().map(StringEscapeUtils::escapeJava).collect(Collectors.joining("\", \"", "\"", "\"")))
+                            .append("))");
+                    }
+                    script.append('\n');
+                });
+            }
+            if (resources.getHighWaterMarks() != null) {
+                resources.getHighWaterMarks().forEach((name, value) -> script.append(".setHighWaterMark(\"").append(StringEscapeUtils.escapeJava(name)).append("\", \"")
+                    .append(StringEscapeUtils.escapeJava(value)).append("\"))\n"));
+            }
+
+            script.append(".build\n\n");
+        }
+
+        script.append(request.getScript()).append("\n\n")
+            .append("import com.thinkbiganalytics.spark.rest.model.job.SparkJobResult")
+            .append("val sparkJobResult = new SparkJobResult()\n")
+            .append("sparkJobResult.setHighWaterMarks(KyloCatalog.builder.build.getHighWaterMarks)\n")
+            .append("sparkJobResult\n");
 
         // Find Spark process
         final SparkShellProcess process;

@@ -97,7 +97,20 @@ public class KyloCatalog {
      */
     @Nonnull
     public static KyloCatalogReader<Dataset<Row>> read() {
-        return builder().build().read();
+        return client().read();
+    }
+
+    /**
+     * Creates a reader for specified non-streaming data set as a Spark {@code DataFrame}.
+     *
+     * <p>Use the reader to override properties of the data set. Then call {@link KyloCatalogReader#load() load()} to retrieve the data set.</p>
+     *
+     * @param id identifier of the pre-defined data set
+     * @return a reader pre-configured to access the data set
+     */
+    @Nonnull
+    public static KyloCatalogReader<Dataset<Row>> read(@Nonnull final String id) {
+        return client().read(id);
     }
 
     /**
@@ -114,7 +127,29 @@ public class KyloCatalog {
      */
     @Nonnull
     public static KyloCatalogWriter<Dataset<Row>> write(@Nonnull final Dataset<Row> df) {
-        return builder().build().write(df);
+        return client().write(df);
+    }
+
+    /**
+     * Creates a writer for saving the specified non-streaming Spark {@code DataFrame} to the specified data set.
+     *
+     * <p>Use the writer to override properties of the data set. Then call {@link KyloCatalogWriter#save() save()} to update the data set.</p>
+     *
+     * @param source   the source data set
+     * @param targetId identifier of the pre-defined target data set
+     * @return a write pre-configured to access the target data set
+     */
+    @Nonnull
+    public static KyloCatalogWriter<Dataset<Row>> write(@Nonnull final Dataset<Row> source, @Nonnull final String targetId) {
+        return client().write(source, targetId);
+    }
+
+    /**
+     * Gets the current Kylo Catalog client.
+     */
+    @Nonnull
+    private static KyloCatalogClient<Dataset<Row>> client() {
+        return builder().build();
     }
 
     /**

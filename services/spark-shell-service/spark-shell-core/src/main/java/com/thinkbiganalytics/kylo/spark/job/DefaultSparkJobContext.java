@@ -22,7 +22,7 @@ package com.thinkbiganalytics.kylo.spark.job;
 
 import com.thinkbiganalytics.kylo.spark.job.tasks.ChainableSupplier;
 import com.thinkbiganalytics.kylo.spark.job.tasks.JobStatusFunction;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 
 import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;

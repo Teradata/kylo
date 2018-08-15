@@ -23,7 +23,7 @@ package com.thinkbiganalytics.kylo.spark.job.tasks;
 import com.thinkbiganalytics.kylo.spark.job.DefaultSparkJobStatus;
 import com.thinkbiganalytics.kylo.spark.job.SparkJobCacheService;
 import com.thinkbiganalytics.kylo.spark.job.SparkJobStatus;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 
 import java.util.function.Function;
 

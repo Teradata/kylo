@@ -21,8 +21,8 @@ package com.thinkbiganalytics.kylo.spark.job.tasks;
  */
 
 
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 

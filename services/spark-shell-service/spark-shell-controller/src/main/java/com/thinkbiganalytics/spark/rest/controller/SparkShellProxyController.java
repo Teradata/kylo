@@ -32,6 +32,8 @@ import com.thinkbiganalytics.kylo.spark.file.metadata.FileMetadataScalaScriptGen
 import com.thinkbiganalytics.kylo.spark.job.SparkJobContext;
 import com.thinkbiganalytics.kylo.spark.job.SparkJobService;
 import com.thinkbiganalytics.kylo.spark.job.SparkJobStatus;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -52,8 +54,6 @@ import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformResultModifier;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;

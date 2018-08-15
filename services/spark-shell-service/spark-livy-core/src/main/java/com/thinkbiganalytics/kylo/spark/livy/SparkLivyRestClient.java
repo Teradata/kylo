@@ -30,6 +30,8 @@ import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementsPost;
 import com.thinkbiganalytics.kylo.model.enums.StatementState;
 import com.thinkbiganalytics.kylo.spark.SparkException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.kylo.utils.LivyRestModelTransformer;
 import com.thinkbiganalytics.kylo.utils.LivyUtils;
 import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
@@ -44,8 +46,6 @@ import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobRequest;
-import com.thinkbiganalytics.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
