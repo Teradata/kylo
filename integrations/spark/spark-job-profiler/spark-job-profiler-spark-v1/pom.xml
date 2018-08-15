@@ -46,7 +46,7 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
-          <outputFile>${project.artifactId}-${project.version}-jar-with-dependencies</outputFile>
+          <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
           <transformers>
             <!-- add Main-Class to manifest file -->
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -54,6 +54,13 @@
             </transformer>
           </transformers>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- assembly plugin: doesn't accurately handle provided scope and produces larger jars than shade plugin-->
