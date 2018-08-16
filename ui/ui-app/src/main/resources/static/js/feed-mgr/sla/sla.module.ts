@@ -14,6 +14,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 import {BrowserModule} from "@angular/platform-browser";
 
@@ -22,6 +23,7 @@ import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 import { CovalentChipsModule } from '@covalent/core/chips';
+import { CovalentDialogsModule } from '@covalent/core/dialogs';
 
 import {TranslateModule} from "@ngx-translate/core";
 import {CodemirrorModule} from "ng2-codemirror";
@@ -36,7 +38,7 @@ import CategoriesService from "../services/CategoriesService";
 import { RestUrlService } from "../services/RestUrlService";
 import { FeedSecurityGroups } from "../services/FeedSecurityGroups";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
-import ServiceLevelAgreementInitController from "./ServiceLevelAgreementInitController.component";
+import ServiceLevelAgreementInit from "./ServiceLevelAgreementInit.component";
 import ServiceLevelAgreements from "./service-level-agreements.component";
 import ServiceLevelAgreementController from "./service-level-agreement.component";
 import { SlaService } from "../services/SlaService";
@@ -46,9 +48,9 @@ import ServiceLevelAgreementForm from "./service-level-agreement-form.component"
 import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
-import { SlaEmailTemplatesController } from "./sla-email-templates/SlaEmailTemplatesController.component";
+import { SlaEmailTemplates } from "./sla-email-templates/SlaEmailTemplates.component";
 import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
-import { SlaEmailTemplateController, testDialogController } from "./sla-email-templates/SlaEmailTemplateController.component";
+import { SlaEmailTemplate, testDialogController } from "./sla-email-templates/SlaEmailTemplate.component";
 import { PolicyInputFormController } from "../shared/policy-input-form/policy-input-form.component";
 // import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
@@ -57,25 +59,25 @@ import * as angular from "angular";
 
 @NgModule({
     declarations: [
-        ServiceLevelAgreementInitController,
+        ServiceLevelAgreementInit,
         ServiceLevelAgreements,
         ServiceLevelAgreementController,
         FeedServiceLevelAgreements,
         ServiceLevelAgreementForm,
-        SlaEmailTemplatesController,
-        SlaEmailTemplateController,
+        SlaEmailTemplates,
+        SlaEmailTemplate,
         testDialogController,
         PolicyInputFormController,
         // CronExpressionPreview
     ],
     entryComponents: [
-        ServiceLevelAgreementInitController,
+        ServiceLevelAgreementInit,
         ServiceLevelAgreements,
         ServiceLevelAgreementController,
         FeedServiceLevelAgreements,
         ServiceLevelAgreementForm,
-        SlaEmailTemplatesController,
-        SlaEmailTemplateController,
+        SlaEmailTemplates,
+        SlaEmailTemplate,
         testDialogController,
         PolicyInputFormController,
         // CronExpressionPreview
@@ -90,6 +92,7 @@ import * as angular from "angular";
         CovalentMenuModule,
         CovalentNotificationsModule,
         CovalentChipsModule,
+        CovalentDialogsModule,
         KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
@@ -102,6 +105,7 @@ import * as angular from "angular";
         MatProgressSpinnerModule,
         MatGridListModule,
         MatDialogModule,
+        MatSnackBarModule,
         FormsModule,
         ReactiveFormsModule,
         TranslateModule,

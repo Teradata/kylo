@@ -73,7 +73,7 @@ angular.module(moduleName).directive("ngIfPermission",
                             .then(function (actionSet: any) {
                                 var valid = accessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
-                            }, true);
+                            });
                     }
 
                 }

@@ -231,7 +231,7 @@ export class FeedScheduleController implements ng.IComponentController {
                 //save the changes back to the model
                 this.model.schedule = this.editModel.schedule;
                     //Get the updated value from the server.
-                    this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
+                    this.model.historyReindexingStatus = response.feedMetadata.historyReindexingStatus;
             }, (response:any) => {
                 this.FeedService.hideFeedSavingDialog();
                 this.FeedService.buildErrorData(this.model.feedName, response);

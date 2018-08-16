@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import { Transition, StateService } from '@uirouter/core';
 import { Component } from '@angular/core';
 
@@ -6,7 +5,7 @@ import { Component } from '@angular/core';
     selector: 'service-level-agreement',
     templateUrl: 'js/feed-mgr/sla/service-level-agreements-view.html'
 })
-export default class ServiceLevelAgreementInitController {
+export default class ServiceLevelAgreementInit {
     
     slaId: any;
 

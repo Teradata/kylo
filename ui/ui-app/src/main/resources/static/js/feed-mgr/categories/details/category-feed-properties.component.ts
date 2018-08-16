@@ -1,16 +1,19 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Inject, SimpleChanges } from '@angular/core';
 import CategoriesService from '../../services/CategoriesService';
+import { CloneUtil } from "../../../common/utils/clone-util";
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { TdDialogService } from "@covalent/core/dialogs";
 // const moduleName = require('feed-mgr/categories/module-name');
 
 @Component({
     selector: 'thinkbig-category-feed-properties',
     templateUrl: 'js/feed-mgr/categories/details/category-feed-properties.html'
 })
-export class CategoryFeedPropertiesController {
+export class CategoryFeedProperties {
 
     /**
     * Indicates if the properties may be edited.
@@ -52,19 +55,20 @@ export class CategoryFeedPropertiesController {
     constructor(private accessControlService:AccessControlService,
                 private entityAccessControlService:EntityAccessControlService, 
                 private CategoriesService:CategoriesService,
-                @Inject("$injector") private $injector: any) {
+                private snackBar : MatSnackBar,
+                private _tdDialogService : TdDialogService) {
 
         this.editModel = CategoriesService.newCategory();
 
         this.model = this.CategoriesService.model;
 
         //Apply the entity access permissions
-        this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN,this.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then((access:any) =>{
+        this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN,this.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS).then((access:any) =>{
             this.allowEdit = access;
         });
         
         this.CategoriesService.modelSubject.subscribe((newValue: any) => {
-            this.isNew = !angular.isString(newValue.id)
+            this.isNew = !ObjectUtils.isString(newValue.id)
         });
         // $scope.$watch(
         //     () =>{
@@ -78,37 +82,32 @@ export class CategoryFeedPropertiesController {
     /**
          * Switches to "edit" mode.
          */
-        onEdit = () => {
-            this.editModel = angular.copy(this.model);
+        onEdit () {
+            this.editModel = CloneUtil.deepCopy(this.model);
         };
 
         /**
          * Saves the category properties.
          */
-        onSave = () => {
-            var model = angular.copy(this.CategoriesService.model);
+        onSave () {
+            var model = CloneUtil.deepCopy(this.CategoriesService.model);
             model.id = this.model.id;
             model.userFields = this.editModel.userFields;
             model.userProperties = null;
 
             this.CategoriesService.save(model).then((response:any) =>{
-                this.model = this.CategoriesService.model = response.data;
+                this.model = this.CategoriesService.model = response;
                 this.CategoriesService.setModel(this.CategoriesService.model);
-                this.CategoriesService.update(response.data);
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Saved the Category')
-                        .hideDelay(3000)
-                );
+                this.CategoriesService.update(response);
+                this.snackBar.open('Saved the Category','OK', {duration : 3000});
             }, (err:any) => {
-                this.$injector.get("$mdDialog").show(
-                    this.$injector.get("$mdDialog").alert()
-                        .clickOutsideToClose(true)
-                        .title("Save Failed")
-                        .textContent("The category '" + model.name + "' could not be saved. " + err.data.message)
-                        .ariaLabel("Failed to save category")
-                        .ok("Got it!")
-                );
+                this._tdDialogService.openAlert({
+                    message : "The category '" + model.name + "' could not be saved. " + err.message,
+                    title : "Save Failed",
+                    ariaLabel : "Failed to save category",
+                    closeButton : "Got it!",
+                    disableClose : false
+                });
             });
         };
 }

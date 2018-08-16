@@ -61,5 +61,3 @@ class ModuleFactory  {
 
 const module = new ModuleFactory();
 export default module;
-
-

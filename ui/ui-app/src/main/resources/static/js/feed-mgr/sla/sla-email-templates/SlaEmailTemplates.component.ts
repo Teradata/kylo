@@ -1,5 +1,3 @@
-import * as angular from 'angular';
-import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
 import { DefaultPaginationDataService } from '../../../services/PaginationDataService';
@@ -14,7 +12,7 @@ import { IPageChangeEvent } from '@covalent/core/paging';
     selector: 'sla-email-templates-controller',
     templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html'
 })
-export class SlaEmailTemplatesController {
+export class SlaEmailTemplates {
 
     /**
     * Indicates if templates are allowed to be edited.
@@ -85,7 +83,7 @@ export class SlaEmailTemplatesController {
      * @param event
      * @param template
      */
-    editTemplate = (template: any) => {
+    editTemplate (template: any) {
         if (this.allowEdit && template != undefined) {
             this.slaEmailTemplateService.template = template;
             this.StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
@@ -95,11 +93,11 @@ export class SlaEmailTemplatesController {
         }
     };
 
-    getExistingTemplates = () => {
+    getExistingTemplates () {
 
         var successFn = (response: any) => {
             this.loading = false;
-            this.templates = response.data;
+            this.templates = response;
 
             this.filteredData = this.templates;
             this.filteredTotal = this.templates.length;
@@ -108,8 +106,8 @@ export class SlaEmailTemplatesController {
         var errorFn = (err: any) => {
             this.loading = false;
         }
-        var promise = this.slaEmailTemplateService.getExistingTemplates()
-        promise.toPromise().then(successFn, errorFn);
+        var promise = this.slaEmailTemplateService.getExistingTemplates();
+        promise.then(successFn, errorFn);
         return promise;
     }
 

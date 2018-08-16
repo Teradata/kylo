@@ -138,7 +138,7 @@ export class PolicyInputFormService {
      * Validate the form before adding/editing a Rule for an SLA
      * @returns {boolean}
      */
-    validateForm(theForm:any, ruleProperties:any, showErrorDialog:any) {
+    validateForm(theForm:any, ruleProperties:any, showErrorDialog ?:any) {
         if (showErrorDialog == undefined) {
             showErrorDialog = true;
         }

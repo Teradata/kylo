@@ -8,12 +8,14 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatGridListModule} from '@angular/material/grid-list';
-import {MatDialogModule} from '@angular/material/dialog';
+import { CovalentDialogsModule } from '@covalent/core/dialogs';
+
 
 import { FormsModule } from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 import {BrowserModule} from "@angular/platform-browser";
 
@@ -27,14 +29,14 @@ import {TranslateModule} from "@ngx-translate/core";
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
-import {CategoryDefinitionController} from "./details/category-definition.component";
-import {CategoryPropertiesController} from "./details/category-properties.component";
-import { CategoryFeedPropertiesController } from "./details/category-feed-properties.component";
-import { CategoryAccessControlController } from "./details/category-access-control.component";
-import { CategoryFeedsController } from "./details/category-feeds.component";
+import {CategoryDefinition} from "./details/category-definition.component";
+import {CategoryProperties} from "./details/category-properties.component";
+import { CategoryFeedProperties } from "./details/category-feed-properties.component";
+import { CategoryAccessControl } from "./details/category-access-control.component";
+import { CategoryFeeds } from "./details/category-feeds.component";
 
-import {CategoriesControllerComponent} from "./CategoriesController.component";
-import {CategoryDetailsController} from "./category-details.component";
+import {CategoriesComponent} from "./Categories.component";
+import {CategoryDetails} from "./category-details.component";
 
 import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
@@ -45,23 +47,23 @@ import * as angular from "angular";
 
 @NgModule({
     declarations: [
-        CategoriesControllerComponent,
-        CategoryDefinitionController,
-        CategoryPropertiesController,
-        CategoryFeedPropertiesController,
-        CategoryAccessControlController,
-        CategoryFeedsController,
-        CategoryDetailsController,
+        CategoriesComponent,
+        CategoryDefinition,
+        CategoryProperties,
+        CategoryFeedProperties,
+        CategoryAccessControl,
+        CategoryFeeds,
+        CategoryDetails,
 
     ],
     entryComponents: [
-        CategoriesControllerComponent,
-        CategoryDefinitionController,
-        CategoryPropertiesController,
-        CategoryFeedPropertiesController,
-        CategoryAccessControlController,
-        CategoryFeedsController,
-        CategoryDetailsController,
+        CategoriesComponent,
+        CategoryDefinition,
+        CategoryProperties,
+        CategoryFeedProperties,
+        CategoryAccessControl,
+        CategoryFeeds,
+        CategoryDetails,
     ],
     imports: [
         CovalentCommonModule,
@@ -79,7 +81,8 @@ import * as angular from "angular";
         MatSelectModule,
         MatProgressSpinnerModule,
         MatGridListModule,
-        MatDialogModule,
+        CovalentDialogsModule,
+        MatSnackBarModule,
         FormsModule,
         TranslateModule,
         MatFormFieldModule,

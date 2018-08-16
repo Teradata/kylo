@@ -1,8 +1,8 @@
 import AccessConstants from "../../constants/AccessConstants";
 import { Ng2StateDeclaration } from "@uirouter/angular";
-import ServiceLevelAgreementInitComponent from "./ServiceLevelAgreementInitController.component";
-import {SlaEmailTemplatesController} from "./sla-email-templates/SlaEmailTemplatesController.component";
-import {SlaEmailTemplateController} from "./sla-email-templates/SlaEmailTemplateController.component";
+import ServiceLevelAgreementInit from "./ServiceLevelAgreementInit.component";
+import {SlaEmailTemplates} from "./sla-email-templates/SlaEmailTemplates.component";
+import {SlaEmailTemplate} from "./sla-email-templates/SlaEmailTemplate.component";
 
 export const slaStates: Ng2StateDeclaration[] = [ 
     { 
@@ -10,7 +10,7 @@ export const slaStates: Ng2StateDeclaration[] = [
         url: "/service-level-agreements/:slaId", 
         views: { 
             "content": { 
-                component: ServiceLevelAgreementInitComponent 
+                component: ServiceLevelAgreementInit
             } 
         }, 
         params: {
@@ -27,7 +27,7 @@ export const slaStates: Ng2StateDeclaration[] = [
         url :"/sla-email-templates",
         views: {
             "content": {
-                component: SlaEmailTemplatesController
+                component: SlaEmailTemplates
             }
         },
         data:{
@@ -44,7 +44,7 @@ export const slaStates: Ng2StateDeclaration[] = [
         },
         views: {
             "content": {
-                component: SlaEmailTemplateController
+                component: SlaEmailTemplate
             }
         },
         data:{

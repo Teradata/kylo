@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Component } from '@angular/core';
 import CategoriesService from '../../services/CategoriesService';
@@ -9,7 +8,7 @@ import StateService from '../../../services/StateService';
     selector: 'thinkbig-category-feeds',
     templateUrl: 'js/feed-mgr/categories/details/category-feeds.html'
 })
-export class CategoryFeedsController {
+export class CategoryFeeds {
 
     model:any;
 
@@ -36,7 +35,7 @@ export class CategoryFeedsController {
     *
     * @param {Object} feed the feed to navigate to
     */
-    onFeedClick = (feed:any) => {
+    onFeedClick (feed:any) {
         this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
     }
 }

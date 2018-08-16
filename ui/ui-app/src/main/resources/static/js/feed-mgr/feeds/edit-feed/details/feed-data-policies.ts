@@ -595,7 +595,7 @@ export class Controller implements ng.IComponentController {
             this.model.table.options = this.editModel.table.options;
             this.model.options = this.editModel.options;
             //Get the updated value from the server.
-            this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
+            this.model.historyReindexingStatus = response.feedMetadata.historyReindexingStatus;
             this.populateFieldNameMap();
         }, (response: any) => {
             this.FeedService.hideFeedSavingDialog();

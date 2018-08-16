@@ -281,7 +281,7 @@ export class DefineFeedScheduleController {
             this.createdFeed = null;
 
             this.FeedService.saveFeedModel(this.model).then((response: any) => {
-                this.createdFeed = response.data;
+                this.createdFeed = response;
                 this.savingFeed = false;
                 this.StateService.FeedManager().Feed().navigateToDefineFeedComplete(this.createdFeed, null);
 

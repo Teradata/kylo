@@ -1,16 +1,18 @@
-import * as angular from 'angular';
-import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
 import {Transition, StateService} from "@uirouter/core";
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewContainerRef } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { CloneUtil } from "../../../common/utils/clone-util";
+import { TdDialogService } from "@covalent/core/dialogs";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
     selector: 'sla-email-template-controller',
     templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-template.html'
 })
-export class SlaEmailTemplateController {
+export class SlaEmailTemplate {
 
     /**
      * The id of the template
@@ -61,8 +63,9 @@ export class SlaEmailTemplateController {
     constructor(private slaEmailTemplateService: SlaEmailTemplateService,
                 private stateService: StateService,
                 private accessControlService: AccessControlService,
-                private dialog: MatDialog,
-                @Inject("$injector") private $injector: any) {}
+                private _tdDialogService: TdDialogService,
+                private snackBar: MatSnackBar,
+                private viewContainerRef : ViewContainerRef) {}
 
     ngOnInit() {
         this.templateId = this.stateService.params.emailTemplateId;
@@ -79,9 +82,9 @@ export class SlaEmailTemplateController {
      * Validate and preview
      */
     validate() {
-        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).toPromise().then((response: angular.IHttpResponse<any>) => {
-            response.data.sendTest = false;
-            this.showTestDialog(response.data);
+        this.slaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).toPromise().then((response: any) => {
+            response.sendTest = false;
+            this.showTestDialog(response);
         });
     }
 
@@ -89,22 +92,14 @@ export class SlaEmailTemplateController {
      * Test the email
      */
     sendTestEmail() {
-        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).toPromise().then((response: angular.IHttpResponse<any>) => {
-            response.data.sendTest = true;
-            if (response.data.success) {
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Successfully sent the template')
-                        .hideDelay(3000)
-                );
+        this.slaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).toPromise().then((response: any) => {
+            response.sendTest = true;
+            if (response.success) {
+                this.snackBar.open('Successfully sent the template','OK',{duration : 3000});
             }
             else {
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Error sending the template ')
-                        .hideDelay(3000)
-                );
-                this.showTestDialog(response.data);
+                this.snackBar.open('Error sending the template ','OK',{duration : 3000});
+                this.showTestDialog(response);
             }
         })
     }
@@ -117,21 +112,13 @@ export class SlaEmailTemplateController {
 
         var successFn = (response: any) => {
             this.hideDialog();
-            if (response.data) {
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Successfully saved the template')
-                        .hideDelay(3000)
-                );
+            if (response) {
+                this.snackBar.open('Successfully saved the template','OK',{duration : 3000});
             }
         }
         var errorFn = (err: any) => {
             this.hideDialog();
-            this.$injector.get("$mdToast").show(
-                this.$injector.get("$mdToast").simple()
-                    .textContent('Error saving template ')
-                    .hideDelay(3000)
-            );
+            this.snackBar.open('Error saving template ','OK',{duration : 3000});
         }
 
         this.slaEmailTemplateService.save(this.template).toPromise().then(successFn, errorFn);
@@ -183,23 +170,23 @@ export class SlaEmailTemplateController {
     }
 
     private loadTemplate() {
-        if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
+        if (ObjectUtils.isDefined(this.templateId) && this.templateId != null && (this.template == null || ObjectUtils.isUndefined(this.template))) {
             this.queriedTemplate = null;
-            this.slaEmailTemplateService.getExistingTemplates().toPromise().then(() => {
+            this.slaEmailTemplateService.getExistingTemplates().then(() => {
                 this.template = this.slaEmailTemplateService.getTemplate(this.templateId);
-                if (angular.isUndefined(this.template)) {
+                if (ObjectUtils.isUndefined(this.template)) {
                     ///WARN UNABLE TO FNID TEMPLATE
                     this.showDialog("Unable to find template", "Unable to find the template for " + this.templateId);
                 }
                 else {
-                    this.queriedTemplate = angular.copy(this.template);
+                    this.queriedTemplate = CloneUtil.deepCopy(this.template);
                     this.isDefault = this.queriedTemplate.default;
                     this.getRelatedSlas();
                 }
             })
         }
-        else if ((this.template != null && angular.isDefined(this.template))) {
-            this.queriedTemplate = angular.copy(this.template);
+        else if ((this.template != null && ObjectUtils.isDefined(this.template))) {
+            this.queriedTemplate = CloneUtil.deepCopy(this.template);
             this.isDefault = this.queriedTemplate.default;
         }
         else {
@@ -227,9 +214,9 @@ export class SlaEmailTemplateController {
 
     private getRelatedSlas() {
         this.relatedSlas = [];
-        if (this.template != null && angular.isDefined(this.template) && angular.isDefined(this.template.id)) {
+        if (this.template != null && ObjectUtils.isDefined(this.template) && ObjectUtils.isDefined(this.template.id)) {
             this.slaEmailTemplateService.getRelatedSlas(this.template.id).toPromise().then((response: any) => {
-                _.each(response.data, (sla: any) => {
+                response.array.forEach(response, (sla: any) => {
                     this.relatedSlas.push(sla)
                     this.template.enabled = true;
                 })
@@ -239,7 +226,7 @@ export class SlaEmailTemplateController {
 
     private showTestDialog(resolvedTemplate: any) {
 
-        let dialogRef = this.dialog.open(testDialogController, {
+        let dialogRef = this._tdDialogService.open(testDialogController, {
             data: { resolvedTemplate: resolvedTemplate,
                     emailAddress: this.emailAddress
             },
@@ -248,20 +235,18 @@ export class SlaEmailTemplateController {
     }
 
     private showDialog(title: string, message: string) {
-        this.$injector.get("$mdDialog").show(
-            this.$injector.get("$mdDialog").alert()
-                .parent(angular.element(document.body))
-                .clickOutsideToClose(false)
-                .title(title)
-                .textContent(message)
-                .ariaLabel(title)
-        );
+        this._tdDialogService.openAlert({
+            message : message,
+            title : title,
+            ariaLabel : title,
+            disableClose: true,
+            viewContainerRef : this.viewContainerRef
+        });
     }
 
     private hideDialog() {
-        this.$injector.get("$mdDialog").hide();
+        this._tdDialogService.closeAll();
     }
-
 }
 
 @Component({
@@ -286,15 +271,15 @@ export class testDialogController {
                 private dialogRef: MatDialogRef<testDialogController>,
                 @Inject(MAT_DIALOG_DATA) private data: any) {}
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 
-    cancel = () => {
+    cancel () {
         this.dialogRef.close();
     };
 
-    trustAsHtml = (string: any) => {
+    trustAsHtml (string: any) {
         return this.$injector.get("$sce").trustAsHtml(string);
     };
 

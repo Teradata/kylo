@@ -120,7 +120,7 @@ export class FeedDefinitionController implements ng.IComponentController
             this.model.templateId = this.editModel.templateId;
                 this.model.allowIndexing = this.editModel.allowIndexing;
                 //Get the updated value from the server.
-                this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
+                this.model.historyReindexingStatus = response.feedMetadata.historyReindexingStatus;
         },  (response:any) =>{
             this. FeedService.hideFeedSavingDialog();
             this.FeedService.buildErrorData(this.model.feedName, response);

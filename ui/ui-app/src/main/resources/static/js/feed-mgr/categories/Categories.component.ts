@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import { Component, Input, Inject, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import * as _ from "underscore";
 import CategoriesService from '../services/CategoriesService';
@@ -35,7 +34,7 @@ import StateService from '../../services/StateService';
         }
     `]
 })
-export class CategoriesControllerComponent{
+export class CategoriesComponent{
 
     /**
     * List of categories.

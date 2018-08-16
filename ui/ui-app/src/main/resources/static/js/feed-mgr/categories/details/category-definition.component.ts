@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import { Component, Input, Inject, OnInit } from '@angular/core';
 import * as _ from "underscore";
 import AccessControlService from "../../../services/AccessControlService";
@@ -7,12 +6,18 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 import { IconPickerDialog } from "../../../common/icon-picker-dialog/icon-picker-dialog.component";
 import CategoriesService from "../../services/CategoriesService";
 import { FeedSecurityGroups } from "../../services/FeedSecurityGroups";
+import { TdDialogService } from "@covalent/core/dialogs";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { FeedService } from "../../services/FeedService";
+import 'rxjs/add/operator/timeout';
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-category-definition',
     templateUrl: 'js/feed-mgr/categories/details/category-definition.html'
 })
-export class CategoryDefinitionController {
+export class CategoryDefinition {
     /**
      * Manages the Category Definition section of the Category Details page.
      *
@@ -73,9 +78,9 @@ export class CategoryDefinitionController {
 
         ngOnInit() {
             
-            this.editModel = angular.copy(this.CategoriesService.model);
+            this.editModel = CloneUtil.deepCopy(this.CategoriesService.model);
 
-            this.isEditable = !angular.isString(this.CategoriesService.model.id);
+            this.isEditable = !ObjectUtils.isString(this.CategoriesService.model.id);
 
             this.model = this.CategoriesService.model;
 
@@ -104,8 +109,9 @@ export class CategoryDefinitionController {
                 private CategoriesService: CategoriesService,
                 private StateService:StateService,
                 private FeedSecurityGroups: FeedSecurityGroups,
-                private dialog: MatDialog,
-                @Inject("$injector") private $injector: any) {}
+                private feedService : FeedService,
+                private _tdDialogService: TdDialogService,
+                private snackBar : MatSnackBar) {}
 
     /**
          * System Name states:
@@ -163,17 +169,17 @@ export class CategoryDefinitionController {
         };
 
         hasNoFeeds = () => {
-            return (!angular.isArray(this.model.relatedFeedSummaries) || this.model.relatedFeedSummaries.length === 0);
+            return (!Array.isArray(this.model.relatedFeedSummaries) || this.model.relatedFeedSummaries.length === 0);
         };
 
         allowEditSystemName = () => {
             this.systemNameEditable = true;
-            this.$injector.get("$timeout")(()=> {
-                var systemNameInput = this.$injector.get("$window").document.getElementById("systemName");
+            setTimeout(() => {
+                var systemNameInput = window.document.getElementById("systemName");
                 if(systemNameInput) {
                     systemNameInput.focus();
                 }
-            });
+            }, 1000);
         };
 
         splitSecurityGroups = () => {
@@ -189,7 +195,7 @@ export class CategoryDefinitionController {
          * @return {boolean} {@code true} if the category can be deleted, or {@code false} otherwise
          */
         canDelete = () => {
-            return this.allowDelete && (angular.isString(this.model.id) && this.hasNoFeeds());
+            return this.allowDelete && (ObjectUtils.isString(this.model.id) && this.hasNoFeeds());
         };
 
         /**
@@ -197,7 +203,7 @@ export class CategoryDefinitionController {
          */
         onCancel () {
             this.systemNameEditable = false;
-            if (!angular.isString(this.model.id)) {
+            if (!ObjectUtils.isString(this.model.id)) {
                 this.StateService.FeedManager().Category().navigateToCategories();
             }
         };
@@ -210,22 +216,17 @@ export class CategoryDefinitionController {
             this.CategoriesService.delete(this.editModel).then( () => {
                 this.systemNameEditable = false;
                 this.CategoriesService.reload();
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Successfully deleted the category ' + name)
-                        .hideDelay(3000)
-                );
+                this.snackBar.open('Successfully deleted the category ' + name, 'OK', {duration : 3000});
                 //redirect
                 this.StateService.FeedManager().Category().navigateToCategories();
             }, (err:any) => {
-                this.$injector.get("$mdDialog").show(
-                    this.$injector.get("$mdDialog").alert()
-                        .clickOutsideToClose(true)
-                        .title('Unable to delete the category')
-                        .textContent('Unable to delete the category ' + name + ". " + err.data.message)
-                        .ariaLabel('Unable to delete the category')
-                        .ok('Got it!')
-                );
+                this._tdDialogService.openAlert({
+                    message : 'Unable to delete the category ' + name + ". " + err.message,
+                    title : 'Unable to delete the category',
+                    ariaLabel : 'Unable to delete the category',
+                    closeButton : "Got it!",
+                    disableClose : false
+                });
             });
         };
 
@@ -233,7 +234,7 @@ export class CategoryDefinitionController {
          * Switches to "edit" mode.
          */
         onEdit () {
-            this.editModel = angular.copy(this.model);
+            this.editModel = CloneUtil.deepCopy(this.model);
         };
 
         /**
@@ -244,9 +245,9 @@ export class CategoryDefinitionController {
             var systemNameExists = false;
             var newDisplayName = this.editModel.name;
 
-            this.$injector.get("FeedService").getSystemName(newDisplayName)
+            this.feedService.getSystemName(newDisplayName)
                 .then( (response:any) =>{
-                    var systemName = response.data;
+                    var systemName = response;
                     if (this.isNewCategory() && !this.isSystemNameEditable()) {
                         this.editModel.systemName = systemName;
                     }
@@ -282,9 +283,9 @@ export class CategoryDefinitionController {
             var nameExists = false;
             var newName = this.editModel.name;
 
-            this.$injector.get("FeedService").getSystemName(newName)
+            this.feedService.getSystemName(newName)
                 .then((response:any) =>{
-                    var systemName = response.data;
+                    var systemName = response;
                     if (this.isNewCategory() && !this.isSystemNameEditable()) {
                         this.editModel.systemName = systemName;
                     }
@@ -311,9 +312,9 @@ export class CategoryDefinitionController {
             var nameExists = false;
             var newName = this.editModel.systemName;
 
-            this.$injector.get("FeedService").getSystemName(newName)
+            this.feedService.getSystemName(newName)
                 .then((response:any) =>{
-                    var systemName = response.data;
+                    var systemName = response;
 
                     nameExists = _.some(this.CategoriesService.categories, (category:any) =>{
                         return  (this.editModel.id == null || (this.editModel.id != null && category.id != this.editModel.id)) && category.systemName === systemName;
@@ -335,8 +336,8 @@ export class CategoryDefinitionController {
          * Saves the category definition.
          */
         onSave () {
-            this.model = angular.copy(this.editModel);
-            var model = angular.copy(this.CategoriesService.model);
+            this.model = CloneUtil.deepCopy(this.editModel);
+            var model = CloneUtil.deepCopy(this.CategoriesService.model);
             model.name = this.editModel.name;
             model.systemName = this.editModel.systemName;
             model.description = this.editModel.description;
@@ -348,23 +349,18 @@ export class CategoryDefinitionController {
 
             this.CategoriesService.save(model).then((response:any) =>{
                 this.systemNameEditable = false;
-                this.CategoriesService.update(response.data);
-                this.model = this.CategoriesService.model.response.data;
-                this.$injector.get("$mdToast").show(
-                    this.$injector.get("$mdToast").simple()
-                        .textContent('Saved the Category')
-                        .hideDelay(3000)
-                );
+                this.CategoriesService.update(response);
+                this.model = this.CategoriesService.model = response;
+                this.snackBar.open('Saved the Category', 'OK', {duration : 3000});
                 this.checkAccessPermissions();
             }, (err:any) =>{
-                this.$injector.get("$mdDialog").show(
-                    this.$injector.get("$mdDialog").alert()
-                        .clickOutsideToClose(true)
-                        .title("Save Failed")
-                        .textContent("The category '" + model.name + "' could not be saved. " + err.data.message)
-                        .ariaLabel("Failed to save category")
-                        .ok("Got it!")
-                );
+                this._tdDialogService.openAlert({
+                    message : "The category '" + model.name + "' could not be saved. " + err.message,
+                    ariaLabel : "Failed to save category",
+                    title : "Save Failed",
+                    disableClose : false,
+                    closeButton : "Got it!"
+                });
             });
         };
 
@@ -373,7 +369,7 @@ export class CategoryDefinitionController {
          */
         showIconPicker = () => {
 
-            let dialogRef = this.dialog.open(IconPickerDialog, {
+            let dialogRef = this._tdDialogService.open(IconPickerDialog, {
                 data: { iconModel: this.editModel },
                 panelClass: "full-screen-dialog"
               });
@@ -393,11 +389,11 @@ export class CategoryDefinitionController {
 
         checkAccessPermissions =() => {
             // Apply the entity access permissions
-            this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then((access:any) =>{
+            this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS).then((access:any) =>{
                 this.allowEdit = access;
             });
 
-            this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then((access:any) =>{
+            this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY).then((access:any) =>{
                 this.allowDelete = access;
             });
         }

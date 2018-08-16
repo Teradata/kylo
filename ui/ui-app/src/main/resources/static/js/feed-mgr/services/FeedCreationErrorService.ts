@@ -21,6 +21,7 @@
 import * as _ from "underscore";
 import { Injectable, Inject, Component } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { TranslateService } from "@ngx-translate/core";
 
 class FeedErrorModel {
         isValid: boolean = false;
@@ -35,7 +36,8 @@ class FeedErrorModel {
 
 @Injectable()
 export class FeedCreationErrorService {
-    constructor (private dialog: MatDialog) {}
+    constructor (private dialog: MatDialog,
+                private translate: TranslateService) {}
   
 
         parseNifiFeedForErrors (nifiFeed:any, errorMap:any) {
@@ -84,17 +86,19 @@ export class FeedCreationErrorService {
 
                 if (this.feedError.feedErrorsCount == 1) {
                     //@TODO Ahmad Hassan use angular 5 internationalization
-                    // this.feedError.message = this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf');
+                    var errorMessage:string = "";
+                    (() => { return this.translate.get('views.FeedCreationErrorService.iiwf').toPromise().then(value => {return errorMessage = value})})();
+                    this.feedError.message = this.feedError.feedErrorsCount + errorMessage;
                     this.feedError.isValid = false;
                 }
                 else if (this.feedError.feedErrorsCount >=2  || this.feedError.feedErrorsCount <= 4) {
 
-                    // this.feedError.message = this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf2');
+                    this.feedError.message = this.translate.instant('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.translate.instant('views.FeedCreationErrorService.iiwf2');
                     this.feedError.isValid = false;
                 }
                 else if (this.feedError.feedErrorsCount >= 5) {
 
-                    // this.feedError.message = this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.$injector.get("$filter")('translate')('views.FeedCreationErrorService.iiwf2');
+                    this.feedError.message = this.translate.instant('views.FeedCreationErrorService.Found') + this.feedError.feedErrorsCount + this.translate.instant('views.FeedCreationErrorService.iiwf2');
                     this.feedError.isValid = false;
                 }
                 else {

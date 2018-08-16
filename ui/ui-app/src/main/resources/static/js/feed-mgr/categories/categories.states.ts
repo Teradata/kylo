@@ -1,7 +1,7 @@
 import AccessConstants from "../../constants/AccessConstants";
 import { Ng2StateDeclaration } from "@uirouter/angular";
-import { CategoryDetailsController } from "./category-details.component";
-import { CategoriesControllerComponent } from "./CategoriesController.component";
+import { CategoryDetails } from "./category-details.component";
+import { CategoriesComponent } from "./Categories.component";
 
 export const categoriesStates: Ng2StateDeclaration[] = [ 
     { 
@@ -9,7 +9,7 @@ export const categoriesStates: Ng2StateDeclaration[] = [
         url: "/categories", 
         views: { 
             "content": { 
-                component: CategoriesControllerComponent 
+                component: CategoriesComponent 
             } 
         }, 
         data: { 
@@ -26,7 +26,7 @@ export const categoriesStates: Ng2StateDeclaration[] = [
         },
         views: {
             "content": {
-                component: CategoryDetailsController
+                component: CategoryDetails
             }
         },
         data:{

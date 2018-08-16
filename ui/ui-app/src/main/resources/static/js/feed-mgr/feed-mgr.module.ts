@@ -56,7 +56,7 @@ import { FattableService } from "./services/fattable/FattableService";
         CommonModule,
         UpgradeModule,
         KyloCommonModule,
-        TranslateModule,
+        TranslateModule.forChild(),
         MatFormFieldModule,
         MatToolbarModule,
         MatProgressSpinnerModule,

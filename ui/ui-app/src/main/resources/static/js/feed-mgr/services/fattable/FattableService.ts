@@ -32,6 +32,7 @@
 import * as _ from "underscore";
 import { VisualQueryPainterService } from '../../visual-query/transform-data/visual-query-table/visual-query-painter.service';
 import { Injectable } from "@angular/core";
+import * as $ from "jquery";
 
 
 const ATTR_DATA_COLUMN_ID = "data-column-id";
@@ -131,15 +132,15 @@ export class FattableService {
 
         painter.setupHeader = (div) => {
             //@TODO Ahmad Hassan usage of element
-            // console.log("setupHeader");
-            // const separator = angular.element('<div class="header-separator"></div>');
-            // separator.on("mousedown", event => mousedown(separator, event));
+            console.log("setupHeader");
+            const separator = $('<div class="header-separator"></div>');
+            separator.on("mousedown", event => mousedown(separator, event));
 
-            // const heading = angular.element('<div class="header-value ui-grid-header-cell-title"></div>');
+            const heading = $('<div class="header-value ui-grid-header-cell-title"></div>');
 
-            // const headerDiv = angular.element(div);
+            const headerDiv = $(div);
 
-            // headerDiv.append(heading).append(separator);
+            headerDiv.append(heading).append(separator);
         };
 
         painter.fillCell = (div: any, data: any) => {
@@ -281,15 +282,15 @@ export class FattableService {
 
         const eventId = "resize.fattable." + settings.tableContainerId;
         //@TODO Ahmad Hassan usage of element
-        // angular.element($window).unbind(eventId);
-        // const debounced = _.debounce(this.setupTable, settings.setupRefreshDebounce);
-        // angular.element($window).on(eventId, () => {
-        //     debounced(settings);
-        // });
+        $(window).unbind(eventId);
+        const debounced = _.debounce(this.setupTable, settings.setupRefreshDebounce);
+        $(window).on(eventId, () => {
+            debounced(settings);
+        });
 
-        // angular.element(selector).on('$destroy', () => {
-        //     angular.element($window).unbind(eventId);
-        // });
+        $(selector).on('$destroy', () => {
+            $(window).unbind(eventId);
+        });
     }
 
 }

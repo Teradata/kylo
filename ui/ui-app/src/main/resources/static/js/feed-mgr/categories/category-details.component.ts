@@ -1,15 +1,15 @@
-import * as angular from 'angular';
 import AccessControlService from '../../services/AccessControlService';
 import { Component, Inject } from "@angular/core";
 import CategoriesService from "../services/CategoriesService";
 import { Transition, StateService } from '@uirouter/core';
 import { Subscription } from 'rxjs/Subscription';
+import { ObjectUtils } from '../../common/utils/object-utils';
 
 @Component({
     selector: 'category-details-controller',
     templateUrl: 'js/feed-mgr/categories/category-details.html'
 })
-export class CategoryDetailsController {
+export class CategoryDetails {
 
     /**
     * Indicates if the category is currently being loaded.
@@ -29,7 +29,6 @@ export class CategoryDetailsController {
      */
     constructor(private categoriesService: CategoriesService, 
                 private accessControlService: AccessControlService,
-                @Inject("$injector") private $injector: any,
                 private state: StateService) {
 
         // $scope.$watch(
@@ -70,11 +69,11 @@ export class CategoryDetailsController {
     /**
     * Loads the category data once the list of categories has loaded.
     */
-    onLoad=()=> {
-        if (angular.isString(this.state.params.categoryId)) {
+    onLoad () {
+        if (ObjectUtils.isString(this.state.params.categoryId)) {
             this.model = this.categoriesService.model = this.categoriesService.findCategory(this.state.params.categoryId);
             this.categoriesService.setModel(this.categoriesService.model);
-            if (angular.isDefined(this.categoriesService.model)) {
+            if (ObjectUtils.isDefined(this.categoriesService.model)) {
                 this.categoriesService.model["loadingRelatedFeeds"] = true;
                 this.categoriesService.setModel(this.categoriesService.model);
                 this.categoriesService.populateRelatedFeeds(this.categoriesService.model).then((category: any) => {
@@ -92,10 +91,10 @@ export class CategoryDetailsController {
                 });
         }
     };
-    checkAccessControl=() =>{
+    checkAccessControl () {
         if (this.accessControlService.isEntityAccessControlled()) {
             //Apply the entity access permissions... only showAccessControl if the user can change permissions
-            this.$injector.get("$q").when(this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
+            this.accessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS).then(
                 (access: any) => {
                     this.showAccessControl = access;
                 });

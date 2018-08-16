@@ -1,8 +1,9 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {  TdDialogService } from '@covalent/core/dialogs';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Injectable()
 export default class SlaEmailTemplateService {
@@ -14,7 +15,8 @@ export default class SlaEmailTemplateService {
     
     constructor(private RestUrlService: RestUrlService,
                 private http: HttpClient,
-                @Inject("$injector") private $injector: any) {
+                private _tdDialogService : TdDialogService
+               ) {
         
         this.data = {
             template:this.template,
@@ -25,20 +27,20 @@ export default class SlaEmailTemplateService {
         this.getExistingTemplates();
 
     };
-    newTemplate = () => {
+    newTemplate () {
         this.data.template = this.newTemplateModel();
     };
-    getTemplateVariables = () => {
+    getTemplateVariables () {
         var injectables = [{ "item": "$sla.name", "desc": "The SLA Name." },
         { "item": "$sla.description", "desc": "The SLA Description." },
         { "item": "$assessmentDescription", "desc": "The SLA Assessment and result." }];
         return injectables;
     }
-    getExistingTemplates = () => {
-        var promise = this.http.get("/proxy/v1/feedmgr/sla/email-template");
-        promise.toPromise().then((response: any) => {
-            if (response.data) {
-                this.data.templates = response.data;
+    getExistingTemplates () {
+        var promise = this.http.get("/proxy/v1/feedmgr/sla/email-template").toPromise();
+        promise.then((response: any) => {
+            if (response) {
+                this.data.templates = response;
                 this.data.templateMap = {};
                 _.each(this.data.templates, (template: any) => {
                     this.data.templateMap[template.id] = template;
@@ -48,75 +50,77 @@ export default class SlaEmailTemplateService {
         return promise;
     };
 
-    getRelatedSlas = (id: any) => {
+    getRelatedSlas (id: any) {
         return this.http.get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
     };
-    getTemplate = (id: any) => {
+    getTemplate (id: any) {
         return this.data.templateMap[id];
     };
-    getAvailableActionItems = () => {
-        var def = this.$injector.get("$q").defer();
+    getAvailableActionItems () : Promise<any>{
         if (this.data.availableActions == undefined || this.data.availableActions == null || this.data.availableActions.length == 0) {
-            this.http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").toPromise().then((response: any) => {
-                if (response.data) {
-                    this.data.availableActions = response.data;
-                    def.resolve(this.data.availableActions);
-                }
-            });
+            return new Promise<any>((resolve,reject) => {
+                this.http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").toPromise().then((response: any) => {
+                    if (response) {
+                        this.data.availableActions = response;
+                        resolve(this.data.availableActions);
+                    }else{
+                        reject();
+                    }
+                });
+            })
         }
         else {
-            def.resolve(this.data.availableActions);
+            new Promise<any>((resolve,reject) => { resolve(this.data.availableActions)});
         }
-        return def.promise;
     }
-    validateTemplate = (subject: any, templateString: any) => {
-        if (angular.isUndefined(subject)) {
+    validateTemplate (subject: any, templateString: any) {
+        if (subject) {
             subject = this.template.subject;
         }
-        if (angular.isUndefined(templateString)) {
+        if (ObjectUtils.isUndefined(templateString)) {
             templateString = this.template.template;
         }
         var testTemplate = { subject: subject, body: templateString };
         return this.http.post("/proxy/v1/feedmgr/sla/test-email-template",
-            angular.toJson(testTemplate),
-            {headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})
+                ObjectUtils.toJson(testTemplate),
+                {headers :  new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})
         });
     };
-    sendTestEmail = (address: any, subject: any, templateString: any) => {
-        if (angular.isUndefined(subject)) {
+    sendTestEmail (address: any, subject: any, templateString: any) {
+        if (ObjectUtils.isUndefined(subject)) {
             subject = this.template.subject;
         }
-        if (angular.isUndefined(templateString)) {
+        if (ObjectUtils.isUndefined(templateString)) {
             templateString = this.template.template;
         }
         var testTemplate = { emailAddress: address, subject: subject, body: templateString };
         return this.http.post("/proxy/v1/feedmgr/sla/send-test-email-template",
-           angular.toJson(testTemplate),
+        ObjectUtils.toJson(testTemplate),
             {headers: new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'})
         });
     };
-    save = (template: any) => {
-        if (angular.isUndefined(template)) {
+    save (template: any) {
+        if (ObjectUtils.isUndefined(template)) {
             template = this.data.template;
         }
         if (template != null) {
             return this.http.post("/proxy/v1/feedmgr/sla/email-template",
-                angular.toJson(template),
+                ObjectUtils.toJson(template),
                 {headers: new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'})
             });
         }
     };
-    accessDeniedDialog = () => {
-        this.$injector.get("$mdDialog").show(
-            this.$injector.get("$mdDialog").alert()
-                .clickOutsideToClose(true)
-                .title("Access Denied")
-                .textContent("You do not have access to edit templates.")
-                .ariaLabel("Access denied to edit templates")
-                .ok("OK")
-        );
+    accessDeniedDialog () {
+        this._tdDialogService.openAlert({
+            disableClose : false,
+            title: "Access Denied",
+            message: "You do not have access to edit templates.",
+            ariaLabel : "Access denied to edit templates",
+            closeButton : "OK"
+
+        });
     }
-    newTemplateModel = () => {
+    newTemplateModel () {
         this.template = { name: '', subject: '', template: '' };
         return this.template;
     }
