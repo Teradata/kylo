@@ -264,9 +264,6 @@ public class LivyWranglerConfig {
 
     @Bean(name = "downloadsDatasourceExcludes")
     public List<String> getDownloadsDatasourceExcludes(@Value("${spark.shell.datasources.exclude.downloads}") String excludesStr) throws IOException {
-
-        FileUtils.write(new File("/tmp/exDownloads.txt"), excludesStr);
-
         List<String> excludes = Lists.newArrayList();
         if (StringUtils.isNotEmpty(excludesStr)) {
             excludes.addAll(Arrays.asList(excludesStr.split(",")));
@@ -276,8 +273,6 @@ public class LivyWranglerConfig {
 
     @Bean(name = "tablesDatasourceExcludes")
     public List<String> getTablesDatasourceExcludes(@Value("${spark.shell.datasources.exclude.tables}") String excludesStr) throws IOException {
-        FileUtils.write(new File("/tmp/exTables.txt"), excludesStr);
-
         List<String> excludes = Lists.newArrayList();
         if (StringUtils.isNotEmpty(excludesStr)) {
             excludes.addAll(Arrays.asList(excludesStr.split(",")));
