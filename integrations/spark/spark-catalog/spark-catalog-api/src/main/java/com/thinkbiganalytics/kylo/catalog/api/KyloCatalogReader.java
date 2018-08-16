@@ -20,7 +20,6 @@ package com.thinkbiganalytics.kylo.catalog.api;
  * #L%
  */
 
-import org.apache.spark.SparkContext;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.types.StructType;
 
@@ -36,117 +35,7 @@ import javax.annotation.Nullable;
  * @see KyloCatalogClient#read()
  */
 @SuppressWarnings("unused")
-public interface KyloCatalogReader<T> {
-
-    /**
-     * Adds a file to be downloaded with all Spark jobs.
-     *
-     * <p>NOTE: Local files cannot be used when Spark is running in yarn-cluster mode.</p>
-     *
-     * @param path can be either a local file, a file in HDFS (or other Hadoop-supported filesystem), or an HTTP/HTTPS/FTP URI
-     * @see SparkContext#addFile(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addFile(@Nullable String path);
-
-    /**
-     * Adds files to be downloaded with all Spark jobs.
-     *
-     * @see #addFile(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addFiles(@Nullable java.util.List<String> paths);
-
-    /**
-     * (Scala-specific) Adds files to be downloaded with all Spark jobs.
-     *
-     * @see #addFile(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addFiles(@Nullable scala.collection.Seq<String> paths);
-
-    /**
-     * Adds a JAR dependency containing the data source classes or its dependencies.
-     *
-     * <p>NOTE: Local jars cannot be used when Spark is running in yarn-cluster mode.</p>
-     *
-     * @param path can be either a local file, a file in HDFS (or other Hadoop-supported filesystem), an HTTP/HTTPS/FTP URI, or local:/path (for a file on every worker node)
-     * @see SparkContext#addJar(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addJar(@Nullable String path);
-
-    /**
-     * Adds JAR dependencies containing the data source classes and its dependencies.
-     *
-     * @see #addJar(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addJars(@Nullable java.util.List<String> paths);
-
-    /**
-     * (Scala-specific) Adds JAR dependencies containing the data source classes and its dependencies.
-     *
-     * @see #addJar(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> addJars(@Nullable scala.collection.Seq<String> paths);
-
-    /**
-     * Specifies the input data source format.
-     *
-     * @see DataFrameReader#format(String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> format(@Nonnull String source);
-
-    /**
-     * Adds an input option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameReader#option(String, double)"
-     */
-    @Nonnull
-    KyloCatalogReader<T> option(@Nonnull String key, double value);
-
-    /**
-     * Adds an input option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameReader#option(String, long)"
-     */
-    @Nonnull
-    KyloCatalogReader<T> option(@Nonnull String key, long value);
-
-    /**
-     * Adds an input option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameReader#option(String, boolean)"
-     */
-    @Nonnull
-    KyloCatalogReader<T> option(@Nonnull String key, boolean value);
-
-    /**
-     * Adds an input option for the underlying data source.
-     *
-     * @see DataFrameReader#option(String, String)
-     */
-    @Nonnull
-    KyloCatalogReader<T> option(@Nonnull String key, @Nullable String value);
-
-    /**
-     * Adds input options for the underlying data source.
-     *
-     * @see DataFrameReader#options(java.util.Map)
-     */
-    @Nonnull
-    KyloCatalogReader<T> options(@Nullable java.util.Map<String, String> options);
-
-    /**
-     * (Scala-specific) Adds input options for the underlying data source.
-     *
-     * @see DataFrameReader#options(scala.collection.Map)
-     */
-    @Nonnull
-    KyloCatalogReader<T> options(@Nullable scala.collection.Map<String, String> options);
+public interface KyloCatalogReader<T> extends KyloCatalogDataSetAccess<KyloCatalogReader<T>> {
 
     /**
      * Specifies the input schema.

@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +78,11 @@ public class ModeShapeEngineConfig {
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
         return metadataRepoConfig().getTransactionManagerLookup();
     }
+    
+    @Bean(name="repositoryConfiguationResource")
+    public Resource repositoryConfigurationResource() {
+        return new ClassPathResource("/metadata-repository.json");
+    }
 
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
@@ -102,7 +108,7 @@ public class ModeShapeEngineConfig {
             throw new IllegalStateException("Failed to verify Modeshape index directory in property: " + INDEX_DIR_PROP, e);
         }
 
-        ClassPathResource res = new ClassPathResource("/metadata-repository.json");
+        Resource res = repositoryConfigurationResource();
         final AtomicReference<RepositoryConfiguration> config = new AtomicReference<>(RepositoryConfiguration.read(res.getURL()));
         
         repositoryIndexConfiguration.ifPresent(idxConfig -> {

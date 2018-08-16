@@ -72,8 +72,8 @@
             <difference>
               <differenceType>7005</differenceType>  <!-- method argument type changed -->
               <className>com/thinkbiganalytics/kylo/catalog/KyloCatalog</className>
-              <method>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.DataFrame)</method>
-              <to>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.Dataset)</to>
+              <method>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.DataFrame*)</method>
+              <to>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.Dataset*)</to>
               <justification>Spark 2 renamed DataFrame to Dataset</justification>
             </difference>
           </ignored>

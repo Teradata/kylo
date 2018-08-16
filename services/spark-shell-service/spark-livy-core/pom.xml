@@ -18,6 +18,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+        </dependency>
+
         <!-- Kylo -->
         <dependency>
             <groupId>com.thinkbiganalytics.kylo</groupId>

@@ -159,7 +159,7 @@ public class JsonFeedIT extends FeedITBase{
     }
 
     protected String getFeedFormat() {
-        return "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT " +
+        return "ROW SPARK_PARAMS SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT " +
                 "'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'";
     }
 

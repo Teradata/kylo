@@ -10,6 +10,7 @@ import './main/IndexController';
 import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
+import LoginNotificationService from "./services/LoginNotificationService";
 
 'use strict';
 
@@ -20,7 +21,7 @@ class Route {
         /*this.*/
         app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", this.configFn.bind(this)]);
         /*this.*/
-        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService",
+        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService",
             this.runFn.bind(this)]);
     }
 
@@ -740,9 +741,11 @@ class Route {
     }
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
-          $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any) {
+          $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any,
+          loginNotificationService: LoginNotificationService) {
         //initialize the access control
         accessControlService.init();
+        loginNotificationService.initNotifications();
 
         $rootScope.$state = $state;
         $rootScope.$location = $location;

@@ -419,6 +419,9 @@ sed -i -r "s|^vault\.keyStorePassword=.*|vault\.keyStorePassword=${KPW}|" ${PROP
 sed -i -r "s|^vault\.keyStoreDirectory=.*|vault\.keyStoreDirectory=${KYLO_SSL}|" ${PROPS}
 sed -i -r "s|^vault\.trustStorePassword=.*|vault\.trustStorePassword=${KPW}|" ${PROPS}
 sed -i -r "s|^vault\.trustStoreDirectory=.*|vault\.trustStoreDirectory=${KYLO_SSL}|" ${PROPS}
+echo "Copying Vault plugin to Kylo"
+cp ${KYLO_HOME}/setup/plugins/kylo-catalog-credential-vault-*.jar ${KYLO_HOME}/kylo-services/plugin/
+chown ${KYLO_USER}:${KYLO_GROUP} ${KYLO_HOME}/kylo-services/plugin/kylo-catalog-credential-vault-*.jar
 
 echo "Vault installation complete"
 echo "The unseal keys and root token have been stored in "${VAULT_CONF_INIT}"."

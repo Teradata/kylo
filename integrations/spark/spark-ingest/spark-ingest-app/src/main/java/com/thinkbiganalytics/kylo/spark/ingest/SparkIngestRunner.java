@@ -75,12 +75,13 @@ public class SparkIngestRunner implements CommandLineRunner {
     /**
      * Kylo catalog client
      */
-    private final KyloCatalogClient client;
+    private final KyloCatalogClient<Object> client;
 
     /**
      * Constructs a {@code SparkIngestRunner}.
      */
     @Autowired
+    @SuppressWarnings("unchecked")
     public SparkIngestRunner(KyloCatalogClient kyloCatalogClient) {
         client = kyloCatalogClient;
     }

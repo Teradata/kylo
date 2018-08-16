@@ -43,6 +43,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -55,9 +56,14 @@ import javax.annotation.Nonnull;
 @Configuration
 public class JcrTestConfig {
 
+    @Bean(name="repositoryConfiguationResource")
+    public Resource repositoryConfigurationResource() {
+        return new ClassPathResource("/test-metadata-repository.json");
+    }
+
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
-        ClassPathResource res = new ClassPathResource("/test-metadata-repository.json");
+        Resource res = repositoryConfigurationResource();
         return RepositoryConfiguration.read(res.getURL());
     }
 

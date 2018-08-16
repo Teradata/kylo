@@ -108,6 +108,14 @@ public class TemporaryConnectorPluginConfig {
         public ConnectorPluginDescriptor getDescriptor() {
             return this.descriptor;
         }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin#getVersion()
+         */
+        @Override
+        public String getVersion() {
+            return "0.0";
+        }
         
     }
     

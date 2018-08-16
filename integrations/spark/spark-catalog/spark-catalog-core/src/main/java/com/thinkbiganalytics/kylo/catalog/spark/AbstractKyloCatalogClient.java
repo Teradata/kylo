@@ -22,8 +22,10 @@ package com.thinkbiganalytics.kylo.catalog.spark;
 
 import com.google.common.base.Optional;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogException;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import org.apache.hadoop.conf.Configuration;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import scala.Option;
 
@@ -51,6 +54,12 @@ import scala.Option;
 public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractKyloCatalogClient.class);
+
+    /**
+     * Map of data set identifier to data set
+     */
+    @Nullable
+    private Map<String, DataSetTemplate> dataSets;
 
     /**
      * List of data set providers to try in-order
@@ -148,6 +157,29 @@ public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<
         return new DefaultKyloCatalogReader<>(this, hadoopConfiguration, resourceLoader);
     }
 
+    @Nonnull
+    @Override
+    public KyloCatalogReader<T> read(@Nonnull final String id) {
+        final DataSetTemplate dataSet = (dataSets != null) ? dataSets.get(id) : null;
+        if (dataSet != null) {
+            final DefaultKyloCatalogReader<T> reader = new DefaultKyloCatalogReader<>(this, hadoopConfiguration, resourceLoader);
+            reader.dataSet(dataSet);
+            return reader;
+        } else {
+            throw new KyloCatalogException("Data set does not exist: " + id);
+        }
+    }
+
+    /**
+     * Sets the pre-defined data sets for this client.
+     *
+     * @see #read(String)
+     * @see #write(Object, String)
+     */
+    public void setDataSets(@Nonnull final Map<String, DataSetTemplate> dataSets) {
+        this.dataSets = new HashMap<>(dataSets);
+    }
+
     @Override
     public void setHighWaterMarks(@Nonnull final Map<String, String> highWaterMarks) {
         for (final Map.Entry<String, String> entry : highWaterMarks.entrySet()) {
@@ -161,8 +193,21 @@ public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<
 
     @Nonnull
     @Override
-    public KyloCatalogWriter<T> write(@Nonnull T df) {
+    public KyloCatalogWriter<T> write(@Nonnull final T df) {
         return new DefaultKyloCatalogWriter<>(this, hadoopConfiguration, resourceLoader, df);
+    }
+
+    @Nonnull
+    @Override
+    public KyloCatalogWriter<T> write(@Nonnull final T source, @Nonnull final String targetId) {
+        final DataSetTemplate dataSet = (dataSets != null) ? dataSets.get(targetId) : null;
+        if (dataSet != null) {
+            final DefaultKyloCatalogWriter<T> writer = new DefaultKyloCatalogWriter<>(this, hadoopConfiguration, resourceLoader, source);
+            writer.dataSet(dataSet);
+            return writer;
+        } else {
+            throw new KyloCatalogException("Data set does not exist: " + targetId);
+        }
     }
 
     /**

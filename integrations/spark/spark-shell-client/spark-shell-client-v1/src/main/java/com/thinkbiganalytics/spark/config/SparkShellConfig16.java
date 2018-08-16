@@ -67,7 +67,7 @@ public class SparkShellConfig16 {
      * Gets the class for transform scripts.
      */
     @Bean
-    public KyloCatalogClientBuilder kyloCatalogClientBuilder(){
+    public KyloCatalogClientBuilder kyloCatalogClientBuilder() {
         return KyloCatalog.builder();
     }
 }

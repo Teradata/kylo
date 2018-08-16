@@ -25,6 +25,7 @@ import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link KyloCatalogClient}.
@@ -33,6 +34,15 @@ import javax.annotation.Nonnull;
  */
 @SuppressWarnings("unused")
 public interface KyloCatalogClientBuilder<T> {
+
+    /**
+     * Creates a builder for adding a data set with the specified identifier.
+     *
+     * @param id data set identifier
+     * @return a data set builder
+     */
+    @Nonnull
+    KyloCatalogDataSetBuilder<T> addDataSet(@Nonnull String id);
 
     /**
      * Adds the specified provider for reading and writing data sets.
@@ -47,6 +57,17 @@ public interface KyloCatalogClientBuilder<T> {
      */
     @Nonnull
     KyloCatalogClientBuilder<T> setDataSetProviders(@Nonnull List<DataSetProvider<T>> providers);
+
+    /**
+     * Sets the specified high water mark value.
+     *
+     * <p>A {@code null} value will delete the high water mark.</p>
+     *
+     * @param name  high water mark name
+     * @param value high water mark value
+     */
+    @Nonnull
+    KyloCatalogClientBuilder<T> setHighWaterMark(@Nonnull String name, @Nullable String value);
 
     /**
      * Builds a {@link KyloCatalogClient}.

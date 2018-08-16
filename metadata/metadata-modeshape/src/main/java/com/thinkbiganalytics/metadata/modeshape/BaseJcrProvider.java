@@ -34,6 +34,7 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -91,14 +92,18 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
     }
 
-    public abstract Class<? extends T> getEntityClass();
-
     public abstract Class<? extends JcrEntity<?>> getJcrEntityClass();
 
     /**
      * return the JCR NodeType for this entity (i.e. tba:category, tba:feed)
      */
     public abstract String getNodeType(Class<? extends JcrObject> jcrEntityType);
+    
+    @SuppressWarnings("unchecked")
+    public Class<? extends T> getEntityClass() {
+        ResolvableType type = ResolvableType.forClass(BaseJcrProvider.class, getClass());
+        return (Class<? extends T>) type.resolveGeneric(0);
+    }
 
     /**
      * \

@@ -64,6 +64,17 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
     KyloCatalogReader<T> read();
 
     /**
+     * Creates a reader for specified non-streaming data set as a Spark {@code DataFrame}.
+     *
+     * <p>Use the reader to override properties of the data set. Then call {@link KyloCatalogReader#load() load()} to retrieve the data set.</p>
+     *
+     * @param id identifier of the pre-defined data set
+     * @return a reader pre-configured to access the data set
+     */
+    @Nonnull
+    KyloCatalogReader<T> read(@Nonnull String id);
+
+    /**
      * Sets the values of the specified high water marks.
      *
      * <p>A {@code null} value will delete the high water mark.</p>
@@ -77,4 +88,16 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
      */
     @Nonnull
     KyloCatalogWriter<T> write(@Nonnull T dataSet);
+
+    /**
+     * Creates a writer for saving the specified non-streaming Spark {@code DataFrame} to the specified data set.
+     *
+     * <p>Use the writer to override properties of the data set. Then call {@link KyloCatalogWriter#save() save()} to update the data set.</p>
+     *
+     * @param source   the source data set
+     * @param targetId identifier of the pre-defined target data set
+     * @return a write pre-configured to access the target data set
+     */
+    @Nonnull
+    KyloCatalogWriter<T> write(@Nonnull T source, @Nonnull String targetId);
 }
