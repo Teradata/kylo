@@ -40,17 +40,17 @@ import org.springframework.context.annotation.Configuration;
 public class CatalogMetadataConfig {
 
     @Bean
-    public ConnectorProvider connectorProvider() {
+    public ConnectorProvider metadataConnectorProvider() {
         return new JcrConnectorProvider();
     }
-    
+
     @Bean
-    public DataSourceProvider dataSourceProvider() {
+    public DataSourceProvider metadataDataSourceProvider() {
         return new JcrDataSourceProvider();
     }
-    
+
     @Bean
-    public DataSetProvider dataSetProvider() {
+    public DataSetProvider metadataDataSetProvider() {
         return new JcrDataSetProvider();
     }
 }
