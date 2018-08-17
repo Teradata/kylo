@@ -46,6 +46,7 @@ public class ScalaScriptService {
         // Add parent reference
         final StringBuilder livyScript = new StringBuilder();
         if (request.getParent() != null && request.getParent().getId() != null) {
+            // TODO: utilize scalaStr
             livyScript.append("var parent = sqlContext.read.table(\"").append(StringEscapeUtils.escapeJava(request.getParent().getId())).append("\")\n");
         }
 
@@ -148,12 +149,17 @@ public class ScalaScriptService {
     }
 
 
-    private static String setParentVar(TransformRequest request) {
+    private String setParentVar(TransformRequest request) {
+        return scriptGenerator.wrappedScript("readTable", "", "\n",
+                                             ScalaScriptUtils.scalaStr(request.getParent().getTable()), request.getParent().getScript());
+
+/*
         String table = request.getParent().getTable();
         if (StringUtils.isEmpty(table)) {
             return request.getParent().getScript();
         } else {
             return String.format("var parent = sqlContext.sql(\"SELECT * FROM %s\")\n", request.getParent().getTable());
         }
+        */
     }
 }

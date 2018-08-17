@@ -27,6 +27,7 @@ import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.ServerProcessManager;
@@ -138,6 +139,12 @@ public class SparkUpgradeConfig {
             @Nonnull
             @Override
             public TransformResponse kyloCatalogTransform(@Nonnull SparkShellProcess process, @Nonnull KyloCatalogReadRequest request) {
+                return null;
+            }
+
+            @Nonnull
+            @Override
+            public ServerStatusResponse serverStatus(SparkShellProcess sparkShellProcess) {
                 return null;
             }
         };

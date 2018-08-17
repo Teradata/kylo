@@ -148,8 +148,20 @@ val transformAsStr = mapper.writeValueAsString(response)
 ]]>
                     </value>
                 </entry>
+                <entry key="readTable">
+                    <value> <!-- first parameter takes a JSON string escaped for scala, second parameter is valid scala -->
+                        <![CDATA[
+var parent = try {
+sqlContext.read.table(%s)
+} catch { case _ : Exception =>  {
+%s
+}}
+]]>
+                    </value>
+                </entry>
             </map>
         </constructor-arg>
     </bean>
+
 
 </beans>

@@ -29,6 +29,7 @@ import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
@@ -208,6 +209,12 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         } catch (final InternalServerErrorException e) {
             throw propagate(e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public ServerStatusResponse serverStatus(SparkShellProcess sparkShellProcess) {
+        throw new UnsupportedOperationException();
     }
 
     /**

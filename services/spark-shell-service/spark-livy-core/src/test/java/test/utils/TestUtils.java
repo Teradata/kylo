@@ -20,7 +20,6 @@ package test.utils;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.model.TestSerializing;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;

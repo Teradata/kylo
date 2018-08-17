@@ -20,11 +20,13 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
-import com.thinkbiganalytics.kylo.exceptions.LivyCodeException;
-import com.thinkbiganalytics.kylo.model.Statement;
-import com.thinkbiganalytics.kylo.model.enums.StatementState;
+import com.thinkbiganalytics.kylo.spark.client.LivyClient;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
+import com.thinkbiganalytics.kylo.spark.model.Statement;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
+import com.thinkbiganalytics.spark.shell.SparkShellProcess;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +36,7 @@ public class LivyUtils {
     private LivyUtils() {} // private constructor
 
     // TODO: is there a better way to wait for a response than synchronous?  UI could poll?
-    public static Statement getStatement(JerseyRestClient jerseyClient, Integer sessionId, Integer stmtId) {
+    public static Statement getStatement(LivyClient livyClient, JerseyRestClient jerseyClient, SparkShellProcess sparkProcess, Integer stmtId) {
         Statement statement = null;
         do {
             try {
@@ -43,9 +45,8 @@ public class LivyUtils {
                 e.printStackTrace();
             }
 
-            statement = jerseyClient.get(String.format("/sessions/%s/statements/%s", sessionId, stmtId),
-                    Statement.class);
-            logger.debug("getStatement statement={}", statement);
+            statement = livyClient.getStatement( jerseyClient, sparkProcess, stmtId );
+
             if( statement.getState().equals(StatementState.error)) {
                 // TODO: what about cancelled? or cancelling?
                 throw new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'");

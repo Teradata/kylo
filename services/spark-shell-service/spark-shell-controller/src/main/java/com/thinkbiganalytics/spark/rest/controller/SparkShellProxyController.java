@@ -51,6 +51,7 @@ import com.thinkbiganalytics.spark.rest.model.PreviewDataSetRequest;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformResultModifier;
@@ -126,6 +127,7 @@ public class SparkShellProxyController {
 
     public static final String BASE = "/v1/spark/shell";
     public static final String TRANSFORM = "/transform";
+    public static final String SERVER_STATUS = "/status";
     public static final String FILE_METADATA = "/file-metadata";
     public static final String TRANSFORM_DOWNLOAD = "/transform/{transform}/save/{save}/zip";
     public static final String TRANSFORM_SAVE = "/transform/{transform}/save";
@@ -610,6 +612,26 @@ public class SparkShellProxyController {
             return getModifiedTransformResponse(() -> restClient.getTransformResult(process, id), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
         }
 
+    }
+
+    @GET
+    @Path(SERVER_STATUS)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Fetches the status of a transformation.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the spark server and session for current user if applicable.", response = ServerStatusResponse.class),
+                      @ApiResponse(code = 500, message = "There was a problem checking the spark server.", response = RestResponseStatus.class)
+                  })
+    @Nonnull
+    public Response getServerStatus() {
+        try {
+            final SparkShellProcess process = getSparkShellProcess();
+            final ServerStatusResponse serverStatusResponse = restClient.serverStatus(process);
+            return Response.ok(serverStatusResponse).build();
+        } catch (Exception e) {
+            throw new WebApplicationException("Unhandled exception attempting to get server status", e);
+        }
     }
 
 

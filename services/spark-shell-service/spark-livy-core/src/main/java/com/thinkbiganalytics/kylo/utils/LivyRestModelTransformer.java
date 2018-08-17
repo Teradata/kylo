@@ -26,23 +26,29 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.kylo.exceptions.LivyCodeException;
-import com.thinkbiganalytics.kylo.exceptions.LivyDeserializationException;
-import com.thinkbiganalytics.kylo.exceptions.LivyException;
-import com.thinkbiganalytics.kylo.model.Statement;
-import com.thinkbiganalytics.kylo.model.StatementOutputResponse;
-import com.thinkbiganalytics.kylo.model.enums.StatementOutputStatus;
-import com.thinkbiganalytics.kylo.model.enums.StatementState;
+import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
+import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
+import com.thinkbiganalytics.kylo.spark.client.model.enums.LivySessionStatus;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyDeserializationException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.model.Statement;
+import com.thinkbiganalytics.kylo.spark.model.StatementOutputResponse;
+import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementOutputStatus;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
@@ -58,6 +64,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 public class LivyRestModelTransformer {
 
@@ -361,13 +369,6 @@ public class LivyRestModelTransformer {
     }
 
 
-    private static TransformQueryResult emptyResult() {
-        TransformQueryResult tqr = new TransformQueryResult();
-        tqr.setColumns(Lists.newArrayList());
-        tqr.setRows(Lists.newArrayList());
-        return tqr;
-    }
-
     public static DataSources toDataSources(Statement statement) {
         StatementOutputResponse sor = statement.getOutput();
         checkCodeWasWellFormed(sor);
@@ -383,6 +384,39 @@ public class LivyRestModelTransformer {
         return serializeStatementOutputResponse(sor, URI.class);
     }
 
+    public static ServerStatusResponse toServerStatusResponse( LivyServer livyServer, Integer sessionId ) {
+        LivyServerStatus livyServerStatus = livyServer.getLivyServerStatus();
+        LivySessionStatus livySessionStatus = null;
+        SessionState sessionState = livyServer.getLivySessionState(sessionId);
+        if( sessionState == null ) {
+            // don't know about session, could compare id to high water to see if dropped
+            if( sessionId <= livyServer.getSessionIdHighWaterMark() ) {
+                livySessionStatus = LivySessionStatus.completed;
+            } else {
+                throw new WebApplicationException("No session with that id was created on the server", 404);
+            }
+        } else if (SessionState.FINAL_STATES.contains(sessionState)) {
+            livySessionStatus = LivySessionStatus.completed;
+        } else if (SessionState.READY_STATES.contains(sessionState)) {
+            livySessionStatus = LivySessionStatus.ready;
+        } else if( livyServerStatus == LivyServerStatus.http_error ) {
+            livySessionStatus = LivySessionStatus.http_error;
+        }
+
+        ServerStatusResponse.ServerStatus serverStatus = ServerStatusResponse.ServerStatus.valueOf(livyServerStatus.toString());
+
+        ServerStatusResponse.SessionStatus sessionStatus = ServerStatusResponse.SessionStatus.valueOf(livySessionStatus.toString());
+
+        return ServerStatusResponse.newInstance(serverStatus,sessionId.toString(),sessionStatus);
+    }
+
+
+    private static TransformQueryResult emptyResult() {
+        TransformQueryResult tqr = new TransformQueryResult();
+        tqr.setColumns(Lists.newArrayList());
+        tqr.setRows(Lists.newArrayList());
+        return tqr;
+    }
     private static <T extends Object> T serializeStatementOutputResponse(StatementOutputResponse sor, Class<T> clazz) {
         String errMsg = String.format("Unable to deserialize %s returned from Livy", clazz.getSimpleName());
 

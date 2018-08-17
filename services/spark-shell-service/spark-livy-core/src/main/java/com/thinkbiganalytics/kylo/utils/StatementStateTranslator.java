@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.model.enums.StatementState;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 

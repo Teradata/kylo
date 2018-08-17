@@ -20,21 +20,16 @@ package com.thinkbiganalytics.kylo.spark.livy;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.kylo.config.SparkLivyConfig;
-import com.thinkbiganalytics.kylo.model.SessionsGet;
-import com.thinkbiganalytics.kylo.model.Statement;
-import com.thinkbiganalytics.kylo.model.enums.StatementOutputStatus;
-import com.thinkbiganalytics.kylo.model.enums.StatementState;
-import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
-import com.thinkbiganalytics.spark.shell.SparkShellProcess;
-import org.junit.Ignore;
+import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
+import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
+import com.thinkbiganalytics.kylo.spark.config.SparkLivyConfig;
+import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
@@ -46,67 +41,36 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import javax.annotation.Resource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestLivyClient.Config.class, SparkLivyConfig.class},
-        loader = AnnotationConfigContextLoader.class)
-@TestPropertySource("classpath:kerberos-client.properties")
+                      loader = AnnotationConfigContextLoader.class)
+@TestPropertySource
 @ActiveProfiles("kylo-livy")
 public class TestLivyClient {
+
     private static final Logger logger = LoggerFactory.getLogger(TestLivyClient.class);
 
     @Resource
-    private SparkLivyProcessManager sparkLivyProcessManager;
-
-    @Resource
-    private KerberosSparkProperties kerberosSparkProperties;
+    private LivyServer livyServer;
 
     @Resource
     private SparkLivyRestClient livyRestProvider;
 
     /**
-     * This test assumes:
-     *   1) you have configured a Livy Server for Kerberos and that it is running at 8998
-     *   2) that server has the library '' installed
-     *
-     * @throws JsonProcessingException
-     * @throws InterruptedException
+     * This test assumes: 1) you have configured a Livy Server and it is running at 8998
      */
     @Test
-    @Ignore // ignore, for now, because this is an integration test that requires livy configured on the test system
-    public void testGetLivySessions() throws JsonProcessingException, InterruptedException {
-        System.setProperty("sun.security.krb5.debug", "true");
-        System.setProperty("sun.security.jgss.debug", "true");
+    public void testHearbeat() {
+        // 1. start a session...   through startLivySession.startLivySession, which will now delegate to LivyClient
 
-        SessionsGet sg = new SessionsGet.Builder().from(1).size(2).build();
-
-        String sgJson = new ObjectMapper().writeValueAsString(sg);
-
-        logger.debug("{}", sgJson);
-        assertThat(sgJson).isEqualToIgnoringCase("{\"from\":1,\"size\":2}");
-
-        logger.debug("kerberosSparkProperties={}", kerberosSparkProperties);
-
-        SparkShellProcess sparkProcess = sparkLivyProcessManager.getProcessForUser("kylo");
-        //((SparkLivyProcess) sparkProcess).setPort(8999);
-
-        JerseyRestClient client = sparkLivyProcessManager.getClient(sparkProcess);
-
-        sparkLivyProcessManager.start("kylo");
-
-        Integer stmtId = 0;
-        Integer sessionId = sparkLivyProcessManager.getLivySessionId(sparkProcess);
-
-        Statement statement = livyRestProvider.getStatement(client,sessionId,stmtId);
-        logger.debug("statement={}", statement);
-
-        assertThat(statement.getState()).isEqualTo(StatementState.available);
-        assertThat(statement.getOutput().getStatus()).isEqualTo(StatementOutputStatus.ok);
+        // 2. Loop for max number seconds waiting for session to be ready..
+        //     only checking livyServerState
     }
 
     @Configuration
+    @EnableConfigurationProperties
     static class Config {
+
         @Bean
         public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
             return new PropertySourcesPlaceholderConfigurer();

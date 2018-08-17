@@ -113,6 +113,7 @@
     <jersey.version>2.22.2</jersey.version>
     <jackson.version>2.9.6</jackson.version>
     <jackson.scala.version>2.9.5</jackson.scala.version>
+    <rxjava.version>2.2.0</rxjava.version>
     <hibernate.version>5.2.17.Final</hibernate.version>
     <hibernate.jpa.version>1.0.0.Final</hibernate.jpa.version>
     <testng.version>6.9.10</testng.version>
@@ -310,6 +311,13 @@
         <groupId>org.mariadb.jdbc</groupId>
         <artifactId>mariadb-java-client</artifactId>
         <version>${mariadb.version}</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
+      <dependency>
+        <groupId>io.reactivex.rxjava2</groupId>
+        <artifactId>rxjava</artifactId>
+        <version>${rxjava.version}</version>
       </dependency>
 
       <!-- Jersey -->

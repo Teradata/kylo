@@ -20,32 +20,82 @@ package com.thinkbiganalytics.kylo.spark.livy;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
-import com.thinkbiganalytics.kylo.exceptions.LivyException;
+import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTimeUtils;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 public class SparkLivyProcess implements SparkShellProcess {
-    private static final Logger logger = LoggerFactory.getLogger(SparkLivyProcess.class);
+
+    private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyProcess.class);
 
     private UUID id;
 
-    private String hostname = "localhost";
+    final private String hostname;
 
-    private int port = 8998;
+    final private int port;
 
-    SparkLivyProcess(String hostname, Integer port) {
+    private transient CountDownLatch startSignal;
+
+    /**
+     * Expected time for client to be ready, in milliseconds
+     */
+    private final long waitForStart;
+
+    /**
+     * Expected point in time for the client to be ready
+     */
+    private long readyTime;
+
+    private SparkLivyProcess(String hostname, Integer port, Long waitForStart) {
         this.hostname = hostname;
         this.port = port;
         this.id = UUID.randomUUID();
+
+        this.waitForStart = waitForStart;
     }
+
+    /**
+     * Causes any thread calling this method to wait uninterruptibly for the Livy session to be ready.
+     *
+     * @return {@code true} if the client is ready, or {@code false} otherwise
+     */
+    public synchronized boolean waitForStart() {
+        final long remaining = readyTime - DateTimeUtils.currentTimeMillis();
+        if (remaining > 0 && startSignal != null ) {
+            boolean started = Uninterruptibles.awaitUninterruptibly(startSignal, remaining, TimeUnit.MILLISECONDS);
+            logger.debug("Finished waiting for start.  started='{}'", started);
+            return started;
+        } else {
+            return true;
+        }
+    }
+
+    public void newSession() {
+        this.startSignal = new CountDownLatch(1);
+        this.readyTime = DateTimeUtils.currentTimeMillis() + waitForStart;
+    }
+
+    /**
+     * Indicates to all waiting threads that the Spark Shell client is ready to receive requests.
+     */
+    public void sessionStarted() {
+        if (startSignal != null) {
+            startSignal.countDown();
+        }
+    }
+
 
     @Nonnull
     @Override
@@ -64,38 +114,29 @@ public class SparkLivyProcess implements SparkShellProcess {
         return port;
     }
 
-    // package private for testing
-    @VisibleForTesting
-    void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    // package private for testing
-    @VisibleForTesting
-    void setPort(int port) {
-        this.port = port;
-    }
-
     @Override
     public boolean isLocal() {
         return true;
     }
 
-
-    public static SparkLivyProcess newInstance(String hostname, Integer port) {
-        if( ! StringUtils.isNotEmpty(hostname) ) {
+    public static SparkLivyProcess newInstance(String hostname, Integer port, Long timeout) {
+        if (!StringUtils.isNotEmpty(hostname)) {
             throw new LivyException("Attempt to contact Livy server when Livy hostname not configured");
         }
-        if( port == null || port <= 0 ) {
+        if (port == null || port <= 0) {
             throw new LivyException("Attempt to contact Livy server when Livy port not configured, or invalid");
         }
-        return new SparkLivyProcess(hostname,port);
+        return new SparkLivyProcess(hostname, port, timeout);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SparkLivyProcess that = (SparkLivyProcess) o;
         return Objects.equals(id, that.id);
     }
