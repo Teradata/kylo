@@ -23,7 +23,7 @@ enum EditMode { NEW=1, EDIT=2 }
 export class FeedPreconditionDialogComponent implements OnInit{
 
     private loading = false;
-    public preconditionForm:FormGroup;
+    public preconditionForm:FormGroup = new FormGroup({});
     options:any[] = [];
     ruleType:any = null;
     editPrecondition:any = null;
@@ -40,11 +40,12 @@ export class FeedPreconditionDialogComponent implements OnInit{
                 private injector: Injector,
                 @Inject(MAT_DIALOG_DATA) public data: Feed){
         let feedService = injector.get("FeedService");
-        this.preconditionForm = new FormGroup({});
+        // this.preconditionForm = new FormGroup({});
         let feed = this.policyInputFormService.currentFeedValue(this.data);
         feedService.getPossibleFeedPreconditions().then((response:any) => {
             this.options = this.policyInputFormService.groupPolicyOptions(response.data, feed);
         });
+        console.log("constructor", data);
         this.ruleTypesAvailable();
         this.preconditionForm.statusChanges.debounceTime(10).subscribe(status => {
             this.isFormValid = status == "VALID";
@@ -52,6 +53,7 @@ export class FeedPreconditionDialogComponent implements OnInit{
     }
 
     ngOnInit(): void {
+        this.preconditions = this.data.schedule['preconditions'];
     }
 
     cancelEdit() {
@@ -81,7 +83,7 @@ export class FeedPreconditionDialogComponent implements OnInit{
             if (this.preconditions == null) {
                 this.preconditions = [];
             }
-            console.log(this.editPrecondition);
+            this.buildDisplayString();
             this.editPrecondition.ruleType = this.ruleType;
             if (this.editMode == EditMode.NEW) {
                 this.preconditions.push(this.editPrecondition);
@@ -91,7 +93,34 @@ export class FeedPreconditionDialogComponent implements OnInit{
             }
 
             this.pendingEdits = true;
+            this.data.schedule['preconditions'] = this.preconditions;
             this.cancelEdit();
+        }
+    }
+
+    private buildDisplayString() {
+        if (this.editPrecondition != null) {
+            var str = '';
+            _.each(this.editPrecondition.properties, (prop:any) => {
+                console.log('prop.type', prop);
+                if (prop.type != 'currentFeed') {
+                    //chain it to the display string
+                    if (str != '') {
+                        str += ';';
+                    }
+                    str += ' ' + prop.displayName;
+                    var val = prop.value;
+                    if ((val == null || val == undefined || val == '') && (prop.values != null && prop.values.length > 0)) {
+                        val = _.map(prop.values, (labelValue:any) => {
+                            console.log('prop.values', prop.values, labelValue.value);
+                            return labelValue.value;
+                        }).join(",");
+                    }
+                    str += ": " + val;
+                }
+            });
+            console.log('buildDisplayString', str);
+            this.editPrecondition.propertyValuesDisplayString = str;
         }
     }
 

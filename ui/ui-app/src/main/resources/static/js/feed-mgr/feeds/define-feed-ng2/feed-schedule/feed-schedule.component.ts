@@ -274,7 +274,6 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
 
    private showPreconditionDialog(index: any) {
-        //TODO: To be implemented
         console.log("Implement me to show precondition dialog. Index is ", index);
         this.preconditionDialogService.openDialog(this.feed);
    }

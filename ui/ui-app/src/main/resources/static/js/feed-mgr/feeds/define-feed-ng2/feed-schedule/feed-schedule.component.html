@@ -120,16 +120,16 @@
               <span>{{rule.propertyValuesDisplayString}}</span>
               <span class="hint">{{rule.name}}</span>
             </div>
+            <span class="md-secondary">
+              <button mat-button (click)="showPreconditionDialog(index)">
+                <ng-md-icon icon="edit"></ng-md-icon>
+              </button>
+            </span>
           </mat-list-item>
-          <span class="md-secondary">
-                    <button mat-button (click)="showPreconditionDialog(index)">
-                      <ng-md-icon icon="edit"></ng-md-icon>
-                    </button>
-                  </span>
           <mat-divider *ngIf="!last"></mat-divider>
         </mat-list>
       </div>
-      <button mat-button (click)="showPreconditionDialog()">
+      <button mat-button color="primary" (click)="showPreconditionDialog()">
         ADD PRECONDITION
       </button>
     </div>
