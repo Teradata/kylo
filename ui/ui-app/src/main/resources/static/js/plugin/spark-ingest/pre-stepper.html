@@ -1,0 +1,16 @@
+<kylo-define-feed-step title="Source" step="getStep(0)">
+  <!--<div ng-if="isSelectedStep(0)">-->
+    <lazy-load module="/js/plugin/spark-ingest/spark-ingest.module#SparkIngestModule" component="/js/plugin/spark-ingest/select-connector.component#SelectConnectorComponent"
+               [inputs]="{model: coreDataModel, stepIndex: getStepIndex(0), stepper: stepper}"></lazy-load>
+  <!--</div>-->
+</kylo-define-feed-step>
+<kylo-define-feed-step title="Connection" step="getStep(1)">
+  <!--<div ng-if="isSelectedStep(1)">-->
+    <lazy-load module="/js/plugin/spark-ingest/spark-ingest.module#SparkIngestModule" component="/js/plugin/spark-ingest/configure-connection.component#ConfigureConnectionComponent"
+               [inputs]="{model: coreDataModel, stepIndex: getStepIndex(1), stepper: stepper}"></lazy-load>
+  <!--</div>-->
+</kylo-define-feed-step>
+<kylo-define-feed-step title="Schema" step="getStep(2)">
+  <lazy-load module="/js/plugin/spark-ingest/spark-ingest.module#SparkIngestModule" component="/js/plugin/spark-ingest/preview-schema.component#PreviewSchemaComponent"
+             [inputs]="{model: coreDataModel, stepIndex: getStepIndex(2), stepper: stepper}"></lazy-load>
+</kylo-define-feed-step>

@@ -20,8 +20,12 @@ package com.thinkbiganalytics.discovery.schema;
  * #L%
  */
 
+import com.thinkbiganalytics.db.DataSourceProperties;
+
+import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -31,23 +35,50 @@ import javax.annotation.Nullable;
 /**
  * Provides database metadata and schema information from JDBC.
  */
+@Order(JdbcSchemaParser.DEFAULT_ORDER)
 public interface JdbcSchemaParser {
+
+    int DEFAULT_ORDER = 0;
+    int EARLY_ORDER = DEFAULT_ORDER - 100;
+    int LATE_ORDER = DEFAULT_ORDER + 100;
+
+    /**
+     * Indicates if this parser can retrieve the schema of connections using the specified URL.
+     *
+     * <p>Typically this only verifies that the sub-protocol is supported.</p>
+     *
+     * @param url URL of the database
+     * @return {@code true} if the parser recognizes the given URL, or {@code false} otherwise
+     * @throws SQLException if a database access error occurs
+     */
+    boolean acceptsURL(@Nonnull String url) throws SQLException;
 
     /**
      * Retrieves the catalog names available in this database.
      */
     @Nonnull
-    List<JdbcCatalog> listCatalogs(@Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
+    List<JdbcCatalog> listCatalogs(@Nonnull Connection connection, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
 
     /**
      * Retrieves the schema names available in this database.
      */
     @Nonnull
-    List<JdbcSchema> listSchemas(@Nullable String catalog, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
+    List<JdbcSchema> listSchemas(@Nonnull Connection connection, @Nullable String catalog, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
 
     /**
      * Retrieves a description of the tables available in the given catalog.
      */
     @Nonnull
-    List<JdbcTable> listTables(@Nullable String catalog, @Nullable String schema, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
+    List<JdbcTable> listTables(@Nonnull Connection connection, @Nullable String catalog, @Nullable String schema, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
+
+    /**
+     * Modifies the data source properties, if necessary, to connect to the specified catalog.
+     *
+     * @param properties data source properties
+     * @param catalog    name of the catalog, or {@code null} for none
+     * @return the modified data source properties, or the original if no changes were needed
+     * @throws SQLException if a database access error occurs
+     */
+    @Nonnull
+    DataSourceProperties prepareDataSource(@Nonnull DataSourceProperties properties, @Nullable String catalog) throws SQLException;
 }

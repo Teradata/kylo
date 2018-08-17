@@ -20,17 +20,19 @@ package com.thinkbiganalytics.kylo.catalog.table;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
+
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 
 /**
- * Represents a function that performs an action on a {@link DataSource} and returns a result.
+ * Represents a function that performs an action on a {@link Connection} and returns a result.
  *
  * @param <R> type of result
  */
-public interface DataSourceFunction<R> {
+public interface SqlSchemaFunction<R> {
 
-    R apply(@Nonnull DataSource fileSystem) throws SQLException;
+    R apply(@Nonnull Connection connection, @Nonnull JdbcSchemaParser schemaParser) throws SQLException;
 }

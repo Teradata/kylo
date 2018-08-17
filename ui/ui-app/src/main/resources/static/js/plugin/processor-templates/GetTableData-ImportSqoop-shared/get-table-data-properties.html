@@ -1,0 +1,157 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="layout-padding-indent">
+
+  <md-input-container property-disabled="ctl.mode == 'edit'" nifi-property-input class="md-block layout-padding-top-bottom" property="ctl.dbConnectionProperty"
+                      on-property-change="ctl.onDbConnectionPropertyChanged(property)"
+                      flex-gt-sm>
+  </md-input-container>
+
+  <div ng-if="ctl.databaseConnectionError ==false">
+    <md-autocomplete flex ng-disabled="ctl.mode == 'edit' || (ctl.dbConnectionProperty.value == null || ctl.dbConnectionProperty.value == undefined)"
+                     md-selected-item="ctl.tablesAutocomplete.selectedTable"
+                     md-search-text-change="ctl.tablesAutocomplete.searchTextChange(ctl.tablesAutocomplete.searchText)"
+                     md-search-text="ctl.tablesAutocomplete.searchText"
+                     md-selected-item-change="ctl.tablesAutocomplete.selectedItemChange(item)"
+                     md-items="item in ctl.tablesAutocomplete.querySearch(ctl.tablesAutocomplete.searchText)"
+                     md-item-text="item.fullName"
+                     md-delay="300"
+                     md-min-length="2"
+                     md-no-cache="true"
+                     placeholder="Type table name"
+                     md-menu-class="autocomplete-hive-table-template"
+                     md-require-match="true"
+                     md-input-name="tableAutocompleteInput"
+                     required>
+      <md-item-template>
+
+                    <span class="item-title">
+                       <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span md-highlight-text="ctl.tablesAutocomplete.searchText" md-highlight-flags="^i" style="padding-left:5px;"> {{item.fullName}} </span>
+                      </span>
+                <span class="item-metadata">
+                        <span class="item-metastat"><span style="color:grey;">Schema:</span><span md-highlight-text="ctl.tablesAutocomplete.searchText"
+                                                                                                  md-highlight-flags="^i">{{item.schema}}</span></span>
+                    <span class="item-metastat"><span style="color:grey;">Table:</span><span md-highlight-text="ctl.tablesAutocomplete.searchText"
+                                                                                             md-highlight-flags="^i">{{item.tableName}}</span></span>
+
+                  </span>
+
+      </md-item-template>
+      <md-not-found>
+        No tables matching "{{ctl.tablesAutocomplete.searchText}}" found.
+      </md-not-found>
+      <div ng-messages="ctl.theForm.tableAutocompleteInput.$error" md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
+    </md-autocomplete>
+    <span class="hint" ng-if="ctl.mode != 'edit'">Start typing the table name.  At least 2 characters are required.  Depending upon the database you are connecting to it may be case sensitive.</span>
+  </div>
+  <div ng-if="ctl.databaseConnectionError == true">
+    <div>
+      Unable to connect to selected data source.
+    </div>
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.renderLoadStrategyOptions">
+      <label class="label-small md-container-ignore">Table Name</label>
+      <input ng-model="ctl.tableProperty.value" ng-change="ctl.onManualTableNameChange()">
+    </md-input-container>
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.renderLoadStrategyOptions">
+      <label class="label-small md-container-ignore">Fields</label>
+      <input ng-model="ctl.fieldsProperty.value" ng-change="ctl.onManualFieldNameChange()"/>
+
+      <div class="hint">Field names separated by a comma</div>
+    </md-input-container>
+
+  </div>
+
+  <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.renderLoadStrategyOptions">
+    <label class="label-small md-container-ignore">Load Strategy</label>
+    <md-radio-group ng-model="ctl.loadStrategyProperty.value" layout="row" layout-wrap="true" class="layout-padding-top">
+      <md-radio-button ng-repeat="strategy in ctl.loadStrategyOptions"
+                       ng-value="strategy.strategy"
+                       aria-label="{{strategy.name}}">
+        {{strategy.name}}
+        <div class="hint">{{strategy.hint}}</div>
+      </md-radio-button>
+    </md-radio-group>
+
+  </md-input-container>
+
+  <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.isIncrementalLoadStrategy() && !ctl.restrictIncrementalToDateOnly">
+    <label class="label-small md-container-ignore">Field for high watermark tracking</label>
+    <md-select name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required ng-if="ctl.databaseConnectionError == false">
+      <md-option ng-repeat="field in ctl.tableFields track by $index" value="{{field.name}}">
+        {{field.name}}
+      </md-option>
+    </md-select>
+
+    <input name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required ng-if="ctl.databaseConnectionError == true"/>
+
+    <div ng-messages="ctl.theForm.incrementalDate.$error " md-auto-hide="false">
+      <div ng-message="required">This field is required.</div>
+    </div>
+  </md-input-container>
+
+  <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.isIncrementalLoadStrategy()  && ctl.restrictIncrementalToDateOnly">
+    <label class="label-small md-container-ignore">Date field for high watermark tracking</label>
+    <md-select name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required ng-if="ctl.databaseConnectionError == false">
+      <md-option ng-repeat="field in ctl.tableFields | filter: ctl.filterFieldDates track by $index" value="{{field.name}}">
+        {{field.name}}
+      </md-option>
+    </md-select>
+
+    <input name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required ng-if="ctl.databaseConnectionError == true"/>
+
+    <div ng-messages="ctl.theForm.incrementalDate.$error " md-auto-hide="false">
+      <div ng-message="required">This field is required.</div>
+    </div>
+  </md-input-container>
+  <!--
+      <nifi-property-time-unit-input property="ctl.retentionPeriodProperty" ng-if="ctl.retentionPeriodProperty != undefined"></nifi-property-time-unit-input>
+
+      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+          <label class="label-small md-container-ignore">Minimum Time Unit</label>
+      <md-select ng-model="ctl.archiveUnitProperty.value" >
+          <md-option ng-repeat="unit in ctl.archiveUnitProperty.propertyDescriptor.allowableValues" value="{{unit.value}}">
+              {{unit.displayName}}
+          </md-option>
+      </md-select>
+
+          </md-input-container>
+
+      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+      <md-checkbox
+                   ng-model="ctl.deleteSourceProperty.value"
+                   aria-label="property.key"
+                   ng-true-value="'true'"
+                   ng-false-value="'false'">Delete Source?
+      </md-checkbox>
+  </md-input-container>
+  -->
+
+
+  <md-input-container nifi-property-input class="md-block layout-padding-top-bottom" property="property" ng-repeat="property in ctl.processor.properties | filter:{userEditable:true}" flex-gt-sm
+                      ng-if="ctl.isCustomProperty(property) == false"  on-property-change="ctl.onNiFiPropertyChanged(property)">
+
+  </md-input-container>
+
+
+</div>

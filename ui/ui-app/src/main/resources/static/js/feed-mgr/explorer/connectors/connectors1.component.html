@@ -1,0 +1,17 @@
+<mat-card>
+  <mat-card-title>Connectors</mat-card-title>
+  <mat-card-subtitle>Select a connector to get started</mat-card-subtitle>
+  <mat-divider></mat-divider>
+  <mat-card-content>
+    <mat-grid-list [cols]="4" rowHeight="150px" gutterSize="10px">
+      <ng-template let-item ngFor [ngForOf]="connectors">
+        <mat-grid-tile matRipple ngClass="bgc-{{item.color}}" class="cursor-pointer" (click)="selectConnector(item)">
+          <ng-md-icon class="icon-component" icon="{{item.icon}}" style="fill: white; fill-opacity: 0.7;" size="112px"></ng-md-icon>
+          <mat-grid-tile-footer>
+            <h3 mat-line>{{item.title}}</h3>
+          </mat-grid-tile-footer>
+        </mat-grid-tile>
+      </ng-template>
+    </mat-grid-list>
+  </mat-card-content>
+</mat-card>

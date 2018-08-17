@@ -42,11 +42,12 @@ public class DefaultJdbcCatalog implements JdbcCatalog {
      * Returns a function that converts the current result set item to a {@code DefaultJdbcCatalog}.
      */
     @Nonnull
-    public static JdbcFunction<ResultSet, DefaultJdbcCatalog> fromResultSet() {
-        return new JdbcFunction<ResultSet, DefaultJdbcCatalog>() {
+    public static <T extends JdbcCatalog> JdbcFunction<ResultSet, T> fromResultSet() {
+        return new JdbcFunction<ResultSet, T>() {
             @Override
-            public DefaultJdbcCatalog apply(final ResultSet resultSet) throws SQLException {
-                return DefaultJdbcCatalog.fromResultSet(resultSet);
+            @SuppressWarnings("unchecked")
+            public T apply(final ResultSet resultSet) throws SQLException {
+                return (T) DefaultJdbcCatalog.fromResultSet(resultSet);
             }
         };
     }

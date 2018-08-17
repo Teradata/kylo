@@ -23,10 +23,6 @@ package com.thinkbiganalytics.schema;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
-import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
-import com.thinkbiganalytics.discovery.schema.JdbcSchema;
-import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
-import com.thinkbiganalytics.discovery.schema.JdbcTable;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
@@ -37,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
@@ -55,7 +50,7 @@ import javax.sql.DataSource;
 /**
  * Provides database metadata and schema information from JDBC.
  */
-public class DBSchemaParser implements JdbcSchemaParser {
+public class DBSchemaParser {
 
     private static final Logger log = LoggerFactory.getLogger(DBSchemaParser.class);
 
@@ -123,31 +118,11 @@ public class DBSchemaParser implements JdbcSchemaParser {
     }
 
     @Nonnull
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<JdbcSchema> listSchemas(@Nullable final String catalog, @Nullable final String pattern, @Nullable final Pageable pageable) throws SQLException {
-        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-            final ResultSet resultSet = connection.getMetaData().getSchemas(catalog, null);
-            return (List) transformResults(resultSet, DefaultJdbcSchema.fromResultSet());
-        }
-    }
-
-    @Nonnull
     public List<String> listCatalogs() {
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             return listCatalogs(conn);
         } catch (SQLException e) {
             throw new SchemaParserException("Unable to list catalogs", e);
-        }
-    }
-
-    @Nonnull
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<JdbcCatalog> listCatalogs(@Nullable final String pattern, @Nullable final Pageable pageable) throws SQLException {
-        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-            final ResultSet resultSet = connection.getMetaData().getCatalogs();
-            return (List) transformResults(resultSet, DefaultJdbcCatalog.fromResultSet());
         }
     }
 
@@ -323,16 +298,6 @@ public class DBSchemaParser implements JdbcSchemaParser {
         return tables;
     }
 
-    @Nonnull
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<JdbcTable> listTables(@Nullable final String catalog, @Nullable final String schema, @Nullable final String pattern, @Nullable Pageable pageable) throws SQLException {
-        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-            final ResultSet resultSet = connection.getMetaData().getTables(catalog, schema, null, null);
-            return (List) transformResults(resultSet, DefaultJdbcTable.fromResultSet(connection.getMetaData()));
-        }
-    }
-
     /**
      * Gets the schema for the specified table.
      *
@@ -467,19 +432,5 @@ public class DBSchemaParser implements JdbcSchemaParser {
         }
         return fields;
 
-    }
-
-    /**
-     * Transforms the specified result set using the specified function.
-     */
-    @Nonnull
-    private <T> List<T> transformResults(@Nonnull final ResultSet resultSet, @Nonnull final JdbcFunction<ResultSet, T> function) throws SQLException {
-        final List<T> results = new ArrayList<>();
-
-        while (resultSet.next()) {
-            results.add(function.apply(resultSet));
-        }
-
-        return results;
     }
 }

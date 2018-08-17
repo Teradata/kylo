@@ -31,6 +31,7 @@ import com.thinkbiganalytics.kylo.catalog.spark.sources.jdbc.JdbcRelationProvide
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.Accumulable;
 import org.apache.spark.AccumulableParam;
 import org.apache.spark.sql.Column;
@@ -48,6 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -57,6 +60,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import scala.Function1;
+import scala.Option;
 import scala.runtime.AbstractFunction1;
 
 /**
@@ -96,6 +100,22 @@ public abstract class AbstractJdbcDataSetProvider<T> implements DataSetProvider<
     @Nonnull
     @Override
     public final T read(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options) {
+        // Set url for PostgreSQL databases
+        final Option<String> catalog = options.getOption("PGDBNAME");
+        final Option<String> url = options.getOption("url");
+        if (catalog.isDefined() && url.isDefined() && url.get().startsWith("jdbc:postgres://")) {
+            final String[] urlSplit = url.get().split("\\?", 2);
+            final String[] pathSplit = urlSplit[0].substring(16).split("/", 2);
+
+            if (pathSplit.length == 1 || StringUtils.equalsAny(pathSplit[1], "", "/")) {
+                String catalogUrl = "jdbc:postgres://" + pathSplit[0] + "/" + urlEncode(catalog.get());
+                if (urlSplit.length == 2) {
+                    catalogUrl += "?" + urlSplit[1];
+                }
+                options.setOption("url", catalogUrl);
+            }
+        }
+
         // Load data set
         final DataFrameReader reader = SparkUtil.prepareDataFrameReader(getDataFrameReader(client, options), options, null);
         reader.format(JdbcRelationProvider.class.getName());
@@ -278,6 +298,15 @@ public abstract class AbstractJdbcDataSetProvider<T> implements DataSetProvider<
 
         final JdbcHighWaterMarkVisitor<?> visitor = new JdbcHighWaterMarkVisitor<>(accumulable, toLong);
         return map(dataSet, fieldName, visitor, fieldType);
+    }
+
+    @Nonnull
+    private String urlEncode(@Nonnull final String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            throw new KyloCatalogException(e.toString(), e);
+        }
     }
 
     /**

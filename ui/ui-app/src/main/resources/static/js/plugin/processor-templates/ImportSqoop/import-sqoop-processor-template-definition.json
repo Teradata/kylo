@@ -1,0 +1,5 @@
+{
+  "processorTypes":["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+  "stepperTemplateUrl":"js/plugin/processor-templates/ImportSqoop/import-sqoop-create.html",
+  "feedDetailsTemplateUrl":"js/plugin/processor-templates/ImportSqoop/import-sqoop-edit.html"
+}

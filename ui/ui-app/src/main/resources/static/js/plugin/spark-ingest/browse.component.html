@@ -1,0 +1,39 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Select a File</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content class="mat-dialog-content">
+  <mat-list>
+    <h3 mat-subheader>Folders</h3>
+    <mat-list-item>
+      <mat-icon mat-list-icon>folder</mat-icon>
+      <h4 mat-line>Photos</h4>
+      <p mat-line>Jan 1, 2016</p>
+    </mat-list-item>
+    <mat-list-item>
+      <mat-icon mat-list-icon>folder</mat-icon>
+      <h4 mat-line>Recipes</h4>
+      <p mat-line>Jan 17, 2016</p>
+    </mat-list-item>
+    <mat-list-item>
+      <mat-icon mat-list-icon>folder</mat-icon>
+      <h4 mat-line>Work</h4>
+      <p mat-line>Jan 28, 2016</p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+    <h3 mat-subheader>Notes</h3>
+    <mat-list-item (click)="open('/tmp/userdata1.csv')">
+      <mat-icon mat-list-icon>note</mat-icon>
+      <h4 mat-line>userdata1.csv</h4>
+      <p mat-line>Feb 20, 2016</p>
+    </mat-list-item>
+    <mat-list-item (click)="open('/tmp/userdata1_orc')">
+      <mat-icon mat-list-icon>note</mat-icon>
+      <h4 mat-line>userdata1_orc</h4>
+      <p mat-line>Jan 18, 2016</p>
+    </mat-list-item>
+  </mat-list>
+</div>

@@ -74,6 +74,21 @@ public class DataSourceProperties {
         this.validationQuery = validationQuery;
     }
 
+    /**
+     * Constructs a {@code DataSourceProperties} by copying the properties of another instance.
+     */
+    public DataSourceProperties(@Nonnull final DataSourceProperties other) {
+        this.user = other.user;
+        this.password = other.password;
+        this.url = other.url;
+        this.driverClassName = other.driverClassName;
+        this.testOnBorrow = other.testOnBorrow;
+        this.validationQuery = other.validationQuery;
+        this.driverLocation = other.driverLocation;
+        this.driverClassLoader = other.driverClassLoader;
+        this.properties = new Properties(other.properties);
+    }
+
     public String getUser() {
         return user;
     }
