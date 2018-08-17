@@ -1,7 +1,8 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
+import { Injectable } from "@angular/core";
 
-export default class IconService{
+@Injectable()
+export default class IconService {
     iconForFeedHealth = (health: any)=> {
             return this.iconForHealth(health);
         }
@@ -145,5 +146,3 @@ export default class IconService{
     constructor(){}
 
 }
-
-  angular.module(moduleName).service('IconService',[IconService]);

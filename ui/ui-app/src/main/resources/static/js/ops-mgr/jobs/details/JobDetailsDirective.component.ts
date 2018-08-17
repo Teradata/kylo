@@ -1,5 +1,4 @@
 import * as angular from "angular";
-import {moduleName} from "./module-name";
 import 'pascalprecht.translate';
 import * as _ from 'underscore';
 import OpsManagerJobService from "../../services/OpsManagerJobService";
@@ -7,6 +6,13 @@ import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
 
 import {Common} from "../../../common/CommonTypes";
+import { Component, Input, Inject } from "@angular/core";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import StateService from "../../../services/StateService";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import AccessControlService from "../../../services/AccessControlService";
+import AngularModuleExtensionService from "../../../services/AngularModuleExtensionService";
+import { TranslateService } from "@ngx-translate/core";
 
 
 class PageState {
@@ -70,27 +76,27 @@ class Step {
 }
 
 class Job {
-    jobExecutionId: number;
-    executionId:number;
-    name: string;
-    jobName: string;
-    exitDescription: string;
-    running: boolean;
-    stopping: boolean;
-    tabIcon: string;
-    tabIconStyle: string;
-    statusIcon: string;
-    cssStatusClass?: string;
-    displayStatus:string;
-    status:string;
-    executedSteps: Step[];
-    jobParameters: any[];
+    jobExecutionId: number = 0;
+    executionId:number =0;
+    name: string = '';
+    jobName: string = '';
+    exitDescription: string = '';
+    running: boolean = false;
+    stopping: boolean = false;
+    tabIcon: string = '';
+    tabIconStyle: string = '';
+    statusIcon: string = '';
+    cssStatusClass?: string = '';
+    displayStatus:string = '';
+    status:string = '';
+    executedSteps: Step[] = [];
+    jobParameters: any[] = [];
     executionContext:any;
-    executionContextArray: any[];
-    renderTriggerRetry?:boolean
+    executionContextArray: any[] = [];
+    renderTriggerRetry?:boolean = false;
     triggerRetryFlowfile:any;
-    errorMessage?:string;
-    exitStatus:string;
+    errorMessage?:string = '';
+    exitStatus:string = '';
 
     constructor(){
 
@@ -121,11 +127,7 @@ class JobWithTitle {
 
 class TabAnimationControl {
 
-    private enableTabAnimationTimeout: angular.IPromise<any>;
-
-    constructor(private $timeout: angular.ITimeoutService) {
-
-    }
+    private enableTabAnimationTimeout: number = null;
 
     /**
      * Might not be needed
@@ -137,16 +139,28 @@ class TabAnimationControl {
 
     enableTabAnimation() {
         if (this.enableTabAnimationTimeout) {
-            this.$timeout.cancel(this.enableTabAnimationTimeout);
+            clearTimeout(this.enableTabAnimationTimeout);
         }
-        this.enableTabAnimationTimeout = this.$timeout(() => {
+        this.enableTabAnimationTimeout = setTimeout(()=>{
             angular.element('.job-details-tabs').removeClass('no-animation');
         }, 1000);
-
     }
 }
 
-export class JobDetailsDirectiveController implements ng.IComponentController {
+@Component({
+    selector: 'tba-job-details',
+    templateUrl: 'js/ops-mgr/jobs/details/job-details-template.html',
+    styles: [`
+        .mat-list-item {
+            height: auto !important;
+        }
+        .selected {
+            background-color: #EEEEEE !important;
+        }
+    `]
+
+})
+export class JobDetailsDirectiveController {
 
     /**
      * Flag for admin controls
@@ -183,7 +197,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
      */
     jobTab: JobWithTitle;
 
-    tabMetadata: {
+    tabMetadata: {} = {
         selectedIndex: 0,
         bottom: false
     };
@@ -192,13 +206,14 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
 
     //Refresh Intervals
-    refreshTimeout: angular.IPromise<any> = null;
+    refreshTimeout: number = null;
     /**
      * The active Job ID
      */
     jobExecutionId: number;
 
-    executionId:string;
+    @Input() executionId:string;
+    @Input() cardTitle: string;
 
     /**
      * Flag indicating the loading of the passed in JobExecutionId was unable to bring back data
@@ -224,25 +239,21 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
     statusCssMap: Common.Map<string>;
 
-    static $inject = ["$scope", "$http", "$state", "$interval", "$timeout", "$q",
-        "$mdToast", "OpsManagerRestUrlService",
-        "OpsManagerJobService", "IconService", "AccessControlService", "AngularModuleExtensionService",
-        "$filter"]
+    constructor(private http: HttpClient,
+                private $state: StateService,
+                private snackBar: MatSnackBar,
+                // private $q: angular.IQService,
+                // private $filter: angular.IFilterService,
+                private translate: TranslateService,
+                @Inject("$injector") private $injector: any,
+                private OpsManagerRestUrlService: OpsManagerRestUrlService,
+                private OpsManagerJobService: OpsManagerJobService,
+                private IconService: IconService,
+                private AccessControlService: AccessControlService,
+                private AngularModuleExtensionService: AngularModuleExtensionService) {}
 
-    constructor(private $scope: angular.IScope,
-                private $http: angular.IHttpService,
-                private $state: any,
-                private $interval: angular.IIntervalService,
-                private $timeout: angular.ITimeoutService,
-                private $q: angular.IQService,
-                private $mdToast: angular.material.IToastService,
-                private OpsManagerRestUrlService: any,
-                private OpsManagerJobService: any,
-                private IconService: any,
-                private AccessControlService: any,
-                private AngularModuleExtensionService: any,
-                private $filter: angular.IFilterService) {
 
+    ngOnInit() {
         this.pageState.showLoading();
 
 
@@ -253,7 +264,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         this.jobTab = {title: 'JOB', content: this.jobData}
 
 
-        this.tabAnimationControl = new TabAnimationControl(this.$timeout);
+        this.tabAnimationControl = new TabAnimationControl();
 
         var cssStatus = {
             'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'],
@@ -269,21 +280,6 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
             });
         });
 
-
-        $scope.$on("$destroy", this.ngOnDestroy.bind(this));
-
-    }
-
-
-    $onInit() {
-        this.ngOnInit();
-    }
-
-    $onDestroy() {
-        this.ngOnDestroy();
-    }
-
-    ngOnInit() {
         this.jobExecutionId = parseInt(this.executionId)
         //init the log ui flag
         this.logUiEnabled = this.AngularModuleExtensionService.stateExists("log-ui");
@@ -291,7 +287,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         // Fetch allowed permissions
         this.AccessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                this.allowAdmin = this.AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
             });
         this.loadJobData();
 
@@ -307,7 +303,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         event.preventDefault();
         var executionId = this.jobData.executionId;
         this.OpsManagerJobService.abandonJob(this.jobData.executionId, {includeSteps: true}, (response: any) => {
-            this.updateJob(executionId, response.data)
+            this.updateJob(executionId, response)
         })
     }
 
@@ -318,7 +314,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
         let _fail = ()=>{
             this.OpsManagerJobService.failJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
-                this.updateJob(executionId, response.data);
+                this.updateJob(executionId, response);
             })
         }
 
@@ -335,7 +331,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         event.preventDefault();
         var executionId = this.jobData.executionId;
         this.OpsManagerJobService.restartJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
-                this.updateJob(executionId, response.data);
+                this.updateJob(executionId, response);
             }, (errMsg:any) => {
                 this.addJobErrorMessage(errMsg);
             }
@@ -345,13 +341,11 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
     triggerSavepointRetry() {
         if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
             this.jobData.renderTriggerRetry = false;
-            this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).then(() => {
+            this.http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).toPromise().then(() => {
 
-                this.$mdToast.show(
-                    this.$mdToast.simple()
-                        .textContent('Triggered the retry')
-                        .hideDelay(3000)
-                );
+                this.snackBar.open("Triggered the retry","OK",{
+                    duration : 3000
+                });
                 this.loadJobData(true);
             });
         }
@@ -359,13 +353,11 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
     triggerSavepointReleaseFailure(callbackFn: any) {
         if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
-            this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).then((response: any) => {
+            this.http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).toPromise().then((response: any) => {
 
-                this.$mdToast.show(
-                    this.$mdToast.simple()
-                        .textContent('Triggered the release and failure')
-                        .hideDelay(3000)
-                );
+                this.snackBar.open("Triggered the release and failure","OK",{
+                    duration : 3000
+                });
                 if (angular.isDefined(callbackFn)) {
                     callbackFn();
                 }
@@ -405,7 +397,8 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
     private cancelLoadJobDataTimeout() {
         if (this.refreshTimeout != null) {
-            this.$timeout.cancel(this.refreshTimeout);
+            clearTimeout(this.refreshTimeout);
+            // this.$injector.get("$timeout").cancel(this.refreshTimeout);
             this.refreshTimeout = null;
         }
     }
@@ -425,17 +418,20 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
             this.pageState.refreshing = true;
             var sortOptions = '';
-            var canceler = this.$q.defer();
+            var canceler = this.$injector.get("$q").defer();
             var successFn = (response: any) => {
 
-                if (response.data) {
+                if (response) {
                     //transform the data for UI
-                    this.transformJobData(response.data);
-                    if (response.data.running == true || response.data.stopping == true) {
+                    this.transformJobData(response);
+                    if (response.running == true || response.stopping == true) {
                         this.cancelLoadJobDataTimeout();
-                        this.refreshTimeout = this.$timeout(() => {
-                            this.loadJobData()
+                        this.refreshTimeout = setTimeout(()=>{
+                            this.loadJobData();
                         }, 1000);
+                        // this.refreshTimeout = this.$injector.get("$timeout")(() => {
+                        //     this.loadJobData()
+                        // }, 1000);
                     }
                     this.pageState.finishedLoading();
                 }
@@ -456,9 +452,12 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
             }
             this.activeJobRequests.push(canceler);
             this.deferred = canceler;
-            var params = {'includeSteps': true}
 
-            this.$http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId), {timeout: canceler.promise, params: params}).then(successFn, errorFn);
+            let params = new HttpParams();
+            params = params.append('includeSteps', 'true');
+
+            // , {timeout: canceler.promise, params: params}
+            this.http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId), {params: params}).toPromise().then(successFn, errorFn);
         }
 
         return this.deferred;
@@ -550,7 +549,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         job.stopping = false;
         job.exitDescription = job.exitStatus;
         if (job.exitDescription == undefined || job.exitDescription == '') {
-            job.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
+            job.exitDescription = this.translate.instant('views.JobDetailsDirective.Nda');
         }
         job.tabIcon = undefined;
 
@@ -602,7 +601,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         step.displayStatus = step.exitCode;
 
         if (step.exitDescription == undefined || step.exitDescription == '') {
-            step.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
+            step.exitDescription = this.$injector.get("$filter")('translate')('views.JobDetailsDirective.Nda')
         }
 
         var style = this.IconService.iconStyleForJobStatus(step.displayStatus);
@@ -669,25 +668,3 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         }
     }
 }
-
-angular.module(moduleName)
-    .controller("JobDetailsDirectiveController", JobDetailsDirectiveController);
-angular.module(moduleName).directive("tbaJobDetails", [
-
-    () => {
-        return {
-            restrict: "EA",
-            bindToController: {
-                cardTitle: "@",
-                executionId: '='
-            },
-            controllerAs: 'vm',
-            scope: {},
-            templateUrl: 'js/ops-mgr/jobs/details/job-details-template.html',
-            controller: "JobDetailsDirectiveController",
-            link: function ($scope, element, attrs, controller) {
-
-            }
-        };
-    }
-]);

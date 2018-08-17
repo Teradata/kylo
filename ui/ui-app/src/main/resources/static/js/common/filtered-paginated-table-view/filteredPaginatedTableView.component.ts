@@ -25,6 +25,7 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     @Input() onPageSizeChange: any;
     @Input() allowedPageSize: number[] = [5, 10, 20, 50];
     @ViewChild(TdDataTableComponent) dataTable: TdDataTableComponent;
+    @Input() showToolbar: boolean = true;
 
     pageSizeChange(pagingEvent: IPageChangeEvent): void {
         if(typeof this.onPageSizeChange === 'function' && pagingEvent){

@@ -13,6 +13,11 @@
     <entity-access-control [entity]="model" entityType="template" [theForm]="templateAccessControlForm" [readOnly]="!allowEdit"></entity-access-control>
     <br/><br/><br/>
 
+    <div>
+      <button mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
+      <button mat-button matStepperNext (click)="stepper.next()">CONTINUE TO STEP 3</button>
+    </div>
+
   </form>
 
   </mat-card-content>

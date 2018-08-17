@@ -17,67 +17,68 @@
   limitations under the License.
   #L%
   -->
-<div class="filter-help"
+
+<div mat-dialog class="filter-help"
      aria-label="Filter help"
      role="listbox" layout-fill>
-  <md-content style="max-height: 400px;overflow-y: auto;overflow-x:hidden" layout="column">
-    <md-list>
-      <md-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
+  <mat-dialog-content style="max-height: 400px;overflow-y: auto;overflow-x:hidden" layout="column">
+    <mat-list>
+      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
         <span class="card-sub-header">Filter Help</span>
-      </md-list-item>
+      </mat-list-item>
 
-      <md-divider></md-divider>
-      <mid-list-item class="layout-padding-left-right  with-padding">
+      <mat-divider></mat-divider>
+      <mat-list-item class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Syntax</span>
-      </mid-list-item>
+      </mat-list-item>
 
-      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
-        <span>{field} {operator} {value}</span>
+      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
+        <!-- <span>{field} {operator} {value}</span> -->
 
         <span style="padding:5px;"></span>
-        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
+        <mat-hint>'%' is used for a wildcard when using the '=~', LIKE, operator</mat-hint>
         <span style="padding:5px;"></span>
-        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
-      </mid-list-item>
+        <mat-hint> If no field/operator is specified a LIKE filter on the job name will be performed</mat-hint>
+      </mat-list-item>
 
 
-      <md-divider></md-divider>
-      <mid-list-item class="layout-padding-left-right  with-padding">
+      <mat-divider></mat-divider>
+      <mat-list-item class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Fields</span>
-      </mid-list-item>
-      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding"
+      </mat-list-item>
+      <mat-list-item class="filter-help-item layout-padding-left-right with-padding"
                      tabindex="-1"
                      role="option"
-                     ng-repeat="item in ctrl.filterHelpFields" layout="column" layout-align="start start">
-        <span class="hint">{{item.displayName}}</span>
+                     *ngFor="let item of filterHelpFields" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </mid-list-item>
-      <md-divider></md-divider>
+      </mat-list-item>
+      <mat-divider></mat-divider>
 
-      <mid-list-item class="layout-padding-left-right with-padding">
+      <mat-list-item class="layout-padding-left-right with-padding">
         <span class="card-sub-header">Filter Operators</span>
-      </mid-list-item>
-      <md-list-item class="filter-help-item layout-padding-left-right  with-padding"
+      </mat-list-item>
+      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding"
                     tabindex="-1"
                     role="option"
-                    ng-repeat="item in ctrl.filterHelpOperators" layout="column" layout-align="start start">
-        <span class="hint">{{item.displayName}}</span>
+                    *ngFor="let item of filterHelpOperators" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </md-list-item>
-      <md-divider></md-divider>
+      </mat-list-item>
+      <mat-divider></mat-divider>
 
-      <mid-list-item class="layout-padding-left-right  with-padding">
+      <mat-list-item class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Examples</span>
-      </mid-list-item>
-      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding"
+      </mat-list-item>
+      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding"
                      tabindex="-1"
                      role="option"
-                     ng-repeat="item in ctrl.filterHelpExamples" layout="column" layout-align="start start">
-        <span class="hint">{{item.displayName}}</span>
+                     *ngFor="let item of filterHelpExamples" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </mid-list-item>
+      </mat-list-item>
 
-    </md-list>
+    </mat-list>
 
-  </md-content>
+  </mat-dialog-content>
 </div>

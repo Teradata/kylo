@@ -1,12 +1,15 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
 import * as _ from 'underscore';
+import "../module";
+import { DefaultPaginationDataService } from "../../services/PaginationDataService";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export default class TabService{
     tabs: any = {};
     tabMetadata: any = {};
-    //tabPageData: any;
-    constructor(private PaginationDataService: any){}
+
+    constructor(private PaginationDataService: DefaultPaginationDataService){}
     registerTabs(pageName: any, tabNamesArray: any, currentTabName: any): any {
        let PaginationDataService = this.PaginationDataService;
             if (this.tabs[pageName] === undefined) {
@@ -145,5 +148,3 @@ export default class TabService{
             tab.currentPage = currentPage;
         }
 }
-
-  angular.module(moduleName).service('TabService',['DefaultPaginationDataService',TabService]);

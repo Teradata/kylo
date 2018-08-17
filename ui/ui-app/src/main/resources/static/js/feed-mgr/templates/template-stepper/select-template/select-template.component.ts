@@ -26,6 +26,8 @@ export class RegisterSelectTemplateController implements OnInit {
     @Input() nifiTemplateId: string;
     @Input() $new: any;
 
+    @Output() onCancelStepper = new EventEmitter();
+
     templates: any = [];
     model: any;
     stepNumber: string;
@@ -349,6 +351,10 @@ export class RegisterSelectTemplateController implements OnInit {
      */
     onRegisteredTemplateLoaded() {
         this.matchNiFiTemplateIdWithModel();
+    }
+
+    cancelStepper() {
+        this.onCancelStepper.emit();
     }
 
 }

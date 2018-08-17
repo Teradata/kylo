@@ -1,9 +1,12 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
-import "../module";
+// import {moduleName} from "../module-name";
+// import "../module";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export default class OpsManagerRestUrlService{
     constructor(){}
+
     ROOT: string = "";
     FEED_MGR_BASE = "/proxy/v1/feedmgr";
     FEED_MGR_FEED_BASE_URL = this.FEED_MGR_BASE + "/feeds";
@@ -139,4 +142,4 @@ export default class OpsManagerRestUrlService{
 
 }
 
-  angular.module(moduleName).service('OpsManagerRestUrlService',[OpsManagerRestUrlService]);
+//   angular.module(moduleName).service('OpsManagerRestUrlService',OpsManagerRestUrlService);

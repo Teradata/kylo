@@ -734,13 +734,6 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         }
         model.errorMessage = '';
 
-        
-        // var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>>this.$injector.get("$q").defer();
-        // var requests = {
-        //     entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
-        //     entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
-        //     functionalAccess: this.accessControlService.getUserAllowedActions()
-        // }
         return new Promise((resolve, reject) => { 
             
         this.accessControlService.getUserAllowedActions().then((functionalAccess: any) => {

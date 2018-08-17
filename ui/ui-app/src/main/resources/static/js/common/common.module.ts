@@ -45,6 +45,7 @@ import {IconPickerDialog} from "./icon-picker-dialog/icon-picker-dialog.componen
 import {AboutKyloService} from "./about-kylo/AboutKyloService";
 import { RestUrlService } from "../feed-mgr/services/RestUrlService";
 import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-view/filteredPaginatedTableView.component";
+import { KyloTimerDirective } from "./timer/kylo-timer.component";
 
 @NgModule({
     declarations: [
@@ -61,7 +62,8 @@ import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-
         CardLayoutComponent,
         IconPickerDialog,
         AboutKyloDialogController,
-        FilteredPaginatedTableViewComponent
+        FilteredPaginatedTableViewComponent,
+        KyloTimerDirective
     ],
     entryComponents: [
         AddButtonComponent,
@@ -111,7 +113,8 @@ import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-
         IconPickerDialog,
         FilteredPaginatedTableViewComponent,
         UploadFileComponent,
-        CovalentDataTableModule
+        CovalentDataTableModule,
+        KyloTimerDirective
     ],
     providers: [AboutKyloService, RestUrlService]
 })

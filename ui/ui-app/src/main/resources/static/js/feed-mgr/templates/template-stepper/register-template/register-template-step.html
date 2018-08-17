@@ -26,7 +26,7 @@
         </div>
     </mat-card-title>
 
-    <mat-card-content class="md-padding">
+    <mat-card-content class="md-padding" style="overflow:hidden;">
         <ng-container [formGroup]="formGroup">
             <div layout="column">
 
@@ -160,11 +160,12 @@
                 </div>
             </div>
 
-            <!-- <thinkbig-step-buttons can-continue="registerTemplateForm.$valid &&!loadingFlowData && remoteProcessGroupValidation.valid && model.reusableTemplate == false" step-index="{{::stepIndex}}"
-                                   final-step="Register"
-                                   on-click-final-button="registerTemplate()">
-            </thinkbig-step-buttons> -->
-
         </ng-container>
+
+        <div style="float:right;">
+            <button class="md-button md-kylo-theme" mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
+            <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">Register</button>
+        </div> 
+
     </mat-card-content>
 </mat-card>

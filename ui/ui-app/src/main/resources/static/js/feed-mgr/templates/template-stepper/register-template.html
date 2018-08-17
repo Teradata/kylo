@@ -23,51 +23,31 @@
         <mat-step [stepControl]="firstFormGroup">
             <form [formGroup]="firstFormGroup">
                 <ng-template matStepLabel>Select Template</ng-template>
-                <thinkbig-register-select-template [(formGroup)]="firstFormGroup"></thinkbig-register-select-template>
-                <div>
-                    <button (click)="cancelStepper()" mat-button matStepperPrevious>CANCEL</button>
-                    <button mat-button matStepperNext [disabled]="!firstFormGroup.valid">CONTINUE TO STEP 2</button>
-                </div>
+                <thinkbig-register-select-template [(formGroup)]="firstFormGroup" [stepper]="stepper" (onCancelStepper)="cancelStepper()"></thinkbig-register-select-template>
             </form>
         </mat-step>
         <mat-step [stepControl]="secondFormGroup">
             <form [formGroup]="secondFormGroup">
                 <ng-template matStepLabel>Input Properties</ng-template>
                 <thinkbig-register-processor-properties  [(formGroup)]="secondFormGroup" [stepIndex]="1" cardTitle="Input Properties" processorPropertiesFieldName="input"></thinkbig-register-processor-properties>
-                <div>
-                    <button mat-button matStepperPrevious>PREVIOUS STEP</button>
-                    <button mat-button matStepperNext [disabled]="!secondFormGroup.valid">CONTINUE TO STEP 3</button>
-                </div>
             </form>
         </mat-step>
         <mat-step [stepControl]="thirdFormGroup">
             <form [formGroup]="thirdFormGroup">
                 <ng-template matStepLabel>Additional Properties</ng-template>
-                <thinkbig-register-processor-properties [(formGroup)]="thirdFormGroup" [stepIndex]="2" cardTitle="Additional Properties" processorPropertiesFieldName="additional"></thinkbig-register-processor-properties>
-                <div>
-                    <button mat-button matStepperPrevious>PREVIOUS STEP</button>
-                    <button mat-button matStepperNext [disabled]="!thirdFormGroup.valid">CONTINUE TO STEP 4</button>
-                </div>   
+                <thinkbig-register-processor-properties [(formGroup)]="thirdFormGroup" [stepIndex]="2" cardTitle="Additional Properties" processorPropertiesFieldName="additional"></thinkbig-register-processor-properties> 
             </form>
         </mat-step>
         <mat-step [stepControl]="fourthFormGroup">
             <form [formGroup]="firstFormGroup">
                 <ng-template matStepLabel>Access Control</ng-template>
                 <thinkbig-template-access-control [stepIndex]="3" cardTitle="Access Control"></thinkbig-template-access-control>
-                <div>
-                    <button mat-button matStepperPrevious>PREVIOUS STEP</button>
-                    <button mat-button matStepperNext [disabled]="canContinue">CONTINUE TO STEP 5</button>
-                </div> 
             </form>
         </mat-step>
         <mat-step [stepControl]="fifthFormGroup">
             <form [formGroup]="fifthFormGroup">
                 <ng-template matStepLabel>Register</ng-template>
                 <thinkbig-register-complete-registration [(formGroup)]="fifthFormGroup" [stepIndex]="4"></thinkbig-register-complete-registration>
-                <div style="float:right;">
-                    <button class="md-button md-kylo-theme" mat-button matStepperPrevious>PREVIOUS STEP</button>
-                    <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!fifthFormGroup.valid" mat-button (click)="registerTemplate()">Register</button>
-                </div> 
             </form>
         </mat-step>
                 

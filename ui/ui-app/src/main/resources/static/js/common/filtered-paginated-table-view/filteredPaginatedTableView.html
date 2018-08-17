@@ -1,8 +1,8 @@
 <div>
         <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
         <div *ngIf="!loading" class="flex-container" fxLayoutAlign="center center">
-            <mat-card flex="80">
-                <mat-card-title>
+            <mat-card flex="100">
+                <mat-card-title *ngIf="showToolbar">
                     <mat-toolbar style="background: none;">
                         <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle}}</div>
                         <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)"

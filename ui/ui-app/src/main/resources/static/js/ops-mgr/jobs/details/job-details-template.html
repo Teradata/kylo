@@ -18,133 +18,140 @@
   #L%
   -->
 <div flex layout="row">
-  <card-layout flex>
-    <header-section transclude-to="head" flex layout>
-      <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
-    </header-section>
-    <body-section transclude-to="body" transclude-replace="true">
-      <md-content ng-if="vm.unableToFindJob == false">
+  <mat-card flex>
+    <mat-card-title flex layout>
+      <div style="white-space:nowrap" class="card-title" flex>{{cardTitle}}</div>
+    </mat-card-title>
+    <mat-card-content>
+      <ng-container *ngIf="unableToFindJob == false">
         <div layout="column" class="layout-padding-bottom layout-padding-left-16">
           <div layout="row">
 
             <div flex="40" layout="column">
                    <span class="item-title">
-                   {{vm.jobData.name}}
+                    {{jobData.name}}
                    </span>
-                  <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
-                                                       <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{vm.jobData.displayStatus | translate}}</span>
-
+                  <span class="column-title-bottom {{jobData.cssStatusClass}}">
+                    <ng-md-icon *ngIf="jobData.statusIcon" class="{{jobData.tabIconStyle}}" icon="{{jobData.statusIcon}}" size="20">
+                    </ng-md-icon>{{jobData.displayStatus | translate}}
+                  </span>
 
             </div>
 
             <div flex="30" layout="column">
-                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
-                                               </span>
+              <span class="item-title">{{jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+              </span>
               <span class="column-title column-title-bottom">{{"views.job-details-template.ST" | translate}}</span>
             </div>
             <div flex="30" layout="column">
-                                               <span class="item-title">
-                                                   <kylo-timer ng-if="vm.jobData.running"
-                                                              start-time="vm.jobData.runTime"></kylo-timer>
-                                                   <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
-                                               </span>
+              <span class="item-title">
+                  <div kylo-timer *ngIf="jobData.running" [startTime]="jobData.runTime"></div>
+                  <span *ngIf="jobData.running == false">{{jobData.runTime | date: 'fullTime' }}</span>
+              </span>
               <span class="column-title column-title-bottom">{{"views.job-details-template.RT" | translate}}</span>
             </div>
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
-               ng-tt-chars-threshold="150">
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;">
+            {{jobData.exitDescription | truncate: 150}}
           </div>
         </div>
-        <md-tabs class="job-details-tabs" flex md-selected="vm.tabMetadata.selectedIndex"
-                 md-align-tabs="{{vm.tabMetadata.bottom ? 'bottom' : 'top'}}" layout-fill md-dynamic-height>
+        <!-- md-align-tabs="{{tabMetadata.bottom ? 'bottom' : 'top'}}" -->
+        <mat-tab-group [selectedIndex]="tabMetadata.selectedIndex" class="job-details-tabs" flex
+                 layout-fill dynamicHeight>
 
-          <md-tab flex>
-            <md-tab-label>
-                   <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
-                                                       <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{'views.job-details-template.JD' | translate}}</span>
-            </md-tab-label>
-            <md-tab-body>
-              <md-divider></md-divider>
-              <div flex layout="column" class="tab-content layout-padding-top">
+          <mat-tab flex>
+              <ng-template mat-tab-label>
+                <span class="column-title-bottom {{jobData.cssStatusClass}}">
+                    <ng-md-icon *ngIf="jobData.statusIcon" class="{{jobData.tabIconStyle}}" icon="{{jobData.statusIcon}}" size="20">
+                    </ng-md-icon>
+                    {{'views.job-details-template.JD' | translate}}
+                  </span>
+              </ng-template>
+            <div>
+              <mat-divider></mat-divider>
+              <div flex layout="column" class="tab-content">
 
-
-                <div layout="row" layout-align="end center">
-                                    <span class="md-button-group" layout="row" layout-align="end center">
-                                          <span flex></span>
-                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == true}" ng-click="vm.toggleJobParameters('JobParameters')">
-                                        {{'views.job-details-template.JP' | translate}}
-                                    </md-button>
-                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == false}" ng-click="vm.toggleJobParameters('ExecutionContext')">
-                                      {{'views.job-details-template.ECD' | translate}}
-                                    </md-button>
-                                        </span>
+                <div layout="row" layout-align="end center" style="padding: 8px 25px;">
+                  <span class="md-button-group" layout="row" layout-align="end center">
+                    <span flex></span>
+                      <button class="border-btn md-button md-kylo-theme md-ink-ripple" style="max-width:200px;" [ngClass]="{'selected': showJobParameters == true}" (click)="toggleJobParameters('JobParameters')">
+                          {{'views.job-details-template.JP' | translate}}
+                      </button>
+                      <button class="border-btn md-button md-kylo-theme md-ink-ripple" style="max-width:200px;" [ngClass]="{'selected': showJobParameters == false}" (click)="toggleJobParameters('ExecutionContext')">
+                        {{'views.job-details-template.ECD' | translate}}
+                      </button>
+                  </span>
 
                 </div>
-                <md-list ng-show="vm.pageState.loading == false" class="list-item-table">
-                  <md-divider></md-divider>
-                  <md-list-item ng-if="vm.showJobParameters == true">
+
+                <mat-list *ngIf="pageState.loading == false" class="list-item-table">
+                  <mat-divider></mat-divider>
+                  <mat-list-item *ngIf="showJobParameters == true">
                     <div flex="30" class="item-column md-list-item-text accent-color-3">
                         {{'views.job-details-template.Parameters' | translate}}
                     </div>
                     <div flex="70" class="item-column md-list-item-text accent-color-3">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
-                    <md-divider></md-divider>
-                  </md-list-item>
-                  <md-list-item ng-if="vm.showJobParameters == true"
-                                ng-repeat="item in vm.jobData.jobParametersArray | orderBy:'key'">
-                    <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
-                      {{item.key}}
-                    </div>
-                    <div flex="70" class="item-column md-list-item-text " style="word-wrap: break-word;">
-                      {{item.value}}
-                    </div>
-                    <md-divider ng-if="!$last"></md-divider>
-                  </md-list-item>
-                  <md-list-item ng-if="vm.showJobParameters == false">
+                    <mat-divider></mat-divider>
+                  </mat-list-item>
+                  <!--  | orderBy:'key' -->
+                  <div *ngIf="showJobParameters == true">
+                    <mat-list-item *ngFor="let item of jobData.jobParametersArray; let last = last;">
+                      <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
+                        {{item.key}}
+                      </div>
+                      <div flex="70" class="item-column md-list-item-text " style="word-wrap: break-word;">
+                        {{item.value}}
+                      </div>
+                      <mat-divider *ngIf="!last"></mat-divider>
+                    </mat-list-item>
+                  </div>
+                  <mat-list-item *ngIf="showJobParameters == false">
                     <div flex="30" class="item-column md-list-item-text accent-color-3">
                         {{'views.job-details-template.CP' | translate}}
                     </div>
                     <div flex="70" class="item-column md-list-item-text accent-color-3">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
-                    <md-divider></md-divider>
-                  </md-list-item>
-                  <md-list-item ng-if="vm.showJobParameters == false" ng-repeat="item in vm.jobData.executionContextArray | orderBy:'key'">
-                    <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
-                      {{item.key}}
-                    </div>
-                    <div flex="70" class="item-column md-list-item-text ">
-                      {{item.value}}
-                    </div>
-                    <md-divider ng-if="!$last"></md-divider>
-                  </md-list-item>
-                </md-list>
+                    <mat-divider></mat-divider>
+                  </mat-list-item>
+                  <!--  | orderBy:'key' -->
+                  <div *ngIf="showJobParameters == false">
+                    <mat-list-item *ngFor="let item of jobData.executionContextArray; let last = last;">
+                      <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
+                        {{item.key}}
+                      </div>
+                      <div flex="70" class="item-column md-list-item-text ">
+                        {{item.value}}
+                      </div>
+                      <mat-divider *ngIf="!last"></mat-divider>
+                    </mat-list-item>
+                  </div>
+                </mat-list>
 
-                <md-divider></md-divider>
+                <mat-divider></mat-divider>
 
 
               </div>
 
-            </md-tab-body>
-          </md-tab>
+            </div>
+          </mat-tab>
 
-          <md-tab flex>
-            <md-tab-label>
-              <span class="column-title-bottom">{{'views.job-details-template.SD' | translate}}</span>
-            </md-tab-label>
-            <md-tab-body>
-              <md-divider></md-divider>
+          <mat-tab flex>
+              <ng-template mat-tab-label>
+                  <span class="column-title-bottom">{{'views.job-details-template.SD' | translate}}</span>
+              </ng-template>
+            <div>
+              <mat-divider></mat-divider>
               <div flex layout="column" class="tab-content">
-                  <md-list>
-                  <md-list-item ng-repeat="step in vm.allSteps" class="with-padding item-column">
-                   <div  layout="column" layout-fill>
+                  <mat-list>
+                  <mat-list-item *ngFor="let step of allSteps" class="with-padding item-column">
+                   <div layout="column" layout-fill>
 
-                    <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"
+                    <div layout="row" (click)="step.content.open == true ? step.content.open = false : step.content.open = true"
                          class="md-list-item-text hover-highlight-pointer layout-padding-top-bottom ">
 
                       <div flex="40" layout="column">
@@ -153,9 +160,8 @@
                     </ng-md-icon>   {{step.title}} - {{step.content.name}}
                    </span>
                   <span class="column-title-bottom {{step.content.cssStatusClass}}">
-                                                       <ng-md-icon ng-if="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{step.content.displayStatus | translate}}</span>
-
+                      <ng-md-icon *ngIf="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
+                      </ng-md-icon>{{step.content.displayStatus | translate}}</span>
 
                       </div>
 
@@ -168,190 +174,162 @@
                         <div layout="row">
                           <div>
                             <span class="item-title">
-                             <kylo-timer ng-if="step.content.running"
-                                         start-time="step.content.runTime"></kylo-timer>
-                             <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
+                             <div kylo-timer *ngIf="step.content.running" [startTime]="step.content.runTime"></div>
+                             <span *ngIf="step.content.running == false">{{step.content.runTime | date: 'fullTime' }}</span>
                             </span>
                               <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
                           </div>
                           <div>
-                            <md-button md-no-ink ng-show="vm.logUiEnabledVar && step.content.displayStatus =='FAILED'" class="border-btn action-btn md-warn" ng-click="vm.navigateToLogsForStep(step)">Search Logs</md-button>
+                            <button md-no-ink *ngIf="logUiEnabledVar && step.content.displayStatus =='FAILED'" class="border-btn action-btn md-warn" (click)="navigateToLogsForStep(step)">Search Logs</button>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16">
+                    <div *ngIf="step.content.open" class="fade-in-out layout-padding-left-16">
 
 
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
                       <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
-                      <md-list flex layout-fill ng-show="vm.pageState.loading == false" class="list-item-table">
-                        <md-divider></md-divider>
-                        <md-list-item>
+                      <mat-list flex layout-fill *ngIf="pageState.loading == false" class="list-item-table">
+                        <mat-divider></mat-divider>
+                        <mat-list-item>
                           <div flex="30" class="item-column md-list-item-text accent-color-3">
                             {{'views.job-details-template.CP' | translate}}
                           </div>
                           <div flex="70" class="item-column md-list-item-text accent-color-3">
                             {{'views.job-details-template.Values' | translate}}
                           </div>
-                          <md-divider></md-divider>
-                        </md-list-item>
-                        <md-list-item ng-repeat="item in step.content.executionContextArray | orderBy:'key'">
+                          <mat-divider></mat-divider>
+                        </mat-list-item>
+                        <!--  | orderBy:'key' -->
+                        <mat-list-item *ngFor="let item of step.content.executionContextArray">
                           <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                             {{item.key}}
                           </div>
                           <div flex="70" class="item-column md-list-item-text ">
                             {{item.value}}
                           </div>
-                          <md-divider ng-if="!$last"></md-divider>
-                        </md-list-item>
-                      </md-list>
+                          <mat-divider *ngIf="!$last"></mat-divider>
+                        </mat-list-item>
+                      </mat-list>
 
                     </div>
-                    <md-divider></md-divider>
+                    <mat-divider></mat-divider>
                    </div>
-                  </md-list-item>
-                  </md-list>
+                  </mat-list-item>
+                  </mat-list>
                 </div>
-            </md-tab-body>
-          </md-tab>
-        </md-tabs>
+              </div>
+          </mat-tab>
+        </mat-tab-group>
 
 
-      </md-content>
-      <md-content ng-if="vm.unableToFindJob == true" style="min-height:300px">
+      </ng-container>
+      <ng-container *ngIf="unableToFindJob == true" style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
-        <span class="md-subhead">
-        {{'views.job-details-template.Utftj' | translate}}
+          <span class="md-subhead">
+          {{'views.job-details-template.Utftj' | translate}}
           </span>
         </div>
-      </md-content>
-    </body-section>
-  </card-layout>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
 
-  <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body" ng-if="vm.unableToFindJob == false">
-    <header-section transclude-to="head" flex layout>
+  <mat-card flex="30" header-css="job-details-header" body-css="job-details-right-body" *ngIf="unableToFindJob == false">
+    <mat-card-title flex layout>
       <div style="white-space:nowrap" class="card-title">{{'views.job-details-template.JD' | translate}}</div>
       <span flex></span>
-    </header-section>
-    <body-section transclude-to="body">
-      <md-content flex md-scroll-y>
+    </mat-card-title>
+    <mat-card-content>
+      <ng-container flex md-scroll-y>
         <div class="card-content">
-          <!--
-            <md-button class="border-btn action-btn" ng-if="vm.jobData.status =='FAILED'"
-                       ng-click="vm.restartJob($event)">RESTART
-            </md-button>
-            <md-button class="border-btn action-btn"
-                       ng-disabled="true"
-                       ng-if="vm.jobData.status =='STARTED' || vm.jobData.status =='STARTING'"
-                       ng-click="vm.stopJob($event)">STOP
-            </md-button>
-            -->
-          <md-button class="border-btn action-btn"
-                     ng-if="!vm.jobData.stream && vm.jobData.status  && vm.jobData.status !='COMPLETED' && vm.jobData.status !='FAILED' && vm.allowAdmin"
-                     ng-click="vm.failJob($event)">{{'views.job-details-template.FAIL' | translate}}
-          </md-button>
-          <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin"
-                     ng-click="vm.abandonJob($event)">{{'views.job-details-template.ABANDON' | translate}}
-          </md-button>
+          <button class="border-btn action-btn"
+                     *ngIf="!jobData.stream && jobData.status  && jobData.status !='COMPLETED' && jobData.status !='FAILED' && allowAdmin"
+                     (click)="failJob($event)">{{'views.job-details-template.FAIL' | translate}}
+          </button>
+          <button class="border-btn action-btn" *ngIf="!jobData.stream && jobData.status && jobData.status =='FAILED' && allowAdmin"
+                     (click)="abandonJob($event)">{{'views.job-details-template.ABANDON' | translate}}
+          </button>
 
-          <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin && vm.jobData.renderTriggerRetry" ng-click="vm.triggerSavepointReleaseFailure()">Force Fail</md-button>
+          <button class="border-btn action-btn" *ngIf="!jobData.stream && jobData.status && jobData.status =='FAILED' && allowAdmin && jobData.renderTriggerRetry" (click)="triggerSavepointReleaseFailure()">Force Fail</button>
 
-            <md-button  class="border-btn action-btn" ng-if="!vm.jobData.stream && !vm.jobData.running && vm.jobData.renderTriggerRetry && vm.allowAdmin " ng-click="vm.triggerSavepointRetry()">Retry</md-button>
+          <button  class="border-btn action-btn" *ngIf="!jobData.stream && !jobData.running && jobData.renderTriggerRetry && allowAdmin " (click)="triggerSavepointRetry()">Retry</button>
 
-          <md-button md-no-ink ng-class="vm.jobData.status =='FAILED' ? 'border-btn action-btn md-warn': 'border-btn action-btn' " ng-show="vm.logUiEnabledVar" ng-click="vm.navigateToLogs(vm.jobData.startTime, vm.jobData.endTime)" >
+          <button md-no-ink [ngClass]="jobData.status =='FAILED' ? 'border-btn action-btn md-warn': 'border-btn action-btn' " *ngIf="logUiEnabledVar" (click)="navigateToLogs(jobData.startTime, jobData.endTime)" >
             Search Logs
-          </md-button>
+          </button>
         </div>
-        <div ng-if="vm.jobData.errorMessage != ''" class="error">
-          {{vm.jobData.errorMessage }}
+        <div *ngIf="jobData.errorMessage != ''" class="error">
+          {{jobData.errorMessage }}
         </div>
 
-        <md-list flex layout-fill layout="column" class="list-item-table">
-          <md-list-item>
+        <mat-list flex layout-fill layout="column" class="list-item-table">
+          <mat-list-item>
 
             <div layout="column" class="item-column md-list-item-text ">
-                                                         <span class="item-title">
-                                                           {{vm.jobData.name}}
-                                                       </span>
-                                                             <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
-                                                               <ng-md-icon
-                                                                   icon="{{vm.jobData.statusIcon}}"
-                                                                   class="{{vm.jobData.tabIconStyle}}"
-                                                                   size="20">
-                                                               </ng-md-icon>{{vm.jobData.displayStatus | translate}}</span>
+              <span class="item-title">
+                {{jobData.name}}
+              </span>
+              <span class="column-title-bottom {{jobData.cssStatusClass}}">
+                <ng-md-icon
+                    icon="{{jobData.statusIcon}}"
+                    class="{{jobData.tabIconStyle}}"
+                    size="20">
+                </ng-md-icon>{{jobData.displayStatus | translate}}
+              </span>
 
             </div>
-          </md-list-item>
-          <md-divider></md-divider>
-          <md-list-item>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <mat-list-item>
 
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.jobType | translate}}
-                                               </span>
+                <span class="item-title">{{jobData.jobType | translate}}
+                </span>
               <span class="column-title column-title-bottom">{{'views.job-details-template.Type' | translate}}</span>
             </div>
-          </md-list-item>
-          <md-divider></md-divider>
-          <md-list-item>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <mat-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
-                                               </span>
+              <span class="item-title">{{jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+              </span>
               <span class="column-title column-title-bottom">{{'views.job-details-template.ST' | translate}}</span>
             </div>
-          </md-list-item>
-          <md-divider></md-divider>
-          <md-list-item ng-if="vm.jobData.endTime != null && vm.jobData.running == false">
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <mat-list-item *ngIf="jobData.endTime != null && jobData.running == false">
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
-                                               </span>
+              <span class="item-title">{{jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
+              </span>
               <span class="column-title column-title-bottom">{{'views.job-details-template.ET' | translate}}</span>
             </div>
-          </md-list-item>
-          <md-divider></md-divider>
-          <md-list-item>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <mat-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">
-                                                   <kylo-timer ng-if="vm.jobData.running"
-                                                              start-time="vm.jobData.runTime"></kylo-timer>
-                                                   <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
-                                               </span>
+                <span class="item-title">
+                    <div kylo-timer *ngIf="jobData.running" [startTime]="jobData.runTime"></div>
+                    <span *ngIf="jobData.running == false">{{jobData.runTime | date: 'fullTime' }}</span>
+                </span>
               <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
             </div>
-          </md-list-item>
-          <md-divider></md-divider>
-          <md-list-item>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <mat-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.exitCode | translate}}
-                                               </span>
+                <span class="item-title">{{jobData.exitCode | translate}}
+                </span>
               <span class="column-title column-title-bottom">{{'views.job-details-template.EC' | translate}}</span>
             </div>
-          </md-list-item>
-          <!--
-          <md-list-item>
-              <div layout="column">
-                                     <span class="item-title">{{vm.jobData.instanceId}}
-                                     </span>
-                  <span class="column-title column-title-bottom">Instance Id</span>
-              </div>
-          </md-list-item>
-          <md-list-item>
-              <div layout="column">
-                                     <span class="item-title">{{vm.jobData.executionId}}
-                                     </span>
-                  <span class="column-title column-title-bottom">Execution Id</span>
-              </div>
-          </md-list-item>
-          -->
-          <md-divider></md-divider>
+          </mat-list-item>
+          <mat-divider></mat-divider>
 
-        </md-list>
-
-
-      </md-content>
-    </body-section>
-  </card-layout>
+        </mat-list>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
 </div>

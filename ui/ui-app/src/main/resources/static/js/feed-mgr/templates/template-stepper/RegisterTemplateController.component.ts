@@ -14,8 +14,6 @@ import { FormGroup, AbstractControl, FormControl, ValidatorFn } from '@angular/f
 })
 export class RegisterTemplateController {
 
-    @ViewChild(RegisterCompleteRegistrationController)
-    private registrationCompleteComponent: RegisterCompleteRegistrationController;
     /**
     * Reference to the RegisteredTemplate Kylo id passed when editing a template
     * @type {null|*}
@@ -84,7 +82,4 @@ export class RegisterTemplateController {
         this.stateService.go("registered-templates");
     }
 
-    registerTemplate = () => {
-        this.registrationCompleteComponent.registerTemplate();
-    }
 }

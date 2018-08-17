@@ -243,6 +243,11 @@
 
             </ng-container>
 
+            <div>
+                <button mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
+                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">CONTINUE TO STEP 3</button>
+            </div>
+
         </mat-card-content>
 
     </mat-card>

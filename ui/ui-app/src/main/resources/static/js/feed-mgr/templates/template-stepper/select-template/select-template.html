@@ -63,6 +63,12 @@
         </div>
 
         <br/><br/><br/>
+
+        <div>
+            <button (click)="cancelStepper()" mat-button matStepperPrevious>CANCEL</button>
+            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">CONTINUE TO STEP 2</button>
+        </div>
+
     </mat-card-content>
 
 </mat-card>

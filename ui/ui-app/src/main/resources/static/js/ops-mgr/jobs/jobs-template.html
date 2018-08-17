@@ -17,133 +17,80 @@
   limitations under the License.
   #L%
   -->
-<card-layout header-css="filter-header">
-  <header-section>
-      <tba-card-filter-header transclude-to="head" flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-            [on-menu-open]="vm.onOptionsMenuOpen" [on-selected-option]="vm.selectedTableOption" [additional-options]="vm.additionalMenuOptions"
-            [on-selected-additional-option]="vm.selectedAdditionalMenuOption" [(filter-model)]="vm.filter" filter-model-options="{debounce:1000}"
-            [on-show-filter-help]="vm.showFilterHelpPanel">
-        </tba-card-filter-header>
-  </header-section>
-    <body-section transclude-to="body">
-            <md-tabs   flex md-selected="vm.tabMetadata.selectedIndex"
-                       md-align-tabs="top" layout-fill  md-dynamic-height>
+<mat-card header-css="filter-header">
+    <mat-card-title style="font-size:smaller;">
 
-                <md-tab ng-repeat="tab in vm.tabs"
-                        ng-disabled="tab.disabled"
-                        md-on-select="vm.onTabSelected(tab)" flex
-                        ng-init="vTitle = 'views.jobs-template.' + tab.title"
-                        >
-                    <md-tab-label> {{vTitle | translate}} </md-tab-label>
-                    <md-tab-body>
-                        <md-divider></md-divider>
-                    <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-                        <div ng-if="vm.showProgress" class="md-list-table-progress">
-                        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                            <br/><br/>
-                        </div>
-                    <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
-                        <md-list-item  dir-paginate="job in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total" current-page="tab.currentPage" >
-                            <div layout="row" layout-fill>
-                                <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                   <span class="item-title">
-                                       {{job.displayName === undefined ? job.jobName : job.displayName.value}}
-                                   </span>
-                                   <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}" class="column-title-bottom">
-                                       <ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                       {{job.displayStatus | translate}}</span>
-                                </div>
-                                <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
-                                    <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
-                                    <span class="column-title column-title-bottom">{{"views.jobs-template.ST" | translate}}</span>
-                                </div>
-                                <div flex="25" layout="column" hide show-gt-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title">{{job.runTime | time }}</span>
-                                    <span class="column-title column-title-bottom">{{"views.jobs-template.RT" | translate}}</span>
-                                </div>
-                                <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text" ng-if="!job.stream">
-                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}
-                                    </md-button>
-                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
-                                    <span ng-if="job.errorMessage != ''">
-                                        <br/>
-                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
+        <mat-toolbar style="display:flex">
+            <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            </td-search-box>
+            <button class="md-icon-button filter-help-button md-button md-kylo-theme md-ink-ripple" 
+                    style="background-color: white; border: 0;"
+                    aria-label="Filter Help" 
+                    (click)="showFilterHelpPanel($event)" 
+                    *ngIf="showFilterHelpPanel">
+                <mat-icon size="15" style="color:grey;">help</mat-icon>
+            </button>
+        </mat-toolbar>
+    </mat-card-title>
+
+    <mat-card-content>
+
+        <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
+                            (selectedIndexChange)="onTabSelected($event)"
+                            layout-fill  dynamicHeight>
+
+                <mat-tab *ngFor="let tab of tabs"
+                        [disabled]="tab.disabled" flex>
+                        <ng-template mat-tab-label>{{tab.title}}</ng-template>
+                    <div>
+                        <mat-divider></mat-divider>
+                        
+                        <filtered-paginated-table-view 
+                            [showToolbar]="false"
+                            [columns]="columns"
+                            [sortable]="true"
+                            [sortBy]="sortBy"
+                            [sortOrder]="sortOrder"
+                            [clickable]="true"
+                            [filteredData]="filteredData"
+                            [onSortChange]="sort"
+                            [firstLast]="false"
+                            [pageSize]="pageSize"
+                            [filteredTotal]="filteredTotal"
+                            [onPageSizeChange]="onPageSizeChange"
+                            [allowedPageSize]="[5,10,20,50]"
+                            [onRowClick]="jobDetails">
+
+                                <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
+                                    <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
+                                        <ng-md-icon icon="{{row.icon}}" size="20" >
+                                        </ng-md-icon>
+                                        <span hide show-gt-md>{{row.displayStatus}}</span>
                                     </span>
-                                </div>
-                            </div>
-                            <md-divider ng-if="!$last"></md-divider>
+                                </ng-template>
 
-                        </md-list-item>
-                        <md-item  ng-show="vm.showProgress == false && tab.data.content.length ==0" style="padding:10px">
-                            {{"views.jobs-template.Nrf" | translate}}
-                        </md-item >
-                        <md-divider></md-divider>
-                        <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                            <dir-pagination-controls pagination-id="vm.paginationId(tab)" ng-if="vm.viewType == 'list'"
-                                                     auto-hide="false"
-                                                     max-size="5"
-                                                     direction-links="true"
-                                                     boundary-links="false"
-                                                     template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                     on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                     label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                     rows-per-page="vm.paginationData.rowsPerPage"
-                                                     rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                     class="pagination-row">
-                            </dir-pagination-controls>
-                        </md-list-item>
+                                <ng-template tdDataTableTemplate="startTime" let-value="value" let-row="row" let-column="column">
+                                    <span>{{row.startTime | date:'MMM d, yyyy HH:mm:ss'}}</span>
+                                </ng-template>
 
+                                <ng-template tdDataTableTemplate="runTime" let-value="value" let-row="row" let-column="column">
+                                    <span>{{row.runTime | date: 'fullTime'}}</span>
+                                </ng-template>
 
-                    </md-list>
-                    </div>
-                    <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
-
-                        <md-table-container>
-                            <table md-table md-progress="vm.deferred.promise">
-                                <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                                <tr md-row>
-                                    <th md-column name="Job Name" md-order-by="jobName">{{"views.jobs-template.JN" | translate}}</th>
-                                    <th md-column  name="State">{{"views.jobs-template.State" | translate}}</th>
-                                    <th md-column  name="Feed" md-order-by="feedName" ng-if="vm.hideFeedColumn == false">{{"views.jobs-template.Feed" | translate}}</th>
-                                    <th md-column  name="Start Time" md-order-by="startTime"   hide show-gt-sm >{{"views.jobs-template.ST" | translate}}</th>
-                                    <th md-column  name="Run Time" md-order-by="runTime"  hide show-gt-md>{{"views.jobs-template.RT" | translate}}</th>
-                                    <th md-column  name="Status" md-order-by="status">{{"views.jobs-template.Status" | translate}}</th>
-                                    <th md-column  name="Action" md-hide show-gt-md >{{"views.jobs-template.Action" | translate}}</th>
-                                </tr>
-                                </thead>
-                                <tbody md-body>
-                                <tr md-row ng-repeat="job in tab.data.content" ng-click="vm.jobDetails($event,job)">
-                                    <td md-cell>{{job.jobName}}</td>
-                                    <td md-cell>
-                               <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}">
-                                       <ng-md-icon icon="{{job.icon}}" size="20" >
-                                       </ng-md-icon>
-                                       <span hide show-gt-md>{{job.displayStatus}}</span></span>
-
-                                    </td>
-                                    <td md-cell ng-if="vm.hideFeedColumn == false">{{job.feedName}}</td>
-                                    <td md-cell hide show-gt-sm>{{job.startTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
-                                    <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
-                                    <td md-cell >{{job.status}}</td>
-                                    <td md-cell hide show-gt-md>
-                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
-                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
-                                         <span ng-if="job.errorMessage != ''">
+                                <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
+                                    <md-button class="border-btn action-btn" *ngIf="row.status !='COMPLETED' && row.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
+                                    <md-button class="border-btn action-btn" *ngIf="row.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
+                                    <span *ngIf="row.errorMessage != ''">
                                         <br/>
-                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
+                                        <span class="md-warn md-caption">{{row.errorMessage}}</span>
                                     </span>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </md-table-container>
+                                </ng-template>
 
-                        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50,100]"></md-table-pagination>
+                        </filtered-paginated-table-view>
 
                     </div>
-                        </md-tab-body>
-                </md-tab>
-            </md-tabs>
-            </body-section>
-            </card-layout>
+                </mat-tab>
+            </mat-tab-group>
+        </mat-card-content>
+    </mat-card>
