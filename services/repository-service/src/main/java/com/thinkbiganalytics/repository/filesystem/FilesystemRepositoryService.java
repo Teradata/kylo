@@ -113,14 +113,14 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    @Value("${kylo.template.repository.default}")
+    @Value("${kylo.template.repository.default:/opt/kylo/setup/data/templates/nifi-1.0}")
     String defaultKyloRepository;
 
     private final MetadataEventListener<TemplateChangeEvent> templateChangedListener = new TemplateChangeRepositoryListener();
 
     @PostConstruct
     public void addEventListener() {
-        log.info("Event listener in fileRepositoryService");
+        log.info("Template change listener added in fileRepositoryService");
         eventService.addListener(templateChangedListener);
     }
 
