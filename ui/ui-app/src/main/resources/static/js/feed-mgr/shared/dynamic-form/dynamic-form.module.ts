@@ -19,6 +19,7 @@ import {DynamicFormFieldComponent} from "./dynamic-form-field.component";
 import {DynamicFormComponent} from "./dynamic-form.component";
 import {TrueFalseValueDirective} from "./true-false-value.directive";
 import {MatRadioModule} from "@angular/material/radio";
+import {CovalentChipsModule} from "@covalent/core/chips";
 
 
 @NgModule({
@@ -50,6 +51,7 @@ import {MatRadioModule} from "@angular/material/radio";
         MatSelectModule,
         MatTabsModule,
         MatToolbarModule,
+        CovalentChipsModule,
         ReactiveFormsModule
     ],
     providers: [
