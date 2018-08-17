@@ -19,7 +19,7 @@ export class KyloTimerDirective {
 
       interval: any;
 
-      clearInterval = ()=> {
+      clearInterval(): void {
         clearInterval(this.interval);
         this.interval = null;
       }
@@ -28,13 +28,13 @@ export class KyloTimerDirective {
         this.clearInterval();
       }
 
-      update = () => {
+      update(): void {
         this.time += this.refreshTime;
         //format it
         this.format();
     }
 
-    format = () => {
+    format(): void {
         var ms = this.time;
         var displayStr = DateTimeUtils(this.$injector.get("$filter")('translate')).formatMillisAsText(ms,this.truncatedFormat,false);
         if(this.addAgoSuffix) {
@@ -49,7 +49,7 @@ export class KyloTimerDirective {
 
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges(changes: SimpleChanges): void {
         if (!changes.startTime.firstChange) {
             console.log(changes.startTime);
             this.time = changes.startTime.currentValue;
@@ -57,7 +57,7 @@ export class KyloTimerDirective {
         }
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.truncatedFormat = angular.isDefined(this.truncatedFormat) ? this.truncatedFormat : false;
         this.addAgoSuffix = angular.isDefined(this.addAgoSuffix) ? this.addAgoSuffix : false;
 
@@ -74,7 +74,6 @@ export class KyloTimerDirective {
 
     }
     constructor(private elRef: ElementRef, 
-                private translate: TranslateService,
                 @Inject("$injector") private $injector: any) {}
 }
 
