@@ -5,6 +5,8 @@ import {UIRouterModule} from "@uirouter/angular";
 import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
 
 import AccessConstants from "../../constants/AccessConstants";
+import "../../codemirror-require/module"
+
 const moduleName: string = require("./module-name");
 
 @NgModule({

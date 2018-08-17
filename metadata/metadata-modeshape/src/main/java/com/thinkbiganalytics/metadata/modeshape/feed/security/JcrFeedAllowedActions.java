@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;

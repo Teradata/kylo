@@ -208,7 +208,7 @@ public class CsvFeedIT extends FeedITBase {
     }
 
     protected String getFeedFormat() {
-        return "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES " +
+        return "ROW SPARK_PARAMS SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES " +
                 "( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE";
     }
 

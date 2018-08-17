@@ -20,29 +20,60 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.SparkException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Resource;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Resource;
+
 public class ScalaScriptService {
+
     private static Pattern dfPattern = Pattern.compile("^\\s*df\\s*$", Pattern.MULTILINE);
 
     @Resource
     private ScriptGenerator scriptGenerator;
 
+    @Nonnull
+    public String wrapScriptForLivy(@Nonnull final SparkJobRequest request) {
+        // Add parent reference
+        final StringBuilder livyScript = new StringBuilder();
+        if (request.getParent() != null && request.getParent().getId() != null) {
+            livyScript.append("var parent = sqlContext.read.table(\"").append(StringEscapeUtils.escapeJava(request.getParent().getId())).append("\")\n");
+        }
+
+        // Extract last line
+        if (StringUtils.isBlank(request.getScript())) {
+            throw new SparkException("Spark job script cannot be blank");
+        }
+
+        String lastLine = "";
+        String script = request.getScript();
+        while (StringUtils.isBlank(lastLine)) {
+            final int index = script.lastIndexOf('\n');
+            lastLine = script.substring(index + 1);
+            script = script.substring(0, index);
+        }
+
+        // Generate script for Livy
+        livyScript.append(script).append('\n')
+            .append("var result = mapper.writeValueAsString(").append(lastLine).append(")\n")
+            .append("%json result");
+        return livyScript.toString();
+    }
 
     /**
      * Modifies the script in request (assumed that it contains a dataframe named df), and creates a
      * List(schema,dataRows) object.  schema is a scala string of json representing the schema.  dataRows
      * is a List of Lists of the row data.  The columns and rows are paged according to the data provided
      * in request.pageSpec.
-     *
-     * @param request
-     * @return
      */
     public String wrapScriptForLivy(TransformRequest request, String transformId) {
 
@@ -68,7 +99,7 @@ public class ScalaScriptService {
         // transformCache.put(request, transformId);
 
         script = dfPattern.matcher(script).replaceAll(/*"var df" + counter + " = df.cache(); "df" + counter*/
-                "df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
+            "df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
 
         sb.append(wrapScriptWithPaging(script, request.getPageSpec()));
 
@@ -83,10 +114,6 @@ public class ScalaScriptService {
      * Modifies the script passed in (assumed it contains a dataframe named df), and creates a List(schema,dataRows)
      * object.  schema is a scala string of json representing the schema.  dataRows is a List of Lists of the row data.
      * The columns and rows are paged according to the data provided in request.pageSpec
-     *
-     * @param script
-     * @param pageSpec
-     * @return
      */
     private String wrapScriptWithPaging(String script, PageSpec pageSpec) {
         if (pageSpec != null) {
@@ -96,7 +123,7 @@ public class ScalaScriptService {
             Integer stopRow = startRow + pageSpec.getNumRows();
 
             return scriptGenerator.wrappedScript("pagedDataFrame", script, "\n",
-                    startCol, stopCol, startRow, stopRow);
+                                                 startCol, stopCol, startRow, stopRow);
         } else {
             // No Pagespec so simply return all results
             return script.concat("val dfRows = List( df.schema.json, df.rdd.collect.map(x => x.toSeq) )\n");

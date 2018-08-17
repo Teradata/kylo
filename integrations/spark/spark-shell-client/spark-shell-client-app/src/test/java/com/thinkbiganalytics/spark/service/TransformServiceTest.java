@@ -76,7 +76,10 @@ public class TransformServiceTest {
         request.setDoProfile(true);
         request.setScript("sqlContext.range(1,10)");
 
-        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService(), Mockito.mock(DataSetConverterService.class), Mockito.mock(KyloCatalogClientBuilder.class));
+        final TransformService
+            service =
+            new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService(), Mockito.mock(DataSetConverterService.class),
+                                 Mockito.mock(KyloCatalogClientBuilder.class));
         final TransformResponse response = service.execute(request);
         Assert.assertEquals(TransformResponse.Status.PENDING, response.getStatus());
 
@@ -137,7 +140,10 @@ public class TransformServiceTest {
         request.setDatasources(Collections.singletonList(Mockito.mock(Datasource.class)));
         request.setScript("sqlContext.range(1,10)");
 
-        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService(), Mockito.mock(DataSetConverterService.class),Mockito.mock(KyloCatalogClientBuilder.class));
+        final TransformService
+            service =
+            new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService(), Mockito.mock(DataSetConverterService.class),
+                                 Mockito.mock(KyloCatalogClientBuilder.class));
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setProfiler(profiler);
 
@@ -177,12 +183,12 @@ public class TransformServiceTest {
 
         // Test converting request to script
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
-                                                              Mockito.mock(JobTrackerService.class), Mockito.mock(DataSetConverterService.class),Mockito.mock(KyloCatalogClientBuilder.class));
+                                                              Mockito.mock(JobTrackerService.class), Mockito.mock(DataSetConverterService.class), Mockito.mock(KyloCatalogClientBuilder.class));
 
         InputStream inputStream = getClass().getResourceAsStream("transform-service-script1.scala");
         final String expected = IOUtils.toString(inputStream, "UTF-8");
         inputStream.close();
-        Assert.assertEquals(expected, service.toScript(request));
+        Assert.assertEquals(expected, service.toTransformScript(request));
     }
 
     /**
@@ -201,11 +207,11 @@ public class TransformServiceTest {
 
         // Test converting request to script
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
-                                                              Mockito.mock(JobTrackerService.class), Mockito.mock(DataSetConverterService.class),Mockito.mock(KyloCatalogClientBuilder.class));
+                                                              Mockito.mock(JobTrackerService.class), Mockito.mock(DataSetConverterService.class), Mockito.mock(KyloCatalogClientBuilder.class));
 
         InputStream inputStream = getClass().getResourceAsStream("transform-service-script2.scala");
         final String expected = IOUtils.toString(inputStream, "UTF-8");
-        Assert.assertEquals(expected, service.toScript(request));
+        Assert.assertEquals(expected, service.toTransformScript(request));
     }
 
     /**

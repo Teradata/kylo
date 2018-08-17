@@ -22,23 +22,29 @@ package com.thinkbiganalytics.kylo.model.enums;
 
 /**
  * Session State
- * Value	Description
- * not_started	Session has not been started
- * starting	Session is starting
- * idle	Session is waiting for input
- * busy	Session is executing a statement
- * shutting_down	Session is shutting down
- * error	Session errored out
- * dead	Session has exited
- * success	Session is successfully stopped
+ * Value	   Description
+ * not_started	   Session has not been started
+ * starting	   Session is starting
+ * recovering      ??  see: LIVY-496
+ * idle	           Session is waiting for input
+ * running         ??  see: LIVY-496
+ * busy	           Session is executing a statement
+ * shutting_down   Session is shutting down
+ * error	   Session errored out
+ * dead	           Session has exited
+ * killed          ??: see: LIVY-496
+ * success	   Session is successfully stopped
  */
 public enum SessionState {
     not_started,
     starting,
+    recovering,
     idle,
+    running,
     busy,
     shutting_down,
     error,
     dead,
+    killed,
     success
 }

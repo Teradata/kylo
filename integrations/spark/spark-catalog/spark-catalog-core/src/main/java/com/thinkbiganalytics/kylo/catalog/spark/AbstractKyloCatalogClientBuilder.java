@@ -22,13 +22,18 @@ package com.thinkbiganalytics.kylo.catalog.spark;
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogDataSetBuilder;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogException;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Base implementation of a {@link KyloCatalogClientBuilder} backed by a Spark engine.
@@ -45,16 +50,46 @@ abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientB
     private static final ThreadLocal<KyloCatalogClient> activeClient = new InheritableThreadLocal<>();
 
     /**
+     * Map of data set identifier to data set
+     */
+    @Nonnull
+    private final Map<String, DataSetTemplate> dataSets = new HashMap<>();
+
+    /**
      * List of data set providers
      */
     @Nonnull
     private final List<DataSetProvider<T>> dataSetProviders;
 
     /**
+     * High water marks
+     */
+    @Nonnull
+    private final Map<String, String> highWaterMarks = new HashMap<>();
+
+    /**
      * Constructs an {@code AbstractKyloCatalogClientBuilder} with the specified default data set providers.
      */
     protected AbstractKyloCatalogClientBuilder(@Nonnull final List<DataSetProvider<T>> defaultDataSetProviders) {
         dataSetProviders = new ArrayList<>(defaultDataSetProviders);
+    }
+
+    @Nonnull
+    @Override
+    public KyloCatalogDataSetBuilder<T> addDataSet(@Nonnull final String id) {
+        return new DefaultKyloCatalogDataSetBuilder<>(id, this);
+    }
+
+    /**
+     * Adds a pre-defined data set.
+     *
+     * @param id      data set identifier
+     * @param dataSet data set
+     */
+    @Nonnull
+    public KyloCatalogClientBuilder<T> addDataSet(@Nonnull final String id, @Nonnull final DataSetTemplate dataSet) {
+        dataSets.put(id, dataSet);
+        return this;
     }
 
     @Nonnull
@@ -74,6 +109,13 @@ abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientB
 
     @Nonnull
     @Override
+    public KyloCatalogClientBuilder<T> setHighWaterMark(@Nonnull final String name, @Nullable final String value) {
+        highWaterMarks.put(name, value);
+        return this;
+    }
+
+    @Nonnull
+    @Override
     @SuppressWarnings("unchecked")
     public final KyloCatalogClient<T> build() {
         KyloCatalogClient<T> client = activeClient.get();
@@ -84,7 +126,12 @@ abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientB
 
             synchronized (activeClient) {
                 if (activeClient.get() == null || activeClient.get().isClosed()) {
-                    activeClient.set(create(dataSetProviders));
+                    client = create(dataSetProviders);
+                    client.setHighWaterMarks(highWaterMarks);
+                    if (client instanceof AbstractKyloCatalogClient) {
+                        ((AbstractKyloCatalogClient) client).setDataSets(dataSets);
+                    }
+                    activeClient.set(client);
                 }
                 client = activeClient.get();
             }

@@ -28,6 +28,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.spark.metadata.Job;
 import com.thinkbiganalytics.spark.metadata.SaveJob;
+import com.thinkbiganalytics.spark.metadata.SparkJob;
 import com.thinkbiganalytics.spark.metadata.StandardSparkListener;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 
@@ -121,7 +122,19 @@ public class JobTrackerService extends StandardSparkListener {
     @Nonnull
     public Optional<SaveJob> getSaveJob(@Nonnull final String groupId) {
         final Job<?> job = getJob(groupId).orNull();
-        return (job != null && job instanceof SaveJob) ? Optional.of((SaveJob) job) : Optional.<SaveJob>absent();
+        return (job instanceof SaveJob) ? Optional.of((SaveJob) job) : Optional.<SaveJob>absent();
+    }
+
+    /**
+     * Gets the SparkJob with the specified group id.
+     *
+     * @param groupId the group id
+     * @return the Spark job
+     */
+    @Nonnull
+    public Optional<SparkJob> getSparkJob(@Nonnull final String groupId) {
+        final Job<?> job = getJob(groupId).orNull();
+        return (job instanceof SparkJob) ? Optional.of((SparkJob) job) : Optional.<SparkJob>absent();
     }
 
     /**
@@ -133,7 +146,7 @@ public class JobTrackerService extends StandardSparkListener {
     @Nonnull
     public Optional<TransformJob> getTransformJob(@Nonnull final String groupId) {
         final Job<?> job = getJob(groupId).orNull();
-        return (job != null && job instanceof TransformJob) ? Optional.of((TransformJob) job) : Optional.<TransformJob>absent();
+        return (job instanceof TransformJob) ? Optional.of((TransformJob) job) : Optional.<TransformJob>absent();
     }
 
     @Override
@@ -244,6 +257,8 @@ public class JobTrackerService extends StandardSparkListener {
                     for (final StageInfo stage : notification.getValue().getStages()) {
                         stages.remove(stage.stageId());
                     }
+
+                    // TODO remove temp table
                 }
             })
             .build();

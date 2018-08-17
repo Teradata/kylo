@@ -36,6 +36,11 @@ class SparkShellProxyResources {
     static final String DOWNLOAD_NOT_FOUND = "download.notFound";
 
     /**
+     * An error occurred during a Spark job.
+     */
+    static final String JOB_ERROR = "job.error";
+
+    /**
      * An error occurred while attempting to save the results.
      */
     static final String SAVE_ERROR = "save.error";

@@ -13,8 +13,12 @@
     </div>
     <md-list layout-padding browser-height browser-height-offset="{{$td.getBrowserHeightOffset(112)}}">
       <md-list-item ng-repeat-start="history in $td.functionHistory">
-        <ng-md-icon icon="{{history.icon}}"></ng-md-icon>
+        <ng-md-icon ng-if="history.inactive" icon="{{history.icon}}"></ng-md-icon>
+        <ng-md-icon ng-if="!history.inactive" icon="{{history.icon}}"></ng-md-icon>
         <p>{{history.name}}<md-tooltip>{{history.name}}</md-tooltip></p>
+        <ng-md-icon ng-click="$td.toggleItem($index)" style="color:grey" ng-if="history.inactive" icon="visibility"></ng-md-icon>
+        <ng-md-icon ng-click="$td.removeItem($index)" style="color:orange" ng-if="history.inactive" icon="remove_circle"></ng-md-icon>
+        <ng-md-icon ng-click="$td.toggleItem($index)" style="color:orange" ng-if="!history.inactive" icon="visibility"></ng-md-icon>
       </md-list-item>
       <md-divider ng-repeat-end></md-divider>
     </md-list>

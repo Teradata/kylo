@@ -20,9 +20,11 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
+import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -144,5 +146,113 @@ public class StripHeaderTest {
         assertTrue(originalContent.startsWith("name") && originalContent.endsWith("94550\n"));
     }
 
+    @Test
+    public void testRouteOriginal_DefaultValueIsTrue() {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        PropertyDescriptor propertyDescriptor = runner.getProcessor().getPropertyDescriptor(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED.getName());
+        Assert.assertEquals(propertyDescriptor.getDefaultValue(), "true");
+    }
+
+    @Test
+    public void testRouteOriginal_IsNotRequired() {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        PropertyDescriptor propertyDescriptor = runner.getProcessor().getPropertyDescriptor(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED.getName());
+        Assert.assertFalse(propertyDescriptor.isRequired());
+    }
+
+    @Test
+    public void testNoProcessing_RouteOriginalEnabled() throws IOException {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        runner.setProperty(StripHeader.ENABLED, "false");
+        runner.setProperty(StripHeader.HEADER_LINE_COUNT, "1");
+        runner.setProperty(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED, "true");
+
+        runner.enqueue(file);
+        runner.run();
+
+        runner.assertTransferCount(StripHeader.REL_CONTENT, 1);
+        runner.assertTransferCount(StripHeader.REL_HEADER, 0);
+        runner.assertTransferCount(StripHeader.REL_ORIGINAL, 1);
+
+        List<MockFlowFile> contentFlows = runner.getFlowFilesForRelationship(StripHeader.REL_CONTENT);
+        String content = new String(contentFlows.get(0).toByteArray());
+        assertTrue(content.startsWith("name") && content.endsWith("94550\n"));
+
+        List<MockFlowFile> originalFlows = runner.getFlowFilesForRelationship(StripHeader.REL_ORIGINAL);
+        String originalContent = new String(originalFlows.get(0).toByteArray());
+        assertTrue(originalContent.startsWith("name") && originalContent.endsWith("94550\n"));
+
+    }
+
+    @Test
+    public void testProcessing_RouteOriginalEnabled() throws IOException {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        runner.setProperty(StripHeader.ENABLED, "true");
+        runner.setProperty(StripHeader.HEADER_LINE_COUNT, "1");
+        runner.setProperty(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED, "true");
+
+        runner.enqueue(file);
+        runner.run();
+
+        runner.assertTransferCount(StripHeader.REL_CONTENT, 1);
+        runner.assertTransferCount(StripHeader.REL_HEADER, 1);
+        runner.assertTransferCount(StripHeader.REL_ORIGINAL, 1);
+
+        List<MockFlowFile> contentFlows = runner.getFlowFilesForRelationship(StripHeader.REL_CONTENT);
+        String content = new String(contentFlows.get(0).toByteArray());
+        assertTrue(content.startsWith("Joe") && content.endsWith("94550\n"));
+
+        List<MockFlowFile> headerFlows = runner.getFlowFilesForRelationship(StripHeader.REL_HEADER);
+        headerFlows.get(0).assertContentEquals("name,phone,zip\n");
+
+        List<MockFlowFile> originalFlows = runner.getFlowFilesForRelationship(StripHeader.REL_ORIGINAL);
+        String originalContent = new String(originalFlows.get(0).toByteArray());
+        assertTrue(originalContent.startsWith("name") && originalContent.endsWith("94550\n"));
+    }
+
+    @Test
+    public void testNoProcessing_RouteOriginalDisabled() throws IOException {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        runner.setProperty(StripHeader.ENABLED, "false");
+        runner.setProperty(StripHeader.HEADER_LINE_COUNT, "1");
+        runner.setProperty(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED, "false");
+
+        runner.enqueue(file);
+        runner.run();
+
+        runner.assertTransferCount(StripHeader.REL_CONTENT, 1);
+        runner.assertTransferCount(StripHeader.REL_HEADER, 0);
+        runner.assertTransferCount(StripHeader.REL_ORIGINAL, 0);
+
+        List<MockFlowFile> contentFlows = runner.getFlowFilesForRelationship(StripHeader.REL_CONTENT);
+        String content = new String(contentFlows.get(0).toByteArray());
+        assertTrue(content.startsWith("name") && content.endsWith("94550\n"));
+    }
+
+    @Test
+    public void testProcessing_RouteOriginalDisabled() throws IOException {
+        final TestRunner runner = TestRunners.newTestRunner(new StripHeader());
+        runner.setProperty(StripHeader.ENABLED, "true");
+        runner.setProperty(StripHeader.HEADER_LINE_COUNT, "1");
+        runner.setProperty(StripHeader.SEND_TO_ORIGINAL_RELATIONSHIP_EVEN_IF_DISABLED, "false");
+
+        runner.enqueue(file);
+        runner.run();
+
+        runner.assertTransferCount(StripHeader.REL_CONTENT, 1);
+        runner.assertTransferCount(StripHeader.REL_HEADER, 1);
+        runner.assertTransferCount(StripHeader.REL_ORIGINAL, 1);
+
+        List<MockFlowFile> contentFlows = runner.getFlowFilesForRelationship(StripHeader.REL_CONTENT);
+        String content = new String(contentFlows.get(0).toByteArray());
+        assertTrue(content.startsWith("Joe") && content.endsWith("94550\n"));
+
+        List<MockFlowFile> headerFlows = runner.getFlowFilesForRelationship(StripHeader.REL_HEADER);
+        headerFlows.get(0).assertContentEquals("name,phone,zip\n");
+
+        List<MockFlowFile> originalFlows = runner.getFlowFilesForRelationship(StripHeader.REL_ORIGINAL);
+        String originalContent = new String(originalFlows.get(0).toByteArray());
+        assertTrue(originalContent.startsWith("name") && originalContent.endsWith("94550\n"));
+    }
 
 }

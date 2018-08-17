@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

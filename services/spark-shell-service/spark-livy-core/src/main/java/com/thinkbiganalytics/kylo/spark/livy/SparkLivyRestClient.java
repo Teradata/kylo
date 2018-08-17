@@ -29,29 +29,44 @@ import com.thinkbiganalytics.kylo.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementsPost;
 import com.thinkbiganalytics.kylo.model.enums.StatementState;
-import com.thinkbiganalytics.kylo.utils.*;
+import com.thinkbiganalytics.kylo.spark.SparkException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.utils.LivyRestModelTransformer;
+import com.thinkbiganalytics.kylo.utils.LivyUtils;
+import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
+import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
+import com.thinkbiganalytics.kylo.utils.StatementStateTranslator;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.io.ZipStreamingOutput;
 import com.thinkbiganalytics.spark.model.SaveResult;
-import com.thinkbiganalytics.spark.rest.model.*;
+import com.thinkbiganalytics.spark.rest.model.DataSources;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
+import com.thinkbiganalytics.spark.rest.model.SaveRequest;
+import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.TransformRequest;
+import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+
+import java.net.URI;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class SparkLivyRestClient implements SparkShellRestClient {
-    private static final Logger logger = LoggerFactory.getLogger(SparkLivyRestClient.class);
+
+    private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyRestClient.class);
 
     @Resource
     private SparkLivyProcessManager sparkLivyProcessManager;
@@ -73,9 +88,28 @@ public class SparkLivyRestClient implements SparkShellRestClient {
      */
     @Nonnull
     public final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(1, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build();
+        .expireAfterAccess(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build();
+
+    @Override
+    public SparkJobResponse createJob(@Nonnull final SparkShellProcess process, @Nonnull final SparkJobRequest request) {
+        logger.entry(process, request);
+
+        // Execute job script
+        final JerseyRestClient client = sparkLivyProcessManager.getClient(process);
+        final String script = scalaScriptService.wrapScriptForLivy(request);
+        final Statement statement = submitCode(client, script, process);
+
+        final String jobId = ScalaScriptService.newTableName();
+        sparkLivyProcessManager.setStatementId(jobId, statement.getId());
+
+        // Generate response
+        final SparkJobResponse response = new SparkJobResponse();
+        response.setId(jobId);
+        response.setStatus(StatementStateTranslator.translate(statement.getState()));
+        return logger.exit(response);
+    }
 
     @Nonnull
     @Override
@@ -90,11 +124,32 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         throw new UnsupportedOperationException();
     }
 
+    @Nonnull
+    @Override
+    public Optional<SparkJobResponse> getJobResult(@Nonnull final SparkShellProcess process, @Nonnull final String id) {
+        logger.entry(process, id);
+
+        // Request result from Livy
+        final JerseyRestClient client = sparkLivyProcessManager.getClient(process);
+        final Integer statementId = sparkLivyProcessManager.getStatementId(id);
+        final Statement statement = client.get(String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), statementId), Statement.class);
+        sparkLivyProcessManager.setStatementId(id, statement.getId());
+        logger.debug("getStatement id={}, spr={}", statement.getId(), statement);
+
+        // Generate response
+        final SparkJobResponse response = LivyRestModelTransformer.toJobResponse(id, statement);
+
+        if (response.getStatus() != TransformResponse.Status.ERROR) {
+            return Optional.of(response);
+        } else {
+            throw new SparkException(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
+        }
+    }
 
     @Nonnull
     @Override
     public Optional<SaveResponse> getQuerySave(@Nonnull SparkShellProcess process, @Nonnull String
-            queryId, @Nonnull String saveId) {
+        queryId, @Nonnull String saveId) {
         throw new UnsupportedOperationException();
     }
 
@@ -108,10 +163,9 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public SaveResponse saveQuery(@Nonnull SparkShellProcess process, @Nonnull String id, @Nonnull SaveRequest
-            request) {
+        request) {
         throw new UnsupportedOperationException();
     }
-
 
     @Nonnull
     @Override
@@ -126,7 +180,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         Statement statement = submitCode(client, script, process);
 
         if (statement.getState() == StatementState.running
-                || statement.getState() == StatementState.waiting) {
+            || statement.getState() == StatementState.waiting) {
             statement = getStatement(client, sparkLivyProcessManager.getLivySessionId(process), statement.getId());
             logger.debug("{}", statement);
         } else {
@@ -139,15 +193,15 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         // 2. Create a response with data from filesysem
         if (result != null && result.getPath() != null) {
             return Optional.of(
-                    Response.ok(new ZipStreamingOutput(result.getPath(), fileSystem))
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
-                            // TODO: could not get access to HttpHeaders constant in javax.ws.rs:javax.ws.rs-api:2.0.1 even after importing
-                            .header("Content-Disposition", "attachment; filename=\"" + saveId + ".zip\"")
-                            .build()
+                Response.ok(new ZipStreamingOutput(result.getPath(), fileSystem))
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
+                    // TODO: could not get access to HttpHeaders constant in javax.ws.rs:javax.ws.rs-api:2.0.1 even after importing
+                    .header("Content-Disposition", "attachment; filename=\"" + saveId + ".zip\"")
+                    .build()
             );
         } else {
             return Optional.of(
-                    createErrorResponse(Response.Status.NOT_FOUND, "download.notFound")
+                createErrorResponse(Response.Status.NOT_FOUND, "download.notFound")
             );
         }
     }
@@ -165,7 +219,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         Statement statement = submitCode(client, script, process);
 
         if (statement.getState() == StatementState.running
-                || statement.getState() == StatementState.waiting) {
+            || statement.getState() == StatementState.waiting) {
             statement = getStatement(client, sparkLivyProcessManager.getLivySessionId(process), statement.getId());
             logger.debug("{}", statement);
         } else {
@@ -179,7 +233,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public Optional<TransformResponse> getTransformResult(@Nonnull SparkShellProcess process, @Nonnull String
-            transformId) {
+        transformId) {
         logger.debug("getTransformResult(process,table) called");
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
@@ -187,21 +241,21 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         Integer stmtId = sparkLivyProcessManager.getStatementId(transformId);
 
         Statement statement = client.get(String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), stmtId),
-                Statement.class);
+                                         Statement.class);
 
         sparkLivyProcessManager.setStatementId(transformId, statement.getId());
         logger.debug("getStatement id={}, spr={}", statement.getId(), statement);
         TransformResponse response = LivyRestModelTransformer.toTransformResponse(statement, transformId);
 
-        if( statement.getState() == StatementState.available && response.getStatus() == TransformResponse.Status.PENDING ) {
+        if (statement.getState() == StatementState.available && response.getStatus() == TransformResponse.Status.PENDING) {
             // TODO:: change this so that if transformId is a livyQueryID it knows what to do.  similiar to saveResponse
 
             // The result came back from Livy, but the transform result still needs to be fetched
             String script = scriptGenerator.script("getTransform", scalaStr(transformId));
-            statement = submitCode(client,script,process);
+            statement = submitCode(client, script, process);
             // associate transformId to this new query and get results on subsequent call
-            sparkLivyProcessManager.setStatementId(transformId,statement.getId());
-        } else if( response.getStatus() == TransformResponse.Status.ERROR){
+            sparkLivyProcessManager.setStatementId(transformId, statement.getId());
+        } else if (response.getStatus() == TransformResponse.Status.ERROR) {
             throw new LivyException(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
         } // end if
         return Optional.of(response);
@@ -210,7 +264,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public Optional<SaveResponse> getTransformSave(@Nonnull SparkShellProcess process, @Nonnull String
-            transformId, @Nonnull String saveId) {
+        transformId, @Nonnull String saveId) {
         logger.debug("getTransformResult(process,table) called");
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
@@ -220,8 +274,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         try {
             Integer stmtId = Integer.parseInt(saveId);
             statement = client.get(
-                    String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), stmtId),
-                    Statement.class);
+                String.format("/sessions/%s/statements/%s", sparkLivyProcessManager.getLivySessionId(process), stmtId),
+                Statement.class);
             logger.debug("getStatement id={}, spr={}", stmtId, statement);
             response = LivyRestModelTransformer.toSaveResponse(statement);
         } catch (NumberFormatException nfe) {
@@ -251,7 +305,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public SaveResponse saveTransform(@Nonnull SparkShellProcess process, @Nonnull String
-            transformId, @Nonnull SaveRequest request) {
+        transformId, @Nonnull SaveRequest request) {
         logger.debug("saveTransform(process,transformId,saveRequest) called");
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
@@ -272,8 +326,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         StatementsPost sp = new StatementsPost.Builder().code(script).kind("spark").build();
 
         Statement statement = client.post(String.format("/sessions/%s/statements", sparkLivyProcessManager.getLivySessionId(process)),
-                sp,
-                Statement.class);
+                                          sp,
+                                          Statement.class);
         logger.debug("statement={}", statement);
 
         return statement;
@@ -295,7 +349,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         Statement statement = submitCode(client, script, process);
 
-        sparkLivyProcessManager.setStatementId(transformId,statement.getId());
+        sparkLivyProcessManager.setStatementId(transformId, statement.getId());
 
         TransformResponse response = new TransformResponse();
         response.setStatus(StatementStateTranslator.translate(statement.getState()));
@@ -308,6 +362,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    @Nonnull
     public TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request) {
         logger.debug("kyloCatalogTransform(process,kyloCatalogReadRequest) called");
 
@@ -319,7 +374,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         Statement statement = submitCode(client, script, process);
 
         if (statement.getState() == StatementState.running
-                || statement.getState() == StatementState.waiting) {
+            || statement.getState() == StatementState.waiting) {
             statement = getStatement(client, sparkLivyProcessManager.getLivySessionId(process), statement.getId());
             logger.debug("{}", statement);
         } else {
@@ -339,7 +394,6 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     /**
      * Creates a scala string literal of the given object
      *
-     * @param obj
      * @return a literal that can be placed in a scala code snippet
      */
     private static String scalaStr(Object obj) {

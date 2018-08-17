@@ -64,4 +64,6 @@ export interface ScriptState<T> {
     tableState: number;
 
     sort:ColumnSort;
+
+    inactive: boolean;
 }

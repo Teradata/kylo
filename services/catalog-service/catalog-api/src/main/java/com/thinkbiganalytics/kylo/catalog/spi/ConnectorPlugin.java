@@ -33,6 +33,8 @@ public interface ConnectorPlugin {
     default String getId() {
         return getClass().getSimpleName();
     }
+    
+    String getVersion();
 
     ConnectorPluginDescriptor getDescriptor();
     

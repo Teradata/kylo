@@ -141,6 +141,26 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Unable to get name of Node " + node, e);
         }
     }
+    
+    public static Node rename(Node node, String newName) {
+        Path currentPath = path(node);
+        Path newPath = currentPath.getParent().resolve(newName);
+        return moveNode(node, newPath);
+    }
+
+    public static Node moveNode(Node node, Path newPath) {
+        try {
+            Session session = node.getSession();
+            String path = newPath.toAbsolutePath().toString();
+            session.move(node.getPath(), path);
+            return session.getNode(path);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to move node to path: " + newPath, e);
+        }
+    }
 
     public static String getPath(Node node) {
         try {
@@ -212,6 +232,21 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + absPath, e);
         }
     }
+    
+    public static boolean hasNode(Session session, Path path) {
+        try {
+            if (path.isAbsolute()) {
+                return session.itemExists(path.toString());
+            } else {
+                return session.getRootNode().hasNode(path.toString());
+            }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + path, e);
+        }
+    }
 
     public static boolean hasNode(Session session, String absParentPath, String name) {
         Node parentNode = getNode(session, absParentPath);
@@ -227,6 +262,10 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
         }
+    }
+    
+    public static Node getNode(Session session, Path path) {
+        return getNode(session, path.toString());
     }
 
     public static Node getNode(Session session, String absPath) {
@@ -253,6 +292,19 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named " + name, e);
         }
+    }
+    
+    public static Node createNode(Session session, Path nodePath, String nodeType) {
+        Node parentNode;
+        Path parentPath = nodePath.getParent();
+        
+        if (parentPath == null) {
+            parentNode = getRootNode(session);
+        } else {
+            parentNode = getNode(session, parentPath);
+        }
+        
+        return createNode(parentNode, nodePath.getFileName().toString(), nodeType);
     }
 
     public static Node createNode(Node parentNode, String name, String nodeType) {

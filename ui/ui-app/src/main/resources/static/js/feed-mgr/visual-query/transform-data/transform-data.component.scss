@@ -4,7 +4,6 @@
 
 thinkbig-visual-query-transform {
 
-
   // Sidebar
   md-sidenav.md-locked-open:not(.collapsed) {
     $width: 257px;
@@ -118,6 +117,13 @@ Override spacing for context menu
   md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
     background-color: transparent !important;
     opacity:1.0;
+  }
+
+  span.ws-text {
+    color: coral;
+    margin-right: 2px;
+    margin-left: 2px;
+    font-weight: bold;
   }
 
 }

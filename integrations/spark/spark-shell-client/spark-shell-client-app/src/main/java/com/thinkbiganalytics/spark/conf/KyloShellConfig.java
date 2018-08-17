@@ -34,11 +34,16 @@ import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.service.*;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
+import com.thinkbiganalytics.spark.service.IdleMonitorService;
+import com.thinkbiganalytics.spark.service.JobTrackerService;
+import com.thinkbiganalytics.spark.service.SparkListenerService;
+import com.thinkbiganalytics.spark.service.SparkLocatorService;
+import com.thinkbiganalytics.spark.service.SparkUtilityService;
+import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang.StringUtils;
@@ -51,8 +56,6 @@ import org.apache.spark.sql.jdbc.JdbcDialect;
 import org.apache.spark.sql.jdbc.JdbcDialects;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -66,8 +69,6 @@ import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.ResourcePropertySource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Arrays;
@@ -75,6 +76,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 
 /**
  * Instantiates a REST server for executing Spark scripts.
@@ -84,7 +91,6 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 // ignore auto-configuration classes outside Spark Shell
 public class KyloShellConfig {
-    private static final Logger logger = LoggerFactory.getLogger(KyloShellConfig.class);
 
     /**
      * Gets the factory for the embedded web server.
@@ -248,35 +254,35 @@ public class KyloShellConfig {
         final SparkConf conf = new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", Integer.toString(serverPort + 1));
 
         final Iterable<Map.Entry<String, Object>> properties = FluentIterable.from(Collections.singleton(env))
-                .filter(AbstractEnvironment.class)
-                .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
-                    @Nullable
-                    @Override
-                    public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
-                        return (input != null) ? input.getPropertySources() : null;
-                    }
-                })
-                .filter(ResourcePropertySource.class)
-                .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
-                    @Nullable
-                    @Override
-                    public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
-                        return (input != null) ? input.getSource() : null;
-                    }
-                })
-                .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
-                    @Nullable
-                    @Override
-                    public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
-                        return (input != null) ? input.entrySet() : null;
-                    }
-                })
-                .filter(new Predicate<Map.Entry<String, Object>>() {
-                    @Override
-                    public boolean apply(@Nullable final Map.Entry<String, Object> input) {
-                        return (input != null && input.getKey().startsWith("spark."));
-                    }
-                });
+            .filter(AbstractEnvironment.class)
+            .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
+                @Nullable
+                @Override
+                public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
+                    return (input != null) ? input.getPropertySources() : null;
+                }
+            })
+            .filter(ResourcePropertySource.class)
+            .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
+                @Nullable
+                @Override
+                public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
+                    return (input != null) ? input.getSource() : null;
+                }
+            })
+            .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
+                @Nullable
+                @Override
+                public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
+                    return (input != null) ? input.entrySet() : null;
+                }
+            })
+            .filter(new Predicate<Map.Entry<String, Object>>() {
+                @Override
+                public boolean apply(@Nullable final Map.Entry<String, Object> input) {
+                    return (input != null && input.getKey().startsWith("spark."));
+                }
+            });
         for (final Map.Entry<String, Object> entry : properties) {
             conf.set(entry.getKey(), entry.getValue().toString());
         }
