@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>{{viewText.title}}  for {{data.feedName}}</h2>
+<h2 mat-dialog-title>{{title}}  for {{feed.feedName}}</h2>
 <mat-dialog-content>
   <div fxLayout="column" fxLayoutAlign="start stretch" class="layout-padding-left-right">
     <mat-form-field>
@@ -12,10 +12,11 @@
   </div>
 
   <policy-input-form *ngIf="editPrecondition !== null" [parentFormGroup]="preconditionForm"
-                     [(rule)]="editPrecondition" [mode]="editMode" [feed]="data"
+                     [(rule)]="editPrecondition" [mode]="editMode" [feed]="feed"
                      (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
 </mat-dialog-content>
 <mat-dialog-actions>
+  <button *ngIf="editIndex" mat-raised-button color="warn" (click)="deletePrecondition(editIndex)">Delete</button>
   <span fxFlex=""></span>
   <button mat-raised-button (click)="cancel()">Cancel</button>
   <button mat-raised-button color="primary" (click)="done()">

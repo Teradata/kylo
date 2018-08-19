@@ -1,4 +1,4 @@
-import {Component, Inject, Injector, OnInit} from "@angular/core";
+import {Component, Inject, Injector} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Feed} from "../../model/feed/feed.model";
 import {FormGroup} from "@angular/forms";
@@ -6,62 +6,62 @@ import {PolicyInputFormService} from "../field-policies-angular2/policy-input-fo
 import * as angular from 'angular';
 import * as _ from "underscore";
 
-interface ViewText {
-    modeText:string;
-    title:string;
-    titleText:string;
-    addText:string;
-    cancelText:string;
-}
-
 enum EditMode { NEW=1, EDIT=2 }
 
 @Component({
     selector:"feed-precondition-dialog",
     templateUrl: "js/feed-mgr/shared/feed-precondition/feed-precondition-dialog.component.html"
 })
-export class FeedPreconditionDialogComponent implements OnInit{
+export class FeedPreconditionDialogComponent{
 
-    private loading = false;
-    public preconditionForm:FormGroup = new FormGroup({});
-    options:any[] = [];
-    ruleType:any = null;
-    editPrecondition:any = null;
-    editIndex :number = null;
-    editMode:EditMode = EditMode.NEW;
+    public preconditionForm: FormGroup = new FormGroup({});
+    options: any[] = [];
+    ruleType: any = null;
+    editPrecondition: any = null;
+    editIndex: number = null;
+    editMode: EditMode = EditMode.NEW;
     preconditions: any[]= null;
-    pendingEdits :boolean = false;
-    isFormValid = false;
-
-    viewText :ViewText = {modeText:"ADD",title:"Add precondition",titleText:"Add new precondition", addText:"ADD", cancelText:"CANCEL ADD"}
+    pendingEdits: boolean = false;
+    isFormValid: boolean = false;
+    feed: Feed;
+    title: string;
+    private edit: boolean = false;
 
     constructor(public dialogRef: MatDialogRef<FeedPreconditionDialogComponent>,
                 private policyInputFormService :PolicyInputFormService,
                 private injector: Injector,
-                @Inject(MAT_DIALOG_DATA) public data: Feed){
+                @Inject(MAT_DIALOG_DATA) public data: any){
+        this.feed = data.feed;
+        this.editIndex = data.itemIndex;
+        this.edit = this.editIndex !== undefined && this.editIndex !== null;
+        this.title = "Add precondition";
+
         let feedService = injector.get("FeedService");
-        // this.preconditionForm = new FormGroup({});
-        let feed = this.policyInputFormService.currentFeedValue(this.data);
+        let feed = this.policyInputFormService.currentFeedValue(this.feed);
+        this.preconditions = this.feed.schedule['preconditions'];
+
         feedService.getPossibleFeedPreconditions().then((response:any) => {
             this.options = this.policyInputFormService.groupPolicyOptions(response.data, feed);
+            if(this.edit){
+                this.title = "Edit precondition";
+                this.editMode = EditMode.EDIT;
+                this.editPrecondition = this.preconditions[this.editIndex];
+                let properties = angular.copy(this.editPrecondition.properties);
+                this.ruleTypesAvailable();
+                this.onRuleTypeChange('');
+                this.editPrecondition.groups[0].properties = properties;
+            }
+
+
         });
-        console.log("constructor", data);
-        this.ruleTypesAvailable();
         this.preconditionForm.statusChanges.debounceTime(10).subscribe(status => {
             this.isFormValid = status == "VALID";
         })
     }
 
-    ngOnInit(): void {
-        this.preconditions = this.data.schedule['preconditions'];
-    }
-
     cancelEdit() {
         this.ruleType = null;
         this.editPrecondition = this.emptyRule();
-        this.viewText.addText = 'Add precondition';
-        this.viewText.cancelText = 'CANCEL ADD';
-        this.viewText.titleText = 'Add new precondition';
     }
 
     private emptyRule():any {
@@ -83,8 +83,7 @@ export class FeedPreconditionDialogComponent implements OnInit{
             if (this.preconditions == null) {
                 this.preconditions = [];
             }
-            this.buildDisplayString();
-            this.editPrecondition.ruleType = this.ruleType;
+            this.editPrecondition.properties = this.editPrecondition.groups[0].properties;
             if (this.editMode == EditMode.NEW) {
                 this.preconditions.push(this.editPrecondition);
             }
@@ -92,8 +91,9 @@ export class FeedPreconditionDialogComponent implements OnInit{
                 this.preconditions[this.editIndex] = this.editPrecondition;
             }
 
+            this.buildDisplayString();
             this.pendingEdits = true;
-            this.data.schedule['preconditions'] = this.preconditions;
+            this.feed.schedule['preconditions'] = this.preconditions;
             this.cancelEdit();
         }
     }
@@ -102,7 +102,6 @@ export class FeedPreconditionDialogComponent implements OnInit{
         if (this.editPrecondition != null) {
             var str = '';
             _.each(this.editPrecondition.properties, (prop:any) => {
-                console.log('prop.type', prop);
                 if (prop.type != 'currentFeed') {
                     //chain it to the display string
                     if (str != '') {
@@ -112,16 +111,18 @@ export class FeedPreconditionDialogComponent implements OnInit{
                     var val = prop.value;
                     if ((val == null || val == undefined || val == '') && (prop.values != null && prop.values.length > 0)) {
                         val = _.map(prop.values, (labelValue:any) => {
-                            console.log('prop.values', prop.values, labelValue.value);
                             return labelValue.value;
                         }).join(",");
                     }
                     str += ": " + val;
                 }
             });
-            console.log('buildDisplayString', str);
             this.editPrecondition.propertyValuesDisplayString = str;
         }
+    }
+
+    isEdit() {
+        return this.editMode === EditMode.EDIT;
     }
 
     private validateForm(){
@@ -138,6 +139,11 @@ export class FeedPreconditionDialogComponent implements OnInit{
         }
         this.pendingEdits = true;
         this.cancelEdit();
+        this.close('deleted');
+    }
+
+    close(msg?: string) {
+        this.dialogRef.close(msg);
     }
 
     /**
@@ -150,7 +156,7 @@ export class FeedPreconditionDialogComponent implements OnInit{
 
     done() {
         this.addPrecondition();
-        this.dialogRef.close('done');
+        this.close('done');
     }
 
     ruleTypesAvailable() {

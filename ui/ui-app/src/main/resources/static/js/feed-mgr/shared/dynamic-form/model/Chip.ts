@@ -7,6 +7,11 @@ export class Chip extends FieldConfig<string> {
     constructor(options: {} = {}) {
         super(options);
         this.items = options['items'];
+        if(options['values'] !== undefined){
+            this.feedsModel = options['values'].map((item:any) => {
+                return item.label;
+            });
+        }
     }
 
     disabled: boolean = false;
@@ -35,7 +40,8 @@ export class Chip extends FieldConfig<string> {
         });
     }
 
-    onAdd(value: any) {
+    updateModel(value: any) {
+
         this.model['values'] = this.items.filter((item: any) => {
             return this.feedsModel ? this.feedsModel.indexOf(item.label) > -1 : false;
         });

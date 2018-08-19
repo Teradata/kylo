@@ -116,15 +116,17 @@
       <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length > 0" fxFlexFill>
         <mat-list>
           <mat-list-item *ngFor="let rule of feed.schedule.preconditions; let index = index; let first = first; let last = last" fxFlexFill class="pad-top-sm pad-bottom-sm">
-            <div layout="column" fxFlex="75" class="md-list-item-text">
-              <span>{{rule.propertyValuesDisplayString}}</span>
-              <span class="hint">{{rule.name}}</span>
+            <div fxLayout="row" fxFlex>
+              <div fxLayout="column" fxFlex="75" class="md-list-item-text">
+                <span>{{rule.propertyValuesDisplayString}}</span>
+                <span class="hint">{{rule.name}}</span>
+              </div>
+              <span class="md-secondary">
+                <button mat-button (click)="showPreconditionDialog(index)">
+                  <ng-md-icon icon="edit"></ng-md-icon>
+                </button>
+              </span>
             </div>
-            <span class="md-secondary">
-              <button mat-button (click)="showPreconditionDialog(index)">
-                <ng-md-icon icon="edit"></ng-md-icon>
-              </button>
-            </span>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
         </mat-list>

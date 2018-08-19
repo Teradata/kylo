@@ -84,7 +84,8 @@
                 placeholder="Select feed(s) from here"
                 (inputChange)="field.filterFeeds($event)"
                 [(ngModel)]="field.feedsModel"
-                (add)="field.onAdd($event)"
+                (add)="field.updateModel($event)"
+                (remove)="field.updateModel($event)"
                 [ngModelOptions]="{standalone: true}"
                 requireMatch>
       </td-chips>

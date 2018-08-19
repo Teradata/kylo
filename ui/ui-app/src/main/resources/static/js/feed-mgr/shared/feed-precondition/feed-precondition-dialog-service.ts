@@ -9,10 +9,10 @@ export class FeedPreconditionDialogService {
     constructor(public dialog:MatDialog){
     }
 
-    openDialog(feed:Feed) : Observable<any> {
+    openDialog(input: any) : Observable<any> {
         const dialogRef = this.dialog.open(FeedPreconditionDialogComponent, {
             width: '600px',
-            data: feed
+            data: input
         });
 
         dialogRef.afterClosed().subscribe((result:any) => {

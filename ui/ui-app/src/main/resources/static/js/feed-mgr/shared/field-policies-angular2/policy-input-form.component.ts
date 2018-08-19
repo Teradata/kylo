@@ -149,7 +149,8 @@ export class PolicyInputFormComponent implements OnInit {
             placeholder: property.placeholder,
             value: property.value,
             hint: property.hint,
-            pattern: property.patternRegExp
+            pattern: property.patternRegExp,
+            values: property.values
         };
         return options;
 
