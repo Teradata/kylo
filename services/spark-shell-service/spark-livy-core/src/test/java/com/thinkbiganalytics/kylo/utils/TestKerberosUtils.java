@@ -21,13 +21,14 @@ package com.thinkbiganalytics.kylo.utils;
  */
 
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
+
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,19 +38,21 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Arrays;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestKerberosUtils.Config.class},
-        loader = AnnotationConfigContextLoader.class)
+                      loader = AnnotationConfigContextLoader.class)
 @TestPropertySource("classpath:kerberos-client.properties")
 @ActiveProfiles("kylo-livy")
 public class TestKerberosUtils {
+
     private static final Logger logger = LoggerFactory.getLogger(TestKerberosUtils.class);
 
     private static final File DEFAULT_KINIT_PATH = new File("/usr/bin/kinit");
@@ -71,14 +74,14 @@ public class TestKerberosUtils {
 
     @Test
     public void testKinitPathFind() {
-        assertThat(kerberosSparkProperties.isKerberosEnabled()).as("this test requires kerberos properties set kerberos enabled").isTrue();
+        Assume.assumeTrue("this test requires kerberos properties set kerberos enabled", kerberosSparkProperties.isKerberosEnabled());
 
         File foundScript = kerberosUtils.getKinitPath(DEFAULT_KINIT_PATH);
         assertThat(foundScript).isEqualTo(DEFAULT_KINIT_PATH);
         logger.info("'/usr/bin/kinit' found by getKinitPath");
 
         // on systems that support the which command we make sure it is the chosen result from getKinitPath when no property 'kerberos.spark.kinitPath' is set
-        if( processRunner.runScript("which", Arrays.asList("kinit") ) ) {
+        if (processRunner.runScript("which", Arrays.asList("kinit"))) {
             String pathFromWhich = StringUtils.chomp(processRunner.getOutputFromLastCommand());
             File actualResultOfWhich = new File(pathFromWhich);
             logger.debug("actualResultOfWhich='{}'", actualResultOfWhich);
@@ -94,8 +97,8 @@ public class TestKerberosUtils {
 
 
     @Configuration
-    @EnableAutoConfiguration
     static class Config {
+
         @Bean
         @ConfigurationProperties("kerberos.spark")
         public KerberosSparkProperties kerberosSparkProperties() {

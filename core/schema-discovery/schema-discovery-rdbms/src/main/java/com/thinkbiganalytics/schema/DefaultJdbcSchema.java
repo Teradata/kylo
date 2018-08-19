@@ -49,11 +49,12 @@ public class DefaultJdbcSchema implements JdbcSchema {
      * Returns a function that converts the current result set item to a {@code DefaultJdbcSchema}.
      */
     @Nonnull
-    public static JdbcFunction<ResultSet, DefaultJdbcSchema> fromResultSet() {
-        return new JdbcFunction<ResultSet, DefaultJdbcSchema>() {
+    public static <T extends JdbcSchema> JdbcFunction<ResultSet, T> fromResultSet() {
+        return new JdbcFunction<ResultSet, T>() {
             @Override
-            public DefaultJdbcSchema apply(final ResultSet resultSet) throws SQLException {
-                return DefaultJdbcSchema.fromResultSet(resultSet);
+            @SuppressWarnings("unchecked")
+            public T apply(final ResultSet resultSet) throws SQLException {
+                return (T) DefaultJdbcSchema.fromResultSet(resultSet);
             }
         };
     }
