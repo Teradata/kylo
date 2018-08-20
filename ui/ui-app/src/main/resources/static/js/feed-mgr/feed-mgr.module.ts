@@ -9,7 +9,10 @@ import {
     entityAccessControlServiceProvider, feedDetailsProcessorRenderingHelperProvider, feedInputProcessorPropertiesTemplateServiceProvider,
     feedPropertyServiceProvider,
     feedServiceProvider,
-    uiComponentsServiceProvider
+    uiComponentsServiceProvider,
+    hiveServiceProvider,
+    visualQueryServiceProvider,
+    datasourcesServiceProvider
 } from "./services/angular2";
 import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 import {NiFiService} from "./services/NiFiService";
@@ -22,6 +25,7 @@ import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {KyloCommonModule} from "../common/common.module";
 import {MatButtonModule} from "@angular/material/button";
+import {VisualQueryService} from "./services/VisualQueryService";
 
 
 @NgModule({
@@ -54,7 +58,11 @@ import {MatButtonModule} from "@angular/material/button";
         uiComponentsServiceProvider,
         feedInputProcessorPropertiesTemplateServiceProvider,
         feedDetailsProcessorRenderingHelperProvider,
-        NiFiService
+        hiveServiceProvider,
+        visualQueryServiceProvider,
+        datasourcesServiceProvider,
+        NiFiService,
+
     ]
 })
 export class KyloFeedManagerModule {

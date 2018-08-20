@@ -8,42 +8,23 @@ import BroadcastService from "./broadcast-service";
 import {NotificationService} from "./notification.service";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 import {TemplateService} from "../repository/services/template.service";
+import {AngularServiceUpgrader} from "../kylo-utils/angular-service-upgrader"
+import StateService from "./StateService";
+import SideNavService from "./SideNavService";
+import FileUpload from "./FileUploadService";
 
-export const addButtonServiceProvider: FactoryProvider = {
-    provide: AddButtonService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("AddButtonService"),
-    deps: ["$injector"]
-};
+export const addButtonServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AddButtonService);
 
-export const broadcastServiceProvider: FactoryProvider = {
-    provide: BroadcastService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("BroadcastService"),
-    deps: ["$injector"]
-};
+export const broadcastServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(BroadcastService);
 
-export const notificationServiceProvider: FactoryProvider = {
-    provide: NotificationService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("NotificationService"),
-    deps: ["$injector"]
-};
+export const notificationServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(NotificationService);
 
 
-export function previewDatasetCollectionServiceFactory(i: any) {
-    return i.get("PreviewDatasetCollectionService");
-}
+export const templateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(TemplateService);
 
-export const previewDatasetCollectionServiceProvider: FactoryProvider = {
-    provide: PreviewDatasetCollectionService,
-    useFactory: previewDatasetCollectionServiceFactory,
-    deps: ["$injector"]
-}
+export const stateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(StateService);
 
-export function templateServiceFactory(i: any) {
-    return i.get("templateService");
-}
+export const sideNavServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(SideNavService);
 
-export const templateServiceProvider: FactoryProvider = {
-    provide: TemplateService,
-    useFactory: templateServiceFactory,
-    deps: ["$injector"]
-}
+
+export const fileUploadServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FileUpload);

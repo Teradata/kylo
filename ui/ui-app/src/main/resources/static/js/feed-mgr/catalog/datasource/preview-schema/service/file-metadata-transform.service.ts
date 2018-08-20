@@ -128,6 +128,8 @@ export class FileMetadataTransformService  {
                     console.log('PROGRESS FOR ', id)
                     this.http.get("/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
                         checkProgress(data);
+                    }, error1 => {
+                        formatError(error1)
                     })
                 }
 

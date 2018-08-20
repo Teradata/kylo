@@ -6,7 +6,7 @@ import {QueryEngine,SampleFile} from "../wrangler/query-engine";
 import {SparkConstants} from "../services/spark/spark-constants";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../module-name";
 
 export class UploadSampleFile implements  OnInit {
 
@@ -119,7 +119,6 @@ export class UploadSampleFile implements  OnInit {
 
 
 }
-
 
 angular.module(moduleName).component("kyloUploadSampleFile", {
     bindings: {

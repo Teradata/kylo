@@ -28,7 +28,6 @@ import {QueryResultColumn} from "../../wrangler/model/query-result-column";
 import {ScriptState} from "../../wrangler/model/script-state";
 import {TransformResponse} from "../../wrangler/model/transform-response";
 import {QueryEngine} from "../../wrangler/query-engine";
-import {registerQueryEngine} from "../../wrangler/query-engine-factory.service";
 import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
@@ -447,7 +446,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
                 if (state.columns === null && response.data.results && response.data.results.columns) {
 
-                //Unnecessary and causes table refresh problems
+                    //Unnecessary and causes table refresh problems
                     // state.columns = response.data.results.columns;
                     // state.rows = [];
                     // state.table = response.data.table;
@@ -555,29 +554,29 @@ export class SparkQueryEngine extends QueryEngine<string> {
         var self = this;
         if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
             const policyMap = {};
-                state.fieldPolicies.forEach(policy => {
-                    policyMap[policy.name] = policy;
-                });
+            state.fieldPolicies.forEach(policy => {
+                policyMap[policy.name] = policy;
+            });
 
-                state.fieldPolicies = state.columns.map(column => {
-                    var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
-                    if (policyMap[name]) {
-                        return policyMap[name];
-                    } else {
-                        return {
-                            name: name,
-                            fieldName: name,
-                            feedFieldName: name,
-                            domainTypeId: null,
-                            partition: null,
-                            profile: true,
-                            standardization: null,
-                            validation: null
-                        };
-                    }
-                });
+            state.fieldPolicies = state.columns.map(column => {
+                var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                if (policyMap[name]) {
+                    return policyMap[name];
+                } else {
+                    return {
+                        name: name,
+                        fieldName: name,
+                        feedFieldName: name,
+                        domainTypeId: null,
+                        partition: null,
+                        profile: true,
+                        standardization: null,
+                        validation: null
+                    };
+                }
+            });
         }
     }
+
 }
 
-registerQueryEngine("spark", SparkQueryEngine);

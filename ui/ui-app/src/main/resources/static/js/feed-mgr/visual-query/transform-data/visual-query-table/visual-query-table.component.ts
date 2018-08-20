@@ -10,7 +10,7 @@ import {WranglerTableService} from "../services/wrangler-table.service";
 import {VisualQueryPainterService} from "./visual-query-painter.service";
 import {WranglerTableModel} from "./wrangler-table-model";
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../../module-name";
 
 export interface VisualQueryTableCell {
     column: number;

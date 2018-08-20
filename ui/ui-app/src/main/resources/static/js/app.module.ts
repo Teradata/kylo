@@ -13,6 +13,7 @@ import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
 import {KyloServicesModule} from "./services/services.module";
+import {KyloFeedManagerModule} from "./feed-mgr/feed-mgr.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");

@@ -1,0 +1,30 @@
+<mat-horizontal-stepper [linear]="true" #stepper>
+  <mat-step [stepControl]="buildQueryFormGroup">
+    <form [formGroup]="buildQueryFormGroup">
+      <ng-template matStepLabel>Build Query</ng-template>
+      <build-query-ng2 [form]="buildQueryFormGroup" [stepper]="stepper" [engine]="engine" [model]="dataModel.model" [showDatasources]="showDatasources" *ngIf="engine != undefined"> </build-query-ng2>
+    </form>
+  </mat-step>
+  <mat-step [stepControl]="transformDataFormGroup">
+    <form [formGroup]="transformDataFormGroup">
+      <ng-template matStepLabel>Transform Data</ng-template>
+      <mat-form-field>
+        <input matInput placeholder="Address" formControlName="secondCtrl" required>
+      </mat-form-field>
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+      </div>
+    </form>
+  </mat-step>
+  <mat-step [stepControl]="saveStepFormGroup" *ngIf="showSaveStep">
+    <form [formGroup]="saveStepFormGroup">
+    <ng-template matStepLabel>Save</ng-template>
+    You are now done.
+    <div>
+      <button mat-button matStepperPrevious>Back</button>
+      <button mat-button (click)="stepper.reset()">Reset</button>
+    </div>
+    </form>
+  </mat-step>
+</mat-horizontal-stepper>

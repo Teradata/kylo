@@ -1,0 +1,17 @@
+<define-feed-step-card [(feed)]="feed" [(step)]="step">
+
+  <feed-step-readonly-content>
+    <div fxLayout="column">
+     Wrangler
+
+    </div>
+
+  </feed-step-readonly-content>
+
+  <feed-step-edit-content>
+    <div fxLayout="column" [formGroup]="formGroup">
+      <visual-query-stepper #visualQuery engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="false" [showSaveStep]="false"></visual-query-stepper>
+    </div>
+
+  </feed-step-edit-content>
+</define-feed-step-card>

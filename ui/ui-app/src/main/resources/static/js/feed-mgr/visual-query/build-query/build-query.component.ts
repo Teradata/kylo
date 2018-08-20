@@ -3,16 +3,18 @@ import * as angular from "angular";
 import * as _ from "underscore";
 
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {TableSchema} from "../wrangler";
+import {DatasourcesServiceStatic, TableSchema} from "../wrangler";
 import {UserDatasource} from "../../model/user-datasource";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SchemaField} from "../wrangler";
 import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 import {SparkDataSet} from "../../model/spark-data-set.model";
+import {flowchart} from "./flowchart/flowchart_viewmodel";
 
-declare const flowchart: any;
-
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../module-name";
+import {Observable} from "rxjs/Observable";
+import {VisualQueryService} from "../../services/VisualQueryService";
+import "../../../codemirror-require/module"
 
 /**
  * Code for the delete key.
@@ -140,6 +142,10 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     stepperController: any;
 
+
+
+
+
     /**
      * Autocomplete for the table selector.
      */
@@ -167,7 +173,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
                 private $document: angular.IDocumentService, private $timeout: angular.ITimeoutService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
-                private VisualQueryService: any, private FeedService: any, private DatasourcesService: any) {
+                private visualQueryService: VisualQueryService, private FeedService: any, private DatasourcesService: any) {
         // Setup initializers
         this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
         this.initKeyBindings();
@@ -637,7 +643,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * @returns the SQL string or null if multiple data sources are used
      */
     getSQLModel(): string | null {
-        let builder = this.VisualQueryService.sqlBuilder(this.chartViewModel.data, this.engine.sqlDialect);
+        let builder = VisualQueryService.sqlBuilder(this.chartViewModel.data, this.engine.sqlDialect);
         let sql = builder.build();
 
         this.selectedColumnsAndTables = builder.getSelectedColumnsAndTables();
@@ -697,8 +703,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     showConnectionDialog(isNew: any, connectionViewModel: any, connectionDataModel: any, source: any, dest: any) {
         this.chartViewModel.deselectAll();
         this.$mdDialog.show({
-            controller: 'ConnectionDialog',
-            templateUrl: 'js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component.html',
+            controller: 'ConnectionDialogController',
+            templateUrl: 'js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog-ng1.component.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,

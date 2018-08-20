@@ -21,7 +21,7 @@ import StepperService from '../../../common/stepper/StepperService';
 
 declare const CodeMirror: any;
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../module-name";
 
 export class WranglerColumn {
 

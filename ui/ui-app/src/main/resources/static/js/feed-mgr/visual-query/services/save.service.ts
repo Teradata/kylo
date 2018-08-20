@@ -8,6 +8,8 @@ import {KyloNotification, NotificationService} from "../../../services/notificat
 import {QueryEngine} from "../wrangler";
 import {SaveRequest, SaveResponse, SaveResponseStatus} from "../wrangler/api/rest-model";
 
+import {moduleName} from "../module-name";
+
 /**
  * Event for when a notification is removed.
  */
@@ -143,5 +145,5 @@ export class VisualQuerySaveService {
     }
 }
 
-angular.module(require("../module-name"))
+angular.module(moduleName)
     .service("VisualQuerySaveService", VisualQuerySaveService);

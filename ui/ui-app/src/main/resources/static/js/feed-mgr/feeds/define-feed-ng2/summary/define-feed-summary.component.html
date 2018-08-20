@@ -8,7 +8,7 @@
 
     </mat-toolbar>
 
-    <div fxLayout="column" fxFlex="100" fxLayoutAlign="center center">
+    <div fxLayout="row" fxFlex="100" fxLayoutAlign="center start">
 
       <mat-card class="feed-summary-card">
 
@@ -31,6 +31,50 @@
               <mat-divider></mat-divider>
             </ng-container>
 
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="feed-summary-right-card" >
+
+        <mat-card-header>
+          <mat-card-title>Links</mat-card-title>
+          <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">State: DRAFT</span>
+            <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-list role="list">
+            <mat-list-item >
+              <div matLine>Category</div>
+              <span></span>
+            </mat-list-item>
+
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <div matLine>Lineage</div>
+              <span></span>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <div matLine>Profile </div>
+              <span></span>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <div matLine>Add SLA</div>
+              <span></span>
+            </mat-list-item>
+
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <div matLine>Version History</div>
+              <span></span>
+            </mat-list-item>
           </mat-list>
         </mat-card-content>
       </mat-card>

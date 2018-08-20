@@ -4,6 +4,8 @@ import "fattable";
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
 
+import {moduleName} from "../../module-name";
+
 /**
  * Default font.
  */
@@ -541,4 +543,4 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 }
 
-angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
+angular.module(moduleName).service("VisualQueryPainterService", VisualQueryPainterService);

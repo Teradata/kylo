@@ -179,7 +179,7 @@ export class FeedService {
              */
             newCreateFeed= () =>{
                 this.createFeedModel = this.getNewCreateFeedModel();
-                this.VisualQueryService.resetModel();
+                this.visualQueryService.resetModel();
                 this.FeedCreationErrorService.reset();
             }
             /**
@@ -254,7 +254,7 @@ export class FeedService {
                     delete createFeedModel[key];
                 })
 
-                this.VisualQueryService.resetModel();
+                this.visualQueryService.resetModel();
                 this.FeedCreationErrorService.reset();
             }
 
@@ -976,7 +976,7 @@ static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "Vis
         private $mdToast: angular.material.IToastService,
         private $mdDialog: angular.material.IDialogService,
         private RestUrlService: any,
-        private VisualQueryService: any,
+        private visualQueryService: any,
         private FeedCreationErrorService: any,
         private FeedPropertyService: any,
         private accessControlService: AccessControlService,
