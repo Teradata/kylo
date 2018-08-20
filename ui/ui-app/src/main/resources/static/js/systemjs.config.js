@@ -30,6 +30,7 @@ System.config({
         "kylo-services-module":"services/module",
         "kylo-side-nav":"side-nav/module-require",
         "kylo-side-nav-module":"side-nav/module",
+        "kylo-ui-codemirror":"codemirror-require/module",
         "kyloTimer":"common/timer/kylo-timer",
         "ment-io":"vendor/ment.io/mentio",
         "npm:": "../node_modules/",

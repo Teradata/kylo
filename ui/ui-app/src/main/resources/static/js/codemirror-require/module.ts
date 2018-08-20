@@ -8,7 +8,7 @@ class ModuleFactory  {
     module: ng.IModule;
     constructor () {
        (<any>window).CodeMirror = CodeMirror;
-        this.module = angular.module(moduleName,[]); 
+        this.module = angular.module(moduleName,["ui.codemirror"]);
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]); 
     }
     runFn($ocLazyLoad: oc.ILazyLoad){
