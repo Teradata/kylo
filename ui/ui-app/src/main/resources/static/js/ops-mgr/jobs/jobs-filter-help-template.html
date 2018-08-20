@@ -21,62 +21,62 @@
 <div mat-dialog class="filter-help"
      aria-label="Filter help"
      role="listbox" layout-fill>
-  <mat-dialog-content style="max-height: 400px;overflow-y: auto;overflow-x:hidden" layout="column">
+  <mat-dialog-content style="max-height:400px;overflow-y:auto;overflow-x:hidden;padding:0;margin:0;" layout="column">
     <mat-list>
       <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
         <span class="card-sub-header">Filter Help</span>
       </mat-list-item>
 
       <mat-divider></mat-divider>
-      <mat-list-item class="layout-padding-left-right  with-padding">
+      <div class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Syntax</span>
-      </mat-list-item>
+      </div>
 
-      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
-        <!-- <span>{field} {operator} {value}</span> -->
+      <div class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
+        <span>{{ '{'+'field'+'}' + '{'+'operator'+'}' + '{'+'value'+'}' }}</span>
 
         <span style="padding:5px;"></span>
-        <mat-hint>'%' is used for a wildcard when using the '=~', LIKE, operator</mat-hint>
+        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
         <span style="padding:5px;"></span>
-        <mat-hint> If no field/operator is specified a LIKE filter on the job name will be performed</mat-hint>
-      </mat-list-item>
+        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
+      </div>
 
 
       <mat-divider></mat-divider>
-      <mat-list-item class="layout-padding-left-right  with-padding">
+      <div class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Fields</span>
-      </mat-list-item>
-      <mat-list-item class="filter-help-item layout-padding-left-right with-padding"
+      </div>
+      <div class="filter-help-item layout-padding-left-right with-padding"
                      tabindex="-1"
                      role="option"
                      *ngFor="let item of filterHelpFields" layout="column" layout-align="start start">
         <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </mat-list-item>
+      </div>
       <mat-divider></mat-divider>
 
-      <mat-list-item class="layout-padding-left-right with-padding">
+      <div class="layout-padding-left-right with-padding">
         <span class="card-sub-header">Filter Operators</span>
-      </mat-list-item>
-      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding"
+      </div>
+      <div class="filter-help-item layout-padding-left-right  with-padding"
                     tabindex="-1"
                     role="option"
                     *ngFor="let item of filterHelpOperators" layout="column" layout-align="start start">
         <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </mat-list-item>
+      </div>
       <mat-divider></mat-divider>
 
-      <mat-list-item class="layout-padding-left-right  with-padding">
+      <div class="layout-padding-left-right  with-padding">
         <span class="card-sub-header">Filter Examples</span>
-      </mat-list-item>
-      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding"
+      </div>
+      <div class="filter-help-item layout-padding-left-right  with-padding"
                      tabindex="-1"
                      role="option"
                      *ngFor="let item of filterHelpExamples" layout="column" layout-align="start start">
         <mat-hint>{{item.displayName}}</mat-hint>
         <span>{{ item.description}}</span>
-      </mat-list-item>
+      </div>
 
     </mat-list>
 
