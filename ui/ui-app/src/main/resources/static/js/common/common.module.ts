@@ -46,6 +46,7 @@ import {AboutKyloService} from "./about-kylo/AboutKyloService";
 import { RestUrlService } from "../feed-mgr/services/RestUrlService";
 import { FilteredPaginatedTableViewComponent } from "./filtered-paginated-table-view/filteredPaginatedTableView.component";
 import { KyloTimerDirective } from "./timer/kylo-timer.component";
+import {TranslateModule} from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
@@ -79,6 +80,8 @@ import { KyloTimerDirective } from "./timer/kylo-timer.component";
         AboutKyloDialogController,
         IconPickerDialog,
         FilteredPaginatedTableViewComponent
+    ],
+    providers:[
     ],
     imports: [
         CommonModule,

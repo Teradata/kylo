@@ -29,10 +29,11 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.joda.time.DateTime;
-
+import com.thinkbiganalytics.metadata.api.Auditable;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -46,7 +47,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  * A feed is a specification for how data should flow into and out of a system.
  *
  */
-public interface Feed extends Propertied, AccessControlled, Serializable {
+public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, AccessControlled {
 
     ID getId();
 
@@ -58,13 +59,21 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void setDisplayName(String name);
 
-    String getDescription();
-
-    void setDescription(String descr);
-
     State getState();
 
     void setState(State state);
+
+    /**
+     * is it a DRAFT feed or not
+     * @return
+     */
+    Mode getMode();
+
+    /**
+     * Set the mode for the feed, DRAFT or COMPLETE
+     * @param mode
+     */
+    void setMode(Mode mode);
 
     boolean isInitialized();
 
@@ -99,10 +108,6 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
     Category getCategory();
 
     String getVersionName();
-
-    DateTime getCreatedTime();
-
-    DateTime getModifiedTime();
 
     List<ServiceLevelAgreement> getServiceLevelAgreements();
 
@@ -185,6 +190,8 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
     void clearSourcesAndDestinations();
 
     enum State {NEW, ENABLED, DISABLED, DELETED}
+
+    enum Mode {DRAFT,COMPLETE}
 
     interface ID extends Serializable {
 

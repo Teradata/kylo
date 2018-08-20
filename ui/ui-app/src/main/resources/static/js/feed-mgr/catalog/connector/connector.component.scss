@@ -1,0 +1,32 @@
+@import '../../../../assets/theme';
+
+mat-card-title {
+  font-size: 24px;
+}
+
+.card-title-icon {
+  margin-top: -8px;
+}
+
+.card-title-text {
+  padding-left: 15px;
+}
+
+.icon-component {
+  color: #607D8B;
+  fill: #607D8B;
+}
+
+.test-section {
+  margin-top: 5px;
+}
+.test-status {
+  padding-left: 20px;
+}
+.status-error {
+  color: mat-color($warn);
+}
+.status-ok {
+  margin: -10px inherit inherit;
+  fill: green;
+}

@@ -895,6 +895,11 @@ Status styles
   fill: #FF9901;
 }
 
+.info-notification {
+  color: #0288d1;
+  background-color: #0288d126;
+}
+
 .primary-color-1 {
   color: #3483BA;
   fill: #3483BA;

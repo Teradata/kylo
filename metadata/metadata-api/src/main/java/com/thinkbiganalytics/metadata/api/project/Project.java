@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.metadata.api.project;
 
+import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
+
 /*-
  * #%L
  * kylo-metadata-api
@@ -22,14 +26,12 @@ package com.thinkbiganalytics.metadata.api.project;
 
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface Project extends AccessControlled {
+public interface Project extends AccessControlled, Auditable, SystemEntity, Taggable {
 
     Project.ID getId();
 
@@ -37,16 +39,6 @@ public interface Project extends AccessControlled {
     String getProjectName();
 
     void setProjectName(@Nullable final String displayName);
-
-    @Nullable
-    String getSystemName();
-
-    void setSystemName(@Nullable final String systemName);
-
-    @Nullable
-    String getDescription();
-
-    void setDescription(@Nullable final String description);
 
     @Nonnull
     String getContainerImage();
@@ -62,14 +54,6 @@ public interface Project extends AccessControlled {
     String getIconColor();
 
     void setIconColor(String iconColor);
-
-    DateTime getCreatedTime();
-
-    void setCreatedTime(DateTime createdTime);
-
-    DateTime getModifiedTime();
-
-    void setModifiedTime(DateTime modifiedTime);
 
     interface ID extends Serializable {
 

@@ -20,11 +20,9 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #L%
  */
 
-import java.io.Serializable;
-
 /**
  * Additional properties for a data source.
  */
-public interface DatasourceDetails extends Serializable {
+public interface DatasourceDetails {
 
 }

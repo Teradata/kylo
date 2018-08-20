@@ -1,0 +1,98 @@
+<div [formGroup]="form" fxLayout="column">
+
+  <div *ngIf="readonly" fxLayout="column">
+
+    <section class="mat-typography" *ngIf="field.controlType == 'section-header'">
+      <h3>{{field.label}}</h3>
+    </section>
+
+
+    <div fxLayout="column" *ngIf="field.controlType != 'section-header'">
+      <div fxLayout="row">
+        <span fxFlex="30%">{{field.label}}</span>
+        <span fxFlex="5%"></span>
+        <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.model[field['modelValueProperty']]}}</span>
+      </div>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+  </div>
+
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly" fxLayout="column">
+
+    <section class="mat-typography pad-top-sm" *ngSwitchCase="'section-header'">
+      <h3>{{field.label}}</h3>
+    </section>
+
+    <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type">
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+
+    <mat-form-field *ngSwitchCase="'select'" class="pad-top-sm">
+      <mat-select [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder">
+        <mat-option *ngFor="let opt of field.options" [value]="opt.value">
+          {{opt.label}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'checkbox'" class="pad-top-sm">
+      <mat-checkbox
+          [id]="field.key" [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.label}}
+      </mat-checkbox>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+    <div *ngSwitchCase="'radio'" class="pad-top-sm">
+      <mat-radio-group [id]="field.key" [formControlName]="field.key">
+        <ng-template ngFor let-opt let-index="index" let-last="last" [ngForOf]="field.options">
+          <mat-radio-button [value]="opt.value">{{opt.label}}</mat-radio-button>
+        </ng-template>
+      </mat-radio-group>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+    <mat-form-field *ngSwitchCase="'textarea'" class="pad-top-sm">
+    <textarea matInput [id]="field.key" [formControlName]="field.key">
+        {{field.model[field['modelValueProperty']]}}
+    </textarea>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'chips'" class="pad-top-sm">
+      <td-chips [chipAddition]="field.chipAddition"
+                [chipRemoval]="field.chipRemoval"
+                [items]="field.filteredFeeds"
+                placeholder="Select feed(s) from here"
+                (inputChange)="field.filterFeeds($event)"
+                [(ngModel)]="field.feedsModel"
+                [ngModelOptions]="{standalone: true}"
+                requireMatch>
+      </td-chips>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </div>
+
+  </div>
+
+</div>

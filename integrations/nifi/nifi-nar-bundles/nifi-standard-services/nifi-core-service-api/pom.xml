@@ -32,6 +32,12 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.cloud</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

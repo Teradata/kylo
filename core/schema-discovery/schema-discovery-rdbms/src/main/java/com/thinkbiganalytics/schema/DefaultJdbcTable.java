@@ -59,11 +59,12 @@ public class DefaultJdbcTable implements JdbcTable {
      * Returns a function that converts the current result set item to a {@code DefaultJdbcTable}.
      */
     @Nonnull
-    public static JdbcFunction<ResultSet, DefaultJdbcTable> fromResultSet(@Nullable final DatabaseMetaData databaseMetaData) {
-        return new JdbcFunction<ResultSet, DefaultJdbcTable>() {
+    public static <T extends JdbcTable> JdbcFunction<ResultSet, T> fromResultSet(@Nullable final DatabaseMetaData databaseMetaData) {
+        return new JdbcFunction<ResultSet, T>() {
             @Override
-            public DefaultJdbcTable apply(final ResultSet resultSet) throws SQLException {
-                return fromResultSet(resultSet, databaseMetaData);
+            @SuppressWarnings("unchecked")
+            public T apply(final ResultSet resultSet) throws SQLException {
+                return (T) fromResultSet(resultSet, databaseMetaData);
             }
         };
     }

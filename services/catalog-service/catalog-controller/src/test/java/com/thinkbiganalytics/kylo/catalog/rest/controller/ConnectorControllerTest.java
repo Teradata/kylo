@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
+
 /*-
  * #%L
  * kylo-catalog-controller
@@ -20,7 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
+import com.thinkbiganalytics.kylo.catalog.connector.FileConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.metadata.MockMetadataAccess;
 

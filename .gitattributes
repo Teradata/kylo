@@ -29,6 +29,7 @@
 *.yaml          text
 *.yml           text
 
+
 # Documents
 *.doc           diff=astextplain
 *.DOC           diff=astextplain

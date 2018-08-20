@@ -23,14 +23,15 @@ package com.thinkbiganalytics.metadata.api.template;
 import java.io.Serializable;
 import java.util.List;
 
-import org.joda.time.DateTime;
-
+import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 /**
  */
-public interface FeedManagerTemplate extends AccessControlled {
+public interface FeedManagerTemplate extends AccessControlled, Auditable, SystemEntity, Taggable {
 
     List<Feed> getFeeds();
 
@@ -47,10 +48,6 @@ public interface FeedManagerTemplate extends AccessControlled {
     String getNifiTemplateId();
 
     void setNifiTemplateId(String nifiTemplateId);
-
-    String getDescription();
-
-    void setDescription(String description);
 
     boolean isDefineTable();
 
@@ -75,10 +72,6 @@ public interface FeedManagerTemplate extends AccessControlled {
     String getJson();
 
     void setJson(String json);
-
-    DateTime getCreatedTime();
-
-    DateTime getModifiedTime();
 
     State getState();
 

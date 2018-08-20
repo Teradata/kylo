@@ -45,7 +45,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
     @Input() formGroup: FormGroup;
 
     private createFormControls(property:any) {
-        if(property.propertyDescriptor.allowableValues == null && property.selected == true 
+        if(property.propertyDescriptor.allowableValues == null && property.selected == true
             && property.required && !property.userEditable) {
             this.formGroup.addControl(property.key,new FormControl(null,Validators.required));
         }
@@ -53,7 +53,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
 
 
     ngOnInit() {
-        
+
         //Filter attrs
         this.stepNumber = parseInt(this.stepIndex) + 1;
 
@@ -84,14 +84,14 @@ export class RegisterProcessorPropertiesController implements OnInit {
                     });
             } else {
                 this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList;
-            }   
+            }
         })
     }
-    
-    constructor(private RestUrlService: RestUrlService, 
+
+    constructor(private RestUrlService: RestUrlService,
                 private registerTemplateService: RegisterTemplateServiceFactory,
                 private registerTemplatePropertyService: RegisterTemplatePropertyService,
-                private feedService: FeedService, 
+                private feedService: FeedService,
                 private uiComponentsService: UiComponentsService,
                 private _dataTableService: TdDataTableService) {}
 
@@ -152,7 +152,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
             if(property.renderTypes !== null){
                 this._dataTableService.sortData(property.renderTypes,
                     "label",TdDataTableSortingOrder.Ascending);
-            }     
+            }
         });
         // Find controller services
         _.chain(this.allProperties).filter((property: any) => {
@@ -226,4 +226,37 @@ export class RegisterProcessorPropertiesController implements OnInit {
         });
     }
 
+
+    /**
+     * Is property registration change info available from Kylo services?
+     * @param property
+     * @returns {boolean}
+     */
+    registrationChangeInfoAvailable(property: any): boolean {
+        return ((property.registrationChangeInfo != null)
+            && (
+            (property.registrationChangeInfo.valueFromNewerNiFiTemplate != null)
+            || (property.registrationChangeInfo.valueFromOlderNiFiTemplate != null)
+            || (property.registrationChangeInfo.valueRegisteredInKyloTemplateFromOlderNiFiTemplate != null)));
+    }
+
+    /**
+     * Should option to accept property value from NiFi template be presented?
+     * @param property
+     * @returns {boolean}
+     */
+    allowUserToAcceptPropertyValueFromNiFi(property: any): boolean {
+        return ((this.registrationChangeInfoAvailable(property))
+            && (property.registrationChangeInfo.valueFromNewerNiFiTemplate != property.registrationChangeInfo.valueFromOlderNiFiTemplate)
+        && (property.registrationChangeInfo.valueFromOlderNiFiTemplate != property.registrationChangeInfo.valueRegisteredInKyloTemplateFromOlderNiFiTemplate)
+        && (property.value != property.registrationChangeInfo.valueFromNewerNiFiTemplate));
+    }
+
+    /**
+     * Update property value to match value defined in NiFi template
+     * @param property
+     */
+    acceptPropertyValueFromNiFi(property: any): void {
+        property.value = property.registrationChangeInfo.valueFromNewerNiFiTemplate;
+    }
 }

@@ -23,6 +23,7 @@
 */
 import * as angular from 'angular';
 import { moduleName } from './module-name';
+import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
 import "./module"; // ensure module is loaded first
 
@@ -100,6 +101,10 @@ export default class StateService {
         data.navigateToRegisteredTemplate = (templateId: any, nifiTemplateId: any) => {
             this.$state.go('register-template', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
         }
+
+        data.navigateToTemplateInfo = (templateId: any, nifiTemplateId: any) => {
+            this.$state.go('template-info', {registeredTemplateId: templateId, nifiTemplateId: nifiTemplateId});
+        }
         /**
          * Navigates to the Templates page.
          */
@@ -116,6 +121,10 @@ export default class StateService {
                 tabIndex = 0;
             }
             this.$state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
+        }
+
+        data.navigateToFeedDefinition = (feedId:string) => {
+            this.$state.go(FEED_DEFINITION_STATE_NAME+".summary",{feedId:feedId});
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {

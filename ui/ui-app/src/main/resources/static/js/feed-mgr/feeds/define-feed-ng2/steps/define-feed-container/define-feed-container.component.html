@@ -1,0 +1,42 @@
+
+<td-layout *ngIf="feed != undefined">
+    <td-layout-manage-list opened="true" mode="side">
+      <mat-toolbar td-sidenav-content>Feed Steps</mat-toolbar>
+      <div td-sidenav-content>
+        <mat-nav-list>
+          <a mat-list-item  (click)="onSummarySelected()" *ngIf="!feed.isNew()">
+            <h3 matLine>Summary</h3>
+            <span></span>
+          </a>
+          <mat-divider></mat-divider>
+          <ng-template let-step let-last="last" ngFor [ngForOf]="feed.steps">
+            <a mat-list-item (click)="onStepSelected(step)" [ngClass]="{'selected-step': (selectedStep != undefined && step.number == selectedStep.number), 'disabled-step':step.disabled}">
+              <h3 matLine>{{step.number}}. {{step.name}}</h3>
+              <span></span>
+              <mat-icon color="accent" *ngIf="step.complete">check</mat-icon>
+            </a>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </ng-template>
+        </mat-nav-list>
+      </div>
+      <mat-toolbar>
+      <!--  <button mat-button tdLayoutManageListToggle>
+          Toggle
+        </button>
+        -->
+        <div *ngIf="selectedStep != undefined">{{feed.feedName}}</div>
+        <span fxFlex="100"></span>
+        <span class="hint" *ngIf="!feed.isNew()">Last updated: {{feed.updateDate | date:'short'}}</span>
+        <button mat-icon-button (click)="onCancelEdit()" *ngIf="!feed.readonly">Cancel</button>
+        <button mat-icon-button (click)="onEdit()" *ngIf="feed.readonly"><mat-icon>edit</mat-icon></button>
+        <button mat-icon-button (click)="onSave()" *ngIf="!feed.readonly"><mat-icon>save</mat-icon></button>
+        <button mat-icon-button (click)="onDelete()" *ngIf="!feed.readonly"><mat-icon>delete</mat-icon></button>
+      </mat-toolbar>
+      <div layout-gt-sm="row" tdMediaToggle="gt-xs" [mediaClasses]="['push-sm']" *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+      <ui-view></ui-view>
+      </div>
+    </td-layout-manage-list>
+
+
+</td-layout>
+

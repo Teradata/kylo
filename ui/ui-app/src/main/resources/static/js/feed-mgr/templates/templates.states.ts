@@ -71,22 +71,5 @@ export const templateStates: Ng2StateDeclaration[] = [
             displayName:'Register Template',
             permissions:AccessConstants.UI_STATES.REGISTER_NEW_TEMPLATE.permissions
         }
-    },
-    {
-        name: AccessConstants.UI_STATES.IMPORT_TEMPLATE.state,
-        url :"/import-template",
-        params: {
-            template:null
-        },
-        views: {
-            "content": {
-                component: ImportTemplateController
-            }
-        },
-        data:{
-            breadcrumbRoot:false,
-            displayName:'Template Manager',
-            permissions:AccessConstants.UI_STATES.IMPORT_TEMPLATE.permissions
-        }
     }
 ]; 

@@ -20,7 +20,7 @@
   <div>
 
     <mat-card header-css="filter-header" class="centered">
-  
+
       <mat-card-title>
         <div layout="row" layout-align="center start">
           <div class="card-title">Import Template<span *ngIf="templateParam != null">: {{templateParam.templateName}}</span></div>
@@ -28,19 +28,19 @@
           <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
         </div>
       </mat-card-title>
-  
-  
+
+
       <mat-card-content>
-  
+
         <div layout="column" class="md-padding">
           <span *ngIf="templateParam == null">
           <div>
             <div class="item-title">Import one of the following from another environment:</div>
           </div>
-  
+
           <div class="layout-padding-indent">
             <mat-list flex layout-fill class="list-item-table list-condensed">
-  
+
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text hint">
@@ -52,11 +52,11 @@
                   <div flex="60" class="md-list-item-text hint">
                     Description
                   </div>
-  
+
                 </div>
               </mat-list-item>
-  
-  
+
+
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text ">
@@ -70,7 +70,7 @@
                   </div>
                 </div>
               </mat-list-item>
-  
+
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text ">
@@ -89,24 +89,24 @@
           </span>
           <div layout="column" style="padding-top:15px;"
                class="layout-padding-indent">
-               
+
             <upload-file *ngIf="templateParam == null" [(uploadFileModel)]="templateFile" (uploadFileModelChange)="changeFileModel($event)"></upload-file>
-  
+
             <div *ngIf="uploadType == 'zip'">
               <div *ngIf="templateDataImportOption.errorMessages != null && templateDataImportOption.errorMessages.length >0">
                 <div *ngFor="let message of templateDataImportOption.errorMessages" layout="column">
                   <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
                 </div>
               </div>
-  
+
               <div *ngIf="nifiTemplateImportOption.errorMessages != null && nifiTemplateImportOption.errorMessages.length >0">
                 <div *ngFor="let message of nifiTemplateImportOption.errorMessages" layout="column">
                   <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
                 </div>
               </div>
-  
+
               <div layout="row" >
-  
+
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50" >
                 <mat-checkbox name="templateDataImportOption" [(ngModel)]="templateDataImportOption.overwrite" aria-label="Overwrite if exists">
                   Overwrite
@@ -115,22 +115,22 @@
                   If a feed template with the same name (as inside the .zip) already exists in NiFi, it will be replaced.
                 </div>
               </div>
-  
+
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50" >
-                <mat-checkbox name="templateDataImportOption" [(ngModel)]="reusableTemplateImportOption.overwrite" aria-label="Overwrite if exists" >
+                <mat-checkbox name="templateDataImportOption" [(ngModel)]="reusableTemplateImportOption.shouldImport" aria-label="Import reusable template" >
                   Import the reusable template
                 </mat-checkbox>
-  
+
                 <div class="hint">
                   If the archive contains a reusable template it will be imported.  If a reusable template with the same name already exists in NiFi it will be replaced and re-initialized.
                 </div>
               </div>
-  
+
               </div>
-  
+
               <div *ngIf="templateDataImportOption.properties && templateDataImportOption.properties.length >0 " flex layout="column">
                 <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
-  
+
                 <div *ngFor="let prop of templateDataImportOption.properties" layout="column" layout-align="start start">
                   <span>{{prop.processorName}}</span>
                   <div layout="row" flex layout-fill>
@@ -141,15 +141,15 @@
                   </div>
                 </div>
               </div>
-  
+
               <div *ngIf="(templateDataImportOption.overwrite)|| (reusableTemplateImportOption.errorMessages != null && reusableTemplateImportOption.errorMessages.length >0)">
                 <div *ngFor="let message of reusableTemplateImportOption.errorMessages" layout="column">
                   <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
                 </div>
-  
+
                 <div *ngIf="reusableTemplateImportOption.properties && reusableTemplateImportOption.properties.length >0" flex layout="column">
                   <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
-  
+
                   <div *ngFor="let prop of reusableTemplateImportOption.properties" layout="column" layout-align="start start">
                     <span>{{prop.processorName}}</span>
                     <div layout="row" flex layout-fill>
@@ -160,21 +160,36 @@
                     </div>
                   </div>
                 </div>
-  
-  
+
+
               </div>
-  
-  
+
+
             </div>
-  
+
             <div *ngIf="uploadType == 'xml'"  layout-fill>
               <div *ngIf="nifiTemplateImportOption.errorMessages != null && nifiTemplateImportOption.errorMessages.length >0">
                 <div *ngFor="let message of nifiTemplateImportOption.errorMessages" layout="column">
                   <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
                 </div>
               </div>
-  
-  
+
+              <div *ngIf="reusableTemplateImportOption.properties && reusableTemplateImportOption.properties.length > 0" flex layout="column">
+                <div class="layout-padding-bottom">
+                  The following properties (total count: {{ reusableTemplateImportOption.properties.length }}) need to be supplied before importing this reusable template.
+                </div>
+
+                <div *ngFor="let prop of reusableTemplateImportOption.properties" layout="column" layout-align="start start">
+                  <span>{{ prop.processorName }}</span>
+                  <div layout="row" layout-fill>
+                    <mat-form-field>
+                      <label>{{ prop.propertyKey }}</label>
+                      <input matInput name="propertyValue" type="text" [(ngModel)]="prop.propertyValue" autocomplete="new-password" name="{{prop.inputName}}">
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+
               <div layout="row">
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50">
                 <mat-checkbox name="nifiTemplateDataImportOption" [(ngModel)]="nifiTemplateImportOption.overwrite" aria-label="Overwrite if exists">
@@ -184,8 +199,8 @@
                   Replace any existing template in NiFi that has the same name.
                 </div>
               </div>
-  
-  
+
+
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50">
                 <mat-checkbox name="reusableTemplateDataImportOption" [(ngModel)]="reusableTemplateImportOption.shouldImport" aria-label="Create a reusable flow (callable by other flows)">
                   Create Reusable Flow
@@ -194,7 +209,7 @@
                   Create a reusable flow from this template under 'reusable_templates' process group in NiFi. Other feed templates can reuse this template's flow by connecting to it.
                 </div>
               </div>
-  
+
                 <div class="condensed-no-float md-block layout-padding-bottom" flex="50" *ngIf="reusableTemplateImportOption.shouldImport && remoteProcessGroupAware">
                   <mat-checkbox name="remoteProcessGroupImportOption" [(ngModel)]="remoteProcessGroupImportOption.shouldImport" aria-label="Make available for Remote Process Groups">
                    Remote Process Group Aware
@@ -203,13 +218,13 @@
                    Make this template available for Feed Remote Process Groups
                   </div>
                 </div>
-  
+
               </div>
-  
+
             </div>
-  
+
           </div>
-  
+
           <div layout="row" class="layout-padding-top">
             <button class="md-raised md-primary md-button md-kylo-theme md-ink-ripple" (click)="importTemplate()" *ngIf="(templateFile != null || templateParam != null) && !reusableTemplateInputPortsNeeded && !remoteProcessGroupInputPortsNeeded"
                        [disabled]="uploadInProgress">
@@ -218,7 +233,7 @@
             <span flex="5"></span>
             <md-progress-linear flex md-mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></md-progress-linear>
           </div>
-  
+
           <div layout="column">
             <div *ngFor="let msg of uploadStatusMessages" layout="row">
               <div flex>
@@ -232,11 +247,11 @@
               </div>
             </div>
           </div>
-  
-  
-  
+
+
+
         </div>
-  
+
         <div *ngIf="importResult != null" class="layout-padding-indent layout-padding-top-bottom">
           <div layout="row">
             <ng-md-icon icon="{{importResultIcon}}"
@@ -244,7 +259,7 @@
             <span style="padding-left:15px;">{{message}}</span>
             <span flex></span>
           </div>
-  
+
           <mat-list class="padding-left" *ngFor="let errors of errorMap">
             <div class="md-warn" *ngIf="errors.length >0">Errors</div>
             <ng-template *ngFor="let error of errors; let last = last">
@@ -259,9 +274,9 @@
               </mat-list-item>
             </ng-template>
           </mat-list>
-  
+
           <div *ngIf="reusableTemplateInputPortsNeeded">
-  
+
             <div layout="column">
             <ng-container [formGroup]="importTemplateForm" layout="column">
               <div class="md-subhead left-aligned">Connection Options</div>
@@ -278,7 +293,7 @@
                             <span>{{inputPort.label}}</span> <span class="hint" *ngIf="inputPort.description"> ({{inputPort.description | truncate:50}})</span>
                         </mat-option>
                       </ng-template>
-  
+
                     </mat-select>
                     <mat-error *ngIf="importTemplateForm.controls['port-'+connection.feedOutputPortName] && importTemplateForm.controls['port-'+connection.feedOutputPortName].errors?.required" >
                         This field is required.
@@ -294,7 +309,7 @@
                 <button (click)="cancelImport()">Cancel</button>
                 <button class="md-primary" (click)="setReusableConnections()" *ngIf="!noReusableConnectionsFound">Import</button>
               </div>
-  
+
                 <div *ngIf="noReusableConnectionsFound">
                   ERROR!!!!! There are no other reusable connections found.
                   You will need to re import additional templates before registering this one.
@@ -302,9 +317,9 @@
               </ng-container>
             </div>
           </div>
-  
+
             <div *ngIf="remoteProcessGroupInputPortsNeeded && remoteProcessGroupImportOption.shouldImport">
-  
+
               <mat-list class="padding-left" *ngIf="remoteProcessGroupImportOption.errorMessages.length >0">
                 <div class="md-warn">Remote Input Port Errors</div>
                 <ng-template *ngFor="let error of remoteProcessGroupImportOption.errorMessages; let last = last">
@@ -316,9 +331,9 @@
                   </mat-list-item>
                 </ng-template>
               </mat-list>
-  
+
             <div layout="column">
-  
+
               <form #importTemplateForm=ngForm name="importTemplateForm" layout="column">
                 <div class="md-subhead left-aligned">Remote Process Group Input Ports</div>
                 <div *ngIf="importResult.remoteProcessGroupInputPortNames.length ==0">
@@ -326,35 +341,34 @@
                   <br/>
                   If you dont wish to expose your template to remote process groups uncheck <i>Remote Process Group Aware</i> option above
                 </div>
-  
+
                   <div>
                     <mat-label>Remote Input Ports</mat-label>
                     <mat-select name="importResult" multiple [(ngModel)]="importResult.remoteProcessGroupInputPortNames" [ngModelOptions]="{trackBy: '$value.inputPortName'}">
-                      <ng-template *ngFor="let port of remoteProcessGroupInputPortNames">  
+                      <ng-template *ngFor="let port of remoteProcessGroupInputPortNames">
                         <mat-option [value]="port" >
                           {{port.inputPortName}}
                         </mat-option>
                       </ng-template>
                     </mat-select>
                   </div>
-  
+
                 <div layout="row" layout-align="start">
                   <span flex="100"></span>
                   <button (click)="cancelImport()">Cancel</button>
                   <button class="md-primary" (click)="setRemoteProcessInputPorts()">Import</button>
                 </div>
-  
-  
+
+
               </form>
             </div>
           </div>
-  
+
           <div *ngIf="!xmlType && showReorderList">
             <thinkbig-template-order [templateId]="importResult.templateId" [templateName]="importResult.templateName" [addAsNew]="false" [addSaveBtn]="true"></thinkbig-template-order>
           </div>
-  
+
         </div>
       </mat-card-content>
     </mat-card>
   </div>
-  

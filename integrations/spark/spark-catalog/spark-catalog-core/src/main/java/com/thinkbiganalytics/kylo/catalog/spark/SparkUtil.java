@@ -117,6 +117,35 @@ public class SparkUtil {
     }
 
     /**
+     * Determines the format (or data source) to use for the specified data set.
+     */
+    public static String resolveDataSource(@Nonnull final DataSetOptions options, @Nullable final KyloCatalogClient client) {
+        Preconditions.checkNotNull(options.getFormat(), "Format must be defined");
+
+        // Determine format
+        String format = getOrElse(options.getOption(KyloCatalogConstants.FORMAT_OPTION2), null);
+        if (format == null) {
+            format = getOrElse(options.getOption(KyloCatalogConstants.FORMAT_OPTION), null);
+        }
+        if (format == null) {
+            format = options.getFormat();
+        }
+
+        // Resolve format using resource loader
+        if (client instanceof AbstractKyloCatalogClient) {
+            Option<DataSourceRegister> dataSource = ((AbstractKyloCatalogClient<?>) client).getDataSource(format);
+            if (dataSource.isEmpty()) {
+                dataSource = ((AbstractKyloCatalogClient<?>) client).getDataSource(format + ".DefaultSource");
+            }
+            if (dataSource.isDefined()) {
+                format = dataSource.get().getClass().getName();
+            }
+        }
+
+        return format;
+    }
+
+    /**
      * Returns the save mode with the specified name.
      *
      * @throws IllegalArgumentException if no save mode has the specified name
@@ -143,35 +172,6 @@ public class SparkUtil {
                 log.debug("Unknown save mode: {}", s);
                 throw new IllegalArgumentException("Unknown save mode: " + s + ". Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.");
         }
-    }
-
-    /**
-     * Determines the format (or data source) to use for the specified data set.
-     */
-    private static String resolveDataSource(@Nonnull final DataSetOptions options, @Nullable final KyloCatalogClient client) {
-        Preconditions.checkNotNull(options.getFormat(), "Format must be defined");
-
-        // Determine format
-        String format = getOrElse(options.getOption(KyloCatalogConstants.FORMAT_OPTION2), null);
-        if (format == null) {
-            format = getOrElse(options.getOption(KyloCatalogConstants.FORMAT_OPTION), null);
-        }
-        if (format == null) {
-            format = options.getFormat();
-        }
-
-        // Resolve format using resource loader
-        if (client instanceof AbstractKyloCatalogClient) {
-            Option<DataSourceRegister> dataSource = ((AbstractKyloCatalogClient<?>) client).getDataSource(format);
-            if (dataSource.isEmpty()) {
-                dataSource = ((AbstractKyloCatalogClient<?>) client).getDataSource(format + ".DefaultSource");
-            }
-            if (dataSource.isDefined()) {
-                format = dataSource.get().getClass().getName();
-            }
-        }
-
-        return format;
     }
 
     /**

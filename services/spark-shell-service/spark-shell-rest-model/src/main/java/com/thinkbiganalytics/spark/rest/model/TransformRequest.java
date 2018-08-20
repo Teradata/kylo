@@ -20,11 +20,10 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 /**
  * A request to perform a transformation on a table.
@@ -40,6 +39,11 @@ public class TransformRequest {
      * List of data sources to make available
      */
     private List<Datasource> datasources;
+
+    /**
+     * List of the catalog datasources
+     */
+    private List<DataSet> catalogDatasets;
 
     /**
      * Whether to perform validation
@@ -150,6 +154,7 @@ public class TransformRequest {
 
     /**
      * Returns the page index information
+     *
      * @return the page spec
      */
     public PageSpec getPageSpec() {
@@ -158,6 +163,7 @@ public class TransformRequest {
 
     /**
      * Sets the page index information
+     *
      * @param pageSpec the page spec
      */
     public void setPageSpec(PageSpec pageSpec) {
@@ -166,6 +172,7 @@ public class TransformRequest {
 
     /**
      * Whether to perform the validation stage using the configured validation policies
+     *
      * @return true if validation stage should be run
      */
     public boolean isDoValidate() {
@@ -174,6 +181,7 @@ public class TransformRequest {
 
     /**
      * Set whether to perform the validation stage on the results
+     *
      * @param doValidate true if validation stage should be performed
      */
     public void setDoValidate(boolean doValidate) {
@@ -182,6 +190,7 @@ public class TransformRequest {
 
     /**
      * Whether to profile the resultset
+     *
      * @return true if profile should be performed
      */
     public boolean isDoProfile() {
@@ -190,10 +199,25 @@ public class TransformRequest {
 
     /**
      * Set whether profile statistics should be generated for the result
+     *
      * @param doProfile true if to perform profiling
      */
     public void setDoProfile(boolean doProfile) {
         this.doProfile = doProfile;
+    }
+
+    /**
+     * Get the DataSets from the catalog that need to be transformed
+     */
+    public List<DataSet> getCatalogDatasets() {
+        return catalogDatasets;
+    }
+
+    /**
+     * set the DataSets to be transformed
+     */
+    public void setCatalogDatasets(List<DataSet> catalogDatasets) {
+        this.catalogDatasets = catalogDatasets;
     }
 
     /**

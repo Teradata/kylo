@@ -2,18 +2,24 @@
 
 <md-menu-content class="md-kylo-theme" role="menu">
   <md-menu-item ng-if="selection && value !== null">
-    <md-button ng-click="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selection }}</md-button>
+    <md-button ng-click="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selectionDisplay }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="selection && value !== null">
-    <md-button ng-click="header.delegate.deleteRowsContaining(selection, header)">Delete rows containing {{ selection }}</md-button>
+    <md-button ng-click="header.delegate.deleteRowsContaining(selection, header)">Delete rows containing {{ selectionDisplay }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="selection && value !== null">
-    <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selection }}</md-button>
+    <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selectionDisplay }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="selection !== null && selection.length > 0">
-    <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selection }}</md-button>
+    <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selectionDisplay }}</md-button>
   </md-menu-item>
-  <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>
+  <md-menu-item ng-if="range && value !== null && selection &&  selection.length > 0">
+    <md-button ng-click="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract string at index {{ range.startOffset }} to {{ range.endOffset }}</md-button>
+  </md-menu-item>
+  <md-menu-divider ng-if="value !== null"></md-menu-divider>
+  <md-menu-item ng-if="value !== null">
+    <md-button ng-click="header.delegate.replaceValueEqualTo(value, header, table)">Replace values equal to {{ displayValue }}</md-button>
+  </md-menu-item>
   <md-menu-item ng-if="value !== null">
     <md-button ng-click="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</md-button>
   </md-menu-item>

@@ -2,9 +2,16 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
-import {TableColumnDefinition} from "./TableColumnDefinition";
+import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
+import {KyloObject} from "../../common/common.model";
+import {TableFieldPolicy} from "./TableFieldPolicy";
 
-export class TableFieldPartition {
+export class TableFieldPartition  implements KyloObject {
+
+    public static OBJECT_TYPE:string = 'TableFieldPartition'
+
+    public objectType:string = TableFieldPartition.OBJECT_TYPE;
+
     /**
      * the 1 based index of the partition entry
      */
@@ -43,10 +50,27 @@ export class TableFieldPartition {
 
     columnDef: TableColumnDefinition;
 
-    constructor(index: number) {
-        this.position = index;
+    initialize() {
         this._id = _.uniqueId();
     }
+
+    public constructor(init?:Partial<TableFieldPartition>) {
+        Object.assign(this, init);
+
+        if(this.columnDef && this.columnDef.objectType && this.columnDef.objectType == TableColumnDefinition.OBJECT_TYPE){
+           //ok
+        }
+        else {
+            this.columnDef = new TableColumnDefinition(this.columnDef);
+        }
+
+        this.initialize();
+    }
+
+    static atPosition(index:number) :TableFieldPartition {
+        return new this({position:index});
+    }
+
 
     /**
      * Sync the sourceField and sourceDataType with this assigned column

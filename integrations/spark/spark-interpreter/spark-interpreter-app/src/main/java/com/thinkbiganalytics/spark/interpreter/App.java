@@ -24,8 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
+import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
@@ -70,7 +73,8 @@ public class App {
         }
 
         // Load environment
-        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
+        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark",
+                                                                              "com.thinkbiganalytics.kylo.catalog");
 
         File scriptFile = new File(args[0]);
         if (scriptFile.exists() && scriptFile.isFile()) {
@@ -114,6 +118,21 @@ public class App {
 
         return datasourceProviderFactory.getDatasourceProvider(datasources);
     }
+
+    @Bean
+    public CatalogDataSetProvider catalogDataSetProvider(final CatalogDataSetProviderFactory catalogDataSetProviderFactory) throws IOException {
+        final List<DataSet> dataSets;
+        final String env = System.getenv("DATASETS");
+
+        if (env != null) {
+            dataSets = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSet.class));
+        } else {
+            dataSets = Collections.emptyList();
+        }
+
+        return catalogDataSetProviderFactory.getDataSetProvider(dataSets);
+    }
+
 
     /**
      * Creates the Spark configuration.

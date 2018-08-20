@@ -2,11 +2,11 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-spark-shell-controller</artifactId>
+    <artifactId>kylo-spark-shell-controller</artifactId>
 
-  <name>Spark Shell Service Controllers</name>
+    <name>Spark Shell Service Controllers</name>
 
   <parent>
     <artifactId>kylo-spark-shell-service</artifactId>
@@ -17,65 +17,77 @@
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
-  <dependencies>
-    <!-- Core -->
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-    </dependency>
+    <dependencies>
+        <!-- Core -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
 
-    <!-- Jersey -->
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
-    </dependency>
+        <!-- Jersey -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+        </dependency>
 
-    <!-- Kylo -->
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-spark-shell-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-spark-shell-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-spark-shell-rest-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-schema-discovery-model2</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-schema-discovery-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-security-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-feed-manager-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-metadata-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-feed-manager-controller</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+        <!-- Kylo -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-spark-shell-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- plugin-shared here ensures it is installed to kylo-services/lib by tarball -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-commons-spark-shell-plugin-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-spark-shell-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-spark-livy-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-spark-shell-rest-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-schema-discovery-model2</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-schema-discovery-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-security-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-feed-manager-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-metadata-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-feed-manager-controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>

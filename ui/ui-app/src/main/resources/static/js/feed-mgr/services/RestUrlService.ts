@@ -324,8 +324,4 @@ import {Injectable} from "@angular/core";
          * Parses a string as a date.
          */
         PARSE_DATE = RestUrlConstants.PARSE_DATE
-
-      constructor() {
-             console.log("REST URL SERVICE")
-      }
     }

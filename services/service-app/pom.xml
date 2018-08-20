@@ -228,7 +228,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-marketplace-rest-controller</artifactId>
+      <artifactId>kylo-repository-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -407,6 +407,11 @@
 
     <dependency>
       <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
       <version>${hibernate.version}</version>
     </dependency>
@@ -490,6 +495,14 @@
       <version>2.9.0</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.jayway.restassured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>2.9.0</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant-jsch</artifactId>
@@ -512,6 +525,14 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
+
+    <!-- TJH test for jsp-api NSME error-->
+    <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>jsp-api</artifactId>
+      <version>2.2</version>
+    </dependency>
+
 
   </dependencies>
 

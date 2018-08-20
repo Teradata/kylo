@@ -17,7 +17,7 @@ var FeedUploadFileDialogController = function ($scope:any, $mdDialog:any, $http:
      * Upload file
      */
     $scope.doUpload = function() {
- 
+
         $scope.uploading = true;
         $scope.errorMessage = '';
         var uploadUrl = RestUrlService.UPLOAD_FILE_FEED_URL(feedId);
@@ -35,7 +35,7 @@ var FeedUploadFileDialogController = function ($scope:any, $mdDialog:any, $http:
     $scope.hide = function() {
         $mdDialog.hide();
     };
- 
+
     $scope.cancel = function() {
         $mdDialog.cancel();
     };
@@ -48,7 +48,7 @@ var FeedUploadFileDialogController = function ($scope:any, $mdDialog:any, $http:
 const SLA_INDEX = 3;
 
 export class FeedDetailsController {
-    
+
     /**
     * Flag to indicate style of page
     * if true it will fit the card to the 980px width
@@ -115,9 +115,9 @@ export class FeedDetailsController {
     requestedTabIndex : any;
     $transition$: Transition;
 
-    static readonly $inject = ["$scope", "$q", "$mdDialog", "$mdToast", "$http", "$state", 
+    static readonly $inject = ["$scope", "$q", "$mdDialog", "$mdToast", "$http", "$state",
     "AccessControlService", "RestUrlService", "FeedService", "RegisterTemplateService", "StateService",
-    "SideNavService", "FileUpload", "ConfigurationService", "EntityAccessControlDialogService", 
+    "SideNavService", "FileUpload", "ConfigurationService", "EntityAccessControlDialogService",
     "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "DatasourcesService"];
 
     /**
@@ -492,7 +492,7 @@ export class FeedDetailsController {
                             this.selectedTabIndex = tabIndex;
                         }
 
-                        this.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate, 'edit');
+                        this.registerTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate, 'edit',[]);
                         this.model.inputProcessors = this.registerTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors, true);
                         //sort them by name
                         this.model.inputProcessors = _.sortBy(this.model.inputProcessors, 'name')

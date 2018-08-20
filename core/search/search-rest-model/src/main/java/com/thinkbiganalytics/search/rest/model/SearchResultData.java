@@ -9,9 +9,9 @@ package com.thinkbiganalytics.search.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,12 +20,23 @@ package com.thinkbiganalytics.search.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * Stores the search result content returned from a search engine
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
+@JsonSubTypes({
+                  @JsonSubTypes.Type(value = CategoryMetadataSearchResultData.class, name = "KYLO_CATEGORIES"),
+                  @JsonSubTypes.Type(value = FeedMetadataSearchResultData.class, name = "KYLO_FEEDS"),
+                  @JsonSubTypes.Type(value = SchemaSearchResultData.class, name = "KYLO_SCHEMA"),
+                  @JsonSubTypes.Type(value = TableSearchResultData.class, name = "KYLO_DATA"),
+                  @JsonSubTypes.Type(value = UnknownTypeSearchResultData.class, name = "KYLO_UNKNOWN"),
+              })
 public interface SearchResultData {
 
     /**

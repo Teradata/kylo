@@ -51,11 +51,11 @@ import {  RestUrlService } from './RestUrlService';
             }
         }
 
-        constructor(private http:HttpClient, 
-                    private restUrlService:RestUrlService, 
+        constructor(private http:HttpClient,
+                    private restUrlService:RestUrlService,
                     private entityAccessControlService:EntityAccessControlService) {
             
-        }     
+        }
         /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons

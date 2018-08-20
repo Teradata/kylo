@@ -27,10 +27,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 
 @EnableAutoConfiguration
+@PropertySource("classpath:test-application.properties")
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @Configuration
 public class TestDbSchemaConfig {
@@ -40,7 +42,7 @@ public class TestDbSchemaConfig {
      */
     @Bean(name = "dataSource")
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource", locations = "classpath:test-application.properties")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         DataSource newDataSource = DataSourceBuilder.create().build();
 

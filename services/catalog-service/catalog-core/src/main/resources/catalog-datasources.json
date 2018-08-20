@@ -30,7 +30,7 @@
     },
     "template": {
       "paths": [
-        "file::///opt/kylo"
+        "file:///opt/kylo"
       ]
     }
   },
@@ -64,6 +64,32 @@
     "template": {
       "options": {
         "kafka.bootstrap.servers": "localhost:9093"
+      }
+    }
+  },
+  {
+    "title": "Kylo MySQL",
+    "connector": {
+      "id": "mysql"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:mysql://localhost:3306/kylo",
+        "user": "root",
+        "password": ""
+      }
+    }
+  },
+  {
+    "title": "Oracle",
+    "connector": {
+      "id": "oracle"
+    },
+    "template": {
+      "options": {
+        "url": "jdbc:oracle:thin:@my.oracle.server.domain.com:1521:DBName",
+        "user": "scott",
+        "password": "tiger"
       }
     }
   },

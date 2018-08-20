@@ -99,7 +99,7 @@ public class AboutKyloController {
                                .filter(authority -> authority.getPrincipal() instanceof Group)
                                .map(JaasGrantedAuthority::getAuthority)
                                .collect(Collectors.toSet()));
-            user.setSystemName(auth.getPrincipal().toString());
+            user.setSystemName(auth.getName());
         }
 
         // Return principal

@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-<filtered-paginated-table-view 
+<filtered-paginated-table-view
     [columns]="columns"
     [sortable]="true"
     [sortBy]="sortBy"
@@ -34,12 +34,16 @@
     [allowedPageSize]="[5,10,20,50]">
 
         <ng-template tdDataTableTemplate="templateName" let-value="value" let-row="row" let-column="column">
-            <div (click)="templateDetails(row)" style="display:flex">
+            <div (click)="templateInfo(row)" style="display:flex">
                 <ng-md-icon icon="{{row.icon}}" size="20" hide-xs [ngStyle]="{'fill':row.iconColor}" style="margin: 0 5px 0 0;">
                 </ng-md-icon>
                 <span>
                     {{value}}
                 </span>
+              <span ng-if="row.updateAvailable" title="Update available from Repository">
+                                      <ng-md-icon icon="update" size="20" style="fill:#F08C38"> </ng-md-icon>
+                                      Update Available
+                                    </span>
             </div>
         </ng-template>
         <ng-template tdDataTableTemplate="properties" let-value="value" let-row="row" let-column="column">

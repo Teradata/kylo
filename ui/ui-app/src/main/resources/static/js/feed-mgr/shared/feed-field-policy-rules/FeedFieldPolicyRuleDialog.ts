@@ -124,7 +124,7 @@ export class FeedFieldPolicyRuleDialogController {
 
 
         function setupPoliciesForFeed() {
-            var arr = this.feedFieldPolicyRuleService.getAllPolicyRules(field);
+            var arr = feedFieldPolicyRuleService.getAllPolicyRules(field);
             if (arr != null && arr != undefined) {
                 $scope.policyRules = angular.copy(arr);
             }

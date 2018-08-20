@@ -48,7 +48,7 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
     public Datasource getDatasource() {
 
         try {
-            PropertyIterator itr = this.node.getProperties();
+            PropertyIterator itr = getNode().getProperties();
             while (itr.hasNext()) {
                 Property p = itr.nextProperty();
                 Value v = p.getValue();

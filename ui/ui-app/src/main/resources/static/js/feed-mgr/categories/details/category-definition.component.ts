@@ -77,7 +77,7 @@ export class CategoryDefinition {
         reservedCategoryNames:any = ['thinkbig']
 
         ngOnInit() {
-            
+
             this.editModel = CloneUtil.deepCopy(this.CategoriesService.model);
 
             this.isEditable = !ObjectUtils.isString(this.CategoriesService.model.id);
@@ -373,7 +373,7 @@ export class CategoryDefinition {
                 data: { iconModel: this.editModel },
                 panelClass: "full-screen-dialog"
               });
-          
+
             dialogRef.afterClosed().subscribe(result => {
                 if (result) {
                     this.editModel.icon = result.icon;

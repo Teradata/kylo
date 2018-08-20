@@ -24,22 +24,53 @@ package com.thinkbiganalytics.metadata.modeshape.extension;
  */
 
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+
+import java.io.Serializable;
+import java.util.Set;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  *
  */
-public class JcrExtensibleEntity extends JcrEntity implements ExtensibleEntity {
+public class JcrExtensibleEntity extends JcrEntity<JcrExtensibleEntity.EntityId> implements AuditableMixin, ExtensibleEntity {
 
 
     /**
      *
      */
     public JcrExtensibleEntity(Node node) {
-
         super(node);
+    }
+    
+    @Override
+    public EntityId getId() {
+        try {
+            return new EntityId(getObjectId());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity#getPropertySet(java.lang.String, java.lang.Class)
+     */
+    @Override
+    public <T> Set<T> getPropertySet(String name, Class<T> objectType) {
+        return getPropertyAsSet(name, objectType);
+    }
+    
+    public static class EntityId extends JcrEntity.EntityId implements ExtensibleEntity.ID {
+        
+        private static final long serialVersionUID = 1L;
+
+        public EntityId(Serializable ser) {
+            super(ser);
+        }
     }
 
 }

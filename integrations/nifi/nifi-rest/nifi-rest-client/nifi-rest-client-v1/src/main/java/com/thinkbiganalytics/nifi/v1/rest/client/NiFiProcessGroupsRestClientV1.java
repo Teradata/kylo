@@ -214,8 +214,8 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Override
     public ProcessGroupFlowDTO flow(@Nonnull final String parentGroupId) {
         try {
-
-            return getClient().get("/flow"+BASE_PATH + parentGroupId , null, ProcessGroupFlowEntity.class)
+            return Optional.ofNullable(getClient().get("/flow"+BASE_PATH + parentGroupId , null, ProcessGroupFlowEntity.class))
+                .orElseThrow(() -> new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null))
                 .getProcessGroupFlow();
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);

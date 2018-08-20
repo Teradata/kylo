@@ -1,4 +1,5 @@
 import {Schema} from "./schema";
+import {SchemaField} from "./schema-field";
 
 /**
  * Schema of a table object
@@ -14,4 +15,6 @@ export interface TableSchema extends Schema {
      * Database name
      */
     databaseName: string;
+
+
 }

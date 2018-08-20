@@ -199,6 +199,9 @@ public class FeedModelTransform {
             domainId = domain.getId();
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             domain.setState(state);
+
+            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode());
+            domain.setMode(mode);
             //reassign the domain data back to the ui model....
             feedMetadata.setFeedId(domainId.toString());
             feedMetadata.setState(state.name());
@@ -221,6 +224,11 @@ public class FeedModelTransform {
         if (StringUtils.isNotBlank(feedMetadata.getState())) {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState().toUpperCase());
             domain.setState(state);
+        }
+
+        if (StringUtils.isNotBlank(feedMetadata.getMode())) {
+            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode().toUpperCase());
+            domain.setMode(mode);
         }
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
@@ -289,6 +297,7 @@ public class FeedModelTransform {
         result.setSchedule(source.getSchedule());
         result.setTable(source.getTable());
         result.setTableOption(source.getTableOption());
+        result.setSourceDataSets(source.getSourceDataSets());
         return result;
     }
 
@@ -401,6 +410,7 @@ public class FeedModelTransform {
             feed.setCategory(categoryModelTransform.domainToFeedCategorySimple(category));
         }
         feed.setState(domain.getState() != null ? domain.getState().name() : null);
+        feed.setMode(domain.getMode() != null ? domain.getMode().name() : null);
         feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
 
         // Set user-defined properties
@@ -475,6 +485,7 @@ public class FeedModelTransform {
         feedSummary.setActive(feedManagerFeed.getState() != null && feedManagerFeed.getState().equals(Feed.State.ENABLED));
 
         feedSummary.setState(feedManagerFeed.getState() != null ? feedManagerFeed.getState().name() : null);
+        feedSummary.setMode(feedManagerFeed.getMode() != null ? feedManagerFeed.getMode().name() : null);
 
         if (feedManagerFeed instanceof Feed) {
 

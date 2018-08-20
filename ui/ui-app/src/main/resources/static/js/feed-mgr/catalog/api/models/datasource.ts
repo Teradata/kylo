@@ -7,11 +7,11 @@ import {DataSourceTemplate} from './datasource-template';
  * It has an instance of a Connector's DataSourceTemplate which is
  * configured with required properties, i.e. configured to connect to S3, JDBC, Kafka, Hive, etc
  */
-export interface DataSource {
+export class DataSource {
 
     id: string;
 
-    connector: Connector,
+    connector: Connector;
 
     title: string;
 

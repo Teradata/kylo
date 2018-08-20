@@ -1,0 +1,11 @@
+  <mat-card class="mat-typography">
+    <mat-card-header>
+      <mat-card-title>{{step.number}}.  {{step.name}}</mat-card-title>
+      <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <ng-content select="feed-step-readonly-content" *ngIf="feed.readonly  && mode == 'normal'"></ng-content>
+      <ng-content select="feed-step-edit-content" *ngIf="!feed.readonly && mode == 'normal'"></ng-content>
+      <ng-content   *ngIf="mode=='custom'"></ng-content>
+    </mat-card-content>
+  </mat-card>

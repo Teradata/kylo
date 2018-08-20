@@ -20,12 +20,10 @@ package com.thinkbiganalytics.kylo.catalog.api;
  * #L%
  */
 
-import org.apache.spark.SparkContext;
 import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.SaveMode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Saves a Spark {@code DataFrame} to an external system.
@@ -36,61 +34,7 @@ import javax.annotation.Nullable;
  * @see KyloCatalogClient#write(Object)
  */
 @SuppressWarnings("unused")
-public interface KyloCatalogWriter<T> {
-
-    /**
-     * Adds a file to be downloaded with all Spark jobs.
-     *
-     * <p>NOTE: Local files cannot be used when Spark is running in yarn-cluster mode.</p>
-     *
-     * @param path can be either a local file, a file in HDFS (or other Hadoop-supported filesystem), or an HTTP/HTTPS/FTP URI
-     * @see SparkContext#addFile(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addFile(@Nullable String path);
-
-    /**
-     * Adds files to be downloaded with all Spark jobs.
-     *
-     * @see #addFile(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addFiles(@Nullable java.util.List<String> paths);
-
-    /**
-     * (Scala-specific) Adds files to be downloaded with all Spark jobs.
-     *
-     * @see #addFile(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addFiles(@Nullable scala.collection.Seq<String> paths);
-
-    /**
-     * Adds a JAR dependency containing the data source classes or its dependencies.
-     *
-     * <p>NOTE: Local jars cannot be used when Spark is running in yarn-cluster mode.</p>
-     *
-     * @param path can be either a local file, a file in HDFS (or other Hadoop-supported filesystem), an HTTP/HTTPS/FTP URI, or local:/path (for a file on every worker node)
-     * @see SparkContext#addJar(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addJar(@Nullable String path);
-
-    /**
-     * Adds JAR dependencies containing the data source classes and its dependencies.
-     *
-     * @see #addJar(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addJars(@Nullable java.util.List<String> paths);
-
-    /**
-     * (Scala-specific) Adds JAR dependencies containing the data source classes and its dependencies.
-     *
-     * @see #addJar(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> addJars(@Nullable scala.collection.Seq<String> paths);
+public interface KyloCatalogWriter<T> extends KyloCatalogDataSetAccess<KyloCatalogWriter<T>> {
 
     /**
      * Buckets the output by the given columns. If specified, the output is laid out on the file system similar to Hive's bucketing scheme.
@@ -101,14 +45,6 @@ public interface KyloCatalogWriter<T> {
      */
     @Nonnull
     KyloCatalogWriter<T> bucketBy(int numBuckets, @Nonnull String colName, String... colNames);
-
-    /**
-     * Specifies the underlying output data source.
-     *
-     * @see DataFrameWriter#format(String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> format(@Nonnull String source);
 
     /**
      * Specifies the behavior when data or table already exists.
@@ -125,54 +61,6 @@ public interface KyloCatalogWriter<T> {
      */
     @Nonnull
     KyloCatalogWriter<T> mode(@Nonnull SaveMode saveMode);
-
-    /**
-     * Adds an output option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameWriter#option(String, double)"
-     */
-    @Nonnull
-    KyloCatalogWriter<T> option(@Nonnull String key, double value);
-
-    /**
-     * Adds an output option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameWriter#option(String, long)"
-     */
-    @Nonnull
-    KyloCatalogWriter<T> option(@Nonnull String key, long value);
-
-    /**
-     * Adds an output option for the underlying data source.
-     *
-     * @see "org.apache.spark.sql.DataFrameWriter#option(String, boolean)"
-     */
-    @Nonnull
-    KyloCatalogWriter<T> option(@Nonnull String key, boolean value);
-
-    /**
-     * Adds an output option for the underlying data source.
-     *
-     * @see DataFrameWriter#option(String, String)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> option(@Nonnull String key, @Nullable String value);
-
-    /**
-     * Adds output options for the underlying data source.
-     *
-     * @see DataFrameWriter#options(java.util.Map)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> options(@Nullable java.util.Map<String, String> options);
-
-    /**
-     * (Scala-specific) Adds output options for the underlying data source.
-     *
-     * @see DataFrameWriter#options(scala.collection.Map)
-     */
-    @Nonnull
-    KyloCatalogWriter<T> options(@Nullable scala.collection.Map<String, String> options);
 
     /**
      * Partitions the output by the given columns on the file system. If specified, the output is laid out on the file system similar to Hive's partitioning scheme.

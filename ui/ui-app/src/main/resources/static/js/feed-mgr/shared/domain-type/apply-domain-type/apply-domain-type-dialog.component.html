@@ -1,0 +1,18 @@
+<h2 mat-dialog-title>Overwrite Field Details for {{data.column.field.name}}</h2>
+<mat-dialog-content class="mat-typography">
+  Applying the domain type {{data.domainType.title}} will overwrite the current field with the following properties:
+
+  <ul>
+    <li *ngIf="data.domainType.field.name">Field Name: {{data.domainType.field.name}}</li>
+    <li *ngIf="data.domainType.field.derivedDataType != null">Data Type: {{data.domainType.field.derivedDataType}}</li>
+    <li>Standardizers: {{data.column.standardizerList}}</li>
+    <li>Validators: {{data.column.validatorList}}</li>
+    <li>Tags: {{data.column.tagList}}</li>
+  </ul>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <span fxFlex=""></span>
+  <button mat-button  color="primary" (click)="apply()">Apply</button>
+</mat-dialog-actions>

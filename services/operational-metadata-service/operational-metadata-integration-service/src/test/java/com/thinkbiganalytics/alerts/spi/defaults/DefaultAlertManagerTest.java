@@ -37,9 +37,14 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -50,6 +55,7 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.validation.ValidatorFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -58,7 +64,8 @@ import static org.mockito.Mockito.verify;
  *
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class, SpringOperationalMetadataTestConfiguration.class})
+@SpringBootTest(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class, SpringOperationalMetadataTestConfiguration.class})
+@EnableAutoConfiguration(exclude = {WebMvcAutoConfiguration.class })
 public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     private static final String LONG_DESCR;
@@ -93,6 +100,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     public void afterMethod() {
         Mockito.reset(this.alertReceiver);
     }
+
 
     @Test(groups = "create")
     public void testCreateAlert() throws Exception {

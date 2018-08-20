@@ -25,6 +25,7 @@
     <module>commons-spark-shell-api</module>
     <module>commons-spark-shell-v1</module>
     <module>commons-spark-shell-v2</module>
+    <module>commons-spark-shell-plugin-shared</module>
   </modules>
 
 </project>

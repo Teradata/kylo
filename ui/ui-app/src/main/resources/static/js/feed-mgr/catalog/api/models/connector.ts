@@ -1,5 +1,5 @@
-import {ConnectorTab} from "./connector-tab";
 import {DataSourceTemplate} from './datasource-template';
+import {ConnectorPlugin} from './connector-plugin';
 
 /**
  * Connector describes a how one can connect to a data source, e.g.
@@ -15,7 +15,7 @@ export interface Connector {
 
     color?: string;
 
-    tabs?: ConnectorTab[],
-
-    template?: DataSourceTemplate
+    template?: DataSourceTemplate;
+    
+//    plugin?: ConnectorPlugin;
 }

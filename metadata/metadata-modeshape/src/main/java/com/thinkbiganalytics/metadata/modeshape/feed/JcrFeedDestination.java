@@ -48,6 +48,6 @@ public class JcrFeedDestination extends JcrFeedConnection implements FeedDestina
      */
     public JcrFeedDestination(Node node, JcrDatasource datasource) {
         super(node, datasource);
-        datasource.addDestinationNode(this.node);
+        datasource.addDestinationNode(getNode());
     }
 }

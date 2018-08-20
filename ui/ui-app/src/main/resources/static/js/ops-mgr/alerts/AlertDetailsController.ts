@@ -258,9 +258,9 @@ angular.module(moduleName).component("alertDetailsController", {
         controllerAs: "vm",
         templateUrl: "js/ops-mgr/alerts/alert-details.html"
     });
-angular.module(moduleName).component("alertDetailsDirectiveController", { 
-        controller: AlertDetailsDirectiveController,
-    });
+angular.module(moduleName).controller("alertDetailsDirectiveController",
+         AlertDetailsDirectiveController,
+    );
 angular.module(moduleName).directive("tbaAlertDetails",
         [
             ()=> {
@@ -277,6 +277,6 @@ angular.module(moduleName).directive("tbaAlertDetails",
                 };
             }
         ]);
-angular.module(moduleName).component("eventDialogController", { 
-        controller: EventDialogController
-    });
+angular.module(moduleName).controller("EventDialogController",
+         EventDialogController
+    );

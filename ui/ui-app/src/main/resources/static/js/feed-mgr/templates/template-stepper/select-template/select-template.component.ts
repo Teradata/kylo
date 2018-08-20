@@ -30,35 +30,36 @@ export class RegisterSelectTemplateController implements OnInit {
 
     templates: any = [];
     model: any;
-    stepNumber: string;
+    stepNumber: any;
+    stepperController: any = null;
     template: any = null;
     isValid: boolean = false;
 
     /**
-    * Error message to be displayed if {@code isValid} is false
-    * @type {null}
-    */
+     * Error message to be displayed if {@code isValid} is false
+     * @type {null}
+     */
     errorMessage: any = null;
     /**
-    * Indicates if admin operations are allowed.
-    * @type {boolean}
-    */
+     * Indicates if admin operations are allowed.
+     * @type {boolean}
+     */
     allowAdmin: any = false;
     /**
-    * Indicates if edit operations are allowed.
-    * @type {boolean}
-    */
+     * Indicates if edit operations are allowed.
+     * @type {boolean}
+     */
     allowEdit: any = false;
     /**
-    * Flag to indicate the template is loading
-    * Used for PRogress
-    * @type {boolean}
-    */
+     * Flag to indicate the template is loading
+     * Used for PRogress
+     * @type {boolean}
+     */
     loadingTemplate: boolean = false;
     /**
-    * Flag to indicate the select template list is loading
-    * @type {boolean}
-    */
+     * Flag to indicate the select template list is loading
+     * @type {boolean}
+     */
     fetchingTemplateList: boolean = false;
     templateTableOptions: any;
     allowAccessControl: any;
@@ -84,7 +85,7 @@ export class RegisterSelectTemplateController implements OnInit {
          * The possible options to choose how this template should be displayed in the Feed Stepper
          * @type {Array.<TemplateTableOption>}
          */
-        this.templateTableOptions = [{ type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table' }];
+        this.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
         this.uiComponentsService.getTemplateTableOptions()
             .then((templateTableOptions: any) => {
                 Array.prototype.push.apply(this.templateTableOptions, templateTableOptions);
@@ -112,16 +113,20 @@ export class RegisterSelectTemplateController implements OnInit {
                 this.allowExport = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
+        this.stepNumber = parseInt(this.stepIndex) + 1;
+        if (this.isLoading()) {
+            this.stepperController.showProgress = true;
+        }
     }
 
-    constructor(private $state: StateService, 
-                private RestUrlService: RestUrlService, 
-                private registerTemplateService: RegisterTemplateServiceFactory, 
-                private StateService: StateService, 
-                private accessControlService: AccessControlService, 
-                private EntityAccesControlService: EntityAccessControlService, 
+    constructor(private $state: StateService,
+                private RestUrlService: RestUrlService,
+                private registerTemplateService: RegisterTemplateServiceFactory,
+                private StateService: StateService,
+                private accessControlService: AccessControlService,
+                private EntityAccesControlService: EntityAccessControlService,
                 private uiComponentsService: UiComponentsService,
-                private AngularModuleExtensionService: AngularModuleExtensionService, 
+                private AngularModuleExtensionService: AngularModuleExtensionService,
                 private broadcastService: BroadcastService,
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
@@ -236,7 +241,6 @@ export class RegisterSelectTemplateController implements OnInit {
             }, (response: any) => {
                 this.deleteTemplateError(response.data.message)
             });
-
         }
     }
 
@@ -254,8 +258,43 @@ export class RegisterSelectTemplateController implements OnInit {
             this.deleteTemplate();
             dialogRef.close();
         });
-        
+
     };
+
+
+    publishTemplate = (overwriteParam: boolean) => {
+        if (this.model.id) {
+
+            this.$http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).then((response: any) => {
+                this.$mdToast.show(
+                    this.$mdToast.simple()
+                        .textContent('Successfully published template to repository.')
+                        .hideDelay(3000)
+                );
+                this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+            }, (response: any) => {
+                this.publishTemplateError(response.data.message)
+            });
+
+        }
+    }
+
+    publishTemplateError = (errorMsg: any) => {
+        // Display error message
+        var msg = "<p>Template could not be published.</p><p>";
+        msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
+        msg += "</p>";
+
+        this.$mdDialog.hide();
+        this.$mdDialog.show(
+            this.$mdDialog.alert()
+                .ariaLabel("Error publishing the template to repository")
+                .clickOutsideToClose(true)
+                .htmlContent(msg)
+                .ok("Got it!")
+                .parent(document.body)
+                .title("Error publishing the template to repository"));
+    }
 
     /**
      * Called when the user changes the radio buttons
@@ -309,7 +348,7 @@ export class RegisterSelectTemplateController implements OnInit {
     templateNavigationLink = (link: any) => {
         var templateId = this.registeredTemplateId;
         var templateName = this.model.templateName;
-        this.$state.go(link.sref, { templateId: templateId, templateName: templateName, model: this.model });
+        this.$state.go(link.sref, {templateId: templateId, templateName: templateName, model: this.model});
     }
 
     /**

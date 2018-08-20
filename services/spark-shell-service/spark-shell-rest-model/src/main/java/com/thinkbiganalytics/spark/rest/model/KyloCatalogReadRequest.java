@@ -127,4 +127,22 @@ public class KyloCatalogReadRequest {
     public void setLimit(Integer limit) {
         this.limit = limit;
     }
+
+    public boolean hasPaths(){
+        return !getPaths().isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("KyloCatalogReadRequest{");
+        sb.append("jars=").append(jars);
+        sb.append(", files=").append(files);
+        sb.append(", paths=").append(paths);
+        sb.append(", format='").append(format).append('\'');
+        sb.append(", options=").append(options);
+        sb.append(", limit=").append(limit);
+        sb.append(", pageSpec=").append(pageSpec);
+        sb.append('}');
+        return sb.toString();
+    }
 }

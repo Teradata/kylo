@@ -109,7 +109,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
      */
     @Override
     public String getSystemName() {
-        return JcrPropertyUtil.getName(this.node);
+        return JcrPropertyUtil.getName(getNode());
     }
 
     /* (non-Javadoc)
@@ -117,7 +117,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
      */
     @Override
     public String getTitle() {
-        return JcrPropertyUtil.getString(node, JcrPropertyConstants.TITLE);
+        return JcrPropertyUtil.getString(getNode(), JcrPropertyConstants.TITLE);
     }
 
     /* (non-Javadoc)
@@ -125,7 +125,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
      */
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(node, JcrPropertyConstants.DESCRIPTION);
+        return JcrPropertyUtil.getString(getNode(), JcrPropertyConstants.DESCRIPTION);
     }
 
     /* (non-Javadoc)
@@ -134,7 +134,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
     @Override
     public List<AllowableAction> getSubActions() {
         NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), NODE_TYPE);
-        return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
+        return JcrUtil.getJcrObjects(getNode(), type, JcrAllowableAction.class).stream().collect(Collectors.toList());
     }
 
     @Override

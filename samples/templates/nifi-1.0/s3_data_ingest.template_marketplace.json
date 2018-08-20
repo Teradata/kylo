@@ -1,6 +1,0 @@
-{
-  "templateName": "S3 Data Ingest",
-  "description": "An ingest template that allows users to read data from an S3 input bucket, and use hive to write data to S3 backed tables",
-  "fileName": "s3_data_ingest.template.zip",
-  "stream": false
-}

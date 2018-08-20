@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.api;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import java.io.Closeable;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -46,6 +47,12 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
     Option<DataSetProvider<T>> getDataSetProvider(@Nonnull String source);
 
     /**
+     * Gets the values for all high water marks.
+     */
+    @Nonnull
+    Map<String, String> getHighWaterMarks();
+
+    /**
      * Indicates that this client has been closed and can no longer be used.
      */
     boolean isClosed();
@@ -57,8 +64,40 @@ public interface KyloCatalogClient<T> extends AutoCloseable, Closeable {
     KyloCatalogReader<T> read();
 
     /**
+     * Creates a reader for specified non-streaming data set as a Spark {@code DataFrame}.
+     *
+     * <p>Use the reader to override properties of the data set. Then call {@link KyloCatalogReader#load() load()} to retrieve the data set.</p>
+     *
+     * @param id identifier of the pre-defined data set
+     * @return a reader pre-configured to access the data set
+     */
+    @Nonnull
+    KyloCatalogReader<T> read(@Nonnull String id);
+
+    /**
+     * Sets the values of the specified high water marks.
+     *
+     * <p>A {@code null} value will delete the high water mark.</p>
+     *
+     * @param highWaterMarks map of high water mark names to values that should be set
+     */
+    void setHighWaterMarks(@Nonnull Map<String, String> highWaterMarks);
+
+    /**
      * Creates a writer for saving the specified non-streaming Spark {@code DataFrame}.
      */
     @Nonnull
     KyloCatalogWriter<T> write(@Nonnull T dataSet);
+
+    /**
+     * Creates a writer for saving the specified non-streaming Spark {@code DataFrame} to the specified data set.
+     *
+     * <p>Use the writer to override properties of the data set. Then call {@link KyloCatalogWriter#save() save()} to update the data set.</p>
+     *
+     * @param source   the source data set
+     * @param targetId identifier of the pre-defined target data set
+     * @return a write pre-configured to access the target data set
+     */
+    @Nonnull
+    KyloCatalogWriter<T> write(@Nonnull T source, @Nonnull String targetId);
 }

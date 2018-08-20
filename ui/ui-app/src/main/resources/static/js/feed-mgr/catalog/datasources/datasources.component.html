@@ -5,9 +5,16 @@
       <mat-divider></mat-divider>
       <mat-nav-list>
         <ng-template let-datasource let-last="last" ngFor [ngForOf]="filteredDatasources">
-          <mat-list-item matRipple class="cursor-pointer" (click)="selectDatasource(datasource)">
-            <ng-md-icon mat-list-icon [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'" [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'icon-component'"></ng-md-icon>
-            <h4 mat-line>{{datasource.title}}</h4>
+          <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">
+            <ng-md-icon mat-list-icon
+                        [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'"
+                        [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'datasource-icon'"></ng-md-icon>
+            <h4 matLine>{{datasource.title}}</h4>
+            <span></span>
+            <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
+              <mat-icon (click)="editDatasource($event, datasource)" title="Edit">mode_edit</mat-icon>
+              <mat-icon (click)="deleteDatasource($event, datasource)" title="Delete">delete</mat-icon>
+            </div>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
         </ng-template>

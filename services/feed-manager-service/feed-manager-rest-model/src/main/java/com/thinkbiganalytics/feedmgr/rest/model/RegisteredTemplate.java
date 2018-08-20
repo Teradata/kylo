@@ -114,6 +114,8 @@ public final class RegisteredTemplate extends EntityAccessControl {
      */
     private Long timeBetweenStartingBatchJobs = 1000L;
 
+    private boolean updateAvailable = false;
+
     public RegisteredTemplate() {
 
     }
@@ -464,6 +466,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.remoteProcessGroups = remoteProcessGroups;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 
         private String flowId;
@@ -495,6 +498,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Processor {
 
         List<NifiProperty> properties;
@@ -625,5 +629,13 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     public void setTimeBetweenStartingBatchJobs(Long timeBetweenStartingBatchJobs) {
         this.timeBetweenStartingBatchJobs = timeBetweenStartingBatchJobs;
+    }
+
+    public boolean isUpdateAvailable() {
+        return updateAvailable;
+    }
+
+    public void setUpdateAvailable(boolean updateAvailable) {
+        this.updateAvailable = updateAvailable;
     }
 }

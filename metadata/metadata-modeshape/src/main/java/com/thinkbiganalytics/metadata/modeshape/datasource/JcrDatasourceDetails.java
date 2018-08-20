@@ -21,7 +21,8 @@ package com.thinkbiganalytics.metadata.modeshape.datasource;
  */
 
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -29,7 +30,7 @@ import javax.jcr.Node;
 /**
  * A Data Source Details node stored in JCR.
  */
-public abstract class JcrDatasourceDetails extends JcrPropertiesEntity implements DatasourceDetails {
+public abstract class JcrDatasourceDetails extends JcrObject implements PropertiedMixin, DatasourceDetails {
 
     /**
      * Constructs a {@code JcrDatasourceDetails} with the specified JCR node.

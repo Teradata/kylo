@@ -20,11 +20,11 @@ package com.thinkbiganalytics.kylo.catalog.spi;
  * #L%
  */
 
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +45,35 @@ public class DataSetOptions {
     private List<String> jars = new ArrayList<>();
     private SaveMode mode;
     private int numBuckets;
-    private final Map<String, String> options = new HashMap<>();
+    @SuppressWarnings("unchecked")
+    private final Map<String, String> options = new CaseInsensitiveMap();
     private List<String> paths;
     private List<String> partitioningColumns;
     private StructType schema;
     private List<String> sortColumnNames;
+
+    /**
+     * Constructs a {@code DataSetOptions}.
+     */
+    public DataSetOptions() {
+        // use defaults
+    }
+
+    /**
+     * Constructs a {@code DataSetOptions} by copying values from another.
+     */
+    public DataSetOptions(@Nonnull final DataSetOptions other) {
+        bucketColumnNames = (other.bucketColumnNames != null) ? new ArrayList<>(other.bucketColumnNames) : null;
+        format = other.format;
+        jars.addAll(other.jars);
+        mode = other.mode;
+        numBuckets = other.numBuckets;
+        options.putAll(other.options);
+        paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
+        partitioningColumns = (other.partitioningColumns != null) ? new ArrayList<>(other.partitioningColumns) : null;
+        schema = other.schema;
+        sortColumnNames = (other.sortColumnNames != null) ? new ArrayList<>(other.sortColumnNames) : null;
+    }
 
     @Nullable
     public List<String> getBucketColumnNames() {

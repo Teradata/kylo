@@ -1,0 +1,24 @@
+<define-feed-step-card [feed]="feed" [step]="step" mode="custom">
+  <form class="source-sample-container" [formGroup]="sourceSample">
+    <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && !feed.readonly" fxLayout="column" >
+      <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
+      <span class="pad-top"><button mat-raised-button (click)="goToDataSet(feed.sourceDataSets[0])">{{feed.sourceDataSets[0].resolvePath()}}</button></span>
+      <span class="pad-top"><button mat-raised-button (click)="browseCatalog()" *ngIf="!feed.readonly">Change source</button></span>
+      <preview-schema [paths]="paths" [datasource]="feed.sourceDataSets[0].dataSource" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" ></preview-schema>
+    </div>
+
+    <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && feed.readonly" fxLayout="column">
+      <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
+      <span>Selected source:{{feed.sourceDataSets[0].resolvePath()}}</span>
+    </div>
+
+    <div *ngIf="showCatalog">
+     <catalog-datasources [datasources]="datasources" selectedDatasourceState="feed-definition.feed-step.datasource" [stateParams]="stateParams" *ngIf="!feed.readonly"></catalog-datasources>
+    </div>
+
+    <div *ngIf="showCatalog && feed.readonly" fxLayout="column" >
+      No source(s) has been selected for this feed.
+    </div>
+
+  </form>
+</define-feed-step-card>

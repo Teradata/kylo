@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement.SlaId;
@@ -98,12 +99,12 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrServiceLevelAgreement.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return "tba:sla";
     }
 

@@ -3,6 +3,7 @@ import 'pascalprecht.translate';
 import * as _ from "underscore";
 import AccessControlService from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -60,11 +61,11 @@ export class FeedNIFIController implements ng.IComponentController {
      */
     editableSection: boolean = false;
 
-    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
+    static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorPropertiesTemplateService", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
 
     constructor(private $scope: any, private $http: angular.IHttpService, private $q: angular.IQService, private RestUrlService: any, private accessControlService: AccessControlService
         , private entityAccessControlService: EntityAccessControlService, private FeedService: any, private EditFeedNifiPropertiesService: any
-        , private FeedDetailsProcessorRenderingHelper: any,
+        , private FeedInputProcessorPropertiesTemplateService: any, private FeedDetailsProcessorRenderingHelper: any,
                 private BroadcastService: any, private FeedPropertyService: any, private $filter: angular.IFilterService) {
 
         this.versions = $scope.versions;

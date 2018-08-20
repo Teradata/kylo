@@ -151,6 +151,21 @@
       <artifactId>kylo-ui-app</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-ui-app</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-spark-shell-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-spark-livy-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- used to copy in the default dependencies to the plugin folder -->
     <dependency>

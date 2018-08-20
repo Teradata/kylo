@@ -34,6 +34,11 @@ import {PreviewSchemaService} from "./service/preview-schema.service";
 import {PreviewRawService} from "./service/preview-raw.service";
 import {TransformResponseTableBuilder} from "./service/transform-response-table-builder";
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
+import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
+import {KyloServicesModule} from "../../../../services/services.module";
+import {UpgradeModule} from "@angular/upgrade/static";
+//import {VisualQuery2Module} from "../../../visual-query/visual-query.ng2.module";
+//import {WranglerModule} from "../../../visual-query/wrangler/core/wrangler.module";
 
 @NgModule({
     declarations: [
@@ -46,6 +51,9 @@ import {FileMetadataTransformService} from "./service/file-metadata-transform.se
     entryComponents: [
         SatusDialogComponent,
         SchemaParseSettingsDialog
+    ],
+    exports:[
+        PreviewSchemaComponent
     ],
     imports: [
         CommonModule,
@@ -70,6 +78,9 @@ import {FileMetadataTransformService} from "./service/file-metadata-transform.se
         ReactiveFormsModule,
         CovalentChipsModule,
         FieldPoliciesModule,
+        KyloServicesModule,
+        //VisualQuery2Module,
+       // WranglerModule,
         UIRouterModule.forChild({
             states: [
                 {

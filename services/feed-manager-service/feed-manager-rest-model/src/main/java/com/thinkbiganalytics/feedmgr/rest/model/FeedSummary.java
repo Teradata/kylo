@@ -42,6 +42,7 @@ public class FeedSummary extends EntityAccessControl implements UIFeed {
     private String systemFeedName;
     private boolean active;
     private String state;
+    private String mode;
     private Date updateDate;
     private String templateName;
     private String templateId;
@@ -63,6 +64,7 @@ public class FeedSummary extends EntityAccessControl implements UIFeed {
         this.categoryIconColor = feedMetadata.getCategoryIconColor();
         this.active = feedMetadata.isActive();
         this.state = feedMetadata.getState();
+        this.mode = feedMetadata.getMode();
         this.templateId = feedMetadata.getTemplateId();
         this.templateName = feedMetadata.getTemplateName();
     }
@@ -182,6 +184,14 @@ public class FeedSummary extends EntityAccessControl implements UIFeed {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
     public String getTemplateName() {

@@ -4,7 +4,13 @@ import {DataSource} from "../../../api/models/datasource";
 import {SchemaParser} from "../../../../model/field-policy";
 import {PreviewDataSetRequest} from "./preview-data-set-request"
 import {TableViewModel, TableColumn} from "./table-view-model";
+import {Common} from "../../../../../common/CommonTypes";
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
+
+export enum DatasetCollectionStatus {
+    NEW =1, COLLECTED =2, REMOVED =3
+}
 
 /**
  * Core Dataset used for previewing
@@ -62,6 +68,9 @@ export class PreviewDataSet {
     public type:string = 'PreviewDataSet';
 
 
+    public collectionStatus:DatasetCollectionStatus = DatasetCollectionStatus.NEW;
+
+
     /**
      * Apply options to the preview request for this dataset
      * @param {PreviewDataSetRequest} previewRequest
@@ -71,10 +80,33 @@ export class PreviewDataSet {
         previewRequest.properties = {}
     }
 
+    /**
+     * Create a SparkDataSet object from the Preview
+     * This is used with the Data Wrangler/VisualQuery
+     * @return {SparkDataSet}
+     */
+    public toSparkDataSet(): SparkDataSet {
+        let sparkDataSet = new SparkDataSet();
+        sparkDataSet.id = this.displayKey;
+        sparkDataSet.dataSource = this.dataSource;
+        sparkDataSet.options = {};
+        sparkDataSet.schema = this.schema;
+        return sparkDataSet;
+    }
+
 
 
     public constructor(init?:Partial<PreviewDataSet>) {
+        this.collectionStatus = DatasetCollectionStatus.NEW;
         Object.assign(this, init);
+    }
+
+    public isCollected(){
+        return this.collectionStatus == DatasetCollectionStatus.COLLECTED;
+    }
+
+    public isRemoved(){
+        return this.collectionStatus == DatasetCollectionStatus.REMOVED;
     }
 
     public hasPreview():boolean {
@@ -85,10 +117,10 @@ export class PreviewDataSet {
         return this.raw != undefined && this.raw.hasColumns();
     }
     public hasPreviewError():boolean {
-        return this.hasPreview() && this.preview.error;
+        return this.hasPreview() && this.preview.error != undefined && this.preview.error == true;
     }
     public hasRawError():boolean {
-        return this.hasRaw() && this.raw.error;
+        return this.hasRaw()&& this.raw.error != undefined && this.raw.error == true;;
     }
     public clearRawError(){
         if(this.raw){

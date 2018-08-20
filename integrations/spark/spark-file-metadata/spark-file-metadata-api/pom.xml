@@ -19,12 +19,14 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-file-metadata-model</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
   </dependencies>
 
 </project>

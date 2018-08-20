@@ -27,6 +27,22 @@
                 <div class="card-title" flex>Select Template</div>
                 <h2 class="card-sub-header">1 of 5</h2>
             </div>
+            <mat-menu #mdMenu="matMenu">
+                <div *ngIf="!model.loading">
+                    <div *ngIf="allowAdmin">
+                        <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">Disable</button>
+                        <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">Enable</button>
+                        <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">Delete</button>
+                    </div>
+                    <div *ngIf="allowExport && model.id != null && registeredTemplateId != null">
+                        <button *ngFor="let item of templateNavigationLinks" style="text-align:left" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
+                        <button href="{{model.exportUrl}}">Export</button>
+                    </div>
+                </div>
+            </mat-menu>
+            <button mat-icon-button arial-label="Options" [matMenuTriggerFor]="appMenu">
+                <ng-md-icon icon="more_vert"></ng-md-icon>
+            </button>
         </mat-card-title>
 
     <mat-card-content class="card-layout-body mat-padding">
@@ -90,15 +106,6 @@
                 Loading Template ...
             </div>
             <div layout="column" class="layout-padding-top" *ngIf="!model.loading">
-                <button class="border-btn md-button md-kylo-theme" *ngIf="model.state == 'ENABLED' && allowAdmin" [disabled]="disabling" (click)="disableTemplate()" class="border-btn">
-                    DISABLE TEMPLATE
-                </button>
-                <button class="border-btn md-button md-kylo-theme" *ngIf="model.state == 'DISABLED' && allowAdmin" [disabled]="enabling" (click)="enableTemplate()" class="border-btn">
-                    ENABLE TEMPLATE
-                </button>
-                <button class="border-btn-warn md-button md-kylo-theme" *ngIf="model.state == 'DISABLED' && allowAdmin && model.feedsCount ==0" (click)="confirmDeleteTemplate()" class="border-btn-warn">
-                    DELETE TEMPLATE
-                </button>
                 <mat-progress-linear mode="indeterminate" *ngIf="enabling || disabling"></mat-progress-linear>
                 
                 <div layout="column" class="layout-padding-top-bottom" >
@@ -115,16 +122,6 @@
                 <div layout="column" class="layout-padding-top-bottom">
                     <span>{{model.feedsCount}}</span>
                     <mat-hint>Feeds</mat-hint>
-                </div>
-
-                <div layout="column" class="item-column md-list-item-text" *ngIf="allowExport && model.id != null">
-                    <ng-template *ngFor="let item of templateNavigationLinks">
-                        <button style="text-align:left" *ngIf="registeredTemplateId != null" (click)="templateNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</button>
-                    </ng-template>
-                    <a href="{{model.exportUrl}}" class="md-button md-kylo-theme">
-                        <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
-                        <span style="padding-left:10px;">Export</span>
-                    </a>
                 </div>
             </div>
 

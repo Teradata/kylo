@@ -1,0 +1,52 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div fxLayout="column" fxLayoutGap="30px">
+  <div *ngIf="loading" fxLayout="row" fxLayoutAlign="center">
+    <mat-spinner [diameter]="25"></mat-spinner>
+  </div>
+  <div *ngIf="success && !error" fxLayout="row">
+    <ng-md-icon icon="check_circle" size="20" style="fill:green; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
+    <div class="md-text">Successfully published '{{data.templateName}}' to repository.</div>
+  </div>
+  <div *ngIf="error" fxLayout="row">
+    <ng-md-icon icon="error" size="20" style="fill:red; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
+    <div>Cannot publish '{{data.templateName}}': {{errorMsg}}</div>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="space-evenly center">
+    <mat-form-field>
+      <mat-select [(ngModel)]="selectedRepository" placeholder="Select Repository">
+        <ng-container *ngFor="let repo of repositories">
+            <span *ngIf="!repo.readOnly">
+              <mat-option [value]="repo"><span class="md-text" title="{{repo.name}}">{{repo.name | truncate:30}}</span></mat-option>
+            </span>
+        </ng-container>
+      </mat-select>
+    </mat-form-field>
+    <mat-checkbox labelPosition="before" [(ngModel)]="overwrite">Overwrite</mat-checkbox>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="end none" fxLayoutGap="10px">
+    <button mat-raised-button class="right" aria-label="Cancel" (click)="close()">
+      <span class="md-body-2">{{(success || error )? 'Close': 'Cancel'}}</span>
+    </button>
+    <button *ngIf="!(success || error )" mat-raised-button [disabled]="!selectedRepository" color="primary" class="right" aria-label="Publish" (click)="publishTemplate()">
+      <span class="md-body-2">Publish</span>
+    </button>
+  </div>
+</div>

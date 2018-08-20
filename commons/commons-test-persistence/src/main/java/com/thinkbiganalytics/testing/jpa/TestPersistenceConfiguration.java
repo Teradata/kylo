@@ -30,12 +30,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
 @Configuration
+@PropertySource("classpath:test-jpa-application.properties")
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @EnableTransactionManagement
@@ -49,7 +51,7 @@ public class TestPersistenceConfiguration {
      */
     @Bean(name = "dataSource")
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource", locations = "classpath:test-jpa-application.properties")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         DataSource newDataSource = DataSourceBuilder.create().build();
 

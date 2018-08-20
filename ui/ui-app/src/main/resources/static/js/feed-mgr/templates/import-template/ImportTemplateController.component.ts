@@ -5,7 +5,7 @@ import { ImportComponentType, DefaultImportService } from "../../services/Import
 import { Import } from "../../services/ImportComponentOptionTypes";
 import { Common } from "../../../common/CommonTypes";
 import {StateService} from "@uirouter/angular";
-import { OnInit, Component, Inject } from "@angular/core";
+import { OnInit, Component, Inject } from "@angular/core";import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
@@ -230,14 +230,13 @@ export class ImportTemplateController {
      * Initialize the controller and properties
      */
     ngOnInit() {
-
         this.indexImportOptions();
         this.setDefaultImportOptions();
         this.checkRemoteProcessGroupAware();
     }
 
     changeFileModel = (fileModel: any) => {
-        
+
             if (fileModel != null)
                 this.checkFileName(fileModel.name);
             if (this.templateFile != fileModel) {
@@ -245,10 +244,10 @@ export class ImportTemplateController {
             }
     }
 
-    constructor(private FileUpload: FileUpload, 
-                private RestUrlService: RestUrlService, 
+    constructor(private FileUpload: FileUpload,
+                private RestUrlService: RestUrlService,
                 private ImportService: DefaultImportService,
-                private registerTemplateService: RegisterTemplateServiceFactory, 
+                private registerTemplateService: RegisterTemplateServiceFactory,
                 private $state: StateService,
                 private http: HttpClient,
                 @Inject("$injector") private $injector: any) {
@@ -256,7 +255,6 @@ export class ImportTemplateController {
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
             this.checkFileName(this.templateParam.fileName);
-            console.log(this.$state.params.template);
         }
 
         this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
@@ -383,7 +381,7 @@ export class ImportTemplateController {
                 //initially mark as valid
                 this.importTemplateForm.addControl("port-" + connection.feedOutputPortName,
                             new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
-                
+
             });
 
             if (responseData.templateResults.errors) {
@@ -465,15 +463,17 @@ export class ImportTemplateController {
 
         if (this.templateParam) {
             params['fileName'] = this.templateParam.fileName;
-            this.importTemplateFromMarketplace(params, successFn, errorFn);
+            params['repositoryName'] = this.templateParam.repository.name;
+            params['repositoryType'] = this.templateParam.repository.type;
+            this.importTemplateFromRepository(params, successFn, errorFn);
         } else
             this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
 
     }
 
-    importTemplateFromMarketplace = (params: any, successFn: any, errorFn: any) => {
+    importTemplateFromRepository(params: any, successFn: any, errorFn: any) {
         console.log(params);
-        this.http.post("/proxy/v1/marketplace/templates/import", params, {
+        this.http.post("/proxy/v1/repository/templates/import", params, {
             headers: {'Content-Type': 'application/json'}
         }).toPromise().then(function (data: any) {
                 if (successFn) {

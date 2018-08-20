@@ -32,7 +32,7 @@ import javax.jcr.RepositoryException;
 
 /**
  */
-public class JcrHadoopSecurityGroup extends JcrEntity implements HadoopSecurityGroup {
+public class JcrHadoopSecurityGroup extends JcrEntity<JcrHadoopSecurityGroup.HadoopSecurityGroupId> implements HadoopSecurityGroup {
 
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
@@ -45,35 +45,35 @@ public class JcrHadoopSecurityGroup extends JcrEntity implements HadoopSecurityG
 
     @Override
     public String getGroupId() {
-        return JcrPropertyUtil.getString(this.node, HADOOP_SECURITY_GROUP_ID);
+        return JcrPropertyUtil.getString(getNode(), HADOOP_SECURITY_GROUP_ID);
     }
 
     public void setGroupId(String id) {
-        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUP_ID, id);
+        JcrPropertyUtil.setProperty(getNode(), HADOOP_SECURITY_GROUP_ID, id);
     }
 
     @Override
     public String getName() {
-        return JcrPropertyUtil.getString(this.node, NAME);
+        return JcrPropertyUtil.getString(getNode(), NAME);
     }
 
     public void setName(String name) {
-        JcrPropertyUtil.setProperty(this.node, NAME, name);
+        JcrPropertyUtil.setProperty(getNode(), NAME, name);
     }
 
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(this.node, DESCRIPTION);
+        return JcrPropertyUtil.getString(getNode(), DESCRIPTION);
     }
 
     public void setDescription(String description) {
-        JcrPropertyUtil.setProperty(this.node, DESCRIPTION, description);
+        JcrPropertyUtil.setProperty(getNode(), DESCRIPTION, description);
     }
 
     @Override
     public HadoopSecurityGroupId getId() {
         try {
-            return new JcrHadoopSecurityGroup.HadoopSecurityGroupId(this.node.getIdentifier());
+            return new JcrHadoopSecurityGroup.HadoopSecurityGroupId(getNode().getIdentifier());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }

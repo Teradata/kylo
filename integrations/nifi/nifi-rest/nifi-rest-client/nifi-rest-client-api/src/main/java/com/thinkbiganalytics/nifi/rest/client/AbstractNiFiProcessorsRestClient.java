@@ -110,10 +110,16 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
                 proc.setState(PROCESS_STATE.RUNNING.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
-            sequence.add((proc) -> {
+
+            sequence.add(proc -> {
+                delay(2000);
+                proc.setState(PROCESS_STATE.STOPPED.name());
+                return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
+            });
+
+            sequence.add(proc -> {
                 delay(2000);
                 proc.setConfig(createConfig(originalProc.getConfig().getSchedulingStrategy(), originalProc.getConfig().getSchedulingPeriod()));
-                proc.setState(PROCESS_STATE.STOPPED.name());
                 return updateWithRetry(proc, 5, 300, TimeUnit.MILLISECONDS);
             });
         }
@@ -151,7 +157,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
     
     private void delay(long millis) {
         try {
-            Thread.sleep(millis);;
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             // Do nothing
         }

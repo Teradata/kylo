@@ -66,7 +66,7 @@ public class JcrObligationGroup extends JcrObject implements ObligationGroup, Se
      */
     @Override
     public Condition getCondition() {
-        return JcrPropertyUtil.getEnum(this.node, "tba:condition", Condition.class, Condition.REQUIRED);
+        return JcrPropertyUtil.getEnum(getNode(), "tba:condition", Condition.class, Condition.REQUIRED);
     }
 
     /* (non-Javadoc)
@@ -76,7 +76,7 @@ public class JcrObligationGroup extends JcrObject implements ObligationGroup, Se
     public List<Obligation> getObligations() {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes("tba:obligations");
+            Iterator<Node> itr = (Iterator<Node>) getNode().getNodes("tba:obligations");
 
             return Lists.newArrayList(Iterators.transform(itr, (obNode) -> {
                 return JcrUtil.createJcrObject(obNode, JcrObligation.class, JcrObligationGroup.this);

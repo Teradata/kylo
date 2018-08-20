@@ -149,7 +149,7 @@ export default class FeedsTableController implements ng.IComponentController {
      * @returns {*[]}
      */
     loadSortOptions() {
-        var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Last Modified': 'updateDate'};
+        var options = {'Feed': 'feedName', 'State': 'state', 'Mode':'mode', 'Category': 'category.name', 'Last Modified': 'updateDate'};
         var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'updateDate', 'desc');
         this.TableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;
@@ -157,7 +157,11 @@ export default class FeedsTableController implements ng.IComponentController {
 
     feedDetails = ($event:any, feed:any)=> {
         if(feed !== undefined) {
-            this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
+            if(feed.mode == "DRAFT") {
+                this.StateService.FeedManager().Feed().navigateToFeedDefinition(feed.id)
+            }else {
+                this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
+            }
         }
     }
 
@@ -196,6 +200,9 @@ export default class FeedsTableController implements ng.IComponentController {
         var simpleFeedData:any = [];
         
         angular.forEach(feeds, (feed)=> {
+            if(feed.mode == 'DRAFT') {
+                feed.draftIcon = 'insert_drive_file'
+            }
             if (feed.state == 'ENABLED') {
                 feed.stateIcon = 'check_circle'
             } else {
@@ -208,7 +215,9 @@ export default class FeedsTableController implements ng.IComponentController {
                 id: feed.id,
                 active: feed.active,
                 state: feed.state,
+                mode:feed.mode,
                 stateIcon: feed.stateIcon,
+                draftIcon:feed.draftIcon,
                 feedName: feed.feedName,
                 category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
                 updateDate: feed.updateDate,

@@ -151,7 +151,7 @@ export class UiComponentsService {
                         resolve(this.TEMPLATE_TABLE_OPTIONS);
                     });
                 });
-                
+
             }
             return this.initialTemplateTableOptionsPromise;
 

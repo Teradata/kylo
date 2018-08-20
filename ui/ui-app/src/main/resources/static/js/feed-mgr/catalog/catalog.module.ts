@@ -21,6 +21,16 @@ import {CatalogComponent} from "./catalog.component";
 import {catalogStates} from "./catalog.states";
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {ConnectorComponent} from './connector/connector.component';
+import { CovalentDynamicFormsModule } from '@covalent/dynamic-forms';
+import {MatNativeDateModule, MatOptionModule} from '@angular/material/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatIconModule} from '@angular/material/icon';
+import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
 
 @NgModule({
     declarations: [
@@ -29,10 +39,19 @@ import {ConnectorComponent} from './connector/connector.component';
         ConnectorsComponent,
         ConnectorComponent,
         CatalogComponent,
+        VisibleOnMouseOverDirective
+    ],
+    exports:[
+        DataSourcesComponent,
+        DatasourceComponent,
+        ConnectorsComponent,
+        ConnectorComponent,
+        CatalogComponent
     ],
     imports: [
         CatalogApiModule,
         CommonModule,
+        CovalentDynamicFormsModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
         CovalentLayoutModule,
@@ -41,10 +60,20 @@ import {ConnectorComponent} from './connector/connector.component';
         FlexLayoutModule,
         KyloCommonModule,
         MatCardModule,
+        FormsModule,
+        MatInputModule,
+        MatIconModule,
+        MatOptionModule,
+        MatSelectModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
         MatDividerModule,
         MatListModule,
         MatTabsModule,
         MatToolbarModule,
+        MatNativeDateModule,
+        MatButtonModule,
+        MatSnackBarModule,
         UIRouterModule.forChild({states: catalogStates})
     ]
 })

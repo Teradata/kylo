@@ -49,7 +49,13 @@ public class Validator {
         if (log.isInfoEnabled()) {
             log.info("Running Spark Validator with the following command line args (comma separated):{}", StringUtils.join(args, ","));
         }
-        new Validator().run(System.out, args);
+        
+        try {
+            new Validator().run(System.out, args);
+        } finally {
+            // The validator will have created the context being stopped.
+            SparkContext.getOrCreate().stop();
+        }
     }
 
     private void run(@Nonnull final PrintStream out, @Nonnull final String... args) {
@@ -100,6 +106,10 @@ public class Validator {
         } catch (Exception e) {
             log.error("Failed to perform validation: {}", e.toString(), e);
             throw e;
+        } finally {
+            log.info("Closing the Validator spark context");
+            sparkContext.stop();
+            log.info("Closed the Validator spark context");
         }
     }
 }

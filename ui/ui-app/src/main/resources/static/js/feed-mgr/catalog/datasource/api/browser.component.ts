@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, Output, OnInit, EventEmitter} from "@angular/core";
 import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
 import {StateService} from "@uirouter/angular";
@@ -29,6 +29,13 @@ export class BrowserComponent implements OnInit {
 
     @Input()
     params: any;
+
+    /**
+     * Use ui-router state to track navigation between paths and folders
+     * @type {boolean} default true
+     */
+    @Input()
+    useRouterStates:boolean = true;
 
     columns: BrowserColumn[];
     sortBy: string;
@@ -87,7 +94,7 @@ export class BrowserComponent implements OnInit {
     /**
      * Needs to be explicitly called by subclasses to load data from server, e.g. during init() method.
      */
-    initData(): void {
+    initData(selectLastPath:boolean = false): void {
         const thisNode = this.node;
         this.files = [];
         this.errorMsg = undefined;
@@ -110,10 +117,17 @@ export class BrowserComponent implements OnInit {
                     thisNode.addChild(node);
                     return browserObject;
                 });
+                if(selectLastPath){
+                    let lastPath = this.selectionService.getLastPathNodeName(this.datasource.id);
+                    if(lastPath && this.node) {
+                        this.selectionStrategy.toggleChild(this.node, lastPath, true);
+                    }
+                }
                 this.initSelection();
                 this.filter();
             });
     }
+
 
     /**
      * To be implemented by subclasses
@@ -238,11 +252,24 @@ export class BrowserComponent implements OnInit {
      * @param {string} location to replace OS browser location set this to "replace"
      */
     browseTo(params: any, location: string): void {
-        const options: any = {notify: false, reload: false};
-        if (location !== undefined) {
-            options.location = location;
+        if(this.useRouterStates) {
+            const options: any = {notify: false, reload: false};
+            if (location !== undefined) {
+                options.location = location;
+            }
+            this.state.go(this.getStateName(), params, options);
         }
-        this.state.go(this.getStateName(), params, options);
+        else {
+            this.params = params;
+            let selectNode = false;
+            if(this.params == undefined){
+                //attempt to get it from the selection service
+                this.params = this.selectionService.getLastPath(this.datasource.id);
+                selectNode = true;
+            }
+            this.initNodes();
+            this.initData(selectNode);
+        }
     }
 
 

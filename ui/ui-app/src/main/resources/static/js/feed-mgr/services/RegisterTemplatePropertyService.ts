@@ -21,6 +21,7 @@ import * as _ from "underscore";
 import { Dictionary } from "underscore";
 import 'pascalprecht.translate';
 import { Templates } from "./TemplateTypes";
+import { FeedPropertyService } from "./FeedPropertyService";
 import { Common } from "../../common/CommonTypes";
 import { AccessControl } from "../../services/AccessControl";
 import { RegisteredTemplateService } from "./RegisterTemplateService";

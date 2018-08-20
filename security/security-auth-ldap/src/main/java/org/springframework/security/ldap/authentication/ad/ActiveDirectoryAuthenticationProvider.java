@@ -101,10 +101,10 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
      * @param url an LDAP url (or multiple URLs)
      */
     public ActiveDirectoryAuthenticationProvider(String domain, 
-                                                       String url, 
-                                                       boolean enableGroups, 
-                                                       String serviceUser, 
-                                                       String servicePassword) {
+                                                 String url, 
+                                                 boolean enableGroups, 
+                                                 String serviceUser, 
+                                                 char[] servicePassword) {
         Assert.isTrue(StringUtils.hasText(url), "Url cannot be empty");
         
         this.domain = StringUtils.hasText(domain) ? domain.toLowerCase() : null;
@@ -113,7 +113,7 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
         this.rootDn = this.domain == null ? null : rootDnFromDomain(this.domain);
         
         if (serviceUser != null) {
-            Assert.isTrue(StringUtils.hasText(servicePassword), "service password cannot be empty");
+            Assert.isTrue(servicePassword != null && servicePassword.length > 0, "service password cannot be empty");
             this.serviceToken = new UsernamePasswordAuthenticationToken(new UsernamePrincipal(serviceUser), servicePassword);
         } else {
             this.serviceToken = null;

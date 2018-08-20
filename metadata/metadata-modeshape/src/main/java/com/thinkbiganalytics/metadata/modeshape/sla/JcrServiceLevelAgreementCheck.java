@@ -24,14 +24,17 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
  */
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+
+import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,7 +47,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
 
-public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreementCheck, Serializable {
+public class JcrServiceLevelAgreementCheck extends JcrEntity<ServiceLevelAgreementCheck.ID> implements ServiceLevelAgreementCheck, SystemEntityMixin {
 
 
     public static final String SLA_NODE_NAME = "tba:slaChecks";
@@ -80,7 +83,7 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
      */
     @Override
     public String getName() {
-        return JcrPropertyUtil.getString(this.node, NAME);
+        return JcrPropertyUtil.getString(getNode(), NAME);
     }
 
     /* (non-Javadoc)
@@ -88,18 +91,23 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
      */
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(this.node, DESCRIPTION);
+        return JcrPropertyUtil.getString(getNode(), DESCRIPTION);
+    }
+
+    @Override
+    public DateTime getCreatedTime() {
+        return getProperty(JcrPropertyConstants.CREATED_TIME, DateTime.class);
     }
 
 
     @Override
     public String getCronSchedule() {
-        return JcrPropertyUtil.getString(this.node, CRON_SCHEDULE);
+        return JcrPropertyUtil.getString(getNode(), CRON_SCHEDULE);
     }
 
     public ServiceLevelAgreement getServiceLevelAgreement() {
         try {
-            return new JcrServiceLevelAgreement(this.node.getParent());
+            return new JcrServiceLevelAgreement(getNode().getParent());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the SLA Node", e);
         }
@@ -111,14 +119,14 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
 
     public void setActionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
         try {
-            NodeIterator nodes = this.node.getNodes(ACTION_CONFIGURATIONS);
+            NodeIterator nodes = getNode().getNodes(ACTION_CONFIGURATIONS);
             while (nodes.hasNext()) {
                 Node metricNode = (Node) nodes.next();
                 metricNode.remove();
             }
 
             for (ServiceLevelAgreementActionConfiguration actionConfiguration : actionConfigurations) {
-                Node node = this.node.addNode(ACTION_CONFIGURATIONS, ACTION_CONFIGURATION_TYPE);
+                Node node = getNode().addNode(ACTION_CONFIGURATIONS, ACTION_CONFIGURATION_TYPE);
 
                 JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
                 ServiceLevelAgreementActionConfig annotation = actionConfiguration.getClass().getAnnotation(ServiceLevelAgreementActionConfig.class);
@@ -137,7 +145,7 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
+            Iterator<Node> itr = (Iterator<Node>) getNode().getNodes(ACTION_CONFIGURATIONS);
 
             List<Node> list = new ArrayList<>();
             itr.forEachRemaining((e) -> list.add(e));

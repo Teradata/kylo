@@ -53,7 +53,7 @@
   <build>
     <plugins>
 
-      <plugin>
+      <!--plugin>
         <groupId>de.saumya.mojo</groupId>
         <artifactId>gem-maven-plugin</artifactId>
         <version>1.1.5</version>
@@ -64,7 +64,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin-->
       <!--<plugin>-->
       <!--<groupId>de.saumya.mojo</groupId>-->
       <!--<artifactId>gem-maven-plugin</artifactId>-->

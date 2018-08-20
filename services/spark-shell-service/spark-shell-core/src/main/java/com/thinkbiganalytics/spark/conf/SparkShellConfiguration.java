@@ -24,15 +24,11 @@ import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
-import com.thinkbiganalytics.spark.shell.DefaultProcessManager;
-import com.thinkbiganalytics.spark.shell.JerseySparkShellRestClient;
-import com.thinkbiganalytics.spark.shell.MultiUserProcessManager;
-import com.thinkbiganalytics.spark.shell.ServerProcessManager;
-import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
-import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.*;
 import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterListener;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -43,20 +39,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.Properties;
 
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
 /**
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
  */
+@Profile("kylo-shell")
+@PropertySource(value = {"classpath:spark.properties"}, ignoreResourceNotFound = true)
 @Configuration
-@PropertySource("classpath:spark.properties")
 public class SparkShellConfiguration {
+    private static final Logger logger = LoggerFactory.getLogger(SparkShellConfiguration.class);
 
     @Inject
     private UsernameCaseStrategyUtil usernameCaseStrategyUtil;
@@ -79,6 +76,7 @@ public class SparkShellConfiguration {
      *
      * @return the Kerberos properties
      */
+    //@Profile("kylo-shell")
     @Bean
     @ConfigurationProperties("kerberos.spark")
     public KerberosSparkProperties kerberosSparkProperties() {
@@ -101,7 +99,7 @@ public class SparkShellConfiguration {
             return new ServerProcessManager(sparkShellProperties);
         } else if (!users.isPresent()) {
             throw new IllegalArgumentException("Invalid Spark configuration. Either set spark.shell.server.host and spark.shell.server.port in spark.properties or add the auth-spark Spring profile"
-                                               + " to application.properties.");
+                    + " to application.properties.");
         } else if (sparkShellProperties.isProxyUser()) {
             return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users.get());
         } else {
@@ -109,17 +107,13 @@ public class SparkShellConfiguration {
         }
     }
 
-    @Bean
-    @Profile("kyloUpgrade")
-    public SparkShellProcessManager processManagerForUpgrade() {
-        return new ServerProcessManager(new SparkShellProperties());
-    }
 
     /**
      * Creates a REST client for communicating with the Spark Shell processes.
      *
      * @return a Spark Shell REST client
      */
+    //@Profile("kylo-shell")
     @Bean
     public SparkShellRestClient restClient() {
         return new JerseySparkShellRestClient();
@@ -130,9 +124,12 @@ public class SparkShellConfiguration {
      *
      * @return the Spark Shell properties
      */
+    //@Profile("kylo-shell")
     @Bean
     @ConfigurationProperties("spark.shell")
     public SparkShellProperties sparkShellProperties(@Nonnull final ServerProperties server) {
+        logger.info("Build sparkShellProperties bean");
+
         final SparkShellProperties properties = new SparkShellProperties();
         // Automatically determine registration url
         if (properties.getRegistrationUrl() == null) {
@@ -157,4 +154,5 @@ public class SparkShellConfiguration {
 
         return properties;
     }
+
 }

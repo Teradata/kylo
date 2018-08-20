@@ -59,11 +59,11 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
 
     public void clear() {
         try {
-            if (this.node.hasProperty(SLA_REF)) {
-                this.node.getProperty(SLA_REF).remove();
+            if (getNode().hasProperty(SLA_REF)) {
+                getNode().getProperty(SLA_REF).remove();
             }
-            if (this.node.hasNode(SLA)) {
-                this.node.getNode(SLA).remove();
+            if (getNode().hasNode(SLA)) {
+                getNode().getNode(SLA).remove();
             }
 
         } catch (RepositoryException e) {
@@ -85,10 +85,10 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
     @Override
     public ServiceLevelAgreement getAgreement() {
         try {
-            if (this.node.hasNode(SLA)) {
-                return new JcrServiceLevelAgreement(this.node.getNode(SLA));
-            } else if (this.node.hasProperty(SLA_REF)) {
-                return new JcrServiceLevelAgreement(this.node.getProperty(SLA_REF).getNode());
+            if (getNode().hasNode(SLA)) {
+                return new JcrServiceLevelAgreement(getNode().getNode(SLA));
+            } else if (getNode().hasProperty(SLA_REF)) {
+                return new JcrServiceLevelAgreement(getNode().getProperty(SLA_REF).getNode());
             } else {
                 return null;
             }

@@ -22,7 +22,8 @@ import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { FeedService } from '../../../services/FeedService';
 import BroadcastService from '../../../../services/broadcast-service';
-import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
+import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
+import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedDetailsController {
@@ -61,7 +62,6 @@ export class DefineFeedDetailsController {
      */
     loading: boolean = false;
 
-    codemirrorRenderTypes: any;
     stepIndex: any;
     stepperController: any = null;
     totalSteps: number;
@@ -90,16 +90,16 @@ export class DefineFeedDetailsController {
     }
 
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
-        "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
+        "FeedInputProcessorPropertiesTemplateService", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper","RegisterTemplatePropertyService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private feedService: FeedService, private registerTemplateService: RegisterTemplateServiceFactory
-        ,  private broadcastService: BroadcastService, private StepperService: any,
-        private FeedDetailsProcessorRenderingHelper: any) {
+        , private FeedInputProcessorPropertiesTemplateService: any, private broadcastService: BroadcastService, private StepperService: any,
+        private FeedDetailsProcessorRenderingHelper: any,
+                private registerTemplatePropertyService:RegisterTemplatePropertyService) {
         this.model = this.feedService.createFeedModel;
 
         var watchers = [];
-            //done after scott's commit, no code mirror render types now in register template property service
-        // this.codemirrorRenderTypes = this.registerTemplatePropertyService.codeMirrorRenderTypes;
+
 
         var inputDatabaseType = ["com.thinkbiganalytics.nifi.GetTableData"]
 
@@ -188,7 +188,7 @@ export class DefineFeedDetailsController {
             this.inputProcessorId = this.inputProcessors[0].id;
         }
         // Skip this step if it's empty
-        if (this.inputProcessors.length === 0 && !_.some(this.nonInputProcessors, (processor: any) => {
+        if (this.inputProcessors.length === 0 && !_.some(this.model.nonInputProcessors, (processor: any) => {
             return processor.userEditable
         })) {
             var step = this.StepperService.getStep("DefineFeedStepper", parseInt(this.stepIndex));

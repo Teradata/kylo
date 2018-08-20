@@ -95,7 +95,7 @@ public class FeedSlaUpgradeAction implements UpgradeState {
         
         for (ExtensibleEntity rel : slaRels) {
             ServiceLevelAgreement sla = JcrUtil.getJcrObject(rel.getProperty("sla"), JcrServiceLevelAgreement.class);
-            Set<Feed> feeds = rel.getPropertyAsSet("feeds", Node.class).stream()
+            Set<Feed> feeds = rel.getPropertySet("feeds", Node.class).stream()
                             .map(JcrFeed::new)
                             .collect(Collectors.toSet());
             

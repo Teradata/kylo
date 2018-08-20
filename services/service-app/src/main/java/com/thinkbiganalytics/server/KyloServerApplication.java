@@ -33,7 +33,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -48,7 +47,7 @@ import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication
-@EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
+@EnableAutoConfiguration
 @EnableConfigurationProperties
 @Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class, SecurityCoreConfig.class})
 @ComponentScan("com.thinkbiganalytics")
@@ -57,7 +56,11 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
+        // Configure java.util.logging for Kylo Spark Shell
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
+
+        // Run upgrader
         KyloUpgrader upgrader = new KyloUpgrader();
 
         if (upgrader.isUpgradeRequired()) {
@@ -71,9 +74,9 @@ public class KyloServerApplication implements SchedulingConfigurer {
             log.info("Kylo v{} is up to date.  Starting the application.",KyloVersionUtil.getBuildVersion());
         }
 
+        // Run services
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
-
     }
 
     @Bean(destroyMethod = "shutdown")

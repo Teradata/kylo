@@ -22,8 +22,9 @@ package com.thinkbiganalytics.metadata.modeshape.domaintype;
 
 import com.thinkbiganalytics.metadata.api.domaintype.DomainType;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 
 import java.io.Serializable;
 
@@ -35,7 +36,7 @@ import javax.jcr.RepositoryException;
  * An implementation of {@link DomainType} backed by a JCR store.
  */
 @SuppressWarnings("squid:S2055")
-public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements DomainType {
+public class JcrDomainType extends JcrEntity<JcrDomainType.DomainTypeId> implements DomainType, AuditableMixin, SystemEntityMixin {
 
     /**
      * JCR node type

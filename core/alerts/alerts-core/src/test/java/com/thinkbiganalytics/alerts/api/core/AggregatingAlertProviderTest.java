@@ -46,7 +46,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -78,7 +78,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ReactorConfiguration.class, AggregatingAlertProviderTest.TestConfig.class})
+@SpringBootTest(classes = {ReactorConfiguration.class, AggregatingAlertProviderTest.TestConfig.class})
 public class AggregatingAlertProviderTest {
 
     @Inject

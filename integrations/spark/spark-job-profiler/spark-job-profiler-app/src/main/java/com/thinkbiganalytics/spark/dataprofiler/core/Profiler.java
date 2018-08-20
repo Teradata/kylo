@@ -20,26 +20,33 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.dataprofiler.ColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.StatisticsModel;
+import com.thinkbiganalytics.spark.dataprofiler.config.LivyProfilerConfig;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Column;
+import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Generate data profile statistics for a table/query, and write result to a table
@@ -103,6 +110,54 @@ public class Profiler {
         } catch (IllegalArgumentException e) {
             showCommandLineArgs();
         }
+    }
+
+    // should be called from spark REPL like this:
+    // spark-shell --master local --conf spark.network.timeout=120s --conf spark.executor.cores=1 --conf spark.executor.instances=1 --conf spark.executor.memory=512m --conf spark.driver.memory=1024m --jars <SNIP>/kylo/integrations/spark/spark-job-profiler/spark-job-profiler-app/target/kylo-spark-job-profiler-app-0.9.1-SNAPSHOT.jar
+    // spark> val exampleArgs = Array("table", "system.userdata1_valid", "10", "system.userdata1_profile", "/tmp/userdata1_field_policy.json", "1526946300553");
+    // spark> Profiler.runProfiler( sc, sqlContext, exampleArgs )
+    public static void runProfiler(SparkContext sc, SQLContext sqlContext, String [] args ) {
+        ApplicationContext ctx = createSpringContext(sc, sqlContext);
+
+        System.out.println(Arrays.asList(ctx.getBeanDefinitionNames()));
+
+        final Profiler profiler = new Profiler(ctx.getBean(FieldPolicyLoader.class), ctx.getBean(com.thinkbiganalytics.spark.dataprofiler.Profiler.class), ctx.getBean(ProfilerConfiguration.class),
+                ctx.getBean(SparkContextService.class), ctx.getBean(SQLContext.class));
+        profiler.run(args);
+    }
+
+
+    public static List<OutputRow> profileDataFrame(SparkContextService sparkContextService,
+                                                   com.thinkbiganalytics.spark.dataprofiler.Profiler profiler,
+                                                   DataFrame dataFrame) {
+        DataSet dataSet16 = sparkContextService.toDataSet(dataFrame);
+
+        // Profile data set
+        ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(50);
+        profilerConfiguration.setBins(35);
+        final StatisticsModel dataStats = profiler.profile(dataSet16, profilerConfiguration);
+
+        // Add stats to result
+        if (dataStats != null) {
+            List<OutputRow> profile = new ArrayList<OutputRow>(dataStats.getColumnStatisticsMap().size());
+
+            for (final ColumnStatistics columnStats : dataStats.getColumnStatisticsMap().values()) {
+                profile.addAll(columnStats.getStatistics());
+            }
+            return profile;
+        }
+
+        // no stats
+        return Lists.newArrayList();
+    }
+
+
+    public static ApplicationContext createSpringContext(final SparkContext sc, final SQLContext sqlContext) {
+        LivyProfilerConfig.setSparkContext(sc);
+        LivyProfilerConfig.setSqlContext(sqlContext);
+        ApplicationContext context = new AnnotationConfigApplicationContext(LivyProfilerConfig.class);
+        return context;
     }
 
     /**
@@ -226,4 +281,5 @@ public class Profiler {
                  + "(Note: Only alphanumeric and underscore characters for table names and partition key)"
                  + "\n***");
     }
+
 }

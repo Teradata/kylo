@@ -1,0 +1,67 @@
+<div fxLayout="row" class="centered">
+    <mat-card fxFlex="65%">
+      <div fxLayout="row" fxLayoutAlign="center">
+        <span style="padding-top: 20px; padding-right: 20px;" class="card-title">Search Templates</span>
+        <mat-form-field style="padding-top: 10px;" class="search-form" fxFlex="78%">
+          <input placeholder="Filter" matInput (keyup)="search($event.target.value)" />
+        </mat-form-field>
+      </div>
+      <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+      <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="center center">
+        <br>
+        <span>No Templates or Feeds available in repository.</span>
+        <br>
+        <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
+      </div>
+      <mat-table *ngIf="!loading && templates.length !== 0"[dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+        <ng-container matColumnDef="templateName">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            <div flex="30" class="item-column md-list-item-text pointer">
+            <ng-md-icon icon="layers" style="fill:#9e9e9e" size="20"></ng-md-icon>
+            <span title="{{element.templateName}}">{{element.templateName | truncate:40}}</span>
+            <p title="{{element.description}}" class="column-title column-title-bottom">
+              {{element.description | truncate:40}}
+            </p>
+          </div>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="repositoryName">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Repository </mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.repository.name}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let element">
+
+            <button mat-button color="primary" (click)="downloadTemplate(element)">
+              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+              <span class="md-body-2">Download</span>
+            </button>
+
+            <button mat-button *ngIf="!element.installed" color="primary" (click)="importTemplate(element)">
+              <ng-md-icon icon="file-import" size="20" style="fill:#F08C38"></ng-md-icon>
+              <span class="md-body-2">Import</span>
+            </button>
+
+            <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
+              <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
+              <span class="md-body-2">Import</span>
+            </button>
+
+            <button mat-button color="primary" *ngIf="element.installed && element.updateAvailable" (click)="importTemplate(element)">
+              <ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>
+              <span class="md-body-2">Update</span>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="['templateName', 'repositoryName', 'actions']"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: ['templateName', 'repositoryName', 'actions']"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50, 100]"></mat-paginator>
+    </mat-card>
+  </div>

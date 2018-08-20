@@ -149,7 +149,7 @@ public class DatasourceService implements PostMetadataConfigAction {
                                                            domainDef.setProcessorType(def.getProcessorType());
                                                            domainDef.setDatasourceType(def.getDatasourceType());
                                                            domainDef.setDescription(def.getDescription());
-                                                           domainDef.setTile(def.getTitle());
+                                                           domainDef.setTitle(def.getTitle());
                                                            datasourceDefinitionProvider.update(domainDef);
                                                        });
                 return null;

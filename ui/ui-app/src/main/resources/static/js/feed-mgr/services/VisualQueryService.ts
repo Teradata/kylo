@@ -1,9 +1,12 @@
 import "feed-mgr/module";
 import {UnderscoreStatic} from "underscore";
 import { Injectable } from "@angular/core";
+import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
+
+import {SparkDataSet} from "../model/spark-data-set.model";
 
 /**
  * Prefix for table aliases.
@@ -918,6 +921,11 @@ export interface RangeVar {
      * The datasource id
      */
     datasourceId?: string;
+
+    /**
+     * the dataset used on this node
+     */
+    dataset?:SparkDataSet;
 }
 
 /**

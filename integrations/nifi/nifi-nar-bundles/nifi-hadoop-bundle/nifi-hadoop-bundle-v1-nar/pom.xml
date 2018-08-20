@@ -27,6 +27,18 @@
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-processors</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+          <exclusion>
+            <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+            <artifactId>kylo-nifi-hadoop-properties-v1.2</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-hadoop-properties-v1</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>

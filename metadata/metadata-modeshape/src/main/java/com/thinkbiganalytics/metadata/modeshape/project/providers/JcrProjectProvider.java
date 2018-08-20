@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.project.JcrProject;
 import com.thinkbiganalytics.metadata.modeshape.project.ProjectPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -154,12 +155,12 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
+    public Class<? extends JcrEntity<?>> getJcrEntityClass() {
         return JcrProject.class;
     }
 
     @Override
-    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+    public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrProject.NODE_TYPE;
     }
 

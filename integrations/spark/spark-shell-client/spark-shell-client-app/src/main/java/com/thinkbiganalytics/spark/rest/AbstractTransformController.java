@@ -27,29 +27,25 @@ import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.service.TransformService;
-
-import org.apache.hadoop.fs.FileSystem;
-
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-import javax.annotation.Nonnull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.hadoop.fs.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Resource;
+import javax.ws.rs.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractTransformController {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTransformController.class);
 
     /**
      * Resources for error messages
@@ -59,20 +55,14 @@ public abstract class AbstractTransformController {
     /**
      * Default file system
      */
-    @Context
+    @Resource
     public FileSystem fileSystem;
 
     /**
      * Service for evaluating transform scripts
      */
-    @Context
+    @Resource
     public TransformService transformService;
-
-    /**
-     * Request info
-     */
-    @Context
-    public UriInfo uriInfo;
 
     /**
      * Downloads the saved results as a ZIP file.
@@ -84,12 +74,31 @@ public abstract class AbstractTransformController {
     @Path("{table}/save/{save}/zip")
     @ApiOperation("Downloads the saved results in a ZIP file")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the saved file."),
-                      @ApiResponse(code = 404, message = "The save does not exist."),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.")
-                  })
+            @ApiResponse(code = 200, message = "Returns the saved file."),
+            @ApiResponse(code = 404, message = "The save does not exist."),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.")
+    })
     @Nonnull
     public Response download(@Nonnull @PathParam("save") final String id) {
+        SaveResult result;
+        try {
+            result = getSaveResult(id);
+        } catch (final Exception e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e);
+        }
+
+        // Return response
+        if (result != null && result.getPath() != null) {
+            return Response.ok(new ZipStreamingOutput(result.getPath(), fileSystem))
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + id + ".zip\"")
+                    .build();
+        } else {
+            return error(Response.Status.NOT_FOUND, "download.notFound");
+        }
+    }
+
+    public SaveResult getSaveResult(String id) throws ExecutionException, InterruptedException {
         // Find job
         SaveJob job;
         try {
@@ -101,25 +110,14 @@ public abstract class AbstractTransformController {
         // Get result
         final SaveResult result;
         if (job != null && job.isDone()) {
-            try {
-                result = job.get();
-            } catch (final Exception e) {
-                return error(Response.Status.INTERNAL_SERVER_ERROR, e);
-            }
+            result = job.get();
         } else {
             result = null;
         }
 
-        // Return response
-        if (result != null && result.getPath() != null) {
-            return Response.ok(new ZipStreamingOutput(result.getPath(), fileSystem))
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + id + ".zip\"")
-                .build();
-        } else {
-            return error(Response.Status.NOT_FOUND, "download.notFound");
-        }
+        return result;
     }
+
 
     /**
      * Requests the status of a save.
@@ -132,13 +130,15 @@ public abstract class AbstractTransformController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a save")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+            @ApiResponse(code = 404, message = "The transformation or save does not exist.", response = SaveResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = SaveResponse.class)
+    })
     @Nonnull
     public Response getSave(@Nonnull @PathParam("save") final String id) {
         try {
+            logger.info("getSave('{}') called", id);
+
             final SaveJob job = transformService.getSaveJob(id, false);
             final SaveResponse response = new SaveResponse();
 
@@ -182,28 +182,33 @@ public abstract class AbstractTransformController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
-                  })
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
+    })
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
         try {
-            TransformJob job = transformService.getTransformJob(id);
-
-            if (job.isDone()) {
-                return Response.ok(job.get()).build();
-            } else {
-                TransformResponse response = new TransformResponse();
-                response.setProgress(job.progress());
-                response.setStatus(TransformResponse.Status.PENDING);
-                response.setTable(job.getGroupId());
-                return Response.ok(response).build();
-            }
+            TransformResponse transformResponse = getTableTransformResponse(id);
+            return Response.ok(transformResponse).build();
         } catch (final IllegalArgumentException e) {
             return error(Response.Status.NOT_FOUND, "getTable.notFound");
         } catch (final Exception e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e);
+        }
+    }
+
+    public TransformResponse getTableTransformResponse(final String id) throws ExecutionException, InterruptedException {
+        TransformJob job = transformService.getTransformJob(id);
+
+        if (job.isDone()) {
+            return job.get();
+        } else {
+            TransformResponse response = new TransformResponse();
+            response.setProgress(job.progress());
+            response.setStatus(TransformResponse.Status.PENDING);
+            response.setTable(job.getGroupId());
+            return response;
         }
     }
 

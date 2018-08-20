@@ -21,68 +21,33 @@ package com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.controllerservice;
  */
 
 import com.thinkbiganalytics.kylo.nifi.teradata.tdch.api.TdchConnectionService;
-import com.thinkbiganalytics.kylo.nifi.teradata.tdch.core.common.TdchValidations;
 
-import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-
-import static org.mockito.Matchers.any;
 
 /**
  * Tests for {@link StandardTdchConnectionService}
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({TdchValidations.class,
-                 StandardTdchConnectionService.class,
-                 StandardValidators.FileExistsValidator.class,
-                 StandardValidators.DirectoryExistsValidator.class,
-                 Path.class})
 public class StandardTdchConnectionService_Set2_Test {
 
-    private static final Logger log = LoggerFactory.getLogger(StandardTdchConnectionService_Set2_Test.class);
-    private static final String DATABASE_SPEC_IN_CONNECTION_URL = "/database=mydb";
     private static final String CONNECTION_SERVICE_ID = "std-tdch-conn-service";
     private static final String MOCK_DIR = "/mock-dir/";
 
-    private final String expectedHdpTdchLibraryJarsPath =
+    private static final String EXPECTED_HDP_TDCH_LIBRARY_JARS_PATH =
         "/avro-1.7.5.test.dummy.jar,"
         + "/antlr-2.7.7.test.dummy.jar,"
         + "/antlr-runtime-3.4.test.dummy.jar,"
@@ -100,25 +65,7 @@ public class StandardTdchConnectionService_Set2_Test {
         + "/libthrift-0.9.3.test.dummy.jar,"
         + MOCK_DIR;
 
-    private String expectedHdpTdchHadoopClassPath =
-        "/avro-1.7.5.test.dummy.jar:"
-        + "/antlr-2.7.7.test.dummy.jar:"
-        + "/antlr-runtime-3.4.test.dummy.jar:"
-        + "/commons-dbcp-1.4.test.dummy.jar:"
-        + "/commons-pool-1.5.4.test.dummy.jar:"
-        + "/datanucleus-api-jdo-4.2.1.test.dummy.jar:"
-        + "/datanucleus-core-4.1.6.test.dummy.jar:"
-        + "/datanucleus-rdbms-4.1.7.test.dummy.jar:"
-        + "/hive-cli-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-        + "/hive-exec-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-        + "/hive-jdbc-1.2.1000.2.5.3.0-37-standalone.test.dummy.jar:"
-        + "/hive-metastore-1.2.1000.2.5.3.0-37.test.dummy.jar:"
-        + "/jdo-api-3.0.1.test.dummy.jar:"
-        + "/libfb303-0.9.3.test.dummy.jar:"
-        + "/libthrift-0.9.3.test.dummy.jar:"
-        + MOCK_DIR;
-
-    private final String expectedCdhTdchLibraryJarsPath =
+    private static final String EXPECTED_CDH_TDCH_LIBRARY_JARS_PATH =
         "/avro.test.dummy.jar,"
         + "/antlr-2.7.7.test.dummy.jar,"
         + "/antlr-runtime-3.4.test.dummy.jar,"
@@ -136,247 +83,17 @@ public class StandardTdchConnectionService_Set2_Test {
         + "/libthrift-0.9.3.test.dummy.jar,"
         + MOCK_DIR;
 
-    String expectedCdhTdchHadoopClassPath =
-        "/avro.test.dummy.jar:"
-        + "/antlr-2.7.7.test.dummy.jar:"
-        + "/antlr-runtime-3.4.test.dummy.jar:"
-        + "/commons-dbcp-1.4.test.dummy.jar:"
-        + "/commons-pool-1.5.4.test.dummy.jar:"
-        + "/datanucleus-api-jdo-3.2.6.test.dummy.jar:"
-        + "/datanucleus-core-3.2.10.test.dummy.jar:"
-        + "/datanucleus-rdbms-3.2.9.test.dummy.jar:"
-        + "/hive-cli-1.1.0-cdh5.14.0.test.dummy.jar:"
-        + "/hive-exec-1.1.0-cdh5.14.0.test.dummy.jar:"
-        + "/hive-jdbc-1.1.0-cdh5.14.0-standalone.test.dummy.jar:"
-        + "/hive-metastore-1.1.0-cdh5.14.0.test.dummy.jar:"
-        + "/jdo-api-3.0.1.test.dummy.jar:"
-        + "/libfb303-0.9.3.test.dummy.jar:"
-        + "/libthrift-0.9.3.test.dummy.jar:"
-        + MOCK_DIR;
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    public class MockPath implements Path {
-
-        private final String str;
-
-        public MockPath(String str) {
-            this.str = str;
-        }
-
-        @Override
-        public FileSystem getFileSystem() {
-            return null;
-        }
-
-        @Override
-        public boolean isAbsolute() {
-            return false;
-        }
-
-        @Override
-        public Path getRoot() {
-            return null;
-        }
-
-        @Override
-        public Path getFileName() {
-            return null;
-        }
-
-        @Override
-        public Path getParent() {
-            return null;
-        }
-
-        @Override
-        public int getNameCount() {
-            return 0;
-        }
-
-        @Override
-        public Path getName(int index) {
-            return null;
-        }
-
-        @Override
-        public Path subpath(int beginIndex, int endIndex) {
-            return null;
-        }
-
-        @Override
-        public boolean startsWith(Path other) {
-            return false;
-        }
-
-        @Override
-        public boolean startsWith(String other) {
-            return false;
-        }
-
-        @Override
-        public boolean endsWith(Path other) {
-            return false;
-        }
-
-        @Override
-        public boolean endsWith(String other) {
-            return false;
-        }
-
-        @Override
-        public Path normalize() {
-            return null;
-        }
-
-        @Override
-        public Path resolve(Path other) {
-            return null;
-        }
-
-        @Override
-        public Path resolve(String other) {
-            return null;
-        }
-
-        @Override
-        public Path resolveSibling(Path other) {
-            return null;
-        }
-
-        @Override
-        public Path resolveSibling(String other) {
-            return null;
-        }
-
-        @Override
-        public Path relativize(Path other) {
-            return null;
-        }
-
-        @Override
-        public URI toUri() {
-            return null;
-        }
-
-        @Override
-        public Path toAbsolutePath() {
-            return null;
-        }
-
-        @Override
-        public Path toRealPath(LinkOption... options) throws IOException {
-            return null;
-        }
-
-        @Override
-        public File toFile() {
-            return null;
-        }
-
-        @Override
-        public WatchKey register(WatchService watcher, WatchEvent.Kind<?>[] events, WatchEvent.Modifier... modifiers) throws IOException {
-            return null;
-        }
-
-        @Override
-        public WatchKey register(WatchService watcher, WatchEvent.Kind<?>... events) throws IOException {
-            return null;
-        }
-
-        @Override
-        public Iterator<Path> iterator() {
-            return null;
-        }
-
-        @Override
-        public int compareTo(Path other) {
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            return str;
-        }
-    }
-
-    public static BasicFileAttributes mockBasicFileAttributes() {
-        return new BasicFileAttributes() {
-            @Override
-            public FileTime lastModifiedTime() {
-                return null;
-            }
-
-            @Override
-            public FileTime lastAccessTime() {
-                return null;
-            }
-
-            @Override
-            public FileTime creationTime() {
-                return null;
-            }
-
-            @Override
-            public boolean isRegularFile() {
-                return false;
-            }
-
-            @Override
-            public boolean isDirectory() {
-                return false;
-            }
-
-            @Override
-            public boolean isSymbolicLink() {
-                return false;
-            }
-
-            @Override
-            public boolean isOther() {
-                return false;
-            }
-
-            @Override
-            public long size() {
-                return 0;
-            }
-
-            @Override
-            public Object fileKey() {
-                return null;
-            }
-        };
-    }
-
-    public static class MockFileExistsValidatorReturnsTrue extends StandardValidators.FileExistsValidator {
-
-        public MockFileExistsValidatorReturnsTrue(boolean allowExpressionLanguage) {
-            super(allowExpressionLanguage);
-        }
-
-        public ValidationResult validate(String subject, String value, ValidationContext context) {
-            return (new ValidationResult.Builder()).subject(subject).input(value).valid(true).explanation("Exists").build();
-        }
-    }
-
-
-    public static class MockDirectoryExistsValidatorReturnsTrue extends StandardValidators.DirectoryExistsValidator {
-
-        public MockDirectoryExistsValidatorReturnsTrue(boolean allowExpressionLanguage, boolean create) {
-            super(allowExpressionLanguage, create);
-        }
-
-        public ValidationResult validate(String subject, String value, ValidationContext context) {
-            return (new ValidationResult.Builder()).subject(subject).input(value).valid(true).explanation("Exists").build();
-        }
-    }
-
-    private void setupMockPaths(List<Path> paths) throws Exception {
-        PowerMockito.when(Files.find(any(Path.class), Mockito.anyInt(), any(BiPredicate.class))).thenAnswer(new Answer<Stream>() {
-            @Override
-            public Stream answer(InvocationOnMock invocationOnMock) throws Throwable {
-                Path path = invocationOnMock.getArgumentAt(0, Path.class);
-                BiPredicate predicate = invocationOnMock.getArgumentAt(2, BiPredicate.class);
-                return new ArrayList<>(paths).stream().filter(p -> predicate.test(p, mockBasicFileAttributes()));
+    private void setupMockPaths(List<String> paths, File folder) {
+        paths.forEach(path -> {
+            try {
+                if (!new File(folder, path).createNewFile()) {
+                    throw new AssertionError("Failed to create file: " + path);
+                }
+            } catch (final IOException e) {
+                throw new AssertionError("Failed to create file: " + path, e);
             }
         });
     }
@@ -384,28 +101,21 @@ public class StandardTdchConnectionService_Set2_Test {
     //checked
     @Test
     public void testStandardTdchConnectionServiceConfiguration() throws Exception {
-        PowerMockito.whenNew(StandardValidators.DirectoryExistsValidator.class).withArguments(true, false).thenReturn(new MockDirectoryExistsValidatorReturnsTrue(true, false));
-        PowerMockito.whenNew(StandardValidators.FileExistsValidator.class).withAnyArguments().thenReturn(new MockFileExistsValidatorReturnsTrue(true));
-
-        List<Path> paths = Arrays.stream(expectedHdpTdchLibraryJarsPath.split(",")).map(s -> new MockPath(s.trim())).collect(Collectors.toList());
+        List<String> paths = Arrays.stream(EXPECTED_HDP_TDCH_LIBRARY_JARS_PATH.split(",")).map(String::trim).collect(Collectors.toList());
 
         StandardTdchConnectionService spiedStandardTdchConnectionService = Mockito.spy(StandardTdchConnectionService.class);
-        PowerMockito.when(spiedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
+        Mockito.when(spiedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
 
-        PowerMockito.mockStatic(Files.class);
-        PowerMockito.mockStatic(Paths.class);
-        PowerMockito.when(Paths.get(Mockito.anyString())).thenReturn(new MockPath(MOCK_DIR));
-
-        setupMockPaths(paths);
+        setupMockPaths(paths, tempFolder.getRoot());
         final TestRunner runner = TestRunners.newTestRunner(TestTdchProcessorForTestingTdchConnectionService.class);
 
         runner.addControllerService(CONNECTION_SERVICE_ID, spiedStandardTdchConnectionService);
         runner.assertNotValid(spiedStandardTdchConnectionService);
-        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "teradata-connector-1.5.jar");
+        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, tempFolder.newFile("teradata-connector-1.5.jar").getAbsolutePath());
         runner.assertNotValid(spiedStandardTdchConnectionService);
-        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_CONF_PATH, MOCK_DIR);
+        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_CONF_PATH, tempFolder.getRoot().getAbsolutePath());
         runner.assertNotValid(spiedStandardTdchConnectionService);
-        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_LIB_PATH, MOCK_DIR);
+        runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_LIB_PATH, tempFolder.getRoot().getAbsolutePath());
         runner.assertNotValid(spiedStandardTdchConnectionService);
         runner.setProperty(spiedStandardTdchConnectionService, StandardTdchConnectionService.PASSWORD, "mydbpwd");
         runner.assertValid(spiedStandardTdchConnectionService);
@@ -414,17 +124,10 @@ public class StandardTdchConnectionService_Set2_Test {
     //checked
     @Test
     public void testHdpCdhLibraryJarsPathAndHadoopClasspathGeneration() throws Exception {
-        String hiveLibPath = "/hive-lib-path";
-        String hiveConfPath = "/hive-conf-path";
+        File hiveLibPath = tempFolder.newFolder("hive-lib-path");
+        File hiveConfPath = tempFolder.newFolder("hive-conf-path");
 
-        PowerMockito.mockStatic(Files.class);
-        PowerMockito.mockStatic(Paths.class);
-        PowerMockito.when(Paths.get(Mockito.anyString())).thenReturn(new MockPath(hiveLibPath));
-        String jars = hiveLibPath + "/hive-dep-001.jar,"
-                      + hiveLibPath + "/hive-dep-002.jar,"
-                      + hiveLibPath + "/hive-dep-003.jar";
-        List<Path> paths = Arrays.stream(jars.split(",")).map(s -> new MockPath(s.trim())).collect(Collectors.toList());
-        setupMockPaths(paths);
+        setupMockPaths(Arrays.asList("hive-dep-001.jar", "hive-dep-002.jar", "hive-dep-003.jar"), hiveLibPath);
 
         StandardTdchConnectionService standardTdchConnectionService = new StandardTdchConnectionService();
 
@@ -437,45 +140,37 @@ public class StandardTdchConnectionService_Set2_Test {
                               + hiveLibPath + "/hive-dep-002.jar,"
                               + hiveLibPath + "/hive-dep-003.jar,"
                               + hiveConfPath;
-        String generatedPath = standardTdchConnectionService.generatePath(hiveLibPath, hiveConfPath, hiveDependencies, standardTdchConnectionService.getTdchLibraryJarsPathDelimiter());
+        String generatedPath = standardTdchConnectionService.generatePath(hiveLibPath.getAbsolutePath(), hiveConfPath.getAbsolutePath(), hiveDependencies,
+                                                                          standardTdchConnectionService.getTdchLibraryJarsPathDelimiter());
         Assert.assertEquals(expectedPath, generatedPath);
 
         expectedPath = hiveLibPath + "/hive-dep-001.jar:"
                        + hiveLibPath + "/hive-dep-002.jar:"
                        + hiveLibPath + "/hive-dep-003.jar:"
                        + hiveConfPath;
-        generatedPath = standardTdchConnectionService.generatePath(hiveLibPath, hiveConfPath, hiveDependencies, standardTdchConnectionService.getTdchHadoopClassPathDelimiter());
+        generatedPath = standardTdchConnectionService.generatePath(hiveLibPath.getAbsolutePath(), hiveConfPath.getAbsolutePath(), hiveDependencies,
+                                                                   standardTdchConnectionService.getTdchHadoopClassPathDelimiter());
         Assert.assertEquals(expectedPath, generatedPath);
     }
 
     //checked
     @Test
     public void testHdpHiveLib() throws Exception {
-        testHiveLib(expectedHdpTdchLibraryJarsPath);
+        testHiveLib(EXPECTED_HDP_TDCH_LIBRARY_JARS_PATH);
     }
 
     //checked
     @Test
     public void testCdhHiveLib() throws Exception {
-        testHiveLib(expectedCdhTdchLibraryJarsPath);
+        testHiveLib(EXPECTED_CDH_TDCH_LIBRARY_JARS_PATH);
     }
 
     //checked
     private void testHiveLib(String expectedTdchLibraryJarsPath) throws Exception {
-        PowerMockito.whenNew(StandardValidators.DirectoryExistsValidator.class).withArguments(true, false).thenReturn(new MockDirectoryExistsValidatorReturnsTrue(true, false));
+        List<String> paths = Arrays.stream(expectedTdchLibraryJarsPath.split(",")).map(String::trim).collect(Collectors.toList());
 
-        List<Path> paths = new ArrayList<>();
-        String[] pathsStringArray = expectedTdchLibraryJarsPath.split(",");
-        for (int i = 0; i < pathsStringArray.length; i++) {
-            paths.add(i, new MockPath(pathsStringArray[i].trim()));
-        }
-
-        StandardTdchConnectionService mockedStandardTdchConnectionService = PowerMockito.mock(StandardTdchConnectionService.class);
-        PowerMockito.when(mockedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
-
-        PowerMockito.mockStatic(Files.class);
-        PowerMockito.mockStatic(Paths.class);
-        PowerMockito.when(Paths.get(Mockito.anyString())).thenReturn(new MockPath(MOCK_DIR));
+        StandardTdchConnectionService mockedStandardTdchConnectionService = Mockito.mock(StandardTdchConnectionService.class);
+        Mockito.when(mockedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
 
         ValidationResult validationResult;
         final TestRunner runner = TestRunners.newTestRunner(TestTdchProcessorForTestingTdchConnectionService.class);
@@ -484,8 +179,9 @@ public class StandardTdchConnectionService_Set2_Test {
         runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.PASSWORD, "mydbpwd");
 
         for (int i = 0; i < paths.size(); i++) {
-            setupMockPaths(paths.subList(0, i));
-            validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_LIB_PATH, MOCK_DIR);
+            final File currentFolder = tempFolder.newFolder(Integer.toString(i));
+            setupMockPaths(paths.subList(0, i), currentFolder);
+            validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.HIVE_LIB_PATH, currentFolder.getAbsolutePath());
             if (i < paths.size() - 1) {
                 Assert.assertFalse(validationResult.isValid());
                 switch (i) {
@@ -563,11 +259,8 @@ public class StandardTdchConnectionService_Set2_Test {
     //checked
     @Test
     public void testTdchJarPath() throws Exception {
-        //Not testing NiFi's FileExistsValidator
-        PowerMockito.whenNew(StandardValidators.FileExistsValidator.class).withAnyArguments().thenReturn(new MockFileExistsValidatorReturnsTrue(true));
-
-        StandardTdchConnectionService mockedStandardTdchConnectionService = PowerMockito.mock(StandardTdchConnectionService.class);
-        PowerMockito.when(mockedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
+        StandardTdchConnectionService mockedStandardTdchConnectionService = Mockito.mock(StandardTdchConnectionService.class);
+        Mockito.when(mockedStandardTdchConnectionService.getIdentifier()).thenReturn(CONNECTION_SERVICE_ID);
 
         ValidationResult validationResult;
         final TestRunner runner = TestRunners.newTestRunner(TestTdchProcessorForTestingTdchConnectionService.class);
@@ -575,23 +268,25 @@ public class StandardTdchConnectionService_Set2_Test {
         runner.addControllerService(CONNECTION_SERVICE_ID, mockedStandardTdchConnectionService);
         runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.PASSWORD, "mydbpwd");
 
-        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "teradata-fail.jar");
+        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, tempFolder.newFile("teradata-fail.jar").getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
 
-        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "teradata-connector-1.4.jar");
+        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH,
+                                              tempFolder.newFile("teradata-connector-1.4.jar").getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
 
-        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "");
+        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, tempFolder.getRoot().getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
 
-        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "teradata-connector-1.5.jar");
+        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH,
+                                              tempFolder.newFile("teradata-connector-1.5.jar").getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
 
-        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, MOCK_DIR + "my-teradata-connector.jar");
+        validationResult = runner.setProperty(mockedStandardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, tempFolder.newFile("my-teradata-connector.jar").getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
     }
@@ -605,12 +300,7 @@ public class StandardTdchConnectionService_Set2_Test {
         runner.addControllerService(CONNECTION_SERVICE_ID, standardTdchConnectionService);
         runner.assertValid(standardTdchConnectionService);
 
-        PowerMockito
-            .whenNew(StandardValidators.DirectoryExistsValidator.class)
-            .withArguments(true, false)
-            .thenReturn(new MockDirectoryExistsValidatorReturnsTrue(true, false));
-
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.HIVE_CONF_PATH, MOCK_DIR + "-exists");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.HIVE_CONF_PATH, tempFolder.getRoot().getAbsolutePath());
         Assert.assertEquals(StandardTdchConnectionService.HIVE_CONF_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
         runner.assertValid(standardTdchConnectionService);

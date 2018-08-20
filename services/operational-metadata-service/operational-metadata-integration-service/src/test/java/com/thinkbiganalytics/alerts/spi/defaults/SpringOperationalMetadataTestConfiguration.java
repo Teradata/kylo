@@ -27,10 +27,15 @@ import com.thinkbiganalytics.servicemonitor.ServiceMonitorRepository;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import javax.jms.ConnectionFactory;
+import javax.validation.ValidatorFactory;
 
 /**
  * Created by sr186054 on 8/10/17.

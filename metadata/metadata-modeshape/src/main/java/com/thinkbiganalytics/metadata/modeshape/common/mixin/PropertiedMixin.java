@@ -3,15 +3,21 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common.mixin;
 
+import java.security.AccessControlException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*-
  * #%L
@@ -45,52 +51,62 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
  * 
  * TODO Not currently used - the JcrObject hierarchy should be refactored to use mixin interfaces such as this one.
  */
-public interface PropertiedMixin extends NodeEntityMixin, Propertied {
+public interface PropertiedMixin extends WrappedNodeMixin, Propertied {
+    
+    Logger log = LoggerFactory.getLogger(PropertiedMixin.class);
 
-    public static final String PROPERTIES_NAME = "tba:properties";
+    String PROPERTIES_NAME = "tba:properties";
 
 
-    default JcrProperties getPropertiesObject() {
-        return JcrUtil.getOrCreateNode(getNode(), PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class);
-    }
-
-    default void clearAdditionalProperties() {
+    default Optional<JcrProperties> getPropertiesObject() {
         try {
-            Node propsNode = getPropertiesObject().getNode();
-            Map<String, Object> props = getPropertiesObject().getProperties();
-            for (Map.Entry<String, Object> prop : props.entrySet()) {
-                if (!JcrPropertyUtil.hasProperty(propsNode.getPrimaryNodeType(), prop.getKey())) {
-                    Property property = propsNode.getProperty(prop.getKey());
-                    property.remove();
-                }
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to clear the Properties for this entity. ", e);
+            return Optional.ofNullable(JcrUtil.getJcrObject(getNode(), PROPERTIES_NAME, JcrProperties.class));
+        } catch (AccessControlException e) {
+            return Optional.empty();
         }
     }
+    
+    default Optional<JcrProperties> ensurePropertiesObject() {
+        try {
+            return Optional.of(JcrUtil.getOrCreateNode(getNode(), PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class));
+        } catch (AccessControlException e) {
+            return Optional.empty();
+        }
+    }
+    
+    default void clearAdditionalProperties() {
+        getPropertiesObject().ifPresent(propsObj -> {
+            try {
+                Node propsNode = propsObj.getNode();
+                Map<String, Object> props = propsObj.getProperties();
+                for (Map.Entry<String, Object> prop : props.entrySet()) {
+                    if (!JcrPropertyUtil.hasPropertyDefinition(propsNode, prop.getKey())) {
+                        try {
+                            Property property = propsNode.getProperty(prop.getKey());
+                            property.remove();
+                        } catch (AccessDeniedException e) {
+                            // Failed remove the extra property
+                            log.debug("Access denied", e);
+                            throw new AccessControlException("You do not have the permission to remove property \"" + prop.getKey() + "\"");
+                        }
+                    }
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Unable to clear the Properties for this entity. ", e);
+            }
+        });
+    }
 
-    @Override
     /**
      * This will return just the extra properties.
      * All primary properties should be defined as getter/setter on the base object
      * You can call the getAllProperties to return the complete set of properties as a map
      */
+    // TODO this seems inconsistent as it behaves differently from WrappedNodeMixin but has the same name.
     default Map<String, Object> getProperties() {
-
-        JcrProperties props = getPropertiesObject();
-        if (props != null) {
-            return props.getProperties();
-        }
-        return null;
-    }
-
-    default void setProperties(Map<String, Object> properties) {
-
-        //add the properties as attrs
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            setProperty(entry.getKey(), entry.getValue());
-        }
-
+        return getPropertiesObject()
+                        .map(propsObj -> propsObj.getProperties())
+                        .orElse(Collections.emptyMap());
     }
 
     /**
@@ -99,65 +115,93 @@ public interface PropertiedMixin extends NodeEntityMixin, Propertied {
     default Map<String, Object> getAllProperties() {
 
         //first get the other extra mixin properties
-        Map<String, Object> properties = getProperties();
-        if (properties == null) {
-            properties = new HashMap<>();
-        }
+        Map<String, Object> properties = new HashMap<>(getProperties());
         //merge in this nodes properties
-        Map<String, Object> thisProperties = NodeEntityMixin.super.getProperties();
-        if (thisProperties != null)
-
-        {
+        Map<String, Object> thisProperties = WrappedNodeMixin.super.getProperties();
+        if (thisProperties != null) {
             properties.putAll(thisProperties);
         }
         return properties;
     }
 
-    default <T> T getProperty(String name, T defValue) {
-        if (hasProperty(name)) {
-            return getProperty(name, (Class<T>) defValue.getClass(), false);
-        } else {
-            return defValue;
-        }
-    }
-
+    /**
+     * Returns true if the conditions of {@link WrappedNodeMixin#hasProperty} are met or if the internal properties object
+     * contains a value for the named property. 
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.WrappedNodeMixin#hasProperty(java.lang.String)
+     */
+    @Override
     default boolean hasProperty(String name) {
         try {
             if (getNode().hasProperty(name)) {
                 return true;
             } else {
-                return getPropertiesObject().getNode().hasProperty(name);
+                return getPropertiesObject()
+                                .map(obj -> JcrPropertyUtil.hasProperty(obj.getNode(), name))
+                                .orElse(false);
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Unable to access property: \"{}\" from node: {}", name, getNode(), e);
+            return false;
+        } catch (AccessControlException e) {
+            return false;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to check Property " + name);
         }
     }
 
     default <T> T getProperty(String name, Class<T> type) {
-        return getProperty(name, type, true);
-    }
-
-
-    @Override
-    default <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
         try {
             if ("nt:frozenNode".equalsIgnoreCase(getNode().getPrimaryNodeType().getName())) {
-                T item = NodeEntityMixin.super.getProperty(name, type, true);
+                T item = WrappedNodeMixin.super.getProperty(name, type);
                 if (item == null) {
-                    item = getPropertiesObject().getProperty(name, type, allowNotFound);
+                    item = getPropertiesObject()
+                                    .map(obj -> obj.getProperty(name, type))
+                                    .orElse(null);
                 }
                 return item;
             } else {
-                if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
-                    return NodeEntityMixin.super.getProperty(name, type, allowNotFound);
+                if (JcrPropertyUtil.hasPropertyDefinition(getNode(), name)) {
+                    return WrappedNodeMixin.super.getProperty(name, type);
                 } else {
-                    return getPropertiesObject().getProperty(name, type, allowNotFound);
+                    return getPropertiesObject()
+                                    .map(obj -> obj.getProperty(name, type))
+                                    .orElse(null);
                 }
             }
+        } catch (AccessDeniedException e) {
+            throw new AccessControlException("You do not have the permission to access property \"" + name + "\"");
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get Property " + name);
         }
+    }
 
+    @Override
+    default <T> T getProperty(String name, Class<T> type, T defaultValue) {
+        try {
+            if ("nt:frozenNode".equalsIgnoreCase(getNode().getPrimaryNodeType().getName())) {
+                T item = WrappedNodeMixin.super.getProperty(name, type, defaultValue);
+                if (item == null) {
+                    item = getPropertiesObject()
+                                    .map(obj -> obj.getProperty(name, type, defaultValue))
+                                    .orElse(null);
+                }
+                return item;
+            } else {
+                if (hasProperty(name)) {
+                    return WrappedNodeMixin.super.getProperty(name, type, defaultValue);
+                } else {
+                    return getPropertiesObject()
+                                    .map(obj -> obj.getProperty(name, type, defaultValue))
+                                    .orElse(null);
+                }
+            }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denided for property: \"{}\"", name, e);
+            // TODO is this correct? 
+            return defaultValue;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get Property " + name);
+        }
     }
 
     /**
@@ -166,13 +210,18 @@ public interface PropertiedMixin extends NodeEntityMixin, Propertied {
      */
     default void setProperty(String name, Object value) {
         try {
-            if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
-                NodeEntityMixin.super.setProperty(name, value);
+            if (JcrPropertyUtil.hasPropertyDefinition(getNode(), name)) {
+                WrappedNodeMixin.super.setProperty(name, value);
             } else {
-                getPropertiesObject().setProperty(name, value);
+                ensurePropertiesObject().ifPresent(obj -> obj.setProperty(name, value));
             }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to set Property " + name + ":" + value);
+        } catch (AccessControlException e) {
+            if (name.toLowerCase().contains("password")) {
+                throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
+            }
+            else {
+                throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            }
         }
     }
 
@@ -189,17 +238,23 @@ public interface PropertiedMixin extends NodeEntityMixin, Propertied {
         if (props != null) {
             newProps.putAll(props);
         }
-        JcrProperties properties = getPropertiesObject();
-        for (Map.Entry<String, Object> entry : newProps.entrySet()) {
-            try {
-                properties.setProperty(entry.getKey(), entry.getValue());
-            } catch (MetadataRepositoryException e) {
-                if (ExceptionUtils.getRootCause(e) instanceof ConstraintViolationException) {
-                    //this is ok
-                } else {
-                    throw e;
+        
+        Optional<JcrProperties> propsObj = ensurePropertiesObject();
+        
+        if (propsObj.isPresent()) {
+            for (Map.Entry<String, Object> entry : newProps.entrySet()) {
+                try {
+                    propsObj.get().setProperty(entry.getKey(), entry.getValue());
+                } catch (MetadataRepositoryException e) {
+                    if (ExceptionUtils.getRootCause(e) instanceof ConstraintViolationException) {
+                        //this is ok
+                    } else {
+                        throw e;
+                    }
                 }
             }
+        } else {
+            throw new AccessControlException("You do not have the permission to set properties");
         }
         return newProps;
     }
@@ -208,10 +263,5 @@ public interface PropertiedMixin extends NodeEntityMixin, Propertied {
         clearAdditionalProperties();
         setProperties(props);
         return props;
-    }
-
-    @Override
-    default void removeProperty(String key) {
-        setProperty(key, null);
     }
 }

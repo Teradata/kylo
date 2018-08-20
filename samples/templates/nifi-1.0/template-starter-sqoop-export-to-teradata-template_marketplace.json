@@ -1,6 +1,0 @@
-{
-  "templateName": "sqoop-export-to-teradata",
-  "description": "Export data to Teradata",
-  "fileName": "template-starter-sqoop-export-to-teradata.zip",
-  "stream": false
-}

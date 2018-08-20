@@ -20,6 +20,8 @@ package com.thinkbiganalytics.kylo.spark.file.metadata;
  * #L%
  */
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class FileMetadataScalaScriptGenerator {
         sb.append("var kyloClient = kyloClientBuilder.build()\n");
         sb.append("var kyloClientReader = kyloClient.read.format(\"com.thinkbiganalytics.spark.file.metadata\")\n");
         for (String path : paths) {
-            sb.append("listBuffer += kyloClientReader.load(\"" + path + "\")\n");
+            sb.append("listBuffer += kyloClientReader.load(\"").append(StringEscapeUtils.escapeJava(path)).append("\")\n");
         }
 
         sb.append("val dataFrameList = listBuffer.toList\n");
@@ -75,13 +77,14 @@ public class FileMetadataScalaScriptGenerator {
                   + "}\n"
                   + "})\n");
 
-        sb.append(" var fileMetadataDf = unionedFileMetadataDf.select(col(\"mimeType\"),col(\"encoding\"),"
+        sb.append("var fileMetadataDf = unionedFileMetadataDf.select(col(\"mimeType\"),col(\"encoding\"),"
                   + "when(col(\"properties\")(\"headerCount\").isNotNull,col(\"properties\")(\"headerCount\")).otherwise(lit(\"0\")).as(\"headerCount\")"
                   + ",when(col(\"properties\")(\"delimiter\").isNotNull,col(\"properties\")(\"delimiter\")).otherwise(lit(\"\")).as(\"delimiter\")"
                   + ",when(col(\"properties\")(\"rowTag\").isNotNull,col(\"properties\")(\"rowTag\")).otherwise(lit(\"\")).as(\"rowTag\")"
                   + ",col(\"properties\").as(\"properties\")"
                   + ",col(\"resource\"))\n");
-        sb.append("fileMetadataDf");
+        sb.append("var df = fileMetadataDf\n");
+        sb.append("df\n");
 
         return sb.toString();
 

@@ -48,9 +48,9 @@ public class SecurityCoreConfig {
         return new EncryptionService();
     }
 
-    @Bean
+    /*@Bean
     @ConditionalOnMissingBean
     public TextEncryptorLocator textEncryptorLocator(TextEncryptor textEncryptor) {
         return new SingleTextEncryptorLocator(textEncryptor);
-    }
+    }*/
 }

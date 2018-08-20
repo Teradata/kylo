@@ -1,0 +1,9 @@
+{
+  "templateName" : "Publish Kafka Provenance",
+  "description" : "Get provenance events from Kafka and publish them to JMS",
+  "fileName" : "kafka_provenance_to_jms.feed.zip",
+  "checksum" : "fbff30c49731bb59d3e4fa1899cb1d03",
+  "stream" : false,
+  "updateAvailable" : false,
+  "lastModified" : 0
+}

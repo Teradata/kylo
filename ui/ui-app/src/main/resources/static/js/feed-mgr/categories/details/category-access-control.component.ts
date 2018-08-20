@@ -76,7 +76,7 @@ export class CategoryAccessControl {
         });
     }
     constructor(private CategoriesService: CategoriesService,
-                private accessControlService: AccessControlService, 
+                private accessControlService: AccessControlService,
                 private entityAccessControlService: EntityAccessControlService,
                 private _tdDialogService : TdDialogService,
                 private snackBar : MatSnackBar) {

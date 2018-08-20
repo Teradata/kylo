@@ -28,13 +28,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SaveResponse {
+public class SaveResponse extends SimpleResponse {
 
     private String id;
     private String location;
-    private String message;
     private Double progress;
-    private Status status;
 
     public String getId() {
         return id;
@@ -52,33 +50,11 @@ public class SaveResponse {
         this.location = location;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public Double getProgress() {
         return progress;
     }
 
     public void setProgress(Double progress) {
         this.progress = progress;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public enum Status {
-        ERROR,
-        PENDING,
-        SUCCESS
     }
 }

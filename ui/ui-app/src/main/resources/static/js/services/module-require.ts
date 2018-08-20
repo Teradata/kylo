@@ -13,6 +13,7 @@ import './ConfigurationService';
 import './AddButtonService';
 import './FileUploadService';
 import './WindowUnloadService';
+import './preview-dataset-collection.service'
 import './Utils';
 import './HttpService';
 import './notification.service';
@@ -20,4 +21,5 @@ import './AngularHttpInterceptor';
 import './UserGroupService';
 import './AngularModuleExtensionService';
 import './BroadcastConstants';
-export  let moduleRequire = angular.module(moduleName);
+import '../repository/services/template.service';
+import './LoginNotificationService';

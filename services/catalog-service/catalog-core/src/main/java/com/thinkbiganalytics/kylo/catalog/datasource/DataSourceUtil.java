@@ -26,6 +26,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +42,25 @@ public class DataSourceUtil {
      */
     @Nonnull
     public static Optional<List<String>> getPaths(@Nonnull final DataSource dataSource) {
-        if (dataSource.getTemplate() != null && dataSource.getTemplate().getPaths() != null) {
-            return Optional.of(dataSource.getTemplate().getPaths());
+        List<String> paths = new ArrayList<>();
+
+        // Add "path" option
+        if (dataSource.getTemplate() != null && dataSource.getTemplate().getOptions() != null && dataSource.getTemplate().getOptions().get("path") != null) {
+            paths.add(dataSource.getTemplate().getOptions().get("path"));
         } else {
-            return Optional.of(dataSource).map(DataSource::getConnector).map(Connector::getTemplate).map(DataSetTemplate::getPaths);
+            Optional.of(dataSource).map(DataSource::getConnector).map(Connector::getTemplate).map(DataSetTemplate::getOptions).map(options -> options.get("path")).ifPresent(paths::add);
         }
+
+        // Add paths list
+        if (dataSource.getTemplate() != null && dataSource.getTemplate().getPaths() != null) {
+            paths.addAll(dataSource.getTemplate().getPaths());
+        } else if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getPaths() != null) {
+            paths.addAll(dataSource.getConnector().getTemplate().getPaths());
+        } else if (paths.isEmpty()) {
+            paths = null;
+        }
+
+        return Optional.ofNullable(paths);
     }
 
     /**

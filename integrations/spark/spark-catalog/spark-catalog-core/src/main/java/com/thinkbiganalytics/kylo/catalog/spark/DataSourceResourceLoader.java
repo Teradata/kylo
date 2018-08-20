@@ -90,7 +90,7 @@ public class DataSourceResourceLoader extends HadoopClassLoader {
      * @param sparkContext Spark context
      * @param parent       parent class loader
      */
-    private DataSourceResourceLoader(@Nonnull final SparkContext sparkContext, @Nonnull final ClassLoader parent) {
+    public DataSourceResourceLoader(@Nonnull final SparkContext sparkContext, @Nonnull final ClassLoader parent) {
         super(sparkContext.hadoopConfiguration(), parent);
         this.sparkContext = sparkContext;
     }

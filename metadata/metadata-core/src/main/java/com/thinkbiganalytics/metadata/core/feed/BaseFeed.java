@@ -66,6 +66,7 @@ public class BaseFeed implements Feed {
     private String displayName;
     private String description;
     private State state;
+    private Mode mode;
     private boolean initialized;
     private DateTime createdTime;
     private Set<Feed> dependentFeeds = new HashSet<>();
@@ -215,6 +216,16 @@ public class BaseFeed implements Feed {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+
+    @Override
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     @Override
@@ -662,5 +673,95 @@ public class BaseFeed implements Feed {
 //        public ID getId() {
 //            return this.id;
 //        }
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Propertied#getProperty(java.lang.String)
+     */
+    @Override
+    public <T> T getProperty(String name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getSystemName()
+     */
+    @Override
+    public String getSystemName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setSystemName(java.lang.String)
+     */
+    @Override
+    public void setSystemName(String name) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#getTitle()
+     */
+    @Override
+    public String getTitle() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.SystemEntity#setTitle(java.lang.String)
+     */
+    @Override
+    public void setTitle(String title) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Auditable#getCreatedBy()
+     */
+    @Override
+    public String getCreatedBy() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Auditable#getModifiedBy()
+     */
+    @Override
+    public String getModifiedBy() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#hasTag(java.lang.String)
+     */
+    @Override
+    public boolean hasTag(String tag) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#addTag(java.lang.String)
+     */
+    @Override
+    public Set<String> addTag(String tag) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Taggable#removeTag(java.lang.String)
+     */
+    @Override
+    public Set<String> removeTag(String tag) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

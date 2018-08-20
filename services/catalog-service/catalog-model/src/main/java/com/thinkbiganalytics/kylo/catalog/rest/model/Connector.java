@@ -25,9 +25,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -35,33 +32,27 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@SuppressWarnings("unused")
 public class Connector {
-
-    /**
-     * Color of the icon
-     */
-    private String color;
-
-    /**
-     * UI plugin for creating new data sources
-     */
-    private UiPlugin dataSourcePlugin;
-
-    /**
-     * Name of the icon
-     */
-    private String icon;
 
     /**
      * Unique identifier
      */
     private String id;
+    
+    /**
+     * Connector plugin ID (connector type)
+     */
+    private String pluginId;
 
     /**
-     * UI tab plugins for setting data set properties
+     * Display name of this connector
      */
-    private List<ConnectorTab> tabs;
+    private String title;
+
+    /**
+     * Display name of this connector
+     */
+    private String description;
 
     /**
      * Properties to apply to all data sets
@@ -71,19 +62,24 @@ public class Connector {
     private DataSetTemplate template;
 
     /**
-     * Display name of this connector
+     * Color of the icon
      */
-    private String title;
+    private String color;
+
+    /**
+     * Name of the icon
+     */
+    private String icon;
 
     public Connector() {
     }
 
     public Connector(@Nonnull final Connector other) {
         color = other.color;
-        dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         icon = other.icon;
         id = other.id;
-        tabs = (other.tabs != null) ? other.tabs.stream().map(ConnectorTab::new).collect(Collectors.toList()) : null;
+        pluginId = other.pluginId;
+
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
     }
@@ -94,14 +90,6 @@ public class Connector {
 
     public void setColor(String color) {
         this.color = color;
-    }
-
-    public UiPlugin getDataSourcePlugin() {
-        return dataSourcePlugin;
-    }
-
-    public void setDataSourcePlugin(UiPlugin dataSourcePlugin) {
-        this.dataSourcePlugin = dataSourcePlugin;
     }
 
     public String getIcon() {
@@ -120,14 +108,14 @@ public class Connector {
         this.id = id;
     }
 
-    public List<ConnectorTab> getTabs() {
-        return tabs;
+    public String getPluginId() {
+        return pluginId;
     }
-
-    public void setTabs(List<ConnectorTab> tabs) {
-        this.tabs = tabs;
+    
+    public void setPluginId(String pluginId) {
+        this.pluginId = pluginId;
     }
-
+    
     public DataSetTemplate getTemplate() {
         return template;
     }
@@ -142,6 +130,14 @@ public class Connector {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

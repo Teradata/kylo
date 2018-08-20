@@ -34,6 +34,11 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-catalog-credential-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-hadoop</artifactId>
       <version>${project.version}</version>
     </dependency>

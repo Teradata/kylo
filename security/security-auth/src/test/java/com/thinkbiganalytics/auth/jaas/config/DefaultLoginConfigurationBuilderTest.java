@@ -34,7 +34,7 @@ import javax.security.auth.login.AppConfigurationEntry;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -46,7 +46,7 @@ import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { JaasAuthConfig.class, TestConfig.class })
+@SpringBootTest(classes = {JaasAuthConfig.class, TestConfig.class })
 public class DefaultLoginConfigurationBuilderTest {
     
     @Configuration

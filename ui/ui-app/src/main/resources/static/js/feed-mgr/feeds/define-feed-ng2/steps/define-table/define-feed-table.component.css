@@ -1,0 +1,21 @@
+
+.scrollbar-width { min-width: 5px }
+
+.strike {
+  text-decoration: line-through;
+}
+
+.pointer {cursor: pointer;}
+
+.mat-card-header .mat-card-title {
+  font-size: 20px;
+}
+
+.mat-card-header .mat-card-subtitle{
+  font-size: 14px;
+}
+
+.unchecked-text {
+  padding-top: 4px;
+  padding-left: 4px;
+}

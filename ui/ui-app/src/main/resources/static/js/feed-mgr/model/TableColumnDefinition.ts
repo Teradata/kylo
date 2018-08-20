@@ -1,8 +1,10 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType, DomainTypesService} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
+import {CloneUtil} from "../../common/utils/clone-util";
+import {KyloObject} from "../../common/common.model";
+import {TableFieldPolicy} from "./TableFieldPolicy";
 
 
 export class ColumnDefinitionHistoryRecord {
@@ -53,13 +55,15 @@ export interface ValidationMessages {
 }
 
 
-export class TableColumnDefinition extends SchemaField {
+export class TableColumnDefinition extends SchemaField implements KyloObject{
 
     private static NAME_PATTERN: RegExp = /^[a-zA-Z0-9_\s\)\(-]*$/;
     private static PRECISION_SCALE_PATTERN: RegExp = /^\d+,\d+$/;
     private static MAX_COLUMN_LENGTH: number = 767;
 
-    classType:string = 'TableColumnDefinition'
+    public static OBJECT_TYPE:string = 'TableColumnDefinition'
+
+    public objectType:string = TableColumnDefinition.OBJECT_TYPE;
 
     /**
      * Vaidate message types
@@ -102,7 +106,7 @@ export class TableColumnDefinition extends SchemaField {
     /**
      * History of changes for the column
      */
-    history: ColumnDefinitionHistoryRecord[];
+    history: ColumnDefinitionHistoryRecord[] = [];
 
     /**
      * listing of errors for this column
@@ -120,11 +124,33 @@ export class TableColumnDefinition extends SchemaField {
      */
     $allowDomainTypeConflict:boolean;
 
-    constructor() {
+    fieldPolicy?:TableFieldPolicy;
+
+
+
+    public constructor(init?:Partial<TableColumnDefinition>) {
         super();
+        this.initialize();
+        Object.assign(this, init);
+        if(this.tags == null || this.tags == undefined){
+            this.tags = []
+        }
+        if(this.sampleValues == null || this.sampleValues == undefined){
+            this.sampleValues = []
+        }
+
+    }
+    initialize() {
         this.name = '';
         this._id = _.uniqueId();
         this.validationErrors = new ColumnDefinitionValidationError();
+        this.dataTypeDisplay = this.getDataTypeDisplay();
+    }
+
+    initSampleValue(){
+        if (this.selectedSampleValue == null && this.sampleValues.length > 0) {
+            this.selectedSampleValue = this.sampleValues[0];
+        }
     }
 
     replaceNameSpaces(){
@@ -149,8 +175,12 @@ export class TableColumnDefinition extends SchemaField {
     }
 
 
+    isDate():boolean{
+      return this.derivedDataType =='date' || this.derivedDataType =='timestamp';
+    }
+
     initFeedColumn() {
-        if (this.origName == undefined) {
+        if (this.origName == undefined || this.history.length == 0) {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;
@@ -195,6 +225,38 @@ export class TableColumnDefinition extends SchemaField {
         this.updatedTracker = historyRecord.updatedTracker;
     }
 
+
+    applyDomainType(domainType:DomainType){
+        this.fieldPolicy.$currentDomainType = domainType;
+        this.fieldPolicy.domainTypeId = domainType.id;
+
+        if (_.isObject(domainType.field)) {
+            this.tags = CloneUtil.deepCopy(domainType.field.tags);
+            if (_.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                this.name = domainType.field.name;
+            }
+            if (_.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
+                this.derivedDataType = domainType.field.derivedDataType;
+                this.precisionScale = domainType.field.precisionScale;
+                this.dataTypeDisplay = this.getDataTypeDisplay();
+            }
+        }
+
+        if (_.isObject(domainType.fieldPolicy)) {
+            this.fieldPolicy.standardization = CloneUtil.deepCopy(domainType.fieldPolicy.standardization);
+            this.fieldPolicy.validation = CloneUtil.deepCopy(domainType.fieldPolicy.validation);
+        }
+
+
+
+        // Update field properties
+        delete this.$allowDomainTypeConflict;
+        this.dataTypeDisplay = this.getDataTypeDisplay();
+        this.fieldPolicy.name = this.name;
+    }
+
+
+
     /**
      * is the column definition invalid
      * @return {boolean}
@@ -212,23 +274,28 @@ export class TableColumnDefinition extends SchemaField {
 
 
     initializeValidationErrors() {
-        if (angular.isUndefined(this.validationErrors)) {
+        if (_.isUndefined(this.validationErrors)) {
             this.validationErrors = new ColumnDefinitionValidationError();
         }
     }
 
+    validateName(){
+        this.initializeValidationErrors();
+        this.validationErrors.name.reserved = this.name === "processing_dttm";
+        this.validationErrors.name.required = _.isUndefined(this.name) || this.name.trim() === "";
+        this.validationErrors.name.length = !_.isUndefined(this.name) && this.name.length > TableColumnDefinition.MAX_COLUMN_LENGTH;
+        this.validationErrors.name.pattern = !_.isUndefined(this.name) && !TableColumnDefinition.NAME_PATTERN.test(this.name);
+
+    }
     /**
      * Updates the validation state for this column
      */
     updateValidationErrors() {
         this.initializeValidationErrors();
 
+        this.validateName();
         if (!this.isDeleted()) {
-            this.validationErrors.name.reserved = this.name === "processing_dttm";
-            this.validationErrors.name.required = _.isUndefined(this.name) || this.name.trim() === "";
-            this.validationErrors.name.length = !_.isUndefined(this.name) && this.name.length > TableColumnDefinition.MAX_COLUMN_LENGTH;
-            this.validationErrors.name.pattern = !_.isUndefined(this.name) && !TableColumnDefinition.NAME_PATTERN.test(this.name);
-            this.validationErrors.precision.pattern = this.derivedDataType === 'decimal' && (_.isUndefined(this.precisionScale) || !TableColumnDefinition.PRECISION_SCALE_PATTERN.test(this.precisionScale));
+        this.validationErrors.precision.pattern = this.derivedDataType === 'decimal' && (_.isUndefined(this.precisionScale) || !TableColumnDefinition.PRECISION_SCALE_PATTERN.test(this.precisionScale));
         }
     }
 
@@ -265,6 +332,28 @@ export class TableColumnDefinition extends SchemaField {
             return errorType == true;
         });
         return errors === undefined ? 0 : errors.length;
+    }
+
+    isComplex(){
+        return this.dataTypeDescriptor && !_.isUndefined(this.dataTypeDescriptor.complex) ? this.dataTypeDescriptor.complex : false;
+    }
+
+    copy() :TableColumnDefinition{
+        let policy = this.fieldPolicy;
+        this.fieldPolicy = null;
+        let copy :TableColumnDefinition = CloneUtil.deepCopy(this);
+        let policyCopy = policy.copy();
+        copy.fieldPolicy= policyCopy;
+        return copy;
+    }
+
+    prepareForSave(){
+        this.sampleValues = null;
+        this.history = null;
+        if(this.fieldPolicy) {
+            this.fieldPolicy.field = null;
+            this.fieldPolicy = null;
+        }
     }
 
 }

@@ -1,8 +1,11 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
+import {KyloObject} from "../../common/common.model";
+import {TableColumnDefinition} from "./TableColumnDefinition";
+import {CloneUtil} from "../../common/utils/clone-util";
 
-export class TableFieldPolicy {
+export class TableFieldPolicy implements KyloObject{
 
     public static OBJECT_TYPE:string = 'TableFieldPolicy'
 
@@ -28,6 +31,12 @@ export class TableFieldPolicy {
     profile: boolean = true;
 
     /**
+     * Should this column be indexed for global search
+     * @type {boolean}
+     */
+    index:boolean = false;
+
+    /**
      * Standardization rules
      * @type {null}
      */
@@ -41,6 +50,8 @@ export class TableFieldPolicy {
 
 
     $currentDomainType: DomainType;
+
+    field?:TableColumnDefinition;
 
     static forName(name:string) :TableFieldPolicy {
         return new this({name:name});
@@ -60,6 +71,15 @@ export class TableFieldPolicy {
         }
 
     }
+
+    copy() :TableFieldPolicy{
+        let field = this.field;
+        this.field = null;
+        let copy = CloneUtil.deepCopy(this);
+        copy.field = field;
+        return copy;
+    }
+
 
 
 }

@@ -59,6 +59,13 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     @PolicyProperty(name = "Row Tag", required = true, hint = "Specify root tag to extract from", value = ",",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "rowTag")})
     private String rowTag = "";
 
+    @PolicyProperty(name = "Attribute Prefix", required = true, hint = "The prefix for attributes so that we can differentiating attributes and elements. This will be the prefix for field names", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "attributePrefix")})
+    private String attributePrefix = "_";
+
+    @PolicyProperty(name = "Value Tag", required = true, hint = "The tag used for the value when there are attributes in the element having no child", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "valueTag")})
+    private String valueTag = "_VALUE";
+
+
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
         File tempFile = null;
@@ -83,7 +90,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             // Parse using Spark
             try (InputStream fis = new FileInputStream(tempFile)) {
-                schema = (HiveTableSchema) getSparkParserService().doParse(fis, SparkFileType.XML, target, new XMLCommandBuilder(hiveParse.getStartTag()));
+                schema = (HiveTableSchema) getSparkParserService().doParse(fis, SparkFileType.XML, target, new XMLCommandBuilder(hiveParse.getStartTag(),attributePrefix, valueTag));
             }
 
             schema.setStructured(true);
@@ -137,7 +144,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
     @Override
     public SparkCommandBuilder getSparkCommandBuilder() {
-        XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag());
+        XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag(), getAttributePrefix(), getValueTag());
         xmlCommandBuilder.setDataframeVariable(dataFrameVariable);
         xmlCommandBuilder.setLimit(limit);
         return xmlCommandBuilder;
@@ -170,8 +177,14 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
         String xmlRowTag;
 
-        XMLCommandBuilder(String rowTag) {
+        String attributePrefix;
+
+        String valueTag;
+
+        XMLCommandBuilder(String rowTag, String attributePrefix, String valueTag) {
             this.xmlRowTag = rowTag;
+            this.attributePrefix = attributePrefix;
+            this.valueTag = valueTag;
         }
 
         @Override
@@ -180,7 +193,10 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             sb.append("\nimport com.databricks.spark.xml._;\n");
             sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
-            sb.append(String.format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
+            sb.append(String.format("sqlContext.read"
+                                    + ".format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\")"
+                                    + ".option(\"attributePrefix\",\"%s\").option(\"valueTag\",\"%s\")"
+                                    + ".load(\"%s\")", xmlRowTag, attributePrefix, valueTag, pathToFile));
             return sb.toString();
         }
 
@@ -189,7 +205,10 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
             StringBuilder sb = new StringBuilder();
 
             sb.append("\nimport com.databricks.spark.xml._;\n");
-            sb.append(unionDataFrames(paths,"sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")\n",xmlRowTag));
+            sb.append(unionDataFrames(paths,"sqlContext.read"
+                                            + ".format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\")"
+                                            + ".option(\"attributePrefix\",\"%s\").option(\"valueTag\",\"%s\")"
+                                            + ".load(\"%s\")\n",xmlRowTag, attributePrefix, valueTag));
 
             return sb.toString();
         }
@@ -203,6 +222,18 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
     public void setRowTag(String rowTag) {
         this.rowTag = rowTag;
+    }
+
+    public String getAttributePrefix() {
+        return attributePrefix;
+    }
+
+    public String getValueTag() { return valueTag; }
+
+    public void setValueTag(String valueTag) { this.valueTag = valueTag; }
+
+    public void setAttributePrefix(String attributePrefix) {
+        this.attributePrefix = attributePrefix;
     }
 
     static class HiveXMLSchemaHandler extends DefaultHandler {

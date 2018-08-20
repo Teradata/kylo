@@ -69,9 +69,11 @@ export interface RegisteredTemplateService {
      * Fetch the input PortDTO objects on the Root process group
      * @return {any}
      */
-    fetchRootInputPorts() : any;
+    fetchRootInputPorts() : angular.IPromise<angular.IHttpResponse<any>>;
+
 
     deriveExpression(expression: string, configOnly: boolean): string;
+
 
     /**
      * Do we render the incoming property with codemirror?

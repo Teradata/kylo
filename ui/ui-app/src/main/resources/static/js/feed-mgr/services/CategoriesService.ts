@@ -22,7 +22,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
          * @type promise
          */
         loadingRequest:any = null;
-        
+
         loading = false;
 
         /**

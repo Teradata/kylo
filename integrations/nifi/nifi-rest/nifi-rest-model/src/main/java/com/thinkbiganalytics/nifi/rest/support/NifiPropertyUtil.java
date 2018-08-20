@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyRegistrationChangeInfo;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.NifiPropertyGroup;
 
@@ -36,6 +37,8 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +58,7 @@ import javax.annotation.Nullable;
  */
 public class NifiPropertyUtil {
 
-
+    private static final Logger log = LoggerFactory.getLogger(NifiPropertyUtil.class);
     /**
      * map the incoming list of properties to a key,value map
      *
@@ -421,7 +424,34 @@ public class NifiPropertyUtil {
 
         private static void updateCore(NifiProperty propertyToUpdate, NifiProperty property) {
 
-            propertyToUpdate.setValue(property.getValue());
+            //Identify property values changes between older/newer NiFi templates and value available in Kylo template
+            NiFiPropertyRegistrationChangeInfo registrationChangeInfo = new NiFiPropertyRegistrationChangeInfo();
+            registrationChangeInfo.setKey(property.getKey());
+            registrationChangeInfo.setValueFromNewerNiFiTemplate(propertyToUpdate.getValue());
+            registrationChangeInfo.setValueFromOlderNiFiTemplate(property.getTemplateValue());
+            registrationChangeInfo.setValueRegisteredInKyloTemplateFromOlderNiFiTemplate(property.getValue());
+
+
+            if ((propertyToUpdate.getValue()!=null) && (property.getValue()!=null)) {
+                if ((!propertyToUpdate.getValue().equals(property.getValue())) && (property.getValue().equals(property.getTemplateValue()))) {
+                    log.debug("Registration change info case 1: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                       + " and Kylo also kept the same value of " + property.getValue() + " while registering the template. "
+                                       + "(Action taken: Kylo will accept NiFi's new property value.)");
+                } else if ((!propertyToUpdate.getValue().equals(property.getValue())) && (!property.getValue().equals(property.getTemplateValue()))) {
+                    log.debug("Registration change info case 2: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                       + " that was overridden to " + property.getKey() + "=" + property.getValue() + " while registering template in Kylo. "
+                                       + "(Action taken: Kylo will ignore NiFi's new property value.)");
+                    propertyToUpdate.setValue(property.getValue());
+                } else {
+                    log.debug("Registration change info case 3: Default");
+                }
+            } else {
+                log.debug("Registration change info case 4: Default (values are null case)");
+            }
+
+            propertyToUpdate.setRegistrationChangeInfo(registrationChangeInfo);
             propertyToUpdate.setUserEditable(property.isUserEditable());
             propertyToUpdate.setSelected(property.isSelected());
             propertyToUpdate.setRenderType(property.getRenderType());

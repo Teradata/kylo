@@ -1,40 +1,32 @@
 [
   {
     "title": "SQL Source",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
+    "pluginId": "mysql",
+    "template": {
+      "format": "jdbc"
+    }
+  },
+  {
+    "title": "Hive",
+    "pluginId": "hive",
     "template": {
       "format": "jdbc"
     }
   },
   {
     "title": "Amazon S3",
+    "pluginId": "amazon-s3",
     "icon": "amazon",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
-        "s3n:///"
+        "s3a:///"
       ]
     }
   },
   {
     "title": "Azure Storage",
+    "pluginId": "azure",
     "icon": "windows",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "wasb:///"
@@ -43,37 +35,25 @@
   },
   {
     "title": "Kafka",
+    "pluginId": "kafka",
     "icon": "kafka",
     "template": {
       "format": "org.apache.spark.sql.kafka010.KafkaSourceProvider",
       "jars": [
         "file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar",
         "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"
-      ],
-      "options": {
-        "kafka.bootstrap.servers": "localhost:9092"
-      }
+      ]
     }
   },
   {
     "title": "File Upload",
-    "icon": "file_upload",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".upload"
-      }
-    ]
+    "pluginId": "file-upload",
+    "icon": "file_upload"
   },
   {
     "title": "HDFS",
+    "pluginId": "hdfs",
     "icon": "hadoop",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
         "hdfs://"
@@ -82,72 +62,66 @@
   },
   {
     "title": "Teradata",
+    "pluginId": "teradata",
     "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
     "template": {
       "format": "jdbc",
       "jars": [
-        "file:/opt/nifi/mysql/tdgssconfig.jar;file:/opt/nifi/mysql/terajdbc4.jar"
+        "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/tdgssconfig.jar",
+        "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/terajdbc4.jar"
+      ]
+    }
+  },
+  {
+    "title": "Mysql",
+    "pluginId": "mysql",
+    "color": "orange-700",
+    "template": {
+      "format": "jdbc",
+      "jars": [
+        "file:/opt/nifi/mysql/mariadb-java-client-1.5.7.jar"
       ],
       "options": {
-        "driver": "com.teradata.jdbc.TeraDriver",
-        "url": "jdbc:teradata://34.211.12.96",
-        "user": "dbc",
-        "password": "0Teradata$"
+        "driver": "org.mariadb.jdbc.Driver",
+        "url": "jdbc:mysql://localhost:3306/kylo"
+      }
+    }
+  },
+  {
+    "title": "Oracle",
+    "pluginId": "oracle",
+    "color": "orange-700",
+    "template": {
+      "format": "jdbc",
+      "jars": [
+        "file:/opt/nifi/oracle/ojdbc6.jar"
+      ],
+      "options": {
+        "driver": "oracle.jdbc.driver.OracleDriver",
+        "url": "jdbc:oracle:thin:@my.oracle.server.domain.com:1521:defaultDB"
       }
     }
   },
   {
     "title": "Google Cloud Storage",
+    "pluginId": "google-cloud-storage",
     "icon": "google",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "jars": [
         "file:/opt/nifi/mysql/gcs-connector-latest-hadoop2.jar"
       ],
-      "options": {
-        "spark.hadoop.google.cloud.auth.service.account.email": "drive-952@freastro.iam.gserviceaccount.com",
-        "spark.hadoop.google.cloud.auth.service.account.keyfile": "/opt/nifi/mysql/freastro-e330d4b6b80b.p12"
-      },
       "paths": [
         "gcs://"
       ]
     }
   },
   {
-    "title": "Hive",
-    "tabs": [
-      {
-        "label": "Table",
-        "sref": ".connection"
-      }
-    ],
-    "template": {
-      "format": "hive"
-    }
-  },
-  {
     "title": "Local File System",
+    "pluginId": "local-file-system",
     "icon": "fa-file",
-    "tabs": [
-      {
-        "label": "File",
-        "sref": ".browse"
-      }
-    ],
     "template": {
       "paths": [
-        "/"
+        "file:/"
       ]
     }
   }

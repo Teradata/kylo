@@ -1,0 +1,72 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<div fxLayout="row" class="centered">
+  <mat-card fxFlex="65%">
+    <!--<mat-spinner *ngIf="loading" aria-label="Loading template"></mat-spinner>-->
+    <mat-card-content>
+      <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
+      <div *ngIf="!loading">
+      <div class="card-title" flex>{{template.templateName}}
+        <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" icon="{{template.icon.title}}" size="20" style="fill:green"></ng-md-icon>
+      </div>
+      <h2 class="card-sub-header">{{template.description}}</h2>
+      <div layout="column" class="layout-padding-top">
+        <div layout="column" class="layout-padding-top-bottom">
+          <div class="hint">State</div>
+          <div ng-class="{'enabled':template.state == 'ENABLED','disabled':template.state != 'ENABLED'}">
+              <ng-md-icon icon="{{template.stateIcon}}" size="20"  style="fill:green" *ngIf="template.state != 'NOT REGISTERED'"></ng-md-icon> {{template.state}}</div>
+        </div>
+
+        <div layout="column" class="layout-padding-top-bottom">
+          <div class="hint">Last Updated</div>
+          <div>{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
+        </div>
+        <div layout="column" class="layout-padding-top-bottom">
+          <div class="hint">Feeds</div>
+          <div>  {{template.feedsCount}}</div>
+        </div>
+        <div fxLayout="row" fxLayoutAlign="end center">
+          <button mat-button color="primary" *ngIf="allowEdit" (click)="editTemplate()">
+            <ng-md-icon icon="edit" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Edit</span>
+          </button>
+          <button mat-button color="primary" *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
+            <ng-md-icon icon="check_circle" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Enable</span>
+          </button>
+          <button mat-button color="primary" *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
+            <ng-md-icon icon="block" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Disable</span>
+          </button>
+          <button mat-button color="primary" *ngIf="allowExport" (click)="confirmPublish()">
+            <ng-md-icon icon="publish" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Publish</span>
+          </button>
+          <button mat-button color="primary" (click)="cancel()">
+            <ng-md-icon icon="arrow_back" size="20" style="fill:#F08C38"> </ng-md-icon>
+            <span class="md-body-2">Back</span>
+          </button>
+        </div>
+      </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

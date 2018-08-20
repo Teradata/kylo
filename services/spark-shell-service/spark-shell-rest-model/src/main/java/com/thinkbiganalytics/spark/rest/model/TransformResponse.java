@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,6 @@ package com.thinkbiganalytics.spark.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
-import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import java.util.List;
@@ -34,12 +31,7 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransformResponse {
-
-    /**
-     * Error message
-     */
-    private String message;
+public class TransformResponse extends SimpleResponse {
 
     /**
      * Profiled column statistics.
@@ -57,11 +49,6 @@ public class TransformResponse {
     private TransformQueryResult results;
 
     /**
-     * Success status of a transformation
-     */
-    private Status status;
-
-    /**
      * Table name with the results
      */
     private String table;
@@ -75,24 +62,6 @@ public class TransformResponse {
      * Actual cols in underlying resultset (may be different than results returned to client due to paging)
      */
     private Integer actualCols;
-
-    /**
-     * Gets the error message.
-     *
-     * @return the error message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * Sets the error message.
-     *
-     * @param message the error message
-     */
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     /**
      * Gets the column statistics.
@@ -149,24 +118,6 @@ public class TransformResponse {
     }
 
     /**
-     * Gets the status of this transformation.
-     *
-     * @return the status
-     */
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * Sets the status of this transformation.
-     *
-     * @param status the status
-     */
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    /**
      * Gets the table with the results.
      *
      * @return the table name
@@ -186,6 +137,7 @@ public class TransformResponse {
 
     /**
      * Actual rows returned by the query but may be different than results due to paging
+     *
      * @return rows
      */
     public Integer getActualRows() {
@@ -198,6 +150,7 @@ public class TransformResponse {
 
     /**
      * Actual cols returned by the query but may be different than results due to paging
+     *
      * @return cols
      */
     public Integer getActualCols() {
@@ -206,30 +159,5 @@ public class TransformResponse {
 
     public void setActualCols(Integer actualCols) {
         this.actualCols = actualCols;
-    }
-
-    /**
-     * Success status of a transformation.
-     */
-    public enum Status {
-        /**
-         * Transformation resulted in an error
-         */
-        ERROR,
-
-        /**
-         * Transformation is in-progress
-         */
-        PENDING,
-
-        /**
-         * Transformation was successful
-         */
-        SUCCESS;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
     }
 }

@@ -18,4 +18,11 @@ wget https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-b
 
 cp /opt/kylo/kylo-services/lib/mariadb-java-client-*.jar ./nifi
 
+
+VAULT_VERSION="${VAULT_VERSION:-0.9.0}"
+UNAME=$(uname -s |  tr '[:upper:]' '[:lower:]')
+VAULT_ZIP="vault_${VAULT_VERSION}_${UNAME}_amd64.zip"
+wget "https://releases.hashicorp.com/vault/${VAULT_VERSION}/${VAULT_ZIP}" -P ./vault
+
+
 tar -cvf kylo-install.tar *

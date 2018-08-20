@@ -183,6 +183,10 @@ public class MetadataJcrConfigurator {
         if (!session.getRootNode().hasNode("metadata/projects")) {
             session.getRootNode().getNode("metadata").addNode("projects");
         }
+        
+        if (!session.getRootNode().hasNode("metadata/catalog")) {
+            session.getRootNode().getNode("metadata").addNode("catalog", "tba:catalogFolder");
+        }
 
         //ensure the role paths exist for the entities
         for (String entity : SecurityRole.ENTITIES) {
