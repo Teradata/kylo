@@ -50,7 +50,7 @@ constructor(private $scope: IScope,
         watchDashboard=()=> {
             this.BroadcastService.subscribe(this.$scope,this.OpsManagerDashboardService.DASHBOARD_UPDATED,(dashboard: any)=>{
                 var alerts = this.OpsManagerDashboardService.dashboard.alerts;
-                this.alertsServiceV2.transformAlerts(alerts);
+                this.alertsServiceV2.transformAlertSummaryResponse(alerts);
                 this.alerts = alerts;
             });
         }

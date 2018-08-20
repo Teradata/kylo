@@ -30,7 +30,7 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
     loading: any;
     showProgress: any;
     jobIdMap: any;
-    activeJobRequests: any[];
+    activeJobRequests: Promise<any>[];
     timeoutMap: any;
     paginationData: any;
     viewType: any;
@@ -48,9 +48,6 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
     filterHelpFields: any[];
     filterHelpExamples: any[];
     
-    deferred: any;
-    promise: any;
-
     @Input() filterJob: any;
     filterJobObserver = new Subject();
 
@@ -67,7 +64,6 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
     constructor(private http: HttpClient,
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
-                @Inject("$injector") private $injector: any,
                 private OpsManagerJobService: OpsManagerJobService,
                 private TableOptionsService: DefaultTableOptionsService,
                 private PaginationDataService: DefaultPaginationDataService,
@@ -137,7 +133,7 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
 
         this.loadJobs(true);
         this.filterJobObserver.subscribe(()=>{
-            return this.loadJobs(true).promise;
+            return this.loadJobs(true);
         });
 
         this.filterHelpOperators = [];
@@ -206,7 +202,7 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
 
     onTabSelected = (tab: any)=> {
         this.TabService.selectedTab(this.pageName, this.tabs[tab]);
-        return this.loadJobs(true).promise;
+        return this.loadJobs(true);
     };
 
         /**
@@ -277,7 +273,7 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
 
         //Load Jobs
 
-        loadJobs(force: any){
+        loadJobs(force: any) : Promise<any>{
             if (force || !this.refreshing) {
 
                 if (force) {
@@ -298,62 +294,60 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
                 var start = (limit * activeTab.currentPage) - limit; //this.query.page(this.selectedTab));
 
                 var sort = this.PaginationDataService.sort(this.pageName);
-                var canceler = this.$injector.get("$q").defer();
-                var transformJobs = (response: any)=> {
-                    //transform the data for UI
-                    this.transformJobData(tabTitle, response);
-                    this.TabService.setTotal(this.pageName, tabTitle, response.recordsFiltered)
-
-                    if (this.loading) {
-                        this.loading = false;
+                var loadPromise = new Promise((resolve,reject) => {
+                    var transformJobs = (response: any)=> {
+                        //transform the data for UI
+                        this.transformJobData(tabTitle, response);
+                        this.TabService.setTotal(this.pageName, tabTitle, response.recordsFiltered)
+    
+                        if (this.loading) {
+                            this.loading = false;
+                        }
+    
+                        this.finishedRequest(loadPromise,resolve);
+    
+                    };
+                    var successFn = (response: any)=> {
+                        if (response) {
+                            this.fetchFeedNames(response.data).then(transformJobs);
+                        }
+                    };
+                    var errorFn = (err: any)=> {
+                        this.finishedRequest(loadPromise,resolve);
+                    };
+                    this.activeJobRequests.push(loadPromise);
+                    var filter = this.filterJob;
+    
+                    let params = new HttpParams();
+                    params.set('start', start.toString());
+                    params.set('limit', limit);
+                    params.set('sort', sort);
+                    params.set('filter', filter);
+    
+                    if (this.feedFilter) {
+                        if(!params.get('filter')) {
+                            params.set('filter', '');
+                        }
+                        if(params.get('filter') != ''){
+                            params.set('filter', params.get('filter') +'');
+                        }
+                        params.set('filter', params.get('filter') + "jobInstance.feed.name=="+this.feedFilter);
                     }
-
-                    this.finishedRequest(canceler);
-
-                };
-                var successFn = (response: any)=> {
-                    if (response) {
-                        this.fetchFeedNames(response.data).then(transformJobs);
+                    //if the filter doesnt contain an operator, then default it to look for the job name
+                    if (params.get('filter') != '' && params.get('filter') != null && !this.containsFilterOperator(params.get('filter'))) {
+                        params.set('filter','job=~%' + params.get('filter'));
                     }
-                };
-                var errorFn = (err: any)=> {
-                    this.finishedRequest(canceler);
-                };
-                this.activeJobRequests.push(canceler);
-                this.deferred = canceler;
-                this.promise = this.deferred.promise;
-                var filter = this.filterJob;
-
-                let params = new HttpParams();
-                params.set('start', start.toString());
-                params.set('limit', limit);
-                params.set('sort', sort);
-                params.set('filter', filter);
-
-                if (this.feedFilter) {
-                    if(!params.get('filter')) {
-                        params.set('filter', '');
-                    }
-                    if(params.get('filter') != ''){
-                        params.set('filter', params.get('filter') +'');
-                    }
-                    params.set('filter', params.get('filter') + "jobInstance.feed.name=="+this.feedFilter);
-                }
-                //if the filter doesnt contain an operator, then default it to look for the job name
-                if (params.get('filter') != '' && params.get('filter') != null && !this.containsFilterOperator(params.get('filter'))) {
-                    params.set('filter','job=~%' + params.get('filter'));
-                }
-
-
-                var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
-
-                // {timeout: canceler.promise}
-                this.http.get(this.OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {params: params}).toPromise().then(successFn, errorFn);
+    
+    
+                    var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
+    
+                    // {timeout: canceler.promise}
+                    this.http.get(this.OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {params: params}).toPromise().then(successFn, errorFn);
+                })
+                
             }
             this.showProgress = true;
-
-            return this.deferred;
-
+            return loadPromise;
         }
 
         fetchFeedNames (response:any) : Promise<any> {
@@ -418,13 +412,12 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
             }
         }
 
-        finishedRequest=(canceler: any) =>{
-            var index = _.indexOf(this.activeJobRequests, canceler);
+        finishedRequest (loadPromise : Promise<any>,resolve: any) {
+            var index = _.indexOf(this.activeJobRequests, loadPromise);
             if (index >= 0) {
                 this.activeJobRequests.splice(index, 1);
             }
-            canceler.resolve();
-            canceler = null;
+            resolve();
             this.refreshing = false;
             this.showProgress = false;
             this.loaded = true;
@@ -586,9 +579,6 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
         showFilterHelpPanel = (ev: any)=> {
 
             var position = $(".filter-help-button").position();
-            // this.$injector.get("$mdPanel").newPanelPosition()
-            //     .relativeTo('.filter-help-button')
-            //     .addPanelPosition(this.$injector.get("$mdPanel").xPosition.ALIGN_END, this.$injector.get("$mdPanel").yPosition.BELOW);
 
             let dialogRef = this.dialog.open(JobFilterHelpPanelMenuCtrl, {
                 data: { filterHelpExamples: this.filterHelpExamples,
@@ -596,11 +586,12 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
                         filterHelpFields: this.filterHelpFields },
                 panelClass: "filter-help",
                 position: {
-                    'top': position.top.toString(),
-                    'left': position.left.toString()
+                    'top': (position.top + 120).toString()+'px',
+                    'left': (position.left - 80).toString()+'px'
                 },
                 closeOnNavigation: true,
-                autoFocus: true
+                autoFocus: true,
+                backdropClass: "filter-help-backdrop"
               });
 
         };
@@ -608,7 +599,12 @@ export class JobsCardController extends BaseFilteredPaginatedTableView implement
 
 @Component({
     selector: 'job-filter-help-panel-menu-ctrl',
-    templateUrl: 'js/ops-mgr/jobs/jobs-filter-help-template.html'
+    templateUrl: 'js/ops-mgr/jobs/jobs-filter-help-template.html',
+    styles: [`
+        .filter-help-backdrop {
+            background: transparent;
+        }
+    `]
 })
 export class JobFilterHelpPanelMenuCtrl implements ng.IComponentController{
 

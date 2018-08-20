@@ -1,109 +1,99 @@
-import * as angular from "angular";
-import {moduleName} from "../module-name";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import IconService from "./IconStatusService";
+import { HttpClient } from "@angular/common/http";
 
-export default class ServicesStatusData{
-    ServicesStatusData: any;
-    
-    //static $inject = ['OpsManagerRestUrlService'];
-    constructor(private $q: any,
-                private $http: any,
-                private $interval: any,
-                private $timeout: any,
-                private IconService: any,
-                private OpsManagerRestUrlService: OpsManagerRestUrlService){       
-                this.ServicesStatusData = {};
-                this.ServicesStatusData.SERVICES_URL = this.OpsManagerRestUrlService.SERVICES_URL;
-                this.ServicesStatusData.fetchServiceInterval = null;
-                this.ServicesStatusData.services = {};
-                this.ServicesStatusData.FETCH_INTERVAL = 5000;
+export default class ServicesStatusData {
 
-                this.ServicesStatusData.fetchServiceStatusErrorCount = 0;
-                this.ServicesStatusData.setFetchTimeout = (timeout: any)=>{
-                this.ServicesStatusData.FETCH_INTERVAL = timeout;
-                }
+    SERVICES_URL: string = this.opsManagerRestUrlService.SERVICES_URL;
+    fetchServiceInterval: any = null;
+    services: any = {};
+    FETCH_INTERVAL: number = 5000;
 
-             this.ServicesStatusData.fetchServiceStatus = (successCallback: any, errorCallback: any)=>{
+    fetchServiceStatusErrorCount: number = 0;
 
-                var successFn =  (response: any)=> {
-                    var data = response.data;
-                    this.ServicesStatusData.transformServicesResponse(data);
-                    if (successCallback) {
-                        successCallback(data);
-                    }
-                }
-                var errorFn =  (err: any)=> {
-                    this.ServicesStatusData.fetchServiceStatusErrorCount++;
+    constructor(private http: HttpClient,
+        private iconService: IconService,
+        private opsManagerRestUrlService: OpsManagerRestUrlService) {
 
-                    if (errorCallback) {
-                        errorCallback(err);
-                    }
-                    if (this.ServicesStatusData.fetchServiceStatusErrorCount >= 10) {
-                        this.ServicesStatusData.FETCH_INTERVAL = 20000;
-                    }
+    }
+    setFetchTimeout = (timeout: any) => {
+        this.FETCH_INTERVAL = timeout;
+    }
+    fetchServiceStatus(successCallback: any, errorCallback: any) : Promise<any> {
 
-                }
-                return this.$http.get(this.ServicesStatusData.SERVICES_URL).then(successFn,errorFn);
+        var successFn = (response: any) => {
+            var data = response.data;
+            this.transformServicesResponse(data);
+            if (successCallback) {
+                successCallback(data);
             }
-            
-             this.ServicesStatusData.transformServicesResponse = (services: any)=>{
-                    var data = services;
-                    this.ServicesStatusData.fetchServiceStatusErrorCount = 0;
-                    angular.forEach(data,  (service: any, i: any) =>{
-                        service.componentsCount = service.components.length;
-                        service.alertsCount = (service.alerts != null && service.alerts.length ) ? service.alerts.length : 0;
-                        if (service.state == 'UNKNOWN') {
-                            service.state = 'WARNING';
-                        }
-                        var serviceHealth = this.IconService.iconForHealth(service.state)
-                        service.healthText = serviceHealth.text;
-                        service.icon = serviceHealth.icon;
-                        service.iconstyle = serviceHealth.style;
-                        if (service.components) {
-                            service.componentMap = {};
-                            angular.forEach(service.components,  (component: any, i: any)=> {
-                                service.componentMap[component.name] = component;
-                                if (component.state == 'UNKNOWN') {
-                                    component.state = 'WARNING';
-                                }
+        }
+        var errorFn = (err: any) => {
+            this.fetchServiceStatusErrorCount++;
 
-                                if (component.alerts != null) {
-                                    angular.forEach(component.alerts,  (alert: any) =>{
-                                        var alertHealth = this.IconService.iconForServiceComponentAlert(alert.state);
-                                        alert.icon = alertHealth.icon;
-                                        alert.iconstyle = alertHealth.style;
-                                        alert.healthText = alertHealth.text
-                                    });
-                                }
-                                else {
-                                    component.alerts = [];
-                                }
-                                var maxAlertState = component.highestAlertState;
-                                if (maxAlertState != null) {
-                                    component.state = maxAlertState;
-                                }
-                                var componentHealth = this.IconService.iconForHealth(component.state)
-                                component.healthText = componentHealth.text;
-                                component.icon = componentHealth.icon;
-                                component.iconstyle = componentHealth.style;
-                            })
-                        }
-
-                        if (this.ServicesStatusData.services[service.serviceName]) {
-                            angular.extend(this.ServicesStatusData.services[service.serviceName], service);
-                        }
-                        else {
-                            this.ServicesStatusData.services[service.serviceName] = service;
-                        }
-                    });
+            if (errorCallback) {
+                errorCallback(err);
             }
-            return this.ServicesStatusData;
-        }   
+            if (this.fetchServiceStatusErrorCount >= 10) {
+                this.FETCH_INTERVAL = 20000;
+            }
+
+        }
+        return this.http.get(this.SERVICES_URL).toPromise().then(successFn, errorFn);
+    }
+
+    transformServicesResponse(services: any) {
+        var data = services;
+        this.fetchServiceStatusErrorCount = 0;
+        Object.keys(data).forEach((dataKey: any) => {
+            var service = data[dataKey];
+            service.componentsCount = service.components.length;
+            service.alertsCount = (service.alerts != null && service.alerts.length) ? service.alerts.length : 0;
+            if (service.state == 'UNKNOWN') {
+                service.state = 'WARNING';
+            }
+            var serviceHealth = this.iconService.iconForHealth(service.state)
+            service.healthText = serviceHealth.text;
+            service.icon = serviceHealth.icon;
+            service.iconstyle = serviceHealth.style;
+            if (service.components) {
+                service.componentMap = {};
+                Object.keys(service.components).forEach((key: any) => {
+                    var component = service.components[key];
+                    service.componentMap[component.name] = component;
+                    if (component.state == 'UNKNOWN') {
+                        component.state = 'WARNING';
+                    }
+
+                    if (component.alerts != null) {
+                        component.alerts.forEach((alert: any) => {
+                            var alertHealth = this.iconService.iconForServiceComponentAlert(alert.state);
+                            alert.icon = alertHealth.icon;
+                            alert.iconstyle = alertHealth.style;
+                            alert.healthText = alertHealth.text
+                        });
+                    }
+                    else {
+                        component.alerts = [];
+                    }
+                    var maxAlertState = component.highestAlertState;
+                    if (maxAlertState != null) {
+                        component.state = maxAlertState;
+                    }
+                    var componentHealth = this.iconService.iconForHealth(component.state)
+                    component.healthText = componentHealth.text;
+                    component.icon = componentHealth.icon;
+                    component.iconstyle = componentHealth.style;
+                });
+            }
+
+            if (this.services[service.serviceName]) {
+                this.services[service.serviceName] = [...this.services[service.serviceName], ...service];
+            }
+            else {
+                this.services[service.serviceName] = service;
+
+            }
+        });
+    }
 }
-
-
-angular.module(moduleName)
-        .factory('ServicesStatusData',
-                ["$q", '$http', '$interval', '$timeout', 'IconService',
-                'OpsManagerRestUrlService',
-                ServicesStatusData]);

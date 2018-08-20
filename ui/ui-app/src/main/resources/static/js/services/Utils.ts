@@ -220,4 +220,4 @@ export default class Utils{
  }
 }
 
- angular.module(moduleName).factory('Utils', ["$timeout", "$filter",Utils]);
+ angular.module(moduleName).service('Utils', ["$timeout", "$filter",Utils]);

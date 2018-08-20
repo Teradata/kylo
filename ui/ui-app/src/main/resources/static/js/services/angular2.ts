@@ -16,6 +16,7 @@ import FileUpload from "./FileUploadService";
 import AngularModuleExtensionService from "./AngularModuleExtensionService";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 import {TemplateService} from "../repository/services/template.service";
+import Utils from "./Utils";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -101,6 +102,12 @@ export const fileUploadServiceProvider : FactoryProvider = {
 export const angularModuleExtensionServiceProvider : FactoryProvider = {
     provide : AngularModuleExtensionService,
     useFactory : (i: angular.auto.IInjectorService) => i.get("AngularModuleExtensionService"),
+    deps : ["$injector"]
+};
+
+export const utilsServiceProvider : FactoryProvider = {
+    provide : Utils,
+    useFactory : (i: angular.auto.IInjectorService) => i.get("Utils"),
     deps : ["$injector"]
 };
 

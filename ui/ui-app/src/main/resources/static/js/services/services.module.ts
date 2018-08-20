@@ -9,7 +9,8 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         commonRestURLServiceProvider,
         userGroupServiceProvider,
         angularModuleExtensionServiceProvider,
-        fileUploadServiceProvider} from "./angular2";
+        fileUploadServiceProvider,
+        utilsServiceProvider} from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
 //import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
@@ -30,6 +31,7 @@ import {TemplateService} from "../repository/services/template.service";
         commonRestURLServiceProvider,
         userGroupServiceProvider,
         fileUploadServiceProvider,
+        utilsServiceProvider,
         angularModuleExtensionServiceProvider,
         TemplateService
     ]

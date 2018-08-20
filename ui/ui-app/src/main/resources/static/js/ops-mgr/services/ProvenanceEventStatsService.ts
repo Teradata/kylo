@@ -1,59 +1,49 @@
-import * as angular from "angular";
-import {moduleName} from "../module-name";
+import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import { HttpClient } from "@angular/common/http";
 
 export default class ProvenanceEventStatsService{
+    loading : boolean = false;
     constructor(
-                private $http: any,
-                private $q: any,
-                private OpsManagerRestUrlService: any
-    ){
-         let data: any = {
-            getTimeFrameOptions: function () {
+                private http : HttpClient,
+                private opsManagerRestUrlService: OpsManagerRestUrlService
+    ){}
+    getTimeFrameOptions() {
 
-                var promise = $http.get(OpsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS);
-                return promise;
-            },
-
-            getFeedProcessorDuration: function (feedName: any, from: any, to: any) {
-             var successFn =  (response: any) =>{
-                }
-                var errorFn =  (err: any) =>{
-                    this.loading = false;
-
-                }
-                var promise = $http.get(OpsManagerRestUrlService.PROCESSOR_DURATION_FOR_FEED(feedName, from, to));
-                promise.then(successFn, errorFn);
-                return promise;
-            },
-            getFeedStatisticsOverTime: function (feedName: any, from: any, to: any) {            
-                var successFn =  (response: any)=> {
-
-                };
-                var errorFn =  (err: any)=> {
-                    this.loading = false;
-                };
-                var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, from, to));
-                promise.then(successFn, errorFn);
-                return promise;
-            },
-
-            getFeedProcessorErrors: function (feedName: any, from: any, to: any, after: any) {
-                var successFn = (response: any) =>{
-
-                }
-                var errorFn =  (err: any)=>{
-                    this.loading = false;
-
-                }
-                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, from, to),{params:{after:after}});
-                promise.then(successFn, errorFn);
-                return promise;
-            }
+        var promise = this.http.get(this.opsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS).toPromise();
+        return promise;
+    };
+    getFeedProcessorDuration (feedName: any, from: any, to: any) {
+     var successFn =  (response: any) =>{
+        }
+        var errorFn =  (err: any) =>{
+            this.loading = false;
 
         }
-        return data;
+        var promise = this.http.get(this.opsManagerRestUrlService.PROCESSOR_DURATION_FOR_FEED(feedName, from, to)).toPromise();
+        promise.then(successFn, errorFn);
+        return promise;
+    };
+    getFeedStatisticsOverTime (feedName: any, from: any, to: any) {            
+        var successFn =  (response: any)=> {
+
+        };
+        var errorFn =  (err: any)=> {
+            this.loading = false;
+        };
+        var promise = this.http.get(this.opsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, from, to,"")).toPromise();
+        promise.then(successFn, errorFn);
+        return promise;
+    };
+    getFeedProcessorErrors(feedName: any, from: any, to: any, after: any) {
+        var successFn = (response: any) =>{
+
+        }
+        var errorFn =  (err: any)=>{
+            this.loading = false;
+
+        }
+        var promise = this.http.get(this.opsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, from, to),{params:{after:after}}).toPromise();
+        promise.then(successFn, errorFn);
+        return promise;
     }
 }
-
-   angular.module(moduleName)
-   .factory('ProvenanceEventStatsService',['$http','$q','OpsManagerRestUrlService',ProvenanceEventStatsService]);

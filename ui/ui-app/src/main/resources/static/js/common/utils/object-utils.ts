@@ -54,5 +54,8 @@ export class ObjectUtils {
     static isString(value : any) : boolean {
         return typeof value === 'string';
     }
+    static isFunction(value : any) : boolean {
+        return typeof value === 'function';
+    }
 
 }

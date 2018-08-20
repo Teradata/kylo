@@ -289,40 +289,18 @@ class Route {
         });
 
         $stateProvider.state({
-            name: 'job-details.**',
-            url: '/job-details/{executionId}',
-            params: {
-                executionId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/details/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('job-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading job-details ", err);
-                    return err;
-                });
-            }
+            name: 'jobs.**',
+            url: '/jobs',
+            loadChildren: 'ops-mgr/jobs/jobs.module#JobsModule'
         });
 
         $stateProvider.state({
-            name: 'jobs.**',
-            url: '/jobs',
+            name: 'job-details.**',
+            url: '/job-details/{executionId}',
             params: {
-                filter: null,
-                tab: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('jobs', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading jobs ", err);
-                    return err;
-                });
-            }
+                        executionId: null
+                    },
+            loadChildren: 'ops-mgr/jobs/details/job-details.module#JobDetailsModule'
         });
 
         $stateProvider.state({
