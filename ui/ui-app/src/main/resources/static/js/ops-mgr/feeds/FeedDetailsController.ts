@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import * as _ from "underscore";
-import OpsManagerFeedService from "../services/OpsManagerFeedService";
+import {OpsManagerFeedService} from "../services/OpsManagerFeedService";
 import OpsManagerJobService from "../services/OpsManagerJobService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 

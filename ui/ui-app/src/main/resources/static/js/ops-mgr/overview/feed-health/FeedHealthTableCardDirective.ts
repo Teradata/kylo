@@ -5,7 +5,7 @@ import StateService from "../../../services/StateService";
 import TabService from "../../services/TabService";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
-import OpsManagerFeedService from "../../services/OpsManagerFeedService";
+import {OpsManagerFeedService} from "../../services/OpsManagerFeedService";
 
 export default class FeedHealthTableCardController implements ng.IComponentController{
     pageName: any;
