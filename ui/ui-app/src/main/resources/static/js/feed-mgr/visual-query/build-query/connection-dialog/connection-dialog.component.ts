@@ -3,9 +3,7 @@ import * as _ from "underscore";
 
 import {moduleName} from "../../module-name";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {BinValuesConfig} from "../../wrangler/api";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {BinValuesDialog} from "../../wrangler/core/columns/bin-values.component";
 import {Component, Inject} from "@angular/core";
 import {CloneUtil} from "../../../../common/utils/clone-util";
 import {FlowChart} from "../flow-chart/model/flow-chart.model";
@@ -63,7 +61,7 @@ export class ConnectionDialog {
     destKey:string;
     joinType:string;
 
-    constructor(private dialog: MatDialogRef<BinValuesDialog>, formBuilder: FormBuilder, @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogConfig) {
+    constructor(private dialog: MatDialogRef<ConnectionDialog>, formBuilder: FormBuilder, @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogConfig) {
 
         this.form = formBuilder.group({});
 

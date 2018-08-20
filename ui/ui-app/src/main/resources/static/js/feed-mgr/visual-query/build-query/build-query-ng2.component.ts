@@ -15,7 +15,6 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import SideNavService from "../../../services/SideNavService";
 import {VisualQueryService} from "../../services/VisualQueryService";
 import {DatasourcesService} from "../../services/DatasourcesService";
-import {ReplaceValueEqualToDialog} from "../wrangler/core/columns/replace-value.component";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {HiveService} from "../../services/HiveService";
 import {TdLoadingService} from "@covalent/core/loading";
