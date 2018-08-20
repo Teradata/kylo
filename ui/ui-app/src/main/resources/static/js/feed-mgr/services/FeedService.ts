@@ -653,7 +653,10 @@ export class FeedService {
      */
     getSystemName(feedName: any) {
 
-        return this.http.get(this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } }).toPromise();
+        return this.http.get(this.RestUrlService.GET_SYSTEM_NAME, {
+            params: { name: feedName },
+            responseType: "text"
+        }).toPromise();
 
     }
     /**

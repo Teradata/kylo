@@ -1,9 +1,5 @@
-import * as angular from 'angular';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableSortingOrder, TdDataTableService } from '@covalent/core/data-table';
-import { IPageChangeEvent } from '@covalent/core/paging';
-import { filter } from 'rxjs/operator/filter';
-import { NgForm } from '@angular/forms';
+import {Component, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {NgForm} from '@angular/forms';
 
 @Component({
     selector: 'service-level-agreement-form',
@@ -36,9 +32,14 @@ export default class ServiceLevelAgreementForm {
 
     @Input() onDeleteSlaMetric: any;
     @Input() onDeleteSlaAction: any;
-    
+
     @Output() ruleTypeChange: EventEmitter<any> = new EventEmitter<any>();
     @Output() slaFormChange: EventEmitter<any> = new EventEmitter<any>();
+
+    @ViewChild("slaForm")
+    set childForm(slaForm: NgForm) {
+        this.onChange(slaForm);
+    }
 
     onRuleTypeChange(ruleType: any) {
         this.ruleTypeChange.emit(ruleType);
@@ -47,7 +48,5 @@ export default class ServiceLevelAgreementForm {
     onChange(slaForm: NgForm) {
         this.slaFormChange.emit(slaForm);
     }
-
-
 }
 

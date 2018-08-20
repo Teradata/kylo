@@ -12,7 +12,7 @@ import { SlaService } from '../services/SlaService';
 import { ITdDataTableColumn, TdDataTableService, TdDataTableSortingOrder, ITdDataTableSortChangeEvent } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
 import { PolicyInputFormService } from '../shared/policy-input-form/PolicyInputFormService';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { FeedService } from '../services/FeedService';
 import {Observable} from 'rxjs/Observable';

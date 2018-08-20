@@ -1,11 +1,11 @@
+import {Component, Input} from "@angular/core";
 import * as angular from "angular";
-import {Component, Input, OnDestroy} from "@angular/core";
+
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
-import { MatMenuTrigger } from '@angular/material';
 
 @Component({
     selector: "tba-options-menu",
-    templateUrl:"js/common/options-menu/options-menu-template.html",
+    templateUrl: "js/common/options-menu/options-menu-template.html",
     styleUrls: ["js/common/options-menu/options-menu-style.css"]
 })
 export class OptionsMenuComponent {
@@ -30,7 +30,7 @@ export class OptionsMenuComponent {
     paginationId: any;
 
     ngOnInit() {
-        
+
         if (this.showViewType) {
             this.viewType = {label: 'List View', icon: 'list', value: 'list', type: 'viewType'};
         }
@@ -44,7 +44,8 @@ export class OptionsMenuComponent {
         this.paginationData = this.paginationDataService.paginationData(this.menuKey);
     }
 
-    constructor(private paginationDataService: DefaultPaginationDataService) {}
+    constructor(private paginationDataService: DefaultPaginationDataService) {
+    }
 
     getPaginationId(tab: any) {
         return this.paginationDataService.paginationId(this.menuKey, tab.title);

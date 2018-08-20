@@ -17,7 +17,7 @@ import {InputText} from "../../../../shared/dynamic-form/model/InputText";
 import {Select} from "../../../../shared/dynamic-form/model/Select";
 import {Checkbox} from "../../../../shared/dynamic-form/model/Checkbox";
 import {DynamicFormService} from "../../../../shared/dynamic-form/services/dynamic-form.service";
-import {MatRadioChange} from "@angular/material";
+import {MatRadioChange} from "@angular/material/radio";
 import {RegisterTemplatePropertyService} from "../../../../services/RegisterTemplatePropertyService";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";

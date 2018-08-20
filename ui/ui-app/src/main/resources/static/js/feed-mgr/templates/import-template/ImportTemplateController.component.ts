@@ -1,27 +1,27 @@
-import * as angular from "angular";
-
-import * as _ from "underscore";
-import { ImportComponentType, DefaultImportService } from "../../services/ImportService";
-import { Import } from "../../services/ImportComponentOptionTypes";
-import { Common } from "../../../common/CommonTypes";
+import {HttpClient} from "@angular/common/http";
+import {Component, Inject} from "@angular/core";
+import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {StateService} from "@uirouter/angular";
-import { OnInit, Component, Inject } from "@angular/core";import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
+import * as angular from "angular";
+import "rxjs/add/operator/timeout";
+import * as _ from "underscore";
+
+import {Common} from "../../../common/CommonTypes";
+import FileUpload from "../../../services/FileUploadService";
+import {Import} from "../../services/ImportComponentOptionTypes";
+import {DefaultImportService, ImportComponentType} from "../../services/ImportService";
+import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
+import {RestUrlService} from "../../services/RestUrlService";
+
+import Map = Common.Map;
 import ImportComponentOption = Import.ImportComponentOption;
-import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
-import ImportService = Import.ImportService;
-import Map = Common.Map;
-import { RegisterTemplateServiceFactory } from "../../services/RegisterTemplateServiceFactory";
-import FileUpload from "../../../services/FileUploadService";
-import { RestUrlService } from "../../services/RestUrlService";
-import { AbstractControl, ValidatorFn, FormControl, FormGroup, Validators } from "@angular/forms";
-import { HttpClient } from "@angular/common/http";
-import "rxjs/add/operator/timeout";
+import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 
-export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
+export function invalidConnection(connectionMap: any, connection: any): ValidatorFn {
 
-    return (control: AbstractControl): {[key: string]: any} | null => {
+    return (control: AbstractControl): { [key: string]: any } | null => {
         if (!angular.isDefined(connectionMap[connection.inputPortDisplayName])) {
             connection.inputPortDisplayName = null;
             //mark as invalid
@@ -237,11 +237,11 @@ export class ImportTemplateController {
 
     changeFileModel = (fileModel: any) => {
 
-            if (fileModel != null)
-                this.checkFileName(fileModel.name);
-            if (this.templateFile != fileModel) {
-                this.resetImportOptions();
-            }
+        if (fileModel != null)
+            this.checkFileName(fileModel.name);
+        if (this.templateFile != fileModel) {
+            this.resetImportOptions();
+        }
     }
 
     constructor(private FileUpload: FileUpload,
@@ -320,7 +320,7 @@ export class ImportTemplateController {
              * Map of errors by type after this upload
              * @type {{FATAL: any[]; WARN: any[]}}
              */
-            let errorMap: any = { "FATAL": [], "WARN": [] };
+            let errorMap: any = {"FATAL": [], "WARN": []};
 
             //reassign the options back from the response data
             let importComponentOptions = responseData.importOptions.importComponentOptions;
@@ -350,7 +350,7 @@ export class ImportTemplateController {
                         if (inputPortsResponse.data) {
                             angular.forEach(inputPortsResponse.data, (port, i) => {
                                 var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
-                                this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled });
+                                this.inputPortList.push({label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled});
                                 this.connectionMap[port.name] = port;
                             });
                         }
@@ -380,7 +380,7 @@ export class ImportTemplateController {
             angular.forEach(this.importResult.reusableTemplateConnections, (connection) => {
                 //initially mark as valid
                 this.importTemplateForm.addControl("port-" + connection.feedOutputPortName,
-                            new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
+                    new FormControl(null, [Validators.required, invalidConnection(this.connectionMap, connection)]));
 
             });
 
@@ -476,14 +476,14 @@ export class ImportTemplateController {
         this.http.post("/proxy/v1/repository/templates/import", params, {
             headers: {'Content-Type': 'application/json'}
         }).toPromise().then(function (data: any) {
-                if (successFn) {
-                    successFn(data)
-                }
-            }, function (err: any) {
-                if (errorFn) {
-                    errorFn(err)
-                }
-            });
+            if (successFn) {
+                successFn(data)
+            }
+        }, function (err: any) {
+            if (errorFn) {
+                errorFn(err)
+            }
+        });
     }
 
     /**
@@ -504,7 +504,9 @@ export class ImportTemplateController {
             // this.$injector.get("$timeout")(() => {
             //     stopStatusCheck();
             // }, delay)
-            setTimeout(() => { stopStatusCheck() }, 5000);
+            setTimeout(() => {
+                stopStatusCheck()
+            }, 5000);
         }
         else {
             stopStatusCheck();

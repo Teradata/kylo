@@ -1,10 +1,10 @@
-import {Common} from "../../common/CommonTypes";
 import {AccessControl} from "../../services/AccessControl";
 import {Templates} from "./TemplateTypes";
-import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
-import PropertyAndProcessors = Templates.PropertyAndProcessors;
-import Property = Templates.Property;
+
 import Processor = Templates.Processor;
+import Property = Templates.Property;
+import PropertyAndProcessors = Templates.PropertyAndProcessors;
+import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 
 
 export interface RegisteredTemplateService {
@@ -69,7 +69,7 @@ export interface RegisteredTemplateService {
      * Fetch the input PortDTO objects on the Root process group
      * @return {any}
      */
-    fetchRootInputPorts() : angular.IPromise<angular.IHttpResponse<any>>;
+    fetchRootInputPorts(): Promise<any>;
 
 
     deriveExpression(expression: string, configOnly: boolean): string;
@@ -146,9 +146,9 @@ export interface RegisteredTemplateService {
      * @param nifiTemplateId
      * @param reusableTemplateConnections
      * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
-             *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
-             *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
-             *            request:{connectionInfo:reusableTemplateConnections}}
+     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+     *            request:{connectionInfo:reusableTemplateConnections}}
      */
     getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: any): Promise<any>;
 

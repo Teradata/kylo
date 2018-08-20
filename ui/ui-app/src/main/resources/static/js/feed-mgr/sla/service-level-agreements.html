@@ -61,14 +61,14 @@
         </div>
         
         <div *ngIf="editSla != null  && !loading">
-          <service-level-agreement-form [(editSla)]="editSla" [allowEdit]= "allowEdit" [onEditSla]= "onEditSla"
-            [editSlaIndex]= "editSlaIndex" [viewSlaAssessments]= "viewSlaAssessments" 
-            [feed]= "feed" [mode]= "mode" [onPropertyChange]= "onPropertyChange" 
-            [addingSlaCondition]= "addingSlaCondition" [addNewCondition]= "addNewCondition"
-            [(ruleType)]= "ruleType" [onDeleteSla]= "onDeleteSla" [cancelEditSla]= "cancelEditSla"
-            [saveSla]= "saveSla" [onNameChange]="onNameChange" [onDescriptionChange]="onDescriptionChange"
-            [(slaForm)]="slaForm" [options]="options" [onAddConditionRuleTypeChange]="onAddConditionRuleTypeChange"
-            [onDeleteSlaMetric]="onDeleteSlaMetric" [onDeleteSlaAction]="onDeleteSlaAction">
+          <service-level-agreement-form [(editSla)]="editSla" [allowEdit]= "allowEdit" [onEditSla]= "onEditSla.bind(this)"
+            [editSlaIndex]= "editSlaIndex" [viewSlaAssessments]= "viewSlaAssessments.bind(this)"
+            [feed]= "feed" [mode]= "mode" [onPropertyChange]= "onPropertyChange.bind(this)"
+            [addingSlaCondition]= "addingSlaCondition" [addNewCondition]= "addNewCondition.bind(this)"
+            [(ruleType)]= "ruleType" [onDeleteSla]= "onDeleteSla.bind(this)" [cancelEditSla]= "cancelEditSla.bind(this)"
+            [saveSla]= "saveSla.bind(this)" [onNameChange]="onNameChange.bind(this)" [onDescriptionChange]="onDescriptionChange.bind(this)"
+            [(slaForm)]="slaForm" [options]="options" [onAddConditionRuleTypeChange]="onAddConditionRuleTypeChange.bind(this)"
+            [onDeleteSlaMetric]="onDeleteSlaMetric.bind(this)" [onDeleteSlaAction]="onDeleteSlaAction.bind(this)">
           </service-level-agreement-form>
         <div>
       

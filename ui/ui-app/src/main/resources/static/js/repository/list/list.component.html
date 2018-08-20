@@ -18,7 +18,7 @@
         <ng-container matColumnDef="templateName">
           <mat-header-cell *matHeaderCellDef mat-sort-header> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <div flex="30" class="item-column md-list-item-text pointer">
+            <div class="item-column md-list-item-text pointer">
             <ng-md-icon icon="layers" style="fill:#9e9e9e" size="20"></ng-md-icon>
             <span title="{{element.templateName}}">{{element.templateName | truncate:40}}</span>
             <p title="{{element.description}}" class="column-title column-title-bottom">

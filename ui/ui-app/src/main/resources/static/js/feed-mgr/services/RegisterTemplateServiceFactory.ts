@@ -1,51 +1,28 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+import {HttpClient, HttpParams} from "@angular/common/http";
+import {Injectable} from '@angular/core';
+import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from 'angular';
-import * as _ from "underscore";
-import { Dictionary } from "underscore";
 import 'pascalprecht.translate';
-import { Templates } from "./TemplateTypes";
-import { FeedPropertyService } from "./FeedPropertyService";
-import { Common } from "../../common/CommonTypes";
-import { AccessControl } from "../../services/AccessControl";
-import { RegisteredTemplateService } from "./RegisterTemplateService";
+import {Subject} from 'rxjs/Subject';
+import * as _ from "underscore";
+import {Dictionary} from "underscore";
 
-
-import Property = Templates.Property;
-import PropertyRenderType = Templates.PropertyRenderType;
-import PropertyAndProcessors = Templates.PropertyAndProcessors;
-import Processor = Templates.Processor;
-import MetadataProperty = Templates.MetadataProperty;
-import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import {AccessControl} from "../../services/AccessControl";
 import AccessControlService from '../../services/AccessControlService';
-import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
-import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
-import { Injectable, Inject } from '@angular/core';
-import { RestUrlService } from './RestUrlService';
-import { Subject } from 'rxjs/Subject';
-import { DefaultFeedPropertyService } from './DefaultFeedPropertyService';
-import { FeedInputProcessorPropertiesTemplateService } from "./FeedInputProcessorPropertiesTemplateService";
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { FeedDetailsProcessorRenderingHelper } from "./FeedDetailsProcessorRenderingHelper";
-import { TdDialogService } from "@covalent/core/dialogs";
+import {EmptyTemplate, ExtendedTemplate, SaveAbleTemplate} from '../model/template-models';
+import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';
+import {DefaultFeedPropertyService} from './DefaultFeedPropertyService';
+import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
+import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
+import {RegisteredTemplateService} from "./RegisterTemplateService";
+import {RestUrlService} from './RestUrlService';
+import {Templates} from "./TemplateTypes";
+
+import Processor = Templates.Processor;
+import Property = Templates.Property;
+import PropertyAndProcessors = Templates.PropertyAndProcessors;
+import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 
 @Injectable()
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
@@ -53,7 +30,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     constructor(
                 private http: HttpClient,
                 private RestUrlService: RestUrlService,
-                private FeedPropertyService: DefaultFeedPropertyService,
+                private feedPropertyService: DefaultFeedPropertyService,
                 private accessControlService: AccessControlService,
                 private entityAccessControlService: EntityAccessControlService,
                 private feedInputProcessorPropertiesTemplateService: FeedInputProcessorPropertiesTemplateService,
@@ -197,9 +174,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param {(response:any) => any} successFn
      * @param {(err: any) => any} errorFn
      */
-    fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<Common.Map<string>>> | undefined {
-return this.registerTemplatePropertyService.fetchConfigurationProperties(successFn, errorFn);
-
+    fetchConfigurationProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any) {
+        return this.registerTemplatePropertyService.fetchConfigurationProperties(successFn, errorFn);
     }
 
     /**
@@ -209,9 +185,8 @@ return this.registerTemplatePropertyService.fetchConfigurationProperties(success
      * @param {(err: any) => any} errorFn
      * @return {Promise<any>}
      */
-    fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any): angular.IPromise<angular.IHttpResponse<any>> | undefined {
-return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, errorFn);
-
+    fetchMetadataProperties(successFn?: (response: angular.IHttpResponse<any>) => any, errorFn?: (err: any) => any) {
+        return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, errorFn);
     }
 
     /**
@@ -234,7 +209,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
      * Fetch the input PortDTO objects on the Root process group
      * @return {any}
      */
-    fetchRootInputPorts(): Promise<any> {
+    fetchRootInputPorts() {
         return this.http.get(this.RestUrlService.ROOT_INPUT_PORTS).toPromise();
     }
 

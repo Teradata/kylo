@@ -1,20 +1,21 @@
+import {HttpClient} from "@angular/common/http";
+import {Component, EventEmitter, Input, OnInit, Output, ViewContainerRef} from '@angular/core';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatDialog} from '@angular/material/dialog';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {TdDialogService} from '@covalent/core/dialogs';
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../../../services/AccessControlService';
-import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
-import BroadcastService from '../../../../services/broadcast-service';
-import { UiComponentsService } from '../../../services/UiComponentsService';
-import { Component, Input, Inject, OnInit, Output, EventEmitter, ViewContainerRef } from '@angular/core';
-import { RestUrlService } from '../../../services/RestUrlService';
-import StateService from '../../../../services/StateService';
-import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import AngularModuleExtensionService from '../../../../services/AngularModuleExtensionService';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog} from '@angular/material/dialog';
-import { TdDialogService } from '@covalent/core/dialogs';
-import { TemplateDeleteDialog } from './template-delete-dialog.component';
 
+import AccessControlService from '../../../../services/AccessControlService';
+import AngularModuleExtensionService from '../../../../services/AngularModuleExtensionService';
+import BroadcastService from '../../../../services/broadcast-service';
+import StateService from '../../../../services/StateService';
+import {RegisterTemplateServiceFactory} from '../../../services/RegisterTemplateServiceFactory';
+import {RestUrlService} from '../../../services/RestUrlService';
+import {UiComponentsService} from '../../../services/UiComponentsService';
+import {EntityAccessControlService} from '../../../shared/entity-access-control/EntityAccessControlService';
+import {TemplateDeleteDialog} from './template-delete-dialog.component';
 
 @Component({
     selector: 'thinkbig-register-select-template',
@@ -30,7 +31,8 @@ export class RegisterSelectTemplateController implements OnInit {
 
     templates: any = [];
     model: any;
-    stepNumber: any;
+    stepIndex: string;
+    stepNumber: number;
     stepperController: any = null;
     template: any = null;
     isValid: boolean = false;
@@ -70,7 +72,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
     ngOnInit() {
 
-        this.formGroup.addControl("template", new FormControl(null,Validators.required));
+        this.formGroup.addControl("template", new FormControl(null, Validators.required));
 
         this.model = this.registerTemplateService.model;
 
@@ -98,8 +100,8 @@ export class RegisterSelectTemplateController implements OnInit {
 
         // TODO: line should be removed once error in service response success function is fixed
         // this.initTemplateTableOptions();
-        this.registerTemplateService.modelLoadingObserver.subscribe((loading: boolean)=>{
-            if(!loading) {
+        this.registerTemplateService.modelLoadingObserver.subscribe((loading: boolean) => {
+            if (!loading) {
                 this.initTemplateTableOptions();
             }
         });
@@ -131,8 +133,10 @@ export class RegisterSelectTemplateController implements OnInit {
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
                 private _dialogService: TdDialogService,
-                private _viewContainerRef: ViewContainerRef
-    /*@Inject("$injector") private $injector: any*/) {}
+                private _viewContainerRef: ViewContainerRef,
+                private http: HttpClient
+                /*@Inject("$injector") private $injector: any*/) {
+    }
 
     // setup the Stepper types
     initTemplateTableOptions = () => {
@@ -212,16 +216,16 @@ export class RegisterSelectTemplateController implements OnInit {
         msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
         msg += "</p>";
 
-            this._dialogService.closeAll();
-            this._dialogService.openAlert({
-                message: msg,
-                viewContainerRef: this._viewContainerRef,
-                title: "Error deleting the template",
-                closeButton: 'Got it!',
-                ariaLabel: "Error deleting the template",
-                closeOnNavigation: true,
-                disableClose: false
-            });
+        this._dialogService.closeAll();
+        this._dialogService.openAlert({
+            message: msg,
+            viewContainerRef: this._viewContainerRef,
+            title: "Error deleting the template",
+            closeButton: 'Got it!',
+            ariaLabel: "Error deleting the template",
+            closeOnNavigation: true,
+            disableClose: false
+        });
     }
 
     deleteTemplate = () => {
@@ -250,9 +254,9 @@ export class RegisterSelectTemplateController implements OnInit {
     confirmDeleteTemplate = () => {
 
         let dialogRef = this.dialog.open(TemplateDeleteDialog, {
-            data: { model: this.model },
+            data: {model: this.model},
             panelClass: "full-screen-dialog"
-          });
+        });
 
         let dialogRefObserver = dialogRef.componentInstance.onDeleteTemplate.subscribe(() => {
             this.deleteTemplate();
@@ -265,12 +269,8 @@ export class RegisterSelectTemplateController implements OnInit {
     publishTemplate = (overwriteParam: boolean) => {
         if (this.model.id) {
 
-            this.$http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).then((response: any) => {
-                this.$mdToast.show(
-                    this.$mdToast.simple()
-                        .textContent('Successfully published template to repository.')
-                        .hideDelay(3000)
-                );
+            this.http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).toPromise().then((response: any) => {
+                this.snackBar.open('Successfully published template to repository.', null, {duration: 3000});
                 this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }, (response: any) => {
                 this.publishTemplateError(response.data.message)
@@ -281,19 +281,15 @@ export class RegisterSelectTemplateController implements OnInit {
 
     publishTemplateError = (errorMsg: any) => {
         // Display error message
-        var msg = "<p>Template could not be published.</p><p>";
+        var msg = "Template could not be published. ";
         msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
-        msg += "</p>";
 
-        this.$mdDialog.hide();
-        this.$mdDialog.show(
-            this.$mdDialog.alert()
-                .ariaLabel("Error publishing the template to repository")
-                .clickOutsideToClose(true)
-                .htmlContent(msg)
-                .ok("Got it!")
-                .parent(document.body)
-                .title("Error publishing the template to repository"));
+        this._dialogService.openAlert({
+            ariaLabel: "Error publishing the template to repository",
+            closeButton: "Got it!",
+            message: msg,
+            title: "Error publishing the template to repository"
+        });
     }
 
     /**

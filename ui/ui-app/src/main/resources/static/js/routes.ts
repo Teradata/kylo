@@ -171,12 +171,6 @@ class Route {
         });
 
         $stateProvider.state({
-            name: 'import-template.**',
-            url: '/import-template',
-            loadChildren: 'feed-mgr/templates/templates.module#TemplateModule'
-        });
-
-        $stateProvider.state({
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
             loadChildren: 'feed-mgr/sla/sla.module#SLAModule'

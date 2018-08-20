@@ -166,6 +166,7 @@ System.config({
         "lz-string": "bower:lz-string/libs/lz-string.min",
         "moment":"bower:moment/min/moment.min",
         "ng2-codemirror": "npm:ng2-codemirror/lib/index",
+        "ng2-dnd": "npm:ng2-dnd/bundles/ng2-dnd.umd.min",
         'ng-fx':"bower:ngFx/dist/ngFx.min",
         "nvd3": "bower:nvd3/build/nv.d3.min",
         "ocLazyLoad":"bower:oclazyload/dist/ocLazyLoad.require",
@@ -178,8 +179,7 @@ System.config({
         "ui-grid": "angular-ui-grid",
         "underscore":"bower:underscore/underscore-min",
         "vis":"bower:vis/dist/vis.min",
-        "mdPickers":"bower:mdPickers/dist/mdPickers.min",
-        "ng2-dnd": "npm:ng2-dnd/bundles/ng2-dnd.umd.js"
+        "mdPickers":"bower:mdPickers/dist/mdPickers.min"
     },
     meta: {
         "@angular/core": {deps:["angular"]},

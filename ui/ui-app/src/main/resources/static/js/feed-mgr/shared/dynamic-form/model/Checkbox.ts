@@ -1,5 +1,5 @@
 import {FieldConfig} from "./FieldConfig";
-import {MatCheckboxChange} from "@angular/material";
+import {MatCheckboxChange} from "@angular/material/checkbox";
 
 
 export class Checkbox extends FieldConfig<string> {

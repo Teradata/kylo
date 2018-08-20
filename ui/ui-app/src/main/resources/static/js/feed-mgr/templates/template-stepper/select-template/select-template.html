@@ -27,22 +27,6 @@
                 <div class="card-title" flex>Select Template</div>
                 <h2 class="card-sub-header">1 of 5</h2>
             </div>
-            <mat-menu #mdMenu="matMenu">
-                <div *ngIf="!model.loading">
-                    <div *ngIf="allowAdmin">
-                        <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">Disable</button>
-                        <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">Enable</button>
-                        <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">Delete</button>
-                    </div>
-                    <div *ngIf="allowExport && model.id != null && registeredTemplateId != null">
-                        <button *ngFor="let item of templateNavigationLinks" style="text-align:left" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
-                        <button href="{{model.exportUrl}}">Export</button>
-                    </div>
-                </div>
-            </mat-menu>
-            <button mat-icon-button arial-label="Options" [matMenuTriggerFor]="appMenu">
-                <ng-md-icon icon="more_vert"></ng-md-icon>
-            </button>
         </mat-card-title>
 
     <mat-card-content class="card-layout-body mat-padding">
@@ -92,7 +76,25 @@
     <mat-card offsetleftfromprevious top="8" class="layout-fill"
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
         <mat-card-title>
-            <div class="card-title">Template</div>
+            <div class="card-title">
+                Template
+                <mat-menu #mdMenu="matMenu">
+                    <div *ngIf="!model.loading">
+                        <div *ngIf="allowAdmin">
+                            <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">Disable</button>
+                            <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">Enable</button>
+                            <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">Delete</button>
+                        </div>
+                        <div *ngIf="allowExport && model.id != null && registeredTemplateId != null">
+                            <button *ngFor="let item of templateNavigationLinks" style="text-align:left" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
+                            <a mat-menu-item href="{{model.exportUrl}}">Export</a>
+                        </div>
+                    </div>
+                </mat-menu>
+                <button mat-icon-button arial-label="Options" [matMenuTriggerFor]="mdMenu" style="float: right; margin-top: -10px;">
+                    <ng-md-icon icon="more_vert"></ng-md-icon>
+                </button>
+            </div>
             <div layout="column" class="layout-padding-top-bottom">
             <span class="item-title" *ngIf="!model.loading">
                  <ng-md-icon icon="{{model.icon.title}}" size="20" hide-xs ng-style="{'fill':model.icon.color}" *ngIf="model.icon && model.state != 'NOT REGISTERED'">
