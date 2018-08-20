@@ -67,7 +67,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -222,7 +221,7 @@ public class FilesystemRepositoryService implements RepositoryService {
 
         //Check if template already exists
         Optional<TemplateMetadataWrapper> foundMetadataOpt = Optional.empty();
-        for (TemplateMetadataWrapper item : getAllTemplatesInRepository(repository)) {
+        for (TemplateMetadataWrapper item : listTemplatesByRepository(repository)) {
             if (item.getTemplateName().equals(zipFile.getTemplateName())) {
                 foundMetadataOpt = Optional.of(item);
                 break;
@@ -334,7 +333,13 @@ public class FilesystemRepositoryService implements RepositoryService {
             .findFirst().get();
     }
 
-    private List<TemplateMetadataWrapper> getAllTemplatesInRepository(TemplateRepository repository) throws IOException {
+    @Override
+    public List<TemplateMetadataWrapper> listTemplatesByRepository(String repositoryType, String repositoryName) throws Exception {
+        TemplateRepository repo = getRepositoryByNameAndType(repositoryName, repositoryType);
+        return listTemplatesByRepository(repo);
+    }
+
+    private List<TemplateMetadataWrapper> listTemplatesByRepository(TemplateRepository repository) throws Exception {
         List<TemplateMetadataWrapper> repositoryItems = new ArrayList<>();
         getMetadataFilesInRepository(repository).stream()
             .map((p) -> jsonToMetadata(p, repository, Optional.empty()))

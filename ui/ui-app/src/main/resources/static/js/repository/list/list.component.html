@@ -1,10 +1,18 @@
 <div fxLayout="row" class="centered">
     <mat-card fxFlex="65%">
-      <div fxLayout="row" fxLayoutAlign="center">
-        <span style="padding-top: 20px; padding-right: 20px;" class="card-title">Search Templates</span>
-        <mat-form-field style="padding-top: 10px;" class="search-form" fxFlex="78%">
-          <input placeholder="Filter" matInput (keyup)="search($event.target.value)" />
-        </mat-form-field>
+      <div fxLayout="column" fxLayoutAlign="space-evenly start">
+        <div style="white-space: nowrap; margin: 20px 0 0 20px;" class="card-title" fxFlex="80">Search Templates</div>
+        <div fxLayout="row" style="width: 100%;" fxLayoutAlign="space-around center">
+          <mat-form-field fxFlex="20" >
+          <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
+            <mat-option *ngFor="let repository of repositories" [value]="repository">
+              {{repository.name}}
+            </mat-option>
+          </mat-select></mat-form-field>
+          <mat-form-field fxFlex="70" class="search-form">
+            <input placeholder="Filter" matInput (keyup)="search($event.target.value)" />
+          </mat-form-field>
+        </div>
       </div>
       <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="center center">
@@ -18,9 +26,8 @@
         <ng-container matColumnDef="templateName">
           <mat-header-cell *matHeaderCellDef mat-sort-header> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <div flex="30" class="item-column md-list-item-text pointer">
-            <ng-md-icon icon="layers" style="fill:#9e9e9e" size="20"></ng-md-icon>
-            <span title="{{element.templateName}}">{{element.templateName | truncate:40}}</span>
+            <div flex="50" class="item-column md-list-item-text pointer">
+            <span style="white-space: nowrap" title="{{element.templateName}}">{{element.templateName | truncate:40}}</span>
             <p title="{{element.description}}" class="column-title column-title-bottom">
               {{element.description | truncate:40}}
             </p>
@@ -28,10 +35,10 @@
           </mat-cell>
         </ng-container>
 
-        <ng-container matColumnDef="repositoryName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> Repository </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{element.repository.name}} </mat-cell>
-        </ng-container>
+        <!--<ng-container matColumnDef="repositoryName">-->
+          <!--<mat-header-cell *matHeaderCellDef mat-sort-header> Repository </mat-header-cell>-->
+          <!--<mat-cell *matCellDef="let element"> {{element.repository.name}} </mat-cell>-->
+        <!--</ng-container>-->
 
         <ng-container matColumnDef="actions">
           <mat-header-cell *matHeaderCellDef></mat-header-cell>
@@ -59,8 +66,8 @@
           </mat-cell>
         </ng-container>
 
-        <mat-header-row *matHeaderRowDef="['templateName', 'repositoryName', 'actions']"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: ['templateName', 'repositoryName', 'actions']"></mat-row>
+        <mat-header-row *matHeaderRowDef="['templateName', 'actions']"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: ['templateName', 'actions']"></mat-row>
       </mat-table>
       <mat-paginator #paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50, 100]"></mat-paginator>
     </mat-card>

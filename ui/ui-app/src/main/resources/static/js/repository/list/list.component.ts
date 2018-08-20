@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
-import {TemplateMetadata} from "../services/model";
+import {TemplateMetadata, TemplateRepository} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
@@ -30,17 +30,33 @@ export class ListTemplatesComponent implements OnInit {
     /**
      * List of available templates
      */
-    public templates: TemplateMetadata[] = [];
+    templates: TemplateMetadata[] = [];
+    repositories: TemplateRepository[] = [];
+    selectedRepository: TemplateRepository;
+
     dataSource = new MatTableDataSource();
 
     public ngOnInit() {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
-        this.loadTemplates();
+        this.init();
+    }
+
+    private init() {
+        this.templateService.getRepositories().subscribe(
+            (repos: TemplateRepository[]) => {
+                this.repositories = repos;
+                if(this.repositories.length > 0){
+                    this.selectedRepository = this.repositories[0];
+                    this.loadTemplates();
+                }
+            }
+        );
     }
 
     loadTemplates() {
-        this.templateService.getTemplates().subscribe(
+
+        this.templateService.getTemplatesInRepository(this.selectedRepository).subscribe(
             (data: TemplateMetadata[]) => {
                 this.templates = data;
                 this.dataSource.data = data;

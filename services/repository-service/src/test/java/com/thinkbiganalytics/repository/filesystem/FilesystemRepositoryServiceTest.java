@@ -105,7 +105,7 @@ public class FilesystemRepositoryServiceTest {
         FilesystemRepositoryService spy = PowerMockito.spy(filesystemRepositoryService);
 
         doReturn(repository).when(spy, "getRepositoryByNameAndType", anyString(), anyString());
-        doReturn(new ArrayList<TemplateMetadata>()).when(spy, "getAllTemplatesInRepository", repository);
+        doReturn(new ArrayList<TemplateMetadata>()).when(spy, "listTemplatesByRepository", repository);
         PowerMockito.when(FilenameUtils.getBaseName(anyString())).thenReturn("testName");
         Path pathMock = mock(Path.class);
         PowerMockito.when(Paths.get(anyString())).thenReturn(pathMock);
@@ -128,7 +128,7 @@ public class FilesystemRepositoryServiceTest {
         FilesystemRepositoryService spy = PowerMockito.spy(filesystemRepositoryService);
 
         doReturn(repository).when(spy, "getRepositoryByNameAndType", anyString(), anyString());
-        doReturn(templates).when(spy, "getAllTemplatesInRepository", repository);
+        doReturn(templates).when(spy, "listTemplatesByRepository", repository);
 
         spy.publishTemplate("test", "test", "test",false);
 

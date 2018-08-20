@@ -75,9 +75,19 @@ public class RepositoryController {
     }
 
     @GET
+    @Path("templates/{repositoryType}/{repositoryName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all templates available in the given repository.")
+    @ApiResponse(code = 200, message = "Returns templates of all types.")
+    public List<TemplateMetadataWrapper> listTemplatesByRepository(@NotBlank @PathParam("repositoryName") String repositoryName,
+                                                                   @NotBlank @PathParam("repositoryType") String repositoryType) throws Exception {
+        return repositoryService.listTemplatesByRepository(repositoryType, repositoryName);
+    }
+
+    @GET
     @Path("templates")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all templates available in all repositories.")
+    @ApiOperation("Lists all templates from all repositories.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
     public List<TemplateMetadataWrapper> listTemplates() throws Exception {
         return repositoryService.listTemplates();
@@ -96,7 +106,7 @@ public class RepositoryController {
 
     @POST
     @Path("templates/import")
-    @ApiOperation("Imports selected templates.")
+    @ApiOperation("Imports selected template.")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importTemplate(ImportTemplateRequest req) throws Exception {
@@ -131,7 +141,7 @@ public class RepositoryController {
     @GET
     @Path("templates/download/{repositoryType}/{repositoryName}/{fileName}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @ApiOperation("Downloads Template zip file from repository.")
+    @ApiOperation("Downloads template zip file from repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response downloadTemplate(@NotBlank @PathParam("repositoryName") String repositoryName,
                                      @NotBlank @PathParam("repositoryType") String repositoryType,
