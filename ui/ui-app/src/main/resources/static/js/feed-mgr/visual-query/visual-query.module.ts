@@ -1,14 +1,21 @@
+/**
+ * This is the ng1 module descriptor
+ * This will eventually go away and be replaced by the visual-query-ng2.module.ts
+ *
+ */
+import "kylo-ui-codemirror"
 import {CommonModule} from "@angular/common";
 import {Injector, NgModule} from "@angular/core";
 import {UIRouterModule} from "@uirouter/angular";
 
+
 import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
 
 import AccessConstants from "../../constants/AccessConstants";
-import "../../codemirror-require/module"
+import {registerQueryEngine} from "./wrangler/query-engine-factory.service";
+import {SparkQueryEngine} from "./services/spark/spark-query-engine";
 
-const moduleName: string = require("./module-name");
-
+registerQueryEngine('spark',SparkQueryEngine)
 @NgModule({
     declarations: [
         VisualQueryComponent,
@@ -44,20 +51,29 @@ const moduleName: string = require("./module-name");
                 data: {
                     breadcrumbRoot: true,
                     displayName: "Visual Query",
-                    module: moduleName,
+                    module: "kylo.feedmgr.vq",
                     permissions: AccessConstants.UI_STATES.VISUAL_QUERY.permissions
                 }
             }]
         })
+    ],
+    exports:[
+        VisualQueryComponent,
+        VisualQueryDirective
     ]
 })
 export class VisualQueryModule {
 
     constructor(injector: Injector) {
+        console.log("loading vq ng1 module")
         // Lazy load AngularJS module and entry component
         require("./module");
-        injector.get("$ocLazyLoad").inject(moduleName);
+        injector.get("$ocLazyLoad").inject("kylo.feedmgr.vq");
+        //require ng1 module
         require("./module-require");
         require("./visual-query.component");
+
+
+
     }
 }

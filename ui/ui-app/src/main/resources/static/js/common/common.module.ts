@@ -14,12 +14,17 @@ import {AddButtonComponent} from "./add-button/add-button.component";
 import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 import {TranslateModule} from "@ngx-translate/core";
+import {FileUploadComponent} from "./file-upload/file-upload.component";
+import {CovalentFileModule} from "@covalent/core/file";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
 
 @NgModule({
     declarations: [
         AddButtonComponent,
         KyloIconComponent,
-        NotificationMenuComponent
+        NotificationMenuComponent,
+        FileUploadComponent
     ],
     entryComponents: [
         AddButtonComponent,
@@ -32,7 +37,10 @@ import {TranslateModule} from "@ngx-translate/core";
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
+        CovalentFileModule,
         KyloServicesModule,
+        MatFormFieldModule,
+        MatInputModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
@@ -40,7 +48,8 @@ import {TranslateModule} from "@ngx-translate/core";
         MatProgressSpinnerModule
     ],
     exports: [
-        KyloIconComponent
+        KyloIconComponent,
+        FileUploadComponent
     ]
 })
 export class KyloCommonModule {

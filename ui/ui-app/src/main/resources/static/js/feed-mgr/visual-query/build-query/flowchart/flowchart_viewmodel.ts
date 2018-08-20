@@ -1,4 +1,4 @@
-namespace flowchart {
+export namespace flowchart {
 
 	export class FlowchartModelBase{
 	// Width of a node.

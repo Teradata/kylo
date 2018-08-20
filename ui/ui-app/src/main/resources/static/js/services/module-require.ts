@@ -23,3 +23,4 @@ import './AngularModuleExtensionService';
 import './BroadcastConstants';
 import '../repository/services/template.service';
 import './LoginNotificationService';
+import FileUpload from "./FileUploadService";

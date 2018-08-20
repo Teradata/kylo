@@ -4,7 +4,7 @@ import {Subject} from "rxjs/Subject";
 import {WranglerEvent} from "./wrangler-event";
 import {WranglerEventType} from "./wrangler-event-type";
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../../module-name";
 
 /**
  * Handles communication between UI components and the wrangler table.

@@ -1,0 +1,62 @@
+<md-dialog aria-label="Connection" ng-cloak>
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h4 class="md-title">Connection Details for {{source.data.name}} to {{dest.data.name}}</h4>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content layout="column" layout-padding style="min-width:500px;">
+      <div>
+        <md-input-container class="md-block condensed">
+          <label>Connection Name</label>
+          <input name="connectionName"
+                 placeholder="Enter a Name"
+                 type="text"
+                 ng-change="validate()"
+                 ng-model="connectionDataModel.name" size="100"/>
+        </md-input-container>
+      </div>
+      <div>
+        <md-input-container flex="30" class="md-block condensed">
+          <label>Join Type</label>
+          <md-select required ng-model="connectionDataModel.joinType" ng-change="validate()">
+            <md-option ng-repeat="joinType in joinTypes" value="{{::joinType.value}}">
+              {{::joinType.name}}
+            </md-option>
+          </md-select>
+        </md-input-container>
+
+      </div>
+      <div layout="row" class="layout-padding-top-bottom">
+        <md-input-container flex="30" class="md-block condensed">
+          <label>Source Key</label>
+          <md-select required ng-model="connectionDataModel.joinKeys.sourceKey" ng-change="validate()">
+            <md-option ng-repeat="attr in source.data.nodeAttributes.attributes" value="{{::attr.name}}">
+              {{::attr.name}}
+            </md-option>
+          </md-select>
+        </md-input-container>
+        <md-input-container flex="30" class="md-block condensed">
+          <label>Destination Key</label>
+          <md-select required ng-model="connectionDataModel.joinKeys.destKey" ng-change="validate()">
+            <md-option ng-repeat="attr in dest.data.nodeAttributes.attributes" value="{{::attr.name}}">
+              {{::attr.name}}
+            </md-option>
+          </md-select>
+        </md-input-container>
+
+      </div>
+
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()">Cancel</md-button>
+      <span flex></span>
+      <md-button class="md-raised md-warn" ng-if="isNew == false" ng-click="delete()">Delete</md-button>
+      <md-button class="md-primary md-raised" ng-disabled="isValid == false" ng-click="save()">Save</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

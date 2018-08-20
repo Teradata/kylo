@@ -10,7 +10,7 @@ import {QueryEngine} from "../wrangler/query-engine";
 import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
 import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
 import TableReference = DatasourcesServiceStatic.TableReference;
-
+import {moduleName} from "../module-name";
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
@@ -368,7 +368,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     }
 }
 
-angular.module(require("feed-mgr/visual-query/module-name"))
+angular.module(moduleName)
     .component("thinkbigVisualQueryStore", {
         bindings: {
             engine: "=",

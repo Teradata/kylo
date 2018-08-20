@@ -121,7 +121,7 @@ export class DatasourcesDetailsController {
                         .then((access: any) => {
                             this.allowChangePermissions = access;
                         });
-                }, () => {
+                }, (error:any) => {
                     this.stateService.FeedManager().Datasource().navigateToDatasources();
                 });
         } else {

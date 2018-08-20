@@ -11,25 +11,21 @@ import {UiComponentsService} from "./UiComponentsService";
 import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
 
-export class AngularServiceUpgrader {
-    constructor(){
-
-    }
-
-    static upgrade(service:Function,name:string = service.name) :FactoryProvider{
-        return {
-            provide: service,
-            useFactory: (i: angular.auto.IInjectorService) => i.get(name),
-            deps: ["$injector"]
-        }
-    }
-}
-
+import {AngularServiceUpgrader} from "../../kylo-utils/angular-service-upgrader"
+import {HiveService} from "./HiveService";
+import {VisualQueryService} from "./VisualQueryService";
+import {DatasourcesService} from "./DatasourcesService";
 export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
+
+export const datasourcesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DatasourcesService);
 
 export const categoriesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(CategoriesService);
 
 export const feedServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedService);
+
+export const hiveServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(HiveService);
+
+export const visualQueryServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(VisualQueryService);
 
 export const domainTypesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DomainTypesService);
 

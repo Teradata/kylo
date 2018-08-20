@@ -1,4 +1,4 @@
-import {Compiler, Injector, NgModuleRef, Type} from "@angular/core";
+import {Compiler, Injectable, Injector, NgModuleRef, Type} from "@angular/core";
 import * as angular from "angular";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/operator/do";
@@ -10,6 +10,7 @@ import {Observable} from "rxjs/Observable";
 
 import {WranglerModule} from "./core/wrangler.module";
 import {QueryEngine} from "./query-engine";
+import {moduleName} from "../module-name";
 
 /**
  * Map of wrangler engine name to implementation.
@@ -17,10 +18,7 @@ import {QueryEngine} from "./query-engine";
 type QueryEngineRef = Type<any> | string;
 const ENGINES: { [name: string]: QueryEngineRef } = {};
 
-/**
- * Angular 2 injector used by the Wrangler module.
- */
-let $$wranglerInjector: any = null;
+
 
 /**
  * Registers the specified query engine with this factory.
@@ -35,24 +33,38 @@ export function registerQueryEngine(name: string, engine: QueryEngineRef) {
 /**
  * A factory for creating {@code QueryEngine} objects.
  */
+@Injectable()
 export class QueryEngineFactory {
+
+    /**
+     * Angular 2 injector used by the Wrangler module.
+     */
+    public static $$wranglerInjector: any = null;
 
     /**
      * Wrangler module.
      */
     private wrangler: Observable<NgModuleRef<WranglerModule>>;
 
-    static readonly $inject: string[] = ["$$angularInjector", "$ocLazyLoad"];
+//    static readonly $inject: string[] = ["$$angularInjector", "$ocLazyLoad"];
+
+
+    private $ocLazyLoad: oc.ILazyLoad;
 
     /**
      * Constructs a {@code QueryEngineFactory}.
      */
-    constructor($$angularInjector: Injector, private $ocLazyLoad: oc.ILazyLoad) {
+    constructor(private $$angularInjector: Injector) {
+        this.$ocLazyLoad = $$angularInjector.get("$ocLazyLoad");
         this.wrangler = Observable.fromPromise($$angularInjector.get(Compiler).compileModuleAndAllComponentsAsync(WranglerModule))
             .map(factories => factories.ngModuleFactory.create($$angularInjector))
-            .do(wrangler => $$wranglerInjector = wrangler.injector)
+            .do(wrangler => {
+                QueryEngineFactory.$$wranglerInjector = wrangler.injector;
+                console.log("Set the wrangler.injector",  QueryEngineFactory.$$wranglerInjector);
+            } )
             .publishLast()
             .refCount();
+
     }
 
     /**
@@ -71,21 +83,27 @@ export class QueryEngineFactory {
         // Load the engine
         return this.wrangler
             .mergeMap(module => {
-                const $injector = module.injector.get("$injector");
+                const $injector = angular.element(document.body).injector();
+                //const $injector = module.injector.get("$injector");
                 if (ENGINES[standardName]) {
                     return Observable.of(this.createEngine(ENGINES[standardName], $injector));
                 } else {
-                    return Observable.fromPromise(this.$ocLazyLoad.load("plugin/" + standardName + "/" + standardName + "-query-engine"))
-                        .map(() => {
-                            if (ENGINES[standardName]) {
-                                return this.createEngine(ENGINES[standardName], $injector);
-                            } else {
-                                throw "Unsupported query engine: " + name;
-                            }
-                        });
+                    return this.loadPluginEngine(module,standardName);
                 }
             })
             .toPromise();
+    }
+
+    private loadPluginEngine(module:any,standardName:string) :Observable<QueryEngine<any>> {
+        const $injector = module.injector.get("$injector");
+        return Observable.fromPromise(this.$ocLazyLoad.load("plugin/" + standardName + "/" + standardName + "-query-engine"))
+            .map(() => {
+                if (ENGINES[standardName]) {
+                    return this.createEngine(ENGINES[standardName], $injector);
+                } else {
+                    throw "Unsupported query engine: " + name;
+                }
+            });
     }
 
     /**
@@ -100,10 +118,3 @@ export class QueryEngineFactory {
     }
 }
 
-angular.module(require("feed-mgr/visual-query/module-name"))
-    .service("VisualQueryEngineFactory", QueryEngineFactory)
-    .provider("$$wranglerInjector", {
-        $get: function () {
-            return $$wranglerInjector;
-        }
-    });

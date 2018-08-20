@@ -200,6 +200,14 @@ export class DefineFeedService {
         }
     }
 
+    ensureSparkShell(){
+        this.http.post(RestUrlConstants.SPARK_SHELL_SERVICE_URL+ "/start", null).subscribe((response)=> {
+            console.log("SPARK SHELL STARTED!");
+        },(error1 => {
+            console.error("ERROR STARTING spark shell ",error1)
+        }));
+    }
+
     onFeedEdit(){
         this.feed.readonly = false;
         this.feedEditSubject.next(this.feed);
@@ -378,9 +386,9 @@ export class DefineFeedService {
         if(templateTableOption == "DEFINE_TABLE"){
             feed.steps = this.newDefineTableFeedSteps();
         }
-        //else if(feed.templateTableOption == "DATA_TRANSFORMATION"){
-        //
-        // }
+        else if(templateTableOption == "DATA_TRANSFORMATION"){
+          feed.steps = this.newDataTransformationSteps();
+         }
         else {
             feed.steps = this.newSimpleFeedSteps();
         }
@@ -405,6 +413,21 @@ export class DefineFeedService {
         let feedDetails = this.feedDetailsStep(steps,4);
         steps.push(generalInfoStep);
         steps.push(sourceSampleStep);
+        steps.push(table)
+        steps.push(feedDetails);
+        return steps;
+    }
+
+    private newDataTransformationSteps() :Step[] {
+        let steps :Step[] = []
+        let generalInfoStep = this.generalInfoStep(steps);
+        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
+        let wranglerStep =  new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("wrangler").setDisabled(true).setRequired(true).build();
+        let table = new StepBuilder().setNumber(4).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
+        let feedDetails = this.feedDetailsStep(steps,5);
+        steps.push(generalInfoStep);
+        steps.push(sourceSampleStep);
+        steps.push(wranglerStep);
         steps.push(table)
         steps.push(feedDetails);
         return steps;
@@ -541,44 +564,46 @@ export class DefineFeedService {
      */
     onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
         let dataSet :PreviewDataSet = dataSets[0];
-        //compare existing source against this source
-    //    let existingSourceColumns = this.feed.table.sourceTableSchema.fields.map(col => col.name+" "+col.derivedDataType).toString();
-     //   let dataSetColumns = dataSet.schema.map(col => col.name+" "+col.dataType).toString();
+        if(dataSet) {
+            //compare existing source against this source
+            //    let existingSourceColumns = this.feed.table.sourceTableSchema.fields.map(col => col.name+" "+col.derivedDataType).toString();
+            //   let dataSetColumns = dataSet.schema.map(col => col.name+" "+col.dataType).toString();
 
-        // check if the dataset source and item name match the feed
-        let previewSparkDataSet = dataSet.toSparkDataSet();
-        let key = previewSparkDataSet.id
-        let dataSourceId = previewSparkDataSet.dataSource.id;
-        let matchingFeedDataSet =this.feed.sourceDataSets.find(sparkDataset => sparkDataset.id == key && sparkDataset.dataSource.id == dataSourceId);
+            // check if the dataset source and item name match the feed
+            let previewSparkDataSet = dataSet.toSparkDataSet();
+            let key = previewSparkDataSet.id
+            let dataSourceId = previewSparkDataSet.dataSource.id;
+            let matchingFeedDataSet = this.feed.sourceDataSets.find(sparkDataset => sparkDataset.id == key && sparkDataset.dataSource.id == dataSourceId);
 
-        if(matchingFeedDataSet == undefined ){
-            //the source differs from the feed source and if we have a target defined.... confirm change
-            if(this.feed.table.tableSchema.fields.length >0){
-                this._dialogService.openConfirm({
-                    message: 'The source schema has changed.  A target schema already exists for this feed.  Do you wish to reset the target schema to match the new source schema? ',
-                    disableClose: true,
-                    title: 'Source dataset already defined', //OPTIONAL, hides if not provided
-                    cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
-                    acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
-                    width: '500px', //OPTIONAL, defaults to 400px
-                }).afterClosed().subscribe((accept: boolean) => {
+            if (matchingFeedDataSet == undefined) {
+                //the source differs from the feed source and if we have a target defined.... confirm change
+                if (this.feed.table.tableSchema.fields.length > 0) {
+                    this._dialogService.openConfirm({
+                        message: 'The source schema has changed.  A target schema already exists for this feed.  Do you wish to reset the target schema to match the new source schema? ',
+                        disableClose: true,
+                        title: 'Source dataset already defined', //OPTIONAL, hides if not provided
+                        cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                        acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                        width: '500px', //OPTIONAL, defaults to 400px
+                    }).afterClosed().subscribe((accept: boolean) => {
 
-                    if (accept) {
-                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET)
-                    } else {
-                        // no op
-                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE);
-                    }
-                });
+                        if (accept) {
+                            this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET)
+                        } else {
+                            // no op
+                            this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE);
+                        }
+                    });
+                }
+                else {
+                    //this will be if its the first time a source is selected for a feed
+                    this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET);
+                }
+
             }
             else {
-                //this will be if its the first time a source is selected for a feed
-                this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET);
+                console.log("No change to source schema found.  ");
             }
-
-        }
-        else {
-            console.log("No change to source schema found.  ");
         }
 
     }

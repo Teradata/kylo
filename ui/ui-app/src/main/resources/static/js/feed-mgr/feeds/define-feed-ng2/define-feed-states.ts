@@ -18,6 +18,7 @@ import {ConnectorsComponent} from "../../catalog/connectors/connectors.component
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
 import {Observable} from "rxjs/Observable";
 import {FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
+import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 
 
 
@@ -106,6 +107,11 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-table",
         url: "/:feedId/feed-table",
         component: DefineFeedTableComponent
+    },
+    {
+        name: FEED_DEFINITION_STATE_NAME+".feed-step.wrangler",
+        url: "/:feedId/wrangler",
+        component: DefineFeedStepWranglerComponent
     },
     {
         name: FEED_DEFINITION_STATE_NAME+".feed-step.datasources",

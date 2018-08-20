@@ -3,7 +3,7 @@ import {NgModule} from "@angular/core";
 import {UpgradeModule} from "@angular/upgrade/static";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 
-import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider} from "./angular2";
+import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider, sideNavServiceProvider, stateServiceProvider, fileUploadServiceProvider} from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
 //import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
@@ -16,6 +16,9 @@ import {TemplateService} from "../repository/services/template.service";
         PreviewDatasetCollectionService,
         addButtonServiceProvider,
         broadcastServiceProvider,
+        sideNavServiceProvider,
+        stateServiceProvider,
+        fileUploadServiceProvider,
         TemplateService
     ]
 })

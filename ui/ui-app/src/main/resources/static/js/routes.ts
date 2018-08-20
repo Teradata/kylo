@@ -11,6 +11,7 @@ import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
+import {VisualQueryNg2Module} from "./feed-mgr/visual-query/visual-query-ng2.module";
 
 'use strict';
 
@@ -300,6 +301,15 @@ class Route {
                 engine: null
             },
             loadChildren: "feed-mgr/visual-query/visual-query.module#VisualQueryModule"
+        });
+
+        $stateProvider.state({
+            name: 'visual-query2.**',
+            url: '/visual-query2/{engine}',
+            params: {
+                engine: null
+            },
+            loadChildren: "feed-mgr/visual-query/visual-query-ng2.module#VisualQueryNg2Module"
         });
 
         //Ops Manager

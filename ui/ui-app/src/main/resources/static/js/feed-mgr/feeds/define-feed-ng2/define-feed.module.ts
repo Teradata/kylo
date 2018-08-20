@@ -55,6 +55,9 @@ import {PropertyListModule} from "../../shared/property-list/property-list.modul
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {TranslateModule} from "@ngx-translate/core";
+//import {VisualQueryModule} from "../../visual-query/visual-query.module";
+import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
+import {VisualQueryNg2Module} from "../../visual-query/visual-query-ng2.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 
 
@@ -71,6 +74,7 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         DefineFeedStepCardComponent,
         DefineFeedStepReadonlyContentComponent,
         DefineFeedStepEditContentComponent,
+        DefineFeedStepWranglerComponent,
         DefineFeedTableComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe
@@ -107,7 +111,6 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
-        MatInputModule,
         MatListModule,
         MatCheckboxModule,
         MatOptionModule,
@@ -124,6 +127,7 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         MatDialogModule,
         PropertyListModule,
         TranslateModule,
+        VisualQueryNg2Module,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

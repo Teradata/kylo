@@ -1,3 +1,4 @@
+import {flowchart} from "./flowchart_viewmodel";
 describe('flowchart-viewmodel', function () {
 	// Create a mock data model from a simple definition.
 	var createMockDataModel: any= function (nodeIds: any, connections: any) {

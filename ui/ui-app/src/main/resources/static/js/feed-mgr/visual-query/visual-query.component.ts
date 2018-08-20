@@ -4,7 +4,7 @@ import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {QueryEngine} from "./wrangler/query-engine";
 import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
 
-const moduleName = require("./module-name");
+import {moduleName} from "../module-name";
 
 /**
  * Displays the Visual Query page for AngularJS.

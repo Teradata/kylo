@@ -1,6 +1,6 @@
 define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil", "constants/AccessConstants", "kylo-common", "kylo-services", "kylo-feedmgr", "jquery",
         "feed-mgr/visual-query/build-query/flowchart/flowchart_directive"], function (angular, moduleName, lazyLoadUtil, AccessConstants) {
-    var module = angular.module(moduleName, ["kylo.common", "kylo.feedmgr", "kylo.services", "kylo.ui-codemirror", "flowChart", "nvd3"]);
+    var module = angular.module("kylo.feedmgr.vq", ["kylo.common", "kylo.feedmgr", "kylo.services", "kylo.ui-codemirror", "flowChart", "nvd3"]);
 
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
         $ocLazyLoad.load({
@@ -14,3 +14,5 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
 
     return module;
 });
+
+
