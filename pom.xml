@@ -10,7 +10,8 @@
   <name>kylo</name>
   <description>Kylo is an enterprise-ready, open source, data lake management software platform for Hadoop and Spark integrating
     best practices around metadata management, governance, and security learned from over Think Big's 150+ successful
-    big data projects.</description>
+    big data projects.
+  </description>
   <inceptionYear>2017</inceptionYear>
   <url>https://kylo.io</url>
   <organization>
@@ -169,6 +170,9 @@
     <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
     <spring.vault.version>1.1.1.RELEASE</spring.vault.version>
     <projectreactor.version>2.0.8.RELEASE</projectreactor.version>
+    <reactive-streams.version>1.0.0</reactive-streams.version>
+    <jose4j.version>0.5.4</jose4j.version>
+    <jetbrains-annotations.version>15.0</jetbrains-annotations.version>
     <assertj.version>3.4.1</assertj.version>
     <org.reflections.version>0.9.9</org.reflections.version>
     <querydsl.version>4.1.4</querydsl.version>
@@ -180,7 +184,8 @@
     <amazon.sqs.java.messaging.lib.version>1.0.0</amazon.sqs.java.messaging.lib.version>
 
     <!-- Plugin Versions -->
-    <plugin.license.version>1.12</plugin.license.version>
+    <plugin.license.version>1.16</plugin.license.version>
+
     <liquibase.version>3.5.3</liquibase.version>
     <!--<liquibase.version>3.3.5</liquibase.version>-->
     <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
@@ -1034,7 +1039,7 @@
       <dependency>
         <groupId>org.bitbucket.b_c</groupId>
         <artifactId>jose4j</artifactId>
-        <version>0.5.4</version>
+        <version>${jose4j.version}</version>
       </dependency>
 
       <dependency>
@@ -1046,16 +1051,26 @@
       <dependency>
         <groupId>org.jetbrains</groupId>
         <artifactId>annotations</artifactId>
-        <version>15.0</version>
+        <version>${jetbrains-annotations.version}</version>
         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.reactivestreams</groupId>
+        <artifactId>reactive-streams</artifactId>
+        <version>${reactive-streams.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>${projectreactor.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
 
   <dependencies>
-
-
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
@@ -1115,6 +1130,7 @@
             <includedLicense>Public Domain</includedLicense>
             <includedLicense>WTFPL</includedLicense>
           </includedLicenses>
+          <!-- @formatter:off -->
           <licenseMerges>
             <licenseMerge>Apache License, Version 2.0|Apache 2|Apache 2.0|Apache 2.0 License|Apache v2|Apache License|Apache License 2.0|Apache License, version 2.0|Apache Software License 2.0|Apache Software License - Version 2.0|Apache Software License - Version 2.0, Eclipse Public License - Version 1.0|Apache Software Licenses|The Apache License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
             <licenseMerge>BSD License|BSD|BSD licence|Eclipse Distribution License (New BSD License)|New BSD license|The BSD 3-Clause License|The BSD License|The New BSD License</licenseMerge>
@@ -1125,6 +1141,7 @@
             <licenseMerge>MIT License|Bouncy Castle Licence|MIT license</licenseMerge>
             <licenseMerge>Mozilla Public License Version 1.1|MPL 1.1</licenseMerge>
           </licenseMerges>
+          <!-- @formatter:on -->
         </configuration>
         <executions>
           <execution>
