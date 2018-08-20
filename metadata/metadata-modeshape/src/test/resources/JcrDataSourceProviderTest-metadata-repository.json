@@ -1,0 +1,45 @@
+{
+    "name" : "metadata-repository",
+    "node-types" : ["metadata-schema.cnd", "users-schema.cnd"],
+    "workspaces" : {
+        "predefined" : ["metadata"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "useOnFailedLogin" : true
+        },
+        "providers" : [
+            {
+                "name" : "Test Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.TestAuthenticationProvider"
+            },
+            {
+                "name" : "Override Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider"
+            },
+            {
+                "name" : "DB Admin Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider"
+            }
+        ]
+    },
+    "storage" : {
+        "persistence" : {
+            "type" : "db",
+            "connectionUrl": "jdbc:h2:mem:JcrDataSourceProviderTest;DB_CLOSE_ON_EXIT=FALSE",
+            "createOnStart" : true,
+            "dropOnExit" : true
+        },
+        "binaryStorage" : {
+            "type" : "file",
+            "directory": "target/content/binaries",
+            "minimumBinarySizeInBytes" : 999
+        }
+    },
+    "garbageCollection" : {
+        "initialTime": "17:00"
+    }
+}

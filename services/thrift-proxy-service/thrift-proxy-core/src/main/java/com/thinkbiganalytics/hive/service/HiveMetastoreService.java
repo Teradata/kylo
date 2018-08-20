@@ -28,7 +28,6 @@ import com.thinkbiganalytics.discovery.schema.DatabaseMetadata;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
 import com.thinkbiganalytics.discovery.schema.JdbcSchema;
-import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
 import com.thinkbiganalytics.discovery.schema.JdbcTable;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
@@ -63,7 +62,7 @@ import javax.sql.DataSource;
 /**
  */
 @Service("hiveMetastoreService")
-public class HiveMetastoreService implements JdbcSchemaParser {
+public class HiveMetastoreService {
 
     private static final Logger log = LoggerFactory.getLogger(HiveMetastoreService.class);
 
@@ -102,13 +101,11 @@ public class HiveMetastoreService implements JdbcSchemaParser {
     }
 
     @Nonnull
-    @Override
     public List<JdbcCatalog> listCatalogs(@Nullable final String pattern, @Nullable final Pageable pageable) {
         return Collections.emptyList();
     }
 
     @Nonnull
-    @Override
     public List<JdbcSchema> listSchemas(@Nullable final String catalog, @Nullable final String pattern, @Nullable final Pageable pageable) {
         return hiveService.getSchemaNames().stream()
             .map(DefaultJdbcSchema::new)
@@ -116,7 +113,6 @@ public class HiveMetastoreService implements JdbcSchemaParser {
     }
 
     @Nonnull
-    @Override
     public List<JdbcTable> listTables(@Nullable final String catalog, @Nullable final String schema, @Nullable final String pattern, @Nullable final Pageable pageable) {
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, t.TBL_TYPE, p.PARAM_VALUE"
                        + " FROM TBLS t"

@@ -14,9 +14,9 @@ package com.thinkbiganalytics.spark.conf;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,15 @@ import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.service.*;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
+import com.thinkbiganalytics.spark.service.JobTrackerService;
+import com.thinkbiganalytics.spark.service.SparkListenerService;
+import com.thinkbiganalytics.spark.service.SparkLocatorService;
+import com.thinkbiganalytics.spark.service.SparkUtilityService;
+import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -48,15 +54,19 @@ import org.apache.spark.sql.SQLContext;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.ResourcePropertySource;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -64,31 +74,36 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 @Profile("kylo-livy")
 @Configuration
 @ComponentScan(
-        basePackages = {"com.thinkbiganalytics.spark",
-                "com.thinkbiganalytics.kylo.catalog" /* needed for CatalogDataSetProviderFactory*/},
-        excludeFilters = {@Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                value = {SparkContext.class}
-        ), @Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                value = {SQLContext.class}
-        ),@Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                value = {EmbeddedServletContainerFactory.class}
-        ),@Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                value = {ResourceConfig.class}
-        )}
+    basePackages = {"com.thinkbiganalytics.spark",
+                    "com.thinkbiganalytics.kylo.catalog" /* needed for CatalogDataSetProviderFactory*/},
+    excludeFilters = {@Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        value = {SparkContext.class}
+    ), @Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        value = {SQLContext.class}
+    ), @Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        value = {EmbeddedServletContainerFactory.class}
+    ), @Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        value = {ResourceConfig.class}
+    )}
 )
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 public class LivyWranglerConfig {
+
     private static SparkContext sparkContext;
     private static SQLContext sqlContext;
 
-    public LivyWranglerConfig() {}
+    public LivyWranglerConfig() {
+    }
 
     public static void setSparkContext(SparkContext sparkContext) {
         LivyWranglerConfig.sparkContext = sparkContext;
@@ -164,38 +179,38 @@ public class LivyWranglerConfig {
     @Primary
     public SparkConf sparkConf(final Environment env/*, @Qualifier("sparkShellPort") final int serverPort*/) {
         final SparkConf conf = new SparkConf().setAppName("SparkShellServer");
-                //.set("spark.ui.port", Integer.toString(serverPort + 1));
+        //.set("spark.ui.port", Integer.toString(serverPort + 1));
 
         final Iterable<Map.Entry<String, Object>> properties = FluentIterable.from(Collections.singleton(env))
-                .filter(AbstractEnvironment.class)
-                .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
-                    @Nullable
-                    @Override
-                    public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
-                        return (input != null) ? input.getPropertySources() : null;
-                    }
-                })
-                .filter(ResourcePropertySource.class)
-                .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
-                    @Nullable
-                    @Override
-                    public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
-                        return (input != null) ? input.getSource() : null;
-                    }
-                })
-                .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
-                    @Nullable
-                    @Override
-                    public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
-                        return (input != null) ? input.entrySet() : null;
-                    }
-                })
-                .filter(new Predicate<Map.Entry<String, Object>>() {
-                    @Override
-                    public boolean apply(@Nullable final Map.Entry<String, Object> input) {
-                        return (input != null && input.getKey().startsWith("spark."));
-                    }
-                });
+            .filter(AbstractEnvironment.class)
+            .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
+                @Nullable
+                @Override
+                public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
+                    return (input != null) ? input.getPropertySources() : null;
+                }
+            })
+            .filter(ResourcePropertySource.class)
+            .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
+                @Nullable
+                @Override
+                public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
+                    return (input != null) ? input.getSource() : null;
+                }
+            })
+            .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
+                @Nullable
+                @Override
+                public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
+                    return (input != null) ? input.entrySet() : null;
+                }
+            })
+            .filter(new Predicate<Map.Entry<String, Object>>() {
+                @Override
+                public boolean apply(@Nullable final Map.Entry<String, Object> input) {
+                    return (input != null && input.getKey().startsWith("spark."));
+                }
+            });
         for (final Map.Entry<String, Object> entry : properties) {
             conf.set(entry.getKey(), entry.getValue().toString());
         }
@@ -249,9 +264,6 @@ public class LivyWranglerConfig {
 
     @Bean(name = "downloadsDatasourceExcludes")
     public List<String> getDownloadsDatasourceExcludes(@Value("${spark.shell.datasources.exclude.downloads}") String excludesStr) throws IOException {
-
-        FileUtils.write(new File("/tmp/exDownloads.txt"), excludesStr);
-
         List<String> excludes = Lists.newArrayList();
         if (StringUtils.isNotEmpty(excludesStr)) {
             excludes.addAll(Arrays.asList(excludesStr.split(",")));
@@ -261,8 +273,6 @@ public class LivyWranglerConfig {
 
     @Bean(name = "tablesDatasourceExcludes")
     public List<String> getTablesDatasourceExcludes(@Value("${spark.shell.datasources.exclude.tables}") String excludesStr) throws IOException {
-        FileUtils.write(new File("/tmp/exTables.txt"), excludesStr);
-
         List<String> excludes = Lists.newArrayList();
         if (StringUtils.isNotEmpty(excludesStr)) {
             excludes.addAll(Arrays.asList(excludesStr.split(",")));

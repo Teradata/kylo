@@ -1386,6 +1386,29 @@
         <nifi.version>1.6.0</nifi.version>
       </properties>
     </profile>
+
+    <profile>
+      <!-- This profile will add the MapR repository for resolving
+          MapR Hadoop artifacts for the Hadoop bundles -->
+      <id>mapr</id>
+      <repositories>
+        <repository>
+          <id>mapr-releases</id>
+          <name>MapR Repository</name>
+          <url>http://repository.mapr.com/maven/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </repository>
+      </repositories>
+      <properties>
+        <!-- Vendor-specific version number included here as default,
+            should be overridden on the command-line <hadoop.version>2.7.0-mapr-1602</hadoop.version> -->
+      </properties>
+    </profile>
   </profiles>
 
 </project>

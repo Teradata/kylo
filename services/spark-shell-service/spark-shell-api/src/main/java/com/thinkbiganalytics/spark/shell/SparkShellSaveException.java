@@ -20,12 +20,14 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.SparkException;
+
 import javax.annotation.Nullable;
 
 /**
  * Thrown to indicate a problem occurred when saving a transformation
  */
-public class SparkShellSaveException extends RuntimeException {
+public class SparkShellSaveException extends SparkException {
 
     private String id;
 

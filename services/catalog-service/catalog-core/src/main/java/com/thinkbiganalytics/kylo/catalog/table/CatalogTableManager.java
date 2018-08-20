@@ -25,17 +25,19 @@ import com.thinkbiganalytics.db.DataSourceProperties;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
 import com.thinkbiganalytics.discovery.schema.JdbcSchema;
+import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
 import com.thinkbiganalytics.discovery.schema.JdbcTable;
 import com.thinkbiganalytics.hive.service.HiveMetastoreService;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kerberos.KerberosUtil;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
-import com.thinkbiganalytics.schema.DBSchemaParser;
+import com.thinkbiganalytics.schema.JdbcSchemaParserProvider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
@@ -75,11 +78,18 @@ public class CatalogTableManager {
     private final HiveMetastoreService hiveMetastoreService;
 
     /**
+     * Factory for JdbcSchemaParser instances
+     */
+    @Nonnull
+    private final JdbcSchemaParserProvider schemaParserProvider;
+
+    /**
      * Constructs a {@code CatalogTableManager}.
      */
     @Autowired
-    public CatalogTableManager(@Nonnull @Qualifier("hiveMetastoreService") final HiveMetastoreService hiveMetastoreService) {
+    public CatalogTableManager(@Nonnull @Qualifier("hiveMetastoreService") final HiveMetastoreService hiveMetastoreService, @Nonnull final JdbcSchemaParserProvider schemaParserProvider) {
         this.hiveMetastoreService = hiveMetastoreService;
+        this.schemaParserProvider = schemaParserProvider;
 
         defaultConf = new Configuration();
         defaultConf.size();  // causes defaults to be loaded
@@ -97,7 +107,7 @@ public class CatalogTableManager {
         if (Objects.equals("hive", template.getFormat())) {
             return listHiveCatalogsOrTables(schemaName);
         } else if (Objects.equals("jdbc", template.getFormat())) {
-            return isolatedFunction(template, jdbcSource -> listJdbcCatalogsOrTables(jdbcSource, catalogName, schemaName));
+            return isolatedFunction(template, catalogName, (connection, schemaParser) -> listJdbcCatalogsOrTables(connection, schemaParser, catalogName, schemaName));
         } else {
             throw new IllegalArgumentException("Unsupported format: " + template.getFormat());
         }
@@ -161,13 +171,13 @@ public class CatalogTableManager {
      * Lists the catalogs, schemas, or tables for the specified data source.
      */
     @Nonnull
-    private List<DataSetTable> listJdbcCatalogsOrTables(@Nonnull final javax.sql.DataSource dataSource, @Nullable final String catalogName, @Nullable final String schemaName) throws SQLException {
-        final DBSchemaParser parser = new DBSchemaParser(dataSource, new KerberosTicketConfiguration());
+    private List<DataSetTable> listJdbcCatalogsOrTables(@Nonnull final Connection connection, @Nonnull final JdbcSchemaParser parser, @Nullable final String catalogName,
+                                                        @Nullable final String schemaName) throws SQLException {
         final String tableCatalog;
         final String tableSchema;
 
         if (catalogName == null) {
-            final List<JdbcCatalog> catalogs = parser.listCatalogs(null, null);
+            final List<JdbcCatalog> catalogs = parser.listCatalogs(connection, null, null);
             if (catalogs.isEmpty()) {
                 tableCatalog = null;
             } else if (catalogs.size() == 1 && catalogs.get(0).getCatalog().isEmpty()) {
@@ -182,7 +192,7 @@ public class CatalogTableManager {
         }
 
         if (schemaName == null) {
-            final List<JdbcSchema> schemas = parser.listSchemas(tableCatalog, null, null);
+            final List<JdbcSchema> schemas = parser.listSchemas(connection, tableCatalog, null, null);
             if (schemas.isEmpty()) {
                 tableSchema = null;
             } else if (schemas.size() == 1 && schemas.get(0).getSchema().isEmpty()) {
@@ -196,7 +206,7 @@ public class CatalogTableManager {
             tableSchema = schemaName;
         }
 
-        return parser.listTables(tableCatalog, tableSchema, null, null).stream()
+        return parser.listTables(connection, tableCatalog, tableSchema, null, null).stream()
             .map(this::createTable)
             .collect(Collectors.toList());
     }
@@ -226,7 +236,8 @@ public class CatalogTableManager {
      * Executes the specified function in a separate class loader containing the jars of the specified template.
      */
     @VisibleForTesting
-    protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nonnull final DataSourceFunction<R> function) throws SQLException {
+    protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nullable final String catalog, @Nonnull final SqlSchemaFunction<R> function) throws SQLException {
+        // Get Hadoop configuration
         final Configuration conf = DataSetUtil.getConfiguration(template, defaultConf);
         final HadoopClassLoader classLoader = new HadoopClassLoader(conf);
         if (template.getJars() != null) {
@@ -234,7 +245,15 @@ public class CatalogTableManager {
             classLoader.addJars(template.getJars());
         }
 
-        final DataSourceProperties properties = getDataSourceProperties(template, classLoader);
-        return function.apply(PoolingDataSourceService.getDataSource(properties));
+        // Get data source configuration
+        DataSourceProperties properties = getDataSourceProperties(template, classLoader);
+        final JdbcSchemaParser schemaParser = schemaParserProvider.getSchemaParser(properties.getUrl());
+        properties = schemaParser.prepareDataSource(properties, catalog);
+
+        // Connect to data source
+        final javax.sql.DataSource dataSource = PoolingDataSourceService.getDataSource(properties);
+        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(dataSource, new KerberosTicketConfiguration())) {
+            return function.apply(connection, schemaParser);
+        }
     }
 }

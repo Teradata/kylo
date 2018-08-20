@@ -8,6 +8,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {NiFiService} from "../../../services/NiFiService";
 import {FeedConstants} from "../../../services/FeedConstants";
 import * as _ from "underscore";
+import {FeedPreconditionDialogService} from "../../../shared/feed-precondition/feed-precondition-dialog-service";
 
 @Component({
     selector: "feed-schedule",
@@ -73,7 +74,8 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
     ];
 
     constructor( private nifiService: NiFiService,
-                 private dialogService: TdDialogService) {
+                 private dialogService: TdDialogService,
+                 private preconditionDialogService: FeedPreconditionDialogService) {
         this.scheduleForm = new FormGroup({});
        this.allScheduleStrategies = Object.keys(FeedConstants.SCHEDULE_STRATEGIES).map(key => FeedConstants.SCHEDULE_STRATEGIES[key])
 
@@ -272,9 +274,8 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
 
    private showPreconditionDialog(index: any) {
-        //TODO: To be implemented
-        console.log("Implement me to show precondition dialog. Index is ", index);
-    }
+        this.preconditionDialogService.openDialog({feed: this.feed, itemIndex: index});
+   }
 
     /**
      * Validates the inputs are good

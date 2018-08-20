@@ -39,6 +39,11 @@
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-commons</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-jdbc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{title}}  for {{feed.feedName}}</h2>
+<mat-dialog-content>
+  <div fxLayout="column" fxLayoutAlign="start stretch" class="layout-padding-left-right">
+    <mat-form-field>
+      <mat-select [(ngModel)]="ruleType" placeholder="Select Type" (selectionChange)="onRuleTypeChange($event.value)">
+        <mat-option *ngFor="let opt of options" [value]="opt">
+          {{ opt.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <span *ngIf="editPrecondition !== null" class="hint">{{editPrecondition.shortDescription}}</span>
+  </div>
+
+  <policy-input-form *ngIf="editPrecondition !== null" [parentFormGroup]="preconditionForm"
+                     [(rule)]="editPrecondition" [mode]="editMode" [feed]="feed"
+                     (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button *ngIf="editIndex" mat-raised-button color="warn" (click)="deletePrecondition(editIndex)">Delete</button>
+  <span fxFlex=""></span>
+  <button mat-raised-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="done()">
+    Done
+  </button>
+</mat-dialog-actions>

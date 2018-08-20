@@ -27,6 +27,20 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>2.0.8.RELEASE</version>
+        </dependency>
 
         <!-- Apache Commons -->
         <dependency>
@@ -35,6 +49,11 @@
         </dependency>
 
         <!-- Kylo -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-catalog-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.kylo</groupId>
             <artifactId>kylo-cluster-manager-api</artifactId>

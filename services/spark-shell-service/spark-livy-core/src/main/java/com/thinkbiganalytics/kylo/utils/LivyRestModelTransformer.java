@@ -29,6 +29,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.exceptions.LivyDeserializationException;
 import com.thinkbiganalytics.kylo.exceptions.LivyException;
@@ -36,20 +37,19 @@ import com.thinkbiganalytics.kylo.model.Statement;
 import com.thinkbiganalytics.kylo.model.StatementOutputResponse;
 import com.thinkbiganalytics.kylo.model.enums.StatementOutputStatus;
 import com.thinkbiganalytics.kylo.model.enums.StatementState;
-import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
-import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Resource;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
@@ -57,19 +57,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
 public class LivyRestModelTransformer {
+
     private static final Logger logger = LoggerFactory.getLogger(LivyRestModelTransformer.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
     // time based expiry to clear out ids not cleared because the UI failed to fetch results
-    public static Cache<String,Integer> statementIdCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(24, TimeUnit.HOURS)
-            .maximumSize(100)
-            .build();
+    public static Cache<String, Integer> statementIdCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(24, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build();
 
+    /**
+     * Instances of {@code LivyRestModelTransformer} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
     private LivyRestModelTransformer() {
-    } // static methods only
+        throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    public static SparkJobResponse toJobResponse(@Nonnull final String id, @Nonnull final Statement statement) {
+        final SparkJobResponse response = new SparkJobResponse();
+        response.setId(id);
+        response.setStatus(StatementStateTranslator.translate(statement.getState()));
+
+        if (response.getStatus() == TransformResponse.Status.SUCCESS) {
+            final JsonNode data = statement.getOutput().getData();
+            if (data != null) {
+                final String json = data.get("application/json").asText();
+                response.setResult(ObjectMapperSerializer.deserialize(json, SparkJobResult.class));
+            }
+        }
+
+        return response;
+    }
 
     public static TransformResponse toTransformResponse(Statement statement, String transformId) {
         TransformResponse response = prepTransformResponse(statement, transformId);
@@ -83,12 +109,12 @@ public class LivyRestModelTransformer {
                 response.setProfile(toTransformResponseProfileStats(statement.getOutput()));
                 response.setActualCols(1);
                 Integer actualRows = rows.stream()
-                        .filter(metric -> metric.getMetricType().equals(MetricType.TOTAL_COUNT))
-                        .map(metric -> Integer.valueOf(metric.getMetricValue()))
-                        .findFirst().orElse(1);
+                    .filter(metric -> metric.getMetricType().equals(MetricType.TOTAL_COUNT))
+                    .map(metric -> Integer.valueOf(metric.getMetricValue()))
+                    .findFirst().orElse(1);
                 response.setActualRows(actualRows);
                 response.setResults(emptyResult());
-            } else if( code.endsWith("transformAsStr")) {
+            } else if (code.endsWith("transformAsStr")) {
                 /* expects that 'statement' contains a payload of TransformResponse in JSON format */
                 TransformResponse tr = serializeStatementOutputResponse(checkCodeWasWellFormed(statement.getOutput()), TransformResponse.class);
                 statementIdCache.put(tr.getTable(), statement.getId());
@@ -200,7 +226,7 @@ public class LivyRestModelTransformer {
                                 Map<String, Object> result = null;
                                 try {
                                     result = mapper.convertValue(value, Map.class);
-                                } catch( Exception e ) {
+                                } catch (Exception e) {
                                     // column value must be a struct or other complex type that we don't handle special..
                                     newValues.add(value.toString());
                                 }
@@ -247,7 +273,7 @@ public class LivyRestModelTransformer {
                 } else {
                     if (dataType.get("class") != null) {
                         throw new LivyDeserializationException("don't know how to deserialize UDT types for class = "
-                                + dataType.get("class").asText());
+                                                               + dataType.get("class").asText());
                     } else {
                         throw new LivyDeserializationException("don't know how to deserialize UDT type of unspecified class");
                     } // end if
@@ -319,18 +345,17 @@ public class LivyRestModelTransformer {
         return serializeStatementOutputResponse(sor, SaveResponse.class);
     }
 
-
     private static TransformResponse prepTransformResponse(Statement statement, String transformId) {
         TransformResponse response = new TransformResponse();
 
         TransformResponse.Status status = StatementStateTranslator.translate(statement.getState());
         response.setStatus(status);
         response.setProgress(statement.getProgress());
-        if(StringUtils.isNotEmpty(transformId)) {
+        if (StringUtils.isNotEmpty(transformId)) {
             response.setTable(transformId);
         } else {
             // generate a new id if we don't have one yet...
-            statementIdCache.put(ScalaScriptService.newTableName(),statement.getId());
+            statementIdCache.put(ScalaScriptService.newTableName(), statement.getId());
         }
         return response;
     }
@@ -379,9 +404,9 @@ public class LivyRestModelTransformer {
     private static StatementOutputResponse checkCodeWasWellFormed(StatementOutputResponse statementOutputResponse) {
         if (statementOutputResponse != null && statementOutputResponse.getStatus() != StatementOutputStatus.ok) {
             String msg = String.format("Malformed code sent to Livy.  ErrorType='%s', Error='%s', Traceback='%s'",
-                    statementOutputResponse.getEname(),
-                    statementOutputResponse.getEvalue(),
-                    statementOutputResponse.getTraceback());
+                                       statementOutputResponse.getEname(),
+                                       statementOutputResponse.getEvalue(),
+                                       statementOutputResponse.getTraceback());
             throw new LivyCodeException(msg);
         }
         return statementOutputResponse;

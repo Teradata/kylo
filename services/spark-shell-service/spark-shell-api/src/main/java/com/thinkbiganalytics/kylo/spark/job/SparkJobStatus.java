@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.kylo.catalog.table;
+package com.thinkbiganalytics.kylo.spark.job;
 
 /*-
  * #%L
- * kylo-catalog-core
+ * Spark Shell Service API
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,17 +20,18 @@ package com.thinkbiganalytics.kylo.catalog.table;
  * #L%
  */
 
-import java.sql.SQLException;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
 
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
+import javax.annotation.Nullable;
 
 /**
- * Represents a function that performs an action on a {@link DataSource} and returns a result.
- *
- * @param <R> type of result
+ * Contains the status of a Spark job.
  */
-public interface DataSourceFunction<R> {
+public interface SparkJobStatus {
 
-    R apply(@Nonnull DataSource fileSystem) throws SQLException;
+    /**
+     * Gets the results of the Spark job, if available.
+     */
+    @Nullable
+    SparkJobResult getResult();
 }

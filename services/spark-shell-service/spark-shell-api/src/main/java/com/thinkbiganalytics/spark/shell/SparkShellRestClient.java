@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
@@ -32,11 +34,20 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.ws.rs.core.Response;
 
-
 /**
  * Communicates with a Spark Shell process.
  */
 public interface SparkShellRestClient {
+
+    /**
+     * Executes a Spark job on the specified Spark Shell process.
+     *
+     * @param process the Spark Shell process
+     * @param request the job request
+     * @return the transformation status
+     * @throws SparkShellTransformException if the job fails
+     */
+    SparkJobResponse createJob(@Nonnull SparkShellProcess process, @Nonnull SparkJobRequest request);
 
     /**
      * Downloads the results of a save running on the specified Spark Shell process.
@@ -65,6 +76,17 @@ public interface SparkShellRestClient {
      */
     @Nonnull
     DataSources getDataSources(@Nonnull SparkShellProcess process);
+
+    /**
+     * Fetches the status of a Spark job running on the specified Spark Shell process.
+     *
+     * @param process the Spark Shell process
+     * @param id      the job identifier
+     * @return the job result if the job exists
+     * @throws SparkShellTransformException if the job fails
+     */
+    @Nonnull
+    Optional<SparkJobResponse> getJobResult(@Nonnull SparkShellProcess process, @Nonnull String id);
 
     /**
      * Fetches the status of a query running on the specified Spark Shell process.
@@ -156,11 +178,9 @@ public interface SparkShellRestClient {
     @Nonnull
     TransformResponse transform(@Nonnull SparkShellProcess process, @Nonnull TransformRequest request);
 
-
     /**
      * Executes a KyloClient Read operation on the specified Spark Shell process
      *
-     * @param request the transformation request
      * @param request the kylo catalog read request
      * @return the transformation status
      * @throws SparkShellTransformException if the transformation fails

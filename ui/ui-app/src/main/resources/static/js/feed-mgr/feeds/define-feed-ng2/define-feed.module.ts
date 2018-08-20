@@ -55,6 +55,7 @@ import {PropertyListModule} from "../../shared/property-list/property-list.modul
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {TranslateModule} from "@ngx-translate/core";
+import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 
 
 @NgModule({
@@ -96,6 +97,7 @@ import {TranslateModule} from "@ngx-translate/core";
         CatalogModule,
         RemoteFilesModule,
         FieldPoliciesModule,
+        FeedPreconditionModule,
         PreviewSchemaModule,
         MatCardModule,
         FormsModule,
