@@ -93,7 +93,6 @@ export class UiComponentsService {
                 });
             });
     }
-//@TODO Ahmad Hassan convert this method after taking care of $templateRequest
     getTableOptionAndCacheTemplates(type: any) {
         // var defer = this.$injector.get("$q").defer();
         // // Loads the table option template

@@ -46,6 +46,7 @@ import TabService from "../services/TabService";
 import OpsManagerJobService from "../services/OpsManagerJobService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import IconService from "../services/IconStatusService";
+import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
 
 @NgModule({
     declarations: [
@@ -91,11 +92,11 @@ import IconService from "../services/IconStatusService";
         MatSnackBarModule,
         CovalentDialogsModule,
         MatTabsModule,
+        OpsManagerServicesModule,
         UIRouterModule.forChild({states: jobStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [ TabService, OpsManagerJobService, OpsManagerRestUrlService, IconService,
-        {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
+    providers: [ {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 })
 export class JobsModule {

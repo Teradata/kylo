@@ -8,7 +8,8 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         commonRestURLServiceProvider,
         userGroupServiceProvider,
         angularModuleExtensionServiceProvider,
-        fileUploadServiceProvider} from "./angular2";
+        fileUploadServiceProvider,
+        utilsServiceProvider} from "./angular2";
 
 @NgModule({
     imports: [
@@ -26,6 +27,7 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         commonRestURLServiceProvider,
         userGroupServiceProvider,
         fileUploadServiceProvider,
+        utilsServiceProvider,
         angularModuleExtensionServiceProvider
     ]
 })

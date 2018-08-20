@@ -81,7 +81,6 @@ const optionDefaults: any = {
         return this.headers[j].displayName;
     }
 };
-// @TODO Ahmad Hassan Fix angular.element references and figure out the type of table
 @Injectable()
 export class FattableService {
 
