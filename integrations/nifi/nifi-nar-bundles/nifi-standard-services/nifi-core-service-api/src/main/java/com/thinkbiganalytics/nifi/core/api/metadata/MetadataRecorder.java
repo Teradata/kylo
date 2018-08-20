@@ -79,7 +79,6 @@ public interface MetadataRecorder {
 
     /**
      * Update the history reindexing status of a feed
-     *
      * @param feedId feed id for which status should be updated
      * @param historyReindexingStatus The new {@link HistoryReindexingStatus}
      * @returns {@link FeedDataHistoryReindexParams} updated status of feed and columns to index
@@ -95,7 +94,6 @@ public interface MetadataRecorder {
 
     /**
      * Invalid initializationStatus in the NiFi side
-     *
      * @param feedId the feed's ID
      */
     void invalidInitializationStatus(String feedId);
