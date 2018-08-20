@@ -25,10 +25,17 @@ import java.lang.reflect.Proxy;
 
 import javax.jcr.Node;
 
-public class VersionableNodeInvocationHandler extends NodeModificationInvocationHandler {
+public class LockableNodeInvocationHandler extends NodeModificationInvocationHandler {
+    
+    private final boolean deep;
 
-    public VersionableNodeInvocationHandler(Node node, Class<?>[] types) {
+    public LockableNodeInvocationHandler(Node node, Class<?>[] types) {
+        this(node, types, false);
+    }
+    
+    public LockableNodeInvocationHandler(Node node, Class<?>[] types, boolean isDeep) {
         super(node, types);
+        this.deep = isDeep;
     }
     
     /* (non-Javadoc)
@@ -36,7 +43,7 @@ public class VersionableNodeInvocationHandler extends NodeModificationInvocation
      */
     @Override
     protected void beforeUpdate(Method method, Object[] args) {
-        JcrVersionUtil.ensureCheckoutNode(getWrappedNode());
+        JcrLockingUtil.lock(getWrappedNode(), this.deep);
     }
     
     /* (non-Javadoc)
@@ -44,6 +51,6 @@ public class VersionableNodeInvocationHandler extends NodeModificationInvocation
      */
     @Override
     protected Node createChildProxy(Node node) {
-        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), getTypes(), new VersionableNodeInvocationHandler(node, getTypes()));
+        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), getTypes(), new LockableNodeInvocationHandler(node, getTypes()));
     }
 }

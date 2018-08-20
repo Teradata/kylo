@@ -57,8 +57,9 @@ public class JcrVersionUtil {
     private static final Logger log = LoggerFactory.getLogger(JcrVersionUtil.class);
     
     public static Node createAutoCheckoutProxy(Node node) {
-        InvocationHandler handler = new VersionableNodeInvocationHandler(node);
-        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), new Class<?>[] { Node.class }, handler);
+        Class<?>[] types = new Class<?>[] { Node.class };
+        InvocationHandler handler = new VersionableNodeInvocationHandler(node, types);
+        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), types, handler);
     }
 
     /**
@@ -204,38 +205,6 @@ public class JcrVersionUtil {
         }
     }
 
-
-    /**
-     * Places a lock on the given node.
-     *
-     * @param node            the node to be locked
-     * @param isDeep          if <code>true</code> this lock will apply to this node and all its descendants; if <code>false</code>, it applies only to this node.
-     * @param isSessionScoped if <code>true</code>, this lock expires with the current session; if <code>false</code> it expires when explicitly or automatically unlocked for some other reason.
-     * @param timeoutHint     desired lock timeout in seconds (servers are free to ignore this value); specify Long.MAX_VALUE for no timeout.
-     * @param ownerInfo       a string containing owner information supplied by the client; servers are free to ignore this value.
-     * @see javax.jcr.lock.LockManager#lock(String, boolean, boolean, long, String)
-     */
-    public static void lock(Node node, boolean isDeep, boolean isSessionScoped, long timeoutHint, String ownerInfo) {
-        try {
-            getLockManager(node.getSession()).lock(node.getPath(), isDeep, isSessionScoped, timeoutHint, ownerInfo);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Could not perform lock", e);
-        }
-    }
-
-    /**
-     * Removes the lock on the given node.
-     *
-     * @param node the node unlock
-     * @see javax.jcr.lock.LockManager#unlock(String)
-     */
-    public static void unlock(Node node) {
-        try {
-            getLockManager(node.getSession()).unlock(node.getPath());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Could not perform unlock", e);
-        }
-    }
 
     public static Version getBaseVersion(Node node) {
         String nodeName = null;
