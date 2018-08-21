@@ -20,18 +20,24 @@ import {DynamicFormComponent} from "./dynamic-form.component";
 import {TrueFalseValueDirective} from "./true-false-value.directive";
 import {MatRadioModule} from "@angular/material/radio";
 import {CovalentChipsModule} from "@covalent/core/chips";
+import {DynamicFormExampleComponent} from "./example/dynamic-form-example.component";
 
 
 @NgModule({
     declarations: [
         DynamicFormFieldComponent,
         DynamicFormComponent,
-        TrueFalseValueDirective
+        TrueFalseValueDirective,
+        DynamicFormExampleComponent
         ],
+    entryComponents:[
+
+    ],
     exports:[
         DynamicFormFieldComponent,
         DynamicFormComponent,
-        TrueFalseValueDirective
+        TrueFalseValueDirective,
+        DynamicFormExampleComponent
     ],
     imports: [
         CommonModule,

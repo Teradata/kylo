@@ -25,7 +25,7 @@
     </section>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
-      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern">
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
@@ -68,7 +68,7 @@
     </div>
 
     <mat-form-field *ngSwitchCase="'textarea'" class="pad-top-sm">
-    <textarea matInput [id]="field.key" [formControlName]="field.key">
+    <textarea matInput [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder">
         {{field.model[field['modelValueProperty']]}}
     </textarea>
       <mat-error *ngIf="!isValid">

@@ -17,7 +17,7 @@ export class DynamicFormComponent implements OnInit {
     public form: FormGroup;
 
     @Input()
-        public readonly :boolean;
+    public readonly :boolean;
 
     @Output()
     onFormControlsAdded :EventEmitter<FormControl[]> = new EventEmitter<FormControl[]>();
@@ -31,12 +31,11 @@ export class DynamicFormComponent implements OnInit {
         if(this.fields == undefined){
             this.fields = [];
         }
-        console.log("new Form ",this.form, this.fields)
        let controls = this.dynamicFormService.addToFormGroup(this.fields, this.form);
         if(this.onFormControlsAdded){
             this.onFormControlsAdded.emit(controls);
         }
-    }
+     }
 
 
     onSubmit() {
