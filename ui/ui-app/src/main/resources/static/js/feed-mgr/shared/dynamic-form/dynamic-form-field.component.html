@@ -3,13 +3,13 @@
   <div *ngIf="readonly" fxLayout="column">
 
     <section class="mat-typography" *ngIf="field.controlType == 'section-header'">
-      <h3>{{field.label}}</h3>
+      <h3  class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
 
     <div fxLayout="column" *ngIf="field.controlType != 'section-header'">
       <div fxLayout="row">
-        <span fxFlex="30%">{{field.label}}</span>
+        <span fxFlex="30%">{{field.placeholder}}</span>
         <span fxFlex="5%"></span>
         <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.model[field['modelValueProperty']]}}</span>
       </div>
@@ -18,10 +18,11 @@
 
   </div>
 
-  <div [ngSwitch]="field.controlType" *ngIf="!readonly" fxLayout="column">
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly" fxLayout="column" class="{{field.styleClass}}">
 
-    <section class="mat-typography pad-top-sm" *ngSwitchCase="'section-header'">
-      <h3>{{field.label}}</h3>
+    <section class="pad-top-sm" *ngSwitchCase="'section-header'">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <h3 class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">

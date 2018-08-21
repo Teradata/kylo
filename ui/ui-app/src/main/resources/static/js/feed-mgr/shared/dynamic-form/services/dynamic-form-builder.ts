@@ -2,13 +2,16 @@ import {FormGroup} from "@angular/forms";
 import {FieldConfigBuilder} from "./field-config-builder";
 import {FieldConfig} from "../model/FieldConfig";
 import {FormFieldBuilder} from "./form-field-builder";
+import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
+import {FieldGroup, Layout} from "../model/FieldGroup"
+
 
 
 export class FormConfig{
 
     title:string;
     message: string;
-    fields:FieldConfig<any>[];
+    fieldGroups:FieldGroup[];
 
     form:FormGroup;
 
@@ -20,11 +23,11 @@ export class DynamicFormBuilder {
 
     title:string;
     message: string;
-    formFieldBuilder:FormFieldBuilder;
+    formFieldBuilders:DynamicFormFieldGroupBuilder[];
     form:FormGroup
 
     constructor(){
-        this.formFieldBuilder = new FormFieldBuilder();
+        this.formFieldBuilders = [];
     }
 
     setTitle(title:string):DynamicFormBuilder{
@@ -36,9 +39,16 @@ export class DynamicFormBuilder {
         return this;
     }
 
-    field(fieldBuilder:FieldConfigBuilder<any>){
-        this.formFieldBuilder.field(fieldBuilder);
-        return this;
+    row(){
+        let rowBuilder = new DynamicFormFieldGroupBuilder(this,Layout.ROW);
+        this.formFieldBuilders.push(rowBuilder);
+        return rowBuilder;
+    }
+
+    column(){
+        let columnBuilder = new DynamicFormFieldGroupBuilder(this,Layout.COLUMN);
+        this.formFieldBuilders.push(columnBuilder);
+        return columnBuilder;
     }
 
     done(){
@@ -57,9 +67,9 @@ export class DynamicFormBuilder {
             this.form = new FormGroup({});
         }
         formConfig.form = this.form;
+        let fieldGroups: FieldGroup[] = this.formFieldBuilders.map(builder => builder.build())
 
-        let fields = this.formFieldBuilder.build();
-        formConfig.fields = fields;
+        formConfig.fieldGroups = fieldGroups;
         return formConfig;
     }
 }

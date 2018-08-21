@@ -21,7 +21,8 @@ import {TrueFalseValueDirective} from "./true-false-value.directive";
 import {MatRadioModule} from "@angular/material/radio";
 import {CovalentChipsModule} from "@covalent/core/chips";
 import {DynamicFormExampleComponent} from "./example/dynamic-form-example.component";
-
+import {TranslateModule} from "@ngx-translate/core";
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 @NgModule({
     declarations: [
@@ -58,7 +59,9 @@ import {DynamicFormExampleComponent} from "./example/dynamic-form-example.compon
         MatTabsModule,
         MatToolbarModule,
         CovalentChipsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        TranslateModule,
+        FlexLayoutModule
     ],
     providers: [
         DynamicFormService

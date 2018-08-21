@@ -7,7 +7,6 @@ import {Checkbox} from "../model/Checkbox";
 import {Chip} from "../model/Chip";
 import {SectionHeader} from "../model/SectionHeader";
 import {Textarea} from "../model/Textarea";
-import {DynamicFormUtil} from "./dynamic-form-util";
 import {FormControl, FormGroup} from "@angular/forms";
 
 export class FormFieldBuilder {

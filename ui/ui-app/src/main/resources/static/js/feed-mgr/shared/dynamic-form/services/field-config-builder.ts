@@ -8,11 +8,11 @@ import {Chip} from "../model/Chip";
 import {SectionHeader} from "../model/SectionHeader";
 import {Checkbox} from "../model/Checkbox";
 import {ObjectUtils} from "../../../../common/utils/object-utils";
+import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
 
 export abstract class FieldConfigBuilder<T> {
     private value: any;
     private key: string;
-    private label: string;
     private required: boolean;
     private order: number;
     private placeholder: string;
@@ -24,15 +24,29 @@ export abstract class FieldConfigBuilder<T> {
     private onModelChange?: Function;
     private validators?: ValidatorFn[] | null;
     private disabled?: boolean;
+    private placeHolderLocaleKey:string;
+    private styleClass:string;
+    private formGroupBuilder?:DynamicFormFieldGroupBuilder
 
-    protected constructor() {
-
+    protected constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        this.formGroupBuilder = formGroupBuilder;
     }
 
     abstract getObjectType():any;
 
 
+    done() : DynamicFormFieldGroupBuilder{
+        return this.formGroupBuilder;
+    }
 
+    setStyleClass(value:string){
+            this.styleClass = value;
+            return this;
+    }
+    setFormGroupBuilder(formGroupBuilder:DynamicFormFieldGroupBuilder){
+        this.formGroupBuilder = this.formGroupBuilder;
+        return this;
+    }
     setKey(value: string)  {
         this.key = value;
         return this;
@@ -43,8 +57,8 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
-    setLabel(value: string){
-        this.label = value;
+    setPlaceholderLocaleKey(value:string){
+        this.placeHolderLocaleKey = value;
         return this;
     }
 
@@ -58,10 +72,6 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
-    setControlType(value: string){
-        this.label = value;
-        return this;
-    }
 
     setPlaceholder(value: string) {
         this.placeholder = value;
@@ -120,7 +130,6 @@ export abstract class FieldConfigBuilder<T> {
     buildOptions(): any {
         let option: any = {
             key: this.key,
-            label: this.label,
             required: this.required,
             placeholder: this.placeholder,
             value: this.value,
@@ -132,10 +141,13 @@ export abstract class FieldConfigBuilder<T> {
             pattern: this.pattern,
             order: this.order,
             readonlyValue: this.readonlyValue,
-            disabled: this.disabled
+            disabled: this.disabled,
+            placeholderLocaleKey:this.placeHolderLocaleKey,
+            styleClass:this.styleClass
         }
         return option;
     }
+
 
 
     build(): T {
@@ -148,8 +160,8 @@ export abstract class FieldConfigBuilder<T> {
     export class SelectFieldBuilder extends FieldConfigBuilder<Select> {
 
         options: {label: string, value: string}[] = [];
-        constructor() {
-            super();
+        public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+           super(formGroupBuilder)
         }
 
         getObjectType():any {
@@ -179,8 +191,8 @@ export abstract class FieldConfigBuilder<T> {
 export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
     options: {label: string, value: string}[] = [];
 
-    constructor() {
-        super();
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
     }
 
     getObjectType():any {
@@ -211,8 +223,8 @@ export class CheckboxFieldBuilder extends FieldConfigBuilder<Checkbox> {
     falseValue:string;
     checked:boolean;
 
-    constructor() {
-        super();
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
     }
 
     getObjectType():any {
@@ -247,8 +259,8 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
 
     type:InputType;
 
-    constructor() {
-        super();
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
     }
 
     getObjectType():any {
@@ -269,19 +281,31 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
 
 export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
 
-    constructor() {
-super();
+    showDivider:boolean = true;
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
     }
 
+    setShowDivider(showDivider:boolean){
+        this.showDivider = showDivider;
+        return this;
+    }
     getObjectType():any {
         return SectionHeader;
+    }
+
+    buildOptions(){
+        let options = super.buildOptions();
+        options.showDivider = this.showDivider;
+        return options;
     }
 }
 
 export  class TextareaFieldBuilder extends FieldConfigBuilder<Textarea> {
 
-    constructor() {
-        super();
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
     }
 
     getObjectType():any {

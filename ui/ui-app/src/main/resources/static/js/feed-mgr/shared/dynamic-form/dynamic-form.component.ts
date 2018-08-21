@@ -3,6 +3,9 @@ import {FormControl, FormGroup} from '@angular/forms';
 
 import {DynamicFormService} from "./services/dynamic-form.service";
 import {FieldConfig} from "./model/FieldConfig";
+import {FieldGroup} from "./model/FieldGroup";
+
+
 
 @Component({
     selector: 'dynamic-form',
@@ -11,7 +14,10 @@ import {FieldConfig} from "./model/FieldConfig";
 export class DynamicFormComponent implements OnInit {
 
     @Input()
-   public fields: FieldConfig<any>[];
+    public fieldGroups: FieldGroup[] = [];
+
+    @Input()
+    public fields: FieldConfig<any>[];
 
     @Input()
     public form: FormGroup;
@@ -28,13 +34,25 @@ export class DynamicFormComponent implements OnInit {
     constructor(private dynamicFormService: DynamicFormService) {  }
 
     ngOnInit() {
-        if(this.fields == undefined){
-            this.fields = [];
+
+        if(this.fieldGroups == undefined ) {
+            this.fieldGroups = [];
         }
-       let controls = this.dynamicFormService.addToFormGroup(this.fields, this.form);
-        if(this.onFormControlsAdded){
-            this.onFormControlsAdded.emit(controls);
+        if(this.fieldGroups.length == 0 && this.fields != undefined ) {
+                //add the fields to a column group
+                let defaultGroup = new FieldGroup()
+                defaultGroup.fields = this.fields;
+                this.fieldGroups.push(defaultGroup)
         }
+        let allControls:FormControl[] = []
+        this.fieldGroups.forEach(group => {
+            let controls = this.dynamicFormService.addToFormGroup(group.fields, this.form);
+            if(controls){
+                controls.forEach(control => allControls.push(control));
+            }
+        });
+        //notify any subscribers the form controls have been added
+        this.onFormControlsAdded.emit(allControls);
      }
 
 
