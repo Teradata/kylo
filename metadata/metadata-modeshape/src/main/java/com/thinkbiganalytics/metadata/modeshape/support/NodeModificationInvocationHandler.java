@@ -134,20 +134,21 @@ public abstract class NodeModificationInvocationHandler implements InvocationHan
     protected Object[] dereference(Object[] args) {
         Object[] resultArgs = args;
        
-        for (int idx = 0; idx < args.length; idx++) {
-            if (Proxy.isProxyClass(args[idx].getClass())) {
-                InvocationHandler handler = Proxy.getInvocationHandler(args[idx]);
-                
-                if (resultArgs == args) {
-                    resultArgs = Arrays.copyOfRange(args, 0, args.length);
+        if (args.length > 0) {
+            for (int idx = 0; idx < args.length; idx++) {
+                if (args[idx] != null && Proxy.isProxyClass(args[idx].getClass())) {
+                    InvocationHandler handler = Proxy.getInvocationHandler(args[idx]);
+
+                    if (resultArgs == args) {
+                        resultArgs = Arrays.copyOfRange(args, 0, args.length);
+                    }
+
+                    if (handler instanceof NodeModificationInvocationHandler) {
+                        resultArgs[idx] = ((NodeModificationInvocationHandler) handler).getWrappedNode();
+                    }
                 }
-                
-                if (handler instanceof NodeModificationInvocationHandler) {
-                    resultArgs[idx] = ((NodeModificationInvocationHandler) handler).getWrappedNode();
-                }
-            }
+            } 
         }
-        
         return resultArgs;
     }
 
