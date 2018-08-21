@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
@@ -65,6 +66,11 @@ public class ModeShapeAuthConfig {
     @Bean
     public SecurityRoleProvider roleProvider() {
         return new JcrSecurityRoleProvider();
+    }
+    
+    @Bean
+    public RoleMembershipProvider roleMembershipProvider() {
+        return new JcrRoleMembershipProvider();
     }
 
     @Bean

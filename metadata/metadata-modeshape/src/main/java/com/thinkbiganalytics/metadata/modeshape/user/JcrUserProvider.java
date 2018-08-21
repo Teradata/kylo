@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
+import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -34,6 +37,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -43,6 +48,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -52,6 +58,12 @@ import javax.jcr.Session;
  * Provides access to {@link User} objects stored in a JCR repository.
  */
 public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> implements UserProvider {
+
+    @Inject
+    private RoleMembershipProvider membershipProvider;
+
+    @Inject
+    private AllowedEntityActionsProvider actionsProvider;
 
     @Nonnull
     @Override
@@ -292,11 +304,17 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
 
     @Override
     public void deleteGroup(@Nonnull final UserGroup group) {
+        this.actionsProvider.getAllowedActions(AccessController.SERVICES).ifPresent(allowed -> allowed.disableAll(group.getPrincipal()));
+        this.membershipProvider.findAll().forEach(membership -> membership.removeMember(group.getPrincipal()));
+        
         delete(group);
     }
 
     @Override
     public void deleteUser(@Nonnull final User user) {
+        this.actionsProvider.getAllowedActions(AccessController.SERVICES).ifPresent(allowed -> allowed.disableAll(user.getPrincipal()));
+        this.membershipProvider.findAll().forEach(membership -> membership.removeMember(user.getPrincipal()));
+        
         delete(user);
     }
 

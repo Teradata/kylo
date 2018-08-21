@@ -21,9 +21,9 @@ package com.thinkbiganalytics.metadata.api.user;
  */
 
 import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
-import java.security.Principal;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -122,7 +122,7 @@ public interface User {
     /**
      * @return the principal representing this user
      */
-    Principal getPrincipal();
+    UsernamePrincipal getPrincipal();
 
     /**
      * Collects a set of all group principals, both direct membership and transitive membership,

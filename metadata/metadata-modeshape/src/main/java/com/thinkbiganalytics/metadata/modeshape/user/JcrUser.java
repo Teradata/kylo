@@ -34,7 +34,6 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.Principal;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -181,7 +180,7 @@ public class JcrUser extends JcrEntity<User.ID> implements User, AuditableMixin 
      * @see com.thinkbiganalytics.metadata.api.user.User#getPrincipal()
      */
     @Override
-    public Principal getPrincipal() {
+    public UsernamePrincipal getPrincipal() {
         return new UsernamePrincipal(getSystemName());
     }
 

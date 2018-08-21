@@ -213,9 +213,9 @@ public class JcrUserGroup extends JcrEntity<UserGroup.ID> implements UserGroup, 
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getPrincial()
      */
     @Override
-    public GroupPrincipal getPrincial() {
+    public GroupPrincipal getPrincipal() {
         Set<Principal> members = StreamSupport.stream(getGroups().spliterator(), false)
-            .map(g -> g.getPrincial())
+            .map(g -> g.getPrincipal())
             .collect(Collectors.toSet());
 
         return new GroupPrincipal(getSystemName(), members);
