@@ -38,6 +38,11 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
+    setValue(value:any){
+        this.value = value;
+        return this;
+    }
+
     setLabel(value: string){
         this.label = value;
         return this;

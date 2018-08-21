@@ -52,6 +52,7 @@ export class DynamicFormBuilder {
 
     build():FormConfig{
         let formConfig = new FormConfig();
+        formConfig.title = this.title;
         if(this.form == undefined){
             this.form = new FormGroup({});
         }

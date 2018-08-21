@@ -1,13 +1,10 @@
-import * as angular from "angular";
-import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import "rxjs/add/observable/merge";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/do";
 import {InputType} from "../model/InputText";
-import {SelectFieldBuilder,InputTextFieldBuilder,RadioButtonFieldBuilder,TextareaFieldBuilder,FieldConfigBuilder,SectionHeaderBuilder} from "../services/field-config-builder";
+import {InputTextFieldBuilder, RadioButtonFieldBuilder, SectionHeaderBuilder, SelectFieldBuilder, TextareaFieldBuilder} from "../services/field-config-builder";
 import {DynamicFormBuilder, FormConfig} from "../services/dynamic-form-builder";
-
 
 
 /**
@@ -24,14 +21,35 @@ export class DynamicFormExampleComponent implements OnInit,OnDestroy{
     constructor() {
 
         // Create form
-        this.formConfig = new DynamicFormBuilder().setTitle("Exampl Form")
-            .field(new SelectFieldBuilder().setKey("color").setLabel("Favorite color").addOption("red","red").addOption("blue","blue").addOption("green","green"))
-            .field(new InputTextFieldBuilder().setKey("age").setLabel("Age").setType(InputType.number).setHint("Your age"))
-            .field(new RadioButtonFieldBuilder().setLabel("Favorite dessert").addOption("ice cream","ICE_CREAM").addOption("cake","CAKE").addOption("cookies","COOKIES").setRequired(true))
+        this.formConfig = new DynamicFormBuilder().setTitle("Example Form")
+            .field(new SelectFieldBuilder().setKey("color")
+                .setLabel("Favorite color")
+                .addOption("red", "red")
+                .addOption("blue", "blue")
+                .addOption("green", "green"))
+            .field(new InputTextFieldBuilder().setKey("age")
+                .setLabel("Age").setType(InputType.number)
+                .setHint("Your age"))
+            .field(new RadioButtonFieldBuilder().setLabel("Favorite dessert")
+                .setValue("CAKE")
+                .addOption("ice cream", "ICE_CREAM")
+                .addOption("cake", "CAKE")
+                .addOption("cookies", "COOKIES")
+                .setRequired(true))
             .field(new SectionHeaderBuilder().setLabel("New Section Header"))
-            .field(new InputTextFieldBuilder().setKey("homeAddress").setLabel("Home address").setType(InputType.text).setRequired(true))
-            .field(new InputTextFieldBuilder().setKey("phone").setLabel("Phone").setType(InputType.tel).setPattern("[0-9]{3}-[0-9]{3}-[0-9]{4}").setPlaceholder("123-456-7890").setRequired(true))
-            .field(new TextareaFieldBuilder().setLabel("description"))
+            .field(new InputTextFieldBuilder().setKey("homeAddress")
+                .setLabel("Home address")
+                .setType(InputType.text)
+                .setRequired(true))
+            .field(new InputTextFieldBuilder()
+                .setKey("phone")
+                .setLabel("Phone")
+                .setType(InputType.tel)
+                .setPattern("[0-9]{3}-[0-9]{3}-[0-9]{4}")
+                .setPlaceholder("123-456-7890")
+                .setRequired(true))
+            .field(new TextareaFieldBuilder()
+                .setLabel("description"))
             .done()
             .build();
     }
