@@ -227,25 +227,6 @@ export class ColumnDelegate implements IColumnDelegate {
     replaceValueEqualTo(value: string, column: any, grid: any) {
         let form = new ReplaceValueEqualToForm(column,grid,this.controller,value);
         this.dialog.openColumnForm(form);
-        /*
-        let self = this;
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
-        dialog.withTitle("Replace value")
-            .inputbox("replaceValue").withLabel("Replace value:").optional().build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let formula = '';
-                let replaceValue=fields['replaceValue'].value;
-                if (dataCategory == DataCategory.NUMERIC) {
-                    if (replaceValue == null || replaceValue == '') {
-                        replaceValue = `''`
-                    }
-                    formula = self.toFormula(`when(${fieldName}==${value}, ${replaceValue}).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
-                } else {
-                    formula = self.toFormula(`when(${fieldName}=='${value}', '${replaceValue}').otherwise(${fieldName}).as("${fieldName}")`, column, grid);
-                }
-                self.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace ${value} with ${replaceValue}`});
-            });
-            */
     }
 
     /**
@@ -446,31 +427,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     crosstabColumn(column: any, grid: any) {
         let form = new CrossTabForm(column,grid,this.controller)
-
         this.dialog.openColumnForm(form);
-        /**
-        const fieldName = self.getColumnFieldName(column);
-        let cols = self.getColumnNames();
-
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
-        dialog.withTitle("Crosstab")
-            .selectbox("crossColumn").withLabel("Crosstab column:").withChoices(cols).build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let crossColumn=fields['crossColumn'].value;
-
-                let crossColumnTemp = (crossColumn == fieldName ? crossColumn + "_0" : crossColumn);
-                let clean = self.createCleanFieldFormula(crossColumn, crossColumnTemp);
-                const cleanFormula = `select(${fieldName}, ${clean})`;
-                let chainedOp: ChainedOperation = new ChainedOperation(2);
-                let crossColumnName = crossColumn;
-                self.controller.setChainedQuery(chainedOp);
-                self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${fieldName} and ${crossColumn}`}, true, false).then(function () {
-                    chainedOp.nextStep();
-                    const formula = `crosstab("${fieldName}","${crossColumnTemp}")`
-                    self.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${fieldName} and ${crossColumnName}`});
-                });
-            });
-         */
     }
 
     /**
@@ -1097,23 +1054,7 @@ export class ColumnDelegate implements IColumnDelegate {
         
         let form = new OrderByForm(column,grid,this.controller,title,cb);
         this.dialog.openColumnForm(form);
-      
-      /*  const DEFAULT = "(default)";
-        let fieldName = ColumnUtil.getColumnFieldName(column);
-        let cols = this.getColumnNames();
-        cols.push(DEFAULT);
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
 
-        dialog.withTitle(title)
-            .selectbox("orderBy1").withLabel("OrderBy:").default(DEFAULT).withChoices(cols).build()
-            .checkbox("asc1").withLabel("Asc:").default(true).build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let orderByClause :string[] = [];
-                self.buildOrderBy(orderByClause, fields['orderBy1'].value, fields['asc1'].value, DEFAULT);
-                let orderBy = (orderByClause.length == 0 ? '1' : orderByClause.join(","));
-                cb(orderBy);
-            });
-            */
     }
 
 
