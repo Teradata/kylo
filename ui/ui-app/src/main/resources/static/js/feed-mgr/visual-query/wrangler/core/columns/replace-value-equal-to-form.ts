@@ -14,6 +14,7 @@ export class ReplaceValueEqualToForm extends ColumnForm{
     buildForm(){
         return new DynamicFormBuilder()
             .setTitle("Replace value:")
+            .setMessage("Replace '"+this.value+"' with a new value.")
             .column()
                 .text()
                     .setKey("replaceValue")

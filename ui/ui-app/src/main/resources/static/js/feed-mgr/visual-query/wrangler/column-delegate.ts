@@ -16,6 +16,7 @@ import {BinValuesForm} from "./core/columns/bin-values-form";
 import {OrderByForm} from "./core/columns/order-by-form";
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {RenameColumnForm} from "./core/columns/rename-column-form";
+import {ImputeMissingValuesForm} from "./core/columns/impute-missing-values-form";
 
 
 /**
@@ -686,16 +687,9 @@ export class ColumnDelegate implements IColumnDelegate {
 
 
     imputeMissingColumn(column: any, grid: any) {
-        const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.dialog.openImputeMissing({
-            message: 'Provide windowing options for sourcing fill-values:',
-            fields: ColumnUtil.toColumnArray(grid.columns, fieldName)
-        }).subscribe(function (response: any) {
+        let form = new ImputeMissingValuesForm(column,grid,this.controller);
+        this.dialog.openColumnForm(form)
 
-            let script = `coalesce(${fieldName}, last(${fieldName}, true).over(partitionBy(${response.groupBy}).orderBy(${response.orderBy}))).as("${fieldName}")`;
-            const formula = ColumnUtil.toFormula(script, column, grid);
-            this.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
-        });
     }
 
 
