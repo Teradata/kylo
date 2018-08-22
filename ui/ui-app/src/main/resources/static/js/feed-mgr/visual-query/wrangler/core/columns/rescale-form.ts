@@ -7,43 +7,7 @@ import {ColumnUtil} from "../column-util";
 import {ProfileHelper} from "../../api/profile-helper";
 import {DialogBuilder, WranglerFormField} from "../../WranglerFormBuilder";
 
-/*
- let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle(`Rescale Value`)
-            .inputbox("minScale").withLabel("Min:").intNumeric().default(0).build()
-            .inputbox("maxScale").withLabel("Max:").intNumeric().default(1).build()
-            .withValidator(function(fields:Map<String,WranglerFormField>) {
-                let minScale=fields['minScale'].getValueAsNumber();
-                let maxScale=fields['maxScale'].getValueAsNumber();
-                if (minScale != null && maxScale != null) {
-                    return (minScale < maxScale);
-                }
-                return true;
-            })
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let minScale = fields['minScale'].getValueAsNumber();
-                let maxScale = fields['maxScale'].getValueAsNumber();
 
-                this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
-                    let min = profileData.min;
-                    let max = profileData.max;
-                    var algo: string;
-                    if (min === max) {
-                        algo = `(0.5*((${minScale})+(${maxScale})))`
-                    } else {
-                        algo = `(((${fieldName}-(${min}))/((${max})-(${min})))*((${maxScale})-(${minScale})+(${minScale})))`
-                    }
-                    let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
-
-                    const formula = ColumnUtil.toFormula(script, column, grid);
-                    this.controller.addFunction(formula, {
-                        formula: formula, icon: "functions",
-                        name: "Rescale " + ColumnUtil.getColumnDisplayName(column)
-                    });
-                })
-            });
-
- */
 export class RescaleForm extends ColumnForm {
 
     private form: FormGroup;

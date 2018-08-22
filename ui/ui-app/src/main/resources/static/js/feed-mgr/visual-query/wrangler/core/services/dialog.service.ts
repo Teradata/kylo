@@ -3,10 +3,8 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import "rxjs/add/operator/filter";
 import {Observable} from "rxjs/Observable";
 
-import {DateFormatConfig, DateFormatResponse, DialogService, CrossTabConfig, CrossTabResponse} from "../../api/services/dialog.service";
+import {DateFormatConfig, DateFormatResponse, DialogService} from "../../api/services/dialog.service";
 import {DateFormatDialog} from "../columns/date-format.component";
-import {BinValuesConfig, BinValuesResponse, ImputeMissingConfig, ImputeMissingResponse, ReplaceValueEqualToConfig, ReplaceValueEqualToResponse} from "../../api";
-import {ImputeMissingDialog} from "../columns/impute-missing.component";
 import {DynamicFormDialogData} from "../../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
 import {SimpleDynamicFormDialogComponent} from "../../../../shared/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
 import {ColumnForm} from "../columns/column-form";
@@ -31,18 +29,6 @@ export class WranglerDialogService implements DialogService {
      */
     openDateFormat(config: DateFormatConfig): Observable<DateFormatResponse> {
         return this.dialog.open(DateFormatDialog, {data: config, panelClass: "full-screen-dialog",height:'100%',width:this.width,position:{top:this.topOffset,right:'0'}})
-            .afterClosed()
-            .filter(value => typeof value !== "undefined");
-    }
-
-    /**
-     * Opens a modal dialog for the user to input a impute method
-     *
-     * @param config - dialog configuration
-     * @returns the options selected
-     */
-    openImputeMissing(config: ImputeMissingConfig): Observable<ImputeMissingResponse> {
-        return this.dialog.open(ImputeMissingDialog, {data: config, panelClass: "full-screen-dialog"})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

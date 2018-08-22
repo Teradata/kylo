@@ -16,6 +16,11 @@ import {RenameColumnForm} from "./core/columns/rename-column-form";
 import {RescaleForm} from "./core/columns/rescale-form";
 import {ImputeMissingForm} from "./core/columns/impute-missing-form";
 import {ReplaceNanForm} from "./core/columns/replace-nan-form";
+import {LpadForm} from "./core/columns/lpad-form";
+import {ExtractIndexForm} from "./core/columns/extract-index-form";
+import {RoundNumberForm} from "./core/columns/round-number-form";
+import {ExtractRegexForm} from "./core/columns/extract-regex-form";
+import {ExtractDelimsForm} from "./core/columns/extract-delims-form";
 
 
 /**
@@ -390,18 +395,8 @@ export class ColumnDelegate implements IColumnDelegate {
 
         this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
 
-            let dialog : DialogBuilder = this.formBuilder.newInstance();
-            dialog.withTitle("Left Pad")
-                .inputbox("length").withLabel("Fixed length:").default(profileData.maxLen).intNumeric().build()
-                .inputbox( "padChar").withLabel("Pad char:").default(" ").withValidation(".", "Single character required.").build()
-                .showDialog((fields:Map<String,WranglerFormField>)=> {
-                    let length=fields['length'].value;
-                    let padChar=fields['padChar'].value;
-
-                    const script = `lpad(${fieldName}, ${length}, "${padChar}").as("${fieldName}")`
-                    const formula = ColumnUtil.toFormula(script, column, grid);
-                    this.controller.addFunction(formula, {formula: formula, icon: 'format_align_right', name: `Left pad ${fieldName}`});
-                });
+            let form = new LpadForm(column,grid,this.controller,profileData.maxLen);
+            this.dialog.openColumnForm(form);
         });
 
     }
@@ -437,19 +432,8 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractArrayItem(column: any, grid: any) {
 
-        const fieldName = ColumnUtil.getColumnFieldName(column);
-
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle(`Extract array item`)
-            .inputbox("colIndex").withLabel("Array index:").intNumeric().default(0).build()
-            .inputbox("colName").withLabel("New column:").default(fieldName+"_0").validName().build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let colIndex=fields['colIndex'].value;
-                let colName=fields['colName'].value;
-
-                let formula = ColumnUtil.createAppendColumnFormula(`getItem(${fieldName},${colIndex}).as("${colName}")`, column, grid, colName);
-                this.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${colIndex}`});
-            });
+        let form = new ExtractIndexForm(column,grid,this.controller);
+        this.dialog.openColumnForm(form);
     }
 
     /**
@@ -955,19 +939,8 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     roundNumeric(column: any, grid: any) {
 
-        let fieldName = ColumnUtil.getColumnFieldName(column);
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle("Round Number")
-            .inputbox("scale").withLabel("Scale:").intNumeric().default(2).build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let scale = fields['scale'].value;
-                const script = `round(${fieldName},${scale}).as("${fieldName}")`;
-                const formula = ColumnUtil.toFormula(script, column, grid);
-                this.controller.addFunction(formula, {
-                    formula: formula, icon: "exposure_zero",
-                    name: `Round ${fieldName} to ${scale} digits`
-                });
-            });
+        let form = new RoundNumberForm(column,grid,this.controller)
+        this.dialog.openColumnForm(form);
     }
 
     /**
@@ -978,16 +951,8 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractRegexPattern(column: any, grid: any) {
 
-        let fieldName = ColumnUtil.getColumnFieldName(column);
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle("Extract Regex")
-            .inputbox("regex").withLabel("Regex:").default("\\\\[(.*?)\\\\]").build()
-            .inputbox("group").withLabel("Group:").intNumeric().default(0).build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let regex = fields['regex'].value;
-                let group = fields['group'].value;
-                this.executeRegex(column,grid,regex,group);
-            });
+        let form = new ExtractRegexForm(column,grid,this.controller,this)
+        this.dialog.openColumnForm(form);
     }
 
     /**
@@ -998,17 +963,8 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractDelimiters(column: any, grid: any) {
 
-        let fieldName = ColumnUtil.getColumnFieldName(column);
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle("Extract Between Delimiters")
-            .inputbox( "start").withLabel("Start delim:").default("[").withValidation(".", "Single character required.").build()
-            .inputbox( "end").withLabel("End delim:").default("]").withValidation(".", "Single character required.").build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let start = ColumnUtil.escapeRegexCharIfNeeded(fields['start'].value.toString().charAt(0));
-                let end = ColumnUtil.escapeRegexCharIfNeeded(fields['end'].value.toString().charAt(0));
-                const regex = `${start}(.*?)${end}`;
-                this.executeRegex(column,grid,regex,0);
-            });
+        let form = new ExtractDelimsForm(column,grid,this.controller,this)
+        this.dialog.openColumnForm(form);
     }
 
     // Executes the regex formula

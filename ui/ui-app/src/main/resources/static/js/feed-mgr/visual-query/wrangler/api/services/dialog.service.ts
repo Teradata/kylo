@@ -245,15 +245,6 @@ export interface DialogService {
     openDateFormat(config: DateFormatConfig): Observable<DateFormatResponse>;
 
     /**
-     * Opens a modal dialog for the user to input impute options on a categorical column
-     *
-     * @param config - dialog configuration
-     * @returns the date format string
-     */
-    openImputeMissing(config: ImputeMissingConfig): Observable<ImputeMissingResponse>;
-
-
-    /**
      * Opens the dynamic form as a dialog
      * @param {DynamicFormDialogData} data
      * @return {Observable<any>}
