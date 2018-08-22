@@ -6,6 +6,8 @@ import {ColumnController} from "./column-controller";
 import * as $ from "jquery";
 import * as _ from "underscore";
 import {ProfileHelper} from "./api/profile-helper";
+import {DialogBuilder, WranglerFormBuilder, WranglerFormField} from "./WranglerFormBuilder";
+import {QueryResultColumn} from "./model/query-result-column";
 
 /**
  * Categories for data types.
@@ -102,8 +104,8 @@ export class MenuItem {
 export class MenuItems {
     math: MenuItem[] = [];
     replace:MenuItem[] = [];
-    ml:MenuItem[] = [];
     extract:MenuItem[] = [];
+    ml:MenuItem[] = [];
     other:MenuItem[] = [];
     format:MenuItem[] = [];
     defaults:MenuItem[] = [];
@@ -130,12 +132,19 @@ export class ColumnDelegate implements IColumnDelegate {
     transforms: MenuItems;
 
     /**
+     * Builder for dynamic forms
+     */
+    formBuilder: WranglerFormBuilder;
+
+
+    /**
      * Constructs a column delegate.
      */
     constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
         this.dataCategory = this.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
+        this.formBuilder = new WranglerFormBuilder($mdDialog, dialog);
     }
 
     /**
@@ -147,6 +156,38 @@ export class ColumnDelegate implements IColumnDelegate {
 
     escapeRegExp(text: string): string {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\\\$&');
+    }
+
+    /**
+     * If the character is reserved regex then the character is escaped
+     */
+    escapeRegexCharIfNeeded(chr:string):string {
+        if (chr == ' ') return "\\\\s";
+        return (chr.match(/[\[\^\$\.\|\?\*\+\(\)]/g) ? `\\\\${chr}` : chr);
+    }
+
+    /**
+     * Extracts text between regex of start and end of selection
+     */
+    extractRegex(value: string, column: any, grid: any) {
+        const self = this;
+        const fieldName = this.getColumnFieldName(column);
+        const first = this.escapeRegexCharIfNeeded(value.charAt(0));
+        const last = this.escapeRegexCharIfNeeded(value.charAt(value.length-1));
+
+        let regexScript = `regexp_extract(${fieldName}, "${first}(.*)${last}", 0).as("${fieldName}")`
+        const regexFormula = self.toFormula(regexScript, column, grid);
+
+        // Now strip the start and end character which demark the extraction and trim whitespace
+        let substrScript = `trim(substr(${fieldName},2,length(${fieldName})-2)).as("${fieldName}")`
+        const substrFormula = self.toFormula(substrScript, column, grid);
+
+        let chainedOp: ChainedOperation = new ChainedOperation(2);
+        self.controller.setChainedQuery(chainedOp);
+        self.controller.pushFormula(regexFormula, {formula: regexFormula, icon: 'content_cut', name:  `Regex extract ${this.getColumnDisplayName(column)}`}, true, false).then(function () {
+            chainedOp.nextStep();
+            self.controller.addFunction(substrFormula, {formula: substrFormula, icon: 'spellcheck', name: `Clean ${fieldName}`});
+        });
     }
 
     stripValueContaining(value: string, column: any, grid: any) {
@@ -188,140 +229,24 @@ export class ColumnDelegate implements IColumnDelegate {
         const dataCategory = this.fromDataType(dataType);
 
         let self = this;
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                replaceValue: any = "";
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                valid(): boolean {
-                    if (dataCategory == DataCategory.NUMERIC) {
-                        return (!isNaN(this.replaceValue));
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Replace value")
+            .inputbox("replaceValue").withLabel("Replace value:").optional().build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let formula = '';
+                let replaceValue=fields['replaceValue'].value;
+                if (dataCategory == DataCategory.NUMERIC) {
+                    if (replaceValue == null || replaceValue == '') {
+                        replaceValue = `''`
                     }
-                    return true;
+                    formula = self.toFormula(`when(${fieldName}==${value}, ${replaceValue}).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
+                } else {
+                    formula = self.toFormula(`when(${fieldName}=='${value}', '${replaceValue}').otherwise(${fieldName}).as("${fieldName}")`, column, grid);
                 }
-
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-
-                apply() {
-                    this.$mdDialog.hide();
-                    let formula = '';
-                    if (dataCategory == DataCategory.NUMERIC) {
-                        if (this.replaceValue == null || this.replaceValue == '') {
-                            this.replaceValue = `''`
-                        }
-                        formula = self.toFormula(`when(${fieldName}==${value}, ${this.replaceValue}).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
-                    } else {
-                        formula = self.toFormula(`when(${fieldName}=='${value}', '${this.replaceValue}').otherwise(${fieldName}).as("${fieldName}")`, column, grid);
-                    }
-                    self.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace string ${value} with ${this.replaceValue}`});
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Replace ${value}</h2>
-                      <md-input-container>
-                        <label>Replace with:</label>
-                        <input ng-model="dialog.replaceValue" >
-                        </input>
-                      </md-input-container>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-        });
+                self.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace ${value} with ${replaceValue}`});
+            });
 
     }
-
-    /**
-     * Convert continuous values in quantiles
-     */
-    binValues(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
-        const dataType = column.dataType;
-        const dataCategory = self.fromDataType(dataType);
-
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                bins: number = 5;
-                sample: number = 10000;
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                valid(): boolean {
-                    if (dataCategory == DataCategory.NUMERIC) {
-                        return (!isNaN(this.bins));
-                    }
-                    return true;
-                }
-
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-
-                apply() {
-                    this.$mdDialog.hide();
-                    const tempField = self.createTempField();
-                    let formula = `QuantileDiscretizer().setInputCol("${fieldName}").setNumBuckets(${this.bins}).setOutputCol("${tempField}").run(select(${fieldName}))`;
-                    let renameScript = self.generateRenameScript(fieldName, tempField, grid);
-
-                    // Two part conversion
-                    let chainedOp: ChainedOperation = new ChainedOperation(2);
-                    self.controller.setChainedQuery(chainedOp);
-                    self.controller.pushFormula(formula, {formula: formula, icon: 'insert_chart_outlined', name: `Bin ${fieldName} values`}, true, false)
-                        .then(function result() {
-                            chainedOp.nextStep();
-                            self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp column to ' + fieldName});
-                        })
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="Bin" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Bin</h2>
-                      <md-input-container>
-                        <label># of bins:</label>
-                        <input type="number" ng-model="dialog.bins" aria-label="# of bins">
-                        </input>
-                      </md-input-container>
-                      <md-input-container>                        
-                        <label># sample rows:</label>
-                        <input type="number" ng-model="dialog.sample" aria-label="# sample rows">
-                        </input>
-                      </md-input-container>
-                      <md-input-container>                        
-                        <md-checkbox ng-model="dialog.persist" aria-label="Always apply same fit params?">
-                          Persist fit params?
-                        </md-checkbox>
-                        </input>
-                      </md-input-container>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-        });
-
-    }
-
 
     /**
      * Filters for rows where the specified column is not null.
@@ -474,6 +399,33 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Pad text with leading characters
+     *
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    leftPad(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+
+        self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+
+            let dialog : DialogBuilder = self.formBuilder.newInstance();
+            dialog.withTitle("Left Pad")
+                .inputbox("length").withLabel("Fixed length:").default(profileData.maxLen).intNumeric().build()
+                .inputbox( "padChar").withLabel("Pad char:").default(" ").withValidation(".", "Single character required.").build()
+                .showDialog((fields:Map<String,WranglerFormField>)=> {
+                    let length=fields['length'].value;
+                    let padChar=fields['padChar'].value;
+
+                    const script = `lpad(${fieldName}, ${length}, "${padChar}").as("${fieldName}")`
+                    const formula = self.toFormula(script, column, grid);
+                    self.controller.addFunction(formula, {formula: formula, icon: 'format_align_right', name: `Left pad ${fieldName}`});
+                });
+        });
+
+    }
+
+    /**
      * Imputes the values using mean
      *
      * @param {ui.grid.GridColumn} column the column to be hidden
@@ -487,6 +439,14 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Returns column names as an array
+     * @returns {string[]}
+     */
+    getColumnNames() : string[] {
+        return (<any>this).controller.engine.getCols().map( (f:QueryResultColumn)=> { return f.field });
+    }
+
+    /**
      * Crosstab against another column
      *
      * @param {ui.grid.GridColumn} column the column to be hidden
@@ -495,64 +455,26 @@ export class ColumnDelegate implements IColumnDelegate {
     crosstabColumn(self: any, column: any, grid: any) {
 
         const fieldName = self.getColumnFieldName(column);
-        let cols = self.controller.engine.getCols();
+        let cols = self.getColumnNames();
 
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                columns: any[] = cols;
-                crossColumn: string = "";
-                static readonly $inject = ["$mdDialog"];
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Crosstab")
+            .selectbox("crossColumn").withLabel("Crosstab column:").withChoices(cols).build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let crossColumn=fields['crossColumn'].value;
 
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                valid(): boolean {
-                    return (this.crossColumn != "");
-                }
-
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-
-                apply() {
-                    this.$mdDialog.hide();
-                    let crossColumnTemp = (this.crossColumn == fieldName ? this.crossColumn + "_0" : this.crossColumn);
-                    let clean2 = self.createCleanFieldFormula(this.crossColumn, crossColumnTemp);
-                    const cleanFormula = `select(${fieldName}, ${clean2})`;
-                    let chainedOp: ChainedOperation = new ChainedOperation(2);
-                    let crossColumnName = this.crossColumn;
-                    self.controller.setChainedQuery(chainedOp);
-                    self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${fieldName} and ${this.crossColumn}`}, true, false).then(function () {
-                        chainedOp.nextStep();
-                        const formula = `crosstab("${fieldName}","${crossColumnTemp}")`
-                        self.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${fieldName} and ${crossColumnName}`});
-                    });
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="Select crosstab field" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Select crosstab field:</h2>
-
-                      <md-input-container>
-                        <label>Cross column:</label>
-                        <md-select ng-model="dialog.crossColumn" >
-                            <md-option ng-repeat="x in dialog.columns" value="{{x.field}}">
-                                {{x.field}}
-                            </md-option>
-                        </md-select> 
-                      </md-input-container>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-        });
+                let crossColumnTemp = (crossColumn == fieldName ? crossColumn + "_0" : crossColumn);
+                let clean = self.createCleanFieldFormula(crossColumn, crossColumnTemp);
+                const cleanFormula = `select(${fieldName}, ${clean})`;
+                let chainedOp: ChainedOperation = new ChainedOperation(2);
+                let crossColumnName = crossColumn;
+                self.controller.setChainedQuery(chainedOp);
+                self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${fieldName} and ${crossColumn}`}, true, false).then(function () {
+                    chainedOp.nextStep();
+                    const formula = `crosstab("${fieldName}","${crossColumnTemp}")`
+                    self.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${fieldName} and ${crossColumnName}`});
+                });
+            });
     }
 
     /**
@@ -620,51 +542,18 @@ export class ColumnDelegate implements IColumnDelegate {
     extractArrayItem(self: any, column: any, grid: any) {
 
         const fieldName = self.getColumnFieldName(column);
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                index : any = "0";
-                name: string = fieldName+"_"+this.index;
-                static readonly $inject = ["$mdDialog"];
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-                valid() : boolean {
-                    return (!isNaN(this.index));
-                }
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-                apply() {
-                    this.$mdDialog.hide();
-                    let formula = self.createAppendColumnFormula(`getItem(${fieldName},${this.index}).as("${this.name}")`, column, grid, this.name);
-                    self.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${this.index}`});
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">${fieldName}</h2>
-                      <md-input-container>
-                        <label>Array index:</label>
-                        <input ng-model="dialog.index" >
-                        </input>
-                      </md-input-container>
-                      <md-input-container>
-                        <label>Field name:</label>
-                        <input ng-model="dialog.name" >
-                        </input>
-                      </md-input-container>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-        });
 
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle(`Extract array item`)
+            .inputbox("colIndex").withLabel("Array index:").intNumeric().default(0).build()
+            .inputbox("colName").withLabel("New column:").default(fieldName+"_0").validName().build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let colIndex=fields['colIndex'].value;
+                let colName=fields['colName'].value;
+
+                let formula = self.createAppendColumnFormula(`getItem(${fieldName},${colIndex}).as("${colName}")`, column, grid, colName);
+                self.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${colIndex}`});
+            });
     }
 
     /**
@@ -819,32 +708,28 @@ export class ColumnDelegate implements IColumnDelegate {
 
     }
 
-    binValues2(self: any, column: any, grid: any) {
+    /**
+     * Bin values of the column into discrete quantiles
+     * @param self
+     * @param column
+     * @param grid
+     */
+    binValues(self: any, column: any, grid: any) {
         const fieldName = self.getColumnFieldName(column);
 
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                bins: number = 4;
-                sample: number = 10000;
-                persist: boolean = true;
-                static readonly $inject = ["$mdDialog"];
+        self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+            if (profileData.percNull > 0) {
+                self.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
+                return;
+            }
 
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                valid(): boolean {
-                    return (!isNaN(this.bins) && !isNaN(this.sample) && this.bins > 1 && this.sample > 0);
-                }
-
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-
-                apply() {
-                    this.$mdDialog.hide();
-
-                    const bins = this.bins;
+            let dialog : DialogBuilder = self.formBuilder.newInstance();
+            dialog.withTitle(`Bin Values`)
+                .inputbox("bin").withLabel("# of bins:").minIntValidator(2).default(4).build()
+                .inputbox("sample").withLabel("# of rows to sample:").intNumeric().default(10000).build()
+                .showDialog((fields:Map<String,WranglerFormField>)=> {
+                    let bins=fields['bins'].getValueAsNumber();
+                    let sample=fields['sample'].getValueAsNumber();
 
                     let binSize = 1 / bins;
                     let arr = []
@@ -852,7 +737,7 @@ export class ColumnDelegate implements IColumnDelegate {
                         arr.push(i * binSize)
                     }
                     let quantileStats = self.approxQuantileFormula(fieldName, bins);
-                    self.controller.extractFormulaResult(quantileStats, this.sample)
+                    self.controller.extractFormulaResult(quantileStats, sample)
                         .then(function (value: any) {
                             let formulaArray = [];
                             for (let i = 1; i < bins; i++) {
@@ -867,137 +752,47 @@ export class ColumnDelegate implements IColumnDelegate {
                                 name: "Bin " + self.getColumnDisplayName(column)
                             });
                         })
-
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="Bin" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Bin</h2>
-                      <md-input-container>
-                        <label># of bins:</label>
-                        <input type="number" ng-model="dialog.bins" matTooltip="Specify the number of bins">
-                        </input>
-                        <span style="color:red" ng-show="myForm.pin.$error.pattern">Invalid Input</span>                        
-                      </md-input-container>
-                      <md-input-container>                        
-                        <label># sample rows:</label>
-                        <input type="number" ng-model="dialog.sample" aria-label="# sample rows">
-                        </input>
-                      </md-input-container>
-                      <md-input-container>                        
-                        <md-checkbox ng-model="dialog.persist" aria-label="Always apply same fit params?">
-                          Persist fit params?
-                        </md-checkbox>
-                        </input>
-                      </md-input-container>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-        });
-
-    }
-
-
-    rescaleMinMax2(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                minScale: number = 0;
-                maxScale: number = 1;
-
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                valid(): boolean {
-                    return (this.minScale != null && this.maxScale != null && this.minScale < this.maxScale)
-                }
-
-                cancel() {
-                    this.$mdDialog.hide();
-                }
-
-                apply() {
-                    this.$mdDialog.hide();
-                    let minScale = this.minScale;
-                    let maxScale = this.maxScale;
-                    self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
-                        let min = profileData.min;
-                        let max = profileData.max;
-                        var algo: string;
-                        if (min === max) {
-                            algo = `(0.5*((${minScale})+(${maxScale})))`
-                        } else {
-                            algo = `(((${fieldName}-(${min}))/((${max})-(${min})))*((${maxScale})-(${minScale})+(${minScale})))`
-                        }
-                        let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
-
-                        const formula = self.toFormula(script, column, grid);
-                        self.controller.addFunction(formula, {
-                            formula: formula, icon: "functions",
-                            name: "Rescale " + self.getColumnDisplayName(column)
-                        });
-                    });
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="Select crosstab field" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Rescale Options</h2>
-                      <md-input-container>
-                        <label>Min:</label>
-                        <input ng-model="dialog.minScale" type="number">
-                        </input> 
-                      </md-input-container>
-                      <md-input-container>
-                        <label>Max:</label>
-                        <input ng-model="dialog.maxScale" type="number">
-                        </input> 
-                      </md-input-container>
-
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.cancel()" class="md-cancel-button" md-autofocus="false">Cancel</md-button>
-                      <md-button ng-click="dialog.apply()" ng-disabled="!dialog.valid()" class="md-primary md-confirm-button" md-autofocus="true">Ok</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
+                });
         });
     }
 
-    /**
-     * Rescale the vector column between min/max
-     * @param self
-     * @param column
-     * @param grid
-     */
     rescaleMinMax(self: any, column: any, grid: any) {
-
         const fieldName = self.getColumnFieldName(column);
-        const tempField = self.createTempField();
-        const formula = `MinMaxScaler().setInputCol("${fieldName}").setOutputCol("${tempField}").run(select(${fieldName}))`;
-        let renameScript = self.generateRenameScript(fieldName, tempField, grid);
 
-        // Two part conversion
-        let chainedOp: ChainedOperation = new ChainedOperation(2);
-        self.controller.setChainedQuery(chainedOp);
-
-        self.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'MinMax rescale ' + self.getColumnDisplayName(column)}, true, false)
-            .then(function () {
-                chainedOp.nextStep();
-                self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName});
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle(`Rescale Value`)
+            .inputbox("minScale").withLabel("Min:").intNumeric().default(0).build()
+            .inputbox("maxScale").withLabel("Max:").intNumeric().default(1).build()
+            .withValidator(function(fields:Map<String,WranglerFormField>) {
+                let minScale=fields['minScale'].getValueAsNumber();
+                let maxScale=fields['maxScale'].getValueAsNumber();
+                if (minScale != null && maxScale != null) {
+                    return (minScale < maxScale);
+                }
+                return true;
             })
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let minScale = fields['minScale'].getValueAsNumber();
+                let maxScale = fields['maxScale'].getValueAsNumber();
+
+                self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+                    let min = profileData.min;
+                    let max = profileData.max;
+                    var algo: string;
+                    if (min === max) {
+                        algo = `(0.5*((${minScale})+(${maxScale})))`
+                    } else {
+                        algo = `(((${fieldName}-(${min}))/((${max})-(${min})))*((${maxScale})-(${minScale})+(${minScale})))`
+                    }
+                    let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
+
+                    const formula = self.toFormula(script, column, grid);
+                    self.controller.addFunction(formula, {
+                        formula: formula, icon: "functions",
+                        name: "Rescale " + self.getColumnDisplayName(column)
+                    });
+                })
+            });
 
     }
 
@@ -1371,33 +1166,52 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
-     * Displays a dialog prompt to prompt for value to replace
+     * Replace all NaN with a fixed value
+     *
+     * @param {ui.grid.GridColumn} column the column to be renamed
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    replaceNaNWithValue(self: any, column: any, grid: any) {
+        const dataType = column.dataType;
+        const dataCategory = self.fromDataType(dataType);
+        let fieldName = self.getColumnFieldName(column);
+
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Replace NaN")
+            .inputbox("replaceValue").withLabel("Replace value:").anyNumber().default(0).build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let value = fields['replaceValue'].value;
+                let script = `when((${fieldName} == "" || isnull(${fieldName}) ),${value}).otherwise(${fieldName}).as("${fieldName}")`;
+                const formula = self.toFormula(script, column, grid);
+                self.controller.addFunction(formula, {
+                    formula: formula, icon: "find_replace",
+                    name: "Fill NaN with " + value
+                });
+            });
+    }
+
+    /**
+     * Replace empty with a fixed value
      *
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
     replaceEmptyWithValue(self: any, column: any, grid: any) {
-        const dataType = column.dataType;
-        const dataCategory = self.fromDataType(dataType);
+        let fieldName = self.getColumnFieldName(column);
 
-        const prompt = (self.$mdDialog as any).prompt({
-            title: "Replace Empty",
-            textContent: "Enter replace value:",
-            placeholder: "0",
-            ok: "OK",
-            cancel: "Cancel"
-        });
-        self.$mdDialog.show(prompt).then(function (value: string) {
-            let fieldName = self.getColumnFieldName(column);
-            let valueClean = (dataCategory == DataCategory.NUMERIC ? value : `"${value}"`);
-            let script = `when((${fieldName} == "" || isnull(${fieldName}) ),${valueClean}).otherwise(${fieldName}).as("${fieldName}")`;
-            const formula = self.toFormula(script, column, grid);
-            self.controller.addFunction(formula, {
-                formula: formula, icon: "find_replace",
-                name: "Fill empty with " + value
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Replace Missing")
+            .inputbox("replaceValue").withLabel("Replace value:").build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let value = fields['replaceValue'].value;
+
+                let script = `when((${fieldName} == "" || isnull(${fieldName}) ),"${value}").otherwise(${fieldName}).as("${fieldName}")`;
+                const formula = self.toFormula(script, column, grid);
+                self.controller.addFunction(formula, {
+                    formula: formula, icon: "find_replace",
+                    name: "Fill empty with " + value
+                });
             });
-
-        });
     }
 
     /**
@@ -1408,33 +1222,153 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     roundNumeric(self: any, column: any, grid: any) {
 
-        const prompt = (self.$mdDialog as any).prompt({
-            title: "Round Numeric",
-            textContent: "Enter scale decimal:",
-            placeholder: "0",
-            initialValue: "0",
-            ok: "OK",
-            cancel: "Cancel"
-        });
-
-        self.$mdDialog.show(prompt).then(function (value: any) {
-            if (value != null && !isNaN(value) && (parseInt(value) >= 0)) {
-                let fieldName = self.getColumnFieldName(column);
-                let script = `round(${fieldName}, ${value}).as("${fieldName}")`;
+        let fieldName = self.getColumnFieldName(column);
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Round Number")
+            .inputbox("scale").withLabel("Scale:").intNumeric().default(2).build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let scale = fields['scale'].value;
+                const script = `round(${fieldName},${scale}).as("${fieldName}")`;
                 const formula = self.toFormula(script, column, grid);
                 self.controller.addFunction(formula, {
                     formula: formula, icon: "exposure_zero",
-                    name: `Round ${fieldName} to ${value} digits`
+                    name: `Round ${fieldName} to ${scale} digits`
                 });
-                return;
-            } else {
-                alert("Enter 0 or a positive numeric integer");
-                self.roundNumeric(self, column, grid);
-            }
+            });
+    }
+
+    /**
+     * Extract regex
+     *
+     * @param {ui.grid.GridColumn} column the column to be renamed
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    extractRegexPattern(self: any, column: any, grid: any) {
+
+        let fieldName = self.getColumnFieldName(column);
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Extract Regex")
+            .inputbox("regex").withLabel("Regex:").default("\\\\[(.*?)\\\\]").build()
+            .inputbox("group").withLabel("Group:").intNumeric().default(0).build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let regex = fields['regex'].value;
+                let group = fields['group'].value;
+                self.executeRegex(self,column,grid,regex,group);
+            });
+    }
+
+    /**
+     * Extract between two delimiters
+     *
+     * @param {ui.grid.GridColumn} column the column to be renamed
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    extractDelimiters(self: any, column: any, grid: any) {
+
+        let fieldName = self.getColumnFieldName(column);
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        dialog.withTitle("Extract Between Delimiters")
+            .inputbox( "start").withLabel("Start delim:").default("[").withValidation(".", "Single character required.").build()
+            .inputbox( "end").withLabel("End delim:").default("]").withValidation(".", "Single character required.").build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let start = self.escapeRegexCharIfNeeded(fields['start'].value.toString().charAt(0));
+                let end = self.escapeRegexCharIfNeeded(fields['end'].value.toString().charAt(0));
+                const regex = `${start}(.*?)${end}`;
+                self.executeRegex(self,column,grid,regex,0);
+            });
+    }
+
+    // Executes the regex formula
+    private executeRegex(self:any, column: any, grid:any, regex:string, group:number) {
+        let fieldName = self.getColumnFieldName(column);
+        const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`
+        const formula = self.toFormula(script, column, grid);
+        self.controller.addFunction(formula, {
+            formula: formula, icon: "content_cut",
+            name: `Extract regex from ${fieldName}`
+        });
+    }
+
+    private buildOrderBy(clauseCollection : string[], orderBy:string, asc:boolean, defaultIfNotSpecified:string) : void {
+        if (!(orderBy == null || orderBy == defaultIfNotSpecified)) {
+            let stmt = (asc ? `${orderBy}` : `desc("${orderBy}")`);
+            clauseCollection.push(stmt);
+        }
+    }
+
+    /**
+     * Provides a dialog for capturing order by information and returns the orderBy clause
+     */
+    orderByDialog(self: any, column: any, grid: any, title: string, cb: any) {
+        const DEFAULT = "(default)";
+        let fieldName = self.getColumnFieldName(column);
+        let cols = self.getColumnNames();
+        cols.push(DEFAULT);
+        let dialog : DialogBuilder = self.formBuilder.newInstance();
+
+        dialog.withTitle(title)
+            .selectbox("orderBy1").withLabel("OrderBy:").default(DEFAULT).withChoices(cols).build()
+            .checkbox("asc1").withLabel("Asc:").default(true).build()
+            .showDialog((fields:Map<String,WranglerFormField>)=> {
+                let orderByClause :string[] = [];
+                self.buildOrderBy(orderByClause, fields['orderBy1'].value, fields['asc1'].value, DEFAULT);
+                let orderBy = (orderByClause.length == 0 ? '1' : orderByClause.join(","));
+                cb(orderBy);
+            });
+    }
+
+
+    /**
+     * % difference from previous value
+     */
+    percDiffFromPrevious(self: any, column: any, grid: any) {
+        self.orderByDialog(self,column,grid, "Percentage Difference From Previous", (orderBy: string)=> {
+            let fieldName = self.getColumnFieldName(column);
+            let script = `((${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))/(lag(${fieldName},1).over(orderBy(${orderBy})))*100)`;
+            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_diffp`);
+            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `% diff from prev ${fieldName}`});
+        });
+    }
+
+    /**
+     * Absolute difference from previous value
+     */
+    diffFromPrevious(self: any, column: any, grid: any) {
+
+        self.orderByDialog(self,column,grid, "Difference From Previous", (orderBy: string)=> {
+            let fieldName = self.getColumnFieldName(column);
+            let script = `(${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))`;
+            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_diff`);
+            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Difference from prev ${fieldName}`});
+        });
+    }
+
+    /**
+     * Create a running average
+     */
+    runningAverage(self: any, column: any, grid: any) {
+
+        self.orderByDialog(self,column,grid, "Running Average", (orderBy: string)=> {
+            let fieldName = self.getColumnFieldName(column);
+            let script = `(avg(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
+            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_ravg`);
+            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running average ${fieldName}`});
         });
 
     }
 
+    /**
+     * Create a running total
+     */
+    runningTotal(self: any, column: any, grid: any) {
+
+        self.orderByDialog(self,column,grid, "Running Total", (orderBy: string)=> {
+            let fieldName = self.getColumnFieldName(column);
+            let script = `(sum(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
+            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_rtot`);
+            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running total ${fieldName}`});
+        });
+    }
 
     /**
      * Validates the specified filter.
@@ -1581,24 +1515,28 @@ export class ColumnDelegate implements IColumnDelegate {
 
         if (dataCategory === DataCategory.NUMERIC) {
             transforms.ml.push(
-                {description: 'Replace null/nan with a specified value', icon: 'find_replace', name: 'Replace empty/NAN...', operation: self.replaceEmptyWithValue},
-                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean', operation: self.imputeMeanColumn},
-                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operation: self.rescaleMinMax2},
-                {description: 'Identify outliers', icon: 'functions', name: 'Identify outliers', operation: self.identifyOutliers},
-                {description: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues2}
+                {description: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues},
+                {description: 'Identify outliers', icon: 'unicorn', name: 'Identify outliers', operation: self.identifyOutliers},
+                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean...', operation: self.imputeMeanColumn},
+                {description: 'Replace empty/NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operation: self.replaceNaNWithValue},
+                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operation: self.rescaleMinMax}
             );
             transforms.math.push(
                 // {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn},
-                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
                 {description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil'},
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
                 {description: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
                 {description: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
+                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
                 {description: 'Log', icon: 'functions', name: 'Log10', operation: 'log10'},
                 {description: 'Logit transform', icon: 'functions', name: 'Logit', operation: self.logitTransform}
             );
             transforms.other.push(
-                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn}
+                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn},
+                {description: 'Running average', icon: 'functions', name: 'Running average...', operation: self.runningAverage},
+                {description: 'Running total', icon: 'functions', name: 'Running total...', operation: self.runningTotal},
+                {description: '% difference', icon: 'functions', name: 'Percent diff from prev value...', operation: self.percDiffFromPrevious},
+                {description: 'Difference from previous', icon: 'functions', name: 'Difference from prev value...', operation: self.diffFromPrevious}
             );
         }
         else if (dataCategory === DataCategory.STRING) {
@@ -1607,14 +1545,20 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
                 {description: 'Trim whitespace', icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Extract numeric', icon: 'filter_2', name: 'Extract numeric', operation: self.extractNumeric}
+                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operation : self.leftPad}
                 );
+
+            transforms.extract.push(
+                {description: 'Extract numeric', icon: 'filter_2', name: 'Numbers', operation: self.extractNumeric},
+                {description: 'Extract regex', icon: 'filter_2', name: 'Regex pattern', operation: self.extractRegexPattern},
+                {description: 'Extract delimiters', icon: 'filter_2', name: 'Between delimiters', operation: self.extractDelimiters},
+            );
 
             transforms.ml.push(
                 {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn},
                 {description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn},
                 {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn},
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace empty...', operation: self.replaceEmptyWithValue});
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operation: self.replaceEmptyWithValue});
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operation: self.crosstabColumn});
@@ -1697,10 +1641,10 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      * @returns {string} a formula that replaces the column
      */
-    protected toAppendColumnFormula(script: string, column: any, grid: any): string {
+    protected toAppendColumnFormula(script: string, column: any, grid: any, newField ?: string): string {
         const self = this;
         const columnFieldName = self.getColumnFieldName(column);
-        const uniqueName = self.toUniqueColumnName(grid.columns, columnFieldName);
+        const uniqueName = (newField == null ? self.toUniqueColumnName(grid.columns, columnFieldName) : newField);
         return self.createAppendColumnFormula(script, column, grid, uniqueName);
     }
 
@@ -1757,6 +1701,5 @@ export class ColumnDelegate implements IColumnDelegate {
         formula += ")";
         return formula;
     }
-
 
 }

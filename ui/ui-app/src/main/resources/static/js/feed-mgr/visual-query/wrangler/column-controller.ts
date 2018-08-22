@@ -2,6 +2,7 @@ import {IPromise} from "angular";
 import {PageSpec} from "./index";
 import {ProfileOutputRow} from "./model/profile-output-row";
 import {ProfileHelper} from "./api/profile-helper";
+import {ChainedOperation} from "./column-delegate";
 
 export interface ColumnController {
 
@@ -84,4 +85,15 @@ export interface ColumnController {
      * @returns {angular.IPromise<any>}
      */
     query(refresh ?: boolean, pageSpec ?: PageSpec, doValidate ?: boolean, doProfile ?: boolean) : IPromise<any>;
+
+    /**
+     * Sets a chain of formulas to be executed in sequential order
+     * @param {ChainedOperation} chainedOp
+     */
+    setChainedQuery(chainedOp : ChainedOperation): void;
+
+    /**
+     * Display error message
+     */
+    displayError(title:string, msg:string): void;
 }
