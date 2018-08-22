@@ -1,6 +1,9 @@
 import {AbstractControlOptions} from "@angular/forms/src/model";
 import {AsyncValidatorFn, ValidatorFn} from "@angular/forms/src/directives/validators";
+import {NgIfCallback} from "../services/field-config-builder";
+import {FormGroup} from "@angular/forms";
 
+const NgIfTrue:NgIfCallback = (form:FormGroup)=> { return true};
 export class FieldConfig<T> {
     value: T;
     key: string;
@@ -20,6 +23,7 @@ export class FieldConfig<T> {
     placeholderLocaleKey?:string;
     labelLocaleKey?:string;
     styleClass:string;
+    ngIf?:NgIfCallback
 
     constructor(options: {
         value?: T,
@@ -36,7 +40,8 @@ export class FieldConfig<T> {
         disabled?:boolean,
         placeholderLocaleKey?:string,
         styleClass?:string,
-        validators?:ValidatorFn[]
+        validators?:ValidatorFn[],
+        ngIf?:NgIfCallback
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -54,6 +59,7 @@ export class FieldConfig<T> {
 
         this.placeholderLocaleKey = options.placeholderLocaleKey;
         this.validators = options.validators;
+        this.ngIf = options.ngIf ? options.ngIf : NgIfTrue ;
 
     }
 

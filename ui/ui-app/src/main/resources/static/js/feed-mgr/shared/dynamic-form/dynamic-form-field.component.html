@@ -1,6 +1,6 @@
 <div [formGroup]="form" fxLayout="column">
 
-  <div *ngIf="readonly" fxLayout="column">
+  <div *ngIf="readonly && field.ngIf(form) == true" fxLayout="column">
 
     <section class="mat-typography" *ngIf="field.controlType == 'section-header'">
       <h3  class="subheading-2">{{field.placeholder}}</h3>
@@ -18,7 +18,7 @@
 
   </div>
 
-  <div [ngSwitch]="field.controlType" *ngIf="!readonly" fxLayout="column" class="{{field.styleClass}}">
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly && field.ngIf(form) == true" fxLayout="column" class="{{field.styleClass}}">
 
     <section class="pad-top-sm" *ngSwitchCase="'section-header'">
       <mat-divider *ngIf="field.showDivider"></mat-divider>

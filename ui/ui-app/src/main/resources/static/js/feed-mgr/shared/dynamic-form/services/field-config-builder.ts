@@ -9,6 +9,9 @@ import {SectionHeader} from "../model/SectionHeader";
 import {Checkbox} from "../model/Checkbox";
 import {ObjectUtils} from "../../../../common/utils/object-utils";
 import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
+import {FormGroup} from "@angular/forms";
+
+export type NgIfCallback = (form:FormGroup) => boolean;
 
 export abstract class FieldConfigBuilder<T> {
     private value: any;
@@ -28,6 +31,10 @@ export abstract class FieldConfigBuilder<T> {
     private styleClass:string;
     private formGroupBuilder?:DynamicFormFieldGroupBuilder
 
+    private ngIfCallback ?:NgIfCallback;
+
+
+
     protected constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         this.formGroupBuilder = formGroupBuilder;
     }
@@ -37,6 +44,11 @@ export abstract class FieldConfigBuilder<T> {
 
     done() : DynamicFormFieldGroupBuilder{
         return this.formGroupBuilder;
+    }
+
+    ngIf(callback:NgIfCallback){
+        this.ngIfCallback= callback;
+        return this;
     }
 
     setStyleClass(value:string){
@@ -143,7 +155,8 @@ export abstract class FieldConfigBuilder<T> {
             readonlyValue: this.readonlyValue,
             disabled: this.disabled,
             placeholderLocaleKey:this.placeHolderLocaleKey,
-            styleClass:this.styleClass
+            styleClass:this.styleClass,
+            ngIf:this.ngIfCallback
         }
         return option;
     }
