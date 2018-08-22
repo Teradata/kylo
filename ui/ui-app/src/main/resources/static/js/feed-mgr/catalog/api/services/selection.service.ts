@@ -170,6 +170,19 @@ export class SelectionService {
         .withPolicy(new SingleSelectionPolicy())
         .withPolicy(new BlockParentObjectSelectionPolicy());
 
+    singleSelectionStrategy(){
+        this.selectionStrategy = new DefaultSelectionStrategy()
+            .withPolicy(new DefaultSelectionPolicy())
+            .withPolicy(new SingleSelectionPolicy())
+            .withPolicy(new BlockParentObjectSelectionPolicy());
+    }
+
+    multiSelectionStrategy(){
+        this.selectionStrategy = new DefaultSelectionStrategy()
+            .withPolicy(new DefaultSelectionPolicy())
+            .withPolicy(new BlockParentObjectSelectionPolicy());
+    }
+
     /**
      * Stores selection for data source
      * @param {string} datasourceId
