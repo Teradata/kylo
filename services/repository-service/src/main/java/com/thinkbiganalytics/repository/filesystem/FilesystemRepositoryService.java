@@ -56,12 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,7 +110,11 @@ public class FilesystemRepositoryService implements RepositoryService {
     @Inject
     MetadataEventService eventService;
 
-    ObjectMapper mapper = new ObjectMapper();
+    @Inject
+    RepositoryMonitor repositoryMonitor;
+
+    @Inject
+    ObjectMapper mapper;
 
     @Value("${kylo.template.repository.default:/opt/kylo/setup/data/templates/nifi-1.0}")
     String defaultKyloRepository;
@@ -118,9 +122,20 @@ public class FilesystemRepositoryService implements RepositoryService {
     private final MetadataEventListener<TemplateChangeEvent> templateChangedListener = new TemplateChangeRepositoryListener();
 
     @PostConstruct
-    public void addEventListener() {
+    public void addEventListener() throws Exception {
         log.info("Template change listener added in fileRepositoryService");
         eventService.addListener(templateChangedListener);
+
+    }
+
+    @Scheduled(fixedDelay = 5000)
+    public void monitorRepositories() throws Exception {
+        log.info("Monitoring kylo repository");
+        Set<Path> repositoriesToWatch = listRepositories()
+            .stream()
+            .map(repo -> Paths.get(repo.getLocation()))
+            .collect(Collectors.toSet());
+        repositoryMonitor.watchRepositories(repositoriesToWatch);
     }
 
     @Override
@@ -236,7 +251,10 @@ public class FilesystemRepositoryService implements RepositoryService {
 
         String digest = DigestUtils.md5DigestAsHex(zipFile.getFile());
 
-        TemplateMetadata metadata = new TemplateMetadata(zipFile.getTemplateName(), zipFile.getDescription(), zipFile.getFileName(), zipFile.isStream());
+        Path templatePath = Paths.get(repository.getLocation() + "/" + zipFile.getFileName());
+        TemplateMetadata metadata = new TemplateMetadata(zipFile.getTemplateName(), zipFile.getDescription(),
+                                                         zipFile.getFileName().toString(), digest,
+                                                         zipFile.isStream(), false, templatePath.toFile().lastModified());
 
         //create repositoryItem
         TemplateMetadataWrapper
@@ -247,16 +265,8 @@ public class FilesystemRepositoryService implements RepositoryService {
         String baseName = FilenameUtils.getBaseName(templateMetadata.getFileName());
         //write file in first of templateLocations
 
-        Path templatePath = Paths.get(repository.getLocation() + "/" + templateMetadata.getFileName());
         Files.write(templatePath, zipFile.getFile());
         log.info("Finished publishing template {} to repository {}.", templateMetadata.getTemplateName(), repository.getName());
-        metadata.setChecksum(digest);
-        metadata.setLastModified(templatePath.toFile().lastModified());
-        metadata.setUpdateAvailable(false);
-
-        log.info("Writing metadata for {} template.", templateMetadata.getTemplateName());
-        File newFile = Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile();
-        mapper.writeValue(Paths.get(repository.getLocation() + "/" + baseName + ".json").toFile(), metadata);
 
         return new TemplateMetadataWrapper(metadata);
     }
@@ -386,7 +396,7 @@ public class FilesystemRepositoryService implements RepositoryService {
                     tmpltMetaData.setLastModified(latest);
                     templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), latest);
 
-                    mapper.writer(new DefaultPrettyPrinter()).writeValue(path.toFile(), tmpltMetaData);
+                    mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), tmpltMetaData);
                     wrapper = new TemplateMetadataWrapper(tmpltMetaData);
                 }
                 wrapper.setInstalled(true);
@@ -428,7 +438,7 @@ public class FilesystemRepositoryService implements RepositoryService {
                     long millis = event.getTimestamp().getMillis();
                     metadata.setLastModified(foundTemplate.getUpdateDate().getTime());
                     metadata.setUpdateAvailable(false);
-                    mapper.writer(new DefaultPrettyPrinter()).writeValue(path.toFile(), metadata);
+                    mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), metadata);
                     templateUpdateInfoCache.put(change.getDescription(), millis);
                     return true;
                 }

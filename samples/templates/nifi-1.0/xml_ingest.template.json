@@ -1,9 +1,0 @@
-{
-  "templateName" : "XML Ingest",
-  "description" : "Ingest XML or other filetypes with optional transformation into Hive",
-  "fileName" : "xml_ingest.template.zip",
-  "checksum" : "0800392e9c5f05e3a9794eab3a585aa0",
-  "stream" : false,
-  "updateAvailable" : false,
-  "lastModified" : 0
-}

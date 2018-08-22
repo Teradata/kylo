@@ -23,8 +23,6 @@ export class PolicyInputFormService {
 
     }
 
-
-
     currentFeedValue(feed:Feed) {
         return feed.category.systemName + "." + feed.systemFeedName;
     }

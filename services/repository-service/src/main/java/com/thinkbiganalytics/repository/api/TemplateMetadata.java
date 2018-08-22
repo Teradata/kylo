@@ -42,6 +42,16 @@ public class TemplateMetadata {
         this.stream = stream;
     }
 
+    public TemplateMetadata(String templateName, String description, String fileName, String checksum, boolean stream, boolean updateAvailable, long lastModified) {
+        this.templateName = templateName;
+        this.description = description;
+        this.fileName = fileName;
+        this.checksum = checksum;
+        this.stream = stream;
+        this.updateAvailable = updateAvailable;
+        this.lastModified = lastModified;
+    }
+
     public String getTemplateName() {
         return templateName;
     }
