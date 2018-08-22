@@ -15,7 +15,7 @@ import {MatDialogRef} from "@angular/material/dialog/typings/dialog-ref";
 import {TransformResponse} from "../../../visual-query/wrangler/model/transform-response";
 import {QueryResultColumn} from "../../../visual-query/wrangler/model/query-result-column";
 import {QueryEngine} from "../../../visual-query/wrangler/query-engine";
-import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
+//import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
 import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.component";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
@@ -267,7 +267,7 @@ export class PreviewSchemaComponent implements OnInit {
             this.previewSchemaService.preview(this.selectedDataSet, previewRequest).subscribe((data: PreviewDataSet) => {
                 this.selectedDataSetViewRaw = false;
                 //auto collect the first one if there is only 1 dataset and its editable
-                if(this.datasetKeys.length == 1 && this.autoCollect && this.editable){
+                if(this.autoCollect && this.editable){  //this.datasetKeys.length == 1 &&
                     this.addToCollection(this.selectedDataSet);
                 }
             }, (error1:any) => {

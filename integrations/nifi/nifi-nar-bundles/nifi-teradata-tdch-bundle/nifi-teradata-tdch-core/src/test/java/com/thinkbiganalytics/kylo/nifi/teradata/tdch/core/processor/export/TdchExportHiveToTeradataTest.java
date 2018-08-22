@@ -650,7 +650,6 @@ public class TdchExportHiveToTeradataTest {
 
 
     @Test
-    @Ignore
     public void testFullExport() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(TdchExportHiveToTeradata.class);
         TdchConnectionService tdchConnectionService = new DummyTdchConnectionService();
@@ -858,6 +857,7 @@ public class TdchExportHiveToTeradataTest {
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIME_FORMAT, "${config_teradata_target_time_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIMESTAMP_FORMAT, "${config_teradata_target_timestamp_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_STRING_TRUNCATE_FLAG, "${config_teradata_string_truncate_flag}");
+        runner.setProperty(TdchExportHiveToTeradata.TERADATA_CHARSET, "${config_teradata_charset}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_USE_XVIEWS, "${config_teradata_use_xviews}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_BATCH_SIZE, "${config_teradata_batch_size}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_FORCE_STAGE, "${config_teradata_force_stage}");
@@ -899,6 +899,7 @@ public class TdchExportHiveToTeradataTest {
         attributes.put("config_teradata_target_time_format", "HH:mm");
         attributes.put("config_teradata_target_timestamp_format", "yyyy-MM-dd HH:mm:ss");
         attributes.put("config_teradata_string_truncate_flag", "false");
+        attributes.put("config_teradata_charset", "UTF8");
         attributes.put("config_teradata_use_xviews", "true");
         attributes.put("config_teradata_batch_size", "500");
         attributes.put("config_teradata_force_stage", "true");
@@ -917,7 +918,7 @@ public class TdchExportHiveToTeradataTest {
 
         String
             expectedCommand =
-            "hadoop jar $USERLIBTDCH com.teradata.connector.common.tool.ConnectorExportTool -libjars $LIB_JARS -Dtdch.output.teradata.truncate=true -classname \"com.teradata.jdbc.TeraDriver\" -url \"jdbc:teradata://localhost/database=finance\" -username \"dbc\" -password ***** -method \"batch.insert\" -jobtype \"hive\" -fileformat \"rcfile\" -nummappers \"5\" -throttlemappers \"true\" -sourcedateformat \"yy-MM-dd\" -sourcetimeformat \"HH:mm\" -sourcetimestampformat \"yyyy-MM-dd HH:mm:ss\" -targetdateformat \"yy-MM-dd\" -targettimeformat \"HH:mm\" -targettimestampformat \"yyyy-MM-dd HH:mm:ss\" -stringtruncate \"false\" -sourcedatabase \"tdch\" -sourcetable \"example7_hive\" -sourcefieldnames \"h1,h2\" -targettable \"finance.example7_td\" -targetfieldnames \"c1,c2\" -usexviews \"true\" -batchsize \"500\" -forcestage \"true\" -keepstagetable \"true\" ";
+            "hadoop jar $USERLIBTDCH com.teradata.connector.common.tool.ConnectorExportTool -libjars $LIB_JARS -Dtdch.output.teradata.truncate=true -classname \"com.teradata.jdbc.TeraDriver\" -url \"jdbc:teradata://localhost/database=finance,CHARSET=UTF8\" -username \"dbc\" -password ***** -method \"batch.insert\" -jobtype \"hive\" -fileformat \"rcfile\" -nummappers \"5\" -throttlemappers \"true\" -sourcedateformat \"yy-MM-dd\" -sourcetimeformat \"HH:mm\" -sourcetimestampformat \"yyyy-MM-dd HH:mm:ss\" -targetdateformat \"yy-MM-dd\" -targettimeformat \"HH:mm\" -targettimestampformat \"yyyy-MM-dd HH:mm:ss\" -stringtruncate \"false\" -sourcedatabase \"tdch\" -sourcetable \"example7_hive\" -sourcefieldnames \"h1,h2\" -targettable \"finance.example7_td\" -targetfieldnames \"c1,c2\" -usexviews \"true\" -batchsize \"500\" -forcestage \"true\" -keepstagetable \"true\" ";
         MockFlowFile failedFlowFile = failedFlowFiles.get(0);
         Assert.assertEquals(expectedCommand, failedFlowFile.getAttribute("tdch.export.hive.to.teradata.command"));
     }
@@ -957,6 +958,7 @@ public class TdchExportHiveToTeradataTest {
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIME_FORMAT, "${config_teradata_target_time_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIMESTAMP_FORMAT, "${config_teradata_target_timestamp_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_STRING_TRUNCATE_FLAG, "${config_teradata_string_truncate_flag}");
+        runner.setProperty(TdchExportHiveToTeradata.TERADATA_CHARSET, "${config_teradata_charset}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_USE_XVIEWS, "${config_teradata_use_xviews}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_BATCH_SIZE, "${config_teradata_batch_size}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_FORCE_STAGE, "${config_teradata_force_stage}");
@@ -998,6 +1000,7 @@ public class TdchExportHiveToTeradataTest {
         attributes.put("config_teradata_target_time_format", "");
         attributes.put("config_teradata_target_timestamp_format", "");
         attributes.put("config_teradata_string_truncate_flag", "");
+        attributes.put("config_teradata_charset", "");
         attributes.put("config_teradata_use_xviews", "");
         attributes.put("config_teradata_batch_size", "");
         attributes.put("config_teradata_force_stage", "");
@@ -1057,6 +1060,7 @@ public class TdchExportHiveToTeradataTest {
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIME_FORMAT, "${config_teradata_target_time_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIMESTAMP_FORMAT, "${config_teradata_target_timestamp_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_STRING_TRUNCATE_FLAG, "${config_teradata_string_truncate_flag}");
+        runner.setProperty(TdchExportHiveToTeradata.TERADATA_CHARSET, "${config_teradata_charset}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_USE_XVIEWS, "${config_teradata_use_xviews}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_BATCH_SIZE, "${config_teradata_batch_size}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_FORCE_STAGE, "${config_teradata_force_stage}");
@@ -1098,6 +1102,7 @@ public class TdchExportHiveToTeradataTest {
         attributes.put("config_teradata_target_time_format", "");
         attributes.put("config_teradata_target_timestamp_format", "");
         attributes.put("config_teradata_string_truncate_flag", "");
+        attributes.put("config_teradata_charset", "");
         attributes.put("config_teradata_use_xviews", "");
         attributes.put("config_teradata_batch_size", "");
         attributes.put("config_teradata_force_stage", "");
@@ -1155,6 +1160,7 @@ public class TdchExportHiveToTeradataTest {
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIME_FORMAT, "${config_teradata_target_time_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_TARGET_TIMESTAMP_FORMAT, "${config_teradata_target_timestamp_format}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_STRING_TRUNCATE_FLAG, "${config_teradata_string_truncate_flag}");
+        runner.setProperty(TdchExportHiveToTeradata.TERADATA_CHARSET, "${config_teradata_charset}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_USE_XVIEWS, "${config_teradata_use_xviews}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_BATCH_SIZE, "${config_teradata_batch_size}");
         runner.setProperty(TdchExportHiveToTeradata.TERADATA_FORCE_STAGE, "${config_teradata_force_stage}");
@@ -1209,6 +1215,7 @@ public class TdchExportHiveToTeradataTest {
         attributes.put("config_teradata_target_time_format", "HH:mm:ss");
         attributes.put("config_teradata_target_timestamp_format", "yyyy-MM-dd HH:mm:ss.SSS");
         attributes.put("config_teradata_string_truncate_flag", "true");
+        attributes.put("config_teradata_charset","UTF16");
         attributes.put("config_teradata_use_xviews", "false");
         attributes.put("config_teradata_batch_size", "10000");
         attributes.put("config_teradata_force_stage", "true");
@@ -1238,7 +1245,7 @@ public class TdchExportHiveToTeradataTest {
 
         String
             expectedCommand =
-            "hadoop jar $USERLIBTDCH com.teradata.connector.common.tool.ConnectorExportTool -libjars $LIB_JARS -Dtdch.output.teradata.truncate=true -classname \"com.teradata.jdbc.TeraDriver\" -url \"jdbc:teradata://localhost/database=perf\" -username \"dbc\" -password ***** -method \"internal.fastload\" -jobtype \"hive\" -fileformat \"textfile\" -nummappers \"2\" -throttlemappers \"true\" -minmappers \"1\" -sourcedateformat \"yyyy-MM-dd\" -sourcetimeformat \"HH:mm:ss\" -sourcetimestampformat \"yyyy-MM-dd HH:mm:ss.SSS\" -sourcetimezoneid \"UTC\" -targetdateformat \"yyyy-MM-dd\" -targettimeformat \"HH:mm:ss\" -targettimestampformat \"yyyy-MM-dd HH:mm:ss.SSS\" -targettimezoneid \"PST\" -stringtruncate \"true\" -hiveconf \"/tdch/hive-config/hive-site.xml\" -sourcedatabase \"tdch\" -sourcetable \"tdch.perf_hive_text_10k\" -sourcefieldnames \"yelp_text,yelp_date,yelp_likes,yelp_business_id,user_id\" -separator , -lineseparator \\\\n -targettable \"perf.perf_td_allstr_10_to_1000k\" -targetfieldnames \"yelp_text,yelp_date,yelp_likes,yelp_business_id,user_id\" -usexviews \"false\" -queryband \"org=finance;\" -batchsize \"10000\" -stagedatabase \"finance_scratchpad\" -stagetablename \"yelp_stg\" -forcestage \"true\" -keepstagetable \"true\" -errortabledatabase \"finance_scratchpad\" -errortablename \"yelp_err\" ";
+            "hadoop jar $USERLIBTDCH com.teradata.connector.common.tool.ConnectorExportTool -libjars $LIB_JARS -Dtdch.output.teradata.truncate=true -classname \"com.teradata.jdbc.TeraDriver\" -url \"jdbc:teradata://localhost/database=perf,CHARSET=UTF16\" -username \"dbc\" -password ***** -method \"internal.fastload\" -jobtype \"hive\" -fileformat \"textfile\" -nummappers \"2\" -throttlemappers \"true\" -minmappers \"1\" -sourcedateformat \"yyyy-MM-dd\" -sourcetimeformat \"HH:mm:ss\" -sourcetimestampformat \"yyyy-MM-dd HH:mm:ss.SSS\" -sourcetimezoneid \"UTC\" -targetdateformat \"yyyy-MM-dd\" -targettimeformat \"HH:mm:ss\" -targettimestampformat \"yyyy-MM-dd HH:mm:ss.SSS\" -targettimezoneid \"PST\" -stringtruncate \"true\" -hiveconf \"/tdch/hive-config/hive-site.xml\" -sourcedatabase \"tdch\" -sourcetable \"tdch.perf_hive_text_10k\" -sourcefieldnames \"yelp_text,yelp_date,yelp_likes,yelp_business_id,user_id\" -separator , -lineseparator \\\\n -targettable \"perf.perf_td_allstr_10_to_1000k\" -targetfieldnames \"yelp_text,yelp_date,yelp_likes,yelp_business_id,user_id\" -usexviews \"false\" -queryband \"org=finance;\" -batchsize \"10000\" -stagedatabase \"finance_scratchpad\" -stagetablename \"yelp_stg\" -forcestage \"true\" -keepstagetable \"true\" -errortabledatabase \"finance_scratchpad\" -errortablename \"yelp_err\" ";
         MockFlowFile failedFlowFile = failedFlowFiles.get(0);
         Assert.assertEquals(expectedCommand, failedFlowFile.getAttribute("tdch.export.hive.to.teradata.command"));
     }

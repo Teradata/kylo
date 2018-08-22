@@ -4,6 +4,8 @@ import "fattable";
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
 
+import {moduleName} from "../../module-name";
+
 /**
  * Default font.
  */
@@ -429,6 +431,10 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 
+    // Replace dots in the
+    private cleanDots(value: string) : string {
+        return value.replace(/·/g, " ");
+    }
     /**
      * Shows the cell menu on the specified cell.
      */
@@ -439,11 +445,14 @@ export class VisualQueryPainterService extends fattable.Painter {
         const header = this.delegate.columns[column];
         const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
-        const range = selection.getRangeAt(0)
 
-        if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
-            return;  // ignore dragging between elements
+        if (!(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
+            return;
         }
+
+        //if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
+        //    return;  // ignore dragging between elements
+       // }
         if (angular.element(document.body).children(".CodeMirror-hints").length > 0) {
             return;  // ignore clicks when CodeMirror function list is active
         } else if (header.delegate.dataCategory === DataCategory.DATETIME || header.delegate.dataCategory === DataCategory.NUMERIC || header.delegate.dataCategory === DataCategory.STRING) {
@@ -453,12 +462,13 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
 
         // Update content
+
         const $scope: IScope = (this.menuPanel.config as any).scope;
         $scope.DataCategory = DataCategory;
         $scope.header = header;
-        $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·"," ") : null;
+        $scope.selection = this.cleanDots(selection.toString()); //(header.delegate.dataCategory === DataCategory.STRING) ? cleanDots(selection.toString()) : null;
+        $scope.range = (selection != null ? { startOffset: selection.anchorOffset, endOffset: selection.anchorOffset+$scope.selection.length } : null);
         $scope.selectionDisplay = this.niceSelection($scope.selection)
-        $scope.range = range;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : $(cellDiv).data('realValue');
         $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
@@ -541,4 +551,4 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 }
 
-angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
+angular.module(moduleName).service("VisualQueryPainterService", VisualQueryPainterService);

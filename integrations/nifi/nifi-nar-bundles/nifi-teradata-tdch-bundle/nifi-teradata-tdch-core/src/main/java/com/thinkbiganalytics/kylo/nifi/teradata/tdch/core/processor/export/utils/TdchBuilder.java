@@ -115,6 +115,7 @@ public class TdchBuilder {
     private String commonTargetTimestampFormat;
     private String commonTargetTimezoneId;
     private Boolean commonStringTruncate;
+    private String commonCharset;
 
     private String sourceHiveConfigurationFileHdfsPath;
     private String sourceHiveSourceDatabase;
@@ -189,10 +190,16 @@ public class TdchBuilder {
     }
 
     public TdchBuilder setCommonTeradataUrl(String targetTeradataUrl, String teradataDatabaseTable) {
+        return setCommonTeradataUrl(targetTeradataUrl, teradataDatabaseTable, null);
+    }
+
+    public TdchBuilder setCommonTeradataUrl(String targetTeradataUrl, String teradataDatabaseTable, String charset) {
         if ((StringUtils.isNotEmpty(targetTeradataUrl)) &&
             (StringUtils.isNotBlank(teradataDatabaseTable)) && (StringUtils.contains(teradataDatabaseTable, "."))) {
             this.commonTeradataUrl = targetTeradataUrl + "/database=" + StringUtils.substring(teradataDatabaseTable, 0,
-                                                                                              StringUtils.indexOf(teradataDatabaseTable, "."));
+                                                                                              StringUtils.indexOf(teradataDatabaseTable, "."))
+                                                                        + (StringUtils.isEmpty(charset)?"": ",CHARSET=" + charset);
+
             logger.info("Teradata connection url: {}", new Object[]{this.commonTeradataUrl});
         }
         return this;
@@ -330,6 +337,15 @@ public class TdchBuilder {
         if (commonStringTruncate != null) {
             this.commonStringTruncate = commonStringTruncate;
             logger.info("String truncate? {}", new Object[]{this.commonStringTruncate});
+        }
+        return this;
+    }
+
+    //Currently, this is not being used directly. Refer to setCommonTeradataUrl().
+    public TdchBuilder setCommonCharset(String commonCharset) {
+        if (StringUtils.isNotEmpty(commonCharset)) {
+            this.commonCharset = commonCharset;
+            logger.info("Charset: {}", new Object[] {this.commonCharset});
         }
         return this;
     }

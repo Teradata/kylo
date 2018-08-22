@@ -54,7 +54,7 @@
 
       <mat-form-field>
         <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto">
-        <mat-autocomplete #auto="matAutocomplete" [displayWith]="categoryAutocompleteDisplay">
+        <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" >
           <mat-option *ngFor="let category of filteredCategories | async" [value]="category">
                   <span class="item-title" [class.disabled]="!category.createFeed">
                        <ng-md-icon icon="{{category.icon}}" style="fill:{{category.iconColor}}" *ngIf="category.createFeed"></ng-md-icon>

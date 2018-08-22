@@ -17,11 +17,13 @@ export class FieldConfig<T> {
     onModelChange?:Function;
     validators?: ValidatorFn[] | null;
     disabled?:boolean;
+    placeholderLocaleKey?:string;
+    labelLocaleKey?:string;
+    styleClass:string;
 
     constructor(options: {
         value?: T,
         key?: string,
-        label?: string,
         required?: boolean,
         order?: number,
         controlType?: string,
@@ -31,12 +33,13 @@ export class FieldConfig<T> {
         readonlyValue?:string,
         modelValueProperty?:string,
         pattern?:string,
-        disabled?:boolean
+        disabled?:boolean,
+        placeholderLocaleKey?:string,
+        styleClass?:string
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
         this.key = options.key || '';
-        this.label = options.label || '';
         this.required = !!options.required;
         this.order = options.order === undefined ? 1 : options.order;
         this.controlType = options.controlType || '';
@@ -46,10 +49,9 @@ export class FieldConfig<T> {
         this.readonlyValue = options.readonlyValue || this.model.value;
         this.pattern = options.pattern;
         this.disabled = options.disabled || false;
+        this.styleClass = options.styleClass || '';
 
-        if(this.placeholder == '' && this.label != ''){
-            this.placeholder = this.label;
-        }
+        this.placeholderLocaleKey = options.placeholderLocaleKey;
 
     }
 

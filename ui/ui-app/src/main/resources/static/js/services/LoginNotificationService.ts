@@ -26,8 +26,7 @@ export default class LoginNotificationService {
                     if (allowed) {
                         this.$http.get(this.CommonRestUrlService.CONFIGURATION_PROPERTIES_URL).then((response: any) => {
                             if (Boolean(response.data['kylo.install.template.notification'])) {
-                                this.NotificationService.success("Found uninstalled templates in repository.", 2000);
-                                // this.NotificationService.addNotification("There are uninstalled templates in repository.", "");
+                                this.NotificationService.addNotification("Found uninstalled templates in repository.", "");
                             }
                         })
                     }

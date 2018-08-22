@@ -14,14 +14,13 @@ import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {ProfileHelper} from "../wrangler/api/profile-helper";
 import {ScriptState, StringUtils} from "../wrangler/index";
-
 import BroadcastService from '../../../services/broadcast-service';
 import {FeedService} from '../../services/FeedService';
 import StepperService from '../../../common/stepper/StepperService';
 
 declare const CodeMirror: any;
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../module-name";
 
 export class WranglerColumn {
 
@@ -912,19 +911,22 @@ export class TransformDataComponent implements OnInit {
             if (msg != null) {
                 msg = self.engine.decodeError(msg);
             }
-
-            let alert = this.$mdDialog.alert()
-                .parent($('body'))
-                .clickOutsideToClose(true)
-                .title("Oops! Error in formula")
-                .textContent(msg)
-                .ariaLabel("Formula error")
-                .ok("Ok");
-            this.$mdDialog.show(alert);
+            self.displayError("Error in formula", msg)
             console.log(e);
             return false;
         }
     };
+
+    displayError(title:string, msg:string): void {
+        let alert = this.$mdDialog.alert()
+            .parent($('body'))
+            .clickOutsideToClose(true)
+            .title(title)
+            .textContent(msg)
+            .ariaLabel(msg)
+            .ok("Ok");
+        this.$mdDialog.show(alert);
+    }
 
     /**
      * Appends the specified formula to the current script.

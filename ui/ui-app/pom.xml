@@ -14,7 +14,7 @@
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
     <frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
-    <node.version>v8.9.3</node.version>
+    <node.version>v8.11.4</node.version>
   </properties>
 
 

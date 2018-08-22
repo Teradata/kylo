@@ -116,6 +116,7 @@
         <include>datasource-styles.json</include>
         <include>icons.json</include>
         <include>icon-colors.json</include>
+        <include>repositories.json</include>
       </includes>
     </fileSet>
     <fileSet>

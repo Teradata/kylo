@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
-import "./services/VisualQueryService";
+
 import "./services/RestUrlService";
 import "./services/FeedCreationErrorService";
 import "./services/FeedService";
@@ -13,7 +13,6 @@ import "./services/SlaService";
 import "./services/DefaultFeedPropertyService";
 import "./shared/policy-input-form/policy-input-form";
 import "./shared/policy-input-form/PolicyInputFormService";
-import "./services/HiveService";
 import "./shared/hql-editor/hql-editor";
 import "./services/DBCPTableSchemaService";
 import "./services/EditFeedNifiPropertiesService";
@@ -50,6 +49,11 @@ import {FeedDetailsProcessorRenderingHelper} from "./services/FeedDetailsProcess
 import {RegisterTemplatePropertyService} from "./services/RegisterTemplatePropertyService";
 import {UiComponentsService} from "./services/UiComponentsService";
 import {RestUrlService} from "./services/RestUrlService";
+import {PreviewDatasetCollectionService} from "./catalog/api/services/preview-dataset-collection.service";
+import {HiveService} from "./services/HiveService";
+import {downgradeInjectable} from "@angular/upgrade/static";
+import {VisualQueryService} from "./services/VisualQueryService";
+import {DatasourcesService} from "./services/DatasourcesService";
 
 
 angular.module(moduleName).service('CategoriesService',CategoriesService);
@@ -77,3 +81,10 @@ angular.module(moduleName).service('FeedDetailsProcessorRenderingHelper', FeedDe
 angular.module(moduleName).service('RegisterTemplatePropertyService', RegisterTemplatePropertyService);
 
 angular.module(moduleName).service('RestUrlService', RestUrlService);
+
+angular.module(moduleName).service('HiveService', HiveService);
+
+angular.module(moduleName)
+    .service("VisualQueryService", VisualQueryService);
+
+angular.module(moduleName).service("DatasourcesService",DatasourcesService);

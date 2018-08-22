@@ -1,0 +1,81 @@
+<div fxLayout="column" fxFlex [class.visual-query-auto-complete-centered]="chartViewModel.data.nodes.length ==0" [class.visual-query-auto-complete-top]="chartViewModel.data.nodes.length >0">
+  <div *ngIf="error != null"  class="visual-query-error" fxLayout="row">
+    <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
+    <div fxLayout="column">
+      <div style="font-weight:500;line-height:24px;">Error!</div>
+      <div style="line-height:20px;">{{error}}</div>
+    </div>
+  </div>
+
+  <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular">
+    <form [formGroup]="form">
+      <div fxLayout="column">
+        <div fxLayout="row" fxLayoutAlign="center start" fxFlex *ngIf="showDatasources && !advancedMode">
+
+          <mat-form-field >
+            <mat-select formControlName="datasource" placeholder="Datasource">
+              <mat-option *ngFor="let datasource of availableDatasources" [value]="datasource.id">{{datasource.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- datasource autocomplete -->
+          <div  *ngIf="model.$selectedDatasourceId != 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70"  >
+            <mat-form-field style="width:100%">
+              <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
+              <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
+                <mat-option *ngFor="let table of filteredTables | async" [value]="table">
+                    <span class="item-title">
+                    <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
+                  </span>
+                          <span class="item-metadata">
+                    <span class="item-metastat">
+                      <span style="color:grey;">Schema:</span>
+                      <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
+                    </span>
+                    <span class="item-metastat">
+                      <span style="color:grey;">Table:</span>
+                      <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
+                    </span>
+                  </span>
+                </mat-option>
+              </mat-autocomplete>
+              <div class="hint md-warn-text" *ngIf="databaseConnectionError">Unable to connect to selected data source.</div>
+            </mat-form-field>
+          </div>
+          <button *ngIf="model.$selectedDatasourceId != 'FILE'" mat-raised-button color="primary" (click)="onAddTable()"class="pad-left" >Add Table</button>
+
+          <div  fxFlex="70" fxLayout="row" *ngIf="model.$selectedDatasourceId == 'FILE'">
+            <upload-sample-file [model]="model" [engine]="engine" [isValid]="isValid" (onFileUploaded)="onFileUploaded()"></upload-sample-file>
+          </div>
+          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null">Edit SQL</button>
+
+
+          <div fxLayout="row">
+            <button mat-button (click)="goBack()" type="button"
+                    [disabled]="stepper.selectedIndex === 0">Back</button>
+            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="goForward()" type="button"
+                    [disabled]="!form.valid">Next</button>
+          </div>
+
+        </div>
+
+      <div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture [hidden]="chartViewModel.data.nodes.length == 0 || advancedMode == true">
+        <div class="svg-container" >
+          <flow-chart class="flowchart" id="visual-query-canvas" #flowChart
+                      [chart]="chartViewModel">
+          </flow-chart>
+        </div>
+      </div>
+      </div>
+
+      <ng-template *ngIf="chartViewModel.data.nodes.length == 0 && !showDatasources">
+         No tables have been selected.  Please complete all previous sections before attempting to transfomr the data.
+
+      </ng-template>
+    </form>
+  </ng-template>
+
+
+
+</div>

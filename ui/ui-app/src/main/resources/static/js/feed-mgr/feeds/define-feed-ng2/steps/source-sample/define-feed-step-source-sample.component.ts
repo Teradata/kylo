@@ -43,6 +43,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
                 private _dialogService: TdDialogService) {
         super(defineFeedService,stateService);
         this.sourceSample = new FormGroup({})
+       this.defineFeedService.ensureSparkShell();
 
     }
 

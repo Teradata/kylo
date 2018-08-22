@@ -203,6 +203,14 @@ public class JcrUtil {
             .stream(getIterableChildren(parent, name).spliterator(), false)
             .collect(Collectors.toList());
     }
+    
+    public static Node getRootNode(Node node) {
+        try {
+            return getRootNode(node.getSession());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the session for the node", e);
+        }
+    }
 
     public static Node getRootNode(Session session) {
         try {

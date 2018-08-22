@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -408,6 +409,20 @@ public class AbstractTdchProcessorTest {
         runner.assertNotValid();
 
         runner.setProperty(TestAbstractTdchProcessor.STRING_TRUNCATE_FLAG, "false");
+        runner.assertValid();
+    }
+
+    @Test
+    public void testCharset() {
+        final TestRunner runner = TestRunners.newTestRunner(TestAbstractTdchProcessor.class);
+        String defaultValue = runner.getProcessor().getPropertyDescriptor(TestAbstractTdchProcessor.CHARSET_NAME).getDefaultValue();
+        assertNull(defaultValue);
+        runner.assertValid();
+
+        runner.setProperty(TestAbstractTdchProcessor.CHARSET, "invalid-charset");
+        runner.assertNotValid();
+
+        runner.setProperty(TestAbstractTdchProcessor.CHARSET, "UTF8");
         runner.assertValid();
     }
 }

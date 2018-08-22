@@ -1,5 +1,5 @@
 import * as angular from "angular";
-const moduleName: string = require("feed-mgr/visual-query/module-name");
+import {moduleName} from "../../module-name";
   /**
      * Controls the Profile dialog of the Visual Query Transform page.
      *

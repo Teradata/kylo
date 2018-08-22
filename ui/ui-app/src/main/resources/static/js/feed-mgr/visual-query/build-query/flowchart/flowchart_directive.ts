@@ -1,9 +1,8 @@
 import * as angular from "angular";
-import "./flowchart_viewmodel";
+import {flowchart} from "./flowchart_viewmodel";
 import './mouse_capture_service';
 import './svg_class';
 import './dragging_service';
-
 export default class FlowChartController{
 // Controller for the flowchart directive.
 // Having a separate controller is better for unit testing, otherwise
@@ -174,6 +173,7 @@ constructor(private $scope: any,
                     // Node dragging has commenced.
                     dragStarted: function (x: any, y: any) {
                         lastMouseCoords = controller.translateCoordinates(x, y, evt);
+                        console.log('NODE Drag Started evt',evt,'x',x,'y',y,'lastMouseCoords',lastMouseCoords)
                         // If nothing is selected when dragging starts,
                         // at least select the node we are dragging.
                         if (!node.selected()) {
@@ -184,6 +184,7 @@ constructor(private $scope: any,
                     // Dragging selected nodes... update their x,y coordinates.
                     dragging: function (x: any, y: any) {
                         var curCoords = controller.translateCoordinates(x, y, evt);
+                        console.log('NODE dragging evt',evt,'x',x,'y',y,'coords',curCoords)
                         var deltaX = curCoords.x - lastMouseCoords.x;
                         var deltaY = curCoords.y - lastMouseCoords.y;
                         chart.updateSelectedNodesLocation(deltaX, deltaY);

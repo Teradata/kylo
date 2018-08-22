@@ -2,7 +2,8 @@ import {FieldConfig} from "./FieldConfig";
 import * as angular from 'angular';
 
 export class Chip extends FieldConfig<string> {
-    controlType = 'chips';
+    static CONTROL_TYPE = "chips"
+    controlType = Chip.CONTROL_TYPE;
     items:any[] = [];
     constructor(options: {} = {}) {
         super(options);

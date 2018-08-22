@@ -3,8 +3,9 @@ import {MatCheckboxChange} from "@angular/material";
 
 
 export class Checkbox extends FieldConfig<string> {
-    controlType = 'checkbox';
-    type: string;
+    static CONTROL_TYPE = "checkbox"
+    controlType = Checkbox.CONTROL_TYPE;
+
     trueValue:string;
     falseValue:string;
     checked:boolean;
