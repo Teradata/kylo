@@ -35,7 +35,8 @@ export class FieldConfig<T> {
         pattern?:string,
         disabled?:boolean,
         placeholderLocaleKey?:string,
-        styleClass?:string
+        styleClass?:string,
+        validators?:ValidatorFn[]
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -52,6 +53,7 @@ export class FieldConfig<T> {
         this.styleClass = options.styleClass || '';
 
         this.placeholderLocaleKey = options.placeholderLocaleKey;
+        this.validators = options.validators;
 
     }
 
