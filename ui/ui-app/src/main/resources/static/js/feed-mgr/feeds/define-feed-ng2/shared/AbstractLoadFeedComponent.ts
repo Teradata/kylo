@@ -5,6 +5,7 @@ import {Feed} from "../../../model/feed/feed.model";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
+import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 
 
 export abstract class AbstractLoadFeedComponent  {
@@ -56,9 +57,12 @@ export abstract class AbstractLoadFeedComponent  {
             if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {
                 this.loadFeed(feedId);
             }
-            else {
+            else if( feed != undefined){
                 this.feed = feed;
                 this._setFeedState();
+            }
+            else {
+                this.stateService.go(FEED_DEFINITION_STATE_NAME+ ".select-template")
             }
         }
         else {

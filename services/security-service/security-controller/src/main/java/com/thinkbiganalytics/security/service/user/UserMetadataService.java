@@ -71,7 +71,7 @@ public class UserMetadataService implements UserService {
 
             return userProvider.findGroupByName(groupId)
                 .map(group -> {
-                    GroupPrincipal princ = group.getPrincial();
+                    GroupPrincipal princ = group.getPrincipal();
                     userProvider.deleteGroup(group);
                     return princ;
                 });

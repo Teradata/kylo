@@ -41,5 +41,8 @@ export class ObjectUtils {
         }
     }
 
+    static newType<T>(options:any, type: { new(arg:any): T ;}) :T {
+        return new type(options);
+    }
 
 }

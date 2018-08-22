@@ -115,12 +115,17 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     private registerFormControls(){
         let feedNameCtrl = new FormControl(this.feed.feedName,[Validators.required])
         feedNameCtrl.valueChanges.debounceTime(200).subscribe(value => {
-            this.generateSystemName();
+            if(this.formGroup.get("systemFeedName").untouched) {
+                this.generateSystemName(value);
+            }
+            else {
+                console.log('system name will not auto generate.  its been touched')
+            }
         });
         this.formGroup.registerControl("feedName",feedNameCtrl);
 
         //TODO add in pattern validator, and unique systemFeedName validator
-        this.formGroup.registerControl("systemFeedName", new FormControl(this.feed.systemFeedName,[Validators.required]))
+        this.formGroup.addControl("systemFeedName", new FormControl(this.feed.systemFeedName,[Validators.required]))
 
         let categoryCtrl = new FormControl(this.feed.category,[Validators.required])
         this.formGroup.registerControl("category",categoryCtrl);
@@ -136,13 +141,9 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
 
 
-    private generateSystemName() {
-        this.feedService.getSystemName(this.feed.feedName).then((response: any) => {
-            this.formGroup.get("systemFeedName").setValue(this.feed.systemFeedName);
-            //TODO add in this validation
-            //  this.model.table.tableSchema.name = this.model.systemFeedName;
-            //  this.validateUniqueFeedName();
-            //  this.validate();
+    private generateSystemName(value:string) {
+        this.feedService.getSystemName(value).then((response: any) => {
+            this.formGroup.get("systemFeedName").setValue(response.data);
         });
     }
 

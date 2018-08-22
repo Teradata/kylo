@@ -374,6 +374,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 msg = "Please remove, impute, or replace all empty values and try again."
             } else if (msg.indexOf("AnalysisException: Can't extract value from ") > -1) {
                 msg = "Action would invalidate downstream transformations or requires an upstream transformation that has been disabled.";
+            } else if (msg.indexOf("Unsupported literal type class [D") > -1) {
+                msg = "Function not available on present version of Spark.";
             }
         }
         return msg;

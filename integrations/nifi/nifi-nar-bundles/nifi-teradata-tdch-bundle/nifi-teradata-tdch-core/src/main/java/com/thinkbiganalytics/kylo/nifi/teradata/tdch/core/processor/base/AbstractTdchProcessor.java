@@ -68,6 +68,8 @@ public abstract class AbstractTdchProcessor extends AbstractNiFiProcessor {
 
     protected static final String STRING_TRUNCATE_FLAG_NAME = "Truncate strings?";
 
+    protected static final String CHARSET_NAME = "Character Set";
+
     //Connection service
     protected static final String TDCH_CONNECTION_SERVICE_NAME = "[Teradata] TDCH connection service";
 
@@ -351,6 +353,15 @@ public abstract class AbstractTdchProcessor extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue(DEFAULT_STRING_TRUNCATE_FLAG)
+        .build();
+
+    public static final PropertyDescriptor CHARSET = new PropertyDescriptor.Builder()
+        .name(CHARSET_NAME)
+        .displayName("Character Set")
+        .description("Character set to use for processing. For example, if Teradata table supports UNICODE, this value can be set to UTF8.")
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.CHARACTER_SET_VALIDATOR)
+        .required(false)
         .build();
 
     @Override

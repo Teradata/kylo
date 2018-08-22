@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrLockingUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
 
@@ -65,7 +66,7 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
 
 
     public JcrFeedTemplate(Node node) {
-        super(node);
+        super(JcrLockingUtil.createAutoLockProxy(node, true));
     }
 
     @Override

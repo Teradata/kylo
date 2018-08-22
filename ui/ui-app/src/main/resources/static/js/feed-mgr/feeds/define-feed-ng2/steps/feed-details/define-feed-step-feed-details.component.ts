@@ -31,6 +31,7 @@ import {UiComponentsService} from "../../../../services/UiComponentsService";
 import {RadioButton} from "../../../../shared/dynamic-form/model/RadioButton";
 import {Textarea} from "../../../../shared/dynamic-form/model/Textarea";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import {FieldGroup} from "../../../../shared/dynamic-form/model/FieldGroup";
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -68,6 +69,16 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     public form :FormGroup;
 
+
+
+    public inputProcessorFieldGroup:FieldGroup = new FieldGroup();
+
+    public nonInputProcessorFieldGroup:FieldGroup = new FieldGroup();
+
+    public inputProcessorFieldGroups:FieldGroup[] = []
+
+    public nonInputProcessorFieldGroups:FieldGroup[] = []
+
     public inputProcessorFields :FieldConfig<any>[] = [];
 
 
@@ -97,6 +108,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         this.registerTemplatePropertyService = this.$$angularInjector.get("RegisterTemplatePropertyService");
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
         this.form = new FormGroup({});
+        this.inputProcessorFieldGroups.push(this.inputProcessorFieldGroup)
+        this.nonInputProcessorFieldGroups.push(this.nonInputProcessorFieldGroup)
     }
 
     getStepName() {
@@ -161,8 +174,9 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
 
     private updateInputProcessorFormElements(newInput:string,oldInput?:string) {
+        let oldConfig :FieldConfig<any>[];
         if(oldInput) {
-            let oldConfig = this.inputFieldsMap[oldInput];
+            oldConfig = this.inputFieldsMap[oldInput];
             if(oldConfig != undefined) {
                 oldConfig.forEach(config => {
                     let control = this.form.controls[config.key];
@@ -174,8 +188,13 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         }
 
         this.inputProcessorFields = this.inputFieldsMap[newInput];
+
+        this.inputProcessorFieldGroup.fields = this.inputProcessorFields;
         if(this.inputProcessorFields != undefined) {
             this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
+        }
+        else {
+            console.log("unable to find input for ",newInput,'oldConfig',oldConfig)
         }
     }
 
@@ -290,7 +309,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     private toFieldConfigOptions(property :Templates.Property):any {
         let key:string = property.idKey;
-        let options = {key:key,label:property.propertyDescriptor.displayName,required:property.required,placeholder:property.propertyDescriptor.displayName, value:property.value,hint:property.propertyDescriptor.description};
+        let options = {key:key,placeholder:property.propertyDescriptor.displayName,required:property.required,value:property.value,hint:property.propertyDescriptor.description};
         return options;
 
     }
@@ -298,6 +317,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
    private buildForm(){
         if(this.inputProcessorId == undefined && this.inputProcessor != undefined){
             this.inputProcessorId = this.inputProcessor.id;
+            console.log('input processor id was null... defaulting to ',this.inputProcessorId)
         }
         this.formFieldOrder = 0
 
@@ -307,11 +327,13 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
          this.nonInputProcessorFields =  this.createFormFields(this.feed.nonInputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;
         });
+         this.nonInputProcessorFieldGroup.fields = this.nonInputProcessorFields;
 
         this.inputProcessorFields = this.inputFieldsMap[this.inputProcessorId];
         if(this.inputProcessorFields == undefined){
             this.inputProcessorFields = [];
         }
+        this.inputProcessorFieldGroup.fields = this.inputProcessorFields;
         this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
         this.dynamicFormService.addToFormGroup(this.nonInputProcessorFields, this.form);
     }
@@ -393,6 +415,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                 if(property.inputProperty){
                     if(this.inputFieldsMap[processor.id] == undefined){
                         this.inputFieldsMap[processor.id] = [];
+                        console.log('NEW INPUT processor ',processor.name,processor.id,processor)
                     }
                     this.inputFieldsMap[processor.id].push(fieldConfig);
                 }

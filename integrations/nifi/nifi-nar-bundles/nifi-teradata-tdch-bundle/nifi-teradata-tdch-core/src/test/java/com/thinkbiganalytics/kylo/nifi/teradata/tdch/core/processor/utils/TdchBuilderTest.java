@@ -77,6 +77,54 @@ public class TdchBuilderTest {
     }
 
     @Test
+    public void testSetting_CommonTeradataUrlWithCharset() {
+        String actualCommand = getBaseTdchBuilder()
+            .setCommonTeradataUrl("jdbc:teradata://localhost", "tera_db.tera_table", "UTF8")
+            .build();
+
+        String expectedCommand = getBaseTdchCommand1()
+                                 + SPACE
+                                 + "-url \"jdbc:teradata://localhost/database=tera_db,CHARSET=UTF8\""
+                                 + SPACE
+                                 + getBaseTdchCommand2()
+                                 + SPACE;
+        Assert.assertEquals(expectedCommand, actualCommand);
+
+    }
+
+    @Test
+    public void testSetting_CommonTeradataUrlWithEmptyCharset() {
+        String actualCommand = getBaseTdchBuilder()
+            .setCommonTeradataUrl("jdbc:teradata://localhost", "tera_db.tera_table", "")
+            .build();
+
+        String expectedCommand = getBaseTdchCommand1()
+                                 + SPACE
+                                 + "-url \"jdbc:teradata://localhost/database=tera_db\""
+                                 + SPACE
+                                 + getBaseTdchCommand2()
+                                 + SPACE;
+        Assert.assertEquals(expectedCommand, actualCommand);
+
+    }
+
+    @Test
+    public void testSetting_CommonTeradataUrlWithNullCharset() {
+        String actualCommand = getBaseTdchBuilder()
+            .setCommonTeradataUrl("jdbc:teradata://localhost", "tera_db.tera_table", null)
+            .build();
+
+        String expectedCommand = getBaseTdchCommand1()
+                                 + SPACE
+                                 + "-url \"jdbc:teradata://localhost/database=tera_db\""
+                                 + SPACE
+                                 + getBaseTdchCommand2()
+                                 + SPACE;
+        Assert.assertEquals(expectedCommand, actualCommand);
+
+    }
+
+    @Test
     public void testSetting_setCommonTeradataClassname() {
         String actualCommand = getBaseTdchBuilder()
             .setCommonTeradataClassname("com.teradata.jdbc.TeraDriver")
@@ -346,6 +394,20 @@ public class TdchBuilderTest {
                                  + SPACE
                                  + "-stringtruncate \"true\""
                                  + SPACE;
+        Assert.assertEquals(expectedCommand, actualCommand);
+    }
+
+    @Test
+    public void testSetting_CommonCharset() {
+        String actualCommand = getBaseTdchBuilder()
+            .setCommonCharset("UTF8")
+            .build();
+
+        String expectedCommand = getBaseTdchCommand1()
+                                 + SPACE
+                                 + getBaseTdchCommand2()
+                                 + SPACE;
+
         Assert.assertEquals(expectedCommand, actualCommand);
     }
 

@@ -246,7 +246,7 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconed, mix:referenceable, tba:accessControlled
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconed, mix:referenceable, tba:accessControlled, mix:lockable
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
