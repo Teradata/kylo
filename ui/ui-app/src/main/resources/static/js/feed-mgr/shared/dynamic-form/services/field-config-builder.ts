@@ -173,9 +173,10 @@ export abstract class FieldConfigBuilder<T> {
         }
 
         setOptionsArray(options:any[]){
-            return  options.map(item => {
+            this.options = options.map(item => {
                 return {label:item,value:item};
             });
+            return this;
         }
 
         addOption(label: string, value: string): SelectFieldBuilder{
