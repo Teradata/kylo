@@ -3,14 +3,11 @@ import * as angular from "angular";
 import {ColumnDelegate as IColumnDelegate, DataType as DT} from "./api/column";
 import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
-import * as $ from "jquery";
 import * as _ from "underscore";
 import {ProfileHelper} from "./api/profile-helper";
 import {DialogBuilder, WranglerFormBuilder, WranglerFormField} from "./WranglerFormBuilder";
-import {QueryResultColumn} from "./model/query-result-column";
 import {ColumnUtil} from "./core/column-util";
-import {ReplaceValueEqualToForm} from "./core/columns/replace-value-equal-to-form";
-import {DynamicFormDialogData} from "../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {ReplaceValueForm} from "./core/columns/replace-value-form";
 import {CrossTabForm} from "./core/columns/cross-tab-form";
 import {BinValuesForm} from "./core/columns/bin-values-form";
 import {OrderByForm} from "./core/columns/order-by-form";
@@ -18,6 +15,7 @@ import {CloneUtil} from "../../../common/utils/clone-util";
 import {RenameColumnForm} from "./core/columns/rename-column-form";
 import {RescaleForm} from "./core/columns/rescale-form";
 import {ImputeMissingForm} from "./core/columns/impute-missing-form";
+import {ReplaceNanForm} from "./core/columns/replace-nan-form";
 
 
 /**
@@ -227,7 +225,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param grid
      */
     replaceValueEqualTo(value: string, column: any, grid: any) {
-        let form = new ReplaceValueEqualToForm(column,grid,this.controller,value);
+        let form = new ReplaceValueForm(column,grid,this.controller,value);
         this.dialog.openColumnForm(form);
     }
 
@@ -931,22 +929,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     replaceNaNWithValue(column: any, grid: any) {
-        const dataType = column.dataType;
-        const dataCategory = ColumnUtil.fromDataType(dataType);
-        let fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle("Replace NaN")
-            .inputbox("replaceValue").withLabel("Replace value:").anyNumber().default(0).build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let value = fields['replaceValue'].value;
-                let script = `when((${fieldName} == "" || isnull(${fieldName}) ),${value}).otherwise(${fieldName}).as("${fieldName}")`;
-                const formula = ColumnUtil.toFormula(script, column, grid);
-                this.controller.addFunction(formula, {
-                    formula: formula, icon: "find_replace",
-                    name: "Fill NaN with " + value
-                });
-            });
+        let replaceForm = new ReplaceNanForm(column,grid, this.controller);
+        this.dialog.openColumnForm(replaceForm);
     }
 
     /**
@@ -955,22 +940,11 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    replaceEmptyWithValue(column: any, grid: any) {
+    replaceMissing(column: any, grid: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle("Replace Missing")
-            .inputbox("replaceValue").withLabel("Replace value:").build()
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let value = fields['replaceValue'].value;
-
-                let script = `when((${fieldName} == "" || isnull(${fieldName}) ),"${value}").otherwise(${fieldName}).as("${fieldName}")`;
-                const formula = ColumnUtil.toFormula(script, column, grid);
-                this.controller.addFunction(formula, {
-                    formula: formula, icon: "find_replace",
-                    name: "Fill empty with " + value
-                });
-            });
+        let replaceMissing = new ReplaceValueForm(column,grid, this.controller, '');
+        this.dialog.openColumnForm(replaceMissing);
     }
 
     /**
@@ -1198,7 +1172,7 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Bin values', icon: 'functions', name: 'Bin values...', operationFn: self.binValues},
                 {description: 'Identify outliers', icon: 'unicorn', name: 'Identify outliers', operationFn: self.identifyOutliers},
                 {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean...', operationFn: self.imputeMeanColumn},
-                {description: 'Replace empty/NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceMissing},
                 {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operationFn: self.rescaleMinMax}
             );
             transforms.math.push(
@@ -1238,7 +1212,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operationFn: self.imputeMissingColumn},
                 {description: 'Index labels', icon: 'functions', name: 'Index labels', operationFn: self.indexColumn},
                 {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn},
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceEmptyWithValue});
+                {description: 'Replace NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceMissing});
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});
