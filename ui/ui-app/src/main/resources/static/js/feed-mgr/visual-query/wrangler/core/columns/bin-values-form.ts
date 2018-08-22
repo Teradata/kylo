@@ -5,14 +5,11 @@ import {FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {InputType} from "../../../../shared/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
 
-
-
 export class BinValuesForm extends ColumnForm {
 
     constructor(column:any, grid:any,controller:ColumnController, value?:string){
         super(column,grid,controller,value)
     }
-
 
     buildForm() {
         return new DynamicFormBuilder().setTitle("Bin Values")
@@ -43,11 +40,11 @@ export class BinValuesForm extends ColumnForm {
             .done()
             .columnComplete()
             .onApply((values:any)=> {
-                let bins:number =values.bin
+                let bins:number =values.bin;
                 let sample:number = values.sample;
 
                 let binSize = 1 / bins;
-                let arr = []
+                let arr = [];
                 for (let i = 1; i < bins; i++) {
                     arr.push(i * binSize)
                 }

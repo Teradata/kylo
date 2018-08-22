@@ -23,7 +23,7 @@ export class ReplaceValueEqualToForm extends ColumnForm{
             .columnComplete()
             .onApply((values:any) => {
                 let formula = '';
-                let replaceValue=values.replaceValue
+                let replaceValue=values.replaceValue;
                 if (this.dataCategory == DataCategory.NUMERIC) {
                     if (replaceValue == null || replaceValue == '') {
                         replaceValue = `''`

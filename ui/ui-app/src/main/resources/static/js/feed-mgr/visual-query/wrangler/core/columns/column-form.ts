@@ -7,7 +7,7 @@ import {QueryResultColumn} from "../../model/query-result-column";
 export abstract class ColumnForm {
 
     fieldName:string;
-    dataType :string
+    dataType :string;
     dataCategory:DataCategory;
     formConfig:FormConfig;
 
@@ -36,7 +36,7 @@ export abstract class ColumnForm {
     // Executes the regex formula
     private executeRegex(column: any, grid:any, regex:string, group:number) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
-        const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`
+        const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`;
         const formula = ColumnUtil.toFormula(script, column, grid);
         this.controller.addFunction(formula, {
             formula: formula, icon: "content_cut",
