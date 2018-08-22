@@ -6,6 +6,8 @@ export type NgIfCallback = (form:FormGroup) => boolean;
 
 export type OnFieldChange = (newValue:any,form:FormGroup,model?:any) =>void;
 
+export type GetErrorMessage = (type:string,validationResponse:any,form:FormGroup) =>string;
+
 const NgIfTrue:NgIfCallback = (form:FormGroup)=> { return true};
 
 export class FieldConfig<T> {
@@ -28,6 +30,7 @@ export class FieldConfig<T> {
     labelLocaleKey?:string;
     styleClass:string;
     ngIf?:NgIfCallback
+    getErrorMessage?:GetErrorMessage
 
     constructor(options: {
         value?: T,
@@ -46,7 +49,8 @@ export class FieldConfig<T> {
         styleClass?:string,
         validators?:ValidatorFn[],
         ngIf?:NgIfCallback,
-        onModelChange?:OnFieldChange
+        onModelChange?:OnFieldChange,
+        getErrorMessage?:GetErrorMessage
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -66,6 +70,7 @@ export class FieldConfig<T> {
         this.validators = options.validators;
         this.ngIf = options.ngIf ? options.ngIf : NgIfTrue ;
         this.onModelChange = options.onModelChange;
+        this.getErrorMessage = options.getErrorMessage;
 
     }
 
