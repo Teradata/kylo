@@ -161,7 +161,7 @@ public class InitializeFeed extends FeedProcessor implements CleanupListener {
     public void scheduled(ProcessContext context) {
         super.scheduled(context);
         this.retryCounts.clear();
-        cleanupEventService = getCleanupService(context);
+        cleanupEventService = context.getProperty(CLEANUP_SERVICE).asControllerService(CleanupEventService.class);
     }
 
     @Override
@@ -206,7 +206,7 @@ public class InitializeFeed extends FeedProcessor implements CleanupListener {
                 getLog().info("Register cleanup event listener for {}.{}", new Object[]{category, feedName});
 
                 // Listen for cleanup events
-                getCleanupService(context).addListener(category, feedName, this);
+                cleanupEventService.addListener(category, feedName, this);
                 map.put(feedId, new ArrayList());
             }
 
@@ -342,11 +342,6 @@ public class InitializeFeed extends FeedProcessor implements CleanupListener {
 
     private AtomicInteger getRetryCount(ProcessContext context, FlowFile inputFF) {
         return this.retryCounts.computeIfAbsent(getFeedId(context, inputFF), k -> new AtomicInteger(0));
-    }
-
-    @Nonnull
-    private CleanupEventService getCleanupService(@Nonnull final ProcessContext context) {
-        return context.getProperty(CLEANUP_SERVICE).asControllerService(CleanupEventService.class);
     }
 
     @Override
