@@ -46,7 +46,7 @@ export class WranglerDialogService implements DialogService {
 
     openColumnForm(data:ColumnForm):Observable<any>{
       let dialogData:DynamicFormDialogData = new DynamicFormDialogData(data.formConfig)
-      return  this.dialog.open(SimpleDynamicFormDialogComponent,{data:dialogData, panelClass: "full-screen-dialog"})
+      return  this.dialog.open(SimpleDynamicFormDialogComponent,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'400px',position:{top:'0',right:'0'}})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }
