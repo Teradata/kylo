@@ -47,7 +47,7 @@ export class DynamicFormUtil {
                     console.log("update the model for ",field, 'with ',value);
                     field.model[field.modelValueProperty] = value;
                     if(field.onModelChange){
-                        field.onModelChange(field.model);
+                        field.onModelChange(value,formGroup,field.model);
                     }
                 }
             })

@@ -1,5 +1,5 @@
 import {ValidatorFn} from "@angular/forms/src/directives/validators";
-import {FieldConfig} from "../model/FieldConfig";
+import {FieldConfig, NgIfCallback, OnFieldChange} from "../model/FieldConfig";
 import {Select} from "../model/Select";
 import {Textarea} from "../model/Textarea";
 import {RadioButton} from "../model/RadioButton";
@@ -11,7 +11,7 @@ import {ObjectUtils} from "../../../../common/utils/object-utils";
 import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
 import {FormGroup} from "@angular/forms";
 
-export type NgIfCallback = (form:FormGroup) => boolean;
+
 
 export abstract class FieldConfigBuilder<T> {
     private value: any;
@@ -24,7 +24,7 @@ export abstract class FieldConfigBuilder<T> {
     private readonlyValue: string;
     private modelValueProperty: string;
     private pattern?: string;
-    private onModelChange?: Function;
+    private onModelChange?: OnFieldChange;
     private validators?: ValidatorFn[] | null;
     private disabled?: boolean;
     private placeHolderLocaleKey:string;
@@ -46,8 +46,13 @@ export abstract class FieldConfigBuilder<T> {
         return this.formGroupBuilder;
     }
 
-    ngIf(callback:NgIfCallback){
-        this.ngIfCallback= callback;
+    ngIf(callback:NgIfCallback, bind?:any){
+        if(bind) {
+            this.ngIfCallback = callback.bind(bind);
+        }
+        else {
+            this.ngIfCallback = callback;
+        }
         return this;
     }
 
@@ -110,8 +115,13 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
-    setOnModelChange(value: Function) {
-        this.onModelChange = value;
+    onChange(value: OnFieldChange, bind?:any) {
+        if(bind) {
+            this.onModelChange = value.bind(bind);
+        }
+        else {
+            this.onModelChange = value;
+        }
         return this;
     }
 
