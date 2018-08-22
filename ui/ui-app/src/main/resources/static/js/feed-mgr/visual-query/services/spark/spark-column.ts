@@ -12,6 +12,7 @@ import {DataType} from "../../wrangler/api/column";
 import {DateFormatType, DateFormatUnit, DialogService} from "../../wrangler/api/services/dialog.service";
 import {ColumnController} from "../../wrangler/column-controller";
 import {ColumnDelegate, DataCategory} from "../../wrangler/column-delegate";
+import {ColumnUtil} from "../../wrangler/core/column-util";
 
 /**
  * Data types supported by Spark and Hive.
@@ -68,14 +69,14 @@ export class SparkColumnDelegate extends ColumnDelegate {
      * Gets the display name of this column.
      */
     private get displayName() {
-        return this.getColumnDisplayName(this.column);
+        return ColumnUtil.getColumnDisplayName(this.column);
     }
 
     /**
      * Gets the field name of this column.
      */
     private get fieldName() {
-        return this.getColumnFieldName(this.column);
+        return ColumnUtil.getColumnFieldName(this.column);
     }
 
     /**
@@ -83,18 +84,18 @@ export class SparkColumnDelegate extends ColumnDelegate {
      */
     castTo(dataType: DataType): void {
         if (dataType === SparkDataType.BIGINT) {
-            const formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, {columns: (this.controller as any).tableColumns});
+            const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, name: "Cast " + this.displayName + " to bigint"});
         }
         if (dataType === SparkDataType.DATE) {
             return this.castToDate();
         }
         if (dataType === SparkDataType.DOUBLE) {
-            const formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
+            const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to double"});
         }
         if (dataType === SparkDataType.INT) {
-            const formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
+            const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to int"});
         }
         if (dataType === SparkDataType.STRING) {
@@ -182,7 +183,7 @@ export class SparkColumnDelegate extends ColumnDelegate {
                 script = "to_date(" + script + ".cast(\"timestamp\")).as(\"" + StringUtils.quote(this.displayName) + "\")";
 
                 // Add function to wrangler
-                const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "event", name: "Cast " + this.displayName + " to date"});
             });
         } else if (this.dataCategory === DataCategory.STRING) {
@@ -208,7 +209,7 @@ export class SparkColumnDelegate extends ColumnDelegate {
                 }
 
                 // Add function to wrangler
-                const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "event", name: "Cast " + this.displayName + " to date"});
             });
         }
@@ -246,11 +247,11 @@ export class SparkColumnDelegate extends ColumnDelegate {
                 }
 
                 // Add function to wrangler
-                const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "format_quote", name: "Cast " + this.displayName + " to string"});
             });
         } else {
-            const formula = this.toFormula(this.fieldName + ".cast(\"string\")", this.column, {columns: (this.controller as any).tableColumns});
+            const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"string\")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, icon: "format_quote", name: "Cast " + this.displayName + " to string"});
         }
     }
@@ -264,13 +265,13 @@ export class SparkColumnDelegate extends ColumnDelegate {
         // Detect ISO dates
 
         if (this.dataCategory === DataCategory.DATETIME) {
-            const formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, {columns: (this.controller as any).tableColumns});
+            const formula = ColumnUtil.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
         } else if (this.dataCategory === DataCategory.STRING) {
             // If ISO date then just convert it. Otherwise, prompt.
             if (Date.parse(sampleValue) != undefined) {
                 var script = `${this.fieldName}.cast("timestamp")`;
-                const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
             } else {
                 this.dialog.openDateFormat({
@@ -282,7 +283,7 @@ export class SparkColumnDelegate extends ColumnDelegate {
                     type: DateFormatType.STRING
                 }).subscribe(response => {
                     const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
-                    const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                    const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                     this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
                 });
             }

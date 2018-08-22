@@ -48,7 +48,7 @@
 
     <div *ngSwitchCase="'checkbox'" class="pad-top-sm">
       <mat-checkbox
-          [id]="field.key" [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.label}}
+          [id]="field.key" [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
       </mat-checkbox>
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}

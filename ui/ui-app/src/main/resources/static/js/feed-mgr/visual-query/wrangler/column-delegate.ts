@@ -8,6 +8,15 @@ import * as _ from "underscore";
 import {ProfileHelper} from "./api/profile-helper";
 import {DialogBuilder, WranglerFormBuilder, WranglerFormField} from "./WranglerFormBuilder";
 import {QueryResultColumn} from "./model/query-result-column";
+import {ColumnUtil} from "./core/column-util";
+import {ReplaceValueEqualToForm} from "./core/columns/replace-value-equal-to-form";
+import {DynamicFormDialogData} from "../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {CrossTabForm} from "./core/columns/cross-tab-form";
+import {BinValuesForm} from "./core/columns/bin-values-form";
+import {OrderByForm} from "./core/columns/order-by-form";
+import {CloneUtil} from "../../../common/utils/clone-util";
+import {RenameColumnForm} from "./core/columns/rename-column-form";
+
 
 /**
  * Categories for data types.
@@ -32,7 +41,7 @@ export enum DataCategory {
  * @readonly
  * @enum {string}
  */
-const DataType = {
+export const DataType = {
     // Numeric types
     TINYINT: 'tinyint',
     SMALLINT: 'smallint',
@@ -98,7 +107,8 @@ export class MenuItem {
     description: string = "";
     icon: string = "";
     name: string;
-    operation:any;
+    operation?:string;
+    operationFn?:Function
 }
 
 export class MenuItems {
@@ -141,7 +151,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * Constructs a column delegate.
      */
     constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
-        this.dataCategory = this.fromDataType(dataType);
+        this.dataCategory = ColumnUtil.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
         this.formBuilder = new WranglerFormBuilder($mdDialog, dialog);
@@ -154,47 +164,38 @@ export class ColumnDelegate implements IColumnDelegate {
         // not supported
     }
 
-    escapeRegExp(text: string): string {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\\\$&');
-    }
 
-    /**
-     * If the character is reserved regex then the character is escaped
-     */
-    escapeRegexCharIfNeeded(chr:string):string {
-        if (chr == ' ') return "\\\\s";
-        return (chr.match(/[\[\^\$\.\|\?\*\+\(\)]/g) ? `\\\\${chr}` : chr);
-    }
 
+ 
     /**
      * Extracts text between regex of start and end of selection
      */
     extractRegex(value: string, column: any, grid: any) {
         const self = this;
-        const fieldName = this.getColumnFieldName(column);
-        const first = this.escapeRegexCharIfNeeded(value.charAt(0));
-        const last = this.escapeRegexCharIfNeeded(value.charAt(value.length-1));
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        const first = ColumnUtil.escapeRegexCharIfNeeded(value.charAt(0));
+        const last = ColumnUtil.escapeRegexCharIfNeeded(value.charAt(value.length-1));
 
         let regexScript = `regexp_extract(${fieldName}, "${first}(.*)${last}", 0).as("${fieldName}")`
-        const regexFormula = self.toFormula(regexScript, column, grid);
+        const regexFormula = ColumnUtil.toFormula(regexScript, column, grid);
 
         // Now strip the start and end character which demark the extraction and trim whitespace
         let substrScript = `trim(substr(${fieldName},2,length(${fieldName})-2)).as("${fieldName}")`
-        const substrFormula = self.toFormula(substrScript, column, grid);
+        const substrFormula = ColumnUtil.toFormula(substrScript, column, grid);
 
         let chainedOp: ChainedOperation = new ChainedOperation(2);
         self.controller.setChainedQuery(chainedOp);
-        self.controller.pushFormula(regexFormula, {formula: regexFormula, icon: 'content_cut', name:  `Regex extract ${this.getColumnDisplayName(column)}`}, true, false).then(function () {
+        self.controller.pushFormula(regexFormula, {formula: regexFormula, icon: 'content_cut', name:  `Regex extract ${ColumnUtil.getColumnDisplayName(column)}`}, true, false).then(function () {
             chainedOp.nextStep();
             self.controller.addFunction(substrFormula, {formula: substrFormula, icon: 'spellcheck', name: `Clean ${fieldName}`});
         });
     }
 
     stripValueContaining(value: string, column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
-        const regex = this.escapeRegExp(value);
-        const formula = this.toFormula("regexp_replace(" + fieldName + ", \"" + regex + "\", \"\").as(\"" + fieldName + "\")", column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Strip " + this.getColumnDisplayName(column) + " containing " + value});
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        const regex = ColumnUtil.escapeRegExp(value);
+        const formula = ColumnUtil.toFormula("regexp_replace(" + fieldName + ", \"" + regex + "\", \"\").as(\"" + fieldName + "\")", column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Strip " + ColumnUtil.getColumnDisplayName(column) + " containing " + value});
     }
 
     /**
@@ -204,17 +205,17 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param grid the table
      */
     extractStringAtSelectedIndex(range: any, column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const startOffset = range.startOffset;
         const endOffset = range.endOffset;
-        const formula = this.toFormula(`substr(${fieldName}, ${startOffset}, ${endOffset}).as("${fieldName}")`, column, grid);
+        const formula = ColumnUtil.toFormula(`substr(${fieldName}, ${startOffset}, ${endOffset}).as("${fieldName}")`, column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: `Extract string between index ${startOffset} and ${endOffset}`});
     }
 
     clearRowsEquals(value: string, column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
-        const formula = this.toFormula(`when(equal(${fieldName}, '${value}'),null).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        const formula = ColumnUtil.toFormula(`when(equal(${fieldName}, '${value}'),null).otherwise(${fieldName}).as("${fieldName}")`, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Clear " + ColumnUtil.getColumnDisplayName(column) + " equals " + value});
     }
 
     /**
@@ -224,10 +225,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param grid
      */
     replaceValueEqualTo(value: string, column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
-        const dataType = column.dataType;
-        const dataCategory = this.fromDataType(dataType);
-
+        let form = new ReplaceValueEqualToForm(column,grid,this.controller,value);
+        this.dialog.openColumnForm(form);
+        /*
         let self = this;
         let dialog : DialogBuilder = self.formBuilder.newInstance();
         dialog.withTitle("Replace value")
@@ -245,15 +245,15 @@ export class ColumnDelegate implements IColumnDelegate {
                 }
                 self.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace ${value} with ${replaceValue}`});
             });
-
+            */
     }
 
     /**
      * Filters for rows where the specified column is not null.
      */
     deleteNullRows(column: any) {
-        const formula = "filter(not(isnull(" + this.getColumnFieldName(column) + ")))";
-        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + this.getColumnDisplayName(column) + " if null"});
+        const formula = "filter(not(isnull(" + ColumnUtil.getColumnFieldName(column) + ")))";
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " if null"});
     }
 
     /**
@@ -263,9 +263,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsContaining(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(not(contains(${fieldName}, '${value}')))`;
-        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " containing " + value});
     }
 
     /**
@@ -275,9 +275,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsEqualTo(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} != '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
     }
 
     /**
@@ -287,9 +287,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsGreaterThan(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} <= '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
     }
 
     /**
@@ -299,18 +299,18 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsLessThan(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} >= '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
     }
 
     /**
      * Filters for rows where the specified column is null.
      */
     findNullRows(column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(isnull(${fieldName}))`;
-        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find where " + this.getColumnDisplayName(column) + " is null"});
+        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find where " + ColumnUtil.getColumnDisplayName(column) + " is null"});
     }
 
     /**
@@ -320,9 +320,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsContaining(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(contains(${fieldName}, '${value}'))`;
-        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " containing " + value});
     }
 
     /**
@@ -332,9 +332,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsEqualTo(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} == '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
     }
 
     /**
@@ -344,9 +344,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsGreaterThan(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} > '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
     }
 
     /**
@@ -356,9 +356,9 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsLessThan(value: string, column: any) {
-        let fieldName = this.getColumnFieldName(column);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} < '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
     }
 
     /**
@@ -371,7 +371,7 @@ export class ColumnDelegate implements IColumnDelegate {
         column.visible = false;
 
         const formula = "drop(\"" + StringUtils.singleQuote(column.headerTooltip) + "\")";
-        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column)});
+        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + ColumnUtil.getColumnDisplayName(column)});
         this.controller.fieldPolicies = this.controller.fieldPolicies.filter((value, index) => index == column.index);
     }
 
@@ -381,7 +381,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     showAnalyzeColumn(column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         this.controller.showAnalyzeColumn(fieldName);
     }
 
@@ -392,10 +392,10 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     cloneColumn(column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const script = "clone(" + fieldName + ")";
-        const formula = this.toAppendColumnFormula(script, column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: 'content_copy', name: 'Clone ' + this.getColumnDisplayName(column)});
+        const formula = ColumnUtil.toAppendColumnFormula(script, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: 'content_copy', name: 'Clone ' + ColumnUtil.getColumnDisplayName(column)});
     }
 
     /**
@@ -404,12 +404,12 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    leftPad(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
+    leftPad(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
 
-            let dialog : DialogBuilder = self.formBuilder.newInstance();
+            let dialog : DialogBuilder = this.formBuilder.newInstance();
             dialog.withTitle("Left Pad")
                 .inputbox("length").withLabel("Fixed length:").default(profileData.maxLen).intNumeric().build()
                 .inputbox( "padChar").withLabel("Pad char:").default(" ").withValidation(".", "Single character required.").build()
@@ -418,8 +418,8 @@ export class ColumnDelegate implements IColumnDelegate {
                     let padChar=fields['padChar'].value;
 
                     const script = `lpad(${fieldName}, ${length}, "${padChar}").as("${fieldName}")`
-                    const formula = self.toFormula(script, column, grid);
-                    self.controller.addFunction(formula, {formula: formula, icon: 'format_align_right', name: `Left pad ${fieldName}`});
+                    const formula = ColumnUtil.toFormula(script, column, grid);
+                    this.controller.addFunction(formula, {formula: formula, icon: 'format_align_right', name: `Left pad ${fieldName}`});
                 });
         });
 
@@ -431,19 +431,11 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    imputeMeanColumn(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
+    imputeMeanColumn(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const script = "when(or(isnull(" + fieldName + "),isnan(" + fieldName + ")),mean(" + fieldName + ").over(orderBy(1))).otherwise(" + fieldName + ").as(\"" + fieldName + "\")";
-        const formula = self.toFormula(script, column, grid);
-        self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: 'Impute mean ' + self.getColumnDisplayName(column)});
-    }
-
-    /**
-     * Returns column names as an array
-     * @returns {string[]}
-     */
-    getColumnNames() : string[] {
-        return (<any>this).controller.engine.getCols().map( (f:QueryResultColumn)=> { return f.field });
+        const formula = ColumnUtil.toFormula(script, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: 'Impute mean ' + ColumnUtil.getColumnDisplayName(column)});
     }
 
     /**
@@ -452,8 +444,11 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    crosstabColumn(self: any, column: any, grid: any) {
+    crosstabColumn(column: any, grid: any) {
+        let form = new CrossTabForm(column,grid,this.controller)
 
+        this.dialog.openColumnForm(form);
+        /**
         const fieldName = self.getColumnFieldName(column);
         let cols = self.getColumnNames();
 
@@ -475,63 +470,7 @@ export class ColumnDelegate implements IColumnDelegate {
                     self.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${fieldName} and ${crossColumnName}`});
                 });
             });
-    }
-
-    /**
-     * Generates a script to use a temp column with the desired result and replace the existing column and ordering for
-     * which the temp column was derived. This is used by some of the machine
-     * learning functions that don't return column types
-     * @returns {string}
-     */
-    generateRenameScript(fieldName: string, tempField: string, grid: any): string {
-        // Build select script to drop temp column we generated
-        var self = this;
-        let cols: string[] = [];
-        angular.forEach(grid.columns, col => {
-            let colName: string = self.getColumnFieldName(col);
-            if (colName != tempField) {
-                colName = (colName == fieldName ? `${tempField}.as("${fieldName}")` : colName);
-                cols.push(colName);
-            }
-        });
-        let selectCols = cols.join();
-        let renameScript = `select(${selectCols})`;
-        return renameScript;
-    }
-
-    /**
-     * Generates a script to move the column B directly to the right of column A
-     * @returns {string}
-     */
-    generateMoveScript(fieldNameA: string, fieldNameB: string | string[], columnSource: any, keepFieldNameA: boolean = true): string {
-        var self = this;
-        let cols: string[] = [];
-        let sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
-        angular.forEach(sourceColumns, col => {
-            let colName: string = self.getColumnFieldName(col);
-            if (colName == fieldNameA) {
-                if (keepFieldNameA) cols.push(colName);
-                if (_.isArray(fieldNameB)) {
-                    cols = cols.concat(fieldNameB);
-                }
-                else {
-                    cols.push(fieldNameB);
-                }
-            } else if ((_.isArray(fieldNameB) && !_.contains(fieldNameB, colName)) || (_.isString(fieldNameB) && colName != fieldNameB)) {
-                cols.push(colName);
-            }
-        });
-        let selectCols = cols.join();
-        return `select(${selectCols})`;
-    }
-
-    /**
-     * Attempt to determine number of elements in array
-     * @param {string} text
-     * @returns {string}
-     */
-    arrayItems(text: string): number {
-        return (text && text.length > 0 ? text.split(",").length : 1);
+         */
     }
 
     /**
@@ -539,11 +478,11 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column
      * @param grid
      */
-    extractArrayItem(self: any, column: any, grid: any) {
+    extractArrayItem(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle(`Extract array item`)
             .inputbox("colIndex").withLabel("Array index:").intNumeric().default(0).build()
             .inputbox("colName").withLabel("New column:").default(fieldName+"_0").validName().build()
@@ -551,8 +490,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 let colIndex=fields['colIndex'].value;
                 let colName=fields['colName'].value;
 
-                let formula = self.createAppendColumnFormula(`getItem(${fieldName},${colIndex}).as("${colName}")`, column, grid, colName);
-                self.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${colIndex}`});
+                let formula = ColumnUtil.createAppendColumnFormula(`getItem(${fieldName},${colIndex}).as("${colName}")`, column, grid, colName);
+                this.controller.addFunction(formula, {formula: formula, icon: "remove", name: `Extract item ${colIndex}`});
             });
     }
 
@@ -561,18 +500,21 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column
      * @param grid
      */
-    extractArrayItems(self: any, column: any, grid: any) {
+    extractArrayItems(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         let count = 0;
 
         // Sample rows determine how many array elements
         if (grid.rows != null && grid.rows.length > 0) {
             let idx: number = 0;
-            angular.forEach(grid.columns, (col, key) => {
-                if (col.name == fieldName) idx = key;
+            _.each(grid.columns, (col:any, key:number) => {
+                if (col.name == fieldName) {
+                    idx = key;
+                }
+                //TODO revisit and break out of each loop
             })
-            angular.forEach(grid.rows, row => {
+            _.each(grid.rows, row => {
                 count = (row[idx] != null && row[idx].length > count ? row[idx].length : count)
             });
         }
@@ -581,8 +523,8 @@ export class ColumnDelegate implements IColumnDelegate {
             let newFieldName = fieldName + "_" + i;
             columns.push(`getItem(${fieldName}, ${i}).as("${newFieldName}")`);
         }
-        var formula = self.generateMoveScript(fieldName, columns, grid, false);
-        self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
+        var formula = ColumnUtil.generateMoveScript(fieldName, columns, grid, false);
+        this.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
 
     /**
@@ -591,21 +533,21 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    indexColumn(self: any, column: any, grid: any) {
+    indexColumn(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const newFieldName = fieldName + "_indexed";
         const formula = `StringIndexer().setInputCol("${fieldName}").setOutputCol("${newFieldName}").run(select(${fieldName}))`;
-        const moveFormula = self.generateMoveScript(fieldName, [newFieldName], grid);
+        const moveFormula = ColumnUtil.generateMoveScript(fieldName, [newFieldName], grid);
 
         // Two part conversion
         let chainedOp: ChainedOperation = new ChainedOperation(2);
-        self.controller.setChainedQuery(chainedOp);
+        this.controller.setChainedQuery(chainedOp);
 
-        self.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Index ' + self.getColumnDisplayName(column)}, true, false)
+        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Index ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
             .then(function () {
                 chainedOp.nextStep();
-                self.controller.addFunction(moveFormula, {formula: formula, icon: 'functions', name: 'Move new column next to ' + fieldName});
+                this.controller.addFunction(moveFormula, {formula: formula, icon: 'functions', name: 'Move new column next to ' + fieldName});
             })
     }
 
@@ -615,20 +557,20 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    vectorizeColumn(self: any, column: any, grid: any) {
+    vectorizeColumn(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
-        const tempField = self.createTempField();
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        const tempField = ColumnUtil.createTempField();
         const formula = `vectorAssembler(["${fieldName}"], "${tempField}")`;
-        let renameScript = self.generateRenameScript(fieldName, tempField, grid);
+        let renameScript = ColumnUtil.generateRenameScript(fieldName, tempField, grid);
 
         // Two part conversion
         let chainedOp: ChainedOperation = new ChainedOperation(2);
-        self.controller.setChainedQuery(chainedOp);
-        self.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Vectorize ' + self.getColumnDisplayName(column)}, true, false)
-            .then(function result() {
+        this.controller.setChainedQuery(chainedOp);
+        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Vectorize ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
+            .then(() =>{
                 chainedOp.nextStep();
-                self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName});
+                this.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName});
             })
     }
 
@@ -638,14 +580,14 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    logitTransform(self: any, column: any, grid: any) {
+    logitTransform(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const script = `ln(${fieldName}/(1-${fieldName}))`;
-        const formula = self.toFormula(script, column, grid);
-        self.controller.addFunction(formula, {
+        const formula = ColumnUtil.toFormula(script, column, grid);
+        this.controller.addFunction(formula, {
             formula: formula, icon: "functions",
-            name: "Logit transform " + self.getColumnDisplayName(column)
+            name: "Logit transform " + ColumnUtil.getColumnDisplayName(column)
         });
     }
 
@@ -657,35 +599,34 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param boolean use mean
      * @param boolean use stdDev (normally default)
      */
-    rescaleColumn(self: any, column: any, grid: any, mean: boolean, stdDev: boolean) {
+    rescaleColumn(column: any, grid: any, mean: boolean, stdDev: boolean) {
 
-        const fieldName = self.getColumnFieldName(column);
-        const tempField = self.createTempField();
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        const tempField = ColumnUtil.createTempField();
         const formula = `StandardScaler().setInputCol("${fieldName}").setOutputCol("${tempField}").setWithMean(${mean}).setWithStd(${stdDev}).run(select(${fieldName}))`;
-        let renameScript = self.generateRenameScript(fieldName, tempField, grid);
+        let renameScript = ColumnUtil.generateRenameScript(fieldName, tempField, grid);
 
         // Two part conversion
         let chainedOp: ChainedOperation = new ChainedOperation(2);
-        self.controller.setChainedQuery(chainedOp);
-        self.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Std Dev. rescale ' + self.getColumnDisplayName(column)}, true, false)
+        this.controller.setChainedQuery(chainedOp);
+        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Std Dev. rescale ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
             .then(function () {
                 chainedOp.nextStep();
-                self.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName});
+                this.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName});
             })
     }
 
     /**
      * Calculate outliers 1 (outlier) or 0 (not outlier)
-     * @param self
      * @param column
      * @param grid
      * @returns {any}
      */
-    identifyOutliers(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
-        let quantileStats = self.approxQuantileFormula(fieldName, 4);
-        self.controller.extractFormulaResult(quantileStats, 10000)
-            .then(function (value: any) {
+    identifyOutliers(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        let quantileStats = ColumnUtil.approxQuantileFormula(fieldName, 4);
+        this.controller.extractFormulaResult(quantileStats, 10000)
+            .then( (value: any) =>{
                 const Q1 = value[0];
                 const Q3 = value[2];
                 const IQR = Q3 - Q1;
@@ -693,73 +634,33 @@ export class ColumnDelegate implements IColumnDelegate {
                 let lower = (Q1 - (1.5 * IQR));
                 let upper = (Q3 + (1.5 * IQR));
                 let script = `when(or(${fieldName} < ${lower},${fieldName}>${upper}),1).otherwise(0)`
-                const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_outlier`);
-                self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Find outliers ${fieldName}`});
+                const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_outlier`);
+                this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Find outliers ${fieldName}`});
             });
-    }
-
-    approxQuantileFormula(fieldName:string, bins:number) {
-        let binSize = 1 / bins;
-        let arr = []
-        for (let i = 1; i < bins; i++) {
-            arr.push(i * binSize)
-        }
-        return `select(approxQuantile("${fieldName}", [${arr}], 0.0).as("data"))`
-
     }
 
     /**
      * Bin values of the column into discrete quantiles
-     * @param self
      * @param column
      * @param grid
      */
-    binValues(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
-
-        self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+    binValues(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
             if (profileData.percNull > 0) {
-                self.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
+                this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;
             }
-
-            let dialog : DialogBuilder = self.formBuilder.newInstance();
-            dialog.withTitle(`Bin Values`)
-                .inputbox("bin").withLabel("# of bins:").minIntValidator(2).default(4).build()
-                .inputbox("sample").withLabel("# of rows to sample:").intNumeric().default(10000).build()
-                .showDialog((fields:Map<String,WranglerFormField>)=> {
-                    let bins=fields['bins'].getValueAsNumber();
-                    let sample=fields['sample'].getValueAsNumber();
-
-                    let binSize = 1 / bins;
-                    let arr = []
-                    for (let i = 1; i < bins; i++) {
-                        arr.push(i * binSize)
-                    }
-                    let quantileStats = self.approxQuantileFormula(fieldName, bins);
-                    self.controller.extractFormulaResult(quantileStats, sample)
-                        .then(function (value: any) {
-                            let formulaArray = [];
-                            for (let i = 1; i < bins; i++) {
-                                let val = value[i-1];
-                                formulaArray.push(`when(${fieldName}<${val},${i})`);
-                            }
-                            formulaArray.push(`otherwise(${bins}).as("${fieldName}")`);
-                            let script = formulaArray.join(".");
-                            const formula = self.toFormula(script, column, grid);
-                            self.controller.addFunction(formula, {
-                                formula: formula, icon: "functions",
-                                name: "Bin " + self.getColumnDisplayName(column)
-                            });
-                        })
-                });
+            let form = new BinValuesForm(column,grid,this.controller)
+            this.dialog.openColumnForm(form);
         });
+
     }
 
-    rescaleMinMax(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
+    rescaleMinMax(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle(`Rescale Value`)
             .inputbox("minScale").withLabel("Min:").intNumeric().default(0).build()
             .inputbox("maxScale").withLabel("Max:").intNumeric().default(1).build()
@@ -775,7 +676,7 @@ export class ColumnDelegate implements IColumnDelegate {
                 let minScale = fields['minScale'].getValueAsNumber();
                 let maxScale = fields['maxScale'].getValueAsNumber();
 
-                self.controller.extractColumnStatistics(fieldName).then(function (profileData: ProfileHelper) {
+                this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
                     let min = profileData.min;
                     let max = profileData.max;
                     var algo: string;
@@ -786,10 +687,10 @@ export class ColumnDelegate implements IColumnDelegate {
                     }
                     let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
 
-                    const formula = self.toFormula(script, column, grid);
-                    self.controller.addFunction(formula, {
+                    const formula = ColumnUtil.toFormula(script, column, grid);
+                    this.controller.addFunction(formula, {
                         formula: formula, icon: "functions",
-                        name: "Rescale " + self.getColumnDisplayName(column)
+                        name: "Rescale " + ColumnUtil.getColumnDisplayName(column)
                     });
                 })
             });
@@ -802,8 +703,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    rescaleStdDevColumn(self: any, column: any, grid: any) {
-        self.rescaleColumn(self, column, grid, false, true);
+    rescaleStdDevColumn( column: any, grid: any) {
+        this.rescaleColumn( column, grid, false, true);
     }
 
     /**
@@ -812,8 +713,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    rescaleMeanColumn(self: any, column: any, grid: any) {
-        self.rescaleColumn(self, column, grid, true, false);
+    rescaleMeanColumn(column: any, grid: any) {
+        this.rescaleColumn( column, grid, true, false);
     }
 
     /**
@@ -822,87 +723,24 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    rescaleBothMethodsColumn(self: any, column: any, grid: any) {
-        self.rescaleColumn(self, column, grid, true, true);
+    rescaleBothMethodsColumn(column: any, grid: any) {
+        this.rescaleColumn(column, grid, true, true);
     }
 
-    toColumnArray(columns: any[], ommitColumn ?: string): string[] {
-        const self = this;
-        let cols: string[] = [];
-        angular.forEach(columns, column => {
-            if (!ommitColumn || (ommitColumn && ommitColumn != column.name)) {
-                cols.push(self.getColumnFieldName(column));
-            }
-        });
-        return cols;
-    }
 
-    imputeMissingColumn(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
-        self.dialog.openImputeMissing({
+    imputeMissingColumn(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
+        this.dialog.openImputeMissing({
             message: 'Provide windowing options for sourcing fill-values:',
-            fields: self.toColumnArray(grid.columns, fieldName)
+            fields: ColumnUtil.toColumnArray(grid.columns, fieldName)
         }).subscribe(function (response: any) {
 
             let script = `coalesce(${fieldName}, last(${fieldName}, true).over(partitionBy(${response.groupBy}).orderBy(${response.orderBy}))).as("${fieldName}")`;
-            const formula = self.toFormula(script, column, grid);
-            self.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
+            const formula = ColumnUtil.toFormula(script, column, grid);
+            this.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
         });
     }
 
-    /**
-     * Parse a struct field into its top-level fields
-     * @param column
-     * @returns {string[]} list of fields
-     */
-    structToFields(column: any): string[] {
-
-        let fields: string = column.dataType;
-        fields = fields.substr(7, fields.length - 2);
-        let level = 0;
-        let cleaned = [];
-        for (let i = 0; i < fields.length; i++) {
-            switch (fields.charAt(i)) {
-                case '<':
-                    level++;
-                    break;
-                case '>':
-                    level--;
-                    break;
-                default:
-                    if (level == 0) {
-                        cleaned.push(fields.charAt(i));
-                    }
-            }
-        }
-        let cleanedString = cleaned.join("");
-        let fieldArray: string[] = cleanedString.split(",");
-        return fieldArray.map((v: string) => {
-            return v.split(":")[0].toLowerCase();
-        });
-    }
-
-    /**
-     * Guaranteed to return a unique column name that conforms to the field naming requirements
-     * @param {Array<string>} columns
-     * @param {string} columnFieldName
-     * @param {number} idx
-     * @returns {string}
-     */
-    uniqueName(columns: Array<string>, columnFieldName: string, idx: number = -1): string {
-
-        if (columns == null || columns.length == 0) {
-            return columnFieldName;
-        }
-        let alias = columnFieldName.replace(/^(_)|[^a-zA-Z0-9_]+/g, "");
-        if (idx >= 0) {
-            alias += "_"+idx;
-        }
-        if (columns.indexOf(alias.toLowerCase()) > -1) {
-            return this.uniqueName(columns, columnFieldName, idx+1);
-        }
-        return alias;
-    }
 
     /**
      * Flattens a struct column into multiple fields (one-level)
@@ -910,12 +748,12 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column
      * @param grid
      */
-    flattenStructColumn(self: any, column: any, grid: any) {
+    flattenStructColumn(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let structFields = self.structToFields(column);
-        let existingCols = self.toColumnArray(grid.columns);
+        let structFields = ColumnUtil.structToFields(column);
+        let existingCols = ColumnUtil.toColumnArray(grid.columns);
 
         let formula: string;
 
@@ -924,14 +762,15 @@ export class ColumnDelegate implements IColumnDelegate {
             return field.toLowerCase();
         });
         let fieldParts = structFields.map((field: string) => {
-            let alias = self.uniqueName(existingColsLower, field);
+            let alias = ColumnUtil.uniqueName(existingColsLower, field);
             existingColsLower.push(alias.toLowerCase());
             return (`getField(${fieldName},"${field}").as("${alias}")`);
         });
 
         // Insert new fields into the field list
         let idxOfCurrentColumn = existingCols.indexOf(fieldName);
-        let formulaFields: string[] = []
+        //TODO revisit formulaFields datatype!!!!
+        let formulaFields: string[][] = []
         if (idxOfCurrentColumn == 0) {
             formulaFields.push(fieldParts);
             formulaFields.push(existingCols.slice(idxOfCurrentColumn + 1));
@@ -949,27 +788,11 @@ export class ColumnDelegate implements IColumnDelegate {
         let fieldString = formulaFields.join(",");
         formula = `select(${fieldString})`;
 
-        self.controller.addFunction(formula, {
+        this.controller.addFunction(formula, {
             formula: formula, icon: "functions",
             name: "Flatten " + fieldName
         });
 
-    }
-
-    /**
-     * Generates a temporary fieldname
-     * @returns {string} the fieldName
-     */
-    createTempField(): string {
-        return "c_" + (new Date()).getTime();
-    }
-
-    /**
-     * Creates a formula for cleaning values as future fieldnames
-     * @returns {string} a formula for cleaning row values as fieldnames
-     */
-    createCleanFieldFormula(fieldName: string, tempField: string): string {
-        return `when(startsWith(regexp_replace(substring(${fieldName},0,1),"[0-9]","***"),"***"),concat("c_",lower(regexp_replace(${fieldName},"[^a-zA-Z0-9_]+","_")))).otherwise(lower(regexp_replace(${fieldName},"[^a-zA-Z0-9_]+","_"))).as("${tempField}")`;
     }
 
     /**
@@ -978,14 +801,14 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    extractNumeric(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
+    extractNumeric(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         let script = `regexp_replace(${fieldName}, "[^0-9\-\\\\.]+","").as('${fieldName}')`;
 
-        const formula = self.toFormula(script, column, grid);
-        self.controller.addFunction(formula, {
+        const formula = ColumnUtil.toFormula(script, column, grid);
+        this.controller.addFunction(formula, {
             formula: formula, icon: "filter_2",
-            name: "Extract numeric from " + self.getColumnDisplayName(column)
+            name: "Extract numeric from " + ColumnUtil.getColumnDisplayName(column)
         });
 
     }
@@ -996,14 +819,14 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    negateBoolean(self: any, column: any, grid: any) {
-        const fieldName = self.getColumnFieldName(column);
+    negateBoolean(column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         let script = `not(${fieldName}).as("${fieldName}")`;
 
-        const formula = self.toFormula(script, column, grid);
-        self.controller.addFunction(formula, {
+        const formula = ColumnUtil.toFormula(script, column, grid);
+        this.controller.addFunction(formula, {
             formula: formula, icon: "exposure",
-            name: "Negate boolean from " + self.getColumnDisplayName(column)
+            name: "Negate boolean from " + ColumnUtil.getColumnDisplayName(column)
         });
 
     }
@@ -1014,33 +837,33 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    oneHotEncodeColumn(self: any, column: any, grid: any) {
+    oneHotEncodeColumn(column: any, grid: any) {
 
-        const fieldName = self.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
 
         // Chain three calls: 1) clean values as valid column names 2) execute pivot 3) replace null with empty (due to spark2 pivot behavior)
-        const tempField = self.createTempField();
-        const cleanFormula = self.createCleanFieldFormula(fieldName, tempField);
+        const tempField = ColumnUtil.createTempField();
+        const cleanFormula = ColumnUtil.createCleanFieldFormula(fieldName, tempField);
 
         // Generate group by and pivot formula from all the columns
-        let cols: string[] = self.toColumnArray(grid.columns);
+        let cols: string[] = ColumnUtil.toColumnArray(grid.columns);
 
         let colString: string = cols.join();
         const formula = `groupBy(${colString}).pivot("${tempField}").agg(when(count(${tempField})>0,1).otherwise(0))`;
 
         let chainedOp: ChainedOperation = new ChainedOperation(3);
-        self.controller.setChainedQuery(chainedOp);
+        this.controller.setChainedQuery(chainedOp);
 
-        self.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'functions', name: 'Clean one hot field ' + fieldName}, true, false)
-            .then(function () {
+        this.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'functions', name: 'Clean one hot field ' + fieldName}, true, false)
+            .then( () =>{
                 chainedOp.nextStep();
-                self.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'One hot encode ' + fieldName}, true, false)
+                this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'One hot encode ' + fieldName}, true, false)
                     .then(function () {
                         // Now we need to fill in the null values with zero for our new cols
-                        let allcols: string[] = self.toColumnArray(self.controller.engine.getCols());
-                        let select: string[] = angular.copy(cols);
+                        let allcols: string[] = ColumnUtil.toColumnArray(this.controller.engine.getCols());
+                        let select: string[] = CloneUtil.deepCopy(cols);
                         let idx: number = cols.length - 1;
-                        angular.forEach(allcols, (col, index) => {
+                        _.each(allcols, (col, index) => {
                             if (index > idx) {
                                 select.push(`coalesce(${col},0).as("${col}")`);
                             }
@@ -1048,7 +871,7 @@ export class ColumnDelegate implements IColumnDelegate {
                         let selectString = select.join();
                         let fillNAFormula = `select(${selectString})`
                         chainedOp.nextStep();
-                        self.controller.addFunction(fillNAFormula, {formula: fillNAFormula, icon: 'functions', name: 'Fill NA'});
+                        this.controller.addFunction(fillNAFormula, {formula: fillNAFormula, icon: 'functions', name: 'Fill NA'});
                     })
             })
     }
@@ -1079,39 +902,15 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     renameColumn(column: any, grid: any) {
-        const self = this;
-        const prompt = (this.$mdDialog as any).prompt({
-            title: "Rename Column",
-            textContent: "Enter a new name for the " + this.getColumnDisplayName(column) + " column:",
-            placeholder: "Column name",
-            ok: "OK",
-            cancel: "Cancel"
-        });
-        this.$mdDialog.show(prompt).then(function (name) {
-            // Update field policy
-            if (column.index < self.controller.fieldPolicies.length) {
-                const name = self.getColumnFieldName(column);
-                const policy = self.controller.fieldPolicies[column.index];
-                policy.name = name;
-                policy.fieldName = name;
-                policy.feedFieldName = name;
-            }
-
-            // Add rename function
-            const script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.singleQuote(name) + "\")";
-            const formula = self.toFormula(script, column, grid);
-            self.controller.addFunction(formula, {
-                formula: formula, icon: "mode_edit",
-                name: "Rename " + self.getColumnDisplayName(column) + " to " + name
-            });
-        });
+        let renameForm = new RenameColumnForm(column,grid, this.controller);
+        this.dialog.openColumnForm(renameForm);
     }
 
     /**
      * Sets the domain type for the specified column.
      */
     setDomainType(column: any, domainTypeId: string) {
-        const fieldName = this.getColumnFieldName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         this.controller.setDomainType(column.index, domainTypeId);
         const formula = `withColumn("${fieldName}", ${fieldName})`
         this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'})
@@ -1138,11 +937,11 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param grid - the table
      */
     splitOn(value: string, column: any, grid: any) {
-        const displayName = this.getColumnDisplayName(column);
-        const fieldName = this.getColumnFieldName(column);
+        const displayName = ColumnUtil.getColumnDisplayName(column);
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
-        const formula = this.toFormula(`split(when(isnull(${fieldName}),"").otherwise(${fieldName}), '${pattern}').as("${displayName}")`, column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value});
+        const formula = ColumnUtil.toFormula(`split(when(isnull(${fieldName}),"").otherwise(${fieldName}), '${pattern}').as("${displayName}")`, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + ColumnUtil.getColumnDisplayName(column) + " on " + value});
     }
 
     /**
@@ -1152,15 +951,16 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be transformed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    transformColumn(transform: any, column: any, grid: any) {
-        const fieldName = this.getColumnFieldName(column);
+    transformColumn(transform: MenuItem, column: any, grid: any) {
+        const fieldName = ColumnUtil.getColumnFieldName(column);
         const self = this;
-        if ($.isFunction(transform.operation)) {
-            transform.operation(self, column, grid);
-        } else {
+        if(transform.operationFn){
+            transform.operationFn.bind(this)(column, grid);
+        }
+        else {
             const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
-            const formula = this.toFormula(script, column, grid);
-            const name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
+            const formula = ColumnUtil.toFormula(script, column, grid);
+            const name = (transform.description ? transform.description : transform.name) + " " + ColumnUtil.getColumnDisplayName(column);
             this.controller.addFunction(formula, {formula: formula, icon: transform.icon, name: name});
         }
     }
@@ -1171,19 +971,19 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    replaceNaNWithValue(self: any, column: any, grid: any) {
+    replaceNaNWithValue(column: any, grid: any) {
         const dataType = column.dataType;
-        const dataCategory = self.fromDataType(dataType);
-        let fieldName = self.getColumnFieldName(column);
+        const dataCategory = ColumnUtil.fromDataType(dataType);
+        let fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle("Replace NaN")
             .inputbox("replaceValue").withLabel("Replace value:").anyNumber().default(0).build()
             .showDialog((fields:Map<String,WranglerFormField>)=> {
                 let value = fields['replaceValue'].value;
                 let script = `when((${fieldName} == "" || isnull(${fieldName}) ),${value}).otherwise(${fieldName}).as("${fieldName}")`;
-                const formula = self.toFormula(script, column, grid);
-                self.controller.addFunction(formula, {
+                const formula = ColumnUtil.toFormula(script, column, grid);
+                this.controller.addFunction(formula, {
                     formula: formula, icon: "find_replace",
                     name: "Fill NaN with " + value
                 });
@@ -1196,18 +996,18 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    replaceEmptyWithValue(self: any, column: any, grid: any) {
-        let fieldName = self.getColumnFieldName(column);
+    replaceEmptyWithValue(column: any, grid: any) {
+        let fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle("Replace Missing")
             .inputbox("replaceValue").withLabel("Replace value:").build()
             .showDialog((fields:Map<String,WranglerFormField>)=> {
                 let value = fields['replaceValue'].value;
 
                 let script = `when((${fieldName} == "" || isnull(${fieldName}) ),"${value}").otherwise(${fieldName}).as("${fieldName}")`;
-                const formula = self.toFormula(script, column, grid);
-                self.controller.addFunction(formula, {
+                const formula = ColumnUtil.toFormula(script, column, grid);
+                this.controller.addFunction(formula, {
                     formula: formula, icon: "find_replace",
                     name: "Fill empty with " + value
                 });
@@ -1220,17 +1020,17 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    roundNumeric(self: any, column: any, grid: any) {
+    roundNumeric(column: any, grid: any) {
 
-        let fieldName = self.getColumnFieldName(column);
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let fieldName = ColumnUtil.getColumnFieldName(column);
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle("Round Number")
             .inputbox("scale").withLabel("Scale:").intNumeric().default(2).build()
             .showDialog((fields:Map<String,WranglerFormField>)=> {
                 let scale = fields['scale'].value;
                 const script = `round(${fieldName},${scale}).as("${fieldName}")`;
-                const formula = self.toFormula(script, column, grid);
-                self.controller.addFunction(formula, {
+                const formula = ColumnUtil.toFormula(script, column, grid);
+                this.controller.addFunction(formula, {
                     formula: formula, icon: "exposure_zero",
                     name: `Round ${fieldName} to ${scale} digits`
                 });
@@ -1243,17 +1043,17 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    extractRegexPattern(self: any, column: any, grid: any) {
+    extractRegexPattern(column: any, grid: any) {
 
-        let fieldName = self.getColumnFieldName(column);
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let fieldName = ColumnUtil.getColumnFieldName(column);
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle("Extract Regex")
             .inputbox("regex").withLabel("Regex:").default("\\\\[(.*?)\\\\]").build()
             .inputbox("group").withLabel("Group:").intNumeric().default(0).build()
             .showDialog((fields:Map<String,WranglerFormField>)=> {
                 let regex = fields['regex'].value;
                 let group = fields['group'].value;
-                self.executeRegex(self,column,grid,regex,group);
+                this.executeRegex(column,grid,regex,group);
             });
     }
 
@@ -1263,46 +1063,44 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be renamed
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    extractDelimiters(self: any, column: any, grid: any) {
+    extractDelimiters(column: any, grid: any) {
 
-        let fieldName = self.getColumnFieldName(column);
-        let dialog : DialogBuilder = self.formBuilder.newInstance();
+        let fieldName = ColumnUtil.getColumnFieldName(column);
+        let dialog : DialogBuilder = this.formBuilder.newInstance();
         dialog.withTitle("Extract Between Delimiters")
             .inputbox( "start").withLabel("Start delim:").default("[").withValidation(".", "Single character required.").build()
             .inputbox( "end").withLabel("End delim:").default("]").withValidation(".", "Single character required.").build()
             .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let start = self.escapeRegexCharIfNeeded(fields['start'].value.toString().charAt(0));
-                let end = self.escapeRegexCharIfNeeded(fields['end'].value.toString().charAt(0));
+                let start = ColumnUtil.escapeRegexCharIfNeeded(fields['start'].value.toString().charAt(0));
+                let end = ColumnUtil.escapeRegexCharIfNeeded(fields['end'].value.toString().charAt(0));
                 const regex = `${start}(.*?)${end}`;
-                self.executeRegex(self,column,grid,regex,0);
+                this.executeRegex(column,grid,regex,0);
             });
     }
 
     // Executes the regex formula
-    private executeRegex(self:any, column: any, grid:any, regex:string, group:number) {
-        let fieldName = self.getColumnFieldName(column);
+    private executeRegex(column: any, grid:any, regex:string, group:number) {
+        let fieldName = ColumnUtil.getColumnFieldName(column);
         const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`
-        const formula = self.toFormula(script, column, grid);
-        self.controller.addFunction(formula, {
+        const formula = ColumnUtil.toFormula(script, column, grid);
+        this.controller.addFunction(formula, {
             formula: formula, icon: "content_cut",
             name: `Extract regex from ${fieldName}`
         });
     }
 
-    private buildOrderBy(clauseCollection : string[], orderBy:string, asc:boolean, defaultIfNotSpecified:string) : void {
-        if (!(orderBy == null || orderBy == defaultIfNotSpecified)) {
-            let stmt = (asc ? `${orderBy}` : `desc("${orderBy}")`);
-            clauseCollection.push(stmt);
-        }
-    }
 
     /**
      * Provides a dialog for capturing order by information and returns the orderBy clause
      */
-    orderByDialog(self: any, column: any, grid: any, title: string, cb: any) {
-        const DEFAULT = "(default)";
-        let fieldName = self.getColumnFieldName(column);
-        let cols = self.getColumnNames();
+    orderByDialog(column: any, grid: any, title: string, cb: Function) {
+        
+        let form = new OrderByForm(column,grid,this.controller,title,cb);
+        this.dialog.openColumnForm(form);
+      
+      /*  const DEFAULT = "(default)";
+        let fieldName = ColumnUtil.getColumnFieldName(column);
+        let cols = this.getColumnNames();
         cols.push(DEFAULT);
         let dialog : DialogBuilder = self.formBuilder.newInstance();
 
@@ -1315,44 +1113,45 @@ export class ColumnDelegate implements IColumnDelegate {
                 let orderBy = (orderByClause.length == 0 ? '1' : orderByClause.join(","));
                 cb(orderBy);
             });
+            */
     }
 
 
     /**
      * % difference from previous value
      */
-    percDiffFromPrevious(self: any, column: any, grid: any) {
-        self.orderByDialog(self,column,grid, "Percentage Difference From Previous", (orderBy: string)=> {
-            let fieldName = self.getColumnFieldName(column);
+    percDiffFromPrevious(column: any, grid: any) {
+        this.orderByDialog(column,grid, "Percentage Difference From Previous", (orderBy: string)=> {
+            let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `((${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))/(lag(${fieldName},1).over(orderBy(${orderBy})))*100)`;
-            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_diffp`);
-            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `% diff from prev ${fieldName}`});
+            const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_diffp`);
+            this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `% diff from prev ${fieldName}`});
         });
     }
 
     /**
      * Absolute difference from previous value
      */
-    diffFromPrevious(self: any, column: any, grid: any) {
+    diffFromPrevious(column: any, grid: any) {
 
-        self.orderByDialog(self,column,grid, "Difference From Previous", (orderBy: string)=> {
-            let fieldName = self.getColumnFieldName(column);
+        this.orderByDialog(column,grid, "Difference From Previous", (orderBy: string)=> {
+            let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `(${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))`;
-            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_diff`);
-            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Difference from prev ${fieldName}`});
+            const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_diff`);
+            this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Difference from prev ${fieldName}`});
         });
     }
 
     /**
      * Create a running average
      */
-    runningAverage(self: any, column: any, grid: any) {
+    runningAverage(column: any, grid: any) {
 
-        self.orderByDialog(self,column,grid, "Running Average", (orderBy: string)=> {
-            let fieldName = self.getColumnFieldName(column);
+        this.orderByDialog(column,grid, "Running Average", (orderBy: string)=> {
+            let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `(avg(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
-            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_ravg`);
-            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running average ${fieldName}`});
+            const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_ravg`);
+            this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running average ${fieldName}`});
         });
 
     }
@@ -1360,13 +1159,13 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Create a running total
      */
-    runningTotal(self: any, column: any, grid: any) {
+    runningTotal( column: any, grid: any) {
 
-        self.orderByDialog(self,column,grid, "Running Total", (orderBy: string)=> {
-            let fieldName = self.getColumnFieldName(column);
+        this.orderByDialog(column,grid, "Running Total", (orderBy: string)=> {
+            let fieldName =ColumnUtil.getColumnFieldName(column);
             let script = `(sum(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
-            const formula = self.toAppendColumnFormula(script, column, grid, `${fieldName}_rtot`);
-            self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running total ${fieldName}`});
+            const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_rtot`);
+            this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running total ${fieldName}`});
         });
     }
 
@@ -1405,68 +1204,6 @@ export class ColumnDelegate implements IColumnDelegate {
     applyFilter(header: any, filter: any, table: any) {
         table.onRowsChange();
         table.refreshRows();
-    }
-
-    /**
-     * Converts from the specified data type to a category.
-     *
-     * @param dataType - the data type
-     * @returns the data category
-     */
-    protected fromDataType(dataType: string): DataCategory {
-        switch (dataType) {
-            case DataType.TINYINT:
-            case DataType.SMALLINT:
-            case DataType.INT:
-            case DataType.BIGINT:
-            case DataType.FLOAT:
-            case DataType.DOUBLE:
-            case DataType.DECIMAL:
-                return DataCategory.NUMERIC;
-
-            case DataType.TIMESTAMP:
-            case DataType.DATE:
-                return DataCategory.DATETIME;
-
-            case DataType.STRING:
-            case DataType.VARCHAR:
-            case DataType.CHAR:
-                return DataCategory.STRING;
-
-            case DataType.BOOLEAN:
-                return DataCategory.BOOLEAN;
-
-            case DataType.BINARY:
-                return DataCategory.BINARY;
-
-            case DataType.ARRAY_DOUBLE:
-                return DataCategory.ARRAY_DOUBLE;
-        }
-        // Deal with complex types
-        if (dataType.startsWith(DataType.ARRAY.toString())) {
-            return DataCategory.ARRAY;
-        } else if (dataType.startsWith(DataType.MAP.toString())) {
-            return DataCategory.MAP;
-        } else if (dataType.startsWith(DataType.STRUCT.toString())) {
-            return DataCategory.STRUCT;
-        } else if (dataType.startsWith(DataType.UNION.toString())) {
-            return DataCategory.UNION;
-        }
-        return DataCategory.OTHER;
-    }
-
-    /**
-     * Gets the human-readable name of the specified column.
-     */
-    protected getColumnDisplayName(column: any): string {
-        return column.displayName;
-    }
-
-    /**
-     * Gets the SQL identifier for the specified column.
-     */
-    protected getColumnFieldName(column: any): string {
-        return column.field || column.name;
     }
 
     /**
@@ -1515,11 +1252,11 @@ export class ColumnDelegate implements IColumnDelegate {
 
         if (dataCategory === DataCategory.NUMERIC) {
             transforms.ml.push(
-                {description: 'Bin values', icon: 'functions', name: 'Bin values...', operation: self.binValues},
-                {description: 'Identify outliers', icon: 'unicorn', name: 'Identify outliers', operation: self.identifyOutliers},
-                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean...', operation: self.imputeMeanColumn},
-                {description: 'Replace empty/NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operation: self.replaceNaNWithValue},
-                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operation: self.rescaleMinMax}
+                {description: 'Bin values', icon: 'functions', name: 'Bin values...', operationFn: self.binValues},
+                {description: 'Identify outliers', icon: 'unicorn', name: 'Identify outliers', operationFn: self.identifyOutliers},
+                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean...', operationFn: self.imputeMeanColumn},
+                {description: 'Replace empty/NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
+                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operationFn: self.rescaleMinMax}
             );
             transforms.math.push(
                 // {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn},
@@ -1527,16 +1264,16 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
                 {description: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
                 {description: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
-                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric},
+                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operationFn: self.roundNumeric},
                 {description: 'Log', icon: 'functions', name: 'Log10', operation: 'log10'},
-                {description: 'Logit transform', icon: 'functions', name: 'Logit', operation: self.logitTransform}
+                {description: 'Logit transform', icon: 'functions', name: 'Logit', operationFn: self.logitTransform}
             );
             transforms.other.push(
-                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn},
-                {description: 'Running average', icon: 'functions', name: 'Running average...', operation: self.runningAverage},
-                {description: 'Running total', icon: 'functions', name: 'Running total...', operation: self.runningTotal},
-                {description: '% difference', icon: 'functions', name: 'Percent diff from prev value...', operation: self.percDiffFromPrevious},
-                {description: 'Difference from previous', icon: 'functions', name: 'Difference from prev value...', operation: self.diffFromPrevious}
+                {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operationFn: self.crosstabColumn},
+                {description: 'Running average', icon: 'functions', name: 'Running average...', operationFn: self.runningAverage},
+                {description: 'Running total', icon: 'functions', name: 'Running total...', operationFn: self.runningTotal},
+                {description: '% difference', icon: 'functions', name: 'Percent diff from prev value...', operationFn: self.percDiffFromPrevious},
+                {description: 'Difference from previous', icon: 'functions', name: 'Difference from prev value...', operationFn: self.diffFromPrevious}
             );
         }
         else if (dataCategory === DataCategory.STRING) {
@@ -1545,28 +1282,28 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
                 {description: 'Trim whitespace', icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operation : self.leftPad}
+                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operationFn : self.leftPad}
                 );
 
             transforms.extract.push(
-                {description: 'Extract numeric', icon: 'filter_2', name: 'Numbers', operation: self.extractNumeric},
-                {description: 'Extract regex', icon: 'filter_2', name: 'Regex pattern', operation: self.extractRegexPattern},
-                {description: 'Extract delimiters', icon: 'filter_2', name: 'Between delimiters', operation: self.extractDelimiters},
+                {description: 'Extract numeric', icon: 'filter_2', name: 'Numbers', operationFn: self.extractNumeric},
+                {description: 'Extract regex', icon: 'filter_2', name: 'Regex pattern', operationFn: self.extractRegexPattern},
+                {description: 'Extract delimiters', icon: 'filter_2', name: 'Between delimiters', operationFn: self.extractDelimiters},
             );
 
             transforms.ml.push(
-                {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn},
-                {description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn},
-                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn},
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operation: self.replaceEmptyWithValue});
+                {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operationFn: self.imputeMissingColumn},
+                {description: 'Index labels', icon: 'functions', name: 'Index labels', operationFn: self.indexColumn},
+                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn},
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceEmptyWithValue});
 
             transforms.other.push(
-                {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operation: self.crosstabColumn});
+                {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});
 
         } else if (dataCategory === DataCategory.ARRAY) {
             transforms.defaults.push(
-                {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems},
-                {description: 'Extract item to column', icon: 'call_split', name: 'Extract item...', operation: self.extractArrayItem},
+                {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operationFn: self.extractArrayItems},
+                {description: 'Extract item to column', icon: 'call_split', name: 'Extract item...', operationFn: self.extractArrayItem},
                 {description: 'Convert array elements to rows', icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
                 {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'}
             );
@@ -1590,116 +1327,15 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
         }
         else if (dataCategory == DataCategory.STRUCT) {
-            transforms.defaults.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operation: self.flattenStructColumn});
+            transforms.defaults.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operationFn: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
             transforms.defaults.push({description: 'Explode array to rows', icon: 'call_split', name: 'Explode', operation: 'explode'});
         } else if (dataCategory === DataCategory.BOOLEAN) {
-            transforms.defaults.push({description: 'Flip boolean', icon: 'exposure', name: 'Negate boolean', operation: self.negateBoolean});
+            transforms.defaults.push({description: 'Flip boolean', icon: 'exposure', name: 'Negate boolean', operationFn: self.negateBoolean});
         }
         return transforms;
     }
 
-    /**
-     * Returns the as alias clause
-     * @param columns column list
-     * @returns {string} a unique fieldname
-     */
-    protected toAliasClause(name: string): string {
-        return ".as(\"" + name + "\")"
-    }
-
-    /**
-     * Creates a guaranteed unique field name
-     * @param columns column list
-     * @returns {string} a unique fieldname
-     */
-    protected toUniqueColumnName(columns: Array<any>, columnFieldName: any): string {
-        let prefix = "new_";
-        let idx = 0;
-        let columnSet = new Set();
-        let uniqueName = null;
-        const self = this;
-        columnSet.add(columnFieldName);
-        angular.forEach(columns, function (item) {
-            columnSet.add(self.getColumnFieldName(item));
-        });
-
-        while (uniqueName == null) {
-            let name = prefix + idx;
-            uniqueName = (columnSet.has(name) ? null : name);
-            idx++;
-        }
-        return uniqueName;
-    }
-
-    /**
-     * Creates a formula that adds a new column with the specified script. It generates a unique column name.
-     *
-     * @param {string} script the expression for the column
-     * @param {ui.grid.GridColumn} column the column to be replaced
-     * @param {ui.grid.Grid} grid the grid with the column
-     * @returns {string} a formula that replaces the column
-     */
-    protected toAppendColumnFormula(script: string, column: any, grid: any, newField ?: string): string {
-        const self = this;
-        const columnFieldName = self.getColumnFieldName(column);
-        const uniqueName = (newField == null ? self.toUniqueColumnName(grid.columns, columnFieldName) : newField);
-        return self.createAppendColumnFormula(script, column, grid, uniqueName);
-    }
-
-    /**
-     * Creates a formula that adds a new column with the specified script.
-     *
-     * @param {string} script the expression for the column
-     * @param {ui.grid.GridColumn} column the column to be replaced
-     * @param {ui.grid.Grid} grid the grid with the column
-     * @returns {string} a formula that replaces the column
-     */
-    protected createAppendColumnFormula(script: string, column: any, grid: any, newField: string): string {
-        const self = this;
-        const columnFieldName = this.getColumnFieldName(column);
-        let formula = "";
-
-        angular.forEach(grid.columns, function (item, idx) {
-            if (item.visible) {
-                const itemFieldName = self.getColumnFieldName(item);
-                formula += (formula.length == 0) ? "select(" : ", ";
-                formula += itemFieldName;
-                if (itemFieldName == columnFieldName) {
-                    formula += "," + script + self.toAliasClause(newField);
-                }
-            }
-        });
-
-        formula += ")";
-        return formula;
-    }
-
-    /**
-     * Creates a formula that replaces the specified column with the specified script.
-     *
-     * @param {string} script the expression for the column
-     * @param {ui.grid.GridColumn} column the column to be replaced
-     * @param {ui.grid.Grid} grid the grid with the column
-     * @returns {string} a formula that replaces the column
-     */
-    protected toFormula(script: string, column: any, grid: any): string {
-
-        const columnFieldName = this.getColumnFieldName(column);
-        let formula = "";
-        const self = this;
-
-        angular.forEach(grid.columns, function (item) {
-            if (item.visible) {
-                const itemFieldName = self.getColumnFieldName(item);
-                formula += (formula.length == 0) ? "select(" : ", ";
-                formula += (itemFieldName === columnFieldName) ? script : itemFieldName;
-            }
-        });
-
-        formula += ")";
-        return formula;
-    }
 
 }

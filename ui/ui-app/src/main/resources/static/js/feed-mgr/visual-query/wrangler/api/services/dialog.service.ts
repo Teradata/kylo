@@ -1,4 +1,8 @@
 import {Observable} from "rxjs/Observable";
+import {DataCategory} from "../../column-delegate";
+import {QueryResultColumn} from "../..";
+import {DynamicFormDialogData} from "../../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {ColumnForm} from "../../core/columns/column-form";
 
 /**
  * Standard configuration for dialogs.
@@ -135,6 +139,98 @@ export interface ImputeMissingResponse {
     orderBy: string;
 }
 
+
+/**
+ * Configuration for the replace values equal to dialog.
+ */
+export interface ReplaceValueEqualToConfig extends DialogConfig {
+
+    /**
+     * the Field
+     */
+    fieldName: string
+
+    /**
+     * The filed data type
+     */
+    dataType:string;
+
+    /**
+     * The category of the data type
+     */
+    dataCategory:DataCategory;
+
+    /**
+     * the value to replace
+     */
+    value:string;
+}
+
+
+/**
+ * Response for replace value equal to dialog
+ */
+export interface ReplaceValueEqualToResponse {
+
+    /**
+     * value to replace
+     */
+    replaceValue: any;
+}
+
+
+
+/**
+ * Configuration for the replace values equal to dialog.
+ */
+export interface BinValuesConfig extends DialogConfig {
+
+    /**
+     * the Field
+     */
+    fieldName: string
+
+    /**
+     * The filed data type
+     */
+    dataType:string;
+
+    /**
+     * The category of the data type
+     */
+    dataCategory:DataCategory;
+
+}
+
+export interface BinValuesResponse {
+    bins: number
+}
+
+
+/**
+ * Configuration for the replace values equal to dialog.
+ */
+export interface CrossTabConfig extends DialogConfig {
+
+    /**
+     * the Field
+     */
+    fieldName: string
+
+    /**
+     * possible columns in the transformation
+     */
+    columns:QueryResultColumn[]
+
+}
+
+export interface CrossTabResponse {
+    field: string
+}
+
+
+
+
 /**
  * Opens modal dialogs for alerting the user or receiving user input.
  */
@@ -155,4 +251,13 @@ export interface DialogService {
      * @returns the date format string
      */
     openImputeMissing(config: ImputeMissingConfig): Observable<ImputeMissingResponse>;
+
+
+    /**
+     * Opens the dynamic form as a dialog
+     * @param {DynamicFormDialogData} data
+     * @return {Observable<any>}
+     */
+    openColumnForm(data:ColumnForm):Observable<any>;
+
 }

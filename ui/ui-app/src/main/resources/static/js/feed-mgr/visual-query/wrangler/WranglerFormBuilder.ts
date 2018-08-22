@@ -115,7 +115,10 @@ export class WranglerFormField {
     
     // Retrieve value as a number or null
     getValueAsNumber() : number {
-        if (this.value != null && !this.value.toString().isNaN()) {
+        if(this.value != null && typeof this.value == 'number') {
+            return <number>this.value;
+        }
+        else if (this.value != null && !this.value.toString().isNaN()) {
             return this.value.toString().toNumber();
         }
         return null;
