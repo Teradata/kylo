@@ -1,5 +1,5 @@
 import {ValidatorFn} from "@angular/forms/src/directives/validators";
-import {FieldConfig, NgIfCallback, OnFieldChange} from "../model/FieldConfig";
+import {FieldConfig, GetErrorMessage, NgIfCallback, OnFieldChange} from "../model/FieldConfig";
 import {Select} from "../model/Select";
 import {Textarea} from "../model/Textarea";
 import {RadioButton} from "../model/RadioButton";
@@ -32,6 +32,8 @@ export abstract class FieldConfigBuilder<T> {
     private formGroupBuilder?:DynamicFormFieldGroupBuilder
 
     private ngIfCallback ?:NgIfCallback;
+
+    private getErrorMessage ?:GetErrorMessage;
 
 
 
@@ -89,6 +91,10 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
+    setErrorMessageLookup(value:GetErrorMessage){
+        this.getErrorMessage = value;
+        return this;
+    }
 
     setPlaceholder(value: string) {
         this.placeholder = value;
@@ -166,7 +172,8 @@ export abstract class FieldConfigBuilder<T> {
             disabled: this.disabled,
             placeholderLocaleKey:this.placeHolderLocaleKey,
             styleClass:this.styleClass,
-            ngIf:this.ngIfCallback
+            ngIf:this.ngIfCallback,
+            getErrorMessage:this.getErrorMessage
         }
         return option;
     }

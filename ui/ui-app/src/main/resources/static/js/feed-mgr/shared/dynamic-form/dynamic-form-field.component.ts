@@ -29,7 +29,7 @@ export class DynamicFormFieldComponent {
     }
 
     getErrorMessage() {
-        return FormControlValidation.getErrorMessage(this.form,this.field.key)
+        return FormControlValidation.getFieldConfigErrorMessage(this.form, this.field)
     }
 
 }
