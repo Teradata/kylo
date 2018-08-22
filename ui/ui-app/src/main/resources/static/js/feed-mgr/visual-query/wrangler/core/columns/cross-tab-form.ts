@@ -33,7 +33,7 @@ export class CrossTabForm extends ColumnForm{
                 let chainedOp: ChainedOperation = new ChainedOperation(2);
                 let crossColumnName = crossColumn;
                 this.controller.setChainedQuery(chainedOp);
-                this.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${this.fieldName} and ${crossColumn}`}, true, false).then(function () {
+                this.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'spellcheck', name: `Clean ${this.fieldName} and ${crossColumn}`}, true, false).then( () => {
                     chainedOp.nextStep();
                     const formula = `crosstab("${this.fieldName}","${crossColumnTemp}")`
                     this.controller.addFunction(formula, {formula: formula, icon: 'poll', name: `Crosstab ${this.fieldName} and ${crossColumnName}`});
