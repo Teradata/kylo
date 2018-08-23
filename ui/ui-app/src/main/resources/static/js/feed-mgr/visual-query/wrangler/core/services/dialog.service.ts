@@ -17,6 +17,9 @@ import {ColumnForm} from "../columns/column-form";
 @Injectable()
 export class WranglerDialogService implements DialogService {
 
+    topOffset = '128px';
+    width ='350px'
+
     constructor(private dialog: TdDialogService) {
     }
 
@@ -27,7 +30,7 @@ export class WranglerDialogService implements DialogService {
      * @returns the date format string
      */
     openDateFormat(config: DateFormatConfig): Observable<DateFormatResponse> {
-        return this.dialog.open(DateFormatDialog, {data: config, panelClass: "full-screen-dialog"})
+        return this.dialog.open(DateFormatDialog, {data: config, panelClass: "full-screen-dialog",height:'100%',width:this.width,position:{top:this.topOffset,right:'0'}})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }
@@ -46,7 +49,7 @@ export class WranglerDialogService implements DialogService {
 
     openColumnForm(data:ColumnForm):Observable<any>{
       let dialogData:DynamicFormDialogData = new DynamicFormDialogData(data.formConfig)
-      return  this.dialog.open(SimpleDynamicFormDialogComponent,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'400px',position:{top:'0',right:'0'}})
+      return  this.dialog.open(SimpleDynamicFormDialogComponent,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:this.width,position:{top:this.topOffset,right:'0'}})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }
