@@ -75,6 +75,15 @@ public class JmsCleanupEventService extends AbstractControllerService implements
         springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventConsumer#addListener(com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener)
+     */
+    @Override
+    public void addListener(CleanupListener listener) {
+        getLogger().debug("Adding cleanup listener: {}", new Object[]{listener});
+        springService.getBean(CleanupEventConsumer.class).addListener(listener);
+    }
+    
     /**
      * adds a listener to be notified on receipt of cleanup events.
      *

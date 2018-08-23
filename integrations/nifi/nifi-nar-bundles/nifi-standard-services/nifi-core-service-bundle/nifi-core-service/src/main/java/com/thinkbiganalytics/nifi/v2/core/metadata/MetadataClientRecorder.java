@@ -342,6 +342,10 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
             return (this.client.updateFeedHistoryReindexing(feedId, historyReindexingStatus));
     }
+    
+    protected void feedRemoved(String feedId, String category, String feedName) {
+        getInitStatusCache().invalidate(feedId);
+    }
 
     private Optional<InitializationStatus> getFeedInitStatus(String feedId) {
         return Optional.ofNullable(this.client.getCurrentInitStatus(feedId));

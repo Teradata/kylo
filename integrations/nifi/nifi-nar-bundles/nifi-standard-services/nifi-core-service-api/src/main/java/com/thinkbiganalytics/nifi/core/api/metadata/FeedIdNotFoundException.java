@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.nifi.v2.common;
+package com.thinkbiganalytics.nifi.core.api.metadata;
 
 /*-
  * #%L

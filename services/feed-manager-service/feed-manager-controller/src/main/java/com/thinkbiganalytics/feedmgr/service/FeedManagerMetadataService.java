@@ -240,30 +240,35 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         // Step 5: Enable NiFi cleanup flow
-        boolean needsCleanup = false;
+        boolean hasCleanupFlow = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
 
         if (categoryProcessGroup != null) {
             feedProcessGroup = NifiProcessUtil.findFirstProcessGroupByName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName());
             if (feedProcessGroup != null) {
-                needsCleanup = nifiRestClient.setInputAsRunningByProcessorMatchingType(feedProcessGroup.getId(), "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
+                hasCleanupFlow = nifiRestClient.setInputAsRunningByProcessorMatchingType(feedProcessGroup.getId(), "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
             }
         }
 
-        // Step 6: Run NiFi cleanup flow
-        if (needsCleanup) {
+        if (hasCleanupFlow) {
             // Wait for input processor to start
             try {
                 Thread.sleep(cleanupDelay);
             } catch (InterruptedException e) {
                 // ignored
             }
-
-            cleanupFeed(feed);
         }
-
-        // Step 7: Remove feed from NiFi
+        
+        // Step 6: Signal the cleanup event.
+        notifyFeedCleanup(feed);
+        
+        // Step 7: Optionally wait for the cleanup job to finish if this feed has a cleanup flow.
+        if (hasCleanupFlow) {
+            waitForFeedCleanup(feed);
+        }
+        
+        // Step 8: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
@@ -271,7 +276,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 8: Delete database entries
+        // Step 9: Delete database entries
         feedProvider.deleteFeed(feedId);
 
     }
@@ -462,16 +467,23 @@ public class FeedManagerMetadataService implements MetadataService {
     public boolean deleteCategory(String categoryId) throws InvalidOperationException {
         return categoryProvider.deleteCategory(categoryId);
     }
+    
+    private void notifyFeedCleanup(@Nonnull final FeedMetadata feed) {
+        Feed.ID id = feedProvider.resolveFeed(feed.getId());
+        
+        // Signal a feed cleanup
+        eventService.notify(new CleanupTriggerEvent(id));
+    }
 
     /**
-     * Runs the cleanup flow for the specified feed.
+     * Waits for the cleanup flow for the specified feed to complete if the feed had one.
      *
      * @param feed the feed to be cleaned up
      * @throws FeedCleanupFailedException  if the cleanup flow was started but failed to complete successfully
      * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
      * @throws RuntimeException            if the cleanup flow could not be started
      */
-    private void cleanupFeed(@Nonnull final FeedMetadata feed) {
+    private void waitForFeedCleanup(@Nonnull final FeedMetadata feed) {
         // Create event listener
         final FeedCompletionListener listener = new FeedCompletionListener(feed, Thread.currentThread());
         eventService.addListener(listener);
@@ -479,7 +491,6 @@ public class FeedManagerMetadataService implements MetadataService {
         try {
             // Trigger cleanup
             feedProvider.enableFeedCleanup(feed.getId());
-            eventService.notify(new CleanupTriggerEvent(feedProvider.resolveFeed(feed.getId())));
 
             // Wait for completion
             long remaining = cleanupTimeout;
