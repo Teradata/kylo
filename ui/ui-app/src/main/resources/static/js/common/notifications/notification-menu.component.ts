@@ -23,7 +23,7 @@ declare const DateTimeUtils: any;
           <div td-menu-header class="mat-subheading-2" style="margin: 0;">Notifications</div>
           <mat-nav-list dense>
             <ng-template ngFor let-item let-index="index" let-last="last" [ngForOf]="notifications">
-              <a mat-list-item [ngClass]="{'not-clickable': item.callback == null}" (click)="onClick(item)">
+              <a mat-list-item [ngClass]="{'not-clickable': item.callback == null}" (click)="onClick(item)" title="{{item.message}}">
                 <mat-icon *ngIf="!item.loading; else loadingIcon" mat-list-icon>{{item.icon}}</mat-icon>
                 <ng-template #loadingIcon>
                   <mat-progress-spinner [diameter]="20" matListIcon mode="indeterminate"></mat-progress-spinner>

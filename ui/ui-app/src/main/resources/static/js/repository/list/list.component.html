@@ -27,9 +27,9 @@
           <mat-header-cell *matHeaderCellDef mat-sort-header> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div flex="50" class="item-column md-list-item-text">
-            <span style="white-space: nowrap" title="{{element.templateName}}">{{element.templateName | truncate:40}}</span>
+            <span style="white-space: nowrap" title="{{element.templateName}}">{{element.templateName | truncate:50}}</span>
             <p title="{{element.description}}" class="column-title column-title-bottom">
-              {{element.description | truncate:40}}
+              {{element.description | truncate:50}}
             </p>
           </div>
           </mat-cell>
@@ -43,26 +43,27 @@
         <ng-container matColumnDef="actions">
           <mat-header-cell *matHeaderCellDef></mat-header-cell>
           <mat-cell *matCellDef="let element">
+            <div fxLayout="row" fxLayoutAlign="end center">
+              <button mat-button color="primary" (click)="downloadTemplate(element)">
+                <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span class="md-body-2">Download</span>
+              </button>
 
-            <button mat-button color="primary" (click)="downloadTemplate(element)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Download</span>
-            </button>
+              <button mat-button *ngIf="!element.installed" color="primary" (click)="importTemplate(element)">
+                <ng-md-icon icon="file-import" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span class="md-body-2">Import</span>
+              </button>
 
-            <button mat-button *ngIf="!element.installed" color="primary" (click)="importTemplate(element)">
-              <ng-md-icon icon="file-import" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Import</span>
-            </button>
+              <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
+                <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span class="md-body-2">Import</span>
+              </button>
 
-            <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
-              <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Import</span>
-            </button>
-
-            <button mat-button color="primary" *ngIf="element.installed && element.updateAvailable" (click)="importTemplate(element)">
-              <ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Update</span>
-            </button>
+              <button mat-button color="primary" *ngIf="element.installed && element.updateAvailable" (click)="importTemplate(element)">
+                <ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span class="md-body-2">Update</span>
+              </button>
+            </div>
           </mat-cell>
         </ng-container>
 

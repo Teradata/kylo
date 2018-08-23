@@ -21,13 +21,12 @@ export default class LoginNotificationService {
     initNotifications = () => {
         this.accessControlService.getUserAllowedActions().then((actionSet: any) => {
             this.templateService.getTemplates().subscribe((templates: TemplateMetadata[]) => {
-                if(templates.find((t) => !t.installed)) {
+                if(templates.find((t) => t.updateAvailable)) {
                     let allowed = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
                     if (allowed) {
                         this.$http.get(this.CommonRestUrlService.CONFIGURATION_PROPERTIES_URL).then((response: any) => {
-                            if (Boolean(response.data['kylo.install.template.notification'])) {
-                                this.NotificationService.addNotification("Found uninstalled templates in repository.", "");
-                            }
+                            const notification = this.NotificationService.addNotification("Template updates available in repository. Click to dismiss this message.", "update");
+                            notification.callback = this.NotificationService.removeNotification.bind(this.NotificationService);
                         })
                     }
                 }

@@ -184,7 +184,7 @@ export class NotificationService {
      * @param icon - icon name
      * @returns the notification
      */
-    addNotification(message: string, icon: string): KyloNotification {
+    addNotification(message: string, icon: string, callback?: any): KyloNotification {
         const notification = new KyloNotification(IDGenerator.generateId("notification"), this.kyloNotificationSubject);
         notification.message = message;
         notification.icon = icon;
