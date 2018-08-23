@@ -21,6 +21,27 @@ export class FormConfig{
 
     }
 }
+export interface StyleClassStrategy{
+
+    applyStyleClass(builder:FieldConfigBuilder<any>):void;
+}
+
+export class HintLengthPaddingStrategy implements StyleClassStrategy{
+
+    constructor(private hintLenght1:number  = 120, private hintLength2: number = 160, private hintLength3:number = 200){}
+
+    applyStyleClass(builder:FieldConfigBuilder<any>):void{
+        if(builder.getHint() ){
+            if(builder.getHint().length > this.hintLength3){
+                builder.appendStyleClass("pad-bottom-lg");
+            } else if(builder.getHint().length > this.hintLength2){
+                builder.appendStyleClass("pad-bottom-md");
+            } else if(builder.getHint().length > this.hintLength1){
+                builder.appendStyleClass("pad-bottom");
+            }
+        }
+    }
+}
 
 export class DynamicFormBuilder {
 
@@ -29,8 +50,10 @@ export class DynamicFormBuilder {
     private formFieldBuilders:DynamicFormFieldGroupBuilder[];
     private form:FormGroup
 
-   private onApplyFn:Function;
+    private onApplyFn:Function;
     private onCancelFn:Function;
+
+    public styleClassStrategy:StyleClassStrategy = new HintLengthPaddingStrategy();
 
     constructor(){
         this.formFieldBuilders = [];
@@ -42,6 +65,11 @@ export class DynamicFormBuilder {
     }
     setMessage(value:string){
         this.message = value;
+        return this;
+    }
+
+    setStyleClassStrategy(styleClassStrategy:StyleClassStrategy){
+        this.styleClassStrategy = styleClassStrategy;
         return this;
     }
 
