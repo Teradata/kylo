@@ -15,7 +15,7 @@ import {ColumnForm} from "../columns/column-form";
 @Injectable()
 export class WranglerDialogService implements DialogService {
 
-    topOffset = '128px';
+    topOffset = '0px';
     width ='350px'
 
     constructor(private dialog: TdDialogService) {
