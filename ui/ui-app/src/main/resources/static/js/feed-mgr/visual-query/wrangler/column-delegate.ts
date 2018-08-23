@@ -538,7 +538,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param boolean use mean
      * @param boolean use stdDev (normally default)
      */
-    rescaleColumn(column: any, grid: any, mean: boolean, stdDev: boolean) {
+    rescaleColumnML(column: any, grid: any, mean: boolean, stdDev: boolean) {
 
         const fieldName = ColumnUtil.getColumnFieldName(column);
         const tempField = ColumnUtil.createTempField();
@@ -603,43 +603,9 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     rescaleMinMax(column: any, grid: any) {
-        const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let dialog : DialogBuilder = this.formBuilder.newInstance();
-        dialog.withTitle(`Rescale Value`)
-            .inputbox("minScale").withLabel("Min:").intNumeric().default(0).build()
-            .inputbox("maxScale").withLabel("Max:").intNumeric().default(1).build()
-            .withValidator(function(fields:Map<String,WranglerFormField>) {
-                let minScale=fields['minScale'].getValueAsNumber();
-                let maxScale=fields['maxScale'].getValueAsNumber();
-                if (minScale != null && maxScale != null) {
-                    return (minScale < maxScale);
-                }
-                return true;
-            })
-            .showDialog((fields:Map<String,WranglerFormField>)=> {
-                let minScale = fields['minScale'].getValueAsNumber();
-                let maxScale = fields['maxScale'].getValueAsNumber();
-
-                this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
-                    let min = profileData.min;
-                    let max = profileData.max;
-                    var algo: string;
-                    if (min === max) {
-                        algo = `(0.5*((${minScale})+(${maxScale})))`
-                    } else {
-                        algo = `(((${fieldName}-(${min}))/((${max})-(${min})))*((${maxScale})-(${minScale})+(${minScale})))`
-                    }
-                    let script = `when(${algo}>${maxScale},${maxScale}).when(${algo}<${minScale},${minScale}).otherwise(${algo}).as("${fieldName}")`
-
-                    const formula = ColumnUtil.toFormula(script, column, grid);
-                    this.controller.addFunction(formula, {
-                        formula: formula, icon: "functions",
-                        name: "Rescale " + ColumnUtil.getColumnDisplayName(column)
-                    });
-                })
-            });
-
+        let form = new RescaleForm(column,grid,this.controller)
+        this.dialog.openColumnForm(form);
     }
 
     /**
@@ -649,7 +615,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     rescaleStdDevColumn( column: any, grid: any) {
-        this.rescaleColumn( column, grid, false, true);
+        this.rescaleColumnML( column, grid, false, true);
     }
 
     /**
@@ -659,7 +625,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     rescaleMeanColumn(column: any, grid: any) {
-        this.rescaleColumn( column, grid, true, false);
+        this.rescaleColumnML( column, grid, true, false);
     }
 
     /**
@@ -669,21 +635,18 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     rescaleBothMethodsColumn(column: any, grid: any) {
-        this.rescaleColumn(column, grid, true, true);
+        this.rescaleColumnML(column, grid, true, true);
     }
 
-
+    /**
+     * Impute missing strings using a fill-forward method provided a grouping column and ordering
+     * @param column
+     * @param grid
+     */
     imputeMissingColumn(column: any, grid: any) {
-        const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.dialog.openImputeMissing({
-            message: 'Provide windowing options for sourcing fill-values:',
-            fields: ColumnUtil.toColumnArray(grid.columns, fieldName)
-        }).subscribe(function (response: any) {
 
-            let script = `coalesce(${fieldName}, last(${fieldName}, true).over(partitionBy(${response.groupBy}).orderBy(${response.orderBy}))).as("${fieldName}")`;
-            const formula = ColumnUtil.toFormula(script, column, grid);
-            this.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
-        });
+        let form = new ImputeMissingForm(column,grid,this.controller)
+        this.dialog.openColumnForm(form);
     }
 
 
@@ -1161,11 +1124,6 @@ export class ColumnDelegate implements IColumnDelegate {
         }
         else if (dataCategory === DataCategory.STRING) {
 
-            transforms.replace.push(
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Missing values...', operationFn: self.replaceMissing},
-                {description: 'Replace NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
-            );
-
             transforms.format.push({description: 'Lowercase', icon: 'arrow_downward', name: 'lowercase', operation: 'lower'},
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
@@ -1182,8 +1140,9 @@ export class ColumnDelegate implements IColumnDelegate {
             transforms.ml.push(
                 {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operationFn: self.imputeMissingColumn},
                 {description: 'Index labels', icon: 'functions', name: 'Index labels', operationFn: self.indexColumn},
-                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn}
-            );
+                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn},
+                {description: 'Replace NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceMissing});
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});
