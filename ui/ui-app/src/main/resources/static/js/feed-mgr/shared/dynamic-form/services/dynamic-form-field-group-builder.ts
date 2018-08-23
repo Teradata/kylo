@@ -1,7 +1,17 @@
 import {FormFieldBuilder} from "./form-field-builder";
-import {CheckboxFieldBuilder, FieldConfigBuilder, InputTextFieldBuilder, RadioButtonFieldBuilder, SectionHeaderBuilder, SelectFieldBuilder, TextareaFieldBuilder} from "./field-config-builder";
+import {
+    CheckboxFieldBuilder,
+    FieldConfigBuilder,
+    InputTextFieldBuilder,
+    RadioButtonFieldBuilder,
+    SectionHeaderBuilder,
+    SelectFieldBuilder,
+    StaticTextBuilder,
+    TextareaFieldBuilder
+} from "./field-config-builder";
 import {FieldGroup, Layout} from "../model/FieldGroup";
 import {DynamicFormBuilder} from "./dynamic-form-builder";
+import {StaticText} from "../model/StaticText";
 
 export class DynamicFormFieldGroupBuilder {
 
@@ -47,6 +57,12 @@ export class DynamicFormFieldGroupBuilder {
     }
     sectionHeader(){
         let builder = new SectionHeaderBuilder(this);
+        this.formFieldBuilder.field(builder);
+        return builder;
+    }
+
+    staticText(){
+        let builder = new StaticTextBuilder(this);
         this.formFieldBuilder.field(builder);
         return builder;
     }

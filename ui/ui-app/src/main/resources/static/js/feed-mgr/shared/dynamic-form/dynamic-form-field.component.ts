@@ -4,6 +4,7 @@ import { FormGroup }        from '@angular/forms';
 import { FieldConfig }     from './model/FieldConfig';
 import {SectionHeader} from "./model/SectionHeader";
 import {FormControlValidation} from "../../../common/utils/form-control-validation";
+import {StaticText} from "./model/StaticText";
 
 @Component({
     selector: 'dynamic-form-field',
@@ -20,7 +21,7 @@ export class DynamicFormFieldComponent {
     }
 
     get isValid() {
-        if(this.field.controlType == SectionHeader.CONTROL_TYPE) {
+        if(this.field.controlType == SectionHeader.CONTROL_TYPE || this.field.controlType == StaticText.CONTROL_TYPE) {
         return true;
         }
         else {

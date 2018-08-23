@@ -28,7 +28,7 @@ export interface StyleClassStrategy{
 
 export class HintLengthPaddingStrategy implements StyleClassStrategy{
 
-    constructor(private hintLenght1:number  = 120, private hintLength2: number = 160, private hintLength3:number = 200){}
+    constructor(private hintLength1:number  = 120, private hintLength2: number = 160, private hintLength3:number = 200){}
 
     applyStyleClass(builder:FieldConfigBuilder<any>):void{
         if(builder.getHint() ){

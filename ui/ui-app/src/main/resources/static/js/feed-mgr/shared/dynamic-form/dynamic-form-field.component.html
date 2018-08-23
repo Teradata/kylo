@@ -25,6 +25,12 @@
       <h3 class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
+
+    <div *ngSwitchCase="'static-text'" [innerHTML]="field.staticText" class="pad-top-sm" fxLayout="column">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <div [innerHTML]="field.staticText" class="{field.textStyleClass}}"></div>
+    </div>
+
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
       <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" >
       <mat-error *ngIf="!isValid">
@@ -46,14 +52,14 @@
       <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
 
-    <div *ngSwitchCase="'checkbox'" class="pad-top-sm">
+    <div *ngSwitchCase="'checkbox'" class="pad-top-sm" fxLayout="column">
       <mat-checkbox
           [id]="field.key"  [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
       </mat-checkbox>
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
-      <mat-hint>{{field.hint}}</mat-hint>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
     </div>
 
     <div *ngSwitchCase="'radio'" class="pad-top-sm">
@@ -65,7 +71,7 @@
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
-      <mat-hint>{{field.hint}}</mat-hint>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
     </div>
 
     <mat-form-field *ngSwitchCase="'textarea'" class="pad-top-sm">
@@ -93,7 +99,7 @@
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
-      <mat-hint>{{field.hint}}</mat-hint>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
     </div>
 
   </div>

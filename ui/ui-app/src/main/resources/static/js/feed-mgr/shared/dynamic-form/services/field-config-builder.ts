@@ -10,6 +10,7 @@ import {Checkbox} from "../model/Checkbox";
 import {ObjectUtils} from "../../../../common/utils/object-utils";
 import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
 import {FormGroup} from "@angular/forms";
+import {StaticText} from "../model/StaticText";
 
 
 
@@ -409,6 +410,46 @@ export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
     protected buildOptions(){
         let options = super.buildOptions();
         options.showDivider = this.showDivider;
+        return options;
+    }
+}
+
+export  class StaticTextBuilder extends FieldConfigBuilder<StaticText> {
+
+    showDivider:boolean = true;
+    staticText:string;
+    textStyleClass:string
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
+    }
+
+    setShowDivider(showDivider:boolean){
+        this.showDivider = showDivider;
+        return this;
+    }
+
+
+    setText(text:string){
+        this.staticText = text;
+        return this;
+    }
+
+    setTextStyleClass(value:string){
+        this.textStyleClass = value;
+        return this;
+    }
+
+
+    getObjectType():any {
+        return StaticText;
+    }
+
+    protected buildOptions(){
+        let options = super.buildOptions();
+        options.showDivider = this.showDivider;
+        options.staticText = this.staticText;
+        options.textStyleClass = this.textStyleClass;
         return options;
     }
 }
