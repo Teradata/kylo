@@ -16,16 +16,10 @@ export class FormFieldBuilder {
     constructor(){
 
     }
-    currentBuilder:FieldConfigBuilder<any>;
-
-
     field(fieldBuilder:FieldConfigBuilder<any>){
         this.fields.push(fieldBuilder);
         return this;
     }
-
-
-
 
     /**
      * Builds the FieldConfig objects needed for a form

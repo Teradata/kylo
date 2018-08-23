@@ -62,6 +62,24 @@ export abstract class FieldConfigBuilder<T> {
             this.styleClass = value;
             return this;
     }
+
+    containsStyle(value:string):boolean {
+        return (this.styleClass != undefined && this.styleClass.split(" ").find((v => v ==value.trim())) == undefined);
+    }
+
+    appendStyleClass(value:string){
+        if(value) {
+            if(this.styleClass == undefined || !this.containsStyle(value)) {
+                if(this.styleClass == undefined){
+                    this.styleClass = value.trim();
+                }
+                else {
+                    this.styleClass += " "+value.trim();
+                }
+            }
+        }
+        return this;
+    }
     setFormGroupBuilder(formGroupBuilder:DynamicFormFieldGroupBuilder){
         this.formGroupBuilder = this.formGroupBuilder;
         return this;
@@ -101,9 +119,17 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
+    getPlaceHolder(){
+        return this.placeholder;
+    }
+
     setHint(value: string) {
         this.hint = value;
         return this;
+    }
+
+    getHint(){
+        return this.hint;
     }
 
     setModelValueProperty(value: string) {
@@ -201,7 +227,11 @@ export abstract class FieldConfigBuilder<T> {
 
 
 
+
     build(): T {
+        if(this.formGroupBuilder.dynamicFormBuilder.styleClassStrategy){
+            this.formGroupBuilder.dynamicFormBuilder.styleClassStrategy.applyStyleClass(this);
+        }
         let options = this.buildOptions();
         return ObjectUtils.newType(options,this.getObjectType());
     }

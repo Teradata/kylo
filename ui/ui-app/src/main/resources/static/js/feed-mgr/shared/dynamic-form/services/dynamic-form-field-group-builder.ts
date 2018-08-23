@@ -9,7 +9,7 @@ export class DynamicFormFieldGroupBuilder {
 
     layout:Layout;
 
-    constructor(private dynamicFormBuilder:DynamicFormBuilder,layout:Layout = Layout.COLUMN){
+    constructor(public dynamicFormBuilder:DynamicFormBuilder,layout:Layout = Layout.COLUMN){
         this.formFieldBuilder = new FormFieldBuilder();
         this.layout = layout;
     }
@@ -71,5 +71,6 @@ export class DynamicFormFieldGroupBuilder {
     castAs<T extends DynamicFormBuilder> (type: { new(): T ;}):T{
         return <T> this.dynamicFormBuilder;
     }
+
 
 }

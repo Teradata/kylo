@@ -26,7 +26,7 @@
     </section>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
-      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" >
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
