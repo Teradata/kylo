@@ -8,7 +8,7 @@ import {Validators} from "@angular/forms";
 export class ExtractDelimsForm extends ColumnForm{
 
 
-    constructor(column:any, grid:any,controller:ColumnController, private delegate:any){
+    constructor(column:any, grid:any,controller:ColumnController){
         super(column,grid,controller)
     }
 
@@ -29,7 +29,7 @@ export class ExtractDelimsForm extends ColumnForm{
                 let end = ColumnUtil.escapeRegexCharIfNeeded(values.end);
                 let group = values.group;
                 let regex = `${start}(.*?)${end}`;
-                this.delegate.executeRegex(this.column,this.grid,regex,group);
+                this.executeRegex(regex,group);
             })
             .build()
     }

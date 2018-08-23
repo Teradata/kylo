@@ -25,7 +25,7 @@ export class ExtractRegexForm extends ColumnForm{
             .onApply((values:any) => {
                 let regex = values.regex;
                 let group = values.group;
-                this.delegate.executeRegex(this.column,this.grid,regex,group);
+                this.executeRegex(regex,group);
             })
             .build()
     }

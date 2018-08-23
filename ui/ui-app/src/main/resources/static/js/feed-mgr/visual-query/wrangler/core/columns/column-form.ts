@@ -34,13 +34,12 @@ export abstract class ColumnForm {
     }
 
     // Executes the regex formula
-    private executeRegex(column: any, grid:any, regex:string, group:number) {
-        let fieldName = ColumnUtil.getColumnFieldName(column);
-        const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`;
-        const formula = ColumnUtil.toFormula(script, column, grid);
+    protected executeRegex(regex:string, group:number) {
+        const script = `regexp_extract(${this.fieldName}, "${regex}", ${group}).as("${this.fieldName}")`;
+        const formula = ColumnUtil.toFormula(script, this.column, this.grid);
         this.controller.addFunction(formula, {
             formula: formula, icon: "content_cut",
-            name: `Extract regex from ${fieldName}`
+            name: `Extract regex from ${this.fieldName}`
         });
     }
 

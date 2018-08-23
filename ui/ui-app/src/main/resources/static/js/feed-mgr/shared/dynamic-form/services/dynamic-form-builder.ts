@@ -86,6 +86,12 @@ export class DynamicFormBuilder {
         return this;
     }
 
+    buildFieldConfiguration():FieldGroup[]{
+        //set the fields
+        let fieldGroups: FieldGroup[] = this.formFieldBuilders.map(builder => builder.build())
+        return fieldGroups;
+    }
+
 
 
     build():FormConfig{
@@ -101,7 +107,7 @@ export class DynamicFormBuilder {
         formConfig.form = this.form;
 
         //set the fields
-        let fieldGroups: FieldGroup[] = this.formFieldBuilders.map(builder => builder.build())
+        let fieldGroups: FieldGroup[] = this.buildFieldConfiguration();
         formConfig.fieldGroups = fieldGroups;
 
         //set the callbacks

@@ -24,7 +24,7 @@ export class DynamicFormFieldComponent {
         return true;
         }
         else {
-            return this.form && this.form.controls && this.form.controls[this.field.key].valid;
+            return this.form && this.form.controls && this.form.controls[this.field.key] && this.form.controls[this.field.key].valid;
         }
     }
 

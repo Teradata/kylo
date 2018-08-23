@@ -154,8 +154,29 @@ export abstract class FieldConfigBuilder<T> {
         this.model = value;
         return this;
     }
+    
+    update<B extends FieldConfigBuilder<any>>(builder:B){
+             this.key = builder.key;
+             this.required = builder.required;
+             this.placeholder = builder.placeholder;
+             this.value = builder.value;
+             this.hint = builder.hint;
+             this.validators = builder.validators;
+             this.model = builder.model;
+             this.modelValueProperty = builder.modelValueProperty;
+             this.onModelChange = builder.onModelChange;
+             this.pattern = builder.pattern;
+             this.order = builder.order;
+             this.readonlyValue = builder.readonlyValue;
+             this.disabled = builder.disabled;
+             this.placeHolderLocaleKey = builder.placeHolderLocaleKey;
+             this.styleClass =builder.styleClass;
+             this.ngIfCallback =builder.ngIfCallback;
+             this.getErrorMessage =builder.getErrorMessage
+        return this;
+    }
 
-    buildOptions(): any {
+    protected buildOptions(): any {
         let option: any = {
             key: this.key,
             required: this.required,
@@ -186,6 +207,22 @@ export abstract class FieldConfigBuilder<T> {
     }
 }
 
+export class ConfigurationFieldBuilder extends FieldConfigBuilder<any> {
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
+    }
+
+    getObjectType(): any {
+        return "ConfigurationFieldBuilder";
+    }
+
+    build():any{
+        //override.
+        console.log("ConfigurationFieldBuilder cant be built ")
+    }
+
+}
 
     export class SelectFieldBuilder extends FieldConfigBuilder<Select> {
 
@@ -214,7 +251,7 @@ export abstract class FieldConfigBuilder<T> {
             return this;
         }
 
-        buildOptions(){
+        protected buildOptions(){
             let options = super.buildOptions();
             options.options = this.options;
             return options;
@@ -246,7 +283,7 @@ export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.options = this.options;
         return options;
@@ -283,7 +320,7 @@ export class CheckboxFieldBuilder extends FieldConfigBuilder<Checkbox> {
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.trueValue = this.trueValue;
         options.falseValue = this.falseValue;
@@ -315,7 +352,7 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.type = this.type;
         options.readonly = this.readonly;
@@ -339,7 +376,7 @@ export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
         return SectionHeader;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.showDivider = this.showDivider;
         return options;
@@ -358,12 +395,12 @@ export  class TextareaFieldBuilder extends FieldConfigBuilder<Textarea> {
         return Textarea;
     }
 
-    setReadonly(value:boolean){
+    setReadonly(value:boolean) {
         this.readonly = value;
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.readonly = this.readonly;
         return options;

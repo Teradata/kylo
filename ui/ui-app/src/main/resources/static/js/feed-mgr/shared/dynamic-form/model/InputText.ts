@@ -18,7 +18,7 @@ import {FieldConfig} from "./FieldConfig";
  week
  */
 export enum InputType{
-    color="color",
+color="color",
 date="date",
 datetime_local="datetime-local",
 email="email",

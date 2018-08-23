@@ -22,7 +22,7 @@ export class FormControlValidation {
                 if(field.getErrorMessage){
                     errorMessage = field.getErrorMessage(firstKey,firstError,form)
                 }
-                if(errorMessage == undefined) {
+                if(errorMessage == undefined || errorMessage == '') {
                     //default error message
                     let label = field.placeholder;
 

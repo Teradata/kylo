@@ -933,7 +933,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractDelimiters(column: any, grid: any) {
 
-        let form = new ExtractDelimsForm(column, grid, this.controller, this)
+        let form = new ExtractDelimsForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 

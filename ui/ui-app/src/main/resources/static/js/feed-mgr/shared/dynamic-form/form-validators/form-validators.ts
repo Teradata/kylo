@@ -45,13 +45,17 @@ export class FormValidators {
             }
             else {
                 if(minValueControl && maxValueControl) {
+                    let error = {};
+                    error[errorKey] = null;
                     //clear the other validators if they are invalid
                     if(minValueControl.hasError(errorKey)){
-                        minValueControl.updateValueAndValidity({onlySelf:true})
+                        minValueControl.setErrors(error)
                     }
                     if(maxValueControl.hasError(errorKey)){
-                        maxValueControl.updateValueAndValidity({onlySelf:true})
+                        maxValueControl.setErrors(error)
                     }
+
+                    //revalidate??
                 }
                 return null;
             }
