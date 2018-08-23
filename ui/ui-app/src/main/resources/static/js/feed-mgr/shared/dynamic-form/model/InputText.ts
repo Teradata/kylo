@@ -37,9 +37,14 @@ export class InputText extends FieldConfig<string> {
     static CONTROL_TYPE = 'textbox';
     controlType = InputText.CONTROL_TYPE;
     type: string;
+    readonly :boolean;
 
     constructor(options: {} = {}) {
         super(options);
         this.type = options['type'] || '';
+        this.readonly = options['readonly'];
+        if(this.readonly) {
+            this.value = this.readonlyValue;
+        }
     }
 }

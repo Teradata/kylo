@@ -295,6 +295,7 @@ export class CheckboxFieldBuilder extends FieldConfigBuilder<Checkbox> {
 export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
 
     type:InputType;
+    private readonly:boolean;
 
     public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         super(formGroupBuilder)
@@ -304,6 +305,11 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
         return InputText;
     }
 
+
+    setReadonly(value:boolean){
+        this.readonly = value;
+        return this;
+    }
     setType(type:InputType):InputTextFieldBuilder{
         this.type = type;
         return this;
@@ -312,6 +318,7 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
     buildOptions(){
         let options = super.buildOptions();
         options.type = this.type;
+        options.readonly = this.readonly;
         return options;
     }
 }
@@ -341,12 +348,25 @@ export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
 
 export  class TextareaFieldBuilder extends FieldConfigBuilder<Textarea> {
 
+    private readonly:boolean;
+
     public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         super(formGroupBuilder)
     }
 
     getObjectType():any {
         return Textarea;
+    }
+
+    setReadonly(value:boolean){
+        this.readonly = value;
+        return this;
+    }
+
+    buildOptions(){
+        let options = super.buildOptions();
+        options.readonly = this.readonly;
+        return options;
     }
 
 }

@@ -50,7 +50,7 @@ export class FieldConfig<T> {
         validators?:ValidatorFn[],
         ngIf?:NgIfCallback,
         onModelChange?:OnFieldChange,
-        getErrorMessage?:GetErrorMessage
+        getErrorMessage?:GetErrorMessage,
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -71,6 +71,7 @@ export class FieldConfig<T> {
         this.ngIf = options.ngIf ? options.ngIf : NgIfTrue ;
         this.onModelChange = options.onModelChange;
         this.getErrorMessage = options.getErrorMessage;
+
 
     }
 
