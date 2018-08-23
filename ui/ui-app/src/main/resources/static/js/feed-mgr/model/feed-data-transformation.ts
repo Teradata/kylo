@@ -1,5 +1,6 @@
 import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 import {SparkDataSet} from "./spark-data-set.model";
+import {FlowChart} from "../visual-query/build-query/flow-chart/model/flow-chart.model";
 
 
 export interface SampleFile{
@@ -54,7 +55,7 @@ export interface FeedDataTransformation {
     /**
      * Model for the flowchart
      */
-    chartViewModel: object;
+    chartViewModel: FlowChart.ChartViewModel;
 
     /**
      * List of required datasource ids

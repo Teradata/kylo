@@ -335,7 +335,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.tableColumns = [];
 
             // Initial load will trigger query from the table model.
-            if (this.isLoaded) {
+            if (this.isLoaded && this.model.chartViewModel.nodes.length >0) {
                 this.query();
             }
             this.isLoaded = true;
