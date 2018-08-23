@@ -26,9 +26,18 @@ import javax.annotation.Nonnull;
  * Event bus for cleanup events.
  */
 public interface CleanupEventConsumer {
+    
+    /**
+     * Adds the specified listener for cleanup events from any feed.
+     *
+     * @param category the category system name
+     * @param feedName the feed system name
+     * @param listener the listener to be added
+     */
+    void addListener(@Nonnull CleanupListener listener);
 
     /**
-     * Adds the specified listener for cleanup events.
+     * Adds the specified listener for cleanup events from feeds with a specific name.
      *
      * @param category the category system name
      * @param feedName the feed system name

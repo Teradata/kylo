@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,20 +47,31 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      * Map of feed category and name to listener
      */
     @Nonnull
-    private final ConcurrentMap<String, CleanupListener> listeners = new ConcurrentHashMap<>();
-
+    private final ConcurrentMap<String, CleanupListener> feedListeners = new ConcurrentHashMap<>();
+    
     /**
-     * adds a listener to be notified on receipt of cleanup events
-     *
-     * @param category the category system name
-     * @param feedName the feed system name
-     * @param listener the listener to be added
+     * Set of listeners that get notified of events for all feeds.
+     */
+    @Nonnull
+    private final Set<CleanupListener> anyFeedListeners = ConcurrentHashMap.newKeySet();
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventConsumer#addListener(com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener)
+     */
+    @Override
+    public void addListener(CleanupListener listener) {
+        LOG.debug("Adding listener for any feed, consumer {}", this);
+        anyFeedListeners.add(listener);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventConsumer#addListener(java.lang.String, java.lang.String, com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener)
      */
     @Override
     public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
         String key = generateKey(category, feedName);
         LOG.debug("Adding listener for {}, consumer {}", key, this);
-        listeners.put(key, listener);
+        feedListeners.put(key, listener);
     }
 
     /**
@@ -74,13 +86,18 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
 
         String key = generateKey(event.getCategoryName(), event.getFeedName());
         LOG.debug("Looking up listener for {}", key);
-        CleanupListener listener = listeners.get(key);
+        CleanupListener listener = feedListeners.get(key);
         if (listener != null) {
             LOG.debug("Found listener for {}, triggering event {}", key, event);
             listener.triggered(event);
         } else {
             LOG.debug("Found no listener for {}", key);
         }
+        
+        this.anyFeedListeners.forEach(anyListener -> {
+            LOG.debug("Triggering event {} for listener {}", event, anyListener);
+            anyListener.triggered(event);
+        });
     }
 
     /**
@@ -91,7 +108,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     @Override
     public void removeListener(@Nonnull CleanupListener listener) {
         LOG.debug("Remove listener {}", listener);
-        listeners.values().remove(listener);
+        feedListeners.values().remove(listener);
     }
 
     /**
