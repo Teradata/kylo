@@ -1,10 +1,9 @@
+import {Injectable} from "@angular/core";
 import * as angular from "angular";
 import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
-
-import {moduleName} from "../../module-name";
 
 /**
  * Default font.
@@ -21,6 +20,7 @@ const HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-ta
  */
 const PIXELS = "px";
 
+@Injectable()
 export class VisualQueryPainterService extends fattable.Painter {
 
     /**
@@ -112,18 +112,32 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private waitingHeaderDivs : HTMLElement[] = [];
 
-    static readonly $inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
+    private $compile: angular.ICompileService;
+    private $mdPanel: angular.material.IPanelService;
+    private $scope: angular.IRootScopeService;
+    private $templateCache: angular.ITemplateCacheService;
+    private $templateRequest: angular.ITemplateRequestService;
+    private $timeout: angular.ITimeoutService;
+    private $window: angular.IWindowService;
 
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
-    constructor(private $compile: angular.ICompileService, private $mdPanel: angular.material.IPanelService, private $scope: angular.IRootScopeService,
-                private $templateCache: angular.ITemplateCacheService, private $templateRequest: angular.ITemplateRequestService, private $timeout: angular.ITimeoutService,
-                private $window: angular.IWindowService) {
+    constructor() {
         super();
 
+        // Load AngularJS services
+        const injector = angular.element(document.body).injector();
+        this.$compile = injector.get("$compile");
+        this.$mdPanel = injector.get("$mdPanel");
+        this.$scope = injector.get("$rootScope");
+        this.$templateCache = injector.get("$templateCache");
+        this.$templateRequest = injector.get("$templateRequest");
+        this.$timeout = injector.get("$timeout");
+        this.$window = injector.get("$window");
+
         //Request the Header template and fill in the contents of any header divs waiting on the template.
-        $templateRequest(HEADER_TEMPLATE).then((response) => {
+        this.$templateRequest(HEADER_TEMPLATE).then((response) => {
             this.headerTemplateLoaded = true;
             angular.forEach(this.waitingHeaderDivs,(headerDiv : HTMLElement) => {
                 this.compileHeader(headerDiv);
@@ -140,7 +154,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         }, {passive:true, capture:true});
     */
         // Create menu
-        this.menuPanel = $mdPanel.create({
+        this.menuPanel = this.$mdPanel.create({
             animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
             attachTo: angular.element(document.body),
             clickOutsideToClose: true,
@@ -152,7 +166,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.menuPanel.attach();
 
         // Create tooltip
-        this.tooltipPanel = $mdPanel.create({
+        this.tooltipPanel = this.$mdPanel.create({
             animation: this.$mdPanel.newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
             attachTo: angular.element(document.body),
             template: `{{value}}<ul><li ng-repeat="item in validation">{{item.rule}}: {{item.reason}}</li></ul>`,
@@ -471,7 +485,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selectionDisplay = this.niceSelection($scope.selection)
         $scope.table = this.delegate;
         $scope.value = isNull ? null : $(cellDiv).data('realValue');
-        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
+        $scope.displayValue = (isNull || $scope.value == null ? "(empty)" : ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value));
 
         // Update position
         this.menuPanel.updatePosition(
@@ -550,5 +564,3 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
-
-angular.module(moduleName).service("VisualQueryPainterService", VisualQueryPainterService);

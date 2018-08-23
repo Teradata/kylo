@@ -7,9 +7,7 @@ import {InputTextFieldBuilder, RadioButtonFieldBuilder, SectionHeaderBuilder, Se
 import {DynamicFormBuilder, FormConfig} from "../services/dynamic-form-builder";
 
 
-/**
- * A prompt dialog for providing a date format pattern that can be used for formatting or parsing dates or timestamps.
- */
+
 @Component({
     selector:"dynamic-form-example",
     templateUrl: "js/feed-mgr/shared/dynamic-form/example/dynamic-form-example.component.html"
@@ -19,6 +17,7 @@ export class DynamicFormExampleComponent implements OnInit,OnDestroy{
     formConfig:FormConfig;
 
     constructor() {
+        console.log("NEW DYNAMIC FORM!!!!!!")
 
         // Create form
         this.formConfig = new DynamicFormBuilder().setTitle("Example Form")

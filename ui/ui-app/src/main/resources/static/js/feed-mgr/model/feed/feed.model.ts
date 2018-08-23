@@ -366,6 +366,18 @@ export class Feed  implements KyloObject{
         return valid;
     }
 
+    getTemplateType():string {
+       return this.templateTableOption ? this.templateTableOption : (this.registeredTemplate? this.registeredTemplate.templateTableOption : '')
+    }
+
+    isDefineTable(){
+        return "DEFINE_TABLE" == this.getTemplateType();
+    }
+
+    isDataTransformation(){
+        return "DATA_TRANSFORMATION" == this.getTemplateType();
+    }
+
     /**
      * Are all the steps for this feed complete
      * @return {boolean}

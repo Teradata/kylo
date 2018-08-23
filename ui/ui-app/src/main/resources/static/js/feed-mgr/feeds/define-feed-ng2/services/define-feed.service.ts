@@ -382,11 +382,11 @@ export class DefineFeedService {
      * @param {Feed} feed
      */
     initializeFeedSteps(feed:Feed){
-        let templateTableOption = feed.templateTableOption ? feed.templateTableOption : (feed.registeredTemplate? feed.registeredTemplate.templateTableOption : '')
-        if(templateTableOption == "DEFINE_TABLE"){
+        let templateTableOption = feed.getTemplateType()
+        if(feed.isDefineTable()){
             feed.steps = this.newDefineTableFeedSteps();
         }
-        else if(templateTableOption == "DATA_TRANSFORMATION"){
+        else if(feed.isDataTransformation()){
           feed.steps = this.newDataTransformationSteps();
          }
         else {

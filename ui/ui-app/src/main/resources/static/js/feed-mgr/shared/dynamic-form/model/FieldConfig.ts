@@ -1,5 +1,14 @@
 import {AbstractControlOptions} from "@angular/forms/src/model";
 import {AsyncValidatorFn, ValidatorFn} from "@angular/forms/src/directives/validators";
+import {FormGroup} from "@angular/forms";
+
+export type NgIfCallback = (form:FormGroup) => boolean;
+
+export type OnFieldChange = (newValue:any,form:FormGroup,model?:any) =>void;
+
+export type GetErrorMessage = (type:string,validationResponse:any,form:FormGroup) =>string;
+
+const NgIfTrue:NgIfCallback = (form:FormGroup)=> { return true};
 
 export class FieldConfig<T> {
     value: T;
@@ -14,12 +23,14 @@ export class FieldConfig<T> {
     readonlyValue:string;
     modelValueProperty:string;
     pattern?:string;
-    onModelChange?:Function;
+    onModelChange?:OnFieldChange;
     validators?: ValidatorFn[] | null;
     disabled?:boolean;
     placeholderLocaleKey?:string;
     labelLocaleKey?:string;
     styleClass:string;
+    ngIf?:NgIfCallback
+    getErrorMessage?:GetErrorMessage
 
     constructor(options: {
         value?: T,
@@ -35,7 +46,11 @@ export class FieldConfig<T> {
         pattern?:string,
         disabled?:boolean,
         placeholderLocaleKey?:string,
-        styleClass?:string
+        styleClass?:string,
+        validators?:ValidatorFn[],
+        ngIf?:NgIfCallback,
+        onModelChange?:OnFieldChange,
+        getErrorMessage?:GetErrorMessage,
     } = {}) {
         this.modelValueProperty = options.modelValueProperty  || 'value'
         this.value = options.value;
@@ -52,6 +67,11 @@ export class FieldConfig<T> {
         this.styleClass = options.styleClass || '';
 
         this.placeholderLocaleKey = options.placeholderLocaleKey;
+        this.validators = options.validators;
+        this.ngIf = options.ngIf ? options.ngIf : NgIfTrue ;
+        this.onModelChange = options.onModelChange;
+        this.getErrorMessage = options.getErrorMessage;
+
 
     }
 

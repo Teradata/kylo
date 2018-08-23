@@ -1,26 +1,32 @@
-import {Input, OnInit} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
+import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
-import {IDeferred, IPromise} from "angular";
-import * as $ from "jquery";
+import {CodemirrorComponent} from "ng2-codemirror";
 import * as _ from "underscore";
+import {Subject} from "rxjs/Subject";
+import {MatStepper} from "@angular/material/stepper";
 
+import StepperService from '../../../common/stepper/StepperService';
+import BroadcastService, {BroadcastEvent} from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {FeedService} from '../../services/FeedService';
+import {ApplyTableDomainTypesDialog} from "../../shared/apply-domain-type/apply-table-domain-types.component";
+import {ProfileHelper} from "../wrangler/api/profile-helper";
+import {ColumnController} from "../wrangler/column-controller";
 import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column-delegate";
+import {ScriptState, StringUtils} from "../wrangler/index";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
+import {AnalyzeColumnDialog} from "./profile-stats/analyze-column-dialog";
+import VisualQueryProfileStatsController from "./profile-stats/VisualQueryProfileStats";
 import {WranglerDataService} from "./services/wrangler-data.service";
-import {ProfileHelper} from "../wrangler/api/profile-helper";
-import {ScriptState, StringUtils} from "../wrangler/index";
-import BroadcastService from '../../../services/broadcast-service';
-import {FeedService} from '../../services/FeedService';
-import StepperService from '../../../common/stepper/StepperService';
 
 declare const CodeMirror: any;
 
-import {moduleName} from "../module-name";
+// import {moduleName} from "../module-name";
 
 export class WranglerColumn {
 
@@ -37,7 +43,11 @@ export class WranglerColumn {
 /**
  * Transform Data step of the Visual Query page.
  */
-export class TransformDataComponent implements OnInit {
+@Component({
+    selector: "thinkbig-visual-query-transform",
+    templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
+})
+export class TransformDataComponent implements AfterViewInit, ColumnController, OnChanges, OnInit {
 
     /**
      * Query engine for transforming data.
@@ -50,6 +60,9 @@ export class TransformDataComponent implements OnInit {
      */
     @Input()
     model: FeedDataTransformation;
+
+    @Input()
+    stepper: MatStepper;
 
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
@@ -154,6 +167,7 @@ export class TransformDataComponent implements OnInit {
 
     gridApi: any;
 
+    @Input()
     stepIndex: any;
 
     /**
@@ -174,11 +188,13 @@ export class TransformDataComponent implements OnInit {
     /**
      * List of field policies for current transformation.
      */
+    @Input()
     fieldPolicies: any[];
 
     /**
      * Height offset from the top of the page.
      */
+    @Input()
     heightOffset: string = "0";
 
     /**
@@ -195,16 +211,36 @@ export class TransformDataComponent implements OnInit {
     /**
      * Keeps track of running executions
      */
-    executionStack: IPromise<any>[] = [];
+    executionStack: Promise<any>[] = [];
+
+    @ViewChild(CodemirrorComponent)
+    codeMirrorView: CodemirrorComponent;
+
+    private readonly domainTypesService: DomainTypesService;
+    private readonly RestUrlService: any;
+    private readonly SideNavService: any;
+    private readonly uiGridConstants: any;
+    private readonly feedService: FeedService;
+    private readonly broadcastService: BroadcastService;
+    private readonly stepperService: StepperService;
+    private readonly WindowUnloadService: WindowUnloadService;
 
     /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
-                private domainTypesService: DomainTypesService, private RestUrlService: any, private SideNavService: any, private uiGridConstants: any, private feedService: FeedService, private broadcastService: BroadcastService,
-                private stepperService: StepperService, private WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
+    constructor($element: ElementRef, private $mdDialog: TdDialogService, injector: Injector, private wranglerDataService: WranglerDataService) {
+        // Load AngularJS services
+        this.domainTypesService = injector.get("DomainTypesService");
+        this.RestUrlService = injector.get("RestUrlService");
+        this.SideNavService = injector.get("SideNavService");
+        this.uiGridConstants = injector.get("uiGridConstants");
+        this.feedService = injector.get("FeedService");
+        this.broadcastService = injector.get("BroadcastService");
+        this.stepperService = injector.get("StepperService");
+        this.WindowUnloadService = injector.get("WindowUnloadService");
+
         //Listen for when the next step is active
-        this.broadcastService.subscribe($scope, this.stepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
+        this.broadcastService.subscribe(this.stepperService.STEP_CHANGED_EVENT).subscribe((event: BroadcastEvent) => this.onStepChange(event.name, event.args[0]));
 
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
@@ -213,12 +249,12 @@ export class TransformDataComponent implements OnInit {
         this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Get height offset attribute
-        this.heightOffset = $element.attr("height-offset");
+        this.heightOffset = $element.nativeElement.getAttribute("height-offset");
 
     }
 
-    $onInit(): void {
-        this.ngOnInit();
+    ngAfterViewInit(): void {
+        this.codemirrorLoaded(this.codeMirrorView.instance);
     }
 
     ngOnInit(): void {
@@ -228,6 +264,11 @@ export class TransformDataComponent implements OnInit {
         //reset sample file changed flag
         this.model.sampleFileChanged = false;
 
+        setInterval(() => {
+            if (this.sql != this.model.sql || this.sqlModel != this.model.chartViewModel || this.selectedColumnsAndTables != this.model.$selectedColumnsAndTables) {
+                this.ngOnInit();
+            }
+        }, 1000);
 
         // Select source model
         let useSqlModel = false;
@@ -260,7 +301,7 @@ export class TransformDataComponent implements OnInit {
             let domainTypesLoaded = false;
             this.sampleFormulas = this.engine.sampleFormulas;
 
-            if(this.model.datasets){
+            if (this.model.datasets) {
                 this.engine.setDatasets(this.model.datasets)
             }
 
@@ -282,21 +323,6 @@ export class TransformDataComponent implements OnInit {
             }
             this.engine.setFieldPolicies(this.fieldPolicies);
 
-            this.$scope.$watch(() => this.fieldPolicies, () => {
-                this.fieldPolicies.forEach(policy => {
-                    if (policy.name == null) {
-                        policy.name = policy.fieldName;
-                    }
-                    if (policy.fieldName !== policy.name) {
-                        policy.fieldName = policy.name;
-                    }
-                    if (policy.feedFieldName !== policy.name) {
-                        policy.feedFieldName = policy.name;
-                    }
-                });
-                this.engine.setFieldPolicies(this.fieldPolicies);
-            }, true);
-
             // Fetch domain types
             this.domainTypesService.findAll()
                 .then((domainTypes: any) => {
@@ -309,7 +335,7 @@ export class TransformDataComponent implements OnInit {
             this.tableColumns = [];
 
             // Initial load will trigger query from the table model.
-            if (this.isLoaded) {
+            if (this.isLoaded && this.model.chartViewModel.nodes.length >0) {
                 this.query();
             }
             this.isLoaded = true;
@@ -323,20 +349,28 @@ export class TransformDataComponent implements OnInit {
         } else {
             onLoad();
         }
+    }
 
-        // Invalidate when SQL changes
-
-        this.$scope.$watch(
-            () => {
-                return (typeof this.model === "object") ? this.model.sql : null;
-            },
-            () => {
-                if (typeof this.model === "object" && this.sql !== this.model.sql) {
-                    this.isValid = false;
-                    this.sql = null;
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.fieldPolicies) {
+            this.fieldPolicies.forEach(policy => {
+                if (policy.name == null) {
+                    policy.name = policy.fieldName;
                 }
+                if (policy.fieldName !== policy.name) {
+                    policy.fieldName = policy.name;
+                }
+                if (policy.feedFieldName !== policy.name) {
+                    policy.feedFieldName = policy.name;
+                }
+            });
+            this.engine.setFieldPolicies(this.fieldPolicies);
+        } else if (changes.model) {
+            if (typeof this.model === "object" && this.sql !== this.model.sql) {
+                this.isValid = false;
+                this.sql = null;
             }
-        );
+        }
     }
 
     /**
@@ -365,31 +399,23 @@ export class TransformDataComponent implements OnInit {
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.$mdDialog.show({
-                controller: "ApplyTableDomainTypesDialog",
-                escapeToClose: false,
-                fullscreen: true,
-                parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.html",
-                locals: {
-                    data: {domainTypes: domainTypes, fields: fields}
-                }
-            }).then((selected: any) => {
-                    selected.forEach((selection: any) => {
-                        var fieldIndex = fields.findIndex((element: WranglerColumn) => {
-                            return element.name === selection.name;
-                        });
-                        this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
-                        flgChanged = true;
+            this.$mdDialog.open(ApplyTableDomainTypesDialog, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
+                .afterClosed().subscribe((selected: any) => {
+                selected.forEach((selection: any) => {
+                    var fieldIndex = fields.findIndex((element: WranglerColumn) => {
+                        return element.name === selection.name;
                     });
-                    if (flgChanged) {
-                        // Need to supply a formula
-                        const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
-                        this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
-                    }
-                }, () => {
-                    // ignore cancel
+                    this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
+                    flgChanged = true;
                 });
+                if (flgChanged) {
+                    // Need to supply a formula
+                    const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
+                    this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
+                }
+            }, () => {
+                // ignore cancel
+            });
         }
     }
 
@@ -418,18 +444,7 @@ export class TransformDataComponent implements OnInit {
      * Displays the column statistics dialog.
      */
     showProfileDialog() {
-        const self = this;
-        this.$mdDialog.show({
-            clickOutsideToClose: false,
-            controller: "VisualQueryProfileStatsController",
-            fullscreen: true,
-            locals: {
-                profile: angular.copy(self.engine.getProfile()),
-                transformController: self
-            },
-            parent: angular.element(document.body),
-            templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
-        });
+        this.$mdDialog.open(VisualQueryProfileStatsController, {data: angular.copy(this.engine.getProfile()), panelClass: "full-screen-dialog"});
     };
 
     //Callback when Codemirror has been loaded (reference is in the html page at:
@@ -462,7 +477,7 @@ export class TransformDataComponent implements OnInit {
      * Creates a Tern server.
      */
     private createTernServer() {
-        this.engine.getTernjsDefinitions().then( (response: any) => {
+        this.engine.getTernjsDefinitions().then((response: any) => {
             this.engine.setFunctionDefs(response);
 
             this.ternServer = new CodeMirror.TernServer({defs: [response]});
@@ -584,77 +599,43 @@ export class TransformDataComponent implements OnInit {
      * Display error dialog
      */
     showError(message: string): void {
-        let self = this;
-        self.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-
-                /**
-                 * Additional details about the error.
-                 */
-                detailMessage = message;
-
-                /**
-                 * Indicates that the detail message should be shown.
-                 */
-                showDetail = false;
-
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                /**
-                 * Hides this dialog.
-                 */
-                hide() {
-                    this.$mdDialog.hide();
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element("body"),
-            template: `
-                  <md-dialog arial-label="error executing the query" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Transform Exception</h2>
-                      <p>{{ dialog.detailMessage }}</p>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
+        this.$mdDialog.openAlert({
+            closeButton: "Got it!",
+            message: message,
+            title: "Transform Exception"
         });
-
     }
 
     /**
      * Executes query if state changed, otherwise returns the current state
      */
-    queryOrGetState(pageSpec: PageSpec): IPromise<ScriptState<any>> {
-        const deferred: IDeferred<ScriptState<any>> = this.$q.defer();
+    queryOrGetState(pageSpec: PageSpec): Promise<ScriptState<any>> {
+        const deferred = new Subject<ScriptState<any>>();
         if (pageSpec.equals(this.currentPage)) {
-            this.$timeout_(() => {
+            setTimeout(() => {
                 // Fetch the state or join with the existing execution
                 if (this.executionStack.length > 0) {
                     var promise = this.executionStack[this.executionStack.length - 1];
                     promise.then(() => {
-                        return deferred.resolve(this.engine.getState())
+                        deferred.next(this.engine.getState());
+                        deferred.complete();
                     });
                 } else {
-                    return deferred.resolve(this.engine.getState());
+                    deferred.next(this.engine.getState());
+                    deferred.complete();
                 }
 
             }, 10);
         } else {
             this.query(true, pageSpec).then(() => {
                 this.currentPage = pageSpec;
-                return deferred.resolve(this.engine.getState());
+                deferred.next(this.engine.getState());
+                deferred.complete();
             }).catch((reason) => {
-                deferred.reject(reason);
+                deferred.error(reason);
             });
         }
-        return deferred.promise;
+        return deferred.toPromise();
     }
 
     /**
@@ -662,10 +643,10 @@ export class TransformDataComponent implements OnInit {
      *
      * @return {Promise} a promise for when the query completes
      */
-    query(refresh: boolean = true, pageSpec ?: PageSpec, doValidate: boolean = true, doProfile: boolean = false): IPromise<any> {
-        const deferred = this.$q.defer();
+    query(refresh: boolean = true, pageSpec ?: PageSpec, doValidate: boolean = true, doProfile: boolean = false): Promise<any> {
+        const deferred = new Subject<any>();
 
-        const promise = deferred.promise;
+        const promise = deferred.toPromise();
         this.executionStack.push(promise);
 
         //flag to indicate query is running
@@ -691,7 +672,7 @@ export class TransformDataComponent implements OnInit {
                 this.updateGrid();
             }
             this.removeExecution(promise);
-            deferred.resolve();
+            deferred.complete();
         };
         const errorCallback = (message: string) => {
             this.setExecutingQuery(false);
@@ -701,7 +682,7 @@ export class TransformDataComponent implements OnInit {
             // Reset state
             this.onUndo();
             this.removeExecution(promise);
-            deferred.reject(message);
+            deferred.error(message);
         };
         const notifyCallback = (progress: number) => {
             //self.setQueryProgress(progress * 100);
@@ -730,7 +711,7 @@ export class TransformDataComponent implements OnInit {
         return message;
     }
 
-    private removeExecution(promise: IPromise<any>): void {
+    private removeExecution(promise: Promise<any>): void {
         var idx = this.executionStack.indexOf(promise);
         this.executionStack.splice(idx, 1);
     }
@@ -794,18 +775,15 @@ export class TransformDataComponent implements OnInit {
         }
         if (duplicateCols.length > 0) {
             this.onUndo();
-            let alert = this.$mdDialog.alert()
-                .parent($('body'))
-                .clickOutsideToClose(true)
-                .title("Warning")
-                .textContent("The last operation created duplicate columns for: " + duplicateCols.join(",") + ". Please try again and alias the new column.")
-                .ok("Ok");
-            this.$mdDialog.show(alert);
-
+            this.$mdDialog.openAlert({
+                closeButton: "Ok",
+                message: "The last operation created duplicate columns for: " + duplicateCols.join(",") + ". Please try again and alias the new column.",
+                title: "Warning"
+            });
         }
     }
 
-    addColumnSort(direction: string, column: any, query?: boolean): IPromise<any> {
+    addColumnSort(direction: string, column: any, query?: boolean): Promise<any> {
         let formula;
 
         let directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
@@ -826,9 +804,7 @@ export class TransformDataComponent implements OnInit {
             return this.pushFormula(formula, {formula: formula, icon: icon, name: name, sort: {direction: directionLower, columnIndex: column.index, columnName: column.field}}, query);
         }
         else {
-            let d = this.$q.defer();
-            d.resolve({});
-            return d.promise;
+            return new Promise<any>(resolve => resolve({}));
         }
     }
 
@@ -838,7 +814,7 @@ export class TransformDataComponent implements OnInit {
      * @param {Object} filter the filter
      * @param {ui.grid.GridColumn} column the column
      */
-    addColumnFilter(filter: any, column: any, query ?: boolean): IPromise<any> {
+    addColumnFilter(filter: any, column: any, query ?: boolean): Promise<any> {
         // Generate formula for filter
         let formula;
         let safeTerm = (column.delegate.dataCategory === DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
@@ -886,7 +862,7 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula the formula
      * @param {TransformContext} context the UI context for the transformation
      */
-    addFunction(formula: any, context: any): IPromise<any> {
+    addFunction(formula: any, context: any): Promise<any> {
         return this.pushFormula(formula, context, true);
     };
 
@@ -896,7 +872,7 @@ export class TransformDataComponent implements OnInit {
      *
      * @param {string} formula - the formula
      */
-    pushFormulaToEngine(formula: any, context: any) : boolean {
+    pushFormulaToEngine(formula: any, context: any): boolean {
         let self = this;
         // Covert to a syntax tree
         this.ternServer.server.addFile("[doc]", formula);
@@ -918,14 +894,12 @@ export class TransformDataComponent implements OnInit {
     };
 
     displayError(title:string, msg:string): void {
-        let alert = this.$mdDialog.alert()
-            .parent($('body'))
-            .clickOutsideToClose(true)
-            .title(title)
-            .textContent(msg)
-            .ariaLabel(msg)
-            .ok("Ok");
-        this.$mdDialog.show(alert);
+        this.$mdDialog.openAlert({
+            title: title,
+            message: msg,
+            ariaLabel: msg,
+            closeButton: "Ok"
+        });
     }
 
     /**
@@ -936,113 +910,72 @@ export class TransformDataComponent implements OnInit {
      * @param {boolean} doQuery - true to immediately execute the query
      * @param {boolean} refreshGrid - true to refresh grid
      */
-    pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
+    pushFormula(formula: any, context: any, doQuery: boolean = false, refreshGrid: boolean = true): Promise<{}> {
         const self = this;
-        const deferred = this.$q.defer();
         self.currentPage = PageSpec.defaultPage();
-        setTimeout(function () {
-            if (self.pushFormulaToEngine(formula, context)) {
-                // Add to function history
-                self.functionHistory.push(context);
+        return new Promise<{}>((resolve, reject) => {
+            setTimeout(function () {
+                if (self.pushFormulaToEngine(formula, context)) {
+                    // Add to function history
+                    self.functionHistory.push(context);
 
-                if (doQuery || self.engine.getRows() === null) {
-                    return self.query(refreshGrid, self.currentPage).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                    if (doQuery || self.engine.getRows() === null) {
+                        return self.query(refreshGrid, self.currentPage).catch(reason => reject(reason)).then(() => resolve());
+                    }
                 }
-            }
-            // Formula couldn't parse
-            self.resetAllProgress();
-            return deferred.reject();
-        },10);
-
-        return deferred.promise;
+                // Formula couldn't parse
+                self.resetAllProgress();
+                return reject();
+            }, 10);
+        });
     };
 
     /**
      * Executes a formula, gathers the value and reverses
      * @param {string} fieldName
      * @param {string} formula
-     * @returns {angular.IPromise<ProfileHelper>}
+     * @returns {Promise<ProfileHelper>}
      */
-    extractFormulaResult(formula:string, sample:number) : IPromise<any> {
+    extractFormulaResult(formula: string, sample: number): Promise<any> {
         const self = this;
-        const deferred : IDeferred<any>  = self.$q.defer();
         self.pushFormulaToEngine(formula, {});
-        let limit : number = self.engine.limit();
-        self.engine.limit(sample)
+        let limit: number = self.engine.limit;
+        self.engine.limit = sample;
         let page = PageSpec.emptyPage();
         page.numRows = page.numCols = 1;
-        page.firstRow=0;
-        self.query(false, page).then( function() {
+        page.firstRow = 0;
+        return self.query(false, page).then(function () {
             let result = self.engine.getRows();
-            deferred.resolve(result[0][0]);
-            self.engine.limit(limit);
+            self.engine.limit = limit;
             self.engine.pop();
-        }).catch(reason => {
-            self.engine.limit(limit);
-        })
-        return deferred.promise;
+            return result[0][0];
+        }).catch(() => {
+            self.engine.limit = limit;
+        });
     }
 
-    extractColumnStatistics(fieldName: string) : IPromise<ProfileHelper> {
+    extractColumnStatistics(fieldName: string): Promise<ProfileHelper> {
         const self = this;
-        const deferred : IDeferred<ProfileHelper>  = self.$q.defer();
         self.pushFormulaToEngine(`select(${fieldName})`, {});
-        self.query(false, PageSpec.emptyPage(), true, true).then( function() {
+        return self.query(false, PageSpec.emptyPage(), true, true).then(function () {
             let profileStats = self.engine.getProfile();
             self.engine.pop();
-            deferred.resolve(new ProfileHelper(fieldName, profileStats));
+            return new ProfileHelper(fieldName, profileStats);
         });
-        return deferred.promise;
-   }
+    }
 
     /**
      * Generates and displays a categorical histogram
      *
      * @return {Promise} a promise for when the query completes
      */
-    showAnalyzeColumn(fieldName: string) : any {
+    showAnalyzeColumn(fieldName: string): any {
+        this.pushFormulaToEngine(`select(${fieldName})`, {});
+        this.query(false, PageSpec.emptyPage(), true, true).then(() => {
+            let profileStats = this.engine.getProfile();
+            this.engine.pop();
 
-        const self = this;
-
-        self.pushFormulaToEngine(`select(${fieldName})`, {});
-        self.query(false, PageSpec.emptyPage(), true, true).then( function() {
-
-                let profileStats = self.engine.getProfile();
-                self.engine.pop();
-                const deferred = self.$q.defer();
-
-                self.$mdDialog.show({
-
-                    controller: class {
-
-                        /**
-                         * Additional details about the error.
-                         */
-                        profile = profileStats;
-                        fieldName = fieldName;
-
-                        static readonly $inject = ["$mdDialog"];
-
-                        constructor(private $mdDialog: angular.material.IDialogService) {
-
-                        }
-
-                        /**
-                         * Hides this dialog.
-                         */
-                        hide() {
-                            self.$mdDialog.hide();
-                        }
-                    },
-                    controllerAs: "dialog",
-                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
-                    parent: angular.element(document.body),
-                    clickOutsideToClose: false,
-                    fullscreen: false,
-                    locals: {
-                    }
-                });
-
+            this.$mdDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}});
         });
 
     };
@@ -1081,14 +1014,14 @@ export class TransformDataComponent implements OnInit {
     /**
      * Update state counter so clients know that state (function stack) has changed
      */
-    updateTableState() : void {
+    updateTableState(): void {
         // Update state variable to indicate to client we are in a new state
         this.tableState = this.engine.getState().tableState;
     }
 
-    updateSortIcon() : void {
+    updateSortIcon(): void {
         let columnSort = this.engine.getState().sort;
-        if(columnSort != null) {
+        if (columnSort != null) {
             this.wranglerDataService.sortDirection_ = <"desc" | "asc">  columnSort.direction;
             this.wranglerDataService.sortIndex_ = columnSort.columnIndex;
         }
@@ -1143,13 +1076,13 @@ export class TransformDataComponent implements OnInit {
         return (this.engine && this.engine.canRedo) ? this.engine.canRedo() : false;
     };
 
-    isUsingSampleFile(){
+    isUsingSampleFile() {
         //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
         return this.model.$selectedDatasourceId == "FILE"
     }
 
-    removeItem(index:number) : void {
-        this.engine.remove(index+1);
+    removeItem(index: number): void {
+        this.engine.remove(index + 1);
         this.functionHistory = this.engine.getHistory();
     }
 
@@ -1157,9 +1090,9 @@ export class TransformDataComponent implements OnInit {
      * Remove step item from history
      * @param {number} index
      */
-    toggleItem(index:number) : void {
+    toggleItem(index: number): void {
         // Adjust for difference between visible history and actual history which contains the 1st query
-        this.engine.toggle(index+1);
+        this.engine.toggle(index + 1);
         this.functionHistory = this.engine.getHistory();
         let self = this;
         this.query().catch(reason => {
@@ -1170,8 +1103,8 @@ export class TransformDataComponent implements OnInit {
         });
     }
 
-    isSampleFileChanged(){
-        return this.isUsingSampleFile()  && this.model.sampleFileChanged;
+    isSampleFileChanged() {
+        return this.isUsingSampleFile() && this.model.sampleFileChanged;
     }
 
     /**
@@ -1181,13 +1114,13 @@ export class TransformDataComponent implements OnInit {
         const self = this;
         const thisIndex = parseInt(this.stepIndex);
 
-       let localFileChanged = this.isSampleFileChanged();
+        let localFileChanged = this.isSampleFileChanged();
 
         if (changedSteps.oldStep === thisIndex) {
-            this.saveToFeedModel().then( () => {
+            this.saveToFeedModel().then(() => {
                 // notify those that the data is loaded/updated
                 this.broadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
-            },function(){
+            }, function () {
                 this.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
         } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
@@ -1208,9 +1141,7 @@ export class TransformDataComponent implements OnInit {
         let feedModel = this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
-            let result = this.$q.defer();
-            result.reject(true);
-            return result.promise;
+            return new Promise((resolve, reject) => reject(true));
         }
 
         // Populate Feed Model from the Visual Query Model
@@ -1222,24 +1153,23 @@ export class TransformDataComponent implements OnInit {
         feedModel.table.sourceTableSchema.name = "";
 
         // Get list of fields
-        let deferred = this.$q.defer();
-        let fields = this.engine.getFields();
+        return new Promise(resolve => {
+            let fields = this.engine.getFields();
 
-        if (fields !== null) {
-            this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
-            this.feedService.syncTableFieldPolicyNames();
-            this.engine.save();
-            deferred.resolve(true);
-        } else {
-            this.query().then(() => {
-                this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+            if (fields !== null) {
+                this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
                 this.feedService.syncTableFieldPolicyNames();
                 this.engine.save();
-                deferred.resolve(true);
-            });
-        }
-
-        return deferred.promise;
+                resolve(true);
+            } else {
+                this.query().then(() => {
+                    this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+                    this.feedService.syncTableFieldPolicyNames();
+                    this.engine.save();
+                    resolve(true);
+                });
+            }
+        });
     }
 
     /**
@@ -1247,9 +1177,9 @@ export class TransformDataComponent implements OnInit {
      */
     onSampleMethodChange() {
         if (this.sampleMethod === "SAMPLE") {
-            this.engine.sample(0.1);
+            this.engine.sample = 0.1;
         } else if (this.sampleMethod === "LIMIT") {
-            this.engine.limit(1000);
+            this.engine.limit = 1000;
         }
     }
 
@@ -1286,7 +1216,7 @@ export class TransformDataComponent implements OnInit {
      * Set the query progress
      * @param {number} progress
      */
-    setQueryProgress(progress : number) {
+    setQueryProgress(progress: number) {
         if (!this.chainedOperation) {
             this.queryProgress = progress;
         } else {
@@ -1298,7 +1228,7 @@ export class TransformDataComponent implements OnInit {
      * Set whether the query is actively running
      * @param {boolean} query
      */
-    setExecutingQuery(query : boolean) {
+    setExecutingQuery(query: boolean) {
         if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
             this.executingQuery = query;
         }
@@ -1312,7 +1242,7 @@ export class TransformDataComponent implements OnInit {
      * Indicates the active query will be followed by another in quick succession
      * @param {ChainedOperation} chainedOperation
      */
-    setChainedQuery(chainedOp : ChainedOperation) {
+    setChainedQuery(chainedOp: ChainedOperation) {
         this.chainedOperation = chainedOp;
     }
 
@@ -1325,20 +1255,3 @@ export class TransformDataComponent implements OnInit {
         this.executingQuery = false;
     }
 }
-
-angular.module(moduleName).component("thinkbigVisualQueryTransform", {
-    bindings: {
-        engine: "=",
-        fieldPolicies: "<?",
-        heightOffset: "@",
-        model: "=",
-        stepIndex: "@"
-    },
-    controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-        "WindowUnloadService", "WranglerDataService", "$timeout", TransformDataComponent],
-    controllerAs: "$td",
-    require: {
-        stepperController: "^thinkbigStepper"
-    },
-    templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
-});

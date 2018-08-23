@@ -23,22 +23,35 @@ import {CovalentChipsModule} from "@covalent/core/chips";
 import {DynamicFormExampleComponent} from "./example/dynamic-form-example.component";
 import {TranslateModule} from "@ngx-translate/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {UpgradeModule} from "@angular/upgrade/static";
+import {ExampleFormsComponent} from "./example/example-forms.component";
+import {SimpleDynamicFormComponent} from "./simple-dynamic-form/simple-dynamic-form.component";
+import {SimpleDynamicFormDialogComponent} from "./simple-dynamic-form/simple-dynamic-form-dialog.component";
 
 @NgModule({
     declarations: [
         DynamicFormFieldComponent,
         DynamicFormComponent,
         TrueFalseValueDirective,
-        DynamicFormExampleComponent
+        DynamicFormExampleComponent,
+        ExampleFormsComponent,
+        SimpleDynamicFormComponent,
+        SimpleDynamicFormDialogComponent
         ],
     entryComponents:[
-
+        DynamicFormExampleComponent,
+        ExampleFormsComponent,
+        SimpleDynamicFormComponent,
+        SimpleDynamicFormDialogComponent
     ],
     exports:[
         DynamicFormFieldComponent,
         DynamicFormComponent,
         TrueFalseValueDirective,
-        DynamicFormExampleComponent
+        DynamicFormExampleComponent,
+        ExampleFormsComponent,
+        SimpleDynamicFormComponent,
+        SimpleDynamicFormDialogComponent
     ],
     imports: [
         CommonModule,
@@ -69,5 +82,6 @@ import {FlexLayoutModule} from "@angular/flex-layout";
     ]
 })
 export class DynamicFormModule {
+
 
 }

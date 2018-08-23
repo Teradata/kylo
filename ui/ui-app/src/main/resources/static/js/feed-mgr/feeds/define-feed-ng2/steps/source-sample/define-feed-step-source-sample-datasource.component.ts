@@ -49,12 +49,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
 
     selectedTab:ConnectorTab;
 
-    /**
-     * Flag to indicate only 1 dataset selection is allowed
-     */
-    singleNodeSelection:boolean;
-
-
 
     private warnIfSourceChanges:boolean = false;
 
@@ -67,8 +61,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
                 private _fileMetadataTransformService: FileMetadataTransformService) {
        super(state,stateRegistry,selectionService,$$angularInjector);
         this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
-        this.singleNodeSelection = this.selectionService.hasPolicy(SingleSelectionPolicy);
-
     }
 
     onTabClicked(tab:ConnectorTab) {
@@ -85,6 +77,12 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
         // Add system tabs
         this.tabs.push({label: "Preview", sref: ".preview"});
         this.feed =this.defineFeedService.getFeed();
+        if(this.feed.isDataTransformation()){
+            this.selectionService.multiSelectionStrategy();
+        }
+        else {
+            this.selectionService.singleSelectionStrategy();
+        }
         this.step = this.feed.steps.find(step => step.systemName == FeedStepConstants.STEP_SOURCE_SAMPLE);
         this.step.visited = true;
 
@@ -113,6 +111,10 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
             console.log("SET preview paths to be ",this.paths);
         }
 
+        isSingleSelectionPolicy(){
+        return this.selectionService.hasPolicy(SingleSelectionPolicy);
+        }
+
     onDatasetAdd(dataset:PreviewDataSet){
         if(this.warnIfSourceChanges && this.previewDatasetCollectionService.datasetCount() >0 && !this.previewDatasetCollectionService.exists(dataset)){
             this._dialogService.openConfirm({
@@ -125,7 +127,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
             }).afterClosed().subscribe((accept: boolean) => {
                 if (accept) {
                     //remove all existing datasets if we are using the singleselection
-                    if(this.singleNodeSelection){
+                    if(this.isSingleSelectionPolicy()){
                         this.previewDatasetCollectionService.reset();
                     }
                     this.previewDatasetCollectionService.addDataSet(dataset);
@@ -135,7 +137,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
             });
         }
         else {
-            if(this.singleNodeSelection){
+            if(this.isSingleSelectionPolicy()){
                 this.previewDatasetCollectionService.reset();
             }
             this.previewDatasetCollectionService.addDataSet(dataset);

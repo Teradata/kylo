@@ -57,7 +57,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {TranslateModule} from "@ngx-translate/core";
 //import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
-import {VisualQueryNg2Module} from "../../visual-query/visual-query-ng2.module";
+import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 
 
@@ -127,7 +127,7 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         MatDialogModule,
         PropertyListModule,
         TranslateModule,
-        VisualQueryNg2Module,
+        VisualQueryModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

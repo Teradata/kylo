@@ -1,23 +1,20 @@
-import * as angular from "angular";
+import {Component, Inject, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {MatStepper} from "@angular/material/stepper";
 
+import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
 import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {QueryEngine} from "./wrangler/query-engine";
-import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
-
-import {Component, Input, Injector, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-
-import {StateRegistry, StateService} from "@uirouter/angular";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
-import {MatStepper} from "@angular/material/stepper";
 
 @Component({
     selector: 'visual-query-stepper',
+    styleUrls: ['js/feed-mgr/visual-query/visual-query-stepper.component.css'],
     templateUrl: 'js/feed-mgr/visual-query/visual-query-stepper.component.html'
 })
-export class VisualQueryStepperComponent implements OnInit, OnDestroy{
+export class VisualQueryStepperComponent implements OnInit, OnDestroy {
 
-    static LOADER = "VisualQueryComponent.LOADER";
+    static readonly LOADER = "VisualQueryComponent.LOADER";
 
     /**
      * Query engine and data transformation model
@@ -28,33 +25,31 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy{
      * Query engine for the data model
      */
     @Input()
-    engineName:string;
+    engineName: string;
 
     @ViewChild("stepper")
-    stepper:MatStepper;
+    stepper: MatStepper;
 
     /**
      * Allow the user to change data sources and query for tables/files etc
      * This will be disabled when using the new ng2 feed stepper coming from a data wrangler feed as those are populated via the PreviewdatasetCollectionService
      */
     @Input()
-    showDatasources:boolean = true;
-
+    showDatasources: boolean = true;
 
     /**
      * Should we show the save step?
      */
     @Input()
-    showSaveStep:boolean = true;
+    showSaveStep: boolean = true;
 
     @Input()
-    toggleSideNavOnDestroy:boolean = true;
+    toggleSideNavOnDestroy: boolean = true;
 
     /**
      * The Query Engine
      */
-    engine:QueryEngine<any>;
-
+    engine: QueryEngine<any>;
 
     /**
      * Form Group for the drag and drop build query
@@ -71,27 +66,17 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy{
      */
     saveStepFormGroup: FormGroup;
 
-    private queryEngineFactory:QueryEngineFactory;
-
-    private stateService: any;
-
-    private sideNavService:any;
-
-    private previewDataSetCollectionService : PreviewDatasetCollectionService
-
-     /**
+    /**
      * Constructs a {@code VisualQueryComponent}.
      */
-    constructor(private _formBuilder: FormBuilder,
-                private $$angularInjector: Injector) {
+    constructor(private _formBuilder: FormBuilder, @Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
+                @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
+                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory) {
         // Manage the sidebar navigation
-         this.previewDataSetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
-        console.log("PreviewDatasetCollectionService",this.previewDataSetCollectionService.datasets)
-        this.sideNavService = $$angularInjector.get("SideNavService");
-         this.stateService = $$angularInjector.get("StateService");
+        console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
 
-         this.sideNavService.hideSideNav();
-         this.initFormGroups();
+        this.sideNavService.hideSideNav();
+        this.initFormGroups();
     }
 
     /**
@@ -105,41 +90,34 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy{
      * Resets the side state.
      */
     ngOnDestroy(): void {
-        if(this.toggleSideNavOnDestroy) {
+        if (this.toggleSideNavOnDestroy) {
             this.sideNavService.showSideNav();
         }
     }
 
     ngOnInit(): void {
-
         this.getEngine();
         this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
         let collection = this.previewDataSetCollectionService.getSparkDataSets();
         this.dataModel.model.datasets = collection;
-        console.log('collection',collection)
-
-
+        console.log('collection', collection)
     }
 
-    getEngine(){
-        this.queryEngineFactory = this.$$angularInjector.get("VisualQueryEngineFactory");
-        if(this.engineName == undefined) {
+    getEngine() {
+        if (this.engineName == undefined) {
             this.engineName = 'spark';
         }
-        this.queryEngineFactory.getEngine(this.engineName).then((engine:QueryEngine<any>) => {
+        this.queryEngineFactory.getEngine(this.engineName).then((engine: QueryEngine<any>) => {
             this.engine = engine;
         });
     }
 
-
-    private initFormGroups(){
-        this.buildQueryFormGroup = this._formBuilder.group({
-        });
+    private initFormGroups() {
+        this.buildQueryFormGroup = this._formBuilder.group({});
         this.transformDataFormGroup = this._formBuilder.group({
             secondCtrl: ['', Validators.required]
         });
         this.saveStepFormGroup = this._formBuilder.group({});
     }
-
 }
 

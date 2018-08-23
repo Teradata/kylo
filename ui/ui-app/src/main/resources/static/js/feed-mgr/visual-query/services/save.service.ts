@@ -1,3 +1,4 @@
+import {Injectable} from "@angular/core";
 import * as angular from "angular";
 import "rxjs/add/operator/share";
 import {Observable} from "rxjs/Observable";
@@ -7,8 +8,6 @@ import {Subscription} from "rxjs/Subscription";
 import {KyloNotification, NotificationService} from "../../../services/notification.service";
 import {QueryEngine} from "../wrangler";
 import {SaveRequest, SaveResponse, SaveResponseStatus} from "../wrangler/api/rest-model";
-
-import {moduleName} from "../module-name";
 
 /**
  * Event for when a notification is removed.
@@ -21,6 +20,7 @@ export interface RemoveEvent {
 /**
  * Handles saving a transformation.
  */
+@Injectable()
 export class VisualQuerySaveService {
 
     /**
@@ -116,7 +116,7 @@ export class VisualQuerySaveService {
         let notification = this.notifications[response.id];
         if (notification == null && response.status !== SaveResponseStatus.SUCCESS) {
             notification = this.notificationService.addNotification(this.getMessage(request), "transform");
-            notification.loading = (response.status === SaveResponseStatus.PENDING || response.status === SaveResponseStatus.LIVY_PENDING );
+            notification.loading = (response.status === SaveResponseStatus.PENDING || response.status === SaveResponseStatus.LIVY_PENDING);
             this.notifications[response.id] = notification;
         }
 
@@ -144,6 +144,3 @@ export class VisualQuerySaveService {
         }
     }
 }
-
-angular.module(moduleName)
-    .service("VisualQuerySaveService", VisualQuerySaveService);

@@ -1,5 +1,5 @@
 import {ValidatorFn} from "@angular/forms/src/directives/validators";
-import {FieldConfig} from "../model/FieldConfig";
+import {FieldConfig, GetErrorMessage, NgIfCallback, OnFieldChange} from "../model/FieldConfig";
 import {Select} from "../model/Select";
 import {Textarea} from "../model/Textarea";
 import {RadioButton} from "../model/RadioButton";
@@ -9,6 +9,9 @@ import {SectionHeader} from "../model/SectionHeader";
 import {Checkbox} from "../model/Checkbox";
 import {ObjectUtils} from "../../../../common/utils/object-utils";
 import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
+import {FormGroup} from "@angular/forms";
+
+
 
 export abstract class FieldConfigBuilder<T> {
     private value: any;
@@ -21,12 +24,18 @@ export abstract class FieldConfigBuilder<T> {
     private readonlyValue: string;
     private modelValueProperty: string;
     private pattern?: string;
-    private onModelChange?: Function;
+    private onModelChange?: OnFieldChange;
     private validators?: ValidatorFn[] | null;
     private disabled?: boolean;
     private placeHolderLocaleKey:string;
     private styleClass:string;
     private formGroupBuilder?:DynamicFormFieldGroupBuilder
+
+    private ngIfCallback ?:NgIfCallback;
+
+    private getErrorMessage ?:GetErrorMessage;
+
+
 
     protected constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         this.formGroupBuilder = formGroupBuilder;
@@ -37,6 +46,16 @@ export abstract class FieldConfigBuilder<T> {
 
     done() : DynamicFormFieldGroupBuilder{
         return this.formGroupBuilder;
+    }
+
+    ngIf(callback:NgIfCallback, bind?:any){
+        if(bind) {
+            this.ngIfCallback = callback.bind(bind);
+        }
+        else {
+            this.ngIfCallback = callback;
+        }
+        return this;
     }
 
     setStyleClass(value:string){
@@ -72,6 +91,10 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
+    setErrorMessageLookup(value:GetErrorMessage){
+        this.getErrorMessage = value;
+        return this;
+    }
 
     setPlaceholder(value: string) {
         this.placeholder = value;
@@ -98,8 +121,13 @@ export abstract class FieldConfigBuilder<T> {
         return this;
     }
 
-    setOnModelChange(value: Function) {
-        this.onModelChange = value;
+    onChange(value: OnFieldChange, bind?:any) {
+        if(bind) {
+            this.onModelChange = value.bind(bind);
+        }
+        else {
+            this.onModelChange = value;
+        }
         return this;
     }
 
@@ -126,8 +154,29 @@ export abstract class FieldConfigBuilder<T> {
         this.model = value;
         return this;
     }
+    
+    update<B extends FieldConfigBuilder<any>>(builder:B){
+             this.key = builder.key;
+             this.required = builder.required;
+             this.placeholder = builder.placeholder;
+             this.value = builder.value;
+             this.hint = builder.hint;
+             this.validators = builder.validators;
+             this.model = builder.model;
+             this.modelValueProperty = builder.modelValueProperty;
+             this.onModelChange = builder.onModelChange;
+             this.pattern = builder.pattern;
+             this.order = builder.order;
+             this.readonlyValue = builder.readonlyValue;
+             this.disabled = builder.disabled;
+             this.placeHolderLocaleKey = builder.placeHolderLocaleKey;
+             this.styleClass =builder.styleClass;
+             this.ngIfCallback =builder.ngIfCallback;
+             this.getErrorMessage =builder.getErrorMessage
+        return this;
+    }
 
-    buildOptions(): any {
+    protected buildOptions(): any {
         let option: any = {
             key: this.key,
             required: this.required,
@@ -143,7 +192,9 @@ export abstract class FieldConfigBuilder<T> {
             readonlyValue: this.readonlyValue,
             disabled: this.disabled,
             placeholderLocaleKey:this.placeHolderLocaleKey,
-            styleClass:this.styleClass
+            styleClass:this.styleClass,
+            ngIf:this.ngIfCallback,
+            getErrorMessage:this.getErrorMessage
         }
         return option;
     }
@@ -156,6 +207,22 @@ export abstract class FieldConfigBuilder<T> {
     }
 }
 
+export class ConfigurationFieldBuilder extends FieldConfigBuilder<any> {
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
+    }
+
+    getObjectType(): any {
+        return "ConfigurationFieldBuilder";
+    }
+
+    build():any{
+        //override.
+        console.log("ConfigurationFieldBuilder cant be built ")
+    }
+
+}
 
     export class SelectFieldBuilder extends FieldConfigBuilder<Select> {
 
@@ -172,12 +239,19 @@ export abstract class FieldConfigBuilder<T> {
             return this;
         }
 
+        setOptionsArray(options:any[]){
+            this.options = options.map(item => {
+                return {label:item,value:item};
+            });
+            return this;
+        }
+
         addOption(label: string, value: string): SelectFieldBuilder{
             this.options.push({label: label, value: value});
             return this;
         }
 
-        buildOptions(){
+        protected buildOptions(){
             let options = super.buildOptions();
             options.options = this.options;
             return options;
@@ -209,7 +283,7 @@ export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.options = this.options;
         return options;
@@ -246,7 +320,7 @@ export class CheckboxFieldBuilder extends FieldConfigBuilder<Checkbox> {
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.trueValue = this.trueValue;
         options.falseValue = this.falseValue;
@@ -258,6 +332,7 @@ export class CheckboxFieldBuilder extends FieldConfigBuilder<Checkbox> {
 export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
 
     type:InputType;
+    private readonly:boolean;
 
     public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         super(formGroupBuilder)
@@ -267,14 +342,20 @@ export class InputTextFieldBuilder extends FieldConfigBuilder<InputText> {
         return InputText;
     }
 
+
+    setReadonly(value:boolean){
+        this.readonly = value;
+        return this;
+    }
     setType(type:InputType):InputTextFieldBuilder{
         this.type = type;
         return this;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.type = this.type;
+        options.readonly = this.readonly;
         return options;
     }
 }
@@ -295,7 +376,7 @@ export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
         return SectionHeader;
     }
 
-    buildOptions(){
+    protected buildOptions(){
         let options = super.buildOptions();
         options.showDivider = this.showDivider;
         return options;
@@ -304,12 +385,25 @@ export  class SectionHeaderBuilder extends FieldConfigBuilder<SectionHeader> {
 
 export  class TextareaFieldBuilder extends FieldConfigBuilder<Textarea> {
 
+    private readonly:boolean;
+
     public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         super(formGroupBuilder)
     }
 
     getObjectType():any {
         return Textarea;
+    }
+
+    setReadonly(value:boolean) {
+        this.readonly = value;
+        return this;
+    }
+
+    protected buildOptions(){
+        let options = super.buildOptions();
+        options.readonly = this.readonly;
+        return options;
     }
 
 }

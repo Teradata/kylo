@@ -1,4 +1,5 @@
-<div fxLayout="column" fxFlex [class.visual-query-auto-complete-centered]="chartViewModel.data.nodes.length ==0" [class.visual-query-auto-complete-top]="chartViewModel.data.nodes.length >0">
+<div fxLayout="column" fxFlex="1 1 auto" [class.visual-query-auto-complete-centered]="chartViewModel.data.nodes.length ==0" [class.visual-query-auto-complete-top]="chartViewModel.data.nodes.length >0"
+     class="layout-full">
   <div *ngIf="error != null"  class="visual-query-error" fxLayout="row">
     <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
     <div fxLayout="column">
@@ -7,10 +8,10 @@
     </div>
   </div>
 
-  <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular">
-    <form [formGroup]="form">
-      <div fxLayout="column">
-        <div fxLayout="row" fxLayoutAlign="center start" fxFlex *ngIf="showDatasources && !advancedMode">
+  <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
+    <form [formGroup]="form" fxFlex="1 1 auto" fxLayout="column">
+      <div fxLayout="column" fxFlex="1 1 auto">
+        <div fxLayout="row" fxLayoutAlign="center start" fxFlex="0 0 auto" *ngIf="showDatasources && !advancedMode">
 
           <mat-form-field >
             <mat-select formControlName="datasource" placeholder="Datasource">
@@ -60,18 +61,15 @@
 
         </div>
 
-      <div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture [hidden]="chartViewModel.data.nodes.length == 0 || advancedMode == true">
+      <div class="visual-query-canvas" style="margin-top:8px;" fxLayout="column" fxFlex="1 1 auto" mouse-capture [fxHide]="chartViewModel.data.nodes.length == 0 || advancedMode == true">
         <div class="svg-container" >
-          <flow-chart class="flowchart" id="visual-query-canvas" #flowChart
-                      [chart]="chartViewModel">
-          </flow-chart>
+          <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
         </div>
       </div>
       </div>
 
       <ng-template *ngIf="chartViewModel.data.nodes.length == 0 && !showDatasources">
-         No tables have been selected.  Please complete all previous sections before attempting to transfomr the data.
-
+        No tables have been selected.  Please complete all previous sections before attempting to transform the data.
       </ng-template>
     </form>
   </ng-template>

@@ -1,37 +1,29 @@
-import {Component, ElementRef, Inject, Injector, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
-import * as angular from "angular";
-import * as _ from "underscore";
-import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {DatasourcesServiceStatic, TableSchema} from "../wrangler";
-import {UserDatasource} from "../../model/user-datasource";
-import {QueryEngine} from "../wrangler/query-engine";
-import {SchemaField} from "../wrangler";
-import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
-import {SparkDataSet} from "../../model/spark-data-set.model";
-
-import { DOCUMENT } from '@angular/common';
-
-import {TdDialogService} from "@covalent/core/dialogs";
-import SideNavService from "../../../services/SideNavService";
-import {VisualQueryService} from "../../services/VisualQueryService";
-import {DatasourcesService} from "../../services/DatasourcesService";
-import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
-import {HiveService} from "../../services/HiveService";
-import {TdLoadingService} from "@covalent/core/loading";
+import {Component, Inject, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
-import {Observable} from "rxjs/Observable";
-import {map, startWith, flatMap} from 'rxjs/operators';
+import {MatStepper} from "@angular/material/stepper";
+import {TdDialogService} from "@covalent/core/dialogs";
+import {TdLoadingService} from "@covalent/core/loading";
 import 'rxjs/add/observable/fromPromise';
-import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/map';
-import {FlowChart} from "./flow-chart/model/flow-chart.model";
-
-import {Category} from "../../model/category/category.model";
-import {FlowChartComponent} from "./flow-chart/flow-chart.component";
+import 'rxjs/add/operator/toPromise';
+import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
-import {MatStepper} from "@angular/material/stepper";
+import * as _ from "underscore";
+
+import SideNavService from "../../../services/SideNavService";
+import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {SparkDataSet} from "../../model/spark-data-set.model";
+import {UserDatasource} from "../../model/user-datasource";
+import {DatasourcesService} from "../../services/DatasourcesService";
+import {HiveService} from "../../services/HiveService";
+import {VisualQueryService} from "../../services/VisualQueryService";
+import {DatasourcesServiceStatic, SchemaField, TableSchema} from "../wrangler";
+import {QueryEngine} from "../wrangler/query-engine";
+import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
+import {FlowChartComponent} from "./flow-chart/flow-chart.component";
+import {FlowChart} from "./flow-chart/model/flow-chart.model";
 
 /**
  * Code for the delete key.
@@ -64,9 +56,9 @@ const ESC_KEY_CODE = 27;
  * - Advanced Mode - A textarea is provided for the user to input their query.
  */
 @Component({
-    selector:'build-query-ng2',
-    styleUrls:["js/feed-mgr/visual-query/build-query/build-query-ng2.component.css"],
-    templateUrl:"js/feed-mgr/visual-query/build-query/build-query-ng2.component.html",
+    selector: 'build-query-ng2',
+    styleUrls: ["js/feed-mgr/visual-query/build-query/build-query-ng2.component.css"],
+    templateUrl: "js/feed-mgr/visual-query/build-query/build-query-ng2.component.html",
     host: {
         '(document:keyup)': '_keyup($event)',
         '(document:keydown)': '_keydown($event)',
@@ -92,16 +84,16 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      * when used in the Visual Query this will be true
      */
     @Input()
-    showDatasources?:boolean = true;
+    showDatasources?: boolean = true;
 
     @Input()
-    stepper:MatStepper;
+    stepper: MatStepper;
 
     /**
      * The form for the page
      */
     @Input()
-    form:FormGroup;
+    form: FormGroup;
 
     /**
      * Indicates if the UI is in advanced mode
@@ -121,15 +113,13 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     /**
      * Model for the chart.
      */
-    chartViewModel: any = {data:{nodes:[]},nodes:[],connections:[]}
+    chartViewModel: any = {data: {nodes: []}, nodes: [], connections: []}
 
     /**
      * Indicates that there was an error retrieving the list of tables.
      * @type {boolean} true if there was an error or false otherwise
      */
     databaseConnectionError: boolean = false;
-
-
 
     /**
      * Error message to be displayed.
@@ -156,8 +146,6 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     loadingSchema: boolean = false;
 
-
-
     /**
      * Next node id.
      */
@@ -174,10 +162,8 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     selectedColumnsAndTables: any = [];
 
-
     @ViewChild("flowChart")
-    flowChart:FlowChartComponent
-
+    flowChart: FlowChartComponent;
 
     /**
      * Aysnc autocomplete list of tables
@@ -189,23 +175,17 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     private nativeDataSourceIds: string[] = [];
 
-    private fileDataSource : UserDatasource = {id:"FILE",name:"Local File", description:"Local File",type:"File"}
+    private fileDataSource: UserDatasource = {id: "FILE", name: "Local File", description: "Local File", type: "File"}
 
     /**
      * flag to indicate the ctrl key is pressed
      */
-    ctrlDown:boolean;
-
-
-    private hiveService: HiveService;
-    private sideNavService: SideNavService;
-    private visualQueryService: VisualQueryService;
-    private datasourcesService: DatasourcesService;
+    ctrlDown: boolean;
 
     //callbacks
-    onCreateConnectionSubscription:ISubscription;
-    onEditConnectionSubscription:ISubscription
-    onDeleteConnectionSubscription:ISubscription
+    onCreateConnectionSubscription: ISubscription;
+    onEditConnectionSubscription: ISubscription;
+    onDeleteConnectionSubscription: ISubscription;
 
     /**
      * Constructs a {@code BuildQueryComponent}.
@@ -214,39 +194,34 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     constructor(private _dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,
-                private _loadingService:TdLoadingService,
-                private $$angularInjector: Injector) {
-        //Services loaded this way instead of di construct injection is because we get an Angular 1 error $inject called before Angular is loaded
-        //once these services are moved to pure ng2 it should fix that
-
-        this.hiveService = this.$$angularInjector.get("HiveService");
-        this.sideNavService = this.$$angularInjector.get("SideNavService");
-        this.visualQueryService = this.$$angularInjector.get("VisualQueryService");
-        this.datasourcesService = this.$$angularInjector.get("DatasourcesService");
-
+                private _loadingService: TdLoadingService,
+                @Inject("HiveService") private hiveService: HiveService,
+                @Inject("SideNavService") private sideNavService: SideNavService,
+                @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
+                @Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
         // Setup environment
         //this.heightOffset = $element.attr("height-offset");
         this.sideNavService.hideSideNav();
     }
 
-    private initFormComponents(){
-        if(this.form == undefined){
+    private initFormComponents() {
+        if (this.form == undefined) {
             this.form = new FormGroup({});
         }
 
-        if(this.showDatasources) {
+        if (this.showDatasources) {
             let datasource = new FormControl();
             this.form.addControl("datasource", datasource);
-            datasource.valueChanges.subscribe((datasourceId:string) => {
+            datasource.valueChanges.subscribe((datasourceId: string) => {
                 this.model.$selectedDatasourceId = datasourceId;
                 this.onDatasourceChange();
             });
 
 
             let tableAutocomplete = new FormControl();
-            this.form.addControl("tableAutocomplete",tableAutocomplete);
+            this.form.addControl("tableAutocomplete", tableAutocomplete);
 
-            this.filteredTables = tableAutocomplete.valueChanges.debounceTime(100).flatMap((text:string) => {
+            this.filteredTables = tableAutocomplete.valueChanges.debounceTime(100).flatMap((text: string) => {
                 return <Observable<any>> Observable.fromPromise(this.onAutocompleteQuerySearch(text));
             });
         }
@@ -292,7 +267,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     onAddTable() {
         this.sideNavService.hideSideNav();
         let table = this.form.get('tableAutocomplete').value;
-        if(table) {
+        if (table) {
             this.onTableClick(table);
             this.form.get('tableAutocomplete').reset('');
         }
@@ -311,7 +286,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                 if (supportedDatasources.length > 0) {
                     return supportedDatasources;
                 } else {
-                    const supportedNames = ((supportedNameList) =>{
+                    const supportedNames = ((supportedNameList) => {
                         if (supportedNameList.length === 0) {
                             return "";
                         } else if (supportedNameList.length === 1) {
@@ -329,6 +304,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                 this.availableDatasources.push(this.fileDataSource);
                 if (this.model.$selectedDatasourceId == null) {
                     this.model.$selectedDatasourceId = datasources[0].id;
+                    this.form.get("datasource").setValue(this.model.$selectedDatasourceId);
                 }
                 this.validate();
             })
@@ -348,7 +324,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         }
     }
 
-    private _keyup(evt:KeyboardEvent){
+    private _keyup(evt: KeyboardEvent) {
         if (evt.keyCode === DELETE_KEY_CODE) {
             //
             // Delete key.
@@ -378,15 +354,14 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     }
 
 
-
-    addPreviewDataSets(){
-        if(this.model.datasets && this.model.datasets.length >0){
-            this.model.datasets.forEach((dataset :SparkDataSet)=> {
-                let tableSchema :any = {};
+    addPreviewDataSets() {
+        if (this.model.datasets && this.model.datasets.length > 0) {
+            this.model.datasets.forEach((dataset: SparkDataSet) => {
+                let tableSchema: any = {};
                 tableSchema.schemaName = dataset.id;
                 tableSchema.name = dataset.id;
                 tableSchema.fields = dataset.schema.map(tableColumn => {
-                    let field :any= {};
+                    let field: any = {};
                     field.name = tableColumn.name;
                     field.description = null;
                     field.nativeDataType = tableColumn.dataType;
@@ -396,16 +371,13 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                 });
                 let nodeName = tableSchema.name;
 
-                this.addDataSetToCanvas(dataset.dataSource.id,nodeName,tableSchema, dataset);
+                this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
 
             });
 
 
-
         }
     }
-
-
 
     /**
      * Initialize the model for the FlowChart.
@@ -431,21 +403,18 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         // Create view model
         this.chartViewModel = new FlowChart.ChartViewModel(chartDataModel);
 
-        this.onCreateConnectionSubscription = this.chartViewModel.onCreateConnection$.subscribe(this.onCreateConnectionCallback.bind(this))
-        this.onEditConnectionSubscription = this.chartViewModel.onEditConnection$.subscribe(this.onEditConnectionCallback.bind(this))
+        this.onCreateConnectionSubscription = this.chartViewModel.onCreateConnection$.subscribe(this.onCreateConnectionCallback.bind(this));
+        this.onEditConnectionSubscription = this.chartViewModel.onEditConnection$.subscribe(this.onEditConnectionCallback.bind(this));
         this.onDeleteConnectionSubscription = this.chartViewModel.onDeleteSelected$.subscribe(this.onDeleteSelectedCallback.bind(this))
-
-     //   , this.onCreateConnectionCallback.bind(this), this.onEditConnectionCallback.bind(this),
-      //      this.onDeleteSelectedCallback.bind(this));
     }
 
-    onDatasourceChange(){
+    onDatasourceChange() {
         //clear the autocomplete
         this.form.get('tableAutocomplete').reset('');
 
-        if(this.model.$selectedDatasourceId == 'FILE'){
+        if (this.model.$selectedDatasourceId == 'FILE') {
             //warn if the user has other items
-            if(this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length >0) ){
+            if (this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length > 0)) {
                 //WARN if you upload a file you will lose your other data
 
                 this._dialogService.openConfirm({
@@ -458,7 +427,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                     width: '500px', //OPTIONAL, defaults to 400px
                 }).afterClosed().subscribe((accept: boolean) => {
                     if (accept) {
-                        this.chartViewModel.nodes= [];
+                        this.chartViewModel.nodes = [];
                         this.model.chartViewModel = null;
                     } else {
                         this.model.$selectedDatasourceId = this.availableDatasources[0].id;
@@ -500,7 +469,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             this.model.chartViewModel = null;
             this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
-        } else if (this.model.$selectedDatasourceId =='FILE'){
+        } else if (this.model.$selectedDatasourceId == 'FILE') {
             this.isValid = this.model.sampleFile != undefined;
         } else if (this.chartViewModel.nodes != null) {
             this.isValid = (this.chartViewModel.nodes.length > 0);
@@ -572,14 +541,11 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                     width: '500px', //OPTIONAL, defaults to 400px
                 }).afterClosed().subscribe((accept: boolean) => {
                     if (accept) {
-                       goAdvanced();
+                        goAdvanced();
                     } else {
                         //nada
                     }
                 });
-
-
-
 
 
             } else {
@@ -668,23 +634,21 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
 
         //get attributes for table
         const datasourceId = this.model.$selectedDatasourceId;
-        const nodeName = table.schema + "." + table.tableName;
         this.getTableSchema(table.schema, table.tableName).then((schemaData: TableSchema) => {
             let nodeName = schemaData.schemaName + "." + schemaData.name;
-            this.addDataSetToCanvas(datasourceId, nodeName,schemaData)
+            this.addDataSetToCanvas(datasourceId, nodeName, schemaData)
         });
 
     };
 
-
-    private addDataSetToCanvas(datasourceId:string,nodeName:string,tableSchema:TableSchema, dataset?:SparkDataSet){
+    private addDataSetToCanvas(datasourceId: string, nodeName: string, tableSchema: TableSchema, dataset?: SparkDataSet) {
         //
         // Template for a new node.
         //
 
         const coord = this.getNewXYCoord();
 
-        _.each(tableSchema.fields,  (field: SchemaField) =>{
+        _.each(tableSchema.fields, (field: SchemaField) => {
             field.selected = true;
             if (this.engine.useNativeDataType) {
                 field.dataTypeWithPrecisionAndScale = field.nativeDataType.toLowerCase();
@@ -694,7 +658,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             name: nodeName,
             id: this.nextNodeID++,
             datasourceId: datasourceId,
-            dataset:dataset,
+            dataset: dataset,
             x: coord.x,
             y: coord.y,
             nodeAttributes: {
@@ -741,14 +705,14 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     /**
      * When a connection is edited
      */
-    onEditConnectionCallback(response:FlowChart.ConnectionCallbackResponse) {
+    onEditConnectionCallback(response: FlowChart.ConnectionCallbackResponse) {
         this.showConnectionDialog(false, response.connectionViewModel, response.connectionDataModel, response.src, response.dest);
     };
 
     /**
      * When a connection is created
      */
-    onCreateConnectionCallback(response:FlowChart.ConnectionCallbackResponse) {
+    onCreateConnectionCallback(response: FlowChart.ConnectionCallbackResponse) {
         // Ensure connection is unique
         let newDestID = response.dest.data.id;
         let newSourceID = response.src.data.id;
@@ -771,8 +735,6 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                 });
 
 
-
-
                 return;
             }
         }
@@ -792,36 +754,37 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     showConnectionDialog(isNew: any, connectionViewModel: any, connectionDataModel: any, source: any, dest: any) {
         this.chartViewModel.deselectAll();
 
-        let config :ConnectionDialogConfig = {  isNew: isNew,
+        let config: ConnectionDialogConfig = {
+            isNew: isNew,
             connectionViewModel: connectionViewModel,
             connectionDataModel: connectionDataModel,
             source: source,
-            dest: dest};
+            dest: dest
+        };
 
         return this._dialogService.open(ConnectionDialog, {data: config, panelClass: "full-screen-dialog"})
-            .afterClosed().subscribe((response:ConnectionDialogResponse) => {
-                if(response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL){
+            .afterClosed().subscribe((response: ConnectionDialogResponse) => {
+                if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {
                     connectionViewModel.select();
                     this.chartViewModel.deleteSelected();
                 }
-                else if(response.status == ConnectionDialogResponseStatus.SAVE) {
-                   // connectionDataModel = response.connectionDataModel;
+                else if (response.status == ConnectionDialogResponseStatus.SAVE) {
+                    // connectionDataModel = response.connectionDataModel;
                     let viewConnection = this.chartViewModel.findConnection(response.id);
                     viewConnection.data.joinType = response.joinType;
                     viewConnection.data.name = response.connectionName;
                     viewConnection.data.joinKeys.sourceKey = response.source;
                     viewConnection.data.joinKeys.destKey = response.dest;
-                    let i = 0;
                 }
                 this.validate()
-        })
+            })
     }
 
     /**
      * callback after a user selects a file from the local file system
      */
-    onFileUploaded(){
-       this.goForward();
+    onFileUploaded() {
+        this.goForward();
     }
 
     // -----------------
@@ -836,13 +799,13 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
 
         //cancel subscriptions
 
-        if(this.onCreateConnectionSubscription){
+        if (this.onCreateConnectionSubscription) {
             this.onCreateConnectionSubscription.unsubscribe();
         }
-        if(this.onEditConnectionSubscription){
+        if (this.onEditConnectionSubscription) {
             this.onEditConnectionSubscription.unsubscribe();
         }
-        if(this.onDeleteConnectionSubscription){
+        if (this.onDeleteConnectionSubscription) {
             this.onDeleteConnectionSubscription.unsubscribe();
         }
     }
@@ -893,22 +856,14 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     }
 
     /**
-     * Finish initializing after data-bound properties are initialized.
-     */
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
-
-    /**
      * Search the list of table names.
      */
-    onAutocompleteQuerySearch(txt: any) :Promise<DatasourcesServiceStatic.TableReference[]> {
-        let promise:Promise<DatasourcesServiceStatic.TableReference[]> = null;
+    onAutocompleteQuerySearch(txt: any): Promise<DatasourcesServiceStatic.TableReference[]> {
+        let promise: Promise<DatasourcesServiceStatic.TableReference[]> = null;
         const tables = this.engine.searchTableNames(txt, this.model.$selectedDatasourceId);
         if (tables instanceof Promise) {
             promise = tables;
-             tables.then( (tables: any) => {
+            tables.then((tables: any) => {
                 this.databaseConnectionError = false;
                 return tables;
             }, () => {
@@ -919,41 +874,19 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         else {
             promise = Observable.of(tables).toPromise();
         }
-         return promise;
+        return promise;
 
     }
 
     onAutocompleteRefreshCache() {
-        const successFn = () => {
-           let searchText =  this.form.get('tableAutocomplete').value;
-          // angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
-        };
-        const errorFn = () => {
-        };
-        this.hiveService.refreshTableCache().then(successFn, errorFn);
+        this.hiveService.refreshTableCache();
     }
 
-    goBack(){
+    goBack() {
         this.stepper.previous();
     }
 
-    goForward(){
+    goForward() {
         this.stepper.next();
     }
 }
-/*
-angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
-    bindings: {
-        engine: "=",
-        heightOffset: "@",
-        model: "=",
-        stepIndex: "@"
-    },
-    controller: QueryBuilderComponent,
-    controllerAs: "$bq",
-    require: {
-        stepperController: "^thinkbigStepper"
-    },
-    templateUrl: "js/feed-mgr/visual-query/build-query/build-query.component.html"
-});
-*/

@@ -1,3 +1,4 @@
+import {Injectable} from "@angular/core";
 import * as angular from "angular";
 import * as _ from "underscore";
 
@@ -5,11 +6,10 @@ import {TransformValidationResult} from "../../wrangler/model/transform-validati
 import {PageSpec} from "../../wrangler/query-engine";
 import {ScriptState} from "../../wrangler";
 
-import {moduleName} from "../../module-name";
-
 const PAGE_ROWS = 64;
 const PAGE_COLS = 1000;
 
+@Injectable()
 export class WranglerDataService {
 
     /**
@@ -28,15 +28,10 @@ export class WranglerDataService {
 
     isLoading: boolean;
 
-
     /**
      * Table state (function index) for
      */
     state: number;
-
-    constructor(private $rootscope: any, private $q: angular.IQService) {
-
-    }
 
     cellPageName(i: number, j: number): string {
         var I = (i / PAGE_ROWS) | 0;
@@ -130,7 +125,3 @@ export class WranglerDataService {
 
 
 }
-
-angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q",  WranglerDataService]);
-
-

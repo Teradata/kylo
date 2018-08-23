@@ -1,6 +1,6 @@
 <div [formGroup]="form" fxLayout="column">
 
-  <div *ngIf="readonly" fxLayout="column">
+  <div *ngIf="readonly && field.ngIf(form) == true" fxLayout="column">
 
     <section class="mat-typography" *ngIf="field.controlType == 'section-header'">
       <h3  class="subheading-2">{{field.placeholder}}</h3>
@@ -18,7 +18,7 @@
 
   </div>
 
-  <div [ngSwitch]="field.controlType" *ngIf="!readonly" fxLayout="column" class="{{field.styleClass}}">
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly && field.ngIf(form) == true" fxLayout="column"  class="{{field.styleClass}}">
 
     <section class="pad-top-sm" *ngSwitchCase="'section-header'">
       <mat-divider *ngIf="field.showDivider"></mat-divider>
@@ -26,7 +26,7 @@
     </section>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
-      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern">
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly">
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
@@ -48,7 +48,7 @@
 
     <div *ngSwitchCase="'checkbox'" class="pad-top-sm">
       <mat-checkbox
-          [id]="field.key" [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.label}}
+          [id]="field.key"  [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
       </mat-checkbox>
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
@@ -69,7 +69,7 @@
     </div>
 
     <mat-form-field *ngSwitchCase="'textarea'" class="pad-top-sm">
-    <textarea matInput [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder">
+    <textarea matInput [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder" [readonly]="field.readonly">
         {{field.model[field['modelValueProperty']]}}
     </textarea>
       <mat-error *ngIf="!isValid">

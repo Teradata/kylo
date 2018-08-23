@@ -167,6 +167,7 @@ System.config({
         "lz-string": "bower:lz-string/libs/lz-string.min",
         "moment":"bower:moment/min/moment.min",
         'ng-fx':"bower:ngFx/dist/ngFx.min",
+        "ng2-codemirror": "npm:ng2-codemirror/lib/index",
         "nvd3": "bower:nvd3/build/nv.d3.min",
         "ocLazyLoad":"bower:oclazyload/dist/ocLazyLoad.require",
         "pivottable": "bower:pivottable/dist/pivot.min",

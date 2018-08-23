@@ -660,7 +660,7 @@
     "views.query-table-header.format": "Format",
     "views.query-table-header.ml": "Prepare",
     "views.query-table-header.extract": "Extract",
-    "views.query-table-header.math": "Math",
+    "views.query-table-header.calculate": "Calculate",
     "views.query-table-header.replace": "Replace",
     "views.query-table-header.other": "Other",
     "views.query-table-header.analyze": "Analyze...",

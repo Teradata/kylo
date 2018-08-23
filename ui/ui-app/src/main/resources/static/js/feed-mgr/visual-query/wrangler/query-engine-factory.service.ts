@@ -1,5 +1,4 @@
-import {Compiler, Injectable, Injector, NgModuleRef, Type} from "@angular/core";
-import * as angular from "angular";
+import {Compiler, Injectable, Injector, NgModuleRef, ReflectiveInjector, Type} from "@angular/core";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/operator/do";
 import "rxjs/add/operator/map";
@@ -10,14 +9,14 @@ import {Observable} from "rxjs/Observable";
 
 import {WranglerModule} from "./core/wrangler.module";
 import {QueryEngine} from "./query-engine";
-import {moduleName} from "../module-name";
+
+declare const SystemJS: any;
 
 /**
  * Map of wrangler engine name to implementation.
  */
 type QueryEngineRef = Type<any> | string;
 const ENGINES: { [name: string]: QueryEngineRef } = {};
-
 
 
 /**
@@ -39,29 +38,23 @@ export class QueryEngineFactory {
     /**
      * Angular 2 injector used by the Wrangler module.
      */
-    public static $$wranglerInjector: any = null;
+    public static $$wranglerInjector: Injector = null;
 
     /**
      * Wrangler module.
      */
     private wrangler: Observable<NgModuleRef<WranglerModule>>;
 
-//    static readonly $inject: string[] = ["$$angularInjector", "$ocLazyLoad"];
-
-
-    private $ocLazyLoad: oc.ILazyLoad;
-
     /**
      * Constructs a {@code QueryEngineFactory}.
      */
     constructor(private $$angularInjector: Injector) {
-        this.$ocLazyLoad = $$angularInjector.get("$ocLazyLoad");
         this.wrangler = Observable.fromPromise($$angularInjector.get(Compiler).compileModuleAndAllComponentsAsync(WranglerModule))
             .map(factories => factories.ngModuleFactory.create($$angularInjector))
             .do(wrangler => {
                 QueryEngineFactory.$$wranglerInjector = wrangler.injector;
-                console.log("Set the wrangler.injector",  QueryEngineFactory.$$wranglerInjector);
-            } )
+                console.log("Set the wrangler.injector", QueryEngineFactory.$$wranglerInjector);
+            })
             .publishLast()
             .refCount();
 
@@ -83,23 +76,20 @@ export class QueryEngineFactory {
         // Load the engine
         return this.wrangler
             .mergeMap(module => {
-                const $injector = angular.element(document.body).injector();
-                //const $injector = module.injector.get("$injector");
                 if (ENGINES[standardName]) {
-                    return Observable.of(this.createEngine(ENGINES[standardName], $injector));
+                    return Observable.of(this.createEngine(ENGINES[standardName]));
                 } else {
-                    return this.loadPluginEngine(module,standardName);
+                    return this.loadPluginEngine(standardName);
                 }
             })
             .toPromise();
     }
 
-    private loadPluginEngine(module:any,standardName:string) :Observable<QueryEngine<any>> {
-        const $injector = module.injector.get("$injector");
-        return Observable.fromPromise(this.$ocLazyLoad.load("plugin/" + standardName + "/" + standardName + "-query-engine"))
+    private loadPluginEngine(standardName: string): Observable<QueryEngine<any>> {
+        return Observable.fromPromise(SystemJS.import("plugin/" + standardName + "/" + standardName + "-query-engine"))
             .map(() => {
                 if (ENGINES[standardName]) {
-                    return this.createEngine(ENGINES[standardName], $injector);
+                    return this.createEngine(ENGINES[standardName]);
                 } else {
                     throw "Unsupported query engine: " + name;
                 }
@@ -113,8 +103,9 @@ export class QueryEngineFactory {
      * @param $injector - Angular 1 injector
      * @returns the query engine
      */
-    private createEngine(ref: QueryEngineRef, $injector: angular.auto.IInjectorService): QueryEngine<any> {
-        return $injector.instantiate(ref as any) as QueryEngine<any>;
+    private createEngine(ref: QueryEngineRef): QueryEngine<any> {
+        const $injector = ReflectiveInjector.resolveAndCreate([{provide: "QueryEngine", useClass: ref as Type<any>}], QueryEngineFactory.$$wranglerInjector);
+        return $injector.get("QueryEngine") as QueryEngine<any>;
     }
 }
 

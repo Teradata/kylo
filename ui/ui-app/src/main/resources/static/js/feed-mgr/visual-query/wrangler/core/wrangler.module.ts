@@ -16,19 +16,17 @@ import {DIALOG_SERVICE, INJECTOR} from "../api/index";
 
 import {DateFormatDialog} from "./columns/date-format.component";
 import {WranglerDialogService} from "./services/dialog.service";
-import {ImputeMissingDialog} from "./columns/impute-missing.component";
 import {DomSanitizer} from "@angular/platform-browser";
+import {DynamicFormModule} from "../../../shared/dynamic-form/dynamic-form.module";
 /**
  *
  */
 @NgModule({
     declarations: [
-        DateFormatDialog,
-        ImputeMissingDialog
+        DateFormatDialog
     ],
     entryComponents: [
-        DateFormatDialog,
-        ImputeMissingDialog
+        DateFormatDialog
     ],
     imports: [
         CommonModule,
@@ -42,7 +40,8 @@ import {DomSanitizer} from "@angular/platform-browser";
         MatProgressBarModule,
         MatSelectModule,
         MatToolbarModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        DynamicFormModule
     ],
     providers: [
         {provide: DIALOG_SERVICE, useClass: WranglerDialogService},

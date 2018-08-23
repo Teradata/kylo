@@ -68,5 +68,8 @@ export class DynamicFormFieldGroupBuilder {
     completeGroup(){
         return this.dynamicFormBuilder;
     }
+    castAs<T extends DynamicFormBuilder> (type: { new(): T ;}):T{
+        return <T> this.dynamicFormBuilder;
+    }
 
 }

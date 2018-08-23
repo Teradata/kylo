@@ -24,12 +24,12 @@ export class DynamicFormFieldComponent {
         return true;
         }
         else {
-            return this.form && this.form.controls && this.form.controls[this.field.key].valid;
+            return this.form && this.form.controls && this.form.controls[this.field.key] && this.form.controls[this.field.key].valid;
         }
     }
 
     getErrorMessage() {
-        return FormControlValidation.getErrorMessage(this.form,this.field.key)
+        return FormControlValidation.getFieldConfigErrorMessage(this.form, this.field)
     }
 
 }
