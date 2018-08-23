@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
@@ -115,6 +114,17 @@ public abstract class FeedProcessor extends BaseProcessor {
             return lookupFeedId(context, flowFile);
         } else {
             return feedId;
+        }
+    }
+
+    protected void invalidFeedCache(String category, String feedName) {
+        final String feedKey = category + "." + feedName;
+        String feedId = feedIdCache.getIfPresent(feedKey);
+        feedIdCache.invalidate(feedKey);
+
+        if (feedId != null) {
+            MetadataRecorder recorder = getMetadataRecorder();
+            recorder.invalidInitializationStatus(feedId);
         }
     }
 
