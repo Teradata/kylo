@@ -16,10 +16,18 @@ export abstract class ColumnForm {
         this.fieldName = ColumnUtil.getColumnFieldName(column);
         this.dataType = column.dataType;
         this.dataCategory = ColumnUtil.fromDataType(this.dataType);
-        this.formConfig = this.buildForm();
+        this.initializeParameters();
+        this.formConfig =this.buildForm();
     }
 
     abstract buildForm():FormConfig;
+
+    /**
+     * initialize any parameters here that you need to reference in the formConfig
+     */
+    initializeParameters():void{
+
+    }
 
     getColumnNames() : string[] {
         return (<any>this).controller.engine.getCols().map( (f:QueryResultColumn)=> { return f.field });
@@ -35,5 +43,6 @@ export abstract class ColumnForm {
             name: `Extract regex from ${fieldName}`
         });
     }
+
 
 }
