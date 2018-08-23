@@ -370,12 +370,28 @@ export class Feed  implements KyloObject{
        return this.templateTableOption ? this.templateTableOption : (this.registeredTemplate? this.registeredTemplate.templateTableOption : '')
     }
 
+    /**
+     * is this a feed to define a target table
+     * @return {boolean}
+     */
     isDefineTable(){
         return "DEFINE_TABLE" == this.getTemplateType();
     }
 
+    /**
+     * Is this a data transformation feed
+     * @return {boolean}
+     */
     isDataTransformation(){
         return "DATA_TRANSFORMATION" == this.getTemplateType();
+    }
+
+    /**
+     * Does this feed have any data transformation sets defined
+     * @return {boolean}
+     */
+    hasDataTransformationDataSets(){
+        return this.isDataTransformation() && this.dataTransformation && this.dataTransformation.datasets && this.dataTransformation.datasets.length >0;
     }
 
     /**

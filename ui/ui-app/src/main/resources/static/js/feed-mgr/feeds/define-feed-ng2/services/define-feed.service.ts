@@ -30,6 +30,7 @@ import {FeedConstants} from "../../../services/FeedConstants";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {TranslateService} from "@ngx-translate/core";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {SelectionService} from "../../../catalog/api/services/selection.service";
 
 
 export enum TableSchemaUpdateMode {
@@ -130,7 +131,8 @@ export class DefineFeedService {
     private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
-                private _dialogService: TdDialogService){
+                private _dialogService: TdDialogService,
+                private selectionService: SelectionService){
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
 
@@ -178,6 +180,7 @@ export class DefineFeedService {
                 console.log("LOADED ", feed)
                 //reset the collection service
                 this.previewDatasetCollectionService.reset();
+                this.selectionService.reset()
                 //convert it to our needed class
                 let feedModel = new Feed(feed)
                 //reset the propertiesInitalized flag
@@ -408,7 +411,7 @@ export class DefineFeedService {
     private newDefineTableFeedSteps() :Step[] {
         let steps :Step[] = []
         let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
+        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator(this.previewDatasetCollectionService)).build();
         let table = new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
         let feedDetails = this.feedDetailsStep(steps,4);
         steps.push(generalInfoStep);
@@ -421,7 +424,7 @@ export class DefineFeedService {
     private newDataTransformationSteps() :Step[] {
         let steps :Step[] = []
         let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
+        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator(this.previewDatasetCollectionService)).build();
         let wranglerStep =  new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("wrangler").setDisabled(true).setRequired(true).build();
         let table = new StepBuilder().setNumber(4).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
         let feedDetails = this.feedDetailsStep(steps,5);

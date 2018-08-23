@@ -13,7 +13,7 @@ import {FeedService} from "../../../../services/FeedService";
 import {ITdDynamicElementConfig, TdDynamicElement} from "@covalent/dynamic-forms";
 import {TdDynamicType} from "@covalent/dynamic-forms/services/dynamic-forms.service";
 import {FieldConfig} from "../../../../shared/dynamic-form/model/FieldConfig";
-import {InputText} from "../../../../shared/dynamic-form/model/InputText";
+import {InputText, InputType} from "../../../../shared/dynamic-form/model/InputText";
 import {Select} from "../../../../shared/dynamic-form/model/Select";
 import {Checkbox} from "../../../../shared/dynamic-form/model/Checkbox";
 import {DynamicFormService} from "../../../../shared/dynamic-form/services/dynamic-form.service";
@@ -32,6 +32,214 @@ import {RadioButton} from "../../../../shared/dynamic-form/model/RadioButton";
 import {Textarea} from "../../../../shared/dynamic-form/model/Textarea";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {FieldGroup} from "../../../../shared/dynamic-form/model/FieldGroup";
+import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormFieldGroupBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-field-group-builder";
+import {ConfigurationFieldBuilder, FieldConfigBuilder} from "../../../../shared/dynamic-form/services/field-config-builder";
+
+
+export class FieldConfigurationState {
+
+    formFieldOrder:number = 0
+    /**
+     * Map of the inputProcessorId to the controls related to that input
+     * @type {{}}
+     */
+    inputFieldsMap :{[key: string]: FieldConfig<any>[]} ={};
+
+    /**
+     * Map of all processors other inputs to array of configs
+     * @type {{}}
+     */
+    processorFieldMap:{[key: string]: FieldConfig<any>[]} ={};
+
+
+    /**
+     * Return all fieldconfig objects for a given input processor
+     * @param {string} processorId
+     * @return {FieldConfig<any>[]}
+     */
+    getFieldsForInput(processorId:string, emptyArrayIfNull:boolean = true){
+        if(!this.hasInputFields(processorId) && emptyArrayIfNull){
+            return [];
+        }
+        else {
+            return this.inputFieldsMap[processorId];
+        }
+    }
+
+    /**
+     * are there input fields defined for the processor
+     * @param {string} processorId
+     * @return {boolean}
+     */
+    hasInputFields(processorId:string) {
+        return this.inputFieldsMap[processorId] != undefined;
+    }
+
+    /**
+     * are there fields defined for the processor
+     * @param {string} processorId
+     * @return {boolean}
+     */
+    hasNonInputFields(processorId:string) {
+        return this.processorFieldMap[processorId] != undefined;
+    }
+
+    /**
+     * Return all fieldconfig objects for a given input processor
+     * @param {string} processorId
+     * @return {FieldConfig<any>[]}
+     */
+    getFieldsForNonInput(processorId:string,emptyArrayIfNull:boolean = true){
+        if(!this.hasNonInputFields(processorId) && emptyArrayIfNull){
+            return [];
+        }
+        else {
+            return this.processorFieldMap[processorId];
+        }
+    }
+
+    getAndIncrementFieldOrder(){
+        let order = this.formFieldOrder;
+        this.formFieldOrder++;
+        return order;
+    }
+    incrementAndGetFieldOrder(){
+        this.formFieldOrder++;
+        return this.formFieldOrder;
+    }
+
+    reset(){
+        this.formFieldOrder = 0;
+        this.inputFieldsMap = {}
+        this.processorFieldMap = {}
+    }
+}
+
+export class FieldConfigurationBuilder {
+    formGroupBuilder:DynamicFormFieldGroupBuilder
+
+    constructor(private state:FieldConfigurationState ) {
+
+    }
+
+
+    public  createFormFields(processors:Templates.Processor[]) :FieldConfig<any>[] {
+        this.formGroupBuilder = new DynamicFormBuilder().column()
+        let elements :FieldConfig<any>[] = []
+        processors.forEach((processor :Templates.Processor) => {
+            let processorConfig :FieldConfig<any>[] = this.toFieldConfig(processor);
+            elements = elements.concat(processorConfig);
+        });
+        return elements;
+    }
+
+   private  buildField(property:Templates.Property):FieldConfig<any> {
+        let field:FieldConfig<any>;
+        //build the generic options to be used by all fields
+       let label = property.propertyDescriptor.displayName || property.propertyDescriptor.name;
+        let configBuilder = new ConfigurationFieldBuilder().setKey(property.nameKey).setOrder(this.state.getAndIncrementFieldOrder()).setPlaceholder(label).setRequired(property.required).setValue(property.value).setModel(property).setHint(property.propertyDescriptor.description);
+
+        if(this.isInputText(property)){
+            //get the correct input type
+
+            let type= property.renderType;
+            if(property.sensitive) {
+                type = "password";
+            }
+            let inputType:InputType = <InputType>InputType[type] || InputType.text;
+
+            //create the field
+            field = this.formGroupBuilder.text().update(configBuilder).setType(inputType).build();
+
+        }
+        else if(property.renderType == "select"){
+            field = this.formGroupBuilder.select().update(configBuilder).setOptions(this.getSelectOptions(property)).build()
+
+        }
+        else if(property.renderType == "radio") {
+            field = this.formGroupBuilder.radio().update(configBuilder).setOptions(this.getSelectOptions(property)).build();
+
+        }
+        else if(property.renderType == "checkbox-true-false" || property.renderType == "checkbox-custom") {
+            let trueValue = property.renderOptions['trueValue'] || 'true';
+            let falseValue = property.renderOptions['falseValue'] || 'false';
+            field = this.formGroupBuilder.checkbox().update(configBuilder).setTrueValue(trueValue).setFalseValue(falseValue).build();
+        }
+        else if(property.renderType == "textarea") {
+            field = this.formGroupBuilder.textarea().update(configBuilder).build();
+        }
+        return field;
+    }
+
+    /**
+     * convert the property allowable values to label,value objects
+     * @param {Templates.Property} property
+     * @return {{label: string; value: string}[]}
+     */
+    private getSelectOptions(property:Templates.Property):({label:string,value:string})[]{
+        //get the select options
+        let options:({label:string,value:string})[] = [];
+
+        if(property.propertyDescriptor.allowableValues && property.propertyDescriptor.allowableValues.length >0) {
+            options = (<any[]>property.propertyDescriptor.allowableValues).map(allowableValue => {
+                return {label: allowableValue.displayName,value: allowableValue.value}
+            });
+        }
+        else if(property.renderOptions && property.renderOptions.selectOptions && property.renderOptions.selectOptions.length >0) {
+            let selectOptions = JSON.parse(property.renderOptions.selectOptions)
+            options = (<any[]>selectOptions).map(allowableValue => {
+                return {label: allowableValue,value: allowableValue}
+            });
+        }
+        //add in the not set value
+        if(!property.required){
+            options.unshift({label:"Not Set",value:""});
+        }
+        return options;
+    }
+
+
+
+    private toFieldConfig(processor:Templates.Processor):FieldConfig<any>[]{
+        let elements :FieldConfig<any>[] = []
+        let processorId = processor.id;
+
+
+        processor.properties.filter((property:Templates.Property) => property.userEditable).map((property:Templates.Property) => {
+
+            let fieldConfig:FieldConfig<any> = this.buildField(property);
+
+            if(property.inputProperty){
+                if(this.state.inputFieldsMap[processor.id] == undefined){
+                    this.state.inputFieldsMap[processor.id] = [];
+                }
+                this.state.inputFieldsMap[processor.id].push(fieldConfig);
+            }
+            else {
+                if(this.state.processorFieldMap[processor.id] == undefined){
+                    this.state.processorFieldMap[processor.id] = [];
+                    //add a new SectionHeader
+                    let sectionHeader =this.formGroupBuilder.sectionHeader().setOrder(this.state.getAndIncrementFieldOrder()).setPlaceholder(processor.name).setShowDivider(true).build();
+                    elements.push(sectionHeader);
+                    this.state.processorFieldMap[processor.id].push(sectionHeader);
+                }
+                this.state.processorFieldMap[processor.id].push(fieldConfig);
+            }
+
+            elements.push(fieldConfig);
+        });
+        return elements;
+    }
+
+    private isInputText(property:Templates.Property){
+        return (property.renderType == null || property.renderType == "text" || property.renderType == "email" || property.renderType == "number" || property.renderType == "password");
+    }
+
+}
+
+
+
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -69,36 +277,23 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     public form :FormGroup;
 
-
-
-    public inputProcessorFieldGroup:FieldGroup = new FieldGroup();
-
-    public nonInputProcessorFieldGroup:FieldGroup = new FieldGroup();
-
+    /**
+     * The array of groups that will be passed to the dynamic form component
+     * @type {any[]}
+     */
     public inputProcessorFieldGroups:FieldGroup[] = []
 
+    /**
+     * The array of groups that will be passed to the dynamic form component
+     * @type {any[]}
+     */
     public nonInputProcessorFieldGroups:FieldGroup[] = []
 
-    public inputProcessorFields :FieldConfig<any>[] = [];
-
-
-    public nonInputProcessorFields :FieldConfig<any>[] = [];
-    /**
-     * Map of the inputProcessorId to the controls related to that input
-     * @type {{}}
-     */
-    private inputFieldsMap :{[key: string]: FieldConfig<any>[]} ={};
-
-    private formFieldOrder:number = 0;
+    private fieldConfigurationState :FieldConfigurationState = new FieldConfigurationState();
 
     private uiComponentsService :UiComponentsService;
 
 
-    /**
-     * Map of all processors other inputs to array of configs
-     * @type {{}}
-     */
-    processorFieldMap:{[key: string]: FieldConfig<any>[]} ={};
 
     private registerTemplatePropertyService :RegisterTemplatePropertyService;
 
@@ -108,8 +303,10 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         this.registerTemplatePropertyService = this.$$angularInjector.get("RegisterTemplatePropertyService");
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
         this.form = new FormGroup({});
-        this.inputProcessorFieldGroups.push(this.inputProcessorFieldGroup)
-        this.nonInputProcessorFieldGroups.push(this.nonInputProcessorFieldGroup)
+
+        //add a single group to each input and non input array
+        this.inputProcessorFieldGroups.push(new FieldGroup())
+        this.nonInputProcessorFieldGroups.push(new FieldGroup())
     }
 
     getStepName() {
@@ -172,12 +369,20 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         this.oldInputProcessorId = event.value;
     }
 
+    private getInputProcessorFieldGroup():FieldGroup {
+        return this.inputProcessorFieldGroups[0];
+    }
+
+    private getNonInputProcessorFieldGroup():FieldGroup {
+        return this.nonInputProcessorFieldGroups[0];
+    }
+
 
     private updateInputProcessorFormElements(newInput:string,oldInput?:string) {
         let oldConfig :FieldConfig<any>[];
         if(oldInput) {
-            oldConfig = this.inputFieldsMap[oldInput];
-            if(oldConfig != undefined) {
+            oldConfig = this.fieldConfigurationState.getFieldsForInput(oldInput);
+            if(oldConfig.length >0) {
                 oldConfig.forEach(config => {
                     let control = this.form.controls[config.key];
                     if(control != undefined) {
@@ -187,15 +392,9 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             }
         }
 
-        this.inputProcessorFields = this.inputFieldsMap[newInput];
+        let inputFields = this.getInputProcessorFieldGroup().fields = this.fieldConfigurationState.getFieldsForInput(newInput);
+        this.dynamicFormService.addToFormGroup(inputFields, this.form);
 
-        this.inputProcessorFieldGroup.fields = this.inputProcessorFields;
-        if(this.inputProcessorFields != undefined) {
-            this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
-        }
-        else {
-            console.log("unable to find input for ",newInput,'oldConfig',oldConfig)
-        }
     }
 
     initializeTemplateProperties() {
@@ -219,9 +418,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
                     //   this.validate();
                 }
-
-
-
 
             }, (err: any) =>{});
             return promise;
@@ -305,139 +501,37 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             }
     }
 
+    private buildForm(){
+        this.fieldConfigurationState.reset();
 
-
-    private toFieldConfigOptions(property :Templates.Property):any {
-        let key:string = property.idKey;
-        let options = {key:key,placeholder:property.propertyDescriptor.displayName,required:property.required,value:property.value,hint:property.propertyDescriptor.description};
-        return options;
-
-    }
-
-   private buildForm(){
+        //ensure the input processorId is set
         if(this.inputProcessorId == undefined && this.inputProcessor != undefined){
             this.inputProcessorId = this.inputProcessor.id;
             console.log('input processor id was null... defaulting to ',this.inputProcessorId)
         }
-        this.formFieldOrder = 0
 
-        this.createFormFields(this.inputProcessors).sort((n1,n2) => {
+        new FieldConfigurationBuilder(this.fieldConfigurationState).createFormFields(this.inputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;
         });
-         this.nonInputProcessorFields =  this.createFormFields(this.feed.nonInputProcessors).sort((n1,n2) => {
+
+        let nonInputProcessorFields =   new FieldConfigurationBuilder(this.fieldConfigurationState).createFormFields(this.feed.nonInputProcessors).sort((n1,n2) => {
             return n1.order - n2.order;
         });
-         this.nonInputProcessorFieldGroup.fields = this.nonInputProcessorFields;
 
-        this.inputProcessorFields = this.inputFieldsMap[this.inputProcessorId];
-        if(this.inputProcessorFields == undefined){
-            this.inputProcessorFields = [];
-        }
-        this.inputProcessorFieldGroup.fields = this.inputProcessorFields;
-        this.dynamicFormService.addToFormGroup(this.inputProcessorFields, this.form);
-        this.dynamicFormService.addToFormGroup(this.nonInputProcessorFields, this.form);
+
+
+        //populate the form with the correct input processors
+        let inputProcessorFields = this.fieldConfigurationState.getFieldsForInput(this.inputProcessorId);
+        this.getInputProcessorFieldGroup().fields = inputProcessorFields;
+        this.dynamicFormService.addToFormGroup(inputProcessorFields, this.form);
+
+        //add all the other form fields
+        this.getNonInputProcessorFieldGroup().fields = nonInputProcessorFields;
+        this.dynamicFormService.addToFormGroup(nonInputProcessorFields, this.form);
     }
 
-  private  createFormFields(processors:Templates.Processor[]) :FieldConfig<any>[] {
-
-        let elements :FieldConfig<any>[] = []
-        processors.forEach((processor :Templates.Processor) => {
-            let processorConfig :FieldConfig<any>[] = this.toFieldConfig(processor);
-            elements = elements.concat(processorConfig);
-           });
-       return elements;
-    }
-    private isInputText(property:Templates.Property){
-        return (property.renderType == null || property.renderType == "text" || property.renderType == "email" || property.renderType == "number" || property.renderType == "password");
-    }
-
-    toFieldConfig(processor:Templates.Processor):FieldConfig<any>[]{
-        let elements :FieldConfig<any>[] = []
-            let processorId = processor.id;
 
 
-            processor.properties.filter((property:Templates.Property) => property.userEditable).map((property:Templates.Property) => {
 
-                let fieldConfig:FieldConfig<any> = null;
-                let fieldConfigOptions = this.toFieldConfigOptions(property);
-                fieldConfigOptions.order= this.formFieldOrder;
-
-                if(this.isInputText(property)){
-                    let type = property.renderType;
-                    if(property.sensitive) {
-                        type = "password";
-                    }
-                    fieldConfigOptions.type = type;
-                    fieldConfig = new InputText(fieldConfigOptions);
-                }
-                else if(property.renderType == "select" || property.renderType == "radio"){
-
-                    let options :any[] = [];
-                    if(property.propertyDescriptor.allowableValues && property.propertyDescriptor.allowableValues.length >0) {
-                        options = (<any[]>property.propertyDescriptor.allowableValues).map(allowableValue => {
-                            return {label: allowableValue.displayName,value: allowableValue.value}
-                        });
-                    }
-                    else if(property.renderOptions && property.renderOptions.selectOptions && property.renderOptions.selectOptions.length >0) {
-                        let selectOptions = JSON.parse(property.renderOptions.selectOptions)
-                        options = (<any[]>selectOptions).map(allowableValue => {
-                            return {label: allowableValue,value: allowableValue}
-                        });
-                    }
-                    //add in the not set value
-                    if(!property.required){
-                        options.unshift({label:"Not Set",value:""});
-                    }
-
-                    fieldConfigOptions.options = options;
-                    if(property.renderType == "select") {
-                        fieldConfig = new Select(fieldConfigOptions);
-                    }
-                    else if(property.renderType == "radio") {
-                        fieldConfig = new RadioButton(fieldConfigOptions);
-                    }
-                }
-                else if(property.renderType == "checkbox-true-false" || property.renderType == "checkbox-custom") {
-                    //default value is true, false.  Only need to set it if its custom
-                    if (property.renderType == "checkbox-custom") {
-                        fieldConfigOptions.trueValue = property.renderOptions['trueValue'];
-                        fieldConfigOptions.falseValue = property.renderOptions['falseValue'];
-                    }
-                    fieldConfig = new Checkbox(fieldConfigOptions);
-
-                }
-                else if(property.renderType == "textarea") {
-                    fieldConfig = new Textarea(fieldConfigOptions);
-                }
-                fieldConfig.model = property;
-
-
-                if(property.inputProperty){
-                    if(this.inputFieldsMap[processor.id] == undefined){
-                        this.inputFieldsMap[processor.id] = [];
-                        console.log('NEW INPUT processor ',processor.name,processor.id,processor)
-                    }
-                    this.inputFieldsMap[processor.id].push(fieldConfig);
-                }
-                else {
-                    if(this.processorFieldMap[processor.id] == undefined){
-                        this.processorFieldMap[processor.id] = [];
-                        //add a new SectionHeader
-                        let sectionHeader =new SectionHeader({order:this.formFieldOrder,label:processor.name});
-                        elements.push(sectionHeader);
-                        this.processorFieldMap[processor.id].push(sectionHeader);
-                        //increment the order again and set it to fieldConfig
-                        this.formFieldOrder +=1;
-                        fieldConfig.order = this.formFieldOrder;
-                    }
-                    this.processorFieldMap[processor.id].push(fieldConfig);
-
-                }
-
-                elements.push(fieldConfig);
-               this.formFieldOrder +=1;
-            });
-            return elements;
-    }
 
 }

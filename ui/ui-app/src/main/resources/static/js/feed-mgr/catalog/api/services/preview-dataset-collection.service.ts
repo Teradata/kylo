@@ -59,6 +59,14 @@ export class PreviewDatasetCollectionService {
             //notify the observers of the change
             this.datasetsSubject.next(this.datasets);
           }
+          else {
+            let existingDataset = this.findByKey(dataset.key);
+            if(!existingDataset.hasPreview() && dataset.hasPreview()){
+                //update the preview
+                existingDataset.preview = dataset.preview;
+                //notify???
+            }
+        }
     }
 
     /**

@@ -196,8 +196,14 @@ export class SelectionService {
      * Resets selection for data source
      * @param {string} datasourceId
      */
-    reset(datasourceId: string): void {
-        this.selections.delete(datasourceId);
+    reset(datasourceId?: string): void {
+        if(datasourceId) {
+            this.selections.delete(datasourceId);
+        }
+        else {
+            //clear it all
+            this.selections.clear()
+        }
     }
 
     /**

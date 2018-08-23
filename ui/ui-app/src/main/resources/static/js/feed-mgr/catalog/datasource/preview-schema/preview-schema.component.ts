@@ -352,6 +352,10 @@ export class PreviewSchemaComponent implements OnInit {
                     if(this.previewDatasetCollectionService.exists(dataSet) && !dataSet.isCollected()){
                         dataSet.collectionStatus = DatasetCollectionStatus.COLLECTED;
                     }
+                    if(this.autoCollect && this.editable){
+                        console.log('ADDING dataset ',dataSet)
+                        this.addToCollection(dataSet);
+                    }
                 });
                 this.setAndSelectFirstDataSet(datasets);
 
@@ -390,10 +394,16 @@ export class PreviewSchemaComponent implements OnInit {
                     //add in any cached preview responses
                     _.each(response.results.datasets,(dataset:PreviewDataSet,key:string)=> {
                         this.previewSchemaService.updateDataSetsWithCachedPreview([dataset])
+                        if(this.autoCollect && this.editable){
+                            console.log('ADDING dataset ',dataset)
+                            this.addToCollection(dataset);
+                        }
                         if(this.previewDatasetCollectionService.exists(dataset) && !dataset.isCollected()){
                             dataset.collectionStatus = DatasetCollectionStatus.COLLECTED;
                         }
                     });
+
+
 
                     //select and transform the first dataset
                     this.setAndSelectFirstDataSet(response.results.datasets);

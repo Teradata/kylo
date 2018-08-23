@@ -7,8 +7,7 @@ export class FeedStepValidator  {
 
     public step : Step;
 
-    constructor(step?:Step) {
-    this.step = step;
+    constructor() {
     }
 
     public setStep(step:Step){
