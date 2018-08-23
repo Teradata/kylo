@@ -1,106 +1,93 @@
-<div layout="row" class="md-kylo-powerui">
-  <md-sidenav md-is-locked-open="$td.isShowFunctionHistory" class="md-sidenav-left md-whiteframe-z1 visual-query-function-history">
-    <md-toolbar>
-      <div class="md-toolbar-tools" style="font-size: 18px;">Function History</div>
-    </md-toolbar>
-    <div layout="row" layout-align="center center">
-      <md-button class="md-icon-button " ng-click="$td.onUndo()" ng-disabled="$td.canUndo() == false">
+<mat-sidenav-container fxFlex="1 1 auto" fxLayout="column">
+  <mat-sidenav fxFlex="0 0 auto" fxLayout="column" [disableClose]="isShowFunctionHistory" [opened]="isShowFunctionHistory" mode="side" class="mat-whiteframe-z1 visual-query-function-history">
+    <mat-toolbar>
+      <div style="font-size: 18px;">Function History</div>
+    </mat-toolbar>
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <button mat-icon-button (click)="onUndo()" [disabled]="!canUndo()">
         <ng-md-icon icon="undo"></ng-md-icon>
-      </md-button>
-      <md-button class="md-icon-button " ng-click="$td.onRedo()" ng-disabled="$td.canRedo() == false">
+      </button>
+      <button mat-icon-button (click)="onRedo()" [disabled]="!canRedo()">
         <ng-md-icon icon="redo"></ng-md-icon>
-      </md-button>
+      </button>
     </div>
-    <md-list layout-padding browser-height browser-height-offset="{{$td.getBrowserHeightOffset(112)}}">
-      <md-list-item ng-repeat-start="history in $td.functionHistory">
-        <ng-md-icon ng-if="history.inactive" icon="{{history.icon}}"></ng-md-icon>
-        <ng-md-icon ng-if="!history.inactive" icon="{{history.icon}}"></ng-md-icon>
-        <p>{{history.name}}<md-tooltip>{{history.name}}</md-tooltip></p>
-        <ng-md-icon ng-click="$td.toggleItem($index)" style="color:grey" ng-if="history.inactive" icon="visibility"></ng-md-icon>
-        <ng-md-icon ng-click="$td.removeItem($index)" style="color:orange" ng-if="history.inactive" icon="remove_circle"></ng-md-icon>
-        <ng-md-icon ng-click="$td.toggleItem($index)" style="color:orange" ng-if="!history.inactive" icon="visibility"></ng-md-icon>
-      </md-list-item>
-      <md-divider ng-repeat-end></md-divider>
-    </md-list>
-  </md-sidenav>
+    <mat-list layout-padding browser-height flex layout-fill>
+      <ng-template ngFor let-item let-i="index" [ngForOf]="functionHistory">
+        <mat-list-item>
+          <ng-md-icon *ngIf="item.inactive" icon="{{item.icon}}"></ng-md-icon>
+          <ng-md-icon *ngIf="!item.inactive" icon="{{item.icon}}"></ng-md-icon>
+          <p [matTooltip]="item.name">{{item.name}}</p>
+          <ng-md-icon (click)="toggleItem(i)" style="color:grey" *ngIf="item.inactive" icon="visibility"></ng-md-icon>
+          <ng-md-icon (click)="removeItem(i)" style="color:orange" *ngIf="item.inactive" icon="remove_circle"></ng-md-icon>
+          <ng-md-icon (click)="toggleItem(i)" style="color:orange" *ngIf="!item.inactive" icon="visibility"></ng-md-icon>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-template>
+    </mat-list>
+  </mat-sidenav>
 
-  <md-content style="width: 100%;">
-    <md-toolbar>
-      <div class="md-toolbar-tools">
-        <md-menu hide-gt-md>
-          <md-button aria-label="Open formula menu" class="md-icon-button" ng-click="$mdOpenMenu($event)">
-            <md-icon md-menu-origin style="color: black;">history</md-icon>
-          </md-button>
-          <md-menu-content width="2">
-            <md-menu-item>
-              <md-button ng-click="$td.toggleFunctionHistory()">History<span ng-if="$td.functionHistory.length>0" style="padding-left:10px;">({{$td.functionHistory.length}})</span></md-button>
-            </md-menu-item>
-            <md-menu-item>
-              <md-button ng-click="$td.toggleSampleMenu()">Sample</md-button>
-            </md-menu-item>
-            <md-menu-item>
-              <md-button ng-click="$td.showProfileDialog()">Profile</md-button>
-            </md-menu-item>
-          </md-menu-content>
-        </md-menu>
-        <md-button class="md-raised " ng-click="$td.toggleFunctionHistory()" hide show-gt-md>
-          History<span ng-if="$td.functionHistory.length>0" hide show-gt-lg style="padding-left:10px;">({{$td.functionHistory.length}})</span>
-        </md-button>
-        <md-button class="md-raised" ng-click="$td.toggleSampleMenu()" hide show-gt-md>Sample</md-button>
-        <!-- <md-button class="md-raised" ng-click="$td.showProfileDialog()" ng-disabled="$td.executingQuery" hide show-gt-md>Profile</md-button> -->
-        <span flex></span>
-        <md-menu>
-          <md-button aria-label="Open formula menu" class="md-icon-button md-primary" ng-click="$mdOpenMenu($event)">
-            <md-icon md-menu-origin>functions</md-icon>
-          </md-button>
-          <md-menu-content width="2">
-            <md-menu-item ng-repeat="item in $td.sampleFormulas | orderBy: 'name'">
-              <md-button ng-click="$td.setFormula(item.formula)">{{item.name}}</md-button>
-            </md-menu-item>
-          </md-menu-content>
-        </md-menu>
-        <div rows="1" class="formula-editor" ui-codemirror="$td.codeMirrorConfig" ng-model="$td.currentFormula" ui-codemirror-opts="$td.codemirrorOptions" style="height: 25px;"></div>
-        <md-button class="md-raised md-accent" ng-click="$td.onAddFunction()" ng-disabled="!$td.currentFormula">Add</md-button>
-        <span flex></span>
-        <thinkbig-step-buttons can-continue="$td.isValid" step-index="{{::$td.stepIndex}}"></thinkbig-step-buttons>
+  <mat-sidenav-content style="width: 100%; margin-left: 0" fxFlex="1 1 auto" fxLayout="column" [style.padding-right]="isShowFunctionHistory ? '257px' : '0'">
+    <mat-toolbar fxFlex="0 0 auto">
+      <div fxFlex="1 1 auto" fxLayout="row">
+        <mat-menu #actionMenu="matMenu">
+          <button mat-menu-item (click)="toggleFunctionHistory()">History<span *ngIf="functionHistory.length>0" style="padding-left:10px;">({{functionHistory.length}})</span></button>
+          <button mat-menu-item (click)="toggleSampleMenu()">Sample</button>
+          <button mat-menu-item (click)="showProfileDialog()"></button>
+        </mat-menu>
+        <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
+          <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
+        </button>
+        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" hide show-gt-md>
+          History<span *ngIf="functionHistory.length>0" fxShow.gt-lg="true" hide show-gt-lg style="padding-left:10px;">({{functionHistory.length}})</span>
+        </button>
+        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" hide show-gt-md>Sample</button>
+        <span fxFlex="1 1 auto"></span>
+        <mat-menu #formulaMenu="matMenu">
+          <button *ngFor="let item of sampleFormulas" mat-menu-item (click)="setFormula(item.formula)">{{item.name}}</button>
+        </mat-menu>
+        <button mat-icon-button aria-label="Open formula menu" [matMenuTriggerFor]="formulaMenu">
+          <ng-md-icon icon="functions" class="tc-primary"></ng-md-icon>
+        </button>
+        <codemirror class="formula-editor" [config]="codemirrorOptions" [(ngModel)]="currentFormula" style="height:25px"></codemirror>
+        <!--<div rows="1" class="formula-editor" ui-codemirror="$td.codeMirrorConfig" ng-model="$td.currentFormula" ui-codemirror-opts="$td.codemirrorOptions" style="height: 25px;"></div>-->
+        <button mat-raised-button class="mat-accent" (click)="onAddFunction()" [disabled]="currentFormula">Add</button>
+        <span fxFlex="1 1 auto"></span>
+        <div fxLayout="row">
+          <button mat-button (click)="goBack()" type="button">Back</button>
+          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="isValid">Next</button>
+        </div>
       </div>
-    </md-toolbar>
+    </mat-toolbar>
 
-    <div layout="column" layout-fill layout-align="center center" browser-height browser-height-scroll-y="false" browser-height-offset="{{$td.getBrowserHeightOffset(64)}}"
-         style="min-height: 0; overflow: hidden; position: relative;">
-      <div class="visual-query-sample-menu" layout="column" ng-if="$td.isShowSampleMenu">
-        <div layout="row" layout-align="start center">
+    <div fxFlex="1 1 auto" fxLayout="column" style="overflow: hidden; position: relative;">
+      <div class="visual-query-sample-menu" fxFlex="0 0 auto" fxLayout="column" *ngIf="isShowSampleMenu">
+        <div fxLayout="row" fxLayoutAlign="start center">
           <h3>Sampling</h3>
-          <span flex></span>
-          <md-button class="md-icon-button" ng-click="$td.toggleSampleMenu()"><md-icon>close</md-icon></md-button>
+          <span fxFlex="1 1 auto"></span>
+          <button mat-icon-button (click)="toggleSampleMenu()"><ng-md-icon icon="close"></ng-md-icon></button>
         </div>
-        <md-radio-group ng-model="$td.sampleMethod" layout="row" ng-if="!$td.engine.allowLimitWithSample" ng-change="$td.onSampleMethodChange()">
-          <md-radio-button value="SAMPLE">Sample</md-radio-button>
-          <md-radio-button value="LIMIT">Limit</md-radio-button>
-        </md-radio-group>
-        <md-input-container layout="row" ng-if="$td.engine.allowLimitWithSample || $td.sampleMethod == 'SAMPLE'">
-          <label>Fraction</label>
-          <input type="number" ng-model="$td.engine.sample" ng-model-options="{getterSetter: true}">
-        </md-input-container>
-        <md-input-container layout="row" ng-if="$td.engine.allowLimitWithSample || $td.sampleMethod == 'LIMIT'">
-          <label>Limit</label>
-          <input type="number" ng-model="$td.engine.limit" ng-model-options="{getterSetter: true}">
-        </md-input-container>
-        <md-checkbox layout="row" ng-model="$td.engine.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?" ng-if="$td.engine.allowLimitWithSample">
+        <mat-radio-group fxLayout="row" fxLayoutGap="20px" *ngIf="engine.allowLimitWithSample" (change)="onSampleMethodChange()" [(ngModel)]="sampleMethod">
+          <mat-radio-button value="SAMPLE">Sample</mat-radio-button>
+          <mat-radio-button value="LIMIT">Limit</mat-radio-button>
+        </mat-radio-group>
+        <mat-form-field *ngIf="engine.allowLimitWithSample || sampleMethod == 'SAMPLE'" style="padding-top:14px">
+          <input matInput placeholder="Fraction" type="number" [(ngModel)]="engine.sample">
+        </mat-form-field>
+        <mat-form-field *ngIf="engine.allowLimitWithSample || sampleMethod == 'LIMIT'">
+          <input matInput placeholder="Limit" type="number" [(ngModel)]="engine.limit">
+        </mat-form-field>
+        <mat-checkbox fxLayout="row" [(ngModel)]="engine.shouldLimitBeforeSample" aria-label="Should sample?" *ngIf="engine.allowLimitWithSample">
           Limit before sampling
-        </md-checkbox>
-        <div layout="row">
-          <md-button class="md-primary md-raised" ng-click="$td.isShowSampleMenu = false; $td.resample();">Update</md-button>
+        </mat-checkbox>
+        <div fxLayout="row" style="padding-top:20px">
+          <button mat-raised-button class="mat-primary" (click)="isShowSampleMenu = false; resample();">Update</button>
         </div>
       </div>
-      <md-progress-linear class="wrangler-determinate-theme" md-mode="determinate" ng-value="$td.queryProgress" ng-if="$td.executingQuery && $td.queryProgress > 0"
-                          style="top: 0;height:2px"></md-progress-linear>
-      <md-progress-linear md-mode="indeterminate" class="wrangler-indeterminate-theme" ng-if="$td.executingQuery" style="top: -2px;height:2px"></md-progress-linear>
-      <visual-query-table actual-cols="$td.actualCols" actual-rows="$td.actualRows" table-columns="$td.tableColumns" table-domain-types="$td.domainTypes" table-rows="$td.tableRows"
-                          table-options="$td.tableOptions"
-                          table-validation="$td.tableValidation"
-                          table-state="$td.tableState" style="width: 100%; height: 500px;" browser-height browser-height-scroll-y="false"
-                          browser-height-offset="{{$td.getBrowserHeightOffset(64)}}"></visual-query-table>
+      <mat-progress-bar class="wrangler-determinate-theme" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0" style="top: 0;height:2px"></mat-progress-bar>
+      <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
+      <visual-query-table [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
+                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" style="width: 100%; height: 500px;" fxFlex="1 1 auto">
+      </visual-query-table>
     </div>
-  </md-content>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

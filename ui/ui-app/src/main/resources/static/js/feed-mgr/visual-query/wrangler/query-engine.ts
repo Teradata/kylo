@@ -1,6 +1,7 @@
 import {Injector} from "@angular/core";
-import {Observable} from "rxjs/Observable";
+import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
+import {Observable} from "rxjs/Observable";
 import * as _ from "underscore";
 
 import {DIALOG_SERVICE} from "./api/index";
@@ -16,25 +17,25 @@ import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/prev
 import {SparkDataSet} from "../../model/spark-data-set.model";
 
 export class PageSpec {
-    firstRow : number;
-    numRows : number;
-    firstCol : number;
-    numCols : number;
+    firstRow: number;
+    numRows: number;
+    firstCol: number;
+    numCols: number;
 
-    public constructor (init?:Partial<PageSpec>) {
+    public constructor(init?: Partial<PageSpec>) {
         Object.assign(this, init);
     }
 
-    equals(page: PageSpec) : boolean {
+    equals(page: PageSpec): boolean {
         return JSON.stringify(this) === JSON.stringify(page);
     }
 
-    static emptyPage() : PageSpec {
-        return new PageSpec({ firstRow:0, numRows: 0, firstCol: 0, numCols: 0 });
+    static emptyPage(): PageSpec {
+        return new PageSpec({firstRow: 0, numRows: 0, firstCol: 0, numCols: 0});
     }
 
-    static defaultPage() : PageSpec {
-        return new PageSpec({ firstRow:0, numRows:64, firstCol: 0, numCols: 1000 });
+    static defaultPage(): PageSpec {
+        return new PageSpec({firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000});
     }
 }
 
@@ -63,7 +64,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * The page of the dataset to display
      */
-    protected pageSpec : PageSpec;
+    protected pageSpec: PageSpec;
 
     /**
      * Transformation function definitions.
@@ -120,7 +121,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Construct a {@code QueryEngine}.
      */
-    constructor(protected $mdDialog: angular.material.IDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
+    constructor(protected dialog: TdDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
     }
 
     /**
@@ -212,7 +213,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * Creates a column delegate of the specified data type.
      */
     createColumnDelegate(dataType: string, controller: ColumnController, column?: any): ColumnDelegate {
-        return new ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants, this.injector.get(DIALOG_SERVICE));
+        return new ColumnDelegate(dataType, controller, this.dialog, this.uiGridConstants, this.injector.get(DIALOG_SERVICE));
     }
 
     /**
@@ -292,11 +293,11 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         return this.getState().fieldPolicies;
     }
 
-    getActualRows() : number | null {
+    getActualRows(): number | null {
         return this.getState().actualRows;
     }
 
-    getActualCols() : number | null {
+    getActualCols(): number | null {
         return this.getState().actualCols;
     }
 
@@ -470,17 +471,15 @@ export abstract class QueryEngine<T> implements WranglerEngine {
 
     /**
      * The number of rows to select in the initial query.
-     *
-     * @param value - the new value
-     * @returns the number of rows
      */
-    limit(value?: number): number {
-        if (typeof value !== "undefined") {
-            this.clearTableState();
-            this.limit_ = value;
-            this.stateChanged = true;
-        }
+    get limit(): number {
         return this.limit_;
+    }
+
+    set limit(value: number) {
+        this.clearTableState();
+        this.limit_ = value;
+        this.stateChanged = true;
     }
 
     /**
@@ -584,17 +583,15 @@ export abstract class QueryEngine<T> implements WranglerEngine {
 
     /**
      * The fraction of rows to include when sampling.
-     *
-     * @param value - the new value
-     * @returns the fraction of rows
      */
-    sample(value?: number): number {
-        if (typeof value !== "undefined") {
-            this.clearTableState();
-            this.sample_ = value;
-            this.stateChanged = true;
-        }
+    get sample(): number {
         return this.sample_;
+    }
+
+    set sample(value: number) {
+        this.clearTableState();
+        this.sample_ = value;
+        this.stateChanged = true;
     }
 
     /**
@@ -644,6 +641,13 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         this.defs_ = defs;
     }
 
+    setScript(script: string): void {
+        this.datasources_ = null;
+        this.redo_ = [];
+        this.source_ = script;
+        this.states_ = [this.newState()];
+    }
+
     /**
      * Loads the specified state for using an existing transformation.
      */
@@ -661,7 +665,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Sets the query and datasources.
      */
-    setQuery(query: string | object, datasources: UserDatasource[] = [], pageSpec : PageSpec = null): void {
+    setQuery(query: string | object, datasources: UserDatasource[] = [], pageSpec: PageSpec = null): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
         this.redo_ = [];
         this.source_ = this.parseQuery(query);
@@ -673,16 +677,16 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Indicates if the limiting should be done before sampling.
      *
-     * @param value - the new value
      * @returns {@code true} if limiting should be done first, or {@code false} if sampling should be done first
      */
-    shouldLimitBeforeSample(value?: boolean): boolean {
-        if (typeof value !== "undefined") {
-            this.clearTableState();
-            this.limitBeforeSample_ = value;
-            this.stateChanged = true;
-        }
+    get shouldLimitBeforeSample(): boolean {
         return this.limitBeforeSample_;
+    }
+
+    set shouldLimitBeforeSample(value: boolean) {
+        this.clearTableState();
+        this.limitBeforeSample_ = value;
+        this.stateChanged = true;
     }
 
     /**
@@ -712,7 +716,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      *
      * @return an observable for the response progress
      */
-    abstract transform(pageSpec ?:PageSpec, doValidate ?: boolean, doProfile ?: boolean): Observable<any>;
+    abstract transform(pageSpec ?: PageSpec, doValidate ?: boolean, doProfile ?: boolean): Observable<any>;
 
 
     /**
@@ -777,7 +781,20 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, inactive:false, tableState:(new Date()).getTime(), sort: null};
+        return {
+            columns: null,
+            context: {},
+            fieldPolicies: null,
+            profile: null,
+            rows: null,
+            script: null,
+            table: null,
+            validationResults: null,
+            actualRows: null,
+            actualCols: null,
+           inactive:false, tableState: (new Date()).getTime(),
+            sort: null
+        };
     }
 
 

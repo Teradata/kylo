@@ -1,26 +1,26 @@
+import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
+import * as _ from "underscore";
 
+import {CloneUtil} from "../../../common/utils/clone-util";
 import {ColumnDelegate as IColumnDelegate, DataType as DT} from "./api/column";
+import {ProfileHelper} from "./api/profile-helper";
 import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
-import * as _ from "underscore";
-import {ProfileHelper} from "./api/profile-helper";
 import {ColumnUtil} from "./core/column-util";
-import {ReplaceValueForm} from "./core/columns/replace-value-form";
-import {CrossTabForm} from "./core/columns/cross-tab-form";
 import {BinValuesForm} from "./core/columns/bin-values-form";
-import {OrderByForm} from "./core/columns/order-by-form";
-import {CloneUtil} from "../../../common/utils/clone-util";
-import {RenameColumnForm} from "./core/columns/rename-column-form";
-import {RescaleForm} from "./core/columns/rescale-form";
-import {ImputeMissingForm} from "./core/columns/impute-missing-form";
-import {ReplaceNanForm} from "./core/columns/replace-nan-form";
-import {LpadForm} from "./core/columns/lpad-form";
-import {ExtractIndexForm} from "./core/columns/extract-index-form";
-import {RoundNumberForm} from "./core/columns/round-number-form";
-import {ExtractRegexForm} from "./core/columns/extract-regex-form";
+import {CrossTabForm} from "./core/columns/cross-tab-form";
 import {ExtractDelimsForm} from "./core/columns/extract-delims-form";
-
+import {ExtractIndexForm} from "./core/columns/extract-index-form";
+import {ExtractRegexForm} from "./core/columns/extract-regex-form";
+import {ImputeMissingForm} from "./core/columns/impute-missing-form";
+import {LpadForm} from "./core/columns/lpad-form";
+import {OrderByForm} from "./core/columns/order-by-form";
+import {RenameColumnForm} from "./core/columns/rename-column-form";
+import {ReplaceNanForm} from "./core/columns/replace-nan-form";
+import {ReplaceValueForm} from "./core/columns/replace-value-form";
+import {RescaleForm} from "./core/columns/rescale-form";
+import {RoundNumberForm} from "./core/columns/round-number-form";
 
 /**
  * Categories for data types.
@@ -111,24 +111,26 @@ export class MenuItem {
     description: string = "";
     icon: string = "";
     name: string;
-    operation?:string;
-    operationFn?:Function
+    operation?: string;
+    operationFn?: Function
 }
 
 export class MenuItems {
     calculate: MenuItem[] = [];
-    replace:MenuItem[] = [];
-    extract:MenuItem[] = [];
-    ml:MenuItem[] = [];
-    other:MenuItem[] = [];
-    format:MenuItem[] = [];
-    defaults:MenuItem[] = [];
+    replace: MenuItem[] = [];
+    extract: MenuItem[] = [];
+    ml: MenuItem[] = [];
+    other: MenuItem[] = [];
+    format: MenuItem[] = [];
+    defaults: MenuItem[] = [];
 }
 
 /**
  * Handles operations on columns.
  */
 export class ColumnDelegate implements IColumnDelegate {
+
+    private readonly $mdDialog: angular.material.IDialogService;
 
     /**
      * The category for the data in the column.
@@ -148,7 +150,8 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Constructs a column delegate.
      */
-    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
+    constructor(public dataType: string, public controller: ColumnController, protected tdDialog: TdDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
+        this.$mdDialog = angular.element(document.body).injector().get("$mdDialog");
         this.dataCategory = ColumnUtil.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
@@ -161,6 +164,7 @@ export class ColumnDelegate implements IColumnDelegate {
         // not supported
     }
 
+
     /**
      * Extracts text between regex of start and end of selection
      */
@@ -168,7 +172,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const self = this;
         const fieldName = ColumnUtil.getColumnFieldName(column);
         const first = ColumnUtil.escapeRegexCharIfNeeded(value.charAt(0));
-        const last = ColumnUtil.escapeRegexCharIfNeeded(value.charAt(value.length-1));
+        const last = ColumnUtil.escapeRegexCharIfNeeded(value.charAt(value.length - 1));
 
         let regexScript = `regexp_extract(${fieldName}, "${first}(.*)${last}", 0).as("${fieldName}")`
         const regexFormula = ColumnUtil.toFormula(regexScript, column, grid);
@@ -179,7 +183,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
         let chainedOp: ChainedOperation = new ChainedOperation(2);
         self.controller.setChainedQuery(chainedOp);
-        self.controller.pushFormula(regexFormula, {formula: regexFormula, icon: 'content_cut', name:  `Regex extract ${ColumnUtil.getColumnDisplayName(column)}`}, true, false).then(function () {
+        self.controller.pushFormula(regexFormula, {formula: regexFormula, icon: 'content_cut', name: `Regex extract ${ColumnUtil.getColumnDisplayName(column)}`}, true, false).then(function () {
             chainedOp.nextStep();
             self.controller.addFunction(substrFormula, {formula: substrFormula, icon: 'spellcheck', name: `Clean ${fieldName}`});
         });
@@ -219,7 +223,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param grid
      */
     replaceValueEqualTo(value: string, column: any, grid: any) {
-        let form = new ReplaceValueForm(column,grid,this.controller,value);
+        let form = new ReplaceValueForm(column, grid, this.controller, value);
         this.dialog.openColumnForm(form);
     }
 
@@ -384,7 +388,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
         this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
 
-            let form = new LpadForm(column,grid,this.controller,profileData.maxLen);
+            let form = new LpadForm(column, grid, this.controller, profileData.maxLen);
             this.dialog.openColumnForm(form);
         });
 
@@ -410,7 +414,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     crosstabColumn(column: any, grid: any) {
-        let form = new CrossTabForm(column,grid,this.controller)
+        let form = new CrossTabForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 
@@ -421,7 +425,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractArrayItem(column: any, grid: any) {
 
-        let form = new ExtractIndexForm(column,grid,this.controller);
+        let form = new ExtractIndexForm(column, grid, this.controller);
         this.dialog.openColumnForm(form);
     }
 
@@ -438,7 +442,7 @@ export class ColumnDelegate implements IColumnDelegate {
         // Sample rows determine how many array elements
         if (grid.rows != null && grid.rows.length > 0) {
             let idx: number = 0;
-            _.each(grid.columns, (col:any, key:number) => {
+            _.each(grid.columns, (col: any, key: number) => {
                 if (col.name == fieldName) {
                     idx = key;
                 }
@@ -491,7 +495,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
         const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
             if (profileData.percNull > 0) {
                 this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;
@@ -504,12 +508,11 @@ export class ColumnDelegate implements IColumnDelegate {
             let chainedOp: ChainedOperation = new ChainedOperation(2);
             this.controller.setChainedQuery(chainedOp);
             this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Vectorize ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
-                .then(() =>{
+                .then(() => {
                     chainedOp.nextStep();
                     this.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName});
                 })
         });
-
 
     }
 
@@ -591,12 +594,12 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     binValues(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
             if (profileData.percNull > 0) {
                 this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;
             }
-            let form = new BinValuesForm(column,grid,this.controller)
+            let form = new BinValuesForm(column, grid, this.controller)
             this.dialog.openColumnForm(form);
         });
 
@@ -604,7 +607,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
     rescaleMinMax(column: any, grid: any) {
 
-        let form = new RescaleForm(column,grid,this.controller)
+        let form = new RescaleForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 
@@ -614,8 +617,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.GridColumn} column the column to be hidden
      * @param {ui.grid.Grid} grid the grid with the column
      */
-    rescaleStdDevColumn( column: any, grid: any) {
-        this.rescaleColumnML( column, grid, false, true);
+    rescaleStdDevColumn(column: any, grid: any) {
+        this.rescaleColumnML(column, grid, false, true);
     }
 
     /**
@@ -625,7 +628,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     rescaleMeanColumn(column: any, grid: any) {
-        this.rescaleColumnML( column, grid, true, false);
+        this.rescaleColumnML(column, grid, true, false);
     }
 
     /**
@@ -645,7 +648,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     imputeMissingColumn(column: any, grid: any) {
 
-        let form = new ImputeMissingForm(column,grid,this.controller)
+        let form = new ImputeMissingForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 
@@ -763,7 +766,7 @@ export class ColumnDelegate implements IColumnDelegate {
         this.controller.setChainedQuery(chainedOp);
 
         this.controller.pushFormula(cleanFormula, {formula: cleanFormula, icon: 'functions', name: 'Clean one hot field ' + fieldName}, true, false)
-            .then( () =>{
+            .then(() => {
                 chainedOp.nextStep();
                 this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'One hot encode ' + fieldName}, true, false)
                     .then(function () {
@@ -810,7 +813,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     renameColumn(column: any, grid: any) {
-        let renameForm = new RenameColumnForm(column,grid, this.controller);
+        let renameForm = new RenameColumnForm(column, grid, this.controller);
         this.dialog.openColumnForm(renameForm);
     }
 
@@ -862,7 +865,7 @@ export class ColumnDelegate implements IColumnDelegate {
     transformColumn(transform: MenuItem, column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
         const self = this;
-        if(transform.operationFn){
+        if (transform.operationFn) {
             transform.operationFn.bind(this)(column, grid);
         }
         else {
@@ -881,7 +884,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     replaceNaNWithValue(column: any, grid: any) {
 
-        let replaceForm = new ReplaceNanForm(column,grid, this.controller);
+        let replaceForm = new ReplaceNanForm(column, grid, this.controller);
         this.dialog.openColumnForm(replaceForm);
     }
 
@@ -894,7 +897,7 @@ export class ColumnDelegate implements IColumnDelegate {
     replaceMissing(column: any, grid: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
 
-        let replaceMissing = new ReplaceValueForm(column,grid, this.controller, '');
+        let replaceMissing = new ReplaceValueForm(column, grid, this.controller, '');
         this.dialog.openColumnForm(replaceMissing);
     }
 
@@ -906,7 +909,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     roundNumeric(column: any, grid: any) {
 
-        let form = new RoundNumberForm(column,grid,this.controller)
+        let form = new RoundNumberForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 
@@ -918,7 +921,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractRegexPattern(column: any, grid: any) {
 
-        let form = new ExtractRegexForm(column,grid,this.controller,this)
+        let form = new ExtractRegexForm(column, grid, this.controller, this)
         this.dialog.openColumnForm(form);
     }
 
@@ -930,12 +933,12 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractDelimiters(column: any, grid: any) {
 
-        let form = new ExtractDelimsForm(column,grid,this.controller,this)
+        let form = new ExtractDelimsForm(column, grid, this.controller, this)
         this.dialog.openColumnForm(form);
     }
 
     // Executes the regex formula
-    private executeRegex(column: any, grid:any, regex:string, group:number) {
+    private executeRegex(column: any, grid: any, regex: string, group: number) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const script = `regexp_extract(${fieldName}, "${regex}", ${group}).as("${fieldName}")`
         const formula = ColumnUtil.toFormula(script, column, grid);
@@ -950,8 +953,8 @@ export class ColumnDelegate implements IColumnDelegate {
      * Provides a dialog for capturing order by information and returns the orderBy clause
      */
     orderByDialog(column: any, grid: any, title: string, cb: Function) {
-        
-        let form = new OrderByForm(column,grid,this.controller,title,cb);
+
+        let form = new OrderByForm(column, grid, this.controller, title, cb);
         this.dialog.openColumnForm(form);
 
     }
@@ -961,7 +964,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * % difference from previous value
      */
     percDiffFromPrevious(column: any, grid: any) {
-        this.orderByDialog(column,grid, "Percentage Difference From Previous", (orderBy: string)=> {
+        this.orderByDialog(column, grid, "Percentage Difference From Previous", (orderBy: string) => {
             let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `((${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))/(lag(${fieldName},1).over(orderBy(${orderBy})))*100)`;
             const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_diffp`);
@@ -974,7 +977,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     diffFromPrevious(column: any, grid: any) {
 
-        this.orderByDialog(column,grid, "Difference From Previous", (orderBy: string)=> {
+        this.orderByDialog(column, grid, "Difference From Previous", (orderBy: string) => {
             let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `(${fieldName}-lag(${fieldName},1).over(orderBy(${orderBy})))`;
             const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_diff`);
@@ -987,7 +990,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     runningAverage(column: any, grid: any) {
 
-        this.orderByDialog(column,grid, "Running Average", (orderBy: string)=> {
+        this.orderByDialog(column, grid, "Running Average", (orderBy: string) => {
             let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `(avg(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
             const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_ravg`);
@@ -999,10 +1002,10 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Create a running total
      */
-    runningTotal( column: any, grid: any) {
+    runningTotal(column: any, grid: any) {
 
-        this.orderByDialog(column,grid, "Running Total", (orderBy: string)=> {
-            let fieldName =ColumnUtil.getColumnFieldName(column);
+        this.orderByDialog(column, grid, "Running Total", (orderBy: string) => {
+            let fieldName = ColumnUtil.getColumnFieldName(column);
             let script = `(sum(${fieldName}).over(orderBy(${orderBy}).rowsBetween(-2147483647,0)))`;
             const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_rtot`);
             this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Running total ${fieldName}`});
@@ -1084,7 +1087,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param dataCategory - the category for the column
      * @returns the transformations for the column
      */
-    protected getTransforms(dataCategory: DataCategory) : MenuItems {
+    protected getTransforms(dataCategory: DataCategory): MenuItems {
 
         let transforms = new MenuItems();
 
@@ -1128,8 +1131,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
                 {description: 'Trim whitespace', icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operationFn : self.leftPad}
-                );
+                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operationFn: self.leftPad}
+            );
 
             transforms.extract.push(
                 {description: 'Extract numeric', icon: 'filter_2', name: 'Numbers', operationFn: self.extractNumeric},

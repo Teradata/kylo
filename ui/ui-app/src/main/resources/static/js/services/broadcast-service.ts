@@ -1,9 +1,24 @@
 import * as angular from 'angular';
 import "jquery";
-
-import {moduleName} from './module-name';
+import "rxjs/add/operator/filter";
+import {Observable} from "rxjs/Observable";
+import {Subject} from "rxjs/Subject";
 
 import "./module"; // ensure module is loaded first
+import {moduleName} from './module-name';
+
+export interface BroadcastEvent {
+
+    /**
+     * Optional one or more arguments
+     */
+    args: any[];
+
+    /**
+     * Name of the event
+     */
+    name: string
+}
 
 /**
  * Allow different controllers/services to subscribe and notify each other
@@ -16,67 +31,68 @@ import "./module"; // ensure module is loaded first
  */
 export default class BroadcastService {
 
-    static readonly $inject = ["$rootScope", "$timeout"];
+    private readonly bus = new Subject<BroadcastEvent>();
 
     /**
-    * map to check if multiple events come in for those that {@code data.notifyAfterTime}
-    * to ensure multiple events are not fired.
-    * @type {{}}
-    */
+     * map to check if multiple events come in for those that {@code data.notifyAfterTime}
+     * to ensure multiple events are not fired.
+     * @type {{}}
+     */
     waitingEvents: any = {};
 
     subscribers = {};
 
-    constructor(private $rootScope: any,
-        private $timeout: any) {
+    static readonly $inject = ["$rootScope", "$timeout"];
 
+    constructor(private $rootScope: any, private $timeout: any) {
     }
+
     /**
-    * notify subscribers of this event passing an optional data object and optional wait time (millis)
-    * @param event
-    * @param data
-    * @param waitTime
-    */
-    notify = (event: any, data?: any, waitTime?: any) => {
+     * notify subscribers of this event passing an optional data object and optional wait time (millis)
+     * @param event
+     * @param data
+     * @param waitTime
+     */
+    notify(event: any, data?: any, waitTime?: any): void {
         if (waitTime == undefined) {
             waitTime = 0;
         }
         if (this.waitingEvents[event] == undefined) {
             this.waitingEvents[event] = event;
             this.$timeout(() => {
-                this.$rootScope.$emit(event, data);
+                this.bus.next({args: data, name: event} as BroadcastEvent);
                 delete this.waitingEvents[event];
             }, waitTime);
         }
     };
+
     /**
      * Subscribe to some event
      */
-    subscribe = (scope: any, event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, callback);
-        if(this.subscribers[event] == undefined){
-            this.subscribers[event] = 0;
-        }
-        this.subscribers[event] +=1;
-        if (scope != null) {
-            scope.$on('$destroy', ()=>{
-                handler();
-                this.subscribers[event] -= 1;
-            });
+    subscribe(event: string): Observable<BroadcastEvent>;
+    subscribe(scope: angular.IScope, event: string, callback: ($event: any, ...args: any[]) => void): void;
+    subscribe(eventOrScope: string | angular.IScope, event?: string, callback?: ($event: any, ...args: any[]) => void): Observable<BroadcastEvent> | void {
+        const observable = this.bus.filter(event => event.name === eventOrScope);
+        if (typeof eventOrScope === "string") {
+            return observable;
+        } else {
+            const subscription = observable.subscribe(event => callback(event, ...event.args));
+            if (eventOrScope != null) {
+                (eventOrScope as angular.IScope).$on("$destroy", () => subscription.unsubscribe());
+            }
         }
     };
+
     /**
      * Subscribe to some event
      */
-    subscribeOnce = (event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, () => {
+    subscribeOnce(event: string, callback: ($event: any, ...args: any[]) => void) {
+        const subscription = this.subscribe(event).subscribe(event => {
             try {
-                callback();
-            } catch (err) {
-                console.error("error calling callback for ", event);
+                callback(event, ...event.args);
+            } finally {
+                subscription.unsubscribe();
             }
-            //deregister the listener
-            handler();
         });
     }
 }

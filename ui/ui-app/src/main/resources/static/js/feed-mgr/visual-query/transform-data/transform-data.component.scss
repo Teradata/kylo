@@ -3,9 +3,12 @@
 
 
 thinkbig-visual-query-transform {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 
   // Sidebar
-  md-sidenav.md-locked-open:not(.collapsed) {
+  mat-sidenav[ng-reflect-opened=true] {
     $width: 257px;
     max-width: $width;
     min-width: $width;
@@ -13,32 +16,20 @@ thinkbig-visual-query-transform {
   }
 
   // Toolbars
-  md-toolbar.md-kylo-theme:not(.md-menu-toolbar) {
-    background-color: #f5f5f5;
-    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 1px 3px 0 rgba(0, 0, 0, .12);
-    color: rgba(0, 0, 0, .87);
-    padding: 0 16px;
-    width: 100%;
-    z-index: 1;
-  }
   .formula-editor {
     font-size: 14px;
     letter-spacing: normal;
   }
 
-  .visual-query-function-history md-list-item > md-icon:first-child {
+  .visual-query-function-history mat-list-item > ng-md-icon:first-child {
     margin-right: 16px;
   }
 
-  .visual-query-function-history md-list-item > p {
+  .visual-query-function-history mat-list-item > p {
     /*margin-right: 40px;*/
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .visual-query-function-history md-list-item > button.md-button.md-secondary-container.md-icon-button {
-    margin-right: -22px;
   }
 
   .visual-query-sample-menu {
@@ -51,10 +42,6 @@ thinkbig-visual-query-transform {
     top: 0;
     transition: all linear 0.2s;
     z-index: 9999;
-  }
-
-  .visual-query-sample-menu.ng-hide {
-    opacity: 0;
   }
 
   thinkbig-step-buttons {
@@ -83,7 +70,7 @@ thinkbig-visual-query-transform {
   }
 
   /** Tooltip */
-  .md-tooltip.visual-query-tooltip {
+  .mat-tooltip.visual-query-tooltip {
     height: auto;
     overflow: visible;
     -webkit-user-select: none;
@@ -91,7 +78,7 @@ thinkbig-visual-query-transform {
     -ms-user-select: none;
     user-select: none;
   }
-  .md-tooltip.visual-query-tooltip ul {
+  .mat-tooltip.visual-query-tooltip ul {
     color: #ffcdd2;
     margin: 0;
     padding-left: 20px;
@@ -100,7 +87,7 @@ thinkbig-visual-query-transform {
   /**
     Override toolbar buttons
      */
-  .md-kylo-powerui .md-button {
+  .md-kylo-powerui button {
     min-height: 27px;
     line-height: 27px;
     font-size: 12px;
@@ -109,14 +96,9 @@ thinkbig-visual-query-transform {
   /*
 Override spacing for context menu
  */
-  md-menu-content.md-kylo-theme md-menu-item  {
+  mat-menu.md-kylo-theme [mat-menu-item] {
     font-size: 14px;
     height: 36px;
-  }
-
-  md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
-    background-color: transparent !important;
-    opacity:1.0;
   }
 
   span.ws-text {
@@ -131,7 +113,7 @@ Override spacing for context menu
 /**
   Override toolbar buttons
    */
-.visual-query-column-menu .md-button  {
+.visual-query-column-menu button  {
   min-height: 27px;
   line-height: 27px;
   font-size: 12px;

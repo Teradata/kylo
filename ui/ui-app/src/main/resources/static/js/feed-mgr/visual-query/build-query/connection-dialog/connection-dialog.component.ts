@@ -1,32 +1,29 @@
-import * as angular from "angular";
+import {Component, Inject} from "@angular/core";
+import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import * as _ from "underscore";
 
-import {moduleName} from "../../module-name";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
-import {Component, Inject} from "@angular/core";
-import {CloneUtil} from "../../../../common/utils/clone-util";
 import {FlowChart} from "../flow-chart/model/flow-chart.model";
 
 export interface ConnectionDialogConfig {
-    isNew:boolean;
-    connectionDataModel:any,
-    connectionViewModel:FlowChart.ConnectionViewModel
-    source:any;
-    dest:any;
+    isNew: boolean;
+    connectionDataModel: any,
+    connectionViewModel: FlowChart.ConnectionViewModel
+    source: any;
+    dest: any;
 }
 
 export enum ConnectionDialogResponseStatus {
-    SAVE=1, DELETE=2, CANCEL=3
+    SAVE = 1, DELETE = 2, CANCEL = 3
 }
 
 export interface ConnectionDialogResponse {
-    id:string;
-    connectionName?:string;
-    source:string;
-    dest:string;
-    joinType:string;
-    status:ConnectionDialogResponseStatus;
+    id: string;
+    connectionName?: string;
+    source: string;
+    dest: string;
+    joinType: string;
+    status: ConnectionDialogResponseStatus;
 }
 
 /**
@@ -40,45 +37,42 @@ export class ConnectionDialog {
 
     form: FormGroup;
 
-    sourceControl:FormControl;
+    sourceControl: FormControl;
 
-    destControl:FormControl;
+    destControl: FormControl;
 
-    joinTypeControl:FormControl;
+    joinTypeControl: FormControl;
 
-    connectionName:FormControl;
+    connectionName: FormControl;
 
-    title:string;
+    title: string;
 
-    connectionDataModel:any;
-    isValid:boolean = false;
+    connectionDataModel: any;
+    isValid: boolean = false;
 
-    source:any;
-    dest:any;
-    joinTypes:any = [{name: "Inner Join", value: "INNER JOIN"}, {name: "Left Join", value: "LEFT JOIN"}, {name: "Right Join", value: "RIGHT JOIN"}];
+    source: any;
+    dest: any;
+    joinTypes: any = [{name: "Inner Join", value: "INNER JOIN"}, {name: "Left Join", value: "LEFT JOIN"}, {name: "Right Join", value: "RIGHT JOIN"}];
 
-    sourceKey:string;
-    destKey:string;
-    joinType:string;
+    sourceKey: string;
+    destKey: string;
+    joinType: string;
 
     constructor(private dialog: MatDialogRef<ConnectionDialog>, formBuilder: FormBuilder, @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogConfig) {
-
         this.form = formBuilder.group({});
 
-        if(this.data.source && this.data.dest) {
+        if (this.data.source && this.data.dest) {
             this.title = "Connection Details"// for " + this.data.source.name + " to " + this.data.dest.name
         }
         else {
             this.title = "Connection details"
         }
 
-
         this.init();
-
     }
 
-    private init(){
-        if(this.data.isNew){
+    private init() {
+        if (this.data.isNew) {
             //attempt to auto find matches
             let sourceNames: any = [];
             let destNames: any = [];
@@ -102,22 +96,21 @@ export class ConnectionDialog {
                 this.destKey = <string> col;
                 this.joinType = "INNER JOIN"
             }
-        }
-        else {
-            this.joinType =this.data.connectionDataModel.joinType;
+        } else {
+            this.joinType = this.data.connectionDataModel.joinType;
             this.sourceKey = this.data.connectionDataModel.joinKeys.sourceKey;
             this.destKey = this.data.connectionDataModel.joinKeys.destKey;
         }
 
-        this.connectionName = new FormControl(this.data.connectionDataModel.name,[]);
-        this.sourceControl = new FormControl(this.sourceKey, [ Validators.required])
-        this.destControl = new FormControl(this.destKey, [ Validators.required])
-        this.joinTypeControl = new FormControl(this.joinType, [ Validators.required])
+        this.connectionName = new FormControl(this.data.connectionDataModel.name, []);
+        this.sourceControl = new FormControl(this.sourceKey, [Validators.required]);
+        this.destControl = new FormControl(this.destKey, [Validators.required]);
+        this.joinTypeControl = new FormControl(this.joinType, [Validators.required]);
 
-        this.form.addControl("connectionName",this.connectionName);
-        this.form.addControl("joinType", this.joinTypeControl)
-        this.form.addControl("source", this.sourceControl)
-        this.form.addControl("dest", this.destControl)
+        this.form.addControl("connectionName", this.connectionName);
+        this.form.addControl("joinType", this.joinTypeControl);
+        this.form.addControl("source", this.sourceControl);
+        this.form.addControl("dest", this.destControl);
 
         this.validate();
     }
@@ -130,9 +123,16 @@ export class ConnectionDialog {
      * Closes this dialog and returns the ConnectionDialogResponse
      */
     apply() {
-        console.log("APPLY ", this.form)
+        console.log("APPLY ", this.form);
         let values = this.form.value;
-        let response:ConnectionDialogResponse = {id:this.data.connectionDataModel.id,connectionName:values.connectionName, source:values.source, dest:values.dest, joinType:values.joinType,status:ConnectionDialogResponseStatus.SAVE}
+        let response: ConnectionDialogResponse = {
+            id: this.data.connectionDataModel.id,
+            connectionName: values.connectionName,
+            source: values.source,
+            dest: values.dest,
+            joinType: values.joinType,
+            status: ConnectionDialogResponseStatus.SAVE
+        };
         this.dialog.close(response);
     }
 
@@ -140,16 +140,21 @@ export class ConnectionDialog {
      * Cancel this dialog.
      */
     cancel() {
-        this.dialog.close({status:ConnectionDialogResponseStatus.CANCEL});
+        this.dialog.close({status: ConnectionDialogResponseStatus.CANCEL});
     }
 
-    validate():boolean {
-        return   this.form.valid;
-    }
-    deleteConnection(){
-        this.dialog.close({id:this.data.connectionDataModel.id, connectionName:this.data.connectionDataModel.name, source:this.data.connectionDataModel.joinKeys.sourceKey,dest:this.data.connectionDataModel.joinKeys.destKey, joinType:this.data.connectionDataModel.joinType,status:ConnectionDialogResponseStatus.DELETE});
+    validate(): boolean {
+        return this.form.valid;
     }
 
-
-
+    deleteConnection() {
+        this.dialog.close({
+            id: this.data.connectionDataModel.id,
+            connectionName: this.data.connectionDataModel.name,
+            source: this.data.connectionDataModel.joinKeys.sourceKey,
+            dest: this.data.connectionDataModel.joinKeys.destKey,
+            joinType: this.data.connectionDataModel.joinType,
+            status: ConnectionDialogResponseStatus.DELETE
+        });
+    }
 }

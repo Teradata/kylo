@@ -83,7 +83,7 @@ export class RegisterSelectTemplateController {
         /**
          * Get notified when a already registered template is selected and loaded from the previous screen
          */
-        this.broadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
+        this.broadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", () => this.onRegisteredTemplateLoaded());
 
         $scope.$watch(() => {
             return this.model.loading;

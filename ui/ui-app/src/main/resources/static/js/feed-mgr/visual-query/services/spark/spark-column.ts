@@ -1,12 +1,14 @@
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import {TdDialogService} from "@covalent/core/dialogs";
+import * as angular from "angular";
 import * as moment from "moment";
-import * as angular from 'angular';
-import * as _ from "underscore";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import {Observable} from "rxjs/Observable";
+import * as _ from "underscore";
+
 import {DateFormatResponse} from "../../wrangler/api";
 import {DataType} from "../../wrangler/api/column";
 import {DateFormatType, DateFormatUnit, DialogService} from "../../wrangler/api/services/dialog.service";
@@ -61,7 +63,8 @@ interface ParseDateResponse {
  */
 export class SparkColumnDelegate extends ColumnDelegate {
 
-    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: angular.material.IDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpClient, private RestUrlService: any) {
+    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: TdDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpClient,
+                private RestUrlService: any) {
         super(dataType, controller, $mdDialog, uiGridConstants, dialog);
     }
 
@@ -133,28 +136,28 @@ export class SparkColumnDelegate extends ColumnDelegate {
      * @param filter
      * @param table
      */
-    applyFilter(header:any,filter: any, table: any) {
-       this.controller.addColumnFilter(filter,header,true)
+    applyFilter(header: any, filter: any, table: any) {
+        this.controller.addColumnFilter(filter, header, true)
     }
 
-    applyFilters(header:any,filters:any[],table:any){
+    applyFilters(header: any, filters: any[], table: any) {
         //filter out any filters that dont have anything
-        let validFilters =_.filter(filters,(filter) => {
-            return (angular.isDefined(filter.term)&& filter.term != '')
+        let validFilters = _.filter(filters, (filter) => {
+            return (angular.isDefined(filter.term) && filter.term != '')
         });
 
-        _.each(validFilters,(filter,i)=> {
-               let query = false;
-               if(i == (validFilters.length -1)){
-                   query = true;
-               }
-                this.controller.addColumnFilter(filter,header,true)
-            });
+        _.each(validFilters, (filter, i) => {
+            let query = false;
+            if (i == (validFilters.length - 1)) {
+                query = true;
+            }
+            this.controller.addColumnFilter(filter, header, true)
+        });
     }
 
 
     sortColumn(direction: string, column: any, grid: any) {
-        this.controller.addColumnSort(direction,column,true);
+        this.controller.addColumnSort(direction, column, true);
     }
 
     /**
