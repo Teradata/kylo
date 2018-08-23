@@ -5,7 +5,6 @@ import {AbstractControl, FormGroup, ValidatorFn, Validators} from "@angular/form
 import {InputType} from "../../../../shared/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
 import {ProfileHelper} from "../../api/profile-helper";
-import {DialogBuilder, WranglerFormField} from "../../WranglerFormBuilder";
 
 
 export class RescaleForm extends ColumnForm {
@@ -21,7 +20,7 @@ export class RescaleForm extends ColumnForm {
         return (control: AbstractControl): {[key: string]: any} | null => {
             let minValue = form.get(minKey).value;
             let maxValue = form.get(maxKey).value;
-            if(minValue > maxValue){
+            if(minValue >= maxValue){
                 return {"minMaxError":true}
             }
             else {
@@ -31,17 +30,29 @@ export class RescaleForm extends ColumnForm {
     }
 
     buildForm() {
-        return new DynamicFormBuilder().setTitle("Rescale Min/Max").setForm(this.form)
+        return new DynamicFormBuilder().setTitle("Rescale Min/Max").setForm(this.form).setMessage("Rescale feature to a given range.")
             .column()
-            .text().setKey("minScale").setPlaceholder("Min:").setType(InputType.number).setRequired(true)
-            .setValidators([ this.minMaxValidator(this.form, "minScale", "maxScale") ]).setValue(0).done()
-            .text().setKey("maxScale").setPlaceholder("Max:").setType(InputType.number).setRequired(true)
-            .setValidators([ this.minMaxValidator(this.form, "minScale", "maxScale") ]).setValue(1).done()
+            .text().setKey("minScale").setPlaceholder("Minimum range").setType(InputType.text).setPattern("\\d*\\.{0,1}\\d+").setValue(0).setRequired(true)
+            .setValidators([ this.minMaxValidator(this.form, "minScale", "maxScale") ])
+            .setErrorMessageLookup((type:string,validationResponse:any,form:FormGroup) => {
+                switch (type) {
+                    case "minMaxError":
+                        return "Min must be less than max.";
 
+                }
+            }).done()
+            .text().setKey("maxScale").setPlaceholder("Maximum range").setType(InputType.text).setPattern("^-?\\d*\\.{0,1}\\d+").setValue(1).setRequired(true)
+            .setErrorMessageLookup((type:string,validationResponse:any,form:FormGroup) => {
+                switch (type) {
+                    case "minMaxError":
+                        return "Min must be less than max.";
+
+                }
+            }).done()
             .columnComplete()
             .onApply((values: any) => {
-                let minScale: number = values.bin;
-                let maxScale: number = values.sample;
+                let minScale: number = values.minScale;
+                let maxScale: number = values.maxScale;
                 let fieldName = this.fieldName;
 
                 this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {

@@ -471,7 +471,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selectionDisplay = this.niceSelection($scope.selection)
         $scope.table = this.delegate;
         $scope.value = isNull ? null : $(cellDiv).data('realValue');
-        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
+        $scope.displayValue = (isNull || $scope.value == null ? "(empty)" : ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value));
 
         // Update position
         this.menuPanel.updatePosition(

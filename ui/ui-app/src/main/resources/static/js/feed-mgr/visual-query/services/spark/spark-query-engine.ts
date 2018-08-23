@@ -445,16 +445,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Check status
             if (response.data.status === "PENDING") {
 
-
-                if (state.columns === null && response.data.results && response.data.results.columns) {
-
-                    //Unnecessary and causes table refresh problems
-                    // state.columns = response.data.results.columns;
-                    // state.rows = [];
-                    // state.table = response.data.table;
-                    // self.updateFieldPolicies(state);
-                }
-
                 deferred.next(response.data.progress);
 
                 self.$timeout(function () {
@@ -464,7 +454,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                         headers: {"Content-Type": "application/json"},
                         responseType: "json"
                     }).then(successCallback, errorCallback);
-                }, 500, false);
+                }, 250, false);
                 return;
             }
             if (response.data.status !== "SUCCESS") {

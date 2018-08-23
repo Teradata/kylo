@@ -15,7 +15,7 @@ export class ReplaceNanForm extends ColumnForm{
             .setTitle("Replace value:")
             .setMessage(`Replaces empty and NAN with a new value.`)
             .column()
-            .text().setKey("replaceValue").setType(InputType.text).setValue(-1).setPlaceholder("Replace value:")
+            .text().setKey("replaceValue").setType(InputType.text).setValue(-1).setPlaceholder("Replacement value")
             .done()
             .columnComplete()
             .onApply((values:any) => {

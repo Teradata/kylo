@@ -18,12 +18,12 @@ export class OrderByForm extends ColumnForm {
         return new DynamicFormBuilder().setTitle(this.title)
             .column()
             .select().setKey("orderBy1")
-            .setPlaceholder("Order by:")
+            .setPlaceholder("Order field")
             .setValue(DEFAULT)
             .setOptions(this.getColumnNames().map(col => {
                 return {label:col,value:col};
             })).done()
-            .checkbox().setKey("asc1").setPlaceholder("Asc:")
+            .checkbox().setKey("asc1").setPlaceholder("Asc?")
             .setValue(true).done()
             .columnComplete()
             .onApply((values:any)=> {

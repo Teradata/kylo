@@ -18,8 +18,8 @@ export class ExtractIndexForm extends ColumnForm{
             .setTitle("Extract Array Element")
             .setMessage("Extracts a single element at provided index from an array into a new column.")
             .column()
-            .text().setKey("colIndex").setType(InputType.number).setRequired(true).setValue(0).setPlaceholder("Array index:").setValidators([Validators.min(0)]).done()
-            .text().setKey("colName").setType(InputType.text).setRequired(true).setValue(`${this.fieldName}_item`).setPattern("^[a-zA-Z_][a-zA-Z0-9_]*$").setPlaceholder("New column:").done()
+            .text().setKey("colIndex").setType(InputType.number).setRequired(true).setValue(0).setPlaceholder("Array index").setValidators([Validators.min(0)]).done()
+            .text().setKey("colName").setType(InputType.text).setRequired(true).setValue(`${this.fieldName}_item`).setPattern("^[a-zA-Z_][a-zA-Z0-9_]*$").setPlaceholder("New column").done()
             .columnComplete()
             .onApply((values:any) => {
                 let colIndex=values.colIndex;

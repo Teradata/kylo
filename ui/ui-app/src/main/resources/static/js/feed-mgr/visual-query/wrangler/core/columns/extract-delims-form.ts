@@ -20,9 +20,9 @@ export class ExtractDelimsForm extends ColumnForm{
             .setTitle("Extract Between Delimiters")
             .setMessage("Extracts a string between two delimiters.")
             .column()
-            .text().setKey("start").setType(InputType.text).setRequired(true).setPattern(".").setValue("[").setPlaceholder("Start delim:").done()
-            .text().setKey("end").setType(InputType.text).setRequired(true).setPattern(".").setValue("]").setPlaceholder("End delim:").done()
-            .text().setKey("group").setType(InputType.number).setRequired(true).setValue(0).setValidators([Validators.min(0)]).setPlaceholder("Group:").done()
+            .text().setKey("start").setType(InputType.text).setRequired(true).setPattern(".").setValue("[").setPlaceholder("Start delim").done()
+            .text().setKey("end").setType(InputType.text).setRequired(true).setPattern(".").setValue("]").setPlaceholder("End delim").done()
+            .text().setKey("group").setType(InputType.number).setRequired(true).setValue(0).setValidators([Validators.min(0)]).setPlaceholder("Group").done()
             .columnComplete()
             .onApply((values:any) => {
                 let start = ColumnUtil.escapeRegexCharIfNeeded(values.start);

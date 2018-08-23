@@ -5,7 +5,6 @@ import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
 import * as _ from "underscore";
 import {ProfileHelper} from "./api/profile-helper";
-import {DialogBuilder, WranglerFormBuilder, WranglerFormField} from "./WranglerFormBuilder";
 import {ColumnUtil} from "./core/column-util";
 import {ReplaceValueForm} from "./core/columns/replace-value-form";
 import {CrossTabForm} from "./core/columns/cross-tab-form";
@@ -117,7 +116,7 @@ export class MenuItem {
 }
 
 export class MenuItems {
-    math: MenuItem[] = [];
+    calculate: MenuItem[] = [];
     replace:MenuItem[] = [];
     extract:MenuItem[] = [];
     ml:MenuItem[] = [];
@@ -147,19 +146,12 @@ export class ColumnDelegate implements IColumnDelegate {
     transforms: MenuItems;
 
     /**
-     * Builder for dynamic forms
-     */
-    formBuilder: WranglerFormBuilder;
-
-
-    /**
      * Constructs a column delegate.
      */
     constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
         this.dataCategory = ColumnUtil.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
-        this.formBuilder = new WranglerFormBuilder($mdDialog, dialog);
     }
 
     /**
@@ -169,9 +161,6 @@ export class ColumnDelegate implements IColumnDelegate {
         // not supported
     }
 
-
-
- 
     /**
      * Extracts text between regex of start and end of selection
      */
@@ -501,18 +490,27 @@ export class ColumnDelegate implements IColumnDelegate {
     vectorizeColumn(column: any, grid: any) {
 
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        const tempField = ColumnUtil.createTempField();
-        const formula = `vectorAssembler(["${fieldName}"], "${tempField}")`;
-        let renameScript = ColumnUtil.generateRenameScript(fieldName, tempField, grid);
 
-        // Two part conversion
-        let chainedOp: ChainedOperation = new ChainedOperation(2);
-        this.controller.setChainedQuery(chainedOp);
-        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Vectorize ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
-            .then(() =>{
-                chainedOp.nextStep();
-                this.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName});
-            })
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) =>{
+            if (profileData.percNull > 0) {
+                this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
+                return;
+            }
+            const tempField = ColumnUtil.createTempField();
+            const formula = `vectorAssembler(["${fieldName}"], "${tempField}")`;
+            let renameScript = ColumnUtil.generateRenameScript(fieldName, tempField, grid);
+
+            // Two part conversion
+            let chainedOp: ChainedOperation = new ChainedOperation(2);
+            this.controller.setChainedQuery(chainedOp);
+            this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Vectorize ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
+                .then(() =>{
+                    chainedOp.nextStep();
+                    this.controller.addFunction(renameScript, {formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName});
+                })
+        });
+
+
     }
 
     /**
@@ -565,19 +563,25 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     identifyOutliers(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        let quantileStats = ColumnUtil.approxQuantileFormula(fieldName, 4);
-        this.controller.extractFormulaResult(quantileStats, 10000)
-            .then( (value: any) =>{
-                const Q1 = value[0];
-                const Q3 = value[2];
-                const IQR = Q3 - Q1;
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+            if (profileData.percNull > 0) {
+                this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
+                return;
+            }
+            let quantileStats = ColumnUtil.approxQuantileFormula(fieldName, 4);
+            this.controller.extractFormulaResult(quantileStats, 10000)
+                .then((value: any) => {
+                    const Q1 = value[0];
+                    const Q3 = value[2];
+                    const IQR = Q3 - Q1;
 
-                let lower = (Q1 - (1.5 * IQR));
-                let upper = (Q3 + (1.5 * IQR));
-                let script = `when(or(${fieldName} < ${lower},${fieldName}>${upper}),1).otherwise(0)`
-                const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_outlier`);
-                this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Find outliers ${fieldName}`});
-            });
+                    let lower = (Q1 - (1.5 * IQR));
+                    let upper = (Q3 + (1.5 * IQR));
+                    let script = `when(or(${fieldName} < ${lower},${fieldName}>${upper}),1).otherwise(0)`
+                    const formula = ColumnUtil.toAppendColumnFormula(script, column, grid, `${fieldName}_outlier`);
+                    this.controller.addFunction(formula, {formula: formula, icon: 'functions', name: `Find outliers ${fieldName}`});
+                });
+        });
     }
 
     /**
@@ -1124,32 +1128,43 @@ export class ColumnDelegate implements IColumnDelegate {
         const self = this;
 
         if (dataCategory === DataCategory.NUMERIC) {
+
+            transforms.replace.push(
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Missing values...', operationFn: self.replaceMissing}
+            );
             transforms.ml.push(
                 {description: 'Bin values', icon: 'functions', name: 'Bin values...', operationFn: self.binValues},
                 {description: 'Identify outliers', icon: 'unicorn', name: 'Identify outliers', operationFn: self.identifyOutliers},
                 {description: 'Impute missing with mean', icon: 'functions', name: 'Impute using mean...', operationFn: self.imputeMeanColumn},
                 {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceMissing},
-                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operationFn: self.rescaleMinMax}
+                {description: 'Rescale min/max', icon: 'functions', name: 'Rescale min/max...', operationFn: self.rescaleMinMax},
+                {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operationFn: self.vectorizeColumn}
             );
-            transforms.math.push(
-                // {description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn},
+            transforms.format.push(
                 {description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil'},
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
+                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operationFn: self.roundNumeric});
+
+            transforms.calculate.push(
                 {description: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},
                 {description: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians'},
-                {description: 'Round number', icon: 'exposure_zero', name: 'Round...', operationFn: self.roundNumeric},
                 {description: 'Log', icon: 'functions', name: 'Log10', operation: 'log10'},
-                {description: 'Logit transform', icon: 'functions', name: 'Logit', operationFn: self.logitTransform}
+                {description: 'Logit transform', icon: 'functions', name: 'Logit', operationFn: self.logitTransform},
+                {description: 'Running average', icon: 'functions', name: 'Running average...', operationFn: self.runningAverage},
+                {description: 'Running total', icon: 'functions', name: 'Running total...', operationFn: self.runningTotal},
+                {description: 'Difference from previous', icon: 'functions', name: 'Difference from prev value...', operationFn: self.diffFromPrevious},
+                {description: '% difference', icon: 'functions', name: '% Difference from prev value...', operationFn: self.percDiffFromPrevious}
             );
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operationFn: self.crosstabColumn},
-                {description: 'Running average', icon: 'functions', name: 'Running average...', operationFn: self.runningAverage},
-                {description: 'Running total', icon: 'functions', name: 'Running total...', operationFn: self.runningTotal},
-                {description: '% difference', icon: 'functions', name: 'Percent diff from prev value...', operationFn: self.percDiffFromPrevious},
-                {description: 'Difference from previous', icon: 'functions', name: 'Difference from prev value...', operationFn: self.diffFromPrevious}
             );
         }
         else if (dataCategory === DataCategory.STRING) {
+
+            transforms.replace.push(
+                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Missing values...', operationFn: self.replaceMissing},
+                {description: 'Replace NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
+            );
 
             transforms.format.push({description: 'Lowercase', icon: 'arrow_downward', name: 'lowercase', operation: 'lower'},
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
@@ -1167,9 +1182,8 @@ export class ColumnDelegate implements IColumnDelegate {
             transforms.ml.push(
                 {description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operationFn: self.imputeMissingColumn},
                 {description: 'Index labels', icon: 'functions', name: 'Index labels', operationFn: self.indexColumn},
-                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn},
-                {description: 'Replace NAN with a specified value', icon: 'find_replace', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
-                {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace missing...', operationFn: self.replaceMissing});
+                {description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operationFn: self.oneHotEncodeColumn}
+            );
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});

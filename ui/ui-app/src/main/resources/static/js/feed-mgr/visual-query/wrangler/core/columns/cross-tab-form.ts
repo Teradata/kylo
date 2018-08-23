@@ -1,11 +1,8 @@
-import {DynamicFormBuilder, FormConfig} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
 import {ColumnForm} from "./column-form";
-import {WranglerFormField} from "../../WranglerFormBuilder";
 import {ColumnController} from "../../column-controller";
-import {ChainedOperation, DataCategory} from "../../column-delegate";
+import {ChainedOperation} from "../../column-delegate";
 import {ColumnUtil} from "../column-util";
-import {QueryResultColumn} from "../../model/query-result-column";
 
 export class CrossTabForm extends ColumnForm{
     constructor(column:any, grid:any,controller:ColumnController, value?:string){
@@ -18,7 +15,7 @@ export class CrossTabForm extends ColumnForm{
             .column()
                 .select()
                     .setKey("crossColumn")
-                    .setPlaceholder("Crosstab column:")
+                    .setPlaceholder("Crosstab column")
                     .setOptions(this.getColumnNames().map(col => {
                         return {label:col,value:col};
                      }))

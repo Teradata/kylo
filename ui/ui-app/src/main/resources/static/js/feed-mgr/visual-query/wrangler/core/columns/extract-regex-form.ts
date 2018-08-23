@@ -19,8 +19,8 @@ export class ExtractRegexForm extends ColumnForm{
             .setTitle("Extract Regex")
             .setMessage("Extracts a string matching regex pattern and provided group.")
             .column()
-            .text().setKey("regex").setType(InputType.text).setRequired(true).setValue("\\\\[(.*?)\\\\]").setPlaceholder("Regex pattern:").done()
-            .text().setKey("group").setType(InputType.number).setRequired(true).setValue(0).setValidators([Validators.min(0)]).setPlaceholder("Group:").done()
+            .text().setKey("regex").setType(InputType.text).setRequired(true).setValue("\\\\[(.*?)\\\\]").setPlaceholder("Regex pattern").done()
+            .text().setKey("group").setType(InputType.number).setRequired(true).setValue(0).setValidators([Validators.min(0)]).setPlaceholder("Group").done()
             .columnComplete()
             .onApply((values:any) => {
                 let regex = values.regex;

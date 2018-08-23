@@ -1,7 +1,7 @@
 import {ColumnForm} from "./column-form";
 import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
-import {FormGroup, ValidatorFn, Validators} from "@angular/forms";
+import {FormGroup, Validators} from "@angular/forms";
 import {InputType} from "../../../../shared/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
 
@@ -11,13 +11,14 @@ export class BinValuesForm extends ColumnForm {
         super(column,grid,controller,value)
     }
 
+
     buildForm() {
         return new DynamicFormBuilder().setTitle("Bin Values")
             .column()
               .text()
                 .setKey("bin")
                 .setType(InputType.number)
-                .setPlaceholder("# of bins:")
+                .setPlaceholder("# of bins")
                 .setValue(4)
                 .setRequired(true)
                 .setValidators([Validators.min(2)])
@@ -33,18 +34,25 @@ export class BinValuesForm extends ColumnForm {
             .done()
             .text()
                 .setKey("sample")
-                .setPlaceholder("# of rows to sample:")
+                .setPlaceholder("# of rows to sample")
                 .setType(InputType.number)
                 .setValue(10000)
+                .setValidators([Validators.min(1)])
+                .setErrorMessageLookup((type:string,validationResponse:any,form:FormGroup) => {
+                switch (type) {
+                    case "min":
+                        return "A positive integer greater than or equal to "+validationResponse.min+" is required ";;
+
+                }})
                 .setRequired(true)
             .done()
             .columnComplete()
             .onApply((values:any)=> {
-                let bins:number =values.bin;
+                let bins:number =values.bin
                 let sample:number = values.sample;
 
                 let binSize = 1 / bins;
-                let arr = [];
+                let arr = []
                 for (let i = 1; i < bins; i++) {
                     arr.push(i * binSize)
                 }

@@ -34,25 +34,26 @@ export class ReplaceValueForm extends ColumnForm{
         }
 
         let displayValue = (this.value == null || this.value == '' ? '(empty)' : this.value);
-        let nullCheck = (this.value == null || this.value == '' ? ` || isnull(${this.fieldName})` : '');
 
         return new DynamicFormBuilder()
             .setTitle("Replace value:")
             .setMessage(`Replaces ${displayValue} with a new value.`)
             .column()
-            .text().setKey("replaceValue").setType(InputType.text).setPattern(pattern).setPlaceholder("Replace value:")
+            .text().setKey("replaceValue").setType(InputType.text).setPattern(pattern).setRequired(true).setPlaceholder("Replacement value:")
             .done()
             .columnComplete()
             .onApply((values:any) => {
                 let formula = '';
                 let replaceValue=values.replaceValue;
+                if (replaceValue == null || replaceValue == '') {
+                    replaceValue = `''`
+                }
                 if (this.dataCategory == DataCategory.NUMERIC) {
-                    if (replaceValue == null || replaceValue == '') {
-                        replaceValue = `''`
-                    }
-                    formula = ColumnUtil.toFormula(`when(${this.fieldName}==${this.value} ${nullCheck}, ${replaceValue}).otherwise(${this.fieldName}).as("${this.fieldName}")`, this.column, this.grid);
+                    let check = (this.value == null || this.value == '' ? `isnull(${this.fieldName})` : `${this.fieldName}==${this.value}`);
+                    formula = ColumnUtil.toFormula(`when( ${check}, ${replaceValue}).otherwise(${this.fieldName}).as("${this.fieldName}")`, this.column, this.grid);
                 } else {
-                    formula = ColumnUtil.toFormula(`when(${this.fieldName}=='${this.value}' ${nullCheck}, '${replaceValue}').otherwise(${this.fieldName}).as("${this.fieldName}")`, this.column, this.grid);
+                    let check = (this.value == null || this.value == '' ? `isnull(${this.fieldName})` : `${this.fieldName}=='${this.value}'`);
+                    formula = ColumnUtil.toFormula(`when( ${check}, '${replaceValue}').otherwise(${this.fieldName}).as("${this.fieldName}")`, this.column, this.grid);
                 }
                 this.controller.addFunction(formula, {formula: formula, icon: "find_replace", name: `Replace ${displayValue} with ${replaceValue}`});
             })

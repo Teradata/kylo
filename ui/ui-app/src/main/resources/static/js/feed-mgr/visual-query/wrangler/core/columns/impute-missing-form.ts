@@ -18,8 +18,8 @@ export class ImputeMissingForm extends ColumnForm {
         let columns = ColumnUtil.toColumnArray(this.grid.columns, this.fieldName)
         return new DynamicFormBuilder().setTitle("Rescale Min/Max").setMessage("Specify windowing options to source fill-forward values:")
             .column()
-            .select().setKey("groupBy").setPlaceholder("Group By:").setOptionsArray(columns).setRequired(true).done()
-            .select().setKey("orderBy").setPlaceholder("Order By:").setOptionsArray(columns).setRequired(true).done()
+            .select().setKey("groupBy").setPlaceholder("Group By").setOptionsArray(columns).setRequired(true).done()
+            .select().setKey("orderBy").setPlaceholder("Order By").setOptionsArray(columns).setRequired(true).done()
             .columnComplete()
             .onApply((values: any) => {
                 let groupBy: string = values.groupBy;
