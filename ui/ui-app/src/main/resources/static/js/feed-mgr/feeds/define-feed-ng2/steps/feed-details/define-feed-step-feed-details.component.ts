@@ -322,7 +322,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             this.mergeTemplateDataWithFeed(this.feed);
         }
 
-
+        //listen when the form is valid or invalid
+        this.subscribeToFormChanges(this.form);
     }
 
     /**

@@ -28,7 +28,7 @@
 
     <div *ngSwitchCase="'static-text'" [innerHTML]="field.staticText" class="pad-top-sm" fxLayout="column">
       <mat-divider *ngIf="field.showDivider"></mat-divider>
-      <div [innerHTML]="field.staticText" class="{field.textStyleClass}}"></div>
+      <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
     </div>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
