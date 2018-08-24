@@ -59,6 +59,8 @@ import {TranslateModule} from "@ngx-translate/core";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
+import {OverviewComponent} from './summary/overview/overview.component';
+import {ProfileComponent} from './summary/profile/profile.component';
 
 
 @NgModule({
@@ -76,6 +78,8 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         DefineFeedStepEditContentComponent,
         DefineFeedStepWranglerComponent,
         DefineFeedTableComponent,
+        OverviewComponent,
+        ProfileComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe
     ],

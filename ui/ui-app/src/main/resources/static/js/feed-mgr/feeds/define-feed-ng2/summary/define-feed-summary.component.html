@@ -11,28 +11,7 @@
     <div fxLayout="row" fxFlex="100" fxLayoutAlign="center start">
 
       <mat-card class="feed-summary-card">
-
-        <mat-card-header>
-          <mat-card-title>Feed Summary - {{feed.feedName}}</mat-card-title>
-          <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
-            <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-list role="list">
-            <ng-container *ngFor="let step of feed.steps">
-
-              <mat-list-item (click)="onStepSelected(step)" [ngClass]="{'selected-step': (selectedStep != undefined && step.number == selectedStep.number), 'disabled-step':step.disabled}">
-                <h3 matLine>{{step.number}}. {{step.name}}</h3>
-                <p mat-line> {{step.description}}</p>
-                <span></span>
-                <mat-icon color="accent" *ngIf="step.complete">check</mat-icon>
-              </mat-list-item>
-              <mat-divider></mat-divider>
-            </ng-container>
-
-          </mat-list>
-        </mat-card-content>
+        <ui-view></ui-view>
       </mat-card>
 
       <mat-card class="feed-summary-right-card" >
@@ -44,38 +23,45 @@
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <mat-list role="list">
-            <mat-list-item >
+          <mat-nav-list role="list">
+            <a mat-list-item uiSref="feed-definition.summary.overview" uiSrefActive="active">
+              <div matLine>Summary</div>
+              <span></span>
+            </a>
+
+            <mat-divider></mat-divider>
+
+            <a mat-list-item >
               <div matLine>Category</div>
               <span></span>
-            </mat-list-item>
+            </a>
 
             <mat-divider></mat-divider>
 
-            <mat-list-item >
+            <a mat-list-item>
               <div matLine>Lineage</div>
               <span></span>
-            </mat-list-item>
+            </a>
             <mat-divider></mat-divider>
 
-            <mat-list-item >
+            <a mat-list-item uiSref="feed-definition.summary.profile" uiSrefActive="active">
               <div matLine>Profile </div>
               <span></span>
-            </mat-list-item>
+            </a>
             <mat-divider></mat-divider>
 
-            <mat-list-item >
+            <a mat-list-item >
               <div matLine>Add SLA</div>
               <span></span>
-            </mat-list-item>
+            </a>
 
             <mat-divider></mat-divider>
 
-            <mat-list-item >
+            <a mat-list-item >
               <div matLine>Version History</div>
               <span></span>
-            </mat-list-item>
-          </mat-list>
+            </a>
+          </mat-nav-list>
         </mat-card-content>
       </mat-card>
 

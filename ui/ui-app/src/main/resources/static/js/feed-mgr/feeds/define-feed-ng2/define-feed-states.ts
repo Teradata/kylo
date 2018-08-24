@@ -19,6 +19,8 @@ import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.c
 import {Observable} from "rxjs/Observable";
 import {FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
+import {ProfileComponent} from './summary/profile/profile.component';
+import {OverviewComponent} from './summary/overview/overview.component';
 
 
 
@@ -58,7 +60,32 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_STATE_NAME+".summary",
         url: "/:feedId/summary",
+        redirectTo: FEED_DEFINITION_STATE_NAME+".summary.overview",
         component: DefineFeedSummaryComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_STATE_NAME+".summary.overview",
+        url: "/overview",
+        component: OverviewComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_STATE_NAME+".summary.profile",
+        url: "/profile",
+        component: ProfileComponent,
         resolve: [
             {
                 token: 'stateParams',

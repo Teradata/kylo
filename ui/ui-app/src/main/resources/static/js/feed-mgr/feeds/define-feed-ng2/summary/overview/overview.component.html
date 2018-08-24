@@ -1,0 +1,21 @@
+<mat-card-header>
+  <mat-card-title>Feed Summary - {{feed.feedName}}</mat-card-title>
+  <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
+    <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
+  </mat-card-subtitle>
+</mat-card-header>
+<mat-card-content>
+  <mat-list role="list">
+    <ng-container *ngFor="let step of feed.steps">
+
+      <mat-list-item (click)="onStepSelected(step)" [ngClass]="{'selected-step': (selectedStep != undefined && step.number == selectedStep.number), 'disabled-step':step.disabled}">
+        <h3 matLine>{{step.number}}. {{step.name}}</h3>
+        <p mat-line> {{step.description}}</p>
+        <span></span>
+        <mat-icon color="accent" *ngIf="step.complete">check</mat-icon>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </ng-container>
+
+  </mat-list>
+</mat-card-content>
