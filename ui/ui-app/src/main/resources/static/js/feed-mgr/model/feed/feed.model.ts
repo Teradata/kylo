@@ -34,7 +34,13 @@ export interface FeedSchedule {
     concurrentTasks: number;
 }
 
+export enum FeedMode {
+    DRAFT="DRAFT", COMPLETE="COMPLETE"
+}
 
+export enum FeedState {
+    NEW="NEW", ENABLED="ENABLED", DISABLED="DISABLED"
+}
 
 
 export class Feed  implements KyloObject{
@@ -72,8 +78,8 @@ export class Feed  implements KyloObject{
      */
     template: any = null;
 
-    state: string; //NEW, ENABLED, DISABLED
-    mode: string; //DRAFT or COMPLETE
+    state: FeedState; //NEW, ENABLED, DISABLED
+    mode: FeedMode; //DRAFT or COMPLETE
 
     updateDate: Date;
     /**
@@ -310,7 +316,7 @@ export class Feed  implements KyloObject{
         this.readonly = true;
         this.systemFeedName = '';
         this.feedName = '';
-        this.mode = "DRAFT";
+        this.mode = FeedMode.DRAFT;
         this.category = {id: null, name: null, systemName: null, description: null};
         this.table = new FeedTableDefinition()
         this.dataTransformation = {
@@ -348,6 +354,10 @@ export class Feed  implements KyloObject{
 
     isNew() {
         return this.id == undefined;
+    }
+
+    isDraft(){
+        return this.mode == "DRAFT"
     }
 
     getStepBySystemName(stepName:string){

@@ -306,7 +306,7 @@ export class DefineFeedService {
     saveFeed() : Observable<Feed>{
 
         let valid = this.feed.validate(false);
-        if(valid) {
+        if(this.feed.isDraft() || (!this.feed.isDraft() && valid)) {
             return this._saveFeed();
         }
         else {
@@ -482,11 +482,15 @@ export class DefineFeedService {
             //set the steps
             this.feed.steps = steps;
             this.feed.updateDate = new Date(updatedFeed.updateDate);
-            this.feed.validate(true);
+           let valid = this.feed.validate(true);
             //mark the last saved feed
             this.lastSavedFeed = this.feed.copy();
             //notify watchers that this step was saved
-            let saveFeedResponse = new SaveFeedResponse(this.feed,true,"Successfully saved "+this.feed.feedName);
+            let message = "Successfully saved "+this.feed.feedName;
+            if(!valid){
+                message = "Saved the feed, but you have validation errors.  Please review."
+            }
+            let saveFeedResponse = new SaveFeedResponse(this.feed,true,message);
             saveFeedResponse.newFeed = newFeed;
             this.savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
