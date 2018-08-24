@@ -135,7 +135,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Last page requested
      */
-    currentPage: PageSpec;
+    currentPage = PageSpec.defaultPage();
 
     /**
      * Rows analyzed by the server

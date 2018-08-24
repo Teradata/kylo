@@ -166,7 +166,7 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
 
     ngOnChanges(changes: SimpleChanges): void {
         /* Watch on columns indicating model changed */
-        if (changes.columns) {
+        if (changes.columns && (changes.columns.currentValue.length != 0 || (changes.columns.previousValue && changes.columns.previousValue.length != 0))) {
             // On paging, we only need to refresh rows
             let rowsOnly: boolean = (this.lastState == this.tableState);
             this.onColumnsChange();
