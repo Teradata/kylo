@@ -59,7 +59,7 @@ export class FieldConfig<T> {
         this.order = options.order === undefined ? 1 : options.order;
         this.controlType = options.controlType || '';
         this.placeholder = options.placeholder || '';
-        this.model = (options.model && options.model[this.modelValueProperty]) ? options.model : this;
+        this.model = (options.model && options.model.hasOwnProperty(this.modelValueProperty)) ? options.model : this;
         this.hint = options.hint || '';
         this.readonlyValue = options.readonlyValue || this.model.value;
         this.pattern = options.pattern;
