@@ -19,6 +19,7 @@ import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLayoutModule} from "@covalent/core/layout";
@@ -33,11 +34,15 @@ import {KyloCommonModule} from "../../common/common.module";
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {DynamicFormModule} from "../shared/dynamic-form/dynamic-form.module";
 import {FieldPoliciesModule} from "../shared/field-policies-angular2/field-policies.module";
+import {PropertyListModule} from "../shared/property-list/property-list.module";
 import {BuildQueryComponent} from "./build-query/build-query-ng2.component";
 import {ConnectionDialog} from "./build-query/connection-dialog/connection-dialog.component";
 import {FlowChartModule} from "./build-query/flow-chart/flow-chart.module";
 import {UploadSampleFileComponent} from "./build-query/upload-sample-file.component";
+import {VisualQuerySaveService} from "./services/save.service";
 import {SparkQueryEngine} from "./services/spark/spark-query-engine";
+import {SaveOptionsComponent} from "./store/save-options.component";
+import {VisualQueryStoreComponent} from "./store/store.component";
 import {WranglerDataService} from "./transform-data/services/wrangler-data.service";
 import {WranglerTableService} from "./transform-data/services/wrangler-table.service";
 import {TransformDataComponent} from "./transform-data/transform-data.component";
@@ -55,9 +60,11 @@ registerQueryEngine('spark', SparkQueryEngine);
     declarations: [
         BuildQueryComponent,
         ConnectionDialog,
+        SaveOptionsComponent,
         TransformDataComponent,
         UploadSampleFileComponent,
         VisualQueryStepperComponent,
+        VisualQueryStoreComponent,
         VisualQueryTable
     ],
     exports: [
@@ -92,12 +99,14 @@ registerQueryEngine('spark', SparkQueryEngine);
         MatListModule,
         MatMenuModule,
         MatProgressBarModule,
+        MatProgressSpinnerModule,
         MatRadioModule,
         MatSelectModule,
         MatSidenavModule,
         MatStepperModule,
         MatToolbarModule,
         MatTooltipModule,
+        PropertyListModule,
         ReactiveFormsModule,
         WranglerModule,
         UIRouterModule.forChild({states: visualQueryStates})
@@ -106,6 +115,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         {provide: INJECTOR, useFactory: () => QueryEngineFactory.$$wranglerInjector},
         {provide: "VisualQueryEngineFactory", useClass: QueryEngineFactory},
         VisualQueryPainterService,
+        VisualQuerySaveService,
         WranglerDataService,
         WranglerTableService
     ]

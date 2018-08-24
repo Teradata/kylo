@@ -335,7 +335,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.tableColumns = [];
 
             // Initial load will trigger query from the table model.
-            if (this.isLoaded && this.model.chartViewModel.nodes.length >0) {
+            if (this.isLoaded) {
                 this.query();
             }
             this.isLoaded = true;
@@ -1253,5 +1253,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.chainedOperation = new ChainedOperation();
         this.queryProgress = 0;
         this.executingQuery = false;
+    }
+
+    goBack() {
+        this.stepper.previous();
+    }
+
+    goForward() {
+        this.stepper.next();
     }
 }

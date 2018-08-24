@@ -9,7 +9,6 @@ import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 
 @Component({
     selector: 'visual-query-stepper',
-    styleUrls: ['js/feed-mgr/visual-query/visual-query-stepper.component.css'],
     templateUrl: 'js/feed-mgr/visual-query/visual-query-stepper.component.html'
 })
 export class VisualQueryStepperComponent implements OnInit, OnDestroy {

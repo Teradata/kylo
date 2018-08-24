@@ -1,4 +1,6 @@
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {HttpClient} from "@angular/common/http";
+import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
@@ -7,6 +9,7 @@ import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typing
 import {VisualQuerySaveService} from "../services/save.service";
 import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
+import {SaveOptionsComponent} from "./save-options.component";
 import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
 import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
 import TableReference = DatasourcesServiceStatic.TableReference;
@@ -14,11 +17,28 @@ import TableReference = DatasourcesServiceStatic.TableReference;
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
 @Component({
+    selector: "thinkbig-visual-query-store",
     templateUrl: "js/feed-mgr/visual-query/store/store.component.html"
 })
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
-    stepperController: any;
+    /**
+     * Query engine
+     */
+    @Input()
+    engine: QueryEngine<any>;
+
+    /**
+     * Transformation model
+     */
+    @Input()
+    model: any;
+
+    /**
+     * Connected to 'Back' button
+     */
+    @Output()
+    back = new EventEmitter<void>();
 
     /**
      * Target destination type. Either DOWNLOAD or TABLE.
@@ -34,12 +54,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Url to download results
      */
     downloadUrl: string;
-
-    /**
-     * Query engine
-     */
-    @Input()
-    engine: QueryEngine<any>;
 
     /**
      * Error message
@@ -77,12 +91,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     loading = true;
 
     /**
-     * Transformation model
-     */
-    @Input()
-    model: any;
-
-    /**
      * Additional options for the output format.
      */
     properties: any[];
@@ -97,12 +105,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     saveSubscription: Subscription;
 
-    /**
-     * Index of this step
-     */
-    @Input()
-    stepIndex: string;
-
     saveMode: SaveMode = SaveMode.INITIAL;
 
     /**
@@ -110,9 +112,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     target: SaveRequest = {};
 
-    static readonly $inject: string[] = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService", "$mdDialog"];
-
-    constructor(private $http: angular.IHttpService, private DatasourcesService: DatasourcesService, private RestUrlService: any, private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: angular.material.IDialogService) {
+    constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService, @Inject("RestUrlService") private RestUrlService: any,
+                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
             if (event.id === this.downloadId) {
@@ -121,14 +122,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
             }
         });
     };
-
-    $onDestroy(): void {
-        this.ngOnDestroy();
-    }
-
-    $onInit(): void {
-        this.ngOnInit();
-    }
 
     /**
      * Release resources when component is destroyed.
@@ -156,10 +149,10 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
             });
 
         // Get list of Spark data sources
-        const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources")
+        const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources").toPromise()
             .then(response => {
-                this.downloadFormats = response.data["downloads"].sort();
-                this.tableFormats = response.data["tables"].sort();
+                this.downloadFormats = response["downloads"].sort();
+                this.tableFormats = response["tables"].sort();
             });
 
         // Wait for completion
@@ -255,10 +248,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     modifyTransformation(): void {
         this._reset();
-        let prevStep: any = this.stepperController.previousActiveStep(parseInt(this.stepIndex));
-        if (angular.isDefined(prevStep)) {
-            this.stepperController.selectedStepIndex = prevStep.index;
-        }
+        this.back.emit(null);
     }
 
     /**
@@ -273,13 +263,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     }
 
     /**
-     * Exit the Visual Query and go to the Feeds list
-     */
-    exit(): void {
-        this.stepperController.cancelStepper();
-    }
-
-    /**
      * Reset options when format changes.
      */
     onFormatChange(): void {
@@ -290,27 +273,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Show options info dialog for different data formats for download.
      */
     showOptionsInfo(): void {
-        this.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                /**
-                 * Hides this dialog.
-                 */
-                hide() {
-                    this.$mdDialog.hide();
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element(document.body),
-            templateUrl: "js/feed-mgr/visual-query/store/save.options.dialog.html"
-        });
+        this.$mdDialog.open(SaveOptionsComponent);
     };
-
 
     /**
      * Saves the results.
@@ -358,6 +322,10 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                     this.saveMode = SaveMode.INITIAL;
                 },
                 () => this.loading = false);
+    }
+
+    trackDataSource(index: number, dataSource: UserDatasource) {
+        return dataSource.id;
     }
 
     /**

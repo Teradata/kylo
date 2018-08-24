@@ -11,6 +11,7 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {KyloServicesModule} from "../services/services.module";
 import {AddButtonComponent} from "./add-button/add-button.component";
+import {BrowserHeight} from "./browser-height/browser-height";
 import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 import {TranslateModule} from "@ngx-translate/core";
@@ -22,6 +23,7 @@ import {MatInputModule} from "@angular/material/input";
 @NgModule({
     declarations: [
         AddButtonComponent,
+        BrowserHeight,
         KyloIconComponent,
         NotificationMenuComponent,
         FileUploadComponent
@@ -48,6 +50,7 @@ import {MatInputModule} from "@angular/material/input";
         MatProgressSpinnerModule
     ],
     exports: [
+        BrowserHeight,
         KyloIconComponent,
         FileUploadComponent
     ]

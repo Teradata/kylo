@@ -1,5 +1,5 @@
-import {Injectable} from "@angular/core";
-import * as angular from "angular";
+import {Inject, Injectable} from "@angular/core";
+import {TdDialogService} from "@covalent/core/dialogs";
 import "rxjs/add/operator/share";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
@@ -33,9 +33,7 @@ export class VisualQuerySaveService {
      */
     private removeSubject = new Subject<RemoveEvent>();
 
-    static readonly $inject: string[] = ["$mdDialog", "NotificationService"];
-
-    constructor(private $mdDialog: angular.material.IDialogService, private notificationService: NotificationService) {
+    constructor(private $mdDialog: TdDialogService, @Inject("NotificationService") private notificationService: NotificationService) {
     }
 
     /**
@@ -90,15 +88,12 @@ export class VisualQuerySaveService {
             if (response.message) {
                 const message = (response.message.length <= 1024) ? response.message : response.message.substr(0, 1021) + "...";
                 error.callback = () => {
-                    this.$mdDialog.show(
-                        this.$mdDialog.alert()
-                            .parent(angular.element("body"))
-                            .clickOutsideToClose(true)
-                            .title("Error saving the transformation")
-                            .textContent(message)
-                            .ariaLabel("Save Failed")
-                            .ok("Got it!")
-                    );
+                    this.$mdDialog.openAlert({
+                        title: "Error saving the transformation",
+                        message: message,
+                        ariaLabel: "Save Failed",
+                        closeButton: "Got it!"
+                    });
                 };
             }
 

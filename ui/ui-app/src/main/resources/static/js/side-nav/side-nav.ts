@@ -193,7 +193,6 @@ export default class SideNav implements ng.IComponentController {
         // links.push({sref: "explorer", type: "link", icon: "find_in_page", text: "Explorer"});
         links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
         links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
-        links.push({sref: "visual-query2",type:'link', icon: "transform", text:'VQ2', fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
         links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
         links.push({sref: FEED_DEFINITION_STATE_NAME,type:'link', icon: "create_new_folder", text:"New Feed", permission: []});
         this.addExtensionLinks(this.MENU_KEY.FEED_MGR, links);

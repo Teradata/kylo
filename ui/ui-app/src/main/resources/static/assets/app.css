@@ -1375,43 +1375,10 @@ md-input-container.global-search .md-input {
   margin-top: 20px;
 }
 
-/* Covalent Loading */
-.layout-full > td-loading {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100%;
-}
-.layout-full > td-loading > .td-loading-wrapper {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-}
-
 /* Material Stepper */
-mat-horizontal-stepper.layout-full {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100%;
-}
-mat-horizontal-stepper.layout-full > .mat-horizontal-stepper-header-container {
-  flex: 0 0 auto;
-}
-mat-horizontal-stepper.layout-full > .mat-horizontal-content-container {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-}
-mat-horizontal-stepper.layout-full > .mat-horizontal-content-container > .mat-horizontal-stepper-content {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100%;
-}
-mat-horizontal-stepper.layout-full > .mat-horizontal-content-container > .mat-horizontal-stepper-content[aria-expanded=false] {
+mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-stepper-header-container {
   display: none;
+}
+mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container {
+  padding: 0;
 }

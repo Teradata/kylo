@@ -21,7 +21,7 @@ import "./ui-router-breadcrumbs/ui-router-breadcrumbs";
 import "./kylo-options/kylo-options";
 import "./vertical-section-layout/vertical-section-layout-directive";
 import "./dir-pagination/dirPagination-arrows";
-import "./browser-height/browser-height";
+import "./browser-height/angular1";
 import "./options-menu/OptionsMenu";
 import "./string-to-number/string-to-number";
 import "./utils/IDGenerator";
