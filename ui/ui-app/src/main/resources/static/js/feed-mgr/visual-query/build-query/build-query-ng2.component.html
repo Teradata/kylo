@@ -19,16 +19,15 @@
           </mat-form-field>
 
           <!-- datasource autocomplete -->
-          <div *ngIf="model.$selectedDatasourceId != 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70">
-            <mat-form-field style="width:100%">
-              <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
-              <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                <mat-option *ngFor="let table of filteredTables | async" [value]="table">
+          <mat-form-field style="width:100%" *ngIf="model.$selectedDatasourceId != 'FILE' " class="pad-left pad-right" fxFlex="70">
+            <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
+              <mat-option *ngFor="let table of filteredTables | async" [value]="table">
                   <span class="item-title">
                     <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
                   </span>
-                  <span class="item-metadata">
+                <span class="item-metadata">
                     <span class="item-metastat">
                       <span style="color:grey;">Schema:</span>
                       <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
@@ -38,11 +37,10 @@
                       <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
                     </span>
                   </span>
-                </mat-option>
-              </mat-autocomplete>
-              <div class="hint md-warn-text" *ngIf="databaseConnectionError">Unable to connect to selected data source.</div>
-            </mat-form-field>
-          </div>
+              </mat-option>
+            </mat-autocomplete>
+            <mat-hint class="mat-error" *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-hint>
+          </mat-form-field>
           <button *ngIf="model.$selectedDatasourceId != 'FILE'" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left">Add Table</button>
 
           <div fxFlex="70" fxLayout="row" *ngIf="model.$selectedDatasourceId == 'FILE'">
