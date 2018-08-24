@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr','feed-mgr/visual-query/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
     module.config(["$compileProvider",function($compileProvider) {
@@ -82,7 +82,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         });
 
         function lazyLoadController(path){
-            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/define-feed/module-require','feed-mgr/visual-query/module-require']);
+            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/define-feed/module-require']);
         }
     }]);
 
