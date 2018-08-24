@@ -26,6 +26,7 @@ import {FlexLayoutModule} from "@angular/flex-layout";
 import {KyloCommonModule} from "../common/common.module";
 import {MatButtonModule} from "@angular/material/button";
 import {VisualQueryService} from "./services/VisualQueryService";
+import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import {VisualQueryService} from "./services/VisualQueryService";
         FlexLayoutModule,
         KyloCommonModule,
         MatButtonModule,
-        CovalentDataTableModule
+        CovalentDataTableModule,
+        SqlEditorModule
     ],
     declarations:[
         DomainTypeConflictDialogComponent,

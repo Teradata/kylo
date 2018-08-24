@@ -170,6 +170,10 @@ angular.extend(SqlBuilder.prototype, {
                     sql += "RIGHT JOIN";
                     break;
 
+                case VisualQueryService.JoinType.FULL_JOIN:
+                    sql += "FULL JOIN";
+                    break;
+
                 default:
                     throw new Error("Unsupported join type: " + expr.jointype);
             }
@@ -604,7 +608,8 @@ export class VisualQueryService {
         JOIN: 0,
         JOIN_INNER: 1,
         JOIN_LEFT: 2,
-        JOIN_RIGHT: 3
+        JOIN_RIGHT: 3,
+        FULL_JOIN: 4
     }
 
     /**
@@ -662,7 +667,7 @@ export type BoolExprType = 0;
 /**
  * Enums for types of relation joins.
  */
-export type JoinType = 0 | 1 | 2 | 3;
+export type JoinType = 0 | 1 | 2 | 3 |4;
 
 /**
  * Type of node.
