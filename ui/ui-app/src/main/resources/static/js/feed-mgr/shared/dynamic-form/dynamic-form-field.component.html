@@ -85,14 +85,15 @@
     </mat-form-field>
 
     <div *ngSwitchCase="'chips'" class="pad-top-sm">
-      <td-chips [chipAddition]="field.chipAddition"
+      <td-chips [id]="field.key"
+          [chipAddition]="field.chipAddition"
                 [chipRemoval]="field.chipRemoval"
                 [items]="field.filteredFeeds"
-                placeholder="Select feed(s) from here"
+                placeholder="{{field.placeholder}}"
                 (inputChange)="field.filterFeeds($event)"
                 [(ngModel)]="field.feedsModel"
-                (add)="field.updateModel($event)"
-                (remove)="field.updateModel($event)"
+                (add)="field.updateModel($event); validateRequiredChips()"
+                (remove)="field.updateModel($event); validateRequiredChips()"
                 [ngModelOptions]="{standalone: true}"
                 requireMatch>
       </td-chips>

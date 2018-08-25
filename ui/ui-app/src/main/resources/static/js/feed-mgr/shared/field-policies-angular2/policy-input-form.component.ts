@@ -78,7 +78,7 @@ export class PolicyInputFormComponent implements OnInit {
               });
           }
           */
-
+        console.log(this.rule, this.mode, this.feed);
         if (this.rule) {
             this.createFormFieldConfig();
         }
@@ -129,7 +129,9 @@ export class PolicyInputFormComponent implements OnInit {
     }
 
     private isInputText(property: FieldPolicyProperty) {
-        return (property.type == null || property.type == "string" || property.type == "text" || property.type == "email" || property.type == "number" || property.type == "password" || property.type == 'regex' || property.type == 'email' || property.type == 'emails');
+        return (property.type == null || property.type == "string" || property.type == "text" || property.type == "email"
+            || property.type == "number" || property.type == "password" || property.type == 'regex' || property.type == 'email'
+            || property.type == 'emails' || property.type == 'cron');
     }
 
     private isSelect(property: FieldPolicyProperty) {
@@ -193,6 +195,7 @@ export class PolicyInputFormComponent implements OnInit {
                 items = property.selectableValues;
             }
             fieldConfigOptions.items = items;
+            fieldConfigOptions.modelValueProperty = 'values';
             fieldConfig = new Chip(fieldConfigOptions);
         }
 

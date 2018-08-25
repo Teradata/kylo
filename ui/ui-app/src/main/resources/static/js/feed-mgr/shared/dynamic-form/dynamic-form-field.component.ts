@@ -5,6 +5,7 @@ import { FieldConfig }     from './model/FieldConfig';
 import {SectionHeader} from "./model/SectionHeader";
 import {FormControlValidation} from "../../../common/utils/form-control-validation";
 import {StaticText} from "./model/StaticText";
+import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
 
 @Component({
     selector: 'dynamic-form-field',
@@ -16,7 +17,7 @@ export class DynamicFormFieldComponent {
     @Input() form: FormGroup;
     @Input() readonly :boolean;
 
-    constructor(){
+    constructor(private policyInputFormService: PolicyInputFormService){
 
     }
 
@@ -31,6 +32,10 @@ export class DynamicFormFieldComponent {
 
     getErrorMessage() {
         return FormControlValidation.getFieldConfigErrorMessage(this.form, this.field)
+    }
+
+    validateRequiredChips() {
+        this.policyInputFormService.validateRequiredChips(this.form, this.field);
     }
 
 }
