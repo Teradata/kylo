@@ -8,11 +8,11 @@
 <div mat-dialog-content class="mat-dialog-content">
   <form class="layout-column" [formGroup]="form">
     <p>{{message}}</p>
-
+<!--
     <mat-form-field>
       <input matInput placeholder="Connection Name" [formControl]="connectionName">
     </mat-form-field>
-
+-->
     <mat-form-field>
       <mat-select placeholder="Join Type"  formControlName="joinType" required>
         <mat-option *ngFor="let joinType of joinTypes" [value]="joinType.value">

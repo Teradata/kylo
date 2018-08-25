@@ -1,5 +1,5 @@
 define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','vis',
-        'kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module','feed-mgr/feeds/define-feed/module','angular-nvd3', 'fattable'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
+        'kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/feeds/define-feed/module','angular-nvd3', 'fattable'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, ['nvd3']);
       // load vis in the global state
@@ -57,7 +57,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
             })
 
         function lazyLoadController(path){
-            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
+            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','angular-visjs']);
         }
     }]);
 

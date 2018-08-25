@@ -1,19 +1,24 @@
 <div [formGroup]="form" fxLayout="column">
 
-  <div *ngIf="readonly && field.ngIf(form) == true" fxLayout="column">
+  <div *ngIf="readonly && field.ngIf(form) == true" fxLayout="column" class="{{field.styleClass}}">
 
-    <section class="mat-typography" *ngIf="field.controlType == 'section-header'">
+    <section  *ngIf="field.controlType == 'section-header'" class="pad-top-sm">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
       <h3  class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
+    <div *ngIf="field.controlType == 'static-text'" [innerHTML]="field.staticText" fxLayout="column" class="pad-top-sm">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
+    </div>
 
-    <div fxLayout="column" *ngIf="field.controlType != 'section-header'">
+    <div fxLayout="column" *ngIf="field.controlType != 'section-header' && field.controlType != 'static-text'" class="pad-top-sm">
       <div fxLayout="row">
         <span fxFlex="30%">{{field.placeholder}}</span>
         <span fxFlex="5%"></span>
         <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.model[field['modelValueProperty']]}}</span>
       </div>
-      <mat-hint>{{field.hint}}</mat-hint>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
     </div>
 
   </div>

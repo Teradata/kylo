@@ -237,7 +237,7 @@ export class HiveService {
         return data;
     }
 
-    transformQueryResultsToUiGridModel(queryResult: any, hideColumns: any, transformFn: any) {
+    transformQueryResultsToUiGridModel(queryResult: any, hideColumns?: any, transformFn?: any) {
         var data: any = {};
         var rows: any = queryResult.data.rows;
         var columns: any = [];

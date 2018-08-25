@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Inject, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {CodemirrorComponent} from "ng2-codemirror";
@@ -48,6 +48,12 @@ export class WranglerColumn {
     templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
 })
 export class TransformDataComponent implements AfterViewInit, ColumnController, OnChanges, OnInit {
+
+    /**
+     * Indicates if this is the active step
+     */
+    @Input()
+    active: boolean = true;
 
     /**
      * Query engine for transforming data.
@@ -129,7 +135,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Last page requested
      */
-    currentPage: PageSpec;
+    currentPage = PageSpec.defaultPage();
 
     /**
      * Rows analyzed by the server
@@ -216,32 +222,14 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild(CodemirrorComponent)
     codeMirrorView: CodemirrorComponent;
 
-    private readonly domainTypesService: DomainTypesService;
-    private readonly RestUrlService: any;
-    private readonly SideNavService: any;
-    private readonly uiGridConstants: any;
-    private readonly feedService: FeedService;
-    private readonly broadcastService: BroadcastService;
-    private readonly stepperService: StepperService;
-    private readonly WindowUnloadService: WindowUnloadService;
-
     /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor($element: ElementRef, private $mdDialog: TdDialogService, injector: Injector, private wranglerDataService: WranglerDataService) {
-        // Load AngularJS services
-        this.domainTypesService = injector.get("DomainTypesService");
-        this.RestUrlService = injector.get("RestUrlService");
-        this.SideNavService = injector.get("SideNavService");
-        this.uiGridConstants = injector.get("uiGridConstants");
-        this.feedService = injector.get("FeedService");
-        this.broadcastService = injector.get("BroadcastService");
-        this.stepperService = injector.get("StepperService");
-        this.WindowUnloadService = injector.get("WindowUnloadService");
-
-        //Listen for when the next step is active
-        this.broadcastService.subscribe(this.stepperService.STEP_CHANGED_EVENT).subscribe((event: BroadcastEvent) => this.onStepChange(event.name, event.args[0]));
-
+    constructor($element: ElementRef, private $mdDialog: TdDialogService, @Inject("DomainTypesService") private domainTypesService: DomainTypesService,
+                @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
+                @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
+                @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
+                private wranglerDataService: WranglerDataService) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
 
@@ -250,7 +238,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get height offset attribute
         this.heightOffset = $element.nativeElement.getAttribute("height-offset");
-
     }
 
     ngAfterViewInit(): void {
@@ -263,12 +250,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
         //reset sample file changed flag
         this.model.sampleFileChanged = false;
-
-        setInterval(() => {
-            if (this.sql != this.model.sql || this.sqlModel != this.model.chartViewModel || this.selectedColumnsAndTables != this.model.$selectedColumnsAndTables) {
-                this.ngOnInit();
-            }
-        }, 1000);
 
         // Select source model
         let useSqlModel = false;
@@ -352,7 +333,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.fieldPolicies) {
+        if (changes.active && (!changes.active.firstChange || changes.active.currentValue)) {
+            if (typeof this.model === "object" && this.sql !== this.model.sql) {
+                this.isValid = false;
+                this.sql = null;
+            }
+            this.onStepChange();
+        } else if (changes.fieldPolicies) {
             this.fieldPolicies.forEach(policy => {
                 if (policy.name == null) {
                     policy.name = policy.fieldName;
@@ -365,11 +352,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 }
             });
             this.engine.setFieldPolicies(this.fieldPolicies);
-        } else if (changes.model) {
-            if (typeof this.model === "object" && this.sql !== this.model.sql) {
-                this.isValid = false;
-                this.sql = null;
-            }
         }
     }
 
@@ -1110,20 +1092,17 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Update the feed model when changing from this transform step to a different step
      */
-    private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
-        const self = this;
-        const thisIndex = parseInt(this.stepIndex);
+    private onStepChange() {
+        const localFileChanged = this.isSampleFileChanged();
 
-        let localFileChanged = this.isSampleFileChanged();
-
-        if (changedSteps.oldStep === thisIndex) {
+        if (!this.active) {
             this.saveToFeedModel().then(() => {
                 // notify those that the data is loaded/updated
                 this.broadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
-            }, function () {
-                this.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+            }, () => {
+                this.broadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
-        } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
+        } else if (this.sql == null || localFileChanged) {
             this.ngOnInit();
             this.model.sampleFileChanged = false;
         }

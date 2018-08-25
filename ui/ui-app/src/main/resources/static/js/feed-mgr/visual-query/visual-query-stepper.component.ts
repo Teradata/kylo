@@ -114,7 +114,6 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     private initFormGroups() {
         this.buildQueryFormGroup = this._formBuilder.group({});
         this.transformDataFormGroup = this._formBuilder.group({
-            secondCtrl: ['', Validators.required]
         });
         this.saveStepFormGroup = this._formBuilder.group({});
     }

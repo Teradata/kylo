@@ -8,34 +8,39 @@
   </div>
 
   <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
-    <form [formGroup]="form" fxLayout="column">
-      <div fxLayout="column">
-        <div fxLayout="row" fxLayoutAlign="center start" *ngIf="showDatasources && !advancedMode" class="mat-padding">
+    <form [formGroup]="form" >
+      <div fxLayout="column" class="mat-padding">
 
-          <mat-form-field>
-            <mat-select formControlName="datasource" placeholder="Datasource">
+        <div fxLayout="row" fxLayoutAlign="start start" class="mat-padding">
+          <!-- Datasource dropdown -->
+
+          <mat-form-field *ngIf="showDatasources">
+            <mat-select formControlName="datasource" placeholder="Data Source">
               <mat-option *ngFor="let datasource of availableDatasources" [value]="datasource.id">{{datasource.name}}</mat-option>
             </mat-select>
           </mat-form-field>
+
+        <div fxLayout="row" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
 
           <!-- datasource autocomplete -->
           <div *ngIf="model.$selectedDatasourceId != 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70">
             <mat-form-field style="width:100%">
               <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
               <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                <mat-option *ngFor="let table of filteredTables | async" [value]="table">
-                  <span class="item-title">
+                <mat-option *ngFor="let table of filteredTables | async" [value]="table" class="autocomplete-option">
+                  <span class="title">
                     <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
                   </span>
-                  <span class="item-metadata">
-                    <span class="item-metastat">
-                      <span style="color:grey;">Schema:</span>
-                      <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
+                  <br/>
+                  <span>
+                    <span>
+                      <span class="sub-title hint">Schema:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
                     </span>
-                    <span class="item-metastat">
-                      <span style="color:grey;">Table:</span>
-                      <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
+                    <span class="item-metastat" style="padding-left:10px;">
+                      <span class="sub-title hint">Table:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
                     </span>
                   </span>
                 </mat-option>
@@ -49,6 +54,9 @@
             <upload-sample-file [model]="model" [engine]="engine" [isValid]="isValid" (onFileUploaded)="onFileUploaded()"></upload-sample-file>
           </div>
           <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null">Edit SQL</button>
+        </div>
+
+          <div fxFlex *ngIf="advancedMode" ></div>
 
           <div fxLayout="row">
             <button mat-button (click)="goBack()" type="button" [disabled]="stepper.selectedIndex === 0">Back</button>
@@ -56,16 +64,27 @@
           </div>
         </div>
 
+        <!-- Canvas -->
+
         <div class="visual-query-canvas" style="margin-top:8px;" mouse-capture [fxHide]="chartViewModel.data.nodes.length == 0 || advancedMode == true">
+          <mat-divider></mat-divider>
           <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" [browser-height-offset]="getBrowserHeightOffset(161)">
             <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
           </div>
         </div>
+
+        <!-- SQL Editor -->
+        <sql-editor [sql]="this.model.sql"  [datasourceId]="model.$selectedDatasourceId"  [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true"></sql-editor>
+
+        <!-- nothing set and user cant change datasources mesage-->
+        <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
+          No tables have been selected. Please complete all previous sections before attempting to transform the data.
+        </ng-template>
+
       </div>
 
-      <ng-template *ngIf="chartViewModel.data.nodes.length == 0 && !showDatasources">
-        No tables have been selected. Please complete all previous sections before attempting to transform the data.
-      </ng-template>
+
     </form>
   </ng-template>
 </div>

@@ -1,0 +1,75 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="pad-sm">
+<form [formGroup]="form">
+
+  <div id="hqlEditorContainer">
+    <span translate>views.hql-editor.EQ</span>
+    <codemirror #codeMirrorView class="sql-editor" [ngModelOptions]="{standalone: true}" [config]="codeMirrorOptions" [(ngModel)]="sql" style="height:{{height}}px"></codemirror>
+  </div>
+
+  <div fxLayout="row" fxLayoutAlign="space-between center">
+    <button mat-raised-button color="primary" [disabled]="sql == ''" (click)="query()" *ngIf="allowExecuteQuery" translate>
+      views.hql-editor.ExecuteQ
+    </button>
+    <span fxFlex></span>
+    <button mat-button (click)="fullscreen()" *ngIf="allowFullscreen" translate>
+      views.hql-editor.FS
+    </button>
+
+  </div>
+
+
+
+
+<div *ngIf="allowDatabaseBrowse" class="layout-padding-top">
+  <div translate>views.hql-editor.BH</div>
+
+  <mat-form-field class="pad-top-sm">
+    <mat-select formControlName="browseDatabaseName" [placeholder]="browseDatabasePlaceholder" (change)="onDatabaseChange()">
+      <mat-option *ngFor="let databaseName of databaseNames" [value]="databaseName">
+        {{databaseName}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field class="pad-top-sm">
+    <mat-select formControlName="browseTableName" [placeholder]="browseTableNamePlaceholder" (change)="browseTable()">
+      <mat-option *ngFor="let tableName of databaseTableNames" [value]="tableName">
+        {{tableName}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+
+
+  <div>
+    <mat-progress-bar  mode="indeterminate" *ngIf="executingQuery"></mat-progress-bar>
+    <div class="browse-results" *ngIf="previewTableOptions != null">
+      <fattable #queryPreview [options]="previewTableOptions"></fattable>
+    </div>
+  </div>
+
+</div>
+
+</form>
+
+
+

@@ -24,6 +24,7 @@ import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
+import {CloneUtil} from "../../../common/utils/clone-util";
 
 /**
  * Code for the delete key.
@@ -108,7 +109,14 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     /**
      * List of data sources to display.
      */
+    allDatasources: UserDatasource[] = [];
+
+    /**
+     * List of data sources to display.
+     */
     availableDatasources: UserDatasource[] = [];
+
+    availableSQLDatasources: UserDatasource[] = [];
 
     /**
      * Model for the chart.
@@ -299,9 +307,8 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
                 }
             })
             .then((datasources: UserDatasource[]) => {
-                this.availableDatasources = datasources;
-                //add in the File data source
-                this.availableDatasources.push(this.fileDataSource);
+                this.updateAvailableDatasources(datasources);
+
                 if (this.model.$selectedDatasourceId == null) {
                     this.model.$selectedDatasourceId = datasources[0].id;
                     this.form.get("datasource").setValue(this.model.$selectedDatasourceId);
@@ -314,6 +321,26 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             .then(() => {
                 this.loadingPage = false;
             });
+    }
+
+    private updateAvailableDatasources(datasources?:UserDatasource[]){
+        if(datasources ) {
+            this.availableDatasources = datasources;
+        }
+
+        let fileIndex = this.availableDatasources.indexOf(this.fileDataSource);
+        if(this.advancedMode == true){
+                if(fileIndex >=0) {
+                    //remove the file datasource for adv. mode
+                    this.availableDatasources.splice(fileIndex, 1);
+                }
+         }
+            else {
+            if(fileIndex <0) {
+                //add in the File data source
+                this.availableDatasources.push(this.fileDataSource);
+            }
+        }
     }
 
     private _keydown(evt: KeyboardEvent) {
@@ -526,9 +553,11 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     toggleAdvancedMode() {
         if (this.advancedMode === false) {
+
             let goAdvanced = () => {
                 this.advancedMode = true;
                 this.advancedModeText = "Visual Mode";
+                this.updateAvailableDatasources();
             };
             if (this.chartViewModel.nodes.length > 0) {
                 this._dialogService.openConfirm({
@@ -555,6 +584,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             this.advancedMode = false;
             this.model.sql = "";
             this.advancedModeText = "Advanced Mode";
+            this.updateAvailableDatasources();
         }
 
     };
@@ -795,8 +825,6 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      * Cleanup environment when this directive is destroyed.
      */
     ngOnDestroy(): void {
-        this.sideNavService.showSideNav();
-
         //cancel subscriptions
 
         if (this.onCreateConnectionSubscription) {

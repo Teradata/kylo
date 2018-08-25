@@ -77,10 +77,12 @@ Style for connections.
 
 .flowchart .connection-name{
   fill: #F08C38;
+  font-weight: bold;
 }
 
 .flowchart .selected-connection-name{
   fill: #F08C38;
+  font-weight: bold;
 }
 
 .flowchart .mouseover-connection-name{

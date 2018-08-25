@@ -52,7 +52,7 @@ export class ConnectionDialog {
 
     source: any;
     dest: any;
-    joinTypes: any = [{name: "Inner Join", value: "INNER JOIN"}, {name: "Left Join", value: "LEFT JOIN"}, {name: "Right Join", value: "RIGHT JOIN"}];
+    joinTypes: any = [{name: "Inner Join", value: "INNER JOIN"}, {name: "Left Join", value: "LEFT JOIN"}, {name: "Right Join", value: "RIGHT JOIN"}, {name: "Full Join", value: "FULL JOIN"}];
 
     sourceKey: string;
     destKey: string;
@@ -127,7 +127,7 @@ export class ConnectionDialog {
         let values = this.form.value;
         let response: ConnectionDialogResponse = {
             id: this.data.connectionDataModel.id,
-            connectionName: values.connectionName,
+            connectionName: values.joinType,
             source: values.source,
             dest: values.dest,
             joinType: values.joinType,
