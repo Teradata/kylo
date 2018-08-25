@@ -25,7 +25,6 @@ import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {UIRouterModule} from "@uirouter/angular";
-import "kylo-ui-codemirror"
 import {CodemirrorModule} from "ng2-codemirror";
 import {ILazyLoad} from "oclazyload";
 
@@ -53,6 +52,7 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import {INJECTOR} from "./wrangler/api/index";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
+import {SqlEditorModule} from "../shared/sql-editor/sql-editor.module";
 
 registerQueryEngine('spark', SparkQueryEngine);
 
@@ -66,6 +66,9 @@ registerQueryEngine('spark', SparkQueryEngine);
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
         VisualQueryTable
+    ],
+    entryComponents:[
+        ConnectionDialog
     ],
     exports: [
         BuildQueryComponent,
@@ -85,7 +88,6 @@ registerQueryEngine('spark', SparkQueryEngine);
         FlexLayoutModule,
         FlowChartModule,
         FormsModule,
-        KyloCodeMirrorModule,
         KyloCommonModule,
         KyloFeedManagerModule,
         MatAutocompleteModule,
@@ -108,6 +110,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         MatTooltipModule,
         PropertyListModule,
         ReactiveFormsModule,
+        SqlEditorModule,
         WranglerModule,
         UIRouterModule.forChild({states: visualQueryStates})
     ],
@@ -126,8 +129,8 @@ export class VisualQueryModule {
             files: [
                 "bower_components/fattable/fattable.css",
                 "js/feed-mgr/visual-query/visual-query.component.css",
-                "js/feed-mgr/visual-query/build-query/flowchart/flowchart.css",
-                "js/feed-mgr/visual-query/transform-data/transform-data.component.css"
+           //     "js/feed-mgr/visual-query/build-query/flowchart/flowchart.css",
+             //   "js/feed-mgr/visual-query/transform-data/transform-data.component.css"
             ]
         });
     }
