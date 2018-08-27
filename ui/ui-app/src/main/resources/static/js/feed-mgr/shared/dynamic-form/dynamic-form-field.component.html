@@ -23,7 +23,7 @@
 
   </div>
 
-  <div [ngSwitch]="field.controlType" *ngIf="!readonly && field.ngIf(form) == true" fxLayout="column"  class="{{field.styleClass}}">
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly && field.ngIf(form) == true  && (hasControl())" fxLayout="column"  class="{{field.styleClass}}">
 
     <section class="pad-top-sm" *ngSwitchCase="'section-header'">
       <mat-divider *ngIf="field.showDivider"></mat-divider>
@@ -36,7 +36,7 @@
       <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
     </div>
 
-    <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm">
+    <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm" >
       <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" >
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
@@ -93,10 +93,10 @@
       <td-chips [id]="field.key"
           [chipAddition]="field.chipAddition"
                 [chipRemoval]="field.chipRemoval"
-                [items]="field.filteredFeeds"
+                [items]="field.filteredItems"
                 placeholder="{{field.placeholder}}"
-                (inputChange)="field.filterFeeds($event)"
-                [(ngModel)]="field.feedsModel"
+                (inputChange)="field.filterItems($event)"
+                [(ngModel)]="field.selectedItems"
                 (add)="field.updateModel($event); validateRequiredChips()"
                 (remove)="field.updateModel($event); validateRequiredChips()"
                 [ngModelOptions]="{standalone: true}"

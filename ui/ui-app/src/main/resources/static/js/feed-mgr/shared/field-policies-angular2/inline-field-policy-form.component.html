@@ -21,8 +21,7 @@
   <mat-progress-bar mode="indeterminate" *ngIf="loadingPolicies"></mat-progress-bar>
 
   <mat-form-field>
-    <mat-label >{{selectLabel}}</mat-label>
-    <mat-select [(value)]="ruleType"  (change)="onRuleTypeChange()" >
+    <mat-select [(value)]="ruleType"  (change)="onRuleTypeChange()" [placeholder]="selectLabel">
       <mat-option [value]="opt" *ngFor="let opt of ruleTypes">{{ opt.name }}</mat-option>
     </mat-select>
     <mat-hint *ngIf="selectedPolicyRule != undefined">{{selectedPolicyRule.description}}</mat-hint>
@@ -30,7 +29,7 @@
   <a href="javascript:void(0)" style="margin-left:10px" *ngIf="showAdvancedOptions" (click)="toggleAdvancedOptions()">Advanced Formatting Options</a>
 
   <div class="layout-padding-indent-20" *ngIf="expandAdvancedOptions == true">
-    <policy-input-form [formGroup]="policyForm" [(rule)]="selectedPolicyRule" [mode]="ruleMode" [feed]="feed"></policy-input-form>
+    <policy-input-form [parentFormGroup]="policyForm" [(rule)]="selectedPolicyRule" [mode]="ruleMode" [feed]="feed"></policy-input-form>
   </div>
 
 

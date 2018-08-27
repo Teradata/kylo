@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Input, Component, OnInit,OnChanges} from '@angular/core';
+import {Input, Output,Component, OnInit, OnChanges, EventEmitter} from '@angular/core';
 import {FieldPolicyOptionsService} from "./field-policy-options.service";
 import {PolicyInputFormService} from "./policy-input-form.service"
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
@@ -35,6 +35,9 @@ export class InlinePolicyInputFormComponent implements OnInit {
 
     @Input()
     policyForm ?:FormGroup;
+
+    @Output()
+    selectedPolicyRuleChange:EventEmitter<any> = new EventEmitter<any>();
 
     loadingPolicies :boolean = true;
 
@@ -116,12 +119,14 @@ export class InlinePolicyInputFormComponent implements OnInit {
                 rule.editable = true;
                 //reset the model
                 this.selectedPolicyRule = rule;
+                this.selectedPolicyRuleChange.emit(this.selectedPolicyRule)
             }
             this.showAdvancedOptions = (this.ruleType.properties && this.ruleType.properties.length > 0);
             this.skipChangeHandler = false;
         }
         else {
             this.selectedPolicyRule = null;
+            this.selectedPolicyRuleChange.emit(this.selectedPolicyRule)
         }
     }
 
@@ -132,7 +137,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
 
     ngOnChanges(changes :SimpleChanges) {
         if(changes.selectedPolicyRule.currentValue){
-            this.skipChangeHandler = true;
+         //   this.skipChangeHandler = true;
             var rule = this.selectedPolicyRule;
             rule.groups = this.policyInputFormService.groupProperties(this.selectedPolicyRule)
             this.policyInputFormService.updatePropertyIndex(rule);

@@ -1,8 +1,8 @@
-import {Component, Input, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 
 
 @Component({
-selector:'file-upload',
+    selector:'file-upload',
     templateUrl:'js/common/file-upload/file-upload.component.html'
 })
 export class FileUploadComponent {
@@ -16,7 +16,25 @@ export class FileUploadComponent {
     @Input()
     files: File | FileList;
 
-    constructor() {
+    @Input()
+    validUpload:boolean = true;
 
-    }
+    @ViewChild("submitButton")
+    submitButton: HTMLInputElement;
+
+    @Output()
+    onSubmit :EventEmitter<File|FileList> = new EventEmitter<File|FileList>();
+
+   constructor() { }
+
+
+   submitFiles(){
+       this.onSubmit.emit(this.files)
+   }
+
+
+   uploadButtonDisabled(){
+       return !this.files || !this.validUpload
+   }
+
 }

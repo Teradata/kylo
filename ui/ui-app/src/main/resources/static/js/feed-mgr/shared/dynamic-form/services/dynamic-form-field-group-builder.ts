@@ -1,6 +1,6 @@
 import {FormFieldBuilder} from "./form-field-builder";
 import {
-    CheckboxFieldBuilder,
+    CheckboxFieldBuilder, ChipsFieldBuilder,
     FieldConfigBuilder,
     InputTextFieldBuilder,
     RadioButtonFieldBuilder,
@@ -57,6 +57,12 @@ export class DynamicFormFieldGroupBuilder {
     }
     sectionHeader(){
         let builder = new SectionHeaderBuilder(this);
+        this.formFieldBuilder.field(builder);
+        return builder;
+    }
+
+    chips(){
+        let builder = new ChipsFieldBuilder(this);
         this.formFieldBuilder.field(builder);
         return builder;
     }

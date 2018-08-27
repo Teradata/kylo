@@ -38,4 +38,8 @@ export class DynamicFormFieldComponent {
         this.policyInputFormService.validateRequiredChips(this.form, this.field);
     }
 
+    hasControl(){
+        return this.field.isStaticText() || this.form.contains(this.field.key);
+    }
+
 }

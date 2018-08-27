@@ -19,6 +19,7 @@ import {FileUploadComponent} from "./file-upload/file-upload.component";
 import {CovalentFileModule} from "@covalent/core/file";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
     declarations: [
@@ -41,6 +42,7 @@ import {MatInputModule} from "@angular/material/input";
         CovalentNotificationsModule,
         CovalentFileModule,
         KyloServicesModule,
+        FormsModule,
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,

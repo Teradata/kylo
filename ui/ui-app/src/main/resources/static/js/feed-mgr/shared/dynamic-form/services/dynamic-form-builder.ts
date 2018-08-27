@@ -109,6 +109,21 @@ export class DynamicFormBuilder {
         return this;
     }
 
+    resetForm(){
+        if(this.form) {
+            console.log('RESET FORM!!!!')
+            Object.keys(this.form.controls).forEach(controlName => {
+                if(this.form.contains(controlName)) {
+                    this.form.removeControl(controlName)
+                }
+            });
+        }
+        this.formFieldBuilders = [];
+
+
+
+    }
+
     setForm(value:FormGroup){
         this.form = value;
         return this;

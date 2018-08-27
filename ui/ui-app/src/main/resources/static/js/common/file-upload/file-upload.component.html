@@ -1,11 +1,11 @@
-<div layout="row">
+<div fxLayout="row" fxFlex="100">
   <mat-form-field tdFileDrop
                   (fileDrop)="files = $event"
                   (click)="fileInput.inputElement.click()"
                   (keyup.enter)="fileInput.inputElement.click()"
                   (keyup.delete)="fileInput.clear()"
                   (keyup.backspace)="fileInput.clear()"
-                  flex>
+                  fxFlex>
     <input matInput
            placeholder="select or drop files"
            [value]="files?.length ? (files?.length + ' files') : files?.name"
@@ -15,8 +15,12 @@
     <mat-icon>cancel</mat-icon>
   </button>
 
-  <input #fileInput id="fileInput" tdFileSelect type="file" >
+  <td-file-input class="push-left-sm push-right-sm" #fileInput [(ngModel)]="files" multiple [disabled]="disabled">
+    <mat-icon>folder</mat-icon>
+    <span class="text-upper">Browse...</span>
+  </td-file-input>
+
     <span>
-    <button mat-raised-button color="accent" [disabled]="!files" class="text-upper">Submit</button>
+    <button mat-raised-button color="accent" [disabled]="uploadButtonDisabled()" class="text-upper" #submitButton (click)="submitFiles()">Submit</button>
   </span>
 </div>

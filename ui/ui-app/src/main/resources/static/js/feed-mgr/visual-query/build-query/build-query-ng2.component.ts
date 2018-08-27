@@ -25,6 +25,7 @@ import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, Conn
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
+import {StateRegistry, StateService} from "@uirouter/angular";
 
 /**
  * Code for the delete key.
@@ -86,6 +87,9 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     @Input()
     showDatasources?: boolean = true;
+
+    @Input()
+    showCancel?:boolean = true;
 
     @Input()
     stepper: MatStepper;
@@ -203,6 +207,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     constructor(private _dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,
                 private _loadingService: TdLoadingService,
+                private stateService:StateService,
                 @Inject("HiveService") private hiveService: HiveService,
                 @Inject("SideNavService") private sideNavService: SideNavService,
                 @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
@@ -411,11 +416,11 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     setupFlowChartModel() {
         // Load data model
-        let chartDataModel: any;
+        let chartDataModel: FlowChart.ChartDataModel;
         if (this.model.chartViewModel != null) {
             chartDataModel = this.model.chartViewModel;
         } else {
-            chartDataModel = {"nodes": [], "connections": []};
+            chartDataModel = new FlowChart.ChartDataModel();
         }
 
         // Prepare nodes
@@ -908,6 +913,10 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
 
     onAutocompleteRefreshCache() {
         this.hiveService.refreshTableCache();
+    }
+
+    cancel(){
+        this.stateService.go("home")
     }
 
     goBack() {

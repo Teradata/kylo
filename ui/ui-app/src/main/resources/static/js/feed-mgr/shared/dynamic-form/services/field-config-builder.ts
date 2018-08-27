@@ -309,6 +309,13 @@ export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
         return this;
     }
 
+    setOptionsArray(options:any[]){
+        this.options = options.map(item => {
+            return {label:item,value:item};
+        });
+        return this;
+    }
+
     addOption(label: string, value: string): RadioButtonFieldBuilder{
         this.options.push({label: label, value: value});
         return this;
@@ -317,6 +324,29 @@ export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
     protected buildOptions(){
         let options = super.buildOptions();
         options.options = this.options;
+        return options;
+    }
+}
+
+export class ChipsFieldBuilder extends FieldConfigBuilder<Chip> {
+    items:any[]
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
+    }
+
+    getObjectType():any {
+        return Chip;
+    }
+
+    setItems(values:any):ChipsFieldBuilder {
+        this.items = values;
+        return this;
+    }
+
+    protected buildOptions(){
+        let options = super.buildOptions();
+        options.items = this.items;
         return options;
     }
 }

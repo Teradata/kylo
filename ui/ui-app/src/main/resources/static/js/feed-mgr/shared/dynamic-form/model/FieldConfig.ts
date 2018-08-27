@@ -1,6 +1,8 @@
 import {AbstractControlOptions} from "@angular/forms/src/model";
 import {AsyncValidatorFn, ValidatorFn} from "@angular/forms/src/directives/validators";
 import {FormGroup} from "@angular/forms";
+import {StaticText} from "./StaticText";
+import {SectionHeader} from "./SectionHeader";
 
 export type NgIfCallback = (form:FormGroup) => boolean;
 
@@ -73,6 +75,9 @@ export class FieldConfig<T> {
         this.getErrorMessage = options.getErrorMessage;
 
 
+    }
+    isStaticText(){
+        return this.controlType == "static-text" || this.controlType == "section-header"
     }
 
     setModelValue(value:any){

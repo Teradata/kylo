@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, EventEmitter, Inject, Input, OnInit, Output} from "@angular/core";
+import {Component, EventEmitter, Inject, Input, OnInit, Output, ViewChild} from "@angular/core";
 import * as angular from "angular";
 import * as _ from "underscore";
 
@@ -9,6 +9,8 @@ import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {RestUrlConstants} from "../../services/RestUrlConstants";
 import {SparkConstants} from "../services/spark/spark-constants";
 import {QueryEngine, SampleFile} from "../wrangler/query-engine";
+import {FileUploadComponent} from "../../../common/file-upload/file-upload.component";
+import {FormGroup} from "@angular/forms";
 
 @Component({
     selector: 'upload-sample-file',
@@ -17,7 +19,7 @@ import {QueryEngine, SampleFile} from "../wrangler/query-engine";
 export class UploadSampleFileComponent implements OnInit {
 
     /**
-     * The file to upload
+     * The file on the model to be passed in and uploaded for schema detection
      */
     sampleFile: File;
 
@@ -40,12 +42,16 @@ export class UploadSampleFileComponent implements OnInit {
     @Input()
     engine: QueryEngine<any>;
 
+    policyForm:FormGroup;
+
+
     uploading: boolean = false;
 
     @Output()
     public onFileUploaded: EventEmitter<any> = new EventEmitter<any>();
 
     constructor(private http: HttpClient, @Inject("FileUpload") private fileUpload: FileUpload) {
+        this.policyForm = new FormGroup({});
     }
 
     ngOnInit() {
@@ -67,13 +73,12 @@ export class UploadSampleFileComponent implements OnInit {
         this.isValid = !(angular.isUndefined(this.model.sampleFile) || this.model.sampleFile == null);
     }
 
-    uploadSampleFile() {
+    uploadSampleFile(file:File) {
         this.model.sampleFile = null;
         this.model.sampleFileChanged = true;
         this.isValid = false;
         this.uploadBtnDisabled = true;
         this.showProgress();
-        let file = this.sampleFile;
         let params = {};
         if (this.schemaParser) {
             //limit is set to -1.  -1 or null will imply no limit.

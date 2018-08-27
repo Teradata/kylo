@@ -3,10 +3,15 @@ import {PolicyInputFormService} from "./policy-input-form.service";
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {FieldConfig} from "../dynamic-form/model/FieldConfig";
 import {Select} from "../dynamic-form/model/Select";
-import {InputText} from "../dynamic-form/model/InputText";
+import {InputText, InputType} from "../dynamic-form/model/InputText";
 import {DynamicFormService} from "../dynamic-form/services/dynamic-form.service";
 import {FieldPolicyProperty} from "../../model/field-policy";
 import {Chip} from "../dynamic-form/model/Chip";
+import {Templates} from "../../services/TemplateTypes";
+import {DynamicFormFieldGroupBuilder} from "../dynamic-form/services/dynamic-form-field-group-builder";
+import {DynamicFormBuilder} from "../dynamic-form/services/dynamic-form-builder";
+import {FieldGroup, Layout} from "../dynamic-form/model/FieldGroup";
+import {ConfigurationFieldBuilder, RadioButtonFieldBuilder, SelectFieldBuilder} from "../dynamic-form/services/field-config-builder";
 
 export function MultipleEmail(control: FormControl) {
 
@@ -36,10 +41,12 @@ export class PolicyInputFormComponent implements OnInit {
     @Input()
     parentFormGroup: FormGroup;
 
+
     formGroup: FormGroup;
 
     @Input()
     feed?: string
+
     @Input()
     mode: string //NEW or EDIT
 
@@ -51,7 +58,14 @@ export class PolicyInputFormComponent implements OnInit {
 
     editChips: any;
 
+    formBuilder:DynamicFormBuilder
+
     fieldConfigGroup: RuleGroupWithFieldConfig[] = []
+
+
+    fieldGroups:FieldGroup[];
+
+    initialized:boolean = false;
 
     constructor(private policyInputFormService: PolicyInputFormService, private dynamicFormService: DynamicFormService) {
         this.editChips = {};
@@ -62,11 +76,17 @@ export class PolicyInputFormComponent implements OnInit {
             this.formGroup = new FormGroup({});
         }
 
+        this.formBuilder = new DynamicFormBuilder().setForm(this.formGroup)
+
+
     }
 
     ngOnInit() {
+        if(this.parentFormGroup != undefined) {
+            this.parentFormGroup.registerControl("policyForm", this.formGroup);
+        }
 
-        this.parentFormGroup.registerControl("policyForm", this.formGroup);
+
 
         //call the onChange if the form initially sets the value
         /*
@@ -80,53 +100,173 @@ export class PolicyInputFormComponent implements OnInit {
           */
         console.log(this.rule, this.mode, this.feed);
         if (this.rule) {
-            this.createFormFieldConfig();
+            this.buildAndSetFieldGroups();
         }
         else {
             this.rule = {name: ''}
         }
+        this.initialized = true;
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.rule) {
+        if (changes && changes.rule && this.initialized) {
             setTimeout(() => {
-                //clear old controls
-                Object.keys(this.formGroup.controls).forEach(controlName => this.formGroup.removeControl(controlName));
-                let fieldConfigList = this.createFormFieldConfig();
-                if (fieldConfigList.length == 0) {
+
+                let propertiesAdded = this.buildAndSetFieldGroups();
+                if (propertiesAdded == 0) {
                     //force the call to emit the formControlsAdded
-                    this.formControlsAdded([]);
+                    //otherwise it will be called from the dynamic-form component after adding to the formgroup
+                    this.onFormControlsAdded.emit([]);
                 }
+
             })
         }
     }
 
     formControlsAdded(controls: FormControl[]) {
-        if (this.onFormControlsAdded) {
-            this.onFormControlsAdded.emit(controls);
-        }
+        this.onFormControlsAdded.emit(controls);
     }
 
-    private createFormFieldConfig(): FieldConfig<any>[] {
+    /**
+     * reset the form and build the new fields
+     *
+     * @return {number}the number of form fields added
+     */
+    private buildAndSetFieldGroups(): number {
+        let propertyCount = 0;
         let order = 0;
-        this.fieldConfigGroup = [];
-        let allFields: FieldConfig<any>[] = [];
+        //clear old controls
+        this.formBuilder.resetForm();
         this.rule.groups.forEach((group: any, idx: number) => {
             if (group.properties) {
+
+                let formGroupBuilder :DynamicFormFieldGroupBuilder = null;
+                let layout= group.layout;
+                if(layout == Layout.ROW) {
+                    formGroupBuilder = this.formBuilder.row();
+                }
+                else {
+                    formGroupBuilder = this.formBuilder.column();
+                }
+
                 let fieldConfigList: FieldConfig<any>[] = [];
                 group.properties.forEach((property: any) => {
                     if (property.hidden == false) {
-                        let fieldConfig = this.toFieldConfig(property, order);
-                        fieldConfigList.push(fieldConfig);
-                        allFields.push(fieldConfig);
+                        if(this.addField(property,order, formGroupBuilder)){
+                            propertyCount++;
+                        };
                         order++;
                     }
                 });
-                this.fieldConfigGroup[idx] = {fields: fieldConfigList, group: group};
-            }
+             }
         });
-        return allFields;
+        this.fieldGroups = this.formBuilder.buildFieldConfiguration();
+        return propertyCount;
     }
+
+
+    private  addField(property:FieldPolicyProperty, order:number,formGroupBuilder :DynamicFormFieldGroupBuilder):boolean {
+        let added = false;
+        //build the generic options to be used by all fields
+        let label = property.displayName || property.placeholder;
+        //   values: property.values
+        let configBuilder = new ConfigurationFieldBuilder().setKey(property.formKey).setOrder(order).setDisabled(!this.rule.editable).setPlaceholder(label).setRequired(property.required).setValue(property.value).setPattern(property.pattern).setModel(property).setHint(property.hint)
+            .onChange((newValue:any,form:FormGroup,model?:any) => {
+                this.onPropertyChange.emit(<FieldPolicyProperty>model)
+            });
+        if (property.pattern) {
+            configBuilder.addValidator(Validators.pattern(property.pattern))
+        }
+        if (property.patternRegExp) {
+            configBuilder.addValidator(Validators.pattern(property.patternRegExp))
+        }
+
+
+        if(this.isInputText(property)){
+
+            //create the field
+          let builder =  formGroupBuilder.text().update(configBuilder)
+            //get the correct input type
+            let type= property.type;
+            if (type == "string") {
+                type = "text";
+            }
+            else if (type == "regex") {
+                type = "text";
+            }
+            else if (type == "emails") {
+                type = "email";
+                builder.addValidator(MultipleEmail)
+            }
+            else if(type == "emaik"){
+                builder.addValidator(Validators.email)
+            }
+            else {
+                type = "text";
+            }
+            let inputType:InputType = <InputType>InputType[type] || InputType.text;
+            builder.setType(inputType)
+
+            added = true;
+
+        }
+        else if(this.isSelect(property)){
+         let builder:SelectFieldBuilder = formGroupBuilder.select().update(configBuilder);
+            if (property.selectableValues.length > 0) {
+                builder.setOptions(property.selectableValues)
+                //TODO know when to change the model propertyValue to 'values' on multi select
+            }
+            else if(property.values && property.values.length >0){
+                builder.setOptionsArray((<any[]>property.values))
+            }
+            added = true
+        }
+        else if(this.isRadio(property)) {
+            let builder:RadioButtonFieldBuilder = formGroupBuilder.radio().update(configBuilder);
+            if (property.selectableValues.length > 0) {
+                builder.setOptions(property.selectableValues)
+                //TODO know when to change the model propertyValue to 'values' on multi select
+                // fieldConfigOptions.modelValueProperty = 'values';
+            }
+            else if(property.values && property.values.length >0){
+                builder.setOptionsArray((<any[]>property.values))
+            }
+        }
+        else if (this.isChip(property)) {
+            let items: any[] = [];
+            if (property.selectableValues.length > 0) {
+                items = property.selectableValues;
+            }
+            formGroupBuilder.chips().update(configBuilder).setModelValueProperty("values").setItems(items)
+            added = true
+        }
+        else if(this.isCheckbox(property)) {
+            formGroupBuilder.checkbox().update(configBuilder).setTrueValue("true").setFalseValue("false")
+            added = true
+        }
+        else if(this.isTextarea(property)) {
+            formGroupBuilder.textarea().update(configBuilder)
+            added = true
+        }
+        return added;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private isInputText(property: FieldPolicyProperty) {
         return (property.type == null || property.type == "string" || property.type == "text" || property.type == "email"
@@ -138,6 +278,20 @@ export class PolicyInputFormComponent implements OnInit {
         return property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type == 'velocityTemplate';
     }
 
+    private isCheckbox(property: FieldPolicyProperty) {
+        return property.type == 'checkbox';
+    }
+
+    private isTextarea(property: FieldPolicyProperty) {
+        return property.type == 'textarea';
+    }
+
+
+    private isRadio(property: FieldPolicyProperty) {
+        return property.type == 'radio';
+    }
+
+
     private isChip(property: FieldPolicyProperty) {
         return property.type == 'feedChips';
     }
@@ -146,9 +300,8 @@ export class PolicyInputFormComponent implements OnInit {
         let key: string = property.formKey;
         let options = {
             key: key,
-            label: property.displayName,
             required: property.required,
-            placeholder: property.placeholder,
+            placeholder: property.displayName,
             value: property.value,
             hint: property.hint,
             pattern: property.patternRegExp,
@@ -158,75 +311,7 @@ export class PolicyInputFormComponent implements OnInit {
 
     }
 
-    private toFieldConfig(property: FieldPolicyProperty, order: number): FieldConfig<any> {
-        let fieldConfig: FieldConfig<any> = null;
-        let fieldConfigOptions: any = this.toFieldConfigOptions(property);
-        fieldConfigOptions.order = order;
-
-        if (this.isInputText(property)) {
-            if (property.type == "string") {
-                fieldConfigOptions.type = "text";
-            }
-            else if (property.type == "regex") {
-                fieldConfigOptions.type = "text";
-            }
-            else if (property.type == "emails") {
-                fieldConfigOptions.type = "email";
-            }
-            else {
-                fieldConfigOptions.type = "text";
-            }
-            fieldConfig = new InputText(fieldConfigOptions);
-        }
-        else if (this.isSelect(property)) {
-
-            let options: any[] = [];
-            if (property.selectableValues.length > 0) {
-                //already in label,value objects
-                options = property.selectableValues;
-                //TODO know when to change the model propertyValue to 'values' on multi select
-            }
-            fieldConfigOptions.options = options;
-            fieldConfig = new Select(fieldConfigOptions);
-        }
-        else if (this.isChip(property)) {
-            let items: any[] = [];
-            if (property.selectableValues.length > 0) {
-                items = property.selectableValues;
-            }
-            fieldConfigOptions.items = items;
-            fieldConfigOptions.modelValueProperty = 'values';
-            fieldConfig = new Chip(fieldConfigOptions);
-        }
-
-        let validatorOpts: any[] = [];
-
-        if (property.patternRegExp) {
-            validatorOpts.push(Validators.pattern(property.patternRegExp))
-        }
-        if (property.pattern) {
-            validatorOpts.push(Validators.pattern(property.pattern))
-        }
-        if (property.type == "emails") {
-            validatorOpts.push(MultipleEmail)
-        }
-        if (property.type == "email") {
-            validatorOpts.push(Validators.email)
-        }
-
-        fieldConfig.disabled = !this.rule.editable;
-        fieldConfig.validators = validatorOpts;
-
-        fieldConfig.model = property
-
-        if (this.onPropertyChange) {
-            fieldConfig.onModelChange = (property: FieldPolicyProperty) => this.onPropertyChange.emit(property)
-        }
-
-        return fieldConfig;
-    }
-
-
+/**
     queryChipSearch = this.policyInputFormService.queryChipSearch;
     transformChip = this.policyInputFormService.transformChip;
 
@@ -234,6 +319,6 @@ export class PolicyInputFormComponent implements OnInit {
     validateRequiredChips(property: any) {
         return this.policyInputFormService.validateRequiredChips(this.formGroup, property);
     }
-
+**/
 
 }

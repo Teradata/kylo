@@ -45,7 +45,7 @@ export class DynamicFormUtil {
 
         fields.filter(field => !DynamicFormUtil.isTextOnlyField(field)).forEach(field => {
                 let control: FormControl = DynamicFormUtil.toFormControl(field, _translateService);
-                formGroup.addControl(field.key, control);
+                formGroup.registerControl(field.key, control);
                 formControls.push(control);
 
                 control.valueChanges.debounceTime(200).subscribe(value => {

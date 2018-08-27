@@ -4,6 +4,8 @@ import * as _ from "underscore";
 import {Subject} from "rxjs/Subject";
 import {SaveFeedResponse} from "../../../../feeds/define-feed-ng2/model/save-feed-response.model";
 import {Feed} from "../../../../model/feed/feed.model";
+import {FeedDataTransformation} from "../../../../model/feed-data-transformation";
+import {KyloObject} from "../../../../../common/common.model";
 
 export namespace FlowChart {
 
@@ -524,6 +526,26 @@ export namespace FlowChart {
 		}
 
 	}
+	export class ChartDataModel  implements KyloObject{
+		nodes:any[];
+		connections:any[];
+
+        public static OBJECT_TYPE:string = 'ChartDataModel'
+
+        public objectType:string = ChartDataModel.OBJECT_TYPE;
+
+        public constructor(init?: Partial<ChartDataModel>) {
+            Object.assign(this, init);
+            if(this.nodes == undefined){
+            	this.nodes = []
+			}
+            if(this.connections == undefined){
+                this.connections = []
+            }
+        }
+
+
+	}
 	/**
 	 * View model for the chart.
 	 *
@@ -533,7 +555,7 @@ export namespace FlowChart {
 	 */
 	export class ChartViewModel extends FlowchartModelBase{
 
-		data: any;
+		data: ChartDataModel;
 		nodes: NodeViewModel[] = [];
 		connections: ConnectionViewModel[] = [];
 
@@ -580,7 +602,7 @@ export namespace FlowChart {
 
 
 
-		constructor(private chartDataModel: any) {
+		constructor(private chartDataModel: ChartDataModel) {
 			super();
 			// Reference to the underlying data.
 			this.data = chartDataModel;

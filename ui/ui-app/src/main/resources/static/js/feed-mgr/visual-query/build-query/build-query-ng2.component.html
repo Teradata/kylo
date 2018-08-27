@@ -50,15 +50,18 @@
           </div>
           <button *ngIf="model.$selectedDatasourceId != 'FILE'" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left">Add Table</button>
 
-          <div fxFlex="70" fxLayout="row" *ngIf="model.$selectedDatasourceId == 'FILE'">
+          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null" *ngIf="model.$selectedDatasourceId != 'FILE'">Edit SQL</button>
+
+          <div *ngIf="model.$selectedDatasourceId == 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70">
             <upload-sample-file [model]="model" [engine]="engine" [isValid]="isValid" (onFileUploaded)="onFileUploaded()"></upload-sample-file>
           </div>
-          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null">Edit SQL</button>
+
         </div>
 
           <div fxFlex *ngIf="advancedMode" ></div>
 
           <div fxLayout="row">
+            <button mat-button (click)="cancel()" type="button" *ngIf="showCancel">Cancel</button>
             <button mat-button (click)="goBack()" type="button" [disabled]="stepper.selectedIndex === 0">Back</button>
             <button mat-button [color]="form.valid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!form.valid">Next</button>
           </div>

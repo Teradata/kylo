@@ -18,10 +18,4 @@
   #L%
   -->
 
-  <!--<span >{{rule.name}}</span>-->
-
-  <div *ngFor="let ruleGroup of fieldConfigGroup" class="layout-padding-left-right" fxLayout="{{ruleGroup.group.layout}}">
-
-    <dynamic-form [fields]="ruleGroup.fields" [form]="formGroup" (onFormControlsAdded)="formControlsAdded($event)" ></dynamic-form>
-
-  </div>
+ <dynamic-form [fieldGroups]="fieldGroups" [form]="formGroup" (onFormControlsAdded)="formControlsAdded($event)" ></dynamic-form>

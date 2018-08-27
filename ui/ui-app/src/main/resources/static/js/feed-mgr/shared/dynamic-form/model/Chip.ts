@@ -9,7 +9,7 @@ export class Chip extends FieldConfig<string> {
         super(options);
         this.items = options['items'];
         if(options['values'] !== undefined){
-            this.feedsModel = options['values'].map((item:any) => {
+            this.selectedItems = options['values'].map((item:any) => {
                 return item.label;
             });
         }
@@ -19,23 +19,23 @@ export class Chip extends FieldConfig<string> {
     chipAddition: boolean = true;
     chipRemoval: boolean = true;
 
-    filteredFeeds: string[];
+    filteredItems: string[];
 
-    feedsModel: string[] = [];
+    selectedItems: string[] = [];
 
     ngOnInit(): void {
-        this.filterFeeds('');
+        this.filterItems('');
     }
 
-    filterFeeds(value: string): void {
-        this.filteredFeeds = this.items.filter((item: any) => {
+    filterItems(value: string): void {
+        this.filteredItems = this.items.filter((item: any) => {
             if (value) {
                 return angular.lowercase(item.value).indexOf(value.toLowerCase()) > -1;
             } else {
                 return false;
             }
         }).filter((filteredItem: any) => {
-            return this.feedsModel ? this.feedsModel.indexOf(filteredItem.label) < 0 : true;
+            return this.selectedItems ? this.selectedItems.indexOf(filteredItem.label) < 0 : true;
         }).map((item:any) => {
             return item.label;
         });
@@ -44,7 +44,7 @@ export class Chip extends FieldConfig<string> {
     updateModel(value: any) {
 
         this.model['values'] = this.items.filter((item: any) => {
-            return this.feedsModel ? this.feedsModel.indexOf(item.label) > -1 : false;
+            return this.selectedItems ? this.selectedItems.indexOf(item.label) > -1 : false;
         });
     }
 }
