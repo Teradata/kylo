@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Inject, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Inject, Input, OnChanges, OnInit, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
@@ -23,6 +23,7 @@ import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {AnalyzeColumnDialog} from "./profile-stats/analyze-column-dialog";
 import VisualQueryProfileStatsController from "./profile-stats/VisualQueryProfileStats";
 import {WranglerDataService} from "./services/wrangler-data.service";
+import {VisualQueryTable} from "./visual-query-table/visual-query-table.component";
 
 declare const CodeMirror: any;
 
@@ -44,7 +45,9 @@ export class WranglerColumn {
  * Transform Data step of the Visual Query page.
  */
 @Component({
+    encapsulation: ViewEncapsulation.None,
     selector: "thinkbig-visual-query-transform",
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/transform-data.component.css"],
     templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
 })
 export class TransformDataComponent implements AfterViewInit, ColumnController, OnChanges, OnInit {
@@ -224,6 +227,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
     @ViewChild(CodemirrorComponent)
     codeMirrorView: CodemirrorComponent;
+
+    @ViewChild(VisualQueryTable)
+    visualQueryTable: VisualQueryTable;
 
     /**
      * Constructs a {@code TransformDataComponent}.
@@ -412,7 +418,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Gets the browser height offset for the element with the specified offset from the top of this component.
      */
     getBrowserHeightOffset(elementOffset: number): number {
-        return parseInt(this.heightOffset) + elementOffset;
+        return (this.heightOffset != null ? parseInt(this.heightOffset) : 0) + elementOffset;
     }
 
     /**

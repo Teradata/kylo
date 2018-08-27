@@ -919,10 +919,6 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         this.stateService.go("home")
     }
 
-    goBack() {
-        this.stepper.previous();
-    }
-
     goForward() {
         this.stepper.next();
     }

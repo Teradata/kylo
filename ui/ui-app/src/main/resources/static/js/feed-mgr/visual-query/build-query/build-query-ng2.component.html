@@ -48,9 +48,9 @@
               <div class="hint md-warn-text" *ngIf="databaseConnectionError">Unable to connect to selected data source.</div>
             </mat-form-field>
           </div>
-          <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left">Add Table</button>
+          <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left text-upper">Add Table</button>
 
-          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources">Edit SQL</button>
+          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" class="text-upper">Edit SQL</button>
 
           <div *ngIf="model.$selectedDatasourceId == 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70">
             <upload-sample-file [model]="model" [engine]="engine" [isValid]="isValid" (onFileUploaded)="onFileUploaded()"></upload-sample-file>
@@ -61,9 +61,8 @@
           <div fxFlex *ngIf="advancedMode" ></div>
 
           <div fxLayout="row">
-            <button mat-button (click)="cancel()" type="button" *ngIf="showCancel">Cancel</button>
-            <button mat-button (click)="goBack()" type="button" [disabled]="stepper.selectedIndex === 0">Back</button>
-            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!form.valid">Next</button>
+            <button mat-button (click)="cancel()" type="button" *ngIf="showCancel" class="text-upper">Cancel</button>
+            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!form.valid" class="text-upper">Next</button>
           </div>
         </div>
 

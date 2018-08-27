@@ -1,4 +1,4 @@
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']" fxLayout="row" fxLayoutAlign="center center">
   <span>{{title}}</span>
   <span class="flex"></span>
   <button mat-icon-button (click)="cancel()">
@@ -7,12 +7,8 @@
 </mat-toolbar>
 <div mat-dialog-content class="mat-dialog-content">
   <form class="layout-column" [formGroup]="form">
-    <p>{{message}}</p>
-<!--
-    <mat-form-field>
-      <input matInput placeholder="Connection Name" [formControl]="connectionName">
-    </mat-form-field>
--->
+    <p *ngIf="message">{{message}}</p>
+
     <mat-form-field>
       <mat-select placeholder="Join Type"  formControlName="joinType" required>
         <mat-option *ngFor="let joinType of joinTypes" [value]="joinType.value">

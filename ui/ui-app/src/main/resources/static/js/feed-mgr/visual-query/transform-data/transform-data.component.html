@@ -1,59 +1,60 @@
 <mat-sidenav-container fxFlex="1 1 auto" fxLayout="column">
-  <mat-sidenav fxFlex="0 0 auto" fxLayout="column" [disableClose]="isShowFunctionHistory" [opened]="isShowFunctionHistory" mode="side" class="mat-whiteframe-z1 visual-query-function-history">
-    <mat-toolbar>
+  <mat-sidenav fxLayout="column" [disableClose]="isShowFunctionHistory" [opened]="isShowFunctionHistory" mode="side" (openedChange)="visualQueryTable.refresh()"
+               class="mat-whiteframe-z1 visual-query-function-history">
+    <mat-toolbar class="md-kylo-theme" fxFlex="0 0 auto">
       <div style="font-size: 18px;">Function History</div>
     </mat-toolbar>
-    <div fxLayout="row" fxLayoutAlign="center center">
-      <button mat-icon-button (click)="onUndo()" [disabled]="!canUndo()">
+    <div fxFlex="0 0 auto" fxLayout="row" fxLayoutAlign="center center">
+      <button mat-icon-button (click)="onUndo()" [disabled]="!canUndo()" class="visual-query-function-history-button">
         <ng-md-icon icon="undo"></ng-md-icon>
       </button>
-      <button mat-icon-button (click)="onRedo()" [disabled]="!canRedo()">
+      <button mat-icon-button (click)="onRedo()" [disabled]="!canRedo()" class="visual-query-function-history-button">
         <ng-md-icon icon="redo"></ng-md-icon>
       </button>
     </div>
-    <mat-list layout-padding browser-height flex layout-fill>
+    <mat-list fxFlex="1 1 auto">
       <ng-template ngFor let-item let-i="index" [ngForOf]="functionHistory">
         <mat-list-item>
-          <ng-md-icon *ngIf="item.inactive" icon="{{item.icon}}"></ng-md-icon>
-          <ng-md-icon *ngIf="!item.inactive" icon="{{item.icon}}"></ng-md-icon>
-          <p [matTooltip]="item.name">{{item.name}}</p>
-          <ng-md-icon (click)="toggleItem(i)" style="color:grey" *ngIf="item.inactive" icon="visibility"></ng-md-icon>
-          <ng-md-icon (click)="removeItem(i)" style="color:orange" *ngIf="item.inactive" icon="remove_circle"></ng-md-icon>
-          <ng-md-icon (click)="toggleItem(i)" style="color:orange" *ngIf="!item.inactive" icon="visibility"></ng-md-icon>
+          <ng-md-icon *ngIf="item.inactive" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
+          <ng-md-icon *ngIf="!item.inactive" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
+          <p [matTooltip]="item.name" fxFlex="1 1 auto">{{item.name}}</p>
+          <ng-md-icon (click)="toggleItem(i)" style="color:grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="removeItem(i)" style="color:orange" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="toggleItem(i)" style="color:orange" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
         </mat-list-item>
         <mat-divider></mat-divider>
       </ng-template>
     </mat-list>
   </mat-sidenav>
 
-  <mat-sidenav-content style="width: 100%; margin-left: 0" fxFlex="1 1 auto" fxLayout="column" [style.padding-right]="isShowFunctionHistory ? '257px' : '0'">
-    <mat-toolbar fxFlex="0 0 auto">
+  <mat-sidenav-content style="width: 100%; margin-left: 0" fxFlex="1 1 auto" fxLayout="column" [style.padding-right]="isShowFunctionHistory ? '257px' : '0'" class="md-kylo-powerui">
+    <mat-toolbar fxFlex="0 0 auto" class="md-kylo-theme">
       <div fxFlex="1 1 auto" fxLayout="row">
-        <mat-menu #actionMenu="matMenu">
+        <mat-menu #actionMenu="matMenu" class="md-kylo-theme">
           <button mat-menu-item (click)="toggleFunctionHistory()">History<span *ngIf="functionHistory.length>0" style="padding-left:10px;">({{functionHistory.length}})</span></button>
           <button mat-menu-item (click)="toggleSampleMenu()">Sample</button>
-          <button mat-menu-item (click)="showProfileDialog()"></button>
+          <button mat-menu-item (click)="showProfileDialog()">Profile</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
         </button>
-        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true">
+        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true" class="text-upper">
           History<span *ngIf="functionHistory.length>0" fxShow.gt-lg="true" fxHide="true" style="padding-left:10px;">({{functionHistory.length}})</span>
         </button>
-        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true">Sample</button>
+        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true" class="text-upper">Sample</button>
         <span fxFlex="1 1 auto"></span>
-        <mat-menu #formulaMenu="matMenu">
+        <mat-menu #formulaMenu="matMenu" class="md-kylo-theme">
           <button *ngFor="let item of sampleFormulas" mat-menu-item (click)="setFormula(item.formula)">{{item.name}}</button>
         </mat-menu>
         <button mat-icon-button aria-label="Open formula menu" [matMenuTriggerFor]="formulaMenu">
           <ng-md-icon icon="functions" class="tc-primary"></ng-md-icon>
         </button>
         <codemirror class="formula-editor" [config]="codemirrorOptions" [(ngModel)]="currentFormula" style="height:25px"></codemirror>
-        <button mat-raised-button class="mat-accent" (click)="onAddFunction()" [disabled]="!currentFormula">Add</button>
+        <button mat-raised-button class="mat-accent" (click)="onAddFunction()" [disabled]="!currentFormula" class="text-upper">Add</button>
         <span fxFlex="1 1 auto"></span>
         <div fxLayout="row">
-          <button mat-button (click)="goBack()" type="button">Back</button>
-          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid">Next</button>
+          <button mat-button (click)="goBack()" type="button" class="text-upper">Back</button>
+          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid" class="text-upper">Next</button>
         </div>
       </div>
     </mat-toolbar>
@@ -65,7 +66,7 @@
           <span fxFlex="1 1 auto"></span>
           <button mat-icon-button (click)="toggleSampleMenu()"><ng-md-icon icon="close"></ng-md-icon></button>
         </div>
-        <mat-radio-group fxLayout="row" fxLayoutGap="20px" *ngIf="engine.allowLimitWithSample" (change)="onSampleMethodChange()" [(ngModel)]="sampleMethod">
+        <mat-radio-group fxLayout="row" fxLayoutGap="20px" *ngIf="!engine.allowLimitWithSample" (change)="onSampleMethodChange()" [(ngModel)]="sampleMethod">
           <mat-radio-button value="SAMPLE">Sample</mat-radio-button>
           <mat-radio-button value="LIMIT">Limit</mat-radio-button>
         </mat-radio-group>
@@ -85,7 +86,9 @@
       <mat-progress-bar class="wrangler-determinate-theme" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0" style="top: 0;height:2px"></mat-progress-bar>
       <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
       <visual-query-table [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
-                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" style="width: 100%; height: 500px;" fxFlex="1 1 auto">
+                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState"
+                          browser-height browser-height-scroll-y="false" [browser-height-offset]="getBrowserHeightOffset(64)"
+                          style="width: 100%; height: 500px;" fxFlex="1 1 auto">
       </visual-query-table>
     </div>
   </mat-sidenav-content>

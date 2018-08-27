@@ -7,7 +7,9 @@
   </mat-step>
   <mat-step>
     <ng-template matStepLabel>Transform Data</ng-template>
-    <thinkbig-visual-query-transform [warnWhenLeaving]="false" [active]="stepper.selectedIndex == 1" [stepper]="stepper" [engine]="engine" [model]="dataModel.model" *ngIf="engine != null"></thinkbig-visual-query-transform>
+    <thinkbig-visual-query-transform [warnWhenLeaving]="false" [active]="stepper.selectedIndex == 1" [stepper]="stepper" [engine]="engine" [model]="dataModel.model" heightOffset="64"
+                                     *ngIf="engine != null">
+    </thinkbig-visual-query-transform>
   </mat-step>
   <mat-step *ngIf="showSaveStep">
     <ng-template matStepLabel>Save</ng-template>

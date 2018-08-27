@@ -139,9 +139,7 @@ export class VisualQueryModule {
         $ocLazyLoad.load({
             files: [
                 "bower_components/fattable/fattable.css",
-                "js/feed-mgr/visual-query/visual-query.component.css",
-                //     "js/feed-mgr/visual-query/build-query/flowchart/flowchart.css",
-                //   "js/feed-mgr/visual-query/transform-data/transform-data.component.css"
+                "js/feed-mgr/visual-query/visual-query.component.css"
             ]
         });
     }

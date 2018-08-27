@@ -1,11 +1,13 @@
 @import "../../../../../../../../node_modules/@angular/material/theming";
 
-
-
 thinkbig-visual-query-transform {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+
+  .mat-drawer-container {
+    background: #ffffff;
+  }
 
   // Sidebar
   mat-sidenav[ng-reflect-opened=true] {
@@ -16,20 +18,55 @@ thinkbig-visual-query-transform {
   }
 
   // Toolbars
+  mat-toolbar.md-kylo-theme {
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 1px 3px 0 rgba(0, 0, 0, .12);
+  }
   .formula-editor {
     font-size: 14px;
     letter-spacing: normal;
+    line-height: normal;
   }
 
-  .visual-query-function-history mat-list-item > ng-md-icon:first-child {
-    margin-right: 16px;
-  }
+  .visual-query-function-history {
+    .visual-query-function-history-button {
+      margin: 0 6px;
 
-  .visual-query-function-history mat-list-item > p {
-    /*margin-right: 40px;*/
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+      ng-md-icon {
+        height: 40px;
+        padding: 8px 0;
+      }
+    }
+
+    .mat-list {
+      overflow: auto;
+      padding: 8px;
+
+      .mat-list-item {
+        .mat-list-item-content {
+          padding: 0;
+
+          ng-md-icon {
+            &.function-icon {
+              margin-left: 0;
+              margin-right: 16px;
+            }
+            &.function-action {
+              cursor: pointer;
+              margin-left: 8px;
+              margin-right: 0;
+            }
+          }
+
+          p {
+            font-size: 14px;
+            /*margin-right: 40px;*/
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
   }
 
   .visual-query-sample-menu {
@@ -84,21 +121,13 @@ thinkbig-visual-query-transform {
     padding-left: 20px;
   }
 
-  /**
-    Override toolbar buttons
-     */
+  /* Override toolbar buttons */
   .md-kylo-powerui button {
-    min-height: 27px;
+    $height: 27px;
+    min-height: $height;
+    height: $height;
     line-height: 27px;
     font-size: 12px;
-  }
-
-  /*
-Override spacing for context menu
- */
-  mat-menu.md-kylo-theme [mat-menu-item] {
-    font-size: 14px;
-    height: 36px;
   }
 
   span.ws-text {
@@ -110,9 +139,14 @@ Override spacing for context menu
 
 }
 
-/**
-  Override toolbar buttons
-   */
+/* Override spacing for context menu */
+.mat-menu-panel.md-kylo-theme .mat-menu-item {
+  font-size: 14px;
+  height: 36px;
+  line-height: 36px;
+}
+
+/* Override toolbar buttons */
 .visual-query-column-menu button  {
   min-height: 27px;
   line-height: 27px;
