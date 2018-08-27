@@ -109,6 +109,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     public void removeListener(@Nonnull CleanupListener listener) {
         LOG.debug("Remove listener {}", listener);
         feedListeners.values().remove(listener);
+        anyFeedListeners.remove(listener);
     }
 
     /**

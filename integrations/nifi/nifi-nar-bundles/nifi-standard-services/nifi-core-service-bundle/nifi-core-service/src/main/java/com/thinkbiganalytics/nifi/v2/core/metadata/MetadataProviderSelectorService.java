@@ -60,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 
@@ -141,7 +143,6 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         properties = Collections.unmodifiableList(props);
     }
 
-
     private volatile MetadataClientProvider provider;
     private volatile MetadataClientRecorder recorder;
     private volatile KyloProvenanceClientProvider kyloProvenanceClientProvider;
@@ -187,20 +188,26 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             } else {
                 client = new MetadataClient(uri, user, password, sslContext);
             }
-
-            this.provider = new MetadataClientProvider(client);
+            
             this.recorder = new MetadataClientRecorder(client);
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
+            
+            if (getCleanupEventService(context).isPresent()) {
+                // If we have a cleanup service set then relax the feed ID cache expiration 
+                // and add this service as a listener.
+                this.provider = new MetadataClientProvider(client, 2, TimeUnit.DAYS);
+                getCleanupEventService(context).get().addListener(this);
+            } else {
+                // If the cleanup service property has not been set by the user yet then 
+                // be more aggressive about feed ID cache expiration (the default).
+                this.provider = new MetadataClientProvider(client, MetadataClientProvider.DEFAULT_FEED_ID_CACHE_DURATION_SEC, TimeUnit.SECONDS);
+            }
             
             getSpringContextService(context).ifPresent(springService -> {
                 CancelActiveWaterMarkEventConsumer waterMarkConsumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
                 waterMarkConsumer.addMetadataRecorder(this.recorder);
                 FeedInitializationChangeEventConsumer initChangeConsumer = springService.getBean(FeedInitializationChangeEventConsumer.class);
                 initChangeConsumer.addMetadataRecorder(this.recorder);
-            });
-            
-            getCleanupEventService(context).ifPresent(cleanupService -> {
-                cleanupService.addListener(this);
             });
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
@@ -221,7 +228,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         });
     }
     
-
+    
     @Override
     public MetadataProvider getProvider() {
         return this.provider;

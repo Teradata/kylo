@@ -1,9 +1,5 @@
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 /*-
  * #%L
  * thinkbig-nifi-core-service
@@ -23,6 +19,10 @@ import com.google.common.cache.CacheBuilder;
  * limitations under the License.
  * #L%
  */
+
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
@@ -58,6 +58,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -69,7 +70,11 @@ public class MetadataClientProvider implements MetadataProvider {
     /**
      * The max number of feed ID entries to cache;
      */
-    private static final int DEFAULT_FEED_ID_CACHE_SIZE = 1024;
+    public static final int DEFAULT_FEED_ID_CACHE_SIZE = 1024;
+    /**
+     * The default number of seconds to cache feed ID entries since they were last accessed (aggressive expiration)
+     */
+    public static final int DEFAULT_FEED_ID_CACHE_DURATION_SEC = 15;
 
     private final MetadataClient client;
     private final Cache<String, String> feedIdCache;
@@ -107,19 +112,35 @@ public class MetadataClientProvider implements MetadataProvider {
      * @param client the MetadataClient will be used to connect with the Metadata store
      */
     public MetadataClientProvider(MetadataClient client) {
-        this(client, DEFAULT_FEED_ID_CACHE_SIZE);
+        this(client, DEFAULT_FEED_ID_CACHE_DURATION_SEC, TimeUnit.SECONDS, DEFAULT_FEED_ID_CACHE_SIZE);
+    }
+    
+    /**
+     * Constructor creates a MetadataClientProvider with the required {@link MetadataClient}
+     *
+     * @param client the MetadataClient will be used to connect with the Metadata store
+     * @param feedIdCacheDuration the expiration of cached feed IDs since they were last accessed
+     * @param unit the time units of the feed ID cache duration
+     */
+    public MetadataClientProvider(MetadataClient client, long feedIdCacheDuration, TimeUnit unit) {
+        this(client, feedIdCacheDuration, unit, DEFAULT_FEED_ID_CACHE_SIZE);
     }
 
     /**
      * Constructor creates a MetadataClientProvider with the required {@link MetadataClient}
      *
      * @param client the MetadataClient will be used to connect with the Metadata store
+     * @param feedIdCacheDuration the expiration of cached feed IDs since they were last accessed
+     * @param unit the time units of the feed ID cache duration
      * @param feedIdCacheSize the max size of the feed ID cache.
      */
-    public MetadataClientProvider(MetadataClient client, int feedIdCacheSize) {
+    public MetadataClientProvider(MetadataClient client, long feedIdCacheDuration, TimeUnit unit, int feedIdCacheSize) {
         super();
         this.client = client;
-        this.feedIdCache = CacheBuilder.newBuilder().maximumSize(feedIdCacheSize).build();
+        this.feedIdCache = CacheBuilder.newBuilder()
+                .maximumSize(feedIdCacheSize)
+                .expireAfterAccess(feedIdCacheDuration, unit)
+                .build();
     }
 
     @Override
