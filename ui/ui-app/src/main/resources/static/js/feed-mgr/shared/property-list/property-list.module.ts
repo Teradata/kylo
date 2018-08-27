@@ -16,6 +16,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MatRadioModule} from "@angular/material/radio";
 import {PropertyListComponent} from "./property-list.component";
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import {PropertyListComponent} from "./property-list.component";
         MatSelectModule,
         MatTabsModule,
         MatToolbarModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        FlexLayoutModule
     ],
     providers: [
 

@@ -30,21 +30,20 @@
         <div fxLayout="column"  *ngIf="selectedDataSet">
 
           <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.loading"></mat-progress-bar>
-          <mat-tab-group>
+          <mat-tab-group dynamicHeight>
             <mat-tab label="Data">
 
-              <div fxLayout="column"  >
-                <p *ngIf="message">
+                <div *ngIf="message" class="pad-top pad-bottom">
                   <mat-icon>warning</mat-icon> {{message}}
-                </p>
+                </div>
+
                 <div *ngIf="selectedDataSet.hasPreviewError()" fxLayout="column">
                   <p>
                     <mat-icon>warning</mat-icon> {{selectedDataSet.message}}
                   </p>
-                  <div fxLayout="row" fxLayoutAlign="start center">
-                    <span fxFlex="5" ></span>
-                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
 
+                  <div class="pad-left">
+                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
                   </div>
 
                   <dataset-simple-table [(columns)]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
@@ -53,24 +52,29 @@
                 <div *ngIf="!selectedDataSet.hasPreviewError()" fxLayout="column">
 
                   <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedDataSet.allowsRawView">
+
                     <span fxFlex="5" ></span>
+
                     <mat-slide-toggle [checked]="selectedDataSetViewRaw" (change)="onToggleRaw()">View Raw
                     </mat-slide-toggle>
+
                     <span fxFlex="5" ></span>
+
                     <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
+
                     <span fxFlex="5" ></span>
+
                     <button mat-raised-button   *ngIf="showAddToCollectionButton(selectedDataSet)"  (click)="addToCollection(selectedDataSet)"><mat-icon>add</mat-icon>{{addToCollectionButtonName}}</button>
                     <button mat-raised-button  *ngIf="showRemoveFromCollectionButton(selectedDataSet)" (click)="removeFromCollection(selectedDataSet)"><mat-icon>remove</mat-icon>{{removeFromCollectionButtonName}}</button>
 
                   </div>
+
 
                   <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
 
                   <dataset-simple-table [(columns)]="selectedDataSet.preview.columns" [rows]="selectedDataSet.preview.rows" *ngIf="selectedDataSetViewRaw == false && selectedDataSet.hasPreview()"></dataset-simple-table>
 
                 </div>
-
-              </div>
 
             </mat-tab>
 

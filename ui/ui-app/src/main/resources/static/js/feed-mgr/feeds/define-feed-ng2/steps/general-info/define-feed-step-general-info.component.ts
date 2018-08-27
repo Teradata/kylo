@@ -48,6 +48,8 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     @ViewChild("propertyList")
     propertyList: PropertyListComponent;
 
+    public title:string = "General Information";
+
 
     /**
      * Aysnc autocomplete list of categories

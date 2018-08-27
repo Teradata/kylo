@@ -17,51 +17,79 @@
   limitations under the License.
   #L%
   -->
-<section class="mat-typography">
-  <h1>{{title}}</h1>
-</section>
-<div *ngIf="editable" fxLayout="column" fxFlex>
-<ng-template ngFor let-property let-$index="index" [ngForOf]="properties" class="feed-user-property" >
-<div fxLayout="row" [formGroup]="userPropertyForm">
 
-  <mat-form-field fxFlex *ngIf="property.locked">
-    <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
-  </mat-form-field>
 
-  <mat-form-field fxFlex="50" *ngIf="!property.locked">
-    <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" >
-    <mat-error *ngIf="hasError(property,'systemName')">
-      {{getErrorMessage(property,'systemName')}}
-    </mat-error>
-    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
-  </mat-form-field>
+<div *ngIf="editable" >
+  <div class="section-header">{{title}}</div>
 
-  <mat-form-field fxFlex="50" *ngIf="!property.locked">
-    <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
-    <mat-error *ngIf="hasError(property,'value')">
-      {{getErrorMessage(property,'value')}}
-    </mat-error>
-    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
-  </mat-form-field>
 
-  <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
+  <div *ngIf="properties.length > 0; else editEmpty">
+
+    <ng-template ngFor let-property let-$index="index" [ngForOf]="properties"  >
+      <div fxLayout="row" [formGroup]="userPropertyForm">
+
+        <mat-form-field fxFlex *ngIf="property.locked">
+          <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
+        </mat-form-field>
+
+        <mat-form-field fxFlex="50" *ngIf="!property.locked">
+          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" >
+          <mat-error *ngIf="hasError(property,'systemName')">
+            {{getErrorMessage(property,'systemName')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="50" *ngIf="!property.locked" class="pad-left">
+          <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
+          <mat-error *ngIf="hasError(property,'value')">
+            {{getErrorMessage(property,'value')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+        </mat-form-field>
+
+        <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
+      </div>
+    </ng-template>
+
+
+  </div>
+
+
+  <ng-template #editEmpty>
+   <div class="pad-top pad-bottom"> No properties exist</div>
+  </ng-template>
+
+
+
+
+  <button mat-raised-button (click)="addProperty()">Add Property</button>
+
+
 </div>
-</ng-template>
 
-
-<button mat-button (click)="addProperty()">New Property</button>
-</div>
 
 <div *ngIf="!editable" fxLayout="column" fxFlex>
-  <div *ngFor="let property of properties" fxLayout="row" class="feed-user-property">
-    <div *ngIf="property.locked" layout="column" flex="25" class="property-name">
-      <span>{{property.displayName}}</span>
-      <span class="hint">{{property.description}}</span>
-    </div>
-    <span *ngIf="!property.locked" flex="25" class="property-name">{{property.systemName}}</span>
+  <div class="section-header">{{title}}</div>
+  <div *ngIf="properties.length >0; else readonlyEmpty">
+      <ng-template ngFor  let-property let-$index="index" [ngForOf]="properties">
+        <div fxLayout="row" >
+          <div *ngIf="property.locked" fxLayout="column" fxFlex="25" >
+            <span  >{{property.displayName}}</span>
+            <span class="hint">{{property.description}}</span>
+          </div>
+          <div *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</div>
 
-    <div fxFlex>
-      {{property.value}}
-    </div>
+          <div fxFlex>{{property.value}}</div>
+        </div>
+      </ng-template>
+
   </div>
+
+
+  <ng-template #readonlyEmpty>
+Nothing found
+  </ng-template>
+
+
 </div>

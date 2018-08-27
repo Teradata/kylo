@@ -34,7 +34,7 @@ import {FieldPolicyProperty} from "../../model/field-policy";
 export class PropertyListComponent  implements OnInit, OnDestroy{
 
     @Input()
-    title:string = "Properties"
+    title?:string = "Additional Properties"
 
     @Input()
     editable:boolean;

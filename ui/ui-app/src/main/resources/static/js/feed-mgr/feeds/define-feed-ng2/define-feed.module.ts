@@ -61,6 +61,8 @@ import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 import {OverviewComponent} from './summary/overview/overview.component';
 import {ProfileComponent} from './summary/profile/profile.component';
+import {FeedSourceSampleChange} from "./services/feed-source-sample-change-listener";
+import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 
 
 @NgModule({
@@ -81,11 +83,13 @@ import {ProfileComponent} from './summary/profile/profile.component';
         OverviewComponent,
         ProfileComponent,
         FeedScheduleComponent,
-        FilterPartitionFormulaPipe
+        FilterPartitionFormulaPipe,
+        FeedLineageComponment
     ],
     providers:[
       DefineFeedService,
       FeedLoadingService,
+        FeedSourceSampleChange,
       FilterPartitionFormulaPipe
     ],
     imports: [

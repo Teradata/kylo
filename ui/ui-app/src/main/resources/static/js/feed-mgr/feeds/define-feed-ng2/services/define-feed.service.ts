@@ -31,6 +31,7 @@ import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {TranslateService} from "@ngx-translate/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {SelectionService} from "../../../catalog/api/services/selection.service";
+import {FeedSourceSampleChange} from "./feed-source-sample-change-listener";
 
 
 export enum TableSchemaUpdateMode {
@@ -125,6 +126,8 @@ export class DefineFeedService {
     private feedService :FeedService;
 
 
+
+
     /**
      * Listen for when a user chooses a new source
      */
@@ -132,7 +135,8 @@ export class DefineFeedService {
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
-                private selectionService: SelectionService){
+                private selectionService: SelectionService,
+                private feedSourceSampleChange:FeedSourceSampleChange){
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
 
@@ -400,7 +404,7 @@ export class DefineFeedService {
 
     generalInfoStep(steps:Step[]):Step{
         let name = this._translateService.instant("views.define-feed-stepper.GeneralInfo")
-        return new StepBuilder().setNumber(1).setName(name).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
+        return new StepBuilder().setNumber(1).setName(name).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Describe the feed, assign properties and schedule").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
     }
 
     feedDetailsStep(steps:Step[], stepNumber:number):Step {
@@ -426,7 +430,7 @@ export class DefineFeedService {
         let generalInfoStep = this.generalInfoStep(steps);
         let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator(this.previewDatasetCollectionService)).build();
         let wranglerStep =  new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("wrangler").setDisabled(true).setRequired(true).build();
-        let table = new StepBuilder().setNumber(4).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
+        let table = new StepBuilder().setNumber(4).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_WRANGLER).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
         let feedDetails = this.feedDetailsStep(steps,5);
         steps.push(generalInfoStep);
         steps.push(sourceSampleStep);
@@ -501,68 +505,7 @@ export class DefineFeedService {
         return observable;
     }
 
-    /**
-     * Update the feed table schemas for a given dataset previewed
-     * @param {PreviewDataSet} dataSet
-     * @param {TableSchemaUpdateMode} mode
-     * @private
-     */
-    private _updateTableSchemas(dataSet:PreviewDataSet,mode:TableSchemaUpdateMode){
-        if(dataSet){
-            let sourceColumns: TableColumnDefinition[] = [];
-            let targetColumns: TableColumnDefinition[] = [];
-            let feedColumns: TableColumnDefinition[] = [];
 
-            let columns: TableColumn[] = dataSet.schema
-            if(columns) {
-                columns.forEach(col => {
-                    let def = angular.extend({}, col);
-                    def.derivedDataType = def.dataType;
-                    //sample data
-                    if (dataSet.preview) {
-                        let sampleValues: string[] = dataSet.preview.columnData(def.name)
-                        def.sampleValues = sampleValues
-                    }
-                    sourceColumns.push(new TableColumnDefinition((def)));
-                    targetColumns.push(new TableColumnDefinition((def)));
-                    feedColumns.push(new TableColumnDefinition((def)));
-                });
-            }
-            else {
-                //WARN Columns are empty.
-                console.log("EMPTY columns for ",dataSet);
-            }
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
-                this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
-                this.feed.table.sourceTableSchema.fields = sourceColumns;
-            }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
-                this.feed.table.feedTableSchema.fields = feedColumns;
-                this.feed.table.tableSchema.fields = targetColumns;
-                this.feed.table.fieldPolicies = targetColumns.map(field => {
-                    let policy = TableFieldPolicy.forName(field.name);
-                    policy.field = field;
-                    field.fieldPolicy = policy;
-                    return policy;
-                });
-                //flip the changed flag
-                this.feed.table.schemaChanged = true;
-            }
-
-
-        }
-        else {
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
-                this.feed.sourceDataSets = [];
-                this.feed.table.sourceTableSchema.fields = [];
-            }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
-                this.feed.table.feedTableSchema.fields = [];
-                this.feed.table.tableSchema.fields = [];
-                this.feed.table.fieldPolicies = [];
-            }
-        }
-    }
 
 
     /**
@@ -570,49 +513,7 @@ export class DefineFeedService {
      * @param {PreviewDataSet[]} dataSets
      */
     onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
-        let dataSet :PreviewDataSet = dataSets[0];
-        if(dataSet) {
-            //compare existing source against this source
-            //    let existingSourceColumns = this.feed.table.sourceTableSchema.fields.map(col => col.name+" "+col.derivedDataType).toString();
-            //   let dataSetColumns = dataSet.schema.map(col => col.name+" "+col.dataType).toString();
-
-            // check if the dataset source and item name match the feed
-            let previewSparkDataSet = dataSet.toSparkDataSet();
-            let key = previewSparkDataSet.id
-            let dataSourceId = previewSparkDataSet.dataSource.id;
-            let matchingFeedDataSet = this.feed.sourceDataSets.find(sparkDataset => sparkDataset.id == key && sparkDataset.dataSource.id == dataSourceId);
-
-            if (matchingFeedDataSet == undefined) {
-                //the source differs from the feed source and if we have a target defined.... confirm change
-                if (this.feed.table.tableSchema.fields.length > 0) {
-                    this._dialogService.openConfirm({
-                        message: 'The source schema has changed.  A target schema already exists for this feed.  Do you wish to reset the target schema to match the new source schema? ',
-                        disableClose: true,
-                        title: 'Source dataset already defined', //OPTIONAL, hides if not provided
-                        cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
-                        acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
-                        width: '500px', //OPTIONAL, defaults to 400px
-                    }).afterClosed().subscribe((accept: boolean) => {
-
-                        if (accept) {
-                            this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET)
-                        } else {
-                            // no op
-                            this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE);
-                        }
-                    });
-                }
-                else {
-                    //this will be if its the first time a source is selected for a feed
-                    this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET);
-                }
-
-            }
-            else {
-                console.log("No change to source schema found.  ");
-            }
-        }
-
+        this.feedSourceSampleChange.dataSetCollectionChanged(dataSets,this.feed)
     }
 
 

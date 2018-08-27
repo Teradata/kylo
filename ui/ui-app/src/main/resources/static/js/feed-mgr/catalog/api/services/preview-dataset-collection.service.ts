@@ -49,6 +49,9 @@ export class PreviewDatasetCollectionService {
     /**
      * Add a dataset to the collection
      * @param {PreviewDataSet} dataset
+     *
+     *
+     * TODO build schema out of dataset.headers.properties
      */
     public addDataSet(dataset:PreviewDataSet){
         //only add if it doesnt exist yet
@@ -65,6 +68,9 @@ export class PreviewDatasetCollectionService {
                 //update the preview
                 existingDataset.preview = dataset.preview;
                 //notify???
+            }
+            if(existingDataset.schema == undefined && dataset.schema != undefined){
+                existingDataset.schema = dataset.schema;
             }
         }
     }

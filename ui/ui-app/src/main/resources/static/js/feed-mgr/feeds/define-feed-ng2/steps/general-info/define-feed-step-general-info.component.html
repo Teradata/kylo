@@ -2,34 +2,31 @@
 
   <feed-step-readonly-content>
     <div fxLayout="column">
-      <div fxLayout="row" fxLayoutAlign="start" class="read-only-row">
-        <div fxFlex="50">
-          <span fxFlex="25" translate>views.define-feed-general-info.DN</span>
-          <span>{{feed.feedName}}</span>
-        </div>
-        <div fxFlex="50">
-          <span fxFlex="25" translate>views.define-feed-general-info.SN</span>
-          <span>{{feed.systemFeedName}}</span>
-        </div>
+      <div class="section-header">{{title}}</div>
+      <div fxLayout="row" fxFlex fxLayoutAlign="start" class="read-only-row">
+          <div fxFlex="25" translate>views.define-feed-general-info.DN</div>
+          <div  fxFlex="25">{{feed.feedName}}</div>
+          <div fxFlex="25" translate>views.define-feed-general-info.SN</div>
+          <div  fxFlex>{{feed.systemFeedName}}</div>
       </div>
 
-      <div class="read-only-row">
-        <span fxFlex="25" translate>views.define-feed-general-info.Category</span>
-        <span>{{feed.category.name}}</span>
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>views.define-feed-general-info.Category</div>
+        <div fxFlex>{{feed.category.name}}</div>
       </div>
 
-      <div class="read-only-row">
-        <span fxFlex="25" translate>views.define-feed-general-info.Description</span>
-        <span>{{feed.description}}</span>
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>views.define-feed-general-info.Description</div>
+        <div>{{feed.description}}</div>
       </div>
 
-      <div class="read-only-row">
-        <span fxFlex="25" translate>views.feed-details.DO</span>
-        <span>{{feed.dataOwner}}</span>
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>views.feed-details.DO</div>
+        <div  fxFlex>{{feed.dataOwner}}</div>
       </div>
 
       <!-- feed properties -->
-      <property-list  [editable]="false" [properties]="feed.userProperties"></property-list>
+      <property-list title="Additional Properties" [editable]="false" [properties]="feed.userProperties"></property-list>
 
       <feed-schedule [parentForm]="formGroup" [editable]="false" [feed]="feed"></feed-schedule>
 
@@ -39,13 +36,14 @@
   </feed-step-readonly-content>
 
   <feed-step-edit-content>
+    <div class="section-header">{{title}}</div>
     <div fxLayout="column" [formGroup]="formGroup">
       <div fxLayout="row" fxLayoutAlign="start">
         <mat-form-field fxFlex="50">
           <input matInput formControlName="feedName" placeholder="Feed name"  >
         </mat-form-field>
 
-        <mat-form-field fxFlex="50">
+        <mat-form-field fxFlex="50" class="pad-left">
           <input matInput placeholder="System Feed name"  formControlName="systemFeedName">
         </mat-form-field>
 
@@ -55,14 +53,18 @@
       <mat-form-field>
         <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto">
         <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" >
-          <mat-option *ngFor="let category of filteredCategories | async" [value]="category">
-                  <span class="item-title" [class.disabled]="!category.createFeed">
+          <mat-option *ngFor="let category of filteredCategories | async" [value]="category" class="autocomplete-option">
+                  <span [class.disabled]="!category.createFeed">
                        <ng-md-icon icon="{{category.icon}}" style="fill:{{category.iconColor}}" *ngIf="category.createFeed"></ng-md-icon>
                     <ng-md-icon icon="block" class="disabled" *ngIf="!category.createFeed"></ng-md-icon>
-                    <span> {{category.name}} </span>
-                    <small>{{category.description}}</small>
+                    <span class="title"> {{category.name}} </span>
+                    <br/>
+                    <span class="sub-title hint">{{category.description}}</span>
                   </span>
           </mat-option>
+
+
+
         </mat-autocomplete>
       </mat-form-field>
       <mat-form-field>
