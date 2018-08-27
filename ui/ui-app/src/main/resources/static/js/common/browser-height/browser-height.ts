@@ -1,5 +1,6 @@
 import {Directive, ElementRef, Input, OnDestroy, OnInit} from "@angular/core";
 import * as $ from "jquery";
+import "rxjs/add/observable/fromEvent";
 import {Observable} from "rxjs/Observable";
 import {Subscription} from "rxjs/Subscription";
 

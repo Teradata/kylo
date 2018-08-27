@@ -1,13 +1,10 @@
-<link rel="stylesheet" href="js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column.css"/>
-
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
-  <span>{{dialog.fieldName}}</span>
-  <span class="flex"></span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
+<div mat-dialog-title fxLayout="row">
+  <h2 style="color: rgb(52, 131, 186)">{{fieldName}}</h2>
+  <span fxFlex="1 1 auto"></span>
+  <button mat-icon-button (click)="hide()" style="opacity: 0.4">
+    <ng-md-icon icon="close" arial-label="Close dialog"></ng-md-icon>
   </button>
-</mat-toolbar>
-<div mat-dialog-content class="mat-dialog-content" layout-padding>
-  <column-analysis profile="dialog.profile" field="dialog.fieldName"></column-analysis>
 </div>
-
+<div mat-dialog-content class="mat-dialog-content">
+  <column-analysis [profile]="profile" [field]="fieldName"></column-analysis>
+</div>

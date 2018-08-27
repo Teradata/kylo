@@ -37,10 +37,10 @@
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
         </button>
-        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" hide show-gt-md>
-          History<span *ngIf="functionHistory.length>0" fxShow.gt-lg="true" hide show-gt-lg style="padding-left:10px;">({{functionHistory.length}})</span>
+        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true">
+          History<span *ngIf="functionHistory.length>0" fxShow.gt-lg="true" fxHide="true" style="padding-left:10px;">({{functionHistory.length}})</span>
         </button>
-        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" hide show-gt-md>Sample</button>
+        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true">Sample</button>
         <span fxFlex="1 1 auto"></span>
         <mat-menu #formulaMenu="matMenu">
           <button *ngFor="let item of sampleFormulas" mat-menu-item (click)="setFormula(item.formula)">{{item.name}}</button>
@@ -49,7 +49,6 @@
           <ng-md-icon icon="functions" class="tc-primary"></ng-md-icon>
         </button>
         <codemirror class="formula-editor" [config]="codemirrorOptions" [(ngModel)]="currentFormula" style="height:25px"></codemirror>
-        <!--<div rows="1" class="formula-editor" ui-codemirror="$td.codeMirrorConfig" ng-model="$td.currentFormula" ui-codemirror-opts="$td.codemirrorOptions" style="height: 25px;"></div>-->
         <button mat-raised-button class="mat-accent" (click)="onAddFunction()" [disabled]="!currentFormula">Add</button>
         <span fxFlex="1 1 auto"></span>
         <div fxLayout="row">

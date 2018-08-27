@@ -1,13 +1,13 @@
-import {AfterViewInit, Component, ElementRef, Inject, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Inject, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
+import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {CodemirrorComponent} from "ng2-codemirror";
-import * as _ from "underscore";
 import {Subject} from "rxjs/Subject";
-import {MatStepper} from "@angular/material/stepper";
+import * as _ from "underscore";
 
 import StepperService from '../../../common/stepper/StepperService';
-import BroadcastService, {BroadcastEvent} from '../../../services/broadcast-service';
+import BroadcastService from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
@@ -882,7 +882,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         }
     };
 
-    displayError(title:string, msg:string): void {
+    displayError(title: string, msg: string): void {
         this.$mdDialog.openAlert({
             title: title,
             message: msg,
@@ -964,7 +964,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             let profileStats = this.engine.getProfile();
             this.engine.pop();
 
-            this.$mdDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}});
+            this.$mdDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}, width: "800px"});
         });
 
     };

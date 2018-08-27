@@ -1,35 +1,24 @@
+import {Component, Input, OnInit} from "@angular/core";
 import * as angular from "angular";
+import * as d3 from "d3";
 
-const d3 = require('d3');
-
-import {moduleName} from "../../../module-name";;
-
-const directive = function () {
-    return {
-        restrict: "EA",
-        bindToController: {
-            profile: '=',
-            field: '='
-        },
-        controllerAs: 'vm',
-        scope: {},
-        templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/column-analysis.html',
-        controller: "ColumnAnalysisController"
-    };
-};
-
-export class ColumnAnalysisController implements ng.IComponentController {
+@Component({
+    selector: "column-analysis",
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/column-analysis.css"],
+    templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/column-analysis.html"
+})
+export class ColumnAnalysisController implements OnInit {
 
     data: Array<any> = [];
-    profile: any;
-    field: string;
+    @Input() profile: any;
+    @Input() field: string;
     totalCount: string;
     unique: string;
     maxLen: string;
     minLen: string;
     percUnique: number;
     percEmpty: number;
-    emptyCount: string ;
+    emptyCount: string;
     columnDataType: string;
     nullCount: string;
     percNull: number;
@@ -44,27 +33,25 @@ export class ColumnAnalysisController implements ng.IComponentController {
     invalidCount: string;
     showValid: boolean = false;
 
-    constructor(private $scope: any, private $timeout: any) {
+    ngOnInit(): void {
         this.show();
     }
 
     show(): void {
-        var self = this;
-
-        self.initializeStats();
+        this.initializeStats();
 
         // populate metrics
-        if (self.data && self.data.length > 0) {
-            self.data.sort(self.compare);
+        if (this.data && this.data.length > 0) {
+            this.data.sort(this.compare);
 
             // rescale bar
-            let total: number = parseInt(self.totalCount);
-            let scaleFactor: number = (1 / (self.data[0].count / total));
+            let total: number = parseInt(this.totalCount);
+            let scaleFactor: number = (1 / (this.data[0].count / total));
             let cummCount: number = 0;
-            angular.forEach(self.data, function (item: any) {
+            this.data.forEach(item => {
                 let frequency = (item.count / total);
                 item.frequency = frequency * 100;
-                cummCount += item.frequency
+                cummCount += item.frequency;
                 item.cumm = cummCount;
                 item.width = item.frequency * scaleFactor;
             });
@@ -136,14 +123,13 @@ export class ColumnAnalysisController implements ng.IComponentController {
                         self.invalidCount = value.metricValue;
                         self.showValid = true;
                         break;
-
                 }
             }
         });
-        if (this.unique != null)  {
+        if (this.unique != null) {
             this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount))
         }
-        if (this.emptyCount != null)  {
+        if (this.emptyCount != null) {
             this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount));
         }
         if (this.nullCount != null) {
@@ -152,7 +138,6 @@ export class ColumnAnalysisController implements ng.IComponentController {
         if (this.showValid) {
             this.validCount = (parseInt(this.totalCount) - parseInt(this.invalidCount));
         }
-
     }
 
     /**
@@ -167,24 +152,17 @@ export class ColumnAnalysisController implements ng.IComponentController {
     }
 }
 
-const columnHistogram = function () {
-    return {
-        restrict: "EA",
-        bindToController: {
-            chartData: '='
-        },
-        controllerAs: 'vm',
-        scope: {},
-        template: '<nvd3 options="vm.chartOptions" data="vm.chartData" api="vm.chartApi"></nvd3>',
-        controller: "HistogramController"
-    };
-};
-export class HistogramController implements ng.IComponentController {
+@Component(({
+    selector: "column-histogram",
+    template: `
+      <nvd3 [options]="chartOptions" [data]="chartData"></nvd3>`
+}))
+export class HistogramController implements OnInit {
 
     tooltipData: any;
-    chartData: any;
-    chartApi : any;
-    chartOptions: any= {
+    @Input("chart-data") chartData: any;
+    chartApi: any;
+    chartOptions: any = {
         "chart": {
             "type": "multiBarChart",
             "height": 315,
@@ -201,25 +179,28 @@ export class HistogramController implements ng.IComponentController {
             "xAxis": {
                 "axisLabel": "Value",
                 "showMaxMin": true,
-                "tickFormat": function(d:number) { return d3.format('0f')(d)}
+                "tickFormat": function (d: number) {
+                    return d3.format('0f')(d)
+                }
             },
             "yAxis": {
                 "axisLabel": "Count",
                 "axisLabelDistance": -20,
-                "tickFormat": function(d:number) { return d3.format('0f')(d)}
+                "tickFormat": function (d: number) {
+                    return d3.format('0f')(d)
+                }
             },
             "showControls": false,
             "showLegend": false,
             tooltip: {
-                contentGenerator: function (e : any) {
-                    var data = e.data;
-                    var index = e.index;
+                contentGenerator: function (e: any) {
+                    const data = e.data;
                     if (data === null) return;
-                    return `<table><tbody>`+
-                    `<tr><td class="key">Min</td><td>${data.min}</td></tr>`+
-                    `<tr><td class="key">Max</td><td>${data.max}</td></tr>`+
-                    `<tr><td class="key">Count</td><td>${data.y}</td></tr>`+
-                    `</tbody></table>`;
+                    return `<table><tbody>` +
+                        `<tr><td class="key">Min</td><td>${data.min}</td></tr>` +
+                        `<tr><td class="key">Max</td><td>${data.max}</td></tr>` +
+                        `<tr><td class="key">Count</td><td>${data.y}</td></tr>` +
+                        `</tbody></table>`;
                 }
             }
 
@@ -227,14 +208,13 @@ export class HistogramController implements ng.IComponentController {
         }
     };
 
-    formatData = function() {
+    formatData() {
+        const xAxis = this.chartData._1;
+        const yAxis = this.chartData._2;
 
-        var xAxis = this.chartData._1;
-        var yAxis = this.chartData._2;
-
-        var data = [];
-        for (var i=0; i<xAxis.length-1; i++) {
-            data.push({ min: xAxis[i], max: xAxis[i+1], x:(xAxis[i] + xAxis[i+1])/2, y:yAxis[i]});
+        const data = [];
+        for (let i = 0; i < xAxis.length - 1; i++) {
+            data.push({min: xAxis[i], max: xAxis[i + 1], x: (xAxis[i] + xAxis[i + 1]) / 2, y: yAxis[i]});
         }
         this.tooltipData = data;
         return [{
@@ -244,23 +224,7 @@ export class HistogramController implements ng.IComponentController {
         }];
     }
 
-    constructor(private $scope: any) {
-
-    }
-
-    $onInit() {
+    ngOnInit() {
         this.chartData = this.formatData();
-
-        /*
-        this.$scope.$watch(this.chartData, (newValue:object)=> {
-            this.chartApi.update();
-        })
-        */
     }
-
 }
-
-angular.module(moduleName).controller("ColumnAnalysisController", ["$scope", "$timeout", ColumnAnalysisController]);
-angular.module(moduleName).controller("HistogramController", ["$scope", HistogramController]);
-angular.module(moduleName).directive("columnAnalysis", directive);
-angular.module(moduleName).directive("columnHistogram", columnHistogram);
