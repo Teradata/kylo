@@ -2,6 +2,7 @@
   <form [formGroup]="policyForm">
   <inline-field-policy-form [policyForm]="policyForm" [(selectedPolicyRule)]="schemaParser" policyParameter="sparkSchemaParser" defaultValue="XML" selectLabel="Parser"></inline-field-policy-form>
 
+  <h3 class="mat-subheading-2 pad-top">Upload sample file</h3>
   <file-upload #fileUpload [files]="sampleFile" (onSubmit)="uploadSampleFile($event)"></file-upload>
 
   </form>

@@ -20,6 +20,7 @@ import {CovalentFileModule} from "@covalent/core/file";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 @NgModule({
     declarations: [
@@ -49,7 +50,8 @@ import {FormsModule} from "@angular/forms";
         MatIconModule,
         MatListModule,
         MatMenuModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        FlexLayoutModule
     ],
     exports: [
         BrowserHeight,
