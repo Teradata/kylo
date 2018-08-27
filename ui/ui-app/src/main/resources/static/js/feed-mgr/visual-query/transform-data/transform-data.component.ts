@@ -203,6 +203,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @Input()
     heightOffset: string = "0";
 
+    @Input()
+    warnWhenLeaving?:boolean = true;
+
     /**
      * Validation results for current transformation.
      */
@@ -233,8 +236,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
 
-        // Display prompt on window unload
-        this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Get height offset attribute
         this.heightOffset = $element.nativeElement.getAttribute("height-offset");
@@ -245,6 +246,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     }
 
     ngOnInit(): void {
+        if(this.warnWhenLeaving) {
+            // Display prompt on window unload
+            this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
+
+        }
+
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;

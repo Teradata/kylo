@@ -1,5 +1,5 @@
 import {UserDatasource} from "./index";
-import {VisualQueryModel} from "../../services/VisualQueryService";
+import {VisualQueryModel, VisualQueryService} from "../../services/VisualQueryService";
 
 /**
  * Parses a query and generates a transform script.
@@ -9,7 +9,7 @@ export abstract class QueryParser {
     /**
      * Constructs a {@code QueryParser}.
      */
-    constructor(protected VisualQueryService: any) {
+    constructor(protected visualQueryService: VisualQueryService) {
     }
 
     /**
