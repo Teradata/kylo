@@ -582,6 +582,21 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
 
+        FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
+        try {
+            state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
+        } catch (Exception e) {
+            //if the string isnt valid, disregard as it will end up disabling the feed.
+        }
+
+
+        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
+
+        boolean isDraft = feedMetadata.isDraft();
+
+
+        if (!isDraft) {
+
         //store ref to the originalFeedProperties before resolving and merging with the template
         List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
 
@@ -620,16 +635,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
-        FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
-        try {
-            state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
-        } catch (Exception e) {
-            //if the string isnt valid, disregard as it will end up disabling the feed.
-        }
 
-        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
 
-        boolean isDraft = feedMetadata.isDraft();
 
         // flag to indicate to enable the feed later
         //if this is the first time for this feed and it is set to be enabled, mark it to be enabled after we commit to the JCR store
@@ -639,7 +646,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             enabled = false;
             feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
         }
-        if (!isDraft) {
+
             CreateFeedBuilder
                 feedBuilder =
                 CreateFeedBuilder
@@ -716,8 +723,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 }
             }
         } else {
+
+            //encrypt the metadata properties
+            feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
             //if Draft its always disabled
             saveFeed(feedMetadata);
+
             feed = new NifiFeed(feedMetadata, null);
             feed.setSuccess(true);
             feed.setEnableAfterSave(false);
