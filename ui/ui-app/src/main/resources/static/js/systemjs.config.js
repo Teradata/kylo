@@ -167,6 +167,7 @@ System.config({
         "moment":"bower:moment/min/moment.min",
         "ng2-codemirror": "npm:ng2-codemirror/lib/index",
         "ng2-dnd": "npm:ng2-dnd/bundles/ng2-dnd.umd.min",
+        "ng2-nvd3": "npm:ng2-nvd3/build/index",
         'ng-fx':"bower:ngFx/dist/ngFx.min",
         "nvd3": "bower:nvd3/build/nv.d3.min",
         "ocLazyLoad":"bower:oclazyload/dist/ocLazyLoad.require",
