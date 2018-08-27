@@ -3,7 +3,7 @@ import {TableSchema} from "../table-schema";
 import {SchemaParser} from "../field-policy";
 import {TableFieldPolicy} from "../TableFieldPolicy";
 import {TableFieldPartition} from "../TableFieldPartition";
-import {FeedDataTransformation} from "../feed-data-transformation";
+import {DefaultFeedDataTransformation, FeedDataTransformation} from "../feed-data-transformation";
 import {FeedStepValidator} from "./feed-step-validator";
 import {TableColumnDefinition} from "../TableColumnDefinition";
 import {Templates} from "../../services/TemplateTypes";
@@ -284,9 +284,15 @@ export class Feed  implements KyloObject{
             });
         }
 
+
         //ensure the tableDef model
         this.table = ObjectUtils.getAs(this.table,FeedTableDefinition, FeedTableDefinition.OBJECT_TYPE);
         this.table.ensureObjectTypes();
+
+        if(this.isDataTransformation()){
+            //ensure types
+            this.dataTransformation = ObjectUtils.getAs(this.dataTransformation,DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
+        }
     }
 
     updateNonNullFields(model: any) {
@@ -319,17 +325,7 @@ export class Feed  implements KyloObject{
         this.mode = FeedMode.DRAFT;
         this.category = {id: null, name: null, systemName: null, description: null};
         this.table = new FeedTableDefinition()
-        this.dataTransformation = {
-            chartViewModel: null,
-            datasourceIds: null,
-            $datasources: null,
-            $selectedColumnsAndTables:null,
-            $selectedDatasourceId:null,
-            dataTransformScript: null,
-            datasets:null,
-            sql: null,
-            states: []
-        };
+        this.dataTransformation = new DefaultFeedDataTransformation();
         this.view = {
             generalInfo: {disabled: false},
             feedDetails: {disabled: false},
