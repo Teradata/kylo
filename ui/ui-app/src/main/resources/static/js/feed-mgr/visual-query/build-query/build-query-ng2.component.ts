@@ -279,7 +279,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     onAddTable() {
         this.sideNavService.hideSideNav();
-        let table = this.form.get('tableAutocomplete').value;
+        let table = this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
         if (table) {
             this.onTableClick(table);
             this.form.get('tableAutocomplete').reset('');
