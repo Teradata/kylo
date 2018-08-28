@@ -282,8 +282,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
      */
    private validate() {
         //TODO: To be implemented
-        console.log("Implement me to validate the form");
-    }
+       }
 
 
     /**

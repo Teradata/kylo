@@ -53,8 +53,6 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
     init(){
         this.paths = this.feed.getSourcePaths();
-
-        console.log("using paths ",this.paths);
         //always show the catalog if no paths are available to preview
         if(this.paths == undefined || this.paths.length ==0) {
             this.showCatalog = true;
@@ -88,7 +86,6 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
         params["resetSelectionService"] = false;
         params["datasourceId"]= dataSet.dataSource.id;
         params["path"]= dataSet.resolvePath(false);
-        console.log("go with params ",params)
         this.selectionService.reset(dataSet.dataSource.id);
         this.selectionService.setLastPath(dataSet.dataSource.id,{path:dataSet.resolvePath()});
        // this.selectionService.set()

@@ -508,7 +508,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         //ensure the input processorId is set
         if(this.inputProcessorId == undefined && this.inputProcessor != undefined){
             this.inputProcessorId = this.inputProcessor.id;
-            console.log('input processor id was null... defaulting to ',this.inputProcessorId)
         }
 
         new FieldConfigurationBuilder(this.fieldConfigurationState).createFormFields(this.inputProcessors).sort((n1,n2) => {

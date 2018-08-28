@@ -141,7 +141,7 @@ import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componm
 })
 export class DefineFeedModule {
     constructor(injector: Injector) {
-        console.log("Loading DefineFeedModule")
+      //  console.log("Loading DefineFeedModule")
      //   require("kylo-feedmgr-module");
     }
 }

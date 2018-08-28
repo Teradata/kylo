@@ -18,34 +18,45 @@
   #L%
   -->
 
-<div fxLayoutAlign="center center" fxLayout="column">
+<div fxLayoutAlign="center center" fxLayout="row">
+     <div fxFlex="110px" *ngIf="allowImport"></div>
+     <div class="mat-padding import-feed-text" fxLayout="row" fxFlex fxLayoutAlign="center center">
+         <span translate>views.define-feed.Sat</span>
+     </div>
+    <div class="import-button pad-right-md" *ngIf="allowImport">
+        <button mat-button (click)="gotoImportFeed()">
+           <mat-icon color="primary">add_circle_outline</mat-icon>
+           <span class="text-caps" translate>views.define-feed.import</span>
+        </button>
+    </div>
+</div>
 
-    <ng-container *ngIf="layout == 'first'">
+<div fxLayoutAlign="center center" fxLayout="column" *ngIf="layout == 'first'">
     <ng-container *ngFor="let template of firstTemplates">
     <mat-card class="template-card" >
         <mat-card-header>
             <div mat-card-avatar>
-                <ng-md-icon icon="{{template.icon}}" size="40" ng-style="{'fill':template.iconColor}" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
+                <ng-md-icon icon="{{template.icon}}" size="40" [ngStyle]="{'fill':template.iconColor}" class="pad-left-sm pad-top-md" ></ng-md-icon>
             </div>
             <mat-card-title (click)="selectTemplate(template)">{{template.templateName}}</mat-card-title>
             <mat-card-subtitle>{{template.description}}</mat-card-subtitle>
         </mat-card-header>
     </mat-card>
     </ng-container>
-    </ng-container>
 
     <div>
-        <button mat-button color="accent" (click)="more()" *ngIf="displayMoreLink">More</button>
+        <button mat-button color="primary" (click)="more()" *ngIf="displayMoreLink">More</button>
     </div>
+</div>
 
 
-
+<div fxLayoutAlign="start start" fxLayout="row wrap" *ngIf="layout == 'all'">
     <ng-container *ngIf="layout == 'all'">
     <ng-container *ngFor="let template of allTemplates" >
         <mat-card class="template-card">
             <mat-card-header>
                 <div mat-card-avatar>
-                    <ng-md-icon icon="{{template.icon}}" size="40" ng-style="{'fill':template.iconColor}" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
+                    <ng-md-icon icon="{{template.icon}}" size="40" [ngStyle]="{'fill':template.iconColor}" class="pad-left-sm pad-top-md"></ng-md-icon>
                 </div>
                 <mat-card-title (click)="selectTemplate(template)">{{template.templateName}}</mat-card-title>
                 <mat-card-subtitle>{{template.description}}</mat-card-subtitle>

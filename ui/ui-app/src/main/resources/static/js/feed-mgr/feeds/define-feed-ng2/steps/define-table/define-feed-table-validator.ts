@@ -22,7 +22,6 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
             this.step.valid = true;
             this.step.setComplete(true);
         }
-        console.log("Validate step finished",this.step, feed)
         return this.step.valid;
     }
 }

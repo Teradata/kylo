@@ -181,7 +181,6 @@ export class DefineFeedService {
 
             let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
             observable.subscribe((feed) => {
-                console.log("LOADED ", feed)
                 //reset the collection service
                 this.previewDatasetCollectionService.reset();
                 this.selectionService.reset()
@@ -209,7 +208,6 @@ export class DefineFeedService {
 
     ensureSparkShell(){
         this.http.post(RestUrlConstants.SPARK_SHELL_SERVICE_URL+ "/start", null).subscribe((response)=> {
-            console.log("SPARK SHELL STARTED!");
         },(error1 => {
             console.error("ERROR STARTING spark shell ",error1)
         }));

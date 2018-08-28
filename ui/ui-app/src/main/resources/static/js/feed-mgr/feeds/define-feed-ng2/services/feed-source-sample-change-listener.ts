@@ -116,7 +116,7 @@ export class DefineTableSourceChangeStrategy implements FeedSourceSampleChangeLi
 
             }
             else {
-                console.log("No change to source schema found.  ");
+            //    console.log("No change to source schema found.  ");
             }
         }
 

@@ -21,7 +21,6 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     }
 
     ngOnInit() {
-        console.log("on init");
         let feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.initializeFeed(feedId);
     }

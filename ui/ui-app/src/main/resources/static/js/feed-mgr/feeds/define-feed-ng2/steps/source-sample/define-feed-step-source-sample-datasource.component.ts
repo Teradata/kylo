@@ -108,7 +108,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
             }
 
         this.paths = paths.concat(feedPaths);
-            console.log("SET preview paths to be ",this.paths);
         }
 
         isSingleSelectionPolicy(){

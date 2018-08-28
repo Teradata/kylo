@@ -50,7 +50,6 @@ export class DynamicFormUtil {
 
                 control.valueChanges.debounceTime(200).subscribe(value => {
                     if (field.model && field.modelValueProperty) {
-                        console.log("update the model for ", field, 'with ', value);
                         field.model[field.modelValueProperty] = value;
                         if (field.onModelChange) {
                             field.onModelChange(value, formGroup, field.model);

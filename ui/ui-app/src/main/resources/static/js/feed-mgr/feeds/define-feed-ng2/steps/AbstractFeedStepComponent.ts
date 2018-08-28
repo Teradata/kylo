@@ -69,7 +69,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
-            console.log("changes",changes,"formStatus",formGroup.status, this.formValid,'changes',changes)
+      //      console.log("changes",changes,"formStatus",formGroup.status, this.formValid,'changes',changes)
             this.step.setComplete(this.formValid);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;

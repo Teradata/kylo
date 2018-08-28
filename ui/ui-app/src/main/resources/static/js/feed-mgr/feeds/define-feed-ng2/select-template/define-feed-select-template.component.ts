@@ -73,6 +73,12 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          */
         displayMoreLink:boolean = false;
 
+        /**
+         * The number of templates to display iniitally
+         * @type {number}
+         */
+        FIRST_TEMPLATES = 5;
+
 
 
     constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private $$angularInjector: Injector) {
@@ -86,15 +92,25 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
         this.allTemplates = [];
 
+
+
         this.firstTemplates = [];
 
         this.displayMoreLink = false;
 
         let sideNavService = $$angularInjector.get("SideNavService");
         sideNavService.showSideNav();
+
+        //TODO change with Entity Access Control!
+        this.allowImport = true;
     };
 
-
+        /**
+         * Navigate to the feed import page
+         */
+        gotoImportFeed(){
+            this.stateService.go('import-feed');
+        }
 
 
         /**
@@ -194,7 +210,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                         this.displayMoreLink = true;
                     }
                     this.allTemplates = data;
-                    this.firstTemplates = _.first(data, 3);
+                    this.firstTemplates = _.first(data, this.FIRST_TEMPLATES);
                 }
 
             };

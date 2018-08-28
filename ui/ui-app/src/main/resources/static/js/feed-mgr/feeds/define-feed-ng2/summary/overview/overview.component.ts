@@ -19,11 +19,9 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService) {
         super(feedLoadingService, stateService, defineFeedService);
-        console.log("constructor");
-    }
+     }
 
     ngOnInit() {
-        console.log("on init");
         let feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.initializeFeed(feedId);
     }
