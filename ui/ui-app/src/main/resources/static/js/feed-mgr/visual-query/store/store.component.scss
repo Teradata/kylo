@@ -1,0 +1,18 @@
+mat-option.autocomplete-option {
+  line-height: 30px;
+  height: 70px;
+  border-bottom: 1px solid lightgrey;
+
+  .sub-title {
+    left: 2px;
+    right: auto;
+    bottom: 7px;
+    font-size: 12px;
+    line-height: 14px;
+    transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
+  }
+
+  .hint {
+    color: grey;
+  }
+}

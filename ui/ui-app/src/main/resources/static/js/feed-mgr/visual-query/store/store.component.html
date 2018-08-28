@@ -15,13 +15,13 @@
         </div>
       </div>
 
-      <form #form>
+      <form #storeForm="ngForm">
         <div fxLayout="column">
 
-          <div style="padding-bottom:10px;">
+          <div style="padding-bottom:20px;">
             <div class="mat-subheader">Choose the destination</div>
             <div class="layout-padding-indent" style="padding-top:8px;">
-              <mat-radio-group name="destination" [(ngModel)]="destination" fxLayout="row" fxLayoutGap="20px" required>
+              <mat-radio-group name="destination" [(ngModel)]="destination" fxLayout="row" fxLayoutGap="20px" (change)="_reset()">
                 <mat-radio-button value="DOWNLOAD">Download as a file</mat-radio-button>
                 <mat-radio-button value="TABLE">Save to a table</mat-radio-button>
               </mat-radio-group>
@@ -29,129 +29,118 @@
           </div>
 
           <mat-form-field *ngIf="destination == 'TABLE'">
-            <label>Data Source</label>
-            <mat-select name="datasource" [(ngModel)]="target.jdbc" placeholder="Data Source" required (change)="form.datasource.$setValidity('connectionError', true)">
+            <mat-select name="datasource" [(ngModel)]="target.jdbc" placeholder="Data Source" required #datasourceField="ngModel" (change)="tableNameControl.reset('')">
               <mat-option *ngFor="let datasource of kyloDataSources; trackBy: trackDataSource" [value]="datasource">{{datasource.name}}</mat-option>
             </mat-select>
-            <div ng-messages="$st.form.datasource.$error" ng-if="$st.form.datasource.$touched">
-              <div ng-message="connectionError">Unable to connect to selected data source.</div>
-              <div ng-message="required">Required</div>
-            </div>
+            <mat-error *ngIf="datasourceField.invalid && datasourceField.errors.required">Required</mat-error>
           </mat-form-field>
+          <mat-error *ngIf="connectionError" style="padding-bottom:20px">Unable to connect to selected data source.</mat-error>
 
           <mat-form-field *ngIf="destination == 'TABLE'">
-            <input matInput required placeholder="Table Name" [matAutocomplete]="autoTable" name="tableName" minlength="1">
+            <input matInput placeholder="Table Name" [matAutocomplete]="autoTable" name="tableName" [formControl]="tableNameControl">
             <mat-autocomplete #autoTable="matAutocomplete" class="autocomplete-hive-table-template">
-              <mat-option *ngFor="let item of findTables(target.tableName) | async" [value]="item.fullName">
-                <span class="item-title">
-                <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
-                <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i" style="padding-left:5px;">{{item.fullName}}</span>
-              </span>
-                <span class="item-metadata">
-                <span class="item-metastat">
-                  <span style="color:grey;">Schema:</span>
-                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.schema}}</span>
-                </span>
-                <span class="item-metastat">
-                  <span style="color:grey;">Table:</span>
-                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.tableName}}</span>
-                </span>
-              </span>
+              <mat-option *ngFor="let item of tableNameList | async" [value]="item.fullName" class="autocomplete-option">
+                <span class="title">
+                    <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span style="padding-left:5px;">{{item.fullName}}</span>
+                  </span>
+                <br/>
+                <span>
+                    <span>
+                      <span class="sub-title hint">Schema:</span>
+                      <span class="sub-title">{{item.schema}}</span>
+                    </span>
+                    <span class="item-metastat" style="padding-left:10px;">
+                      <span class="sub-title hint">Table:</span>
+                      <span class="sub-title">{{item.tableName}}</span>
+                    </span>
+                  </span>
               </mat-option>
             </mat-autocomplete>
-            <div ng-messages="$st.form.tableName.$error" ng-if="$st.form.tableName.$touched">
-              <div ng-message="required">Required</div>
-            </div>
+            <mat-error *ngIf="tableNameControl.invalid">Required</mat-error>
           </mat-form-field>
 
           <mat-form-field *ngIf="destination == 'DOWNLOAD' || (destination == 'TABLE' && target.jdbc['@type'] != 'JdbcDatasource')">
-            <label>File Format</label>
-            <mat-select name="format" [(ngModel)]="target.format" (change)="onFormatChange()" placeholder="Format" required>
+            <mat-select name="format" [(ngModel)]="target.format" (change)="onFormatChange()" placeholder="File Format" required #formatField="ngModel">
               <mat-option *ngFor="let format of (destination == 'DOWNLOAD' ? downloadFormats : tableFormats)" [value]="format">{{format}}</mat-option>
             </mat-select>
-            <div ng-messages="$st.form.format.$error" ng-if="$st.form.format.$touched">
-              <div ng-message="required">Required</div>
-            </div>
+            <mat-error *ngIf="formatField.invalid">Required</mat-error>
           </mat-form-field>
 
-          <mat-form-field *ngIf="destination == 'DOWNLOAD' && target.format == 'csv'">
-            <mat-checkbox name="header" [(ngModel)]="target.options.header">Include header row</mat-checkbox>
-          </mat-form-field>
+          <mat-checkbox *ngIf="destination == 'DOWNLOAD' && target.format == 'csv'" name="header" [(ngModel)]="target.options.header" style="margin-bottom:18px">Include header row</mat-checkbox>
 
-          <property-list *ngIf="destination" editable="true" [properties]="properties" [parentFormGroup]="form"></property-list>
+          <property-list *ngIf="destination" editable="true" [properties]="properties" [parentFormGroup]="propertiesForm"></property-list>
 
           <div fxLayout="column" class="layout-padding-top-bottom" fxLayoutAlign="space-between start" *ngIf="destination == 'DOWNLOAD'">
             <button mat-button style="text-align:left" (click)="showOptionsInfo()" color="primary">View available properties</button>
           </div>
 
-          <mat-form-field *ngIf="destination == 'TABLE'">
-           <label>Save mode</label>
-           <mat-select name="mode" [(ngModel)]="target.mode" placeholder="Mode" required>
-             <mat-option value="Append">Append to existing data</mat-option>
-             <mat-option value="ErrorIfExists">Fail if table exists</mat-option>
-             <mat-option value="Ignore">Skip existing table</mat-option>
-             <mat-option value="Overwrite">Overwrite existing table</mat-option>
-           </mat-select>
-           <div ng-messages="$st.form.mode.$error" ng-if="$st.form.mode.$touched">
-             <div ng-message="required">Required</div>
-           </div>
-         </mat-form-field>
+          <mat-form-field *ngIf="destination == 'TABLE'" style="margin-top:20px">
+            <mat-select name="mode" [(ngModel)]="target.mode" placeholder="Save mode" required #modeField="ngModel">
+              <mat-option value="Append">Append to existing data</mat-option>
+              <mat-option value="ErrorIfExists">Fail if table exists</mat-option>
+              <mat-option value="Ignore">Skip existing table</mat-option>
+              <mat-option value="Overwrite">Overwrite existing table</mat-option>
+            </mat-select>
+            <mat-error *ngIf="modeField.invalid">Required</mat-error>
+          </mat-form-field>
 
-       </div>
-     </form>
+        </div>
+      </form>
     </mat-card-content>
     <mat-divider></mat-divider>
     <mat-card-actions>
       <button mat-button (click)="back.emit(null)" type="button">Back</button>
+      <button mat-raised-button color="primary" (click)="save()" [disabled]="!storeForm.form.valid || propertiesForm.invalid">Save</button>
     </mat-card-actions>
- </mat-card>
+  </mat-card>
 
- <mat-card *ngIf="showSaveResultsCard()">
-   <mat-card-title><span *ngIf="isSaved()">Saved your data</span> <span *ngIf="isSaved()">Processing your request</span></mat-card-title>
-   <mat-divider></mat-divider>
-   <mat-card-content class="mat-padding">
+  <mat-card *ngIf="showSaveResultsCard()">
+    <mat-card-title><span *ngIf="isSaved()">Saved your data</span> <span *ngIf="!isSaved()">Processing your request</span></mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content class="mat-padding">
 
-     <div *ngIf="isSavingFile()" fxLayout="column"  fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
-       <span class="mat-subheader">Your request is being processed.</span>
-       <span>Your file will be ready shortly.  You can leave this page and continue to work within Kylo.</span>
-       <span>You will be notified at the top right of Kylo once your request is complete.</span>
-     </div>
+      <div *ngIf="isSavingFile()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
+        <span class="mat-subheader">Your request is being processed.</span>
+        <span>Your file will be ready shortly.  You can leave this page and continue to work within Kylo.</span>
+        <span>You will be notified at the top right of Kylo once your request is complete.</span>
+      </div>
 
-     <div *ngIf="isSavingTable()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
-       <span class="mat-subheader">Your request is being processed.</span>
-       <span>You can leave this page and continue to work within Kylo.</span>
-       <span>You will be notified at the top right of Kylo once your request is complete.</span>
-     </div>
+      <div *ngIf="isSavingTable()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
+        <span class="mat-subheader">Your request is being processed.</span>
+        <span>You can leave this page and continue to work within Kylo.</span>
+        <span>You will be notified at the top right of Kylo once your request is complete.</span>
+      </div>
 
-     <div *ngIf="isSavedTable()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
-       <span class="mat-subheader">Your table is now available.</span>
-     </div>
+      <div *ngIf="isSavedTable()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
+        <span class="mat-subheader">Your table is now available.</span>
+      </div>
 
-     <div *ngIf="downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" fxLayout="row">
-       <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>
-       <div fxLayout="column" fxFlex="1 1 auto">
-         <div style="font-weight:500;line-height:24px;">Download Ready</div>
-         <div style="line-height:20px;">The file is ready to be downloaded.</div>
-       </div>
-       <button mat-button (click)="download()">Download</button>
-     </div>
+      <div *ngIf="downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" fxLayout="row">
+        <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>
+        <div fxLayout="column" fxFlex="1 1 auto">
+          <div style="font-weight:500;line-height:24px;">Download Ready</div>
+          <div style="line-height:20px;">The file is ready to be downloaded.</div>
+        </div>
+        <button mat-button (click)="download()">Download</button>
+      </div>
 
-     <div fxLayout="column" fxLayoutAlign="center center" fxFill class="layout-padding-top-20">
-       <div class="mat-subheader">Additional Options </div>
-       <div fxLayout="row" class="layout-padding-bottom" style="cursor:pointer;outline:none;" (click)="downloadAgainAs()">
-         <ng-md-icon icon="insert_drive_file" size="50" style="fill:#3782B8;"></ng-md-icon>
-         <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Download as another format</span>
-       </div>
-       <div fxLayout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" (click)="modifyTransformation()">
-         <ng-md-icon icon="settings_backup_restore" size="50" style="fill:#3782B8;"></ng-md-icon>
-         <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Modify your transformation</span>
-       </div>
-       <div fxLayout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" (click)="back.emit(null)">
-         <ng-md-icon icon="exit_to_app" size="50" style="fill:#3782B8;"></ng-md-icon>
-         <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Exit Visual Query</span>
-       </div>
-     </div>
+      <div fxLayout="column" fxLayoutAlign="center center" fxFill class="layout-padding-top-20">
+        <h2 class="mat-subheader">Additional Options </h2>
+        <div fxLayout="row" class="layout-padding-bottom" style="cursor:pointer;outline:none;" (click)="downloadAgainAs()">
+          <ng-md-icon icon="insert_drive_file" size="50" style="fill:#3782B8;"></ng-md-icon>
+          <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Download as another format</span>
+        </div>
+        <div fxLayout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" (click)="modifyTransformation()">
+          <ng-md-icon icon="settings_backup_restore" size="50" style="fill:#3782B8;"></ng-md-icon>
+          <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Modify your transformation</span>
+        </div>
+        <div fxLayout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" (click)="exit()">
+          <ng-md-icon icon="exit_to_app" size="50" style="fill:#3782B8;"></ng-md-icon>
+          <span class="mat-subheader" style="padding-top:40px;padding-left:30px;">Exit Visual Query</span>
+        </div>
+      </div>
 
-   </mat-card-content>
- </mat-card>
+    </mat-card-content>
+  </mat-card>
 </div>

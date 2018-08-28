@@ -23,7 +23,7 @@
         <div fxLayout="row" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
 
           <!-- datasource autocomplete -->
-          <div *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="row" class="pad-left pad-right" fxFlex="70">
+          <div *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="70">
             <mat-form-field style="width:100%">
               <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
               <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
@@ -45,8 +45,8 @@
                   </span>
                 </mat-option>
               </mat-autocomplete>
-              <div class="hint md-warn-text" *ngIf="databaseConnectionError">Unable to connect to selected data source.</div>
             </mat-form-field>
+            <mat-error *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-error>
           </div>
           <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left text-upper">Add Table</button>
 

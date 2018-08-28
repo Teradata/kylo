@@ -3,10 +3,13 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
+import "rxjs/add/observable/from";
 import 'rxjs/add/observable/fromPromise';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/debounceTime';
+import "rxjs/add/operator/filter";
 import 'rxjs/add/operator/map';
+import "rxjs/add/operator/switchMap";
 import 'rxjs/add/operator/toPromise';
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
@@ -234,9 +237,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             let tableAutocomplete = new FormControl();
             this.form.addControl("tableAutocomplete", tableAutocomplete);
 
-            this.filteredTables = tableAutocomplete.valueChanges.debounceTime(100).flatMap((text: string) => {
-                return <Observable<any>> Observable.fromPromise(this.onAutocompleteQuerySearch(text));
-            });
+            this.filteredTables = tableAutocomplete.valueChanges.debounceTime(100).switchMap(text => this.onAutocompleteQuerySearch(text));
         }
     }
 
@@ -895,8 +896,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         let promise: Promise<DatasourcesServiceStatic.TableReference[]> = null;
         const tables = this.engine.searchTableNames(txt, this.model.$selectedDatasourceId);
         if (tables instanceof Promise) {
-            promise = tables;
-            tables.then((tables: any) => {
+            promise = tables.then((tables: any) => {
                 this.databaseConnectionError = false;
                 return tables;
             }, () => {
@@ -905,6 +905,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
             });
         }
         else {
+            this.databaseConnectionError = false;
             promise = Observable.of(tables).toPromise();
         }
         return promise;

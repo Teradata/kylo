@@ -26,6 +26,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
+import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 import {CodemirrorModule} from "ng2-codemirror";
 import {NvD3Module} from "ng2-nvd3";
@@ -57,6 +58,8 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import {INJECTOR} from "./wrangler/api/index";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
+import VisualQueryProfileStatsController from "./transform-data/profile-stats/VisualQueryProfileStats";
+import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
 
 registerQueryEngine('spark', SparkQueryEngine);
 
@@ -66,17 +69,21 @@ registerQueryEngine('spark', SparkQueryEngine);
         BuildQueryComponent,
         ColumnAnalysisController,
         ConnectionDialog,
+        ConnectionErrorValidatorDirective,
         HistogramController,
         SaveOptionsComponent,
         TransformDataComponent,
         UploadSampleFileComponent,
+        VisualQueryProfileStatsController,
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
         VisualQueryTable
     ],
     entryComponents: [
         AnalyzeColumnDialog,
-        ConnectionDialog
+        ConnectionDialog,
+        SaveOptionsComponent,
+        VisualQueryProfileStatsController
     ],
     exports: [
         BuildQueryComponent,
@@ -122,6 +129,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         PropertyListModule,
         ReactiveFormsModule,
         SqlEditorModule,
+        TranslateModule.forChild(),
         WranglerModule,
         UIRouterModule.forChild({states: visualQueryStates})
     ],

@@ -50,7 +50,7 @@ export class WindowUnloadService {
      * Called when changing states.
      */
     shouldChangeState() {
-        if (this.text_ === null || confirm(this.text_)) {
+        if (this.text_ == null || confirm(this.text_)) {
             this.clear();
             return true;
         } else {

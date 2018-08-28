@@ -1,9 +1,14 @@
 import {HttpClient} from "@angular/common/http";
 import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
+import {Observable, ObservableInput} from "rxjs/Observable";
+import {switchMap} from "rxjs/operators/switchMap";
+import {debounceTime} from "rxjs/operators/debounceTime";
 import {Subscription} from "rxjs/Subscription";
 
+import StateService from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {VisualQuerySaveService} from "../services/save.service";
@@ -18,6 +23,7 @@ export enum SaveMode { INITIAL, SAVING, SAVED}
 
 @Component({
     selector: "thinkbig-visual-query-store",
+    styleUrls: ["js/feed-mgr/visual-query/store/store.component.css"],
     templateUrl: "js/feed-mgr/visual-query/store/store.component.html"
 })
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
@@ -39,6 +45,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     @Output()
     back = new EventEmitter<void>();
+
+    /**
+     * Indicates if there is an error connecting to the data source
+     */
+    connectionError: boolean;
 
     /**
      * Target destination type. Either DOWNLOAD or TABLE.
@@ -71,11 +82,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     tableFormats: string[];
 
     /**
-     * HTML form
-     */
-    form: any;
-
-    /**
      * Indicates if the properties are valid.
      */
     isValid: boolean;
@@ -93,7 +99,9 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     /**
      * Additional options for the output format.
      */
-    properties: any[];
+    properties: any[] = [];
+
+    propertiesForm = new FormGroup({});
 
     /**
      * Subscription to notification removal
@@ -107,13 +115,17 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
     saveMode: SaveMode = SaveMode.INITIAL;
 
+    tableNameControl = new FormControl(null, [Validators.required, Validators.minLength(1)]);
+
+    tableNameList: Observable<TableReference[]>;
+
     /**
      * Output configuration
      */
     target: SaveRequest = {};
 
     constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService, @Inject("RestUrlService") private RestUrlService: any,
-                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService) {
+                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, @Inject("StateService") private stateService: StateService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
             if (event.id === this.downloadId) {
@@ -121,6 +133,13 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 this.downloadUrl = null;
             }
         });
+
+        // Listen for table name changes
+        this.tableNameControl.valueChanges.subscribe(text => this.target.tableName = text);
+        this.tableNameList = this.tableNameControl.valueChanges.pipe(
+            debounceTime(100),
+            switchMap(text => this.findTables(text))
+        );
     };
 
     /**
@@ -175,25 +194,22 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     /**
      * Find tables matching the specified name.
      */
-    findTables(name: any): TableReference[] | Promise<TableReference[]> {
-        let tables: TableReference[] | Promise<TableReference[]> = [];
-
+    findTables(name: any): ObservableInput<TableReference[]> {
         if (this.target.jdbc) {
-            tables = this.engine.searchTableNames(name, this.target.jdbc.id);
+            const tables = this.engine.searchTableNames(name, this.target.jdbc.id);
             if (tables instanceof Promise) {
-                tables = tables.then(response => {
-                    this.form.datasource.$setValidity("connectionError", true);
+                return tables.then(response => {
+                    this.connectionError = false;
                     return response;
                 }, () => {
-                    this.form.datasource.$setValidity("connectionError", false);
+                    this.connectionError = true;
                     return [];
                 });
             } else {
-                this.form.datasource.$setValidity("connectionError", true);
+                this.connectionError = false;
+                return Observable.of(tables);
             }
         }
-
-        return tables;
     }
 
     /**
@@ -260,6 +276,14 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         this.downloadUrl = null;
         this.error = null;
         this.loading = false;
+        this.propertiesForm = new FormGroup({});
+    }
+
+    /**
+     * Exit the Visual Query and go to the Feeds list
+     */
+    exit(): void {
+        this.stateService.navigateToHome();
     }
 
     /**
@@ -273,7 +297,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Show options info dialog for different data formats for download.
      */
     showOptionsInfo(): void {
-        this.$mdDialog.open(SaveOptionsComponent);
+        this.$mdDialog.open(SaveOptionsComponent, {panelClass: "full-screen-dialog"});
     };
 
     /**
