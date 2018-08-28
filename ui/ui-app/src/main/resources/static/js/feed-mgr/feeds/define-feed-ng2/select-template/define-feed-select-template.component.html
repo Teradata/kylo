@@ -48,7 +48,7 @@
 <div  fxLayout="column"  class="mat-padding">
   <h3 mat-subheader>All Templates</h3>
   <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
-    <mat-grid-tile *ngFor="let template of allTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)>
+    <mat-grid-tile *ngFor="let template of allTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)">
       <mat-icon class="icon-component tc-white">{{template.icon}}</mat-icon>
       <mat-grid-tile-footer>
         <div class="mat-grid-list-text" >{{template.templateName}}</div>
