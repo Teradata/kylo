@@ -305,7 +305,7 @@ export class DefineFeedService {
      * Users can subscribe to this event via the savedFeedSubject
      * @return {Observable<Feed>}
      */
-    saveFeed() : Observable<Feed>{
+    saveFeed() : Observable<SaveFeedResponse>{
 
         let valid = this.feed.validate(false);
         if(this.feed.isDraft() || (!this.feed.isDraft() && valid)) {
@@ -455,7 +455,7 @@ export class DefineFeedService {
      * @return {Observable<Feed>}
      * @private
      */
-    private _saveFeed() : Observable<Feed>{
+    private _saveFeed() : Observable<SaveFeedResponse>{
         let body = this.feed.copyModelForSave();
 
 
@@ -500,7 +500,7 @@ export class DefineFeedService {
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
             this.savedFeedSubject.next(response);
         });
-        return observable;
+        return this.savedFeed$;
     }
 
 

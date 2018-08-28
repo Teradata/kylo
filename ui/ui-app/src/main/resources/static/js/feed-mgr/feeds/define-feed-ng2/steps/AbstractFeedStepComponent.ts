@@ -9,6 +9,8 @@ import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {FormGroup} from "@angular/forms";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FeedLoadingService} from "../services/feed-loading-service";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -31,7 +33,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
    // private feedSavedSubscription : ISubscription;
 
-    constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService) {
+    constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
+                protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService) {
         //subscribe to the beforeSave call so the step can update the service with the latest feed information
         this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
         this.feedStateChangeSubscription = this.defineFeedService.feedStateChange$.subscribe(this.feedStateChanged.bind(this))
@@ -88,6 +91,55 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     public destroy(){
 
     }
+
+    registerLoading(): void {
+        this.feedLoadingService.registerLoading();
+    }
+
+    resolveLoading(): void {
+        this.feedLoadingService.resolveLoading();
+    }
+
+
+    onSave(){
+        this.registerLoading();
+        //notify any subscribers that we are about to save the service feed model.
+        //this gives them a chance to update the service with their data prior to the actual save call
+        this.defineFeedService.beforeSave();
+        //notify the subscribers on the actual save call so they can listen when the save finishes
+        this.defineFeedService.saveFeed();
+    }
+    onEdit(){
+        this.feed.readonly = false;
+        this.defineFeedService.onFeedEdit();
+    }
+    onCancelEdit() {
+
+        this.dialogService.openConfirm({
+            message: 'Are you sure you want to canel editing  '+this.feed.feedName+'?  All pending edits will be lost.',
+            disableClose: true,
+            title: 'Confirm Cancel Edit', //OPTIONAL, hides if not provided
+            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
+            width: '500px', //OPTIONAL, defaults to 400px
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+                if(this.feed.isNew()){
+                    this.stateService.go('feeds')
+                }
+                else {
+                    let oldFeed = this.defineFeedService.restoreLastSavedFeed();
+                    this.feed.update(oldFeed);
+                    //this.openSnackBar("Restored this feed")
+                    this.feed.readonly = true;
+                }
+            } else {
+                // DO SOMETHING ELSE
+            }
+        });
+    }
+
+
 
     updateFeedService(){
         //update the feed service with this data

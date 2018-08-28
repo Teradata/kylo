@@ -112,18 +112,29 @@ export class FattableOptions {
     }
 
     headerText(header: any) {
-        return header.displayName;
+        if(typeof header == "string"){
+            return header;
+        }
+        else {
+            return header.displayName;
+        }
+
     }
 
 
     cellText (row: any, column: any) {
-        return row[column.displayName];
+        if(typeof column =="string") {
+            return row[column];
+        }
+        else {
+            return row[column.displayName];
+        }
     }
     fillCell (cellDiv: any, data: any) {
         cellDiv.innerHTML = _.escape(data.value);
     }
     getCellSync (i: any, j: any) {
-        const displayName = this.headers[j].displayName;
+        const displayName = this.headerText(this.headers[j]) //.displayName;
         const row = this.rows[i];
         if (row === undefined) {
             //occurs when filtering table
@@ -137,7 +148,7 @@ export class FattableOptions {
         headerDiv.innerHTML = _.escape(header.value);
     }
     getHeaderSync(j: any) {
-        return this.headers[j].displayName;
+        return this.headerText(this.headers[j]);// this.headers[j].displayName;
     }
 
 
@@ -146,7 +157,7 @@ export class FattableOptions {
 
 @Component({
     selector:"fattable",
-    template:`<div ></div>`
+    template:`<div style="width:700px;height:500px;" ></div>`
 })
 export class FattableComponent {
 
@@ -285,7 +296,7 @@ export class FattableComponent {
             div.style.fontSize = this.settings.headerFontSize;
             div.style.fontFamily = this.settings.headerFontFamily;
             div.style.fontWeight = this.settings.headerFontWeight;
-            const children = angular.element(div).children();
+            const children = jQuery(div).children();
 
             this.setColumnId(children.last(), header.id);
 

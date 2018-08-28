@@ -1,8 +1,10 @@
-.template-card {
-  max-width:400px;
-  min-width: 400px;
-  min-height:90px;
+.material-icons, mat-icon.material-icons, mat-icon.material-icons.mat-icon {
+  width: 1em;
+  height: 1em;
 }
+          .icon-component {
+            font-size: 7rem;
+          }
 
 .import-feed-text * {
   padding-right:3px;

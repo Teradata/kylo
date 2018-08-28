@@ -7,6 +7,12 @@ import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {TdDialogService} from "@covalent/core/dialogs";
+import {DateFormatDialog} from "../../../visual-query/wrangler/core/columns/date-format.component";
+import {DateFormatConfig, DateFormatResponse} from "../../../visual-query/wrangler/api/services/dialog.service";
+import {Observable} from "rxjs/Observable";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
+import {Template} from "../../../model/template-models";
 
 
 @Component({
@@ -65,7 +71,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * Array of the first n templates to be displayed prior to the 'more' link
          * @type {Array}
          */
-        firstTemplates:Array<any>;
+        recentTemplates:Array<any>;
 
         /**
          * flag to indicate we need to display the 'more templates' link
@@ -77,11 +83,12 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * The number of templates to display iniitally
          * @type {number}
          */
-        FIRST_TEMPLATES = 5;
+        RECENT_TEMPLATES = 5;
 
 
 
-    constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private $$angularInjector: Injector) {
+    constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService,
+                  private $$angularInjector: Injector) {
 
         this.model = new Feed();
         /**
@@ -94,7 +101,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
 
-        this.firstTemplates = [];
+        this.recentTemplates = [];
 
         this.displayMoreLink = false;
 
@@ -121,11 +128,21 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             this.displayMoreLink = false;
         };
 
+
+        selectTemplate(template:Template){
+            this.openNewFeedDialog(new NewFeedDialogData(template)).subscribe((response:NewFeedDialogResponse) => {
+                this.createFeed(response)
+            })
+        }
         /**
          * Select a template
          * @param template
          */
-        selectTemplate(template:any) {
+        createFeed(newFeedData:NewFeedDialogResponse) {
+            let template = newFeedData.template;
+            let feedName = newFeedData.feedName;
+            let systemFeedName = newFeedData.systemFeedName;
+            this.model = new Feed();
             this.model.templateId = template.id;
             this.model.templateName = template.templateName;
             //setup some initial data points for the template
@@ -187,8 +204,14 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             } else {
                 this.model.totalSteps = 5;
             }
-            this.defineFeedService.setFeed(this.model)
-            this.stateService.go(FEED_DEFINITION_STATE_NAME+".feed-step.new-feed")
+            this.model.feedName = feedName;
+            this.model.systemFeedName = systemFeedName
+            this.model.category = newFeedData.category;
+            this.defineFeedService.setFeed(this.model);
+            this.defineFeedService.saveFeed().subscribe(feed => {
+                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".summary.overview", {"feedId": feed.feed.id})
+            });
+
         };
 
 
@@ -210,7 +233,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                         this.displayMoreLink = true;
                     }
                     this.allTemplates = data;
-                    this.firstTemplates = _.first(data, this.FIRST_TEMPLATES);
+                    this.recentTemplates = _.first(data, this.RECENT_TEMPLATES);
                 }
 
             };
@@ -247,6 +270,18 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
         }
 
+
+    /**
+     * Opens a modal dialog for the user to input a date format string.
+     *
+     * @param config - dialog configuration
+     * @returns the date format string
+     */
+    openNewFeedDialog(config: NewFeedDialogData): Observable<NewFeedDialogResponse> {
+        return this.dialog.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",height:'100%',width:'500px'})
+            .afterClosed()
+            .filter(value => typeof value !== "undefined");
+    }
 
 
 

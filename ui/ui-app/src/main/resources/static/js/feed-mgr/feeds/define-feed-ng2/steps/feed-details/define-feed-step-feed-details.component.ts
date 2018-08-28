@@ -35,6 +35,8 @@ import {FieldGroup} from "../../../../shared/dynamic-form/model/FieldGroup";
 import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
 import {DynamicFormFieldGroupBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-field-group-builder";
 import {ConfigurationFieldBuilder, FieldConfigBuilder} from "../../../../shared/dynamic-form/services/field-config-builder";
+import {FeedLoadingService} from "../../services/feed-loading-service";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 
 export class FieldConfigurationState {
@@ -297,8 +299,11 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     private registerTemplatePropertyService :RegisterTemplatePropertyService;
 
-    constructor(  defineFeedService:DefineFeedService,  stateService:StateService, private http:HttpClient,private $$angularInjector: Injector,private dynamicFormService:DynamicFormService) {
-        super(defineFeedService,stateService);
+    constructor(  defineFeedService:DefineFeedService,  stateService:StateService, private http:HttpClient,
+                  private $$angularInjector: Injector,
+                  private dynamicFormService:DynamicFormService, feedLoadingService:FeedLoadingService,
+                  dialogService: TdDialogService) {
+    super(defineFeedService,stateService, feedLoadingService,dialogService);
         this.feedService = $$angularInjector.get("FeedService");
         this.registerTemplatePropertyService = this.$$angularInjector.get("RegisterTemplatePropertyService");
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");

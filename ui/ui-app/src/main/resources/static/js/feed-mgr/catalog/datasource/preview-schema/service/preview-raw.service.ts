@@ -62,7 +62,7 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
     limitSparkScript(sparkScript:string) {
         //LIVY doesnt like the trailing df variable.
         //Spark Shell needs it
-        let appendTrailingDf = false;
+        let appendTrailingDf = true;
         let sparkScriptWithLimit = "import org.apache.spark.sql._\n" + sparkScript + "\ndf=df.limit(20)\n";
         if(appendTrailingDf) {
             sparkScriptWithLimit+="df";

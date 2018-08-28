@@ -33,6 +33,7 @@ import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/
 
 import {QueryEngineFactory} from "../../../../visual-query/wrangler/query-engine-factory.service";
 import {VisualQueryStepperComponent} from "../../../../visual-query/visual-query-stepper.component";
+import {FeedLoadingService} from "../../services/feed-loading-service";
 
 @Component({
     selector: "define-feed-step-wrangler",
@@ -58,8 +59,9 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private _translateService: TranslateService,
-                private $$angularInjector: Injector) {
-        super(defineFeedService, stateService);
+                private $$angularInjector: Injector, feedLoadingService:FeedLoadingService,
+                dialogService: TdDialogService) {
+        super(defineFeedService,stateService, feedLoadingService,dialogService);
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.formGroup = new FormGroup({});
         this.queryEngine = $$angularInjector.get("VisualQueryEngineFactory").getEngine("spark")

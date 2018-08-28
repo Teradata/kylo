@@ -1,4 +1,4 @@
-<define-feed-step-card [(feed)]="feed" [(step)]="step">
+<define-feed-step-card [(feed)]="feed" [(step)]="step" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
 
   <feed-step-readonly-content>
     <div fxLayout="column">
@@ -37,42 +37,17 @@
 
   <feed-step-edit-content>
     <div class="section-header">{{title}}</div>
-    <div fxLayout="column" [formGroup]="formGroup">
-      <div fxLayout="row" fxLayoutAlign="start">
-        <mat-form-field fxFlex="50">
-          <input matInput formControlName="feedName" placeholder="Feed name"  >
-        </mat-form-field>
+    <form [formGroup]="formGroup">
+    <div fxLayout="column" >
 
-        <mat-form-field fxFlex="50" class="pad-left">
-          <input matInput placeholder="System Feed name"  formControlName="systemFeedName">
-        </mat-form-field>
+      <system-feed-name [formGroup]="formGroup" [feed]="feed"></system-feed-name>
 
-      </div>
-
-
-      <mat-form-field>
-        <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto">
-        <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" >
-          <mat-option *ngFor="let category of filteredCategories | async" [value]="category" class="autocomplete-option">
-                  <span [class.disabled]="!category.createFeed">
-                       <ng-md-icon [icon]="category.icon" [ngStyle]="{'fill':category.iconColor}" *ngIf="category.createFeed"></ng-md-icon>
-                    <ng-md-icon icon="block" class="disabled" *ngIf="!category.createFeed"></ng-md-icon>
-                    <span class="title"> {{category.name}}</span>
-                    <br/>
-                    <span class="sub-title hint">{{category.description}}</span>
-                  </span>
-          </mat-option>
-
-
-
-        </mat-autocomplete>
-      </mat-form-field>
+      <category-autocomplete [formGroup]="formGroup" [category]="feed.category">
+      </category-autocomplete>
       <mat-form-field>
         <textarea matInput placeholder="Description" formControlName="description" rows="3" ></textarea>
       </mat-form-field>
 
-      <!-- Once the feed has been defined show the following components -->
-      <div *ngIf="feed.id != null">
 
 
       <!-- Data Owner ... TODO disabled flag
@@ -91,8 +66,9 @@
 
         <!-- TODO: Access Controls form here -->
 
-      </div>
     </div>
+    </form>
 
   </feed-step-edit-content>
+
 </define-feed-step-card>

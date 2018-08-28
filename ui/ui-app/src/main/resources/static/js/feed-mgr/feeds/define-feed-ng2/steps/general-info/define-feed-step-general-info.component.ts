@@ -30,6 +30,7 @@ import {ISubscription} from "rxjs/Subscription";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import { TranslateService } from '@ngx-translate/core';
 import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/preview-dataset-collection.service";
+import {FeedLoadingService} from "../../services/feed-loading-service";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -71,9 +72,11 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
+                feedLoadingService:FeedLoadingService,
+                dialogService: TdDialogService,
                 private _translateService: TranslateService,
                 private $$angularInjector: Injector) {
-        super(defineFeedService, stateService);
+        super(defineFeedService, stateService, feedLoadingService, dialogService);
         this.categoriesService = $$angularInjector.get("CategoriesService");
         this.feedService = $$angularInjector.get("FeedService");
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
@@ -97,14 +100,6 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     }
 
-    /**
-     * Function for the Autocomplete to display the name of the category object matched
-     * @param {Category} category
-     * @return {string | undefined}
-     */
-    categoryAutocompleteDisplay(category?: Category): string | undefined {
-        return category ? category.name : undefined;
-    }
 
 
     getStepName() {
@@ -115,40 +110,9 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      * register form controls for the feed
      */
     private registerFormControls(){
-        let feedNameCtrl = new FormControl(this.feed.feedName,[Validators.required])
-        feedNameCtrl.valueChanges.debounceTime(200).subscribe(value => {
-            if(this.formGroup.get("systemFeedName").untouched) {
-                this.generateSystemName(value);
-            }
-            else {
-                console.log('system name will not auto generate.  its been touched')
-            }
-        });
-        this.formGroup.registerControl("feedName",feedNameCtrl);
-
-        //TODO add in pattern validator, and unique systemFeedName validator
-        this.formGroup.addControl("systemFeedName", new FormControl(this.feed.systemFeedName,[Validators.required]))
-
-        let categoryCtrl = new FormControl(this.feed.category,[Validators.required])
-        this.formGroup.registerControl("category",categoryCtrl);
-        this.filteredCategories = categoryCtrl.valueChanges.flatMap(text => {
-            return <Observable<Category[]>> Observable.fromPromise(this.categoriesService.querySearch(text));
-        });
-
         this.formGroup.registerControl("description", new FormControl(this.feed.description));
         this.formGroup.registerControl("dataOwner", new FormControl(this.feed.dataOwner));
-
-
     }
-
-
-
-    private generateSystemName(value:string) {
-        this.feedService.getSystemName(value).then((response: any) => {
-            this.formGroup.get("systemFeedName").setValue(response.data);
-        });
-    }
-
 
     /**
      * Update the feed model with the form values

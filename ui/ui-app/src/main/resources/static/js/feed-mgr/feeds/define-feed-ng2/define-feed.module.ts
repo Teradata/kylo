@@ -38,7 +38,6 @@ import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.mod
 import {PreviewSchemaModule} from "../../catalog/datasource/preview-schema/preview-schema.module";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {CovalentMediaModule} from "@covalent/core/media";
-import {DefineFeedStepCardComponent} from "./steps/define-feed-step-card/define-feed-step-card.component";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
@@ -63,6 +62,12 @@ import {OverviewComponent} from './summary/overview/overview.component';
 import {ProfileComponent} from './summary/profile/profile.component';
 import {FeedSourceSampleChange} from "./services/feed-source-sample-change-listener";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
+import {MatStepperModule} from "@angular/material/stepper";
+import {MatGridListModule} from "@angular/material/grid-list";
+import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.component";
+import {SystemFeedNameComponent} from "./shared/system-feed-name.component";
+import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.component";
+import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
 
 
 @NgModule({
@@ -75,7 +80,6 @@ import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componm
         DefineFeedStepSourceSampleComponent,
         DefineFeedStepSourceSampleDatasourceComponent,
         DefineFeedStepFeedDetailsComponent,
-        DefineFeedStepCardComponent,
         DefineFeedStepReadonlyContentComponent,
         DefineFeedStepEditContentComponent,
         DefineFeedStepWranglerComponent,
@@ -84,7 +88,14 @@ import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componm
         ProfileComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe,
-        FeedLineageComponment
+        FeedLineageComponment,
+        CategoryAutocompleteComponent,
+        SystemFeedNameComponent,
+        NewFeedDialogComponent,
+        FeedSideNavComponent
+    ],
+    entryComponents:[
+        NewFeedDialogComponent
     ],
     providers:[
       DefineFeedService,
@@ -133,9 +144,11 @@ import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componm
         MatButtonModule,
         MatSnackBarModule,
         MatDialogModule,
+        MatGridListModule,
         PropertyListModule,
         TranslateModule,
         VisualQueryModule,
+        MatStepperModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

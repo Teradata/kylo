@@ -40,6 +40,7 @@ import {
     ApplyDomainTypesRow
 } from "../../../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import {FeedLoadingService} from "../../services/feed-loading-service";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -150,18 +151,22 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
 
     constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
-                private _dialogService: TdDialogService,
+                dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 private cdr: ChangeDetectorRef,
                 public dialog:MatDialog,
-                private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService) {
-        super(defineFeedService,stateService)
+                private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService,) {
+        super(defineFeedService,stateService, feedLoadingService,dialogService);
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
+        this.defineTableForm = new FormGroup({});
+        this.definePartitionForm = new FormGroup({});
 
+        this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
+        this.defineTableForm.registerControl("profileCheckAll",new FormControl(this.profileCheckAll.isChecked))
     }
 
 
@@ -171,8 +176,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll.setup(this.feed.table);
 
         this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.feed);
-        this.defineTableForm = new FormGroup({});
-        this.definePartitionForm = new FormGroup({});
+
         this.tableFormControls = new TableFormControls(this.defineTableForm,this.definePartitionForm, this.feedTableColumnDefinitionValidation,this.tablePermissions)
 
         //fetch the domain types
@@ -653,8 +657,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 this.tableFormControls.addTableFieldFormControl(columnDef);
             });
 
-            this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
-            this.defineTableForm.registerControl("profileCheckAll",new FormControl(this.profileCheckAll.isChecked))
+            this.defineTableForm.get("indexCheckAll").setValue(this.indexCheckAll.isChecked)
+            this.defineTableForm.get("profileCheckAll").setValue(this.profileCheckAll.isChecked)
 
         }
         this.calcTableState();

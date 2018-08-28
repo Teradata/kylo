@@ -1,71 +1,10 @@
-<ng-template tdLoading="processingFeed" tdLoadingMode="indeterminate" tdLoadingType="circle" tdLoadyingStrategy="replace" tdLoadingColor="accent">
-  <div *ngIf="feed != undefined">
-    <mat-toolbar>
-      <div fxLayout="row" fxLayoutAlign="start end">
-        <span *ngIf="feed != undefined">{{feed.feedName}}</span>
-        <span *ngIf="feed == undefined">Feed Summary</span>
-      </div>
+<td-layout *ngIf="feed != undefined">
+  <td-layout-manage-list opened="true" mode="side">
+    <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
+    <ui-view></ui-view>
 
-    </mat-toolbar>
+  </td-layout-manage-list>
 
-    <div fxLayout="row" fxFlex="100" fxLayoutAlign="center start">
 
-      <mat-card class="feed-summary-card">
-        <ui-view></ui-view>
-      </mat-card>
+</td-layout>
 
-      <mat-card class="feed-summary-right-card" >
-
-        <mat-card-header>
-          <mat-card-title>Links</mat-card-title>
-          <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">State: DRAFT</span>
-            <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-nav-list role="list">
-            <a mat-list-item uiSref="feed-definition.summary.overview" uiSrefActive="active">
-              <div matLine>Summary</div>
-              <span></span>
-            </a>
-
-            <mat-divider></mat-divider>
-
-            <a mat-list-item >
-              <div matLine>Category</div>
-              <span></span>
-            </a>
-
-            <mat-divider></mat-divider>
-
-            <a mat-list-item>
-              <div matLine>Lineage</div>
-              <span></span>
-            </a>
-            <mat-divider></mat-divider>
-
-            <a mat-list-item uiSref="feed-definition.summary.profile" uiSrefActive="active">
-              <div matLine>Profile </div>
-              <span></span>
-            </a>
-            <mat-divider></mat-divider>
-
-            <a mat-list-item >
-              <div matLine>Add SLA</div>
-              <span></span>
-            </a>
-
-            <mat-divider></mat-divider>
-
-            <a mat-list-item >
-              <div matLine>Version History</div>
-              <span></span>
-            </a>
-          </mat-nav-list>
-        </mat-card-content>
-      </mat-card>
-
-    </div>
-  </div>
-
-</ng-template>

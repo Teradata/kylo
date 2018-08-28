@@ -1,4 +1,4 @@
-<define-feed-step-card [(feed)]="feed" [(step)]="step">
+<define-feed-step-card [(feed)]="feed" [(step)]="step" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
 
   <feed-step-readonly-content>
     <div fxLayout="column">

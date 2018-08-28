@@ -18,6 +18,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/preview-dataset-collection.service";
 import {Node} from "../../../../catalog/api/models/node";
 import {FileMetadataTransformService} from "../../../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
+import {StepperSelectionEvent} from "@angular/cdk/stepper";
 
 @Component({
     selector: "define-feed-source-sample-catalog-dataset",
@@ -61,6 +62,12 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
                 private _fileMetadataTransformService: FileMetadataTransformService) {
        super(state,stateRegistry,selectionService,$$angularInjector);
         this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
+    }
+
+    onStepSelectionChanged(event:StepperSelectionEvent) {
+        let index = event.selectedIndex
+        let tab = this.tabs[index];
+        this.onTabClicked(tab)
     }
 
     onTabClicked(tab:ConnectorTab) {

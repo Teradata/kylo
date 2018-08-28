@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import {FeedFieldPolicyDialogData} from "./feed-field-policy-dialog-data";
 import {FieldPolicyOptionsService} from "../field-policies-angular2/field-policy-options.service";
-import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter} from "@angular/core";
+import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ViewChild} from "@angular/core";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
 import {FormGroup} from "@angular/forms";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
@@ -9,6 +9,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatSelectChange} from "@angular/material/select";
 import {CloneUtil} from "../../../common/utils/clone-util";
+import {PolicyInputFormComponent} from "../field-policies-angular2/policy-input-form.component";
 
 
 interface ViewText {
@@ -30,6 +31,9 @@ enum EditMode {
 export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
     private loading = false;
+
+    @ViewChild(PolicyInputFormComponent)
+    policyInputForm:PolicyInputFormComponent
 
     /**
      * Rule Type options for the std or vaidators
@@ -330,6 +334,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     private _changedOptionType(type: string) {
         this.options = type == FieldPolicyOptionsService.STANDARDIZATION ? this.standardizers : this.validators;
         this.selectedOptionType = type;
+        this.policyInputForm.resetForm();
     }
 
 

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from "@angular/core";
 import {PolicyInputFormService} from "./policy-input-form.service";
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {FieldConfig} from "../dynamic-form/model/FieldConfig";
@@ -12,6 +12,7 @@ import {DynamicFormFieldGroupBuilder} from "../dynamic-form/services/dynamic-for
 import {DynamicFormBuilder} from "../dynamic-form/services/dynamic-form-builder";
 import {FieldGroup, Layout} from "../dynamic-form/model/FieldGroup";
 import {ConfigurationFieldBuilder, RadioButtonFieldBuilder, SelectFieldBuilder} from "../dynamic-form/services/field-config-builder";
+import {DynamicFormComponent} from "../dynamic-form/dynamic-form.component";
 
 export function MultipleEmail(control: FormControl) {
 
@@ -56,6 +57,9 @@ export class PolicyInputFormComponent implements OnInit {
     @Output()
     onFormControlsAdded: EventEmitter<any> = new EventEmitter<any>();
 
+    @ViewChild(DynamicFormComponent)
+    dynamicForm:DynamicFormComponent;
+
     editChips: any;
 
     formBuilder:DynamicFormBuilder
@@ -63,7 +67,7 @@ export class PolicyInputFormComponent implements OnInit {
     fieldConfigGroup: RuleGroupWithFieldConfig[] = []
 
 
-    fieldGroups:FieldGroup[];
+    fieldGroups:FieldGroup[] = [];
 
     initialized:boolean = false;
 
@@ -110,21 +114,26 @@ export class PolicyInputFormComponent implements OnInit {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes && changes.rule && this.initialized) {
-            setTimeout(() => {
+          //  setTimeout(() => {
 
                 let propertiesAdded = this.buildAndSetFieldGroups();
+                this.dynamicForm.addFields();
                 if (propertiesAdded == 0) {
                     //force the call to emit the formControlsAdded
                     //otherwise it will be called from the dynamic-form component after adding to the formgroup
                     this.onFormControlsAdded.emit([]);
                 }
 
-            })
+         //   })
         }
     }
 
     formControlsAdded(controls: FormControl[]) {
         this.onFormControlsAdded.emit(controls);
+    }
+
+    resetForm(){
+        this.formBuilder.resetForm();
     }
 
     /**
@@ -160,7 +169,13 @@ export class PolicyInputFormComponent implements OnInit {
                 });
              }
         });
-        this.fieldGroups = this.formBuilder.buildFieldConfiguration();
+        //clear the array
+        this.fieldGroups.length =0
+        let newGroups = this.formBuilder.buildFieldConfiguration();
+        newGroups.forEach(group => {
+            this.fieldGroups.push(group);
+        })
+        //this.fieldGroups = this.formBuilder.buildFieldConfiguration();
         return propertyCount;
     }
 

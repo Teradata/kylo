@@ -31,37 +31,29 @@
     </div>
 </div>
 
-<div fxLayoutAlign="center center" fxLayout="column" *ngIf="layout == 'first'">
-    <ng-container *ngFor="let template of firstTemplates">
-    <mat-card class="template-card" >
-        <mat-card-header>
-            <div mat-card-avatar>
-                <ng-md-icon icon="{{template.icon}}" size="40" [ngStyle]="{'fill':template.iconColor}" class="pad-left-sm pad-top-md" ></ng-md-icon>
-            </div>
-            <mat-card-title (click)="selectTemplate(template)">{{template.templateName}}</mat-card-title>
-            <mat-card-subtitle>{{template.description}}</mat-card-subtitle>
-        </mat-card-header>
-    </mat-card>
-    </ng-container>
-
-    <div>
-        <button mat-button color="primary" (click)="more()" *ngIf="displayMoreLink">More</button>
-    </div>
+<div  fxLayout="column" class="mat-padding">
+    <h3 mat-subheader>Recent</h3>
+  <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
+      <mat-grid-tile *ngFor="let template of recentTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)">
+        <mat-icon class=" icon-component tc-white">{{template.icon}}</mat-icon>
+       <mat-grid-tile-footer>
+         <div class="mat-grid-list-text" >{{template.templateName}}</div>
+         <div class="mat-grid-list-text hint">{{template.description}}</div>
+       </mat-grid-tile-footer>
+      </mat-grid-tile>
+  </mat-grid-list>
 </div>
 
 
-<div fxLayoutAlign="start start" fxLayout="row wrap" *ngIf="layout == 'all'">
-    <ng-container *ngIf="layout == 'all'">
-    <ng-container *ngFor="let template of allTemplates" >
-        <mat-card class="template-card">
-            <mat-card-header>
-                <div mat-card-avatar>
-                    <ng-md-icon icon="{{template.icon}}" size="40" [ngStyle]="{'fill':template.iconColor}" class="pad-left-sm pad-top-md"></ng-md-icon>
-                </div>
-                <mat-card-title (click)="selectTemplate(template)">{{template.templateName}}</mat-card-title>
-                <mat-card-subtitle>{{template.description}}</mat-card-subtitle>
-            </mat-card-header>
-        </mat-card>
-    </ng-container>
-    </ng-container>
+<div  fxLayout="column"  class="mat-padding">
+  <h3 mat-subheader>All Templates</h3>
+  <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
+    <mat-grid-tile *ngFor="let template of allTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)>
+      <mat-icon class="icon-component tc-white">{{template.icon}}</mat-icon>
+      <mat-grid-tile-footer>
+        <div class="mat-grid-list-text" >{{template.templateName}}</div>
+        <div class="mat-grid-list-text hint">{{template.description}}</div>
+      </mat-grid-tile-footer>
+    </mat-grid-tile>
+  </mat-grid-list>
 </div>

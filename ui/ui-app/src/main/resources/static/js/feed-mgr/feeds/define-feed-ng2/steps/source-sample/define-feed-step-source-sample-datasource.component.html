@@ -1,17 +1,26 @@
 <mat-card>
         <mat-card-content>
-<div>
-        <div fxLayout="row" >
-                <nav mat-tab-nav-bar>
-                        <a *ngFor="let tab of tabs" mat-tab-link (click)=onTabClicked(tab)
-                           [disabled]="isDisabled(tab)"
-                        >{{tab.label}}</a>
-                </nav>
-        </div>
 
-        <remote-files [datasource]="datasource" [useRouterStates]="false" [params]="params"  *ngIf="selectedTab && selectedTab.sref =='.browse'"   ></remote-files>
-        <preview-schema [paths]="paths" [datasource]="datasource" *ngIf="selectedTab && selectedTab.sref =='.preview'" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" (customDatasetAddition)="onDatasetAdd($event)" (customDatasetRemoval)="onDatasetRemoval($event)"></preview-schema>
+                <mat-horizontal-stepper [linear]="true"  (selectionChange)="onStepSelectionChanged($event)" >
+                        <ng-container *ngFor="let tab of tabs">
+                                <mat-step *ngIf="tab.sref == '.browse'">
+                                        <form  fxFlex="1 1 auto" fxLayout="column">
+                                                <ng-template matStepLabel>{{tab.label}}</ng-template>
+                                                <remote-files *ngIf="selectedTab && selectedTab.sref =='.browse'" [datasource]="datasource" [useRouterStates]="false" [params]="params"     ></remote-files>
+                                        </form>
+                                </mat-step>
 
-</div>
+                                <mat-step *ngIf="tab.sref =='.preview'">
+                                        <form  fxFlex="1 1 auto" fxLayout="column">
+                                                <ng-template matStepLabel>{{tab.label}}</ng-template>
+                                                <preview-schema *ngIf="selectedTab && selectedTab.sref =='.preview'" [paths]="paths" [datasource]="datasource" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" (customDatasetAddition)="onDatasetAdd($event)" (customDatasetRemoval)="onDatasetRemoval($event)"></preview-schema>
+                                        </form>
+                                </mat-step>
+
+
+                        </ng-container>
+                </mat-horizontal-stepper>
         </mat-card-content>
 </mat-card>
+
+

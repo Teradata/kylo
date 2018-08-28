@@ -35,24 +35,28 @@ export class DynamicFormComponent implements OnInit {
 
     ngOnInit() {
 
-        if(this.fieldGroups == undefined ) {
-            this.fieldGroups = [];
-        }
-        if(this.fieldGroups.length == 0 && this.fields != undefined ) {
-                //add the fields to a column group
-                let defaultGroup = new FieldGroup()
-                defaultGroup.fields = this.fields;
-                this.fieldGroups.push(defaultGroup)
-        }
-        let allControls:FormControl[] = []
-        this.fieldGroups.forEach(group => {
-            let controls = this.dynamicFormService.addToFormGroup(group.fields, this.form);
-            if(controls){
-                controls.forEach(control => allControls.push(control));
-            }
-        });
-        //notify any subscribers the form controls have been added
-        this.onFormControlsAdded.emit(allControls);
+      this.addFields();
+     }
+
+     addFields(){
+         if(this.fieldGroups == undefined ) {
+             this.fieldGroups = [];
+         }
+         if(this.fieldGroups.length == 0 && this.fields != undefined ) {
+             //add the fields to a column group
+             let defaultGroup = new FieldGroup()
+             defaultGroup.fields = this.fields;
+             this.fieldGroups.push(defaultGroup)
+         }
+         let allControls:FormControl[] = []
+         this.fieldGroups.forEach(group => {
+             let controls = this.dynamicFormService.addToFormGroup(group.fields, this.form);
+             if(controls){
+                 controls.forEach(control => allControls.push(control));
+             }
+         });
+         //notify any subscribers the form controls have been added
+         this.onFormControlsAdded.emit(allControls);
      }
 
 

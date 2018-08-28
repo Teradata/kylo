@@ -1,12 +1,16 @@
+<mat-toolbar >
+  <div>{{feed.feedName}} Profile</div>
+  <span fxFlex="100"></span>
+</mat-toolbar>
+
 <mat-card class="mat-typography">
-  <mat-card-header class="mat-typography">
-    <mat-card-title>Feed Profile - {{feed.feedName}}</mat-card-title>
-    <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
-      <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
-    </mat-card-subtitle>
+  <mat-card-header>
+    <mat-card-title>Feed Profile view</mat-card-title>
+    <mat-card-subtitle>Profile desc</mat-card-subtitle>
+    <span fxFlex></span>
   </mat-card-header>
   <mat-card-content>
-    Feed Profile
+    Feed Profile content
   </mat-card-content>
 </mat-card>
 

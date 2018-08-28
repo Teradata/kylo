@@ -16,7 +16,7 @@ export class DefineFeedSummaryComponent  extends AbstractLoadFeedComponent imple
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, private $$angularInjector: Injector) {
         super(feedLoadingService, stateService, defineFeedService);
         let sideNavService = $$angularInjector.get("SideNavService");
-        sideNavService.showSideNav();
+        sideNavService.hideSideNav();
     }
 
     ngOnInit() {

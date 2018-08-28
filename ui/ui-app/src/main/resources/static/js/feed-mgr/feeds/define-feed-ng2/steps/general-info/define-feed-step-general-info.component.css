@@ -30,3 +30,10 @@ mat-option.autocomplete-option .hint {
   font-weight:bold;
   padding-top: 16px;
 }
+
+:host ::ng-deep feed-schedule .section-header{
+  color:darkgray;
+  font-size:16px;
+  font-weight:bold;
+  padding-top: 24px;
+}

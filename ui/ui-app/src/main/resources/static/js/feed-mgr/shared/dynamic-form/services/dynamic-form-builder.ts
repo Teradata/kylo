@@ -111,7 +111,7 @@ export class DynamicFormBuilder {
 
     resetForm(){
         if(this.form) {
-            console.log('RESET FORM!!!!')
+            console.log('RESET FORM!!!! ',Object.keys(this.form.controls).length)
             Object.keys(this.form.controls).forEach(controlName => {
                 if(this.form.contains(controlName)) {
                     this.form.removeControl(controlName)

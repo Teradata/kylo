@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, EventEmitter, Input, Output, OnInit} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 import {FormGroup} from "@angular/forms";
@@ -21,7 +21,21 @@ export class DefineFeedStepCardComponent implements OnInit {
     public step : Step;
 
     @Input()
+    public displayToolbar?:boolean = true;
+
+    @Input()
+    public displayEditActions?:boolean = true;
+
+
+
+    @Input()
     public mode ?:string;
+
+    @Output()
+    saved:EventEmitter<any> = new EventEmitter<any>();
+
+    @Output()
+    cancelEdit:EventEmitter<any> = new EventEmitter<any>();
 
     constructor() {
 
@@ -31,6 +45,14 @@ export class DefineFeedStepCardComponent implements OnInit {
         if(this.mode == undefined){
             this.mode = 'normal'
         }
+    }
+
+    onSave(){
+        this.saved.emit();
+    }
+
+    onCancel(){
+        this.cancelEdit.emit();
     }
 
 

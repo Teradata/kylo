@@ -1,12 +1,16 @@
+<mat-toolbar >
+  <div>{{feed.feedName}} Lineage</div>
+  <span fxFlex="100"></span>
+</mat-toolbar>
+
 <mat-card class="mat-typography">
-<mat-card-header class="mat-typography">
-  <mat-card-title>Feed Lineage - {{feed.feedName}}</mat-card-title>
-  <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
-    <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
-  </mat-card-subtitle>
-</mat-card-header>
+  <mat-card-header>
+    <mat-card-title>Feed Lineage view</mat-card-title>
+    <mat-card-subtitle>lineage desc</mat-card-subtitle>
+    <span fxFlex></span>
+  </mat-card-header>
   <mat-card-content>
-    Feed Lineage
+    Feed Lineage content
   </mat-card-content>
 </mat-card>
 

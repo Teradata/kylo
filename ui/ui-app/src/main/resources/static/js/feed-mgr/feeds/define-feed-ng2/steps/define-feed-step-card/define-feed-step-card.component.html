@@ -1,11 +1,23 @@
+<mat-toolbar *ngIf="displayToolbar">
+  <div>{{feed.feedName}} {{step.name}}</div>
+  <span fxFlex="100"></span>
+  <button mat-icon-button (click)="feed.readonly = false" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
+</mat-toolbar>
+
   <mat-card class="mat-typography">
     <mat-card-header>
-      <mat-card-title>{{step.number}}.  {{step.name}}</mat-card-title>
+      <mat-card-title>{{step.name}}</mat-card-title>
       <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
+      <span fxFlex></span>
+      <button mat-icon-button (click)="feed.readonly = false" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
     </mat-card-header>
     <mat-card-content>
       <ng-content select="feed-step-readonly-content" *ngIf="feed.readonly  && mode == 'normal'"></ng-content>
       <ng-content select="feed-step-edit-content" *ngIf="!feed.readonly && mode == 'normal'"></ng-content>
-      <ng-content   *ngIf="mode=='custom'"></ng-content>
+      <ng-content *ngIf="mode=='custom'"></ng-content>
     </mat-card-content>
+    <mat-card-actions *ngIf="!feed.readonly && displayEditActions">
+      <button mat-icon-button (click)="onCancel()">Cancel</button>
+      <button mat-icon-button (click)="onSave()" ><mat-icon>save</mat-icon></button>
+    </mat-card-actions>
   </mat-card>

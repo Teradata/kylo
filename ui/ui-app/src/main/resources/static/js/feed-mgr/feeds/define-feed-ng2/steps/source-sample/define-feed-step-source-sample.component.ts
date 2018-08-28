@@ -12,6 +12,7 @@ import {SparkDataSet} from "../../../../model/spark-data-set.model";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {FeedLoadingService} from "../../services/feed-loading-service";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -40,8 +41,9 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
 
     constructor(defineFeedService:DefineFeedService,stateService: StateService, private selectionService: SelectionService,
-                private _dialogService: TdDialogService) {
-        super(defineFeedService,stateService);
+                dialogService: TdDialogService,
+                feedLoadingService:FeedLoadingService,) {
+        super(defineFeedService,stateService, feedLoadingService,dialogService);
         this.sourceSample = new FormGroup({})
        this.defineFeedService.ensureSparkShell();
 
@@ -63,7 +65,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
     browseCatalog(){
         if(this.feed.sourceDataSets && this.feed.sourceDataSets.length >0){
-            this._dialogService.openConfirm({
+            this.dialogService.openConfirm({
                 message: 'You already have a dataset defined for this feed. Switching the source will result in a new target schema. Are you sure you want to browse for a new dataset? ',
                 disableClose: true,
                 title: 'Source dataset already defined', //OPTIONAL, hides if not provided

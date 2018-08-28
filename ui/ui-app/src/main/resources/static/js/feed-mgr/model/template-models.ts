@@ -61,7 +61,8 @@ export interface Template {
     isStream: boolean,
     roleMemberships: any[],
     owner: any,
-    roleMembershipsUpdated: boolean
+    roleMembershipsUpdated: boolean,
+    templateTableOption:string
 }
 export class SaveAbleTemplate implements SaveTemplate {
     id: string;
@@ -130,6 +131,7 @@ export class EmptyTemplate implements Template {
     roleMemberships: any[];
     owner: any;
     roleMembershipsUpdated: boolean = false;
+    templateTableOption:string= '';
 }
 export class ExtendedTemplate implements Template {
     id: string = null;
