@@ -122,7 +122,7 @@ export default class StateService {
         }
 
         data.navigateToFeedDefinition = (feedId:string) => {
-            this.$state.go(FEED_DEFINITION_STATE_NAME+".summary",{feedId:feedId});
+            this.$state.go(FEED_DEFINITION_STATE_NAME+".feed-step.general-info",{feedId:feedId});
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {
