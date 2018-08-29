@@ -1,5 +1,5 @@
-
-<mat-form-field [formGroup]="formGroup">
+<div [formGroup]="formGroup" fxFlex="50">
+<mat-form-field >
   <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto">
   <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" (onCategorySelected)="categorySelected($event)" >
     <mat-option *ngFor="let category of filteredCategories | async" [value]="category" class="autocomplete-option">
@@ -13,3 +13,4 @@
     </mat-option>
   </mat-autocomplete>
 </mat-form-field>
+</div>

@@ -273,6 +273,8 @@ export class Feed  implements KyloObject{
      */
     propertiesInitialized?: boolean;
 
+    isValid:boolean;
+
 
     public constructor(init?: Partial<Feed>) {
         this.initialize();
@@ -369,6 +371,7 @@ export class Feed  implements KyloObject{
                 step.updateStepState();
             }
         });
+        this.isValid = valid;
         return valid;
     }
 

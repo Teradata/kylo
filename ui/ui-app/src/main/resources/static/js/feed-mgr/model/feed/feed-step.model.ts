@@ -1,6 +1,6 @@
 import {FeedStepValidator} from "./feed-step-validator";
 import {Feed} from "./feed.model";
-import {FEED_DEFINITION_STATE_NAME} from "./feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "./feed-constants";
 
 
 export class Step {
@@ -155,7 +155,7 @@ export class StepBuilder {
             name: this.name,
             systemName: this.systemName,
             description: this.description,
-            sref: FEED_DEFINITION_STATE_NAME + ".feed-step." + this.sref,
+            sref: FEED_DEFINITION_SECTION_STATE_NAME+"." + this.sref,
             complete: false,
             dependsUponSteps: this.dependsUponSteps,
             required: this.required

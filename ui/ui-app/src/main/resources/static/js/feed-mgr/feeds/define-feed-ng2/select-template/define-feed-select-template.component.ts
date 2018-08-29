@@ -6,7 +6,7 @@ import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {DateFormatDialog} from "../../../visual-query/wrangler/core/columns/date-format.component";
 import {DateFormatConfig, DateFormatResponse} from "../../../visual-query/wrangler/api/services/dialog.service";
@@ -209,7 +209,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             this.model.category = newFeedData.category;
             this.defineFeedService.setFeed(this.model);
             this.defineFeedService.saveFeed().subscribe(feed => {
-                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".summary.overview", {"feedId": feed.feed.id})
+                this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview", {"feedId": feed.feed.id})
             });
 
         };

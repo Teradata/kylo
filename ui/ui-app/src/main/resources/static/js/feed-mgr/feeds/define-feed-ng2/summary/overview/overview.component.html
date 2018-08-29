@@ -29,17 +29,29 @@
   </mat-card-content>
 </mat-card>
 
-  <mat-card class="mat-typography" fxFlex="25%">
-    <mat-card-header>
-      <mat-card-title>Feed details</mat-card-title>
-      <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
-        <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
-      </mat-card-subtitle>
-      <span fxFlex></span>
-    </mat-card-header>
-    <mat-card-content>
-      Details Card
-    </mat-card-content>
-  </mat-card>
+  <div fxLayout="column"  fxFlex="25%">
+
+
+    <mat-card class="mat-typography" *ngIf="feed.isDraft()">
+      <mat-card-content>
+        <button mat-button [disabled]="!feed.isValid">Publish</button>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="mat-typography" >
+      <mat-card-header>
+        <mat-card-title>Feed details</mat-card-title>
+        <mat-card-subtitle><span *ngIf="feed.mode == 'DRAFT'">DRAFT</span>
+          <span *ngIf="feed.mode !='DRAFT'">{{feed.state}}</span>
+        </mat-card-subtitle>
+        <span fxFlex></span>
+      </mat-card-header>
+      <mat-card-content>
+        Details Card
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
 
 </div>

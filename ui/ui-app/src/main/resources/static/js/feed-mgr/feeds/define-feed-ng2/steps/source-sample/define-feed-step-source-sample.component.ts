@@ -13,6 +13,7 @@ import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -91,7 +92,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
         this.selectionService.reset(dataSet.dataSource.id);
         this.selectionService.setLastPath(dataSet.dataSource.id,{path:dataSet.resolvePath()});
        // this.selectionService.set()
-        this.stateService.go('feed-definition.feed-step.datasource',params)
+        this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".datasource",params)
     }
 
 

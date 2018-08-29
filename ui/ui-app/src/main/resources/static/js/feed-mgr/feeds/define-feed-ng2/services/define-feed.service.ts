@@ -484,7 +484,7 @@ export class DefineFeedService {
             //set the steps
             this.feed.steps = steps;
             this.feed.updateDate = new Date(updatedFeed.updateDate);
-           let valid = this.feed.validate(true);
+            let valid = this.feed.validate(true);
             //mark the last saved feed
             this.lastSavedFeed = this.feed.copy();
             //notify watchers that this step was saved

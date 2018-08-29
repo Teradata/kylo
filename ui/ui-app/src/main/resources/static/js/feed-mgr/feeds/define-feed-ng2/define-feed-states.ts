@@ -17,7 +17,7 @@ import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-fe
 import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
 import {Observable} from "rxjs/Observable";
-import {FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
+import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../model/feed/feed-constants";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {ProfileComponent} from './summary/profile/profile.component';
 import {OverviewComponent} from './summary/overview/overview.component';
@@ -59,34 +59,9 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         component: DefineFeedSelectTemplateComponent
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".summary",
-        url: "/:feedId/summary",
-        redirectTo: FEED_DEFINITION_STATE_NAME+".summary.overview",
-        component: DefineFeedSummaryComponent,
-        resolve: [
-            {
-                token: 'stateParams',
-                deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
-            }
-        ]
-    },
-    {
-        name: FEED_DEFINITION_STATE_NAME+".summary.overview",
-        url: "/overview",
-        component: OverviewComponent,
-        resolve: [
-            {
-                token: 'stateParams',
-                deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
-            }
-        ]
-    },
-    {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step",
-        url: "/feed-step",
-        redirectTo: FEED_DEFINITION_STATE_NAME+".feed-step.new-feed",
+        name: FEED_DEFINITION_SECTION_STATE_NAME,
+        url: "/section",
+        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".overview",
         component: DefineFeedContainerComponent,
         resolve: [
             {
@@ -97,9 +72,9 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.new-feed",
-        url: "/new-feed",
-        component: DefineFeedStepGeneralInfoComponent,
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".overview",
+        url: "/:feedId/overview",
+        component: OverviewComponent,
         resolve: [
             {
                 token: 'stateParams',
@@ -107,30 +82,30 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 resolveFn: (state: StateService) => state.transition.params()
             }
         ]
-    },
+    },   
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.general-info",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".general-info",
         url: "/:feedId/general-info",
         component: DefineFeedStepGeneralInfoComponent
 
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-details",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-details",
         url: "/:feedId/feed-details",
         component: DefineFeedStepFeedDetailsComponent
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-table",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-table",
         url: "/:feedId/feed-table",
         component: DefineFeedTableComponent
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.wrangler",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".wrangler",
         url: "/:feedId/wrangler",
         component: DefineFeedStepWranglerComponent
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.datasources",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".datasources",
         url: "/:feedId/source-sample",
         component: DefineFeedStepSourceSampleComponent,
         resolve: [
@@ -157,7 +132,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name:FEED_DEFINITION_STATE_NAME+".feed-step.datasource",
+        name:FEED_DEFINITION_SECTION_STATE_NAME+".datasource",
         url:"/:feedId/source-sample/:datasourceId/:path",
         component: DefineFeedStepSourceSampleDatasourceComponent,
         params: {
@@ -213,7 +188,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.profile",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile",
         url: "/:feedId/profile",
         component: ProfileComponent,
         resolve: [
@@ -225,7 +200,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_STATE_NAME+".feed-step.feed-lineage",
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-lineage",
         url: "/:feedId/feed-lineage",
         component: FeedLineageComponment,
         resolve: [

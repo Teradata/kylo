@@ -19,6 +19,7 @@ import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/
 import {Node} from "../../../../catalog/api/models/node";
 import {FileMetadataTransformService} from "../../../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 
 @Component({
     selector: "define-feed-source-sample-catalog-dataset",
@@ -188,7 +189,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
 
 
     public backToCatalog(){
-        this.state.go("feed-definition.feed-step.datasources",{feedId:this.feed.id,jumpToSource:false})
+        this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".datasources",{feedId:this.feed.id,jumpToSource:false})
     }
 
 }

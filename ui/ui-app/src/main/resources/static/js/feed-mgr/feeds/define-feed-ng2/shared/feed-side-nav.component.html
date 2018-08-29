@@ -1,7 +1,7 @@
 <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">Feeds</mat-toolbar>
 <div td-sidenav-content>
   <mat-nav-list>
-    <a mat-list-item  (click)="onSummarySelected()" *ngIf="!feed.isNew() ">
+    <a mat-list-item [ngClass]="{'selected-step': (isSummarySelected())}" (click)="onSummarySelected()" >
       <h3 matLine>Summary</h3>
       <span></span>
     </a>

@@ -12,14 +12,14 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
-import {FEED_DEFINITION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 
 
 export class FeedLink{
     sref:string;
     constructor(public label:string,sref:string, private icon:string,isShort:boolean = true) {
         if(isShort) {
-            this.sref = FEED_DEFINITION_STATE_NAME+".feed-step."+sref;
+            this.sref = FEED_DEFINITION_SECTION_STATE_NAME+"."+sref;
         }
         else {
             this.sref = sref;
@@ -209,7 +209,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
             this.feedName = this.feed.feedName;
         }
         if(response.newFeed){
-            this.stateService.go(FEED_DEFINITION_STATE_NAME+".feed-step.general-info",{"feedId":response.feed.id},{location:"replace"})
+            this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".general-info",{"feedId":response.feed.id},{location:"replace"})
         }
 
     }
