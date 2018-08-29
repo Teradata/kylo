@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
 import {Feed} from "../../../model/feed/feed.model";
@@ -32,6 +31,9 @@ import {TranslateService} from "@ngx-translate/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {SelectionService} from "../../../catalog/api/services/selection.service";
 import {FeedSourceSampleChange} from "./feed-source-sample-change-listener";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {PartialObserver} from "rxjs/Observer";
+import {ISubscription} from "rxjs/Subscription";
 
 
 export enum TableSchemaUpdateMode {
@@ -41,9 +43,14 @@ export enum TableSchemaUpdateMode {
 @Injectable()
 export class DefineFeedService {
 
+    /**
+     *
+     * The feed in the same state as the server
+     * All Steps will get a copy of the feed that they manipulate and save back to this service.
+     * This object will get updated after each explicit Load or after a Save
+     */
     feed:Feed;
 
-    lastSavedFeed:Feed;
 
     stepSrefMap:Common.Map<Step> = {}
 
@@ -61,63 +68,7 @@ export class DefineFeedService {
     private currentStepSubject: Subject<Step>;
 
 
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public savedFeed$: Observable<SaveFeedResponse>;
 
-    /**
-     * The datasets subject for listening
-     */
-    private savedFeedSubject: Subject<SaveFeedResponse>;
-
-
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public beforeSave$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private beforeSaveSubject: Subject<Feed>;
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public cancelFeedEdit$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private cancelFeedEditSubject: Subject<Feed>;
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public feedEdit$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private feedEditSubject: Subject<Feed>;
-
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public feedStateChange$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private feedStateChangeSubject: Subject<Feed>;
 
     private uiComponentsService :UiComponentsService;
 
@@ -136,28 +87,14 @@ export class DefineFeedService {
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
                 private selectionService: SelectionService,
-                private feedSourceSampleChange:FeedSourceSampleChange){
-        this.currentStepSubject = new Subject<Step>();
-        this.currentStep$ = this.currentStepSubject.asObservable();
-
-        this.savedFeedSubject = new Subject<SaveFeedResponse>();
-        this.savedFeed$ = this.savedFeedSubject.asObservable();
-
-        this.beforeSaveSubject = new Subject<Feed>();
-        this.beforeSave$ = this.beforeSaveSubject.asObservable();
-
-
-        this.feedStateChangeSubject = new Subject<Feed>();
-        this.feedStateChange$ = this.feedStateChangeSubject.asObservable();
-
-        this.cancelFeedEditSubject = new Subject<Feed>();
-        this.cancelFeedEdit$ = this.cancelFeedEditSubject.asObservable();
-
-        this.feedEditSubject = new Subject<Feed>();
-        this.feedEdit$ = this.feedEditSubject.asObservable();
+                private feedSourceSampleChange:FeedSourceSampleChange,
+                private snackBar: MatSnackBar){
 
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
+
+        this.currentStepSubject = new Subject<Step>();
+        this.currentStep$ = this.currentStepSubject.asObservable();
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
@@ -169,7 +106,7 @@ export class DefineFeedService {
     }
 
     /**
-     * Load a feed based upon its UUID
+     * Load a feed based upon its UUID and return a copy to the subscribers
      *
      * @param {string} id
      * @return {Observable<Feed>}
@@ -178,6 +115,8 @@ export class DefineFeedService {
 
         let feed = this.getFeed();
         if((feed && feed.id != id) || (feed == undefined && id != undefined) || force == true) {
+            let loadFeedSubject = new Subject<Feed>();
+            let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
 
             let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
             observable.subscribe((feed) => {
@@ -191,15 +130,17 @@ export class DefineFeedService {
 
                 this.initializeFeedSteps(feedModel);
                 feedModel.validate(true);
-                this.setFeed(feedModel)
-                this.lastSavedFeed = feedModel.copy();
+                this.feed = feedModel;
                 //reset the dataset collection service
                 this.previewDatasetCollectionService.reset();
+                //notify subscribers of a copy
+                loadFeedSubject.next(feedModel.copy());
+
             });
-            return observable;
+            return loadFeedObservable$;
         }
         else if(feed){
-            return Observable.of(this.getFeed())
+            return Observable.of(this.feed.copy())
         }
         else {
             return Observable.empty();
@@ -213,27 +154,6 @@ export class DefineFeedService {
         }));
     }
 
-    onFeedEdit(){
-        this.feed.readonly = false;
-        this.feedEditSubject.next(this.feed);
-        this.feedStateChangeSubject.next(this.feed)
-    }
-
-    /**
-     * Restore the last saved feed effectively removing all edits done on the current feed
-     */
-    restoreLastSavedFeed() : Feed{
-        if(this.lastSavedFeed) {
-            this.feed.update(this.lastSavedFeed.copy());
-            this.cancelFeedEditSubject.next(this.feed);
-            this.feedStateChangeSubject.next(this.feed)
-            return this.getFeed();
-        }
-        else {
-            this.cancelFeedEditSubject.next(this.feed);
-            this.feedStateChangeSubject.next(this.feed)
-        }
-    }
 
 
 
@@ -285,38 +205,30 @@ export class DefineFeedService {
 
     }
 
-    /**
-     * Sets the feed
-     * @param {Feed} feed
-     */
-    setFeed(feed:Feed) : void{
-        this.feed = feed;
-        this.feed.steps.forEach(step => {
-            this.stepSrefMap[step.sref] = step;
-        })
-    }
-
-    beforeSave() {
-        this.beforeSaveSubject.next(this.feed);
-    }
 
     /**
      * Save the Feed
      * Users can subscribe to this event via the savedFeedSubject
      * @return {Observable<Feed>}
      */
-    saveFeed() : Observable<SaveFeedResponse>{
+    saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
 
-        let valid = this.feed.validate(false);
-        if(this.feed.isDraft() || (!this.feed.isDraft() && valid)) {
-            return this._saveFeed();
+        let valid = feed.validate(false);
+        if(feed.isDraft() || (!feed.isDraft() && valid)) {
+            return this._saveFeed(feed);
         }
         else {
             //errors exist before we try to save
             //notify watchers that this step was saved
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.next(response);
-            return null;
+            /**
+             * Allow other components to listen for changes to the currentStep
+             *
+             */
+            let  savedFeedSubject: Subject<SaveFeedResponse> = new Subject<SaveFeedResponse>();
+            let  savedFeed$: Observable<SaveFeedResponse> = savedFeedSubject.asObservable();
+            savedFeedSubject.next(response);
+            return savedFeed$;
         }
     }
 
@@ -329,46 +241,34 @@ export class DefineFeedService {
         }
     }
 
-
     /**
      * Set the current step reference and notify any subscribers
      * @param {Step} step
      */
     setCurrentStep(step:Step){
-        this.currentStep = step;
-        //notify the observers of the change
-        this.currentStepSubject.next(this.currentStep)
-    }
-
-    /**
-     * Make a copy of this feed
-     * @return {Feed}
-     */
-    copyFeed() :Feed{
-        let feed =this.getFeed();
-        let feedCopy :Feed = undefined;
-        if(feed != undefined) {
-            //copy the feed data for this step
-            feedCopy = angular.copy(feed);
-            //set the steps back to the core steps
-            feedCopy.steps = feed.steps;
+        if(this.currentStep == undefined || this.currentStep != step){
+            //notify of change
+            this.currentStepSubject.next(step);
         }
-        return feedCopy;
+        this.currentStep = step;
     }
-
 
     getCurrentStep(){
         return this.currentStep;
     }
 
+    subscribeToStepChanges(observer:PartialObserver<Step>) :ISubscription{
+      return  this.currentStepSubject.subscribe(observer);
+    }
+
     /**
      * Gets the current feed
+     * This is not the copy!!!
      * @return {Feed}
      */
     getFeed(): Feed{
-        return this.feed;
+        return this.feed != undefined && this.feed.copy() || undefined;
     }
-
     /**
      * gets the step from the sRef
      * @param {string} sRef
@@ -455,8 +355,11 @@ export class DefineFeedService {
      * @return {Observable<Feed>}
      * @private
      */
-    private _saveFeed() : Observable<SaveFeedResponse>{
-        let body = this.feed.copyModelForSave();
+    private _saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
+        let body = feed.copyModelForSave();
+
+        let savedFeedSubject = new Subject<SaveFeedResponse>();
+        let savedFeedObservable$ = savedFeedSubject.asObservable();
 
 
         let newFeed = body.id == undefined;
@@ -466,41 +369,41 @@ export class DefineFeedService {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
         observable.subscribe((response: any)=> {
-            let steps = this.feed.steps;
+
             let updatedFeed = response.feedMetadata;
             //turn the response back into our Feed object
             let savedFeed = new Feed(updatedFeed);
+            savedFeed.steps = feed.steps;
 
             //if the properties are already initialized we should keep those values
-            if(this.feed.propertiesInitialized){
-                savedFeed.inputProcessor =  this.feed.inputProcessor;
-                savedFeed.inputProcessors = this.feed.inputProcessors;
-                savedFeed.nonInputProcessors = this.feed.nonInputProcessors;
+            if(feed.propertiesInitialized){
+                savedFeed.inputProcessor =  feed.inputProcessor;
+                savedFeed.inputProcessors = feed.inputProcessors;
+                savedFeed.nonInputProcessors = feed.nonInputProcessors;
             }
-            this.feed.update(savedFeed);
+           // feedCopy.update(savedFeed);
 
             //reset it to be editable
-            this.feed.readonly = false;
-            //set the steps
-            this.feed.steps = steps;
-            this.feed.updateDate = new Date(updatedFeed.updateDate);
-            let valid = this.feed.validate(true);
-            //mark the last saved feed
-            this.lastSavedFeed = this.feed.copy();
+            savedFeed.readonly = false;
+
+            savedFeed.updateDate = new Date(updatedFeed.updateDate);
+            let valid = savedFeed.validate(true);
+
             //notify watchers that this step was saved
-            let message = "Successfully saved "+this.feed.feedName;
+            let message = "Successfully saved "+feed.feedName;
             if(!valid){
                 message = "Saved the feed, but you have validation errors.  Please review."
             }
-            let saveFeedResponse = new SaveFeedResponse(this.feed,true,message);
+            this.feed = savedFeed;
+            let saveFeedResponse = new SaveFeedResponse(savedFeed,true,message);
             saveFeedResponse.newFeed = newFeed;
-            this.savedFeedSubject.next(saveFeedResponse);
+            savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
             console.error("Error",error);
-            let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.next(response);
+            let response = new SaveFeedResponse(feed,false,"Error saving feed "+feed.feedName+". You have validation errors");
+            savedFeedSubject.next(response);
         });
-        return this.savedFeed$;
+        return savedFeedObservable$
     }
 
 
@@ -514,6 +417,15 @@ export class DefineFeedService {
         this.feedSourceSampleChange.dataSetCollectionChanged(dataSets,this.feed)
     }
 
+
+    public openSnackBar(message:string, duration?:number){
+        if(duration == undefined){
+            duration = 3000;
+        }
+        this.snackBar.open(message, null, {
+            duration: duration,
+        });
+    }
 
 
 

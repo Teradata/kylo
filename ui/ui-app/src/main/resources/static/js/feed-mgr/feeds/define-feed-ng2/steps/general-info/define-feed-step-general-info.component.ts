@@ -117,7 +117,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     /**
      * Update the feed model with the form values
      */
-    updateFeedService(){
+   protected  applyUpdatesToFeed(){
        //update the model
      let formModel =   this.formGroup.value;
      this.feed.feedName = formModel.feedName;
@@ -131,16 +131,15 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
      if(this.propertyList) {
          this.propertyList.updateModel();
      }
-     //save it back to the service
-     super.updateFeedService();
+
     }
 
     /**
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    protected cancelFeedEdit(feed:Feed){
-        this.propertyList.reset(feed.userProperties);
-        this.feedSchedule.reset(feed);
+    protected cancelFeedEdit(){
+         this.propertyList.reset(this.feed.userProperties);
+        this.feedSchedule.reset(this.feed);
     }
 }

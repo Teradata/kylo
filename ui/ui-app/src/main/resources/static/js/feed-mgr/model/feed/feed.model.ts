@@ -16,6 +16,7 @@ import {Step} from "./feed-step.model";
 import {KyloObject} from "../../../common/common.model";
 import {SourceTableSchema} from "./feed-source-table-schema.model";
 import {UserProperty, UserPropertyUtil} from "../user-property.model";
+import * as _ from "underscore";
 
 
 export interface TableOptions {
@@ -49,6 +50,11 @@ export class Feed  implements KyloObject{
     public static OBJECT_TYPE:string = 'Feed'
 
     public objectType:string = Feed.OBJECT_TYPE;
+
+    /**
+     * internal id to track feed instances
+     */
+    userInterfaceId:string;
 
     /**
      * What options does the template provide for the feed
@@ -295,6 +301,7 @@ export class Feed  implements KyloObject{
             //ensure types
             this.dataTransformation = ObjectUtils.getAs(this.dataTransformation,DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
         }
+        this.userInterfaceId = _.uniqueId("feed-");
     }
 
     updateNonNullFields(model: any) {
@@ -443,8 +450,8 @@ export class Feed  implements KyloObject{
         allSteps.push(copy);
         copy.allSteps = allSteps;
         });
-        let newFeed :Feed =  Object.create(this);
-        Object.assign(newFeed,this)
+        let newFeed :Feed =  new Feed(this)
+      //  Object.assign(newFeed,this)
         newFeed.steps = null;
         let copy :Feed;
         if(keepCircularReference) {

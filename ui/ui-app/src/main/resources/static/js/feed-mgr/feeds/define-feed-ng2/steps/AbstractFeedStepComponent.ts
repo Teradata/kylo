@@ -33,14 +33,9 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
    // private feedSavedSubscription : ISubscription;
 
-    constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
+    protected constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
                 protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService) {
-        //subscribe to the beforeSave call so the step can update the service with the latest feed information
-        this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
-        this.feedStateChangeSubscription = this.defineFeedService.feedStateChange$.subscribe(this.feedStateChanged.bind(this))
-        this.cancelFeedEditSubscription = this.defineFeedService.cancelFeedEdit$.subscribe(this.cancelFeedEdit.bind(this))
-        this.feedEditSubscription = this.defineFeedService.feedEdit$.subscribe(this.feedEdit.bind(this))
-      //  this.feedSavedSubscription = this.defineFeedService.savedFeed$.subscribe(this.onFeedFinishedSaving.bind(this))
+
     }
     ngOnInit() {
         this.initData();
@@ -53,16 +48,6 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         }catch(err){
             console.error("error in destroy",err);
         }
-      if(!this.feed.readonly) {
-          //update the feed service with any changes
-          this.updateFeedService();
-      }
-      //unsubscribe from the beforeSave call
-      this.beforeSaveSubscription.unsubscribe();
-      this.feedStateChangeSubscription.unsubscribe();
-      this.cancelFeedEditSubscription.unsubscribe();
-      this.feedEditSubscription.unsubscribe();
-  //    this.feedSavedSubscription.unsubscribe();
     }
 
     subscribeToFormChanges(formGroup:FormGroup, debounceTime:number = 500) {
@@ -92,6 +77,13 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     }
 
+    /**
+     * Called before save to apply updates to the feed model
+     */
+    protected applyUpdatesToFeed():void{
+
+    }
+
     registerLoading(): void {
         this.feedLoadingService.registerLoading();
     }
@@ -101,17 +93,18 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
 
+
     onSave(){
         this.registerLoading();
-        //notify any subscribers that we are about to save the service feed model.
-        //this gives them a chance to update the service with their data prior to the actual save call
-        this.defineFeedService.beforeSave();
+        this.applyUpdatesToFeed();
         //notify the subscribers on the actual save call so they can listen when the save finishes
-        this.defineFeedService.saveFeed();
+        this.defineFeedService.saveFeed(this.feed).subscribe((response:SaveFeedResponse) => {
+            this.defineFeedService.openSnackBar("Saved the feed ",3000);
+        })
     }
     onEdit(){
         this.feed.readonly = false;
-        this.defineFeedService.onFeedEdit();
+      //  this.defineFeedService.onFeedEdit();
     }
     onCancelEdit() {
 
@@ -128,10 +121,12 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
                     this.stateService.go('feeds')
                 }
                 else {
-                    let oldFeed = this.defineFeedService.restoreLastSavedFeed();
+
+                    let oldFeed = this.defineFeedService.getFeed();
                     this.feed.update(oldFeed);
                     //this.openSnackBar("Restored this feed")
                     this.feed.readonly = true;
+                    this.cancelFeedEdit();
                 }
             } else {
                 // DO SOMETHING ELSE
@@ -140,31 +135,14 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
 
-
-    updateFeedService(){
-        //update the feed service with this data
-        this.defineFeedService.setFeed(this.feed);
-    }
-
-    private feedStateChanged(feed:Feed){
-        this.feed.readonly = feed.readonly;
-    }
-
     /**
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    protected cancelFeedEdit(feed:Feed){
+    protected cancelFeedEdit(){
 
     }
 
-    /**
-     * When a feed is in edit mode
-     * @param {Feed} feed
-     */
-    protected feedEdit(feed:Feed){
-
-    }
 
 
 
@@ -177,8 +155,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         }
             this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
             if (this.step) {
-                this.defineFeedService.setCurrentStep(this.step)
                 this.step.visited = true;
+                this.defineFeedService.setCurrentStep(this.step)
             }
             else {
                 //ERROR OUT

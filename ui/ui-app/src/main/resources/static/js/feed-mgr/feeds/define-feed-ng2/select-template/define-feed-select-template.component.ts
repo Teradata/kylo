@@ -13,6 +13,7 @@ import {DateFormatConfig, DateFormatResponse} from "../../../visual-query/wrangl
 import {Observable} from "rxjs/Observable";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
 import {Template} from "../../../model/template-models";
+import {SaveFeedResponse} from "../model/save-feed-response.model";
 
 
 @Component({
@@ -207,9 +208,8 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             this.model.feedName = feedName;
             this.model.systemFeedName = systemFeedName
             this.model.category = newFeedData.category;
-            this.defineFeedService.setFeed(this.model);
-            this.defineFeedService.saveFeed().subscribe(feed => {
-                this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview", {"feedId": feed.feed.id})
+            this.defineFeedService.saveFeed(this.model).subscribe((response :SaveFeedResponse)=> {
+                this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview", {"feedId": response.feed.id})
             });
 
         };

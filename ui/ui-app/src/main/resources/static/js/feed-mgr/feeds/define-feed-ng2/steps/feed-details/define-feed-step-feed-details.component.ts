@@ -334,7 +334,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     /**
      * called before saving
      */
-    updateFeedService(){
+    protected applyUpdatesToFeed(){
         let properties :Templates.Property[] = [];
         if (this.inputProcessor != null) {
             this.inputProcessor.properties.forEach(property => {
@@ -354,7 +354,6 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
         }
         this.feed.properties = properties;
 
-        this.defineFeedService.setFeed(this.feed);
     }
 
     onInputProcessorChange(event:MatRadioChange){

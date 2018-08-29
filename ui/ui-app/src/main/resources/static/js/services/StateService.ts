@@ -23,7 +23,7 @@
 */
 import * as angular from 'angular';
 import { moduleName } from './module-name';
-import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
 export default class StateService {
     Auth: any;
@@ -122,7 +122,7 @@ export default class StateService {
         }
 
         data.navigateToFeedDefinition = (feedId:string) => {
-            this.$state.go(FEED_DEFINITION_STATE_NAME+".feed-step.general-info",{feedId:feedId});
+            this.$state.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview",{feedId:feedId});
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {

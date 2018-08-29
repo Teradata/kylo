@@ -4,6 +4,7 @@ import {FeedLink} from "../steps/define-feed-container/define-feed-container.com
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {Input, Component} from "@angular/core";
 import {Feed} from "../../../model/feed/feed.model";
+import {DefineFeedService} from "../services/define-feed.service";
 
 @Component({
     selector: "feed-definition-side-nav",
@@ -20,9 +21,10 @@ export class FeedSideNavComponent {
 
     feedLinks:FeedLink[] = [new FeedLink("Lineage",'feed-lineage',"graphic_eq"),new FeedLink("Profile","profile","track_changes"),new FeedLink("SLA","sla","beenhere"),new FeedLink("Versions","version-history","history")];
 
-constructor(private  stateService:StateService) {
-this.summarySelected = true;
-}
+    constructor(private  stateService:StateService, private defineFeedService:DefineFeedService) {
+        this.summarySelected = true;
+        this.defineFeedService.subscribeToStepChanges(this.onStepChanged.bind(this))
+    }
 
 
     gotoFeeds(){
@@ -70,6 +72,15 @@ this.summarySelected = true;
             this.stateService.go(step.sref,{"feedId":this.feed.id})
             this.summarySelected = false;
         }
+    }
+
+    /**
+     * Listen when the step changes
+     * @param {Step} step
+     */
+    onStepChanged(step:Step){
+        this.selectedStep = step;
+        this.summarySelected = false;
     }
 
     onSummarySelected(){

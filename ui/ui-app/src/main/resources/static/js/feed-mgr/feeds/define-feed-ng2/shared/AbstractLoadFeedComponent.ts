@@ -14,8 +14,6 @@ export abstract class AbstractLoadFeedComponent  {
 
     public feed: Feed;
 
-    public selectedStep : Step;
-
     protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService){
 
     }
@@ -24,7 +22,7 @@ export abstract class AbstractLoadFeedComponent  {
         this.registerLoading();
       let observable = this.feedLoadingService.loadFeed(feedId);
       observable.subscribe((feedModel:Feed) => {
-            this.feed = this.defineFeedService.getFeed();
+            this.feed = feedModel;
             this._setFeedState();
             this.loadingFeed = false;
             this.resolveLoading();
@@ -44,8 +42,7 @@ export abstract class AbstractLoadFeedComponent  {
     }
 
     private _setFeedState(){
-        this.selectedStep = this.defineFeedService.getCurrentStep();
-        if(this.feed.isNew()){
+         if(this.feed.isNew()){
             //make editable if this is a new feed
             this.feed.readonly = false;
         }

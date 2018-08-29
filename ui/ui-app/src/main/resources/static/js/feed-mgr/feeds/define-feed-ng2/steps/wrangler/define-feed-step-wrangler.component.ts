@@ -80,6 +80,12 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
     }
 
+    /**
+     * Save the wrangler model to this feed
+     */
+   protected applyUpdatesToFeed(){
+
+    }
 
 
     getStepName() {
@@ -98,23 +104,9 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
 
     /**
-     * Update the feed model with the form values
-     */
-    updateFeedService(){
-       //update the model
-    // let formModel =   this.formGroup.value;
-
-     //this.feed.  = formModel.
-
-     //save it back to the service
-     super.updateFeedService();
-    }
-
-    /**
      * When a feed edit is cancelled, reset the forms
-     * @param {Feed} feed
      */
-    protected cancelFeedEdit(feed:Feed){
+    protected cancelFeedEdit(){
 
     }
 }

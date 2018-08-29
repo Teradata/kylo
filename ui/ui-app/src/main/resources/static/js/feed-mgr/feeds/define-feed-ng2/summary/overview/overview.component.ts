@@ -28,7 +28,6 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
 
     onStepSelected(step: Step) {
         if (!step.isDisabled()) {
-            this.selectedStep = step;
             let params = {"feedId": this.feed.id};
             this.stateService.go(step.sref, params, {location: "replace"})
         }

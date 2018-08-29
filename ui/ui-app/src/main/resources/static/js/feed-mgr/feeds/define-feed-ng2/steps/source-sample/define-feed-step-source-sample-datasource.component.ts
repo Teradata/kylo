@@ -55,14 +55,10 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     private warnIfSourceChanges:boolean = false;
 
 
-    private beforeSaveSubscription : ISubscription;
-
-
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,  $$angularInjector: Injector,private  defineFeedService:DefineFeedService,
         private _dialogService: TdDialogService,
                 private _fileMetadataTransformService: FileMetadataTransformService) {
        super(state,stateRegistry,selectionService,$$angularInjector);
-        this.beforeSaveSubscription = this.defineFeedService.beforeSave$.subscribe(this.updateFeedService.bind(this))
     }
 
     onStepSelectionChanged(event:StepperSelectionEvent) {
@@ -101,7 +97,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     }
     ngOnDestroy(){
         super.ngOnDestroy();
-        this.beforeSaveSubscription.unsubscribe();
     }
 
     setPreviewPaths(){
@@ -180,11 +175,6 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
        super.onDataSetCollectionChanged(dataSets);
        this.step.validate(this.feed);
        this.step.updateStepState();
-    }
-
-    private updateFeedService(){
-        //update the feed service with this data
-        this.defineFeedService.setFeed(this.feed);
     }
 
 
