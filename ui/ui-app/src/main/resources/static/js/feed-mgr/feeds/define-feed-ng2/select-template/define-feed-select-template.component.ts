@@ -14,6 +14,7 @@ import {Observable} from "rxjs/Observable";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
 import {Template} from "../../../model/template-models";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
+import {LocalStorageService} from "../../../../common/local-storage/local-storage.service";
 
 
 @Component({
@@ -74,6 +75,8 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          */
         recentTemplates:Array<any>;
 
+        recentTemplateNames:string[];
+
         /**
          * flag to indicate we need to display the 'more templates' link
          * @type {boolean}
@@ -86,9 +89,11 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          */
         RECENT_TEMPLATES = 5;
 
+        LOCAL_STORAGE_KEY = "KYLO_RECENT_TEMPLATES";
 
 
-    constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService,
+
+    constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService, private localStorageService:LocalStorageService,
                   private $$angularInjector: Injector) {
 
         this.model = new Feed();
@@ -111,6 +116,8 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
         //TODO change with Entity Access Control!
         this.allowImport = true;
+
+
     };
 
         /**
@@ -131,6 +138,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
         selectTemplate(template:Template){
+            this.updateRecentTemplates(template);
             this.openNewFeedDialog(new NewFeedDialogData(template)).subscribe((response:NewFeedDialogResponse) => {
                 this.createFeed(response)
             })
@@ -214,6 +222,23 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
         };
 
+        private updateRecentTemplates(template:Template){
+            let idx = this.recentTemplateNames.indexOf(template.templateName);
+            if(idx >=0){
+                //remove it
+                this.recentTemplateNames.splice(idx,1)
+            }
+            idx = this.recentTemplates.indexOf(template);
+            if(idx >=0){
+                //remove it
+                this.recentTemplates.splice(idx,1)
+            }
+            this.recentTemplateNames.unshift(template.templateName);
+            this.recentTemplates.unshift(template);
+
+            this.localStorageService.setItem(this.LOCAL_STORAGE_KEY, this.recentTemplateNames);
+        }
+
 
         /**
          * Return a list of the Registered Templates in the system
@@ -233,7 +258,17 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                         this.displayMoreLink = true;
                     }
                     this.allTemplates = data;
-                    this.recentTemplates = _.first(data, this.RECENT_TEMPLATES);
+                    let recentTemplates:string[] = <string[]>this.localStorageService.getItem(this.LOCAL_STORAGE_KEY);
+                    if(recentTemplates) {
+                        let recentTemplateObjects = _.filter(data, ((template:Template) => {
+                            return _.find(recentTemplates, (templateName) => templateName == template.templateName) != undefined;
+                        }));
+                        this.recentTemplates = _.first(recentTemplateObjects,this.RECENT_TEMPLATES);
+                        this.recentTemplateNames = recentTemplates
+                    }
+                    else {
+                        this.recentTemplateNames = [];
+                    }
                 }
 
             };

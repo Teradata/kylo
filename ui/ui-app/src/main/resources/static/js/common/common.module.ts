@@ -21,6 +21,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {LocalStorageService} from "./local-storage/local-storage.service";
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import {FlexLayoutModule} from "@angular/flex-layout";
         NotificationMenuComponent
     ],
     providers:[
+        LocalStorageService
     ],
     imports: [
         CommonModule,
