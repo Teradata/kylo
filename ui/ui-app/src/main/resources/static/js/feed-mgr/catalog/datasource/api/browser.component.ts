@@ -65,6 +65,8 @@ export class BrowserComponent implements OnInit {
     errorMsg: undefined;
     private selectionStrategy: SelectionStrategy;
 
+    parent:BrowserComponent = this;
+
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
                 private dialog: MatDialog, private loadingService: TdLoadingService) {

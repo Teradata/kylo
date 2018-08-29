@@ -27,15 +27,20 @@
         </mat-card-content>
 </mat-card>
 
-<!--
-<ng-template #fileRowTemplate let-file="file" let-columns="columns">
+
+<ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
 
         <td td-data-table-cell>
               <button mat-button>Add </button>
+          <mat-checkbox [checked]="parent.isChildSelected(file.name)"
+                        [disabled]="parent.isSelectChildDisabled(file.name)"
+                        (change)="parent.onToggleChild($event, file)"></mat-checkbox>
+          <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
+                                 [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
 
         </td>
         <td td-data-table-cell *ngFor="let column of columns"
-            [numeric]="column.numeric" [width]="column.width">
+            [numeric]="column.numeric" [width]="column.width" (click)="parent.rowClick(file)">
 
                 <div class="cell-content">
                         <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
@@ -44,4 +49,3 @@
         </td>
 </ng-template>
 
--->
