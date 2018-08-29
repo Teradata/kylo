@@ -46,6 +46,7 @@ import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
+import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
@@ -96,6 +97,15 @@ public class SparkLivyRestClient implements SparkShellRestClient {
      */
     @Nonnull
     public final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(1, TimeUnit.HOURS)
+        .maximumSize(100)
+        .build();
+
+    /**
+     * Cache of transformId => saveid
+     */
+    @Nonnull
+    public final static Cache<String, Integer> transformIdsToLivyId = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build();
@@ -276,19 +286,23 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
-        Statement statement;
         SaveResponse response;
-        try {
-            Integer stmtId = Integer.parseInt(saveId);
-            statement = livyClient.getStatement(client, process, stmtId);
-
+        Integer stmtId = transformIdsToLivyId.getIfPresent(transformId);
+        if (stmtId != null ) {
+            Statement statement = livyClient.getStatement(client, process, stmtId);
             response = LivyRestModelTransformer.toSaveResponse(statement);
-        } catch (NumberFormatException nfe) {
+            if (statement.getState() == StatementState.available) {
+                transformIdsToLivyId.invalidate(transformId);
+            }
+        } else {
             // saveId is not an integer.  We have already processed Livy Response
             String script = scriptGenerator.script("getSave", saveId);
 
-            statement = submitCode(client, script, process);
+            Statement statement = submitCode(client, script, process);
             response = LivyRestModelTransformer.toSaveResponse(statement);
+            response.setId(saveId);
+            // remember the true id.  how? a cache.. it's not gonna get communicated back to us from UI..
+            transformIdsToLivyId.put(transformId, statement.getId());
         }
 
         return logger.exit(Optional.of(response));
@@ -306,11 +320,10 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         String script = scriptGenerator.wrappedScript("submitSaveJob", "", "\n", ScalaScriptUtils.toJsonInScalaString(request), transformId);
 
         Statement statement = submitCode(client, script, process);
+        statement = getStatement(client,process,statement.getId());
+        SaveResponse saveResponse = LivyRestModelTransformer.toSaveResponse(statement);
 
-        SaveResponse saveResponse = new SaveResponse();
-        saveResponse.setId(statement.getId().toString());
-        saveResponse.setStatus(SaveResponse.Status.LIVY_PENDING);
-        saveResponse.setProgress(statement.getProgress());
+        transformIdsToLivyId.put(transformId, statement.getId());
 
         return logger.exit(saveResponse);
     }

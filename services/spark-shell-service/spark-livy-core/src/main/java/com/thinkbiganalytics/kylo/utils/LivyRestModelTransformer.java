@@ -345,7 +345,6 @@ public class LivyRestModelTransformer {
 
         if (statement.getState() != StatementState.available) {
             SaveResponse response = new SaveResponse();
-            response.setId(statement.getId().toString());
             response.setStatus(StatementStateTranslator.translateToSaveResponse(statement.getState()));
             return response;
         }
