@@ -1,5 +1,4 @@
 import {Injectable} from "@angular/core";
-import * as angular from "angular";
 import * as _ from "underscore";
 
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
@@ -112,7 +111,7 @@ export class WranglerDataService {
     getHeader(j: number): object {
 
         if (j >= 0 && this.columns_ && j < this.columns_.length) {
-            return angular.extend(this.columns_[j], {
+            return _.extend(this.columns_[j], {
                 field: (this.columns_[j] as any).name,
                 index: j,
                 sort: {

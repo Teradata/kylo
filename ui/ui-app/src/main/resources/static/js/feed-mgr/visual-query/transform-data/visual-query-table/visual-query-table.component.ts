@@ -1,21 +1,18 @@
-import {Directive, ElementRef, Injector, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
-import {MatStepper} from "@angular/material/stepper";
-import * as angular from "angular";
+import {Directive, ElementRef, Inject, Injector, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
 import "fattable";
 import * as $ from "jquery";
-import * as _ from "underscore";
-import {Observable} from "rxjs/Observable";
 import "rxjs/add/observable/fromEvent";
 import "rxjs/add/operator/debounceTime";
+import {Observable} from "rxjs/Observable";
+import * as _ from "underscore";
 
+import {CloneUtil} from "../../../../common/utils/clone-util";
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
 import {WranglerTableService} from "../services/wrangler-table.service";
 import {VisualQueryPainterService} from "./visual-query-painter.service";
 import {WranglerTableModel} from "./wrangler-table-model";
-
-// import {moduleName} from "../../module-name";
 
 export interface VisualQueryTableCell {
     column: number;
@@ -146,13 +143,9 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
 
     private tableModel: any;
 
-    private readonly uiGridConstants_: any;
-
-    constructor(private $element: ElementRef, private painter: VisualQueryPainterService, private dataService: WranglerDataService, private tableService: WranglerTableService, injector: Injector) {
+    constructor(private $element: ElementRef, private painter: VisualQueryPainterService, private dataService: WranglerDataService, private tableService: WranglerTableService, injector: Injector,
+                @Inject("uiGridConstants") private uiGridConstants_: any) {
         this.painter.delegate = this;
-
-        // Set AngularJS services
-        this.uiGridConstants_ = injector.get("uiGridConstants");
 
         // Refresh table on resize
         Observable.fromEvent(window, "resize")
@@ -188,7 +181,7 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
     }
 
     ngOnInit() {
-        this.rows = angular.copy(this.rows);
+        this.rows = (this.rows != null) ? CloneUtil.deepCopy(this.rows) : null;
         this.init(this.$element);
     }
 
@@ -268,7 +261,7 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
         var priorScrollTop: number = 0;
 
         var ourTable: any = (this.table_ as any);
-        if (!angular.isUndefined(ourTable.scroll)) {
+        if (typeof ourTable.scroll !== "undefined") {
             var ratioX = 0;
             var ratioY = 0;
 
@@ -331,7 +324,7 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
             document.createDocumentFragment().appendChild(canvas);
 
             this.canvasContext_ = canvas.getContext("2d");
-            if (angular.isString(this.options.headerFont)) {
+            if (typeof this.options.headerFont === "string") {
                 this.canvasContext_.font = this.options.headerFont;
             }
         }
@@ -363,7 +356,7 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
     private getColumnWidths(): number[] {
         var self = this;
         // Skip if no columns
-        if (!angular.isArray(this.columns) || this.columns.length === 0) {
+        if (!Array.isArray(this.columns) || this.columns.length === 0) {
             return [];
         }
 
@@ -426,18 +419,13 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
      * Sorts and applies filters to rows.
      */
     private onRowsChange() {
-        const self = this;
-
         // Add index column
         if (this.rows && this.rows.length > 0 && this.rows[0].length === this.columns.length) {
             this.rows.forEach((row, index) => row.push(index));
         }
 
         //sorts and filters are now applied server side
-
     }
-
-
 }
 
 export class ScrollPosition {

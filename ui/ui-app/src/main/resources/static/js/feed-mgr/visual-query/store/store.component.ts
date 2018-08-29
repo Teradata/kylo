@@ -2,12 +2,12 @@ import {HttpClient} from "@angular/common/http";
 import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
 import {Observable, ObservableInput} from "rxjs/Observable";
-import {switchMap} from "rxjs/operators/switchMap";
 import {debounceTime} from "rxjs/operators/debounceTime";
+import {switchMap} from "rxjs/operators/switchMap";
 import {Subscription} from "rxjs/Subscription";
 
+import {CloneUtil} from "../../../common/utils/clone-util";
 import StateService from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
@@ -320,7 +320,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 options: this.getOptions()
             };
         } else {
-            request = angular.copy(this.target);
+            request = CloneUtil.deepCopy(this.target);
             request.options = this.getOptions();
         }
 
@@ -356,7 +356,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Gets the target output options by parsing the properties object.
      */
     private getOptions(): { [k: string]: string } {
-        let options = angular.copy(this.target.options);
+        let options = CloneUtil.deepCopy(this.target.options);
         this.properties.forEach(property => options[property.systemName] = property.value);
         return options;
     }

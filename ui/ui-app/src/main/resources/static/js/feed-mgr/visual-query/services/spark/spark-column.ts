@@ -1,6 +1,5 @@
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
 import * as moment from "moment";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
@@ -143,7 +142,7 @@ export class SparkColumnDelegate extends ColumnDelegate {
     applyFilters(header: any, filters: any[], table: any) {
         //filter out any filters that dont have anything
         let validFilters = _.filter(filters, (filter) => {
-            return (angular.isDefined(filter.term) && filter.term != '')
+            return (typeof filter.term != "undefined" && filter.term != '')
         });
 
         _.each(validFilters, (filter, i) => {

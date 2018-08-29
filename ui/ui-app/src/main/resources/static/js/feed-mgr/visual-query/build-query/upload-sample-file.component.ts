@@ -1,6 +1,6 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, EventEmitter, Inject, Input, OnInit, Output, ViewChild} from "@angular/core";
-import * as angular from "angular";
+import {Component, EventEmitter, Inject, Input, OnInit, Output} from "@angular/core";
+import {FormGroup} from "@angular/forms";
 import * as _ from "underscore";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
@@ -9,8 +9,6 @@ import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {RestUrlConstants} from "../../services/RestUrlConstants";
 import {SparkConstants} from "../services/spark/spark-constants";
 import {QueryEngine, SampleFile} from "../wrangler/query-engine";
-import {FileUploadComponent} from "../../../common/file-upload/file-upload.component";
-import {FormGroup} from "@angular/forms";
 
 @Component({
     selector: 'upload-sample-file',
@@ -42,7 +40,7 @@ export class UploadSampleFileComponent implements OnInit {
     @Input()
     engine: QueryEngine<any>;
 
-    policyForm:FormGroup;
+    policyForm: FormGroup;
 
 
     uploading: boolean = false;
@@ -70,10 +68,10 @@ export class UploadSampleFileComponent implements OnInit {
     }
 
     private validate() {
-        this.isValid = !(angular.isUndefined(this.model.sampleFile) || this.model.sampleFile == null);
+        this.isValid = (this.model.sampleFile != null);
     }
 
-    uploadSampleFile(file:File) {
+    uploadSampleFile(file: File) {
         this.model.sampleFile = null;
         this.model.sampleFileChanged = true;
         this.isValid = false;
@@ -93,7 +91,7 @@ export class UploadSampleFileComponent implements OnInit {
             this.uploadBtnDisabled = false;
             let fileLocation: string = responseData.fileLocation;
             let script: string = responseData.script;
-            let schemaParser = CloneUtil.deepCopy(this.schemaParser)
+            let schemaParser = CloneUtil.deepCopy(this.schemaParser);
             let serverSampleFile = <SampleFile>{fileLocation: fileLocation, script: script, localFileName: file.name, localFileObject: file, schemaParser: schemaParser};
             this.engine.setSampleFile(serverSampleFile);
             this.isValid = true;

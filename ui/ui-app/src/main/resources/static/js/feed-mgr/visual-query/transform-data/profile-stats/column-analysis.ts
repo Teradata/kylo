@@ -1,5 +1,4 @@
 import {Component, Input, OnInit} from "@angular/core";
-import * as angular from "angular";
 import * as d3 from "d3";
 
 @Component({
@@ -59,73 +58,74 @@ export class ColumnAnalysisController implements OnInit {
     }
 
     initializeStats(): void {
-        var self = this;
-        angular.forEach(self.profile, function (value: any) {
-            if (value.columnName == self.field) {
+        if (this.profile != null) {
+            this.profile.forEach((value: any) => {
+                if (value.columnName == this.field) {
 
-                switch (value.metricType) {
-                    case 'TOP_N_VALUES':
-                        let values = value.metricValue.split("^B");
-                        angular.forEach(values, function (item: string) {
-                            if (item != '') {
-                                let e = item.split("^A");
-                                self.data.push({domain: e[1], count: parseInt(e[2])});
-                            }
-                        });
-                        break;
-                    case 'TOTAL_COUNT':
-                        self.totalCount = value.metricValue;
-                        break;
-                    case 'UNIQUE_COUNT':
-                        self.unique = value.metricValue;
-                        break;
-                    case 'EMPTY_COUNT':
-                        self.emptyCount = value.metricValue;
-                        break;
-                    case 'NULL_COUNT':
-                        self.nullCount = value.metricValue;
-                        break;
-                    case 'COLUMN_DATATYPE':
-                        self.columnDataType = value.metricValue;
-                        break;
-                    case 'MAX_LENGTH':
-                        self.maxLen = value.metricValue;
-                        break;
-                    case 'MIN_LENGTH':
-                        self.minLen = value.metricValue;
-                        break;
-                    case 'MAX':
-                        self.max = value.metricValue;
-                        break;
-                    case 'MIN':
-                        self.min = value.metricValue;
-                        break;
-                    case 'SUM':
-                        self.sum = value.metricValue;
-                        break;
-                    case 'MEAN':
-                        self.mean = value.metricValue;
-                        break;
-                    case 'STDDEV':
-                        self.stddev = value.metricValue;
-                        break;
-                    case 'VARIANCE':
-                        self.variance = value.metricValue;
-                        break;
-                    case 'HISTO':
-                        self.histo = angular.fromJson(value.metricValue);
-                        break;
-                    case 'VALID_COUNT':
-                        self.validCount = value.metricValue;
-                        self.showValid = true;
-                        break;
-                    case 'INVALID_COUNT':
-                        self.invalidCount = value.metricValue;
-                        self.showValid = true;
-                        break;
+                    switch (value.metricType) {
+                        case 'TOP_N_VALUES':
+                            let values = value.metricValue.split("^B");
+                            values.forEach((item: string) => {
+                                if (item != '') {
+                                    let e = item.split("^A");
+                                    this.data.push({domain: e[1], count: parseInt(e[2])});
+                                }
+                            });
+                            break;
+                        case 'TOTAL_COUNT':
+                            this.totalCount = value.metricValue;
+                            break;
+                        case 'UNIQUE_COUNT':
+                            this.unique = value.metricValue;
+                            break;
+                        case 'EMPTY_COUNT':
+                            this.emptyCount = value.metricValue;
+                            break;
+                        case 'NULL_COUNT':
+                            this.nullCount = value.metricValue;
+                            break;
+                        case 'COLUMN_DATATYPE':
+                            this.columnDataType = value.metricValue;
+                            break;
+                        case 'MAX_LENGTH':
+                            this.maxLen = value.metricValue;
+                            break;
+                        case 'MIN_LENGTH':
+                            this.minLen = value.metricValue;
+                            break;
+                        case 'MAX':
+                            this.max = value.metricValue;
+                            break;
+                        case 'MIN':
+                            this.min = value.metricValue;
+                            break;
+                        case 'SUM':
+                            this.sum = value.metricValue;
+                            break;
+                        case 'MEAN':
+                            this.mean = value.metricValue;
+                            break;
+                        case 'STDDEV':
+                            this.stddev = value.metricValue;
+                            break;
+                        case 'VARIANCE':
+                            this.variance = value.metricValue;
+                            break;
+                        case 'HISTO':
+                            this.histo = JSON.parse(value.metricValue);
+                            break;
+                        case 'VALID_COUNT':
+                            this.validCount = value.metricValue;
+                            this.showValid = true;
+                            break;
+                        case 'INVALID_COUNT':
+                            this.invalidCount = value.metricValue;
+                            this.showValid = true;
+                            break;
+                    }
                 }
-            }
-        });
+            });
+        }
         if (this.unique != null) {
             this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount))
         }

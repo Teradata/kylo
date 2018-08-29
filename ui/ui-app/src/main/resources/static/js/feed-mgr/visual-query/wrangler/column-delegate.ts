@@ -1,5 +1,4 @@
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
 import * as _ from "underscore";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
@@ -130,8 +129,6 @@ export class MenuItems {
  */
 export class ColumnDelegate implements IColumnDelegate {
 
-    private readonly $mdDialog: angular.material.IDialogService;
-
     /**
      * The category for the data in the column.
      */
@@ -151,7 +148,6 @@ export class ColumnDelegate implements IColumnDelegate {
      * Constructs a column delegate.
      */
     constructor(public dataType: string, public controller: ColumnController, protected tdDialog: TdDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
-        this.$mdDialog = angular.element(document.body).injector().get("$mdDialog");
         this.dataCategory = ColumnUtil.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);

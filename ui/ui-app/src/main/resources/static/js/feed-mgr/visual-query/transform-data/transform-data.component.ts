@@ -1,12 +1,12 @@
 import {AfterViewInit, Component, ElementRef, Inject, Input, OnChanges, OnInit, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
 import {CodemirrorComponent} from "ng2-codemirror";
 import {Subject} from "rxjs/Subject";
 import * as _ from "underscore";
 
 import StepperService from '../../../common/stepper/StepperService';
+import {CloneUtil} from "../../../common/utils/clone-util";
 import BroadcastService from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
@@ -266,10 +266,10 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Select source model
         let useSqlModel = false;
-        if (angular.isObject(this.sqlModel)) {
+        if (this.sqlModel !== null && typeof this.sqlModel === "object") {
             // Check for non-Hive datasource
-            if (angular.isArray(this.model.datasourceIds) && this.model.datasourceIds.length > 0) {
-                useSqlModel = (this.model.datasourceIds.length > 1 || (angular.isDefined(this.model.datasourceIds[0]) && this.model.datasourceIds[0] !== "HIVE"));  // TODO remove "HIVE"
+            if (Array.isArray(this.model.datasourceIds) && this.model.datasourceIds.length > 0) {
+                useSqlModel = (this.model.datasourceIds.length > 1 || (typeof this.model.datasourceIds[0] !== "undefined" && this.model.datasourceIds[0] !== "HIVE"));  // TODO remove "HIVE"
             }
             if (!useSqlModel) {
                 useSqlModel = _.chain(this.sqlModel.nodes)
@@ -299,7 +299,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 this.engine.setDatasets(this.model.datasets)
             }
 
-            if (angular.isArray(this.model.states) && this.model.states.length > 0) {
+            if (Array.isArray(this.model.states) && this.model.states.length > 0) {
                 this.engine.setQuery(source, this.model.$datasources);
                 this.engine.setState(this.model.states);
                 this.functionHistory = this.engine.getHistory();
@@ -439,7 +439,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Displays the column statistics dialog.
      */
     showProfileDialog() {
-        this.$mdDialog.open(VisualQueryProfileStatsController, {data: angular.copy(this.engine.getProfile()), panelClass: "full-screen-dialog"});
+        this.$mdDialog.open(VisualQueryProfileStatsController, {data: CloneUtil.deepCopy(this.engine.getProfile()), panelClass: "full-screen-dialog"});
     };
 
     //Callback when Codemirror has been loaded (reference is in the html page at:
@@ -718,24 +718,27 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let fieldPolicies = this.engine.getFieldPolicies();
         let profile = this.engine.getProfile();
 
-        angular.forEach(this.engine.getColumns(), (col, index) => {
-            const delegate = this.engine.createColumnDelegate(col.dataType, this, col);
-            const fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
-            const longestValue = _.find(profile, (row: any) => {
-                return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
-            });
+        const engineColumns = this.engine.getColumns();
+        if (engineColumns != null) {
+            engineColumns.forEach((col, index) => {
+                const delegate = this.engine.createColumnDelegate(col.dataType, this, col);
+                const fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
+                const longestValue = _.find(profile, (row: any) => {
+                    return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
+                });
 
-            columns.push({
-                dataType: col.dataType,
-                delegate: delegate,
-                displayName: col.displayName,
-                domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
-                filters: delegate.filters,
-                headerTooltip: col.hiveColumnLabel,
-                longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
-                name: this.engine.getColumnName(col)
+                columns.push({
+                    dataType: col.dataType,
+                    delegate: delegate,
+                    displayName: col.displayName,
+                    domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
+                    filters: delegate.filters,
+                    headerTooltip: col.hiveColumnLabel,
+                    longestValue: (typeof longestValue !== "undefined" && longestValue !== null) ? longestValue.metricValue : null,
+                    name: this.engine.getColumnName(col)
+                });
             });
-        });
+        }
 
         //update the ag-grid
         this.updateTableState();
@@ -781,7 +784,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     addColumnSort(direction: string, column: any, query?: boolean): Promise<any> {
         let formula;
 
-        let directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
+        let directionLower = (typeof direction !== "undefined") ? direction.toLowerCase() : '';
         let icon = ''
         if (directionLower == 'asc') {
             formula = "sort(asc(\"" + column.headerTooltip + "\"))";
@@ -844,7 +847,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         // Add formula
         let name = "Find " + column.displayName + " " + verb + " " + filter.term;
 
-        if (angular.isUndefined(query)) {
+        if (typeof query === "undefined") {
             query = false;
         }
 

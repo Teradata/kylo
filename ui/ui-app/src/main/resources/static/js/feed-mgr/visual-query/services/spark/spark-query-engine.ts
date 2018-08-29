@@ -1,7 +1,6 @@
 import {HttpClient} from "@angular/common/http";
 import {Inject, Injectable, Injector} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
 import {Program} from "estree";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/fromPromise";
@@ -43,8 +42,6 @@ import {SparkScriptBuilder} from "./spark-script-builder";
 @Injectable()
 export class SparkQueryEngine extends QueryEngine<string> {
 
-    private static ANGULAR1_INJECTOR: angular.auto.IInjectorService = angular.element(document.body).injector();
-
     private readonly VALID_NAME_PATTERN = /[^a-zA-Z0-9\s_]|\s/g;
 
     /**
@@ -56,8 +53,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * Constructs a {@code SparkQueryEngine}.
      */
     constructor(private $http: HttpClient, dialog: TdDialogService, @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, @Inject("HiveService") private HiveService: HiveService,
-                @Inject("RestUrlService") private RestUrlService: RestUrlService, @Inject("VisualQueryService") private VisualQueryService: VisualQueryService, private $$angularInjector?: Injector) {
-        super(dialog, SparkQueryEngine.ANGULAR1_INJECTOR.get("DatasourcesService"), SparkQueryEngine.ANGULAR1_INJECTOR.get("uiGridConstants"), $$angularInjector);
+                @Inject("RestUrlService") private RestUrlService: RestUrlService, @Inject("VisualQueryService") private VisualQueryService: VisualQueryService, private $$angularInjector: Injector,
+                @Inject("DatasourcesService") datasourcesService: any, @Inject("uiGridConstants") uiGridConstants: any) {
+        super(dialog, datasourcesService, uiGridConstants, $$angularInjector);
 
         // Ensure Kylo Spark Shell is running
         this.apiUrl = this.RestUrlService.SPARK_SHELL_SERVICE_URL;
@@ -151,7 +149,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             } else {
                 dataType = col.dataType;
             }
-            const name = angular.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
+            const name = (typeof col.displayName != "undefined") ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
 
             const colDef = {name: name, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
             if (dataType === 'decimal') {
@@ -439,11 +437,11 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 return (column.hiveColumnLabel === "processing_dttm");
             });
 
-            if (angular.isDefined(invalid)) {
+            if (typeof invalid != "undefined") {
                 state.rows = [];
                 state.columns = [];
                 deferred.error("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
-            } else if (angular.isDefined(reserved)) {
+            } else if (typeof reserved != "undefined") {
                 state.rows = [];
                 state.columns = [];
                 deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
@@ -472,7 +470,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Respond with error message
             let message;
 
-            if (angular.isString(response.message)) {
+            if (typeof response.message == "string") {
                 message = self.decodeError(response.message);
                 message = (message.length <= 1024) ? message : message.substr(0, 1021) + "...";
             } else {
@@ -517,7 +515,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             });
 
             state.fieldPolicies = state.columns.map(column => {
-                const name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                const name = (typeof column.displayName != "undefined") ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
                 if (policyMap[name]) {
                     return policyMap[name];
                 } else {
