@@ -1,8 +1,8 @@
 <mat-toolbar>
   <div>{{feed.feedName}} {{step.name}}</div>
   <span fxFlex="100"></span>
-  <button mat-icon-button (click)="onCancelEdit()" *ngIf="!feed.readonly">Cancel</button>
-  <button mat-icon-button (click)="onSave()" *ngIf="!feed.readonly"><mat-icon>save</mat-icon></button>
+  <button mat-button (click)="onCancelEdit()" *ngIf="!feed.readonly">Cancel</button>
+  <button mat-button color="primary"(click)="onSave()" *ngIf="!feed.readonly">Save</button>
 </mat-toolbar>
 
 <div fxLayout="row">

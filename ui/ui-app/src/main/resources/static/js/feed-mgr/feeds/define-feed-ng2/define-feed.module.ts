@@ -68,6 +68,7 @@ import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.comp
 import {SystemFeedNameComponent} from "./shared/system-feed-name.component";
 import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.component";
 import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
+import {DefineFeedStepCardComponent} from "./steps/define-feed-step-card/define-feed-step-card.component";
 
 
 @NgModule({
@@ -76,6 +77,7 @@ import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
         DefineFeedSelectTemplateComponent,
         DefineFeedSummaryComponent,
         DefineFeedContainerComponent,
+        DefineFeedStepCardComponent,
         DefineFeedStepGeneralInfoComponent,
         DefineFeedStepSourceSampleComponent,
         DefineFeedStepSourceSampleDatasourceComponent,
