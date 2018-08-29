@@ -274,7 +274,7 @@ export class VisualQueryPainterService extends fattable.Painter {
                 .data("realValue", cell.value);
         }
 
-        $(cellDiv).html(cellDiv.textContent.replace(/\s/g,"<span class='ws-text'>·</span>"))
+        cellDiv.innerHTML = cellDiv.innerHTML.replace(/\s/g,"<span class='ws-text'>·</span>");
     }
 
     /**
