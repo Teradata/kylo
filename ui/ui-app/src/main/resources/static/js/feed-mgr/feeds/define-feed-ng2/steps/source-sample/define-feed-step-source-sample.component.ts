@@ -34,6 +34,9 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
     public paths:string[] = [];
 
+
+    feedDefintionDatasourceState:string = FEED_DEFINITION_SECTION_STATE_NAME+".datasource"
+
     /**
      * Flag that is toggled when a user is looking at a feed with a source already defined and they choose to browse the catalog to change the source
      * this will render the catalog selection/browse dialog

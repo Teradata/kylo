@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, Input, Output, OnInit, EventEmitter} from "@angular/core";
+import {Component, Input, Output, OnInit, EventEmitter, TemplateRef, ContentChild} from "@angular/core";
 import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
 import {StateService} from "@uirouter/angular";
@@ -13,6 +13,7 @@ import {BrowserColumn} from '../../api/models/browser-column';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
+import {NgForOfContext} from "@angular/common";
 
 @Component({
     selector: "remote-files",
@@ -29,6 +30,12 @@ export class BrowserComponent implements OnInit {
 
     @Input()
     params: any;
+
+    @Input()
+    fileRowTemplate:TemplateRef<any>;
+
+    @ContentChild(TemplateRef)
+    defaultFileRowTemplate:TemplateRef<any>;
 
     /**
      * Use ui-router state to track navigation between paths and folders
@@ -78,6 +85,9 @@ export class BrowserComponent implements OnInit {
         if(this.params == undefined){
             //attempt to get it from the selection service
             this.params = this.selectionService.getLastPath(this.datasource.id);
+        }
+        if(this.fileRowTemplate == undefined){
+            this.fileRowTemplate = this.defaultFileRowTemplate;
         }
         this.initNodes();
         this.init();

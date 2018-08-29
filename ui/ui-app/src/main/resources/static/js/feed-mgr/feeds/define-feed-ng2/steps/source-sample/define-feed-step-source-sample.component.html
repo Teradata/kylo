@@ -13,7 +13,7 @@
     </div>
 
     <div *ngIf="showCatalog">
-     <catalog-datasources [datasources]="datasources" selectedDatasourceState="feed-definition.feed-step.datasource" [stateParams]="stateParams" *ngIf="!feed.readonly"></catalog-datasources>
+     <catalog-datasources [datasources]="datasources" [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" *ngIf="!feed.readonly"></catalog-datasources>
     </div>
 
     <div *ngIf="showCatalog && feed.readonly" fxLayout="column" >

@@ -6,7 +6,11 @@
                                 <mat-step *ngIf="tab.sref == '.browse'">
                                         <form  fxFlex="1 1 auto" fxLayout="column">
                                                 <ng-template matStepLabel>{{tab.label}}</ng-template>
-                                                <remote-files *ngIf="selectedTab && selectedTab.sref =='.browse'" [datasource]="datasource" [useRouterStates]="false" [params]="params"     ></remote-files>
+                                                <remote-files [fileRowTemplate]="fileRowTemplate" *ngIf="selectedTab && selectedTab.sref =='.browse'" [datasource]="datasource" [useRouterStates]="false" [params]="params"     >
+
+
+
+                                                </remote-files>
                                         </form>
                                 </mat-step>
 
@@ -23,4 +27,21 @@
         </mat-card-content>
 </mat-card>
 
+<!--
+<ng-template #fileRowTemplate let-file="file" let-columns="columns">
 
+        <td td-data-table-cell>
+              <button mat-button>Add </button>
+
+        </td>
+        <td td-data-table-cell *ngFor="let column of columns"
+            [numeric]="column.numeric" [width]="column.width">
+
+                <div class="cell-content">
+                        <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
+                        <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
+                </div>
+        </td>
+</ng-template>
+
+-->
