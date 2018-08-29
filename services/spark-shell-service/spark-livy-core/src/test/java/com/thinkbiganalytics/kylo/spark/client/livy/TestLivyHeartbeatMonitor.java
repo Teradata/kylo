@@ -68,9 +68,8 @@ import io.reactivex.disposables.Disposable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestLivyHeartbeatMonitor.Config.class/*, SparkLivyConfig.class*/},
+@ContextConfiguration(classes = {TestLivyHeartbeatMonitor.Config.class},
                       loader = AnnotationConfigContextLoader.class)
 @TestPropertySource
 @ActiveProfiles("kylo-livy")
@@ -148,10 +147,10 @@ public class TestLivyHeartbeatMonitor {
     }
 
     /**
-     * This test assumes: 1) you have configured a Livy Server and it is running at 8998
+     * Tests the heartbeat thread will produce the expected outcomes at the expected intervals
      */
     @Test
-    @Ignore
+    @Ignore("ignored due to a time component of the tests, slower systems may fail")
     public void testHearbeat() throws InterruptedException {
         LivyHeartbeatMonitor livyHeartbeatMonitor = livyHeartbeatMonitor();
 
@@ -236,7 +235,6 @@ public class TestLivyHeartbeatMonitor {
 
         @Bean
         public Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache() {
-            // cache is emptied by heartbeat service.
             Cache<SparkShellProcess, Integer> cache = CacheBuilder.newBuilder()
                 .build();
             return cache.asMap();

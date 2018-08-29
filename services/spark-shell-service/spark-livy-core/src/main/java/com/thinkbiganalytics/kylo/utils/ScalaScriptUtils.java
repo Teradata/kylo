@@ -20,7 +20,18 @@ package com.thinkbiganalytics.kylo.utils;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
+
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+
 public class ScalaScriptUtils {
+    private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyRestClient.class);
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private ScalaScriptUtils() {
         throw new UnsupportedOperationException();
     }
@@ -36,6 +47,23 @@ public class ScalaScriptUtils {
         } else {
             return "\"\"\"" + String.valueOf(obj) + "\"\"\"";
         }
+    }
+
+    /**
+     * Serializes the given object to JSON and encloses the result in triple quotes so it can be placed directly into a scala script.
+     *
+     * @param objToSerialize
+     * @return
+     */
+    public static String toJsonInScalaString(Object objToSerialize) {
+        String objAsJson = "{}";
+        try {
+            objAsJson = mapper.writeValueAsString(objToSerialize);
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to serialize '{}' to string: {}", objToSerialize.getClass(), objToSerialize);
+        }
+
+        return ScalaScriptUtils.scalaStr(objAsJson);
     }
 }
 
