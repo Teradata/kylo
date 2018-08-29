@@ -2,13 +2,17 @@
   width: 1em;
   height: 1em;
 }
-          .icon-component {
-            font-size: 7rem;
-          }
+.icon-component {
+  font-size: 7rem;
+}
 
 .import-feed-text * {
   padding-right:3px;
 }
 .import-button{
   float:right;
+}
+
+mat-grid-tile {
+  cursor:pointer;
 }

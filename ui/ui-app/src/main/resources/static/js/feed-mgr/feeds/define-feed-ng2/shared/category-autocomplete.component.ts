@@ -7,6 +7,7 @@ import CategoriesService from "../../../services/CategoriesService";
 
 @Component({
     selector:"category-autocomplete",
+    styleUrls:["js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.css"],
     templateUrl:"js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.html"
 })
 export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
