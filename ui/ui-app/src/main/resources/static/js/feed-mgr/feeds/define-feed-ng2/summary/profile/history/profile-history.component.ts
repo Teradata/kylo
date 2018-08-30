@@ -25,7 +25,6 @@ export class ProfileHistoryComponent implements OnInit {
     private showNoResults: boolean = false;
 
     constructor(private $$angularInjector: Injector, private http: HttpClient, private state: StateService) {
-        console.log('constructor');
         this.hiveService = $$angularInjector.get("HiveService");
         this.utils = $$angularInjector.get("Utils");
         this.restUrlService = $$angularInjector.get("RestUrlService");
@@ -33,16 +32,12 @@ export class ProfileHistoryComponent implements OnInit {
 
 
     public ngOnInit(): void {
-        console.log('ngOnInit');
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        console.log('feedId = ' + this.feedId);
         this.processingdttm = this.stateParams ? this.stateParams.processingdttm : undefined;
-        console.log('processingdttm = ' + this.processingdttm);
         this.getProfileHistory();
     }
 
     private getProfileHistory() {
-        console.log('getProfileHistory');
         this.loading = true;
         this.showNoResults = false;
         const successFn = (response: any) => {
@@ -126,9 +121,6 @@ export class ProfileHistoryComponent implements OnInit {
     };
 
     goToResults(row: any, type: string) {
-        const dttm = row['PROCESSING_DTTM'];
-        const dt = row['DATE_TIME'];
-        console.log('goToResults dttm, dt', dttm, dt);
         this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".profile.results", {processingdttm: row['PROCESSING_DTTM'], t: type});
     }
 
