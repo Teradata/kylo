@@ -258,7 +258,7 @@
     "views.feed-stats-charts.Time": "Time",
     "views.feed-stats.module.FS": "Feed Stats",
 
-    "views.profile-history.Npdftf": "No profile data for this feed.",
+    "views.profile-history.NoProfileData": "No profile data for this feed.",
 
     "views.feed-activity-template.JA": "Job Activity",
     "views.feed-activity-template.3D": "3 Days",
@@ -411,11 +411,11 @@
     "views.service-level-agreement-form.Cancel": "Cancel",
     "views.service-level-agreement-form.SSLA": "Save SLA",
 
-    "views.profile-history.Rows": "Rows",
-    "views.profile-history.Valid": "Valid",
-    "views.profile-history.Invalid": "Invalid",
-    "views.profile-history.PD": "Processing Date",
-    "views.profile-history.DP": "Dates Processed",
+    "views.profile-history.Rows": "# Rows",
+    "views.profile-history.Valid": "# Valid",
+    "views.profile-history.Invalid": "# Invalid",
+    "views.profile-history.ProcessingDate": "Processing Date",
+    "views.profile-history.Dates Processed": "Dates Processed",
     "views.profile-history.View": "View",
 
     "views.category-details.CD": "Category Details",

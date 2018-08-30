@@ -55,7 +55,7 @@
                                          {{row.DATE_TIME | moment}}
                                    </span>
                                    <span class="column-title column-title-bottom">
-                                   {{"views.profile-history.PD" | translate}}
+                                   {{"views.profile-history.ProcessingDate" | translate}}
                                    </span>
 
                 </div>
@@ -65,7 +65,7 @@
                         {{row.MIN_TIMESTAMP}} to {{row.MAX_TIMESTAMP}}
                     </span>
                                      <span class="column-title column-title-bottom">
-                                    {{"views.profile-history.DP" | translate}}
+                                    {{"views.profile-history.Dates Processed" | translate}}
                                    </span>
                 </div>
                 <div class="item-column md-list-item-text ">
@@ -79,7 +79,7 @@
         </md-list>
     </div>
   <div ng-if="vm.showNoResults" class="layout-padding-left-right layout-padding-top-bottom">
-    {{"views.profile-history.Npdftf" | translate}}
+    {{"views.profile-history.NoProfileData" | translate}}
   </div>
 
 

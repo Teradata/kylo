@@ -1,0 +1,50 @@
+<div *ngIf="showSummary">
+  <!--<md-progress-linear md-mode="indeterminate" *ngIf="loading == true"></md-progress-linear>-->
+  <mat-nav-list role="list">
+    <div *ngFor="let row of profileSummary; last as isLast;">
+      <a mat-list-item (click)="viewProfileResults(row)">
+        <div fxLayout="row" fxLayoutAlign="space-around center">
+
+          <div flex="15" class="item-column">
+            <div class="item-title" title="{{row.TOTAL_COUNT}}">
+              {{row.TOTAL_COUNT}}
+            </div>
+            <div class="column-title column-title-bottom" translate>views.profile-history.Rows</div>
+          </div>
+
+          <div flex="15" class="item-column">
+            <a (click)="onValidCountClick(row)" class="item-title primary-color-1" title="{{row.VALID_COUNT}}">
+              {{row.VALID_COUNT}}
+            </a>
+            <div class="column-title column-title-bottom" translate>views.profile-history.Valid</div>
+          </div>
+
+          <div flex="15" class="item-column">
+            <div (click)="onInvalidCountClick(row)" class="item-title primary-color-1" title="{{row.INVALID_COUNT}}">
+              {{row.INVALID_COUNT}}
+            </div>
+            <div class="column-title column-title-bottom" translate>views.profile-history.Invalid</div>
+          </div>
+
+          <div flex="20" class="item-column">
+            <div class="item-title" title="{{row.DATE_TIME}}">
+              {{row.DATE_TIME | timeAgo:reference}}
+            </div>
+            <div class="column-title column-title-bottom" translate>views.profile-history.ProcessingDate</div>
+          </div>
+
+          <div flex="30" class="item-column" *ngIf="row.MIN_TIMESTAMP">
+            <div class="item-title" title="{{row.MIN_TIMESTAMP}} - {{row.MAX_TIMESTAMP}}">
+              {{row.MIN_TIMESTAMP}} to {{row.MAX_TIMESTAMP}}
+            </div>
+            <div class="column-title column-title-bottom" translate>views.profile-history.Dates Processed</div>
+          </div>
+
+        </div>
+      </a>
+
+      <mat-divider *ngIf="!isLast"></mat-divider>
+    </div>
+  </mat-nav-list>
+</div>
+<div *ngIf="showNoResults" class="layout-padding-left-right layout-padding-top-bottom" translate>views.profile-history.NoProfileData</div>

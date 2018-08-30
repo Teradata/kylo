@@ -13,11 +13,11 @@ export class ProfileComponent extends AbstractLoadFeedComponent implements OnIni
 
     static LOADER = "ProfileComponent.LOADER";
 
-    @Input() stateParams:any;
+    @Input() stateParams: any;
 
-
-    constructor(feedLoadingService: FeedLoadingService, stateService: StateService,  defineFeedService:DefineFeedService) {
-        super(feedLoadingService, stateService,defineFeedService);
+    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService) {
+        super(feedLoadingService, stateService, defineFeedService);
+        console.log('constructor');
     }
 
     ngOnInit() {

@@ -1,0 +1,145 @@
+<div fxLayout="row" layout-xs="column">
+  <div fxFlex="15" flex-xs="100">
+    <mat-checkbox aria-label="Profiled" [(ngModel)]="showOnlyProfiled"><span class="hint">Show Only Profiled</span></mat-checkbox>
+
+    <mat-nav-list>
+      <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="sorted">
+        <ng-template let-row="row" let-last="last" tdVirtualScrollRow>
+          <div *ngIf="hasProfile(row)">
+            <a mat-list-item (click)="selectRowAndUpdateCharts($event, row)">
+              <div>
+                {{row[columns.columnName]}}
+                <span flex> </span>
+                <mat-icon *ngIf="isProfiled(row)" size="10px" class="profile column icon">insert_chart</mat-icon>
+              </div>
+            </a>
+            <mat-divider *ngIf="!$last"></mat-divider>
+          </div>
+        </ng-template>
+        <a mat-list-item *ngIf="data.length == 0">No results found</a>
+      </td-virtual-scroll-container>
+    </mat-nav-list>
+  </div>
+  <div fxFlex="85" flex-xs="100">
+    <div fxLayout="column">
+
+      <div *ngIf="selectedRow.columnName == '(ALL)'" fxLayout="row" fxFlex="100">
+        <div fxLayout="column" fxFlex="33">
+          <div fxFlex="100">
+            <div>Summary</div>
+            <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedRow.columnName != '(ALL)'" fxLayout="row" layout-xs="column" fxFlex="100">
+        <div fxLayout="column" fxFlex="33" flex-xs="100">
+          <div fxFlex="100">
+            <div>Summary</div>
+            <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
+          </div>
+        </div>
+        <div fxLayout="column" fxFlex="33" flex-xs="100">
+          <div>Relative Statistics</div>
+          <div>
+            <nvd3 flex [options]="percOptions" [data]="percData"></nvd3>
+          </div>
+        </div>
+
+        <div fxLayout="column" fxFlex="33" flex-xs="100" class="top-value">
+
+          <!-- Top Values -->
+          <div>Top Values</div>
+          <mat-list>
+            <mat-list-item>
+              <div fxFlex="90" fxLayout="row">
+                <div fxFlex="90" class="item-column md-list-item-text">
+                  <span class="hint">Value</span>
+                </div>
+                <div fxFlex="10" class="item-column md-list-item-text">
+                  <span class="hint">Count</span>
+                </div>
+              </div>
+              <mat-divider></mat-divider>
+            </mat-list-item>
+            <!--<mat-list-item class="md-secondary" dir-paginate="row in topvalues | itemsPerPage: 10" pagination-id="profile_stats_1">-->
+            <mat-list-item class="md-secondary" *ngFor="let row of topvalues; last as isLast;">
+              <div fxFlex="90" fxLayout="row">
+                <div fxFlex="90" class="item-column md-list-item-text">
+                  <span class="">{{row['value']}}</span>
+
+                </div>
+                <div fxFlex="10" class="item-column md-list-item-text">
+                  <span class="">{{row['count']}}</span>
+                </div>
+              </div>
+              <mat-divider *ngIf="!isLast"></mat-divider>
+            </mat-list-item>
+            <mat-list-item *ngIf="topvalues && topvalues.length == 0">No results found</mat-list-item>
+          </mat-list>
+
+          <!-- Numeric stats -->
+          <div *ngIf="selectedRow.profile == 'Numeric'" fxLayout="column" fxFlex="100" class="numeric-stats2">
+            <div class="md-subhead">Numeric Stats</div>
+            <mat-list class="list-item-table">
+              <!--<mat-list-item class="md-secondary" dir-paginate="row in numericvalues | itemsPerPage: 6" pagination-id="profile_stats_3">-->
+              <mat-list-item class="md-secondary" *ngFor="let row of numericvalues; last as isLast;">
+                <div fxLayout="row" fxFlex="90">
+                  <div fxFlex="30" class="item-column md-list-item-text">
+                    <span class="hint">{{row['name']}}</span>
+                  </div>
+                  <div fxFlex="70" class="item-column md-list-item-text">
+                    <span class="" title="{{row['value']}}">{{row['value']}}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!isLast"></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngIf="numericvalues.length == 0">No results found</mat-list-item>
+            </mat-list>
+          </div>
+
+          <!-- String stats -->
+          <div *ngIf="selectedRow.profile == 'String'" fxLayout="column" fxFlex="100" class="string-stats2">
+            <div class="md-subhead">String Stats</div>
+            <mat-list class="list-item-table">
+              <!--<mat-list-item class="md-secondary" dir-paginate="row in stringvalues | itemsPerPage: 6" pagination-id="profile_stats_3">-->
+              <mat-list-item class="md-secondary" *ngFor="let row of stringvalues; last as isLast;">
+                <div fxLayout="row" fxFlex="90">
+                  <div fxFlex="30" class="item-column md-list-item-text">
+                    <span class="hint">{{row['name']}}</span>
+                  </div>
+                  <div fxFlex="70" class="item-column md-list-item-text">
+                    <!--<span class="" title="{{row['value']}}">{{row['value'] | characters:50}}</span>-->
+                    <span class="" title="{{row['value']}}">{{row['value']}}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!$last"></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngIf="stringvalues.length == 0">No results found</mat-list-item>
+            </mat-list>
+
+            <!-- Numeric stats -->
+            <div *ngIf="selectedRow.profile == 'Time'" fxLayout="column" fxFlex="100" class="time-stats2">
+              <div class="md-subhead">Time Stats</div>
+              <mat-list class="list-item-table">
+                <!--<mat-list-item class="md-secondary" dir-paginate="row in timevalues | itemsPerPage: 2" pagination-id="profile_stats_2">-->
+                <mat-list-item class="md-secondary" *ngFor="let row of timevalues; last as isLast;">
+                  <div fxLayout="row" fxFlex="100">
+                    <div fxFlex="40" class="item-column md-list-item-text">
+                      <span class="hint">{{row['name']}}</span>
+                    </div>
+                    <div fxFlex="60" class="item-column md-list-item-text">
+                      <span class="">{{row['value']}}</span>
+                    </div>
+                  </div>
+                  <mat-divider *ngIf="!isLast"></mat-divider>
+                </mat-list-item>
+                <mat-list-item *ngIf="timevalues.length == 0">No results found</mat-list-item>
+              </mat-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

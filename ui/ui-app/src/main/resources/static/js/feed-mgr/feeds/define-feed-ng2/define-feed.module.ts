@@ -22,7 +22,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedSummaryComponent} from "./summary/define-feed-summary.component";
@@ -54,14 +54,17 @@ import {PropertyListModule} from "../../shared/property-list/property-list.modul
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {TranslateModule} from "@ngx-translate/core";
-//import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 import {OverviewComponent} from './summary/overview/overview.component';
 import {ProfileComponent} from './summary/profile/profile.component';
+import {CovalentCommonModule} from '@covalent/core/common';
+import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
+import {ProfileStatsComponent} from './summary/profile/container/stats/profile-stats.component';
 import {FeedSourceSampleChange} from "./services/feed-source-sample-change-listener";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
+import {NvD3Module} from 'ng2-nvd3';
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatGridListModule} from "@angular/material/grid-list";
 import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.component";
@@ -70,10 +73,13 @@ import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.componen
 import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
 import {DefineFeedStepCardComponent} from "./steps/define-feed-step-card/define-feed-step-card.component";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
+import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 
 
 @NgModule({
     declarations: [
+        ProfileContainerComponent,
+        ProfileHistoryComponent,
         DefineFeedComponent,
         DefineFeedSelectTemplateComponent,
         DefineFeedSummaryComponent,
@@ -89,6 +95,7 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
         DefineFeedTableComponent,
         OverviewComponent,
         ProfileComponent,
+        ProfileStatsComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe,
         FeedLineageComponment,
@@ -98,16 +105,17 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
         FeedSideNavComponent
     ],
     entryComponents:[
-        NewFeedDialogComponent
+        NewFeedDialogComponent,
     ],
     providers:[
       DefineFeedService,
       FeedLoadingService,
-        FeedSourceSampleChange,
+      FeedSourceSampleChange,
       FilterPartitionFormulaPipe
     ],
     imports: [
         CommonModule,
+        CovalentCommonModule,
         CovalentChipsModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
@@ -152,6 +160,7 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
         PropertyListModule,
         TranslateModule,
         VisualQueryModule,
+        NvD3Module,
         MatStepperModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]

@@ -3,8 +3,6 @@ import {catchError} from "rxjs/operators/catchError";
 import {finalize} from "rxjs/operators/finalize";
 
 import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
-import {FormBuilder} from "@angular/forms";
-import {DefineFeedSummaryComponent} from "./summary/define-feed-summary.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-sample/define-feed-step-source-sample-datasource.component";
 import {DefineFeedComponent} from "./define-feed.component";
@@ -14,15 +12,14 @@ import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {DefineFeedService} from "./services/define-feed.service";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
-import {ConnectorsComponent} from "../../catalog/connectors/connectors.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
-import {Observable} from "rxjs/Observable";
-import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {ProfileComponent} from './summary/profile/profile.component';
 import {OverviewComponent} from './summary/overview/overview.component';
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
-
+import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
+import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 
 
 const resolveFeed :any =
@@ -190,6 +187,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".profile",
         url: "/:feedId/profile",
+        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".profile.history",
         component: ProfileComponent,
         resolve: [
             {
@@ -197,6 +195,30 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: (state: StateService) => state.transition.params()
             }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile.history",
+        url: "/history",
+        component: ProfileHistoryComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile.results",
+        url: "/:processingdttm?t=:type",
+        component: ProfileContainerComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
         ]
     },
     {
