@@ -53,6 +53,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES;
+
 /**
  * Uitlity to extract properties and property info from NiFi
  */
@@ -422,7 +424,7 @@ public class NifiPropertyUtil {
 
     public static class NiFiPropertyUpdater {
 
-        private static void updateCore(NifiProperty propertyToUpdate, NifiProperty property) {
+        protected static void updateCore(NifiProperty propertyToUpdate, NifiProperty property, PropertyUpdateMode propertyUpdateMode) {
 
             //Identify property values changes between older/newer NiFi templates and value available in Kylo template
             NiFiPropertyRegistrationChangeInfo registrationChangeInfo = new NiFiPropertyRegistrationChangeInfo();
@@ -432,23 +434,29 @@ public class NifiPropertyUtil {
             registrationChangeInfo.setValueRegisteredInKyloTemplateFromOlderNiFiTemplate(property.getValue());
 
 
-            if ((propertyToUpdate.getValue()!=null) && (property.getValue()!=null)) {
-                if ((!propertyToUpdate.getValue().equals(property.getValue())) && (property.getValue().equals(property.getTemplateValue()))) {
-                    log.debug("Registration change info case 1: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
-                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
-                                       + " and Kylo also kept the same value of " + property.getValue() + " while registering the template. "
-                                       + "(Action taken: Kylo will accept NiFi's new property value.)");
-                } else if ((!propertyToUpdate.getValue().equals(property.getValue())) && (!property.getValue().equals(property.getTemplateValue()))) {
-                    log.debug("Registration change info case 2: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
-                                       + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
-                                       + " that was overridden to " + property.getKey() + "=" + property.getValue() + " while registering template in Kylo. "
-                                       + "(Action taken: Kylo will ignore NiFi's new property value.)");
-                    propertyToUpdate.setValue(property.getValue());
-                } else {
-                    log.debug("Registration change info case 3: Default");
-                }
+            if ((propertyUpdateMode!=null) && (propertyUpdateMode == PropertyUpdateMode.UPDATE_ALL_PROPERTIES)) {
+                log.debug("Mode: update_all_properties");
+                propertyToUpdate.setValue(property.getValue());
             } else {
-                log.debug("Registration change info case 4: Default (values are null case)");
+                log.debug("Mode: do_not_update_all_properties");
+                if ((propertyToUpdate.getValue()!=null) && (property.getValue()!=null)) {
+                    if ((!propertyToUpdate.getValue().equals(property.getValue())) && (property.getValue().equals(property.getTemplateValue()))) {
+                        log.debug("Registration change info case 1: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                           + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                           + " and Kylo also kept the same value of " + property.getValue() + " while registering the template. "
+                                           + "(Action taken: Kylo will accept NiFi's new property value.)");
+                    } else if ((!propertyToUpdate.getValue().equals(property.getValue())) && (!property.getValue().equals(property.getTemplateValue()))) {
+                        log.debug("Registration change info case 2: NiFi property value has changed to " + propertyToUpdate.getKey() + "=" + propertyToUpdate.getValue()
+                                           + ". Original NiFi property value was " + property.getKey() + "=" + property.getTemplateValue()
+                                           + " that was overridden to " + property.getKey() + "=" + property.getValue() + " while registering template in Kylo. "
+                                           + "(Action taken: Kylo will ignore NiFi's new property value.)");
+                        propertyToUpdate.setValue(property.getValue());
+                    } else {
+                        log.debug("Registration change info case 3: Default");
+                    }
+                } else {
+                    log.debug("Registration change info case 4: Default (values are null case)");
+                }
             }
 
             propertyToUpdate.setRegistrationChangeInfo(registrationChangeInfo);
@@ -488,7 +496,7 @@ public class NifiPropertyUtil {
                 (!propertyToUpdate.getValue().contains("${metadata.")) || (propertyToUpdate.getValue()
                                                                                .contains("${metadata.") && property.getValue() != null && property.getValue()
                                                                                .contains("${metadata."))))) {
-                update(propertyToUpdate, property);
+                update(propertyToUpdate, property, null);
             }
         }
 
@@ -501,7 +509,7 @@ public class NifiPropertyUtil {
          * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
          */
         public static void updateSkipInput(NifiProperty propertyToUpdate, NifiProperty property) {
-            updateCore(propertyToUpdate, property);
+            updateCore(propertyToUpdate, property, null);
         }
 
         /**
@@ -510,8 +518,8 @@ public class NifiPropertyUtil {
          * @param propertyToUpdate the property to update.  This will be updated using the <code>property</code>
          * @param property         the property that contains the new values.  This will update the <code>propertyToUpdate</code>
          */
-        public static void update(NifiProperty propertyToUpdate, NifiProperty property) {
-            updateCore(propertyToUpdate, property);
+        public static void update(NifiProperty propertyToUpdate, NifiProperty property, PropertyUpdateMode propertyUpdateMode) {
+            updateCore(propertyToUpdate, property, propertyUpdateMode);
             propertyToUpdate.setInputProperty(property.isInputProperty());
 
 
@@ -607,7 +615,7 @@ public class NifiPropertyUtil {
                         NiFiPropertyUpdater.updateSkipMetadataExpressionProperties(matchingProperty, nifiProperty);
                         break;
                     case UPDATE_ALL_PROPERTIES:
-                        NiFiPropertyUpdater.update(matchingProperty, nifiProperty);
+                        NiFiPropertyUpdater.update(matchingProperty, nifiProperty, UPDATE_ALL_PROPERTIES);
                         break;
                     case UPDATE_ALL_SKIP_IS_INPUT_FLAG:
                         NiFiPropertyUpdater.updateSkipInput(matchingProperty, nifiProperty);
