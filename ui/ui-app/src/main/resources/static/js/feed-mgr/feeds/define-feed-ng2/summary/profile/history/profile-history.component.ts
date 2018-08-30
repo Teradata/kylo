@@ -126,7 +126,9 @@ export class ProfileHistoryComponent implements OnInit {
     };
 
     goToResults(row: any, type: string) {
-        console.log('goToResults');
+        const dttm = row['PROCESSING_DTTM'];
+        const dt = row['DATE_TIME'];
+        console.log('goToResults dttm, dt', dttm, dt);
         this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".profile.results", {processingdttm: row['PROCESSING_DTTM'], t: type});
     }
 

@@ -1,13 +1,24 @@
-<div fxFlex>
-  <mat-tab-group>
-    <mat-tab label="Profile">
-      <profile-stats2 [model]="profileData"></profile-stats2>
-    </mat-tab>
-    <mat-tab label="Valid">
-      Valid contents
-    </mat-tab>
-    <mat-tab label="Invalid">
-      Invalid contents
-    </mat-tab>
-  </mat-tab-group>
-</div>
+<mat-card class="mat-typography">
+  <mat-card-header>
+    <mat-card-title>Profile Stats: {{timeInMillis | date:'full'}}</mat-card-title>
+    <mat-card-subtitle>Profile Stats as of {{timeInMillis | timeAgo:reference}}</mat-card-subtitle>
+    <span fxFlex></span>
+  </mat-card-header>
+
+
+  <mat-card-content>
+    <div fxFlex>
+      <mat-tab-group>
+        <mat-tab label="Profile">
+          <profile-stats2 [model]="profileData"></profile-stats2>
+        </mat-tab>
+        <mat-tab label="Valid">
+          Valid contents
+        </mat-tab>
+        <mat-tab label="Invalid">
+          Invalid contents
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </mat-card-content>
+</mat-card>

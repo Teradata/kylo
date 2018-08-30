@@ -17,6 +17,8 @@ export class ProfileContainerComponent implements OnInit {
     private profileData: any[];
     private type: string;
     private loading = false;
+    private hiveService: any;
+    private timeInMillis: number | Date;
 
     constructor(private http: HttpClient, private $$angularInjector: Injector) {
         // this.feed = data.feed;
@@ -26,6 +28,7 @@ export class ProfileContainerComponent implements OnInit {
         // this.processingdttm = this.profileRow['PROCESSING_DTTM'];
         // this.processingdate = this.profileRow['DATE'];
         this.restUrlService = $$angularInjector.get("RestUrlService");
+        this.hiveService = $$angularInjector.get("HiveService");
     }
 
     public ngOnInit(): void {
@@ -33,6 +36,7 @@ export class ProfileContainerComponent implements OnInit {
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         console.log('feedId = ' + this.feedId);
         this.processingdttm = this.stateParams ? this.stateParams.processingdttm : undefined;
+        this.timeInMillis = this.hiveService.getUTCTime(this.processingdttm);
         console.log('processingdttm = ' + this.processingdttm);
         this.type = this.stateParams ? this.stateParams.t : undefined;
         console.log('type = ' + this.type);
