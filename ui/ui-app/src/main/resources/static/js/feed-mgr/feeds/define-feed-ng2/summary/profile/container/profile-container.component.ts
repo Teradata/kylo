@@ -1,5 +1,6 @@
 import {Component, Injector, Input, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
+import {FormControl} from '@angular/forms';
 
 @Component({
     selector: 'profile-container',
@@ -19,6 +20,9 @@ export class ProfileContainerComponent implements OnInit {
     private hiveService: any;
     private timeInMillis: number | Date;
 
+    private tabs = ['stats', 'valid', 'invalid'];
+    private selected = new FormControl(0);
+
     constructor(private http: HttpClient, private $$angularInjector: Injector) {
         this.restUrlService = $$angularInjector.get("RestUrlService");
         this.hiveService = $$angularInjector.get("HiveService");
@@ -28,7 +32,9 @@ export class ProfileContainerComponent implements OnInit {
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.processingdttm = this.stateParams ? this.stateParams.processingdttm : undefined;
         this.timeInMillis = this.hiveService.getUTCTime(this.processingdttm);
-        this.type = this.stateParams ? this.stateParams.t : undefined;
+        this.type = this.stateParams ? this.stateParams.t : this.tabs[0];
+        this.selected.setValue(this.tabs.indexOf(this.type));
+
         this.getProfileStats();
     }
 

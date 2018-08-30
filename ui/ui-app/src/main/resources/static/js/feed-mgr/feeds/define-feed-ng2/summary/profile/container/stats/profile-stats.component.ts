@@ -198,12 +198,10 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
-        console.log('model', this.model);
         this.onModelChange();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log("changes:", changes);
         this.model = changes.model.currentValue;
         this.onModelChange();
     }

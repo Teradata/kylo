@@ -8,7 +8,7 @@
 
   <mat-card-content>
     <div fxFlex>
-      <mat-tab-group>
+      <mat-tab-group [selectedIndex]="selected.value">
         <mat-tab label="Profile">
           <profile-stats2 [model]="profileData"></profile-stats2>
         </mat-tab>
