@@ -1,17 +1,28 @@
-<define-feed-step-card [(feed)]="feed" [(step)]="step" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
-
+<define-feed-step-card [(feed)]="feed" [(step)]="step" (saved)="onSave()" [fxHide]="!feed.readonly">
   <feed-step-readonly-content>
     <div fxLayout="column">
-     Wrangler
-
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.QUERY</div>
+        <div fxFlex>{{feed.dataTransformation.sql}}</div>
+      </div>
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.DATA_TRANSFORMATIONS</div>
+        <div fxFlex fxLayout="row">
+          <mat-list fxFlex class="layout-padding-top-bottom">
+            <ng-template ngFor let-item let-last="last" [ngForOf]="feed.dataTransformation.states">
+              <mat-list-item>
+                <ng-md-icon matListIcon [icon]="item.context.icon"></ng-md-icon>
+                <p matLine [matTooltip]="item.context.name" class="tc-black">{{item.context.name}}</p>
+              </mat-list-item>
+              <mat-divider *ngIf="!last" class="relative"></mat-divider>
+            </ng-template>
+          </mat-list>
+        </div>
+      </div>
     </div>
-
   </feed-step-readonly-content>
-
-  <feed-step-edit-content>
-    <div fxLayout="column" [formGroup]="formGroup">
-      <visual-query-stepper #visualQuery engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="false" [showSaveStep]="false"></visual-query-stepper>
-    </div>
-
-  </feed-step-edit-content>
 </define-feed-step-card>
+
+<visual-query-stepper #visualQuery *ngIf="!feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
+                      (cancel)="onCancelEdit()" (save)="onSave()">
+</visual-query-stepper>

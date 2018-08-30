@@ -299,7 +299,7 @@ class Route {
             params: {
                 engine: null
             },
-            loadChildren: "feed-mgr/visual-query/visual-query.module#VisualQueryModule"
+            loadChildren: "feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
         });
 
         //Ops Manager

@@ -1,4 +1,4 @@
-import {Component, Inject, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
+import {Component, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -27,8 +27,6 @@ import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
-import {CloneUtil} from "../../../common/utils/clone-util";
-import {StateRegistry, StateService} from "@uirouter/angular";
 
 /**
  * Code for the delete key.
@@ -69,7 +67,7 @@ const ESC_KEY_CODE = 27;
         '(document:keydown)': '_keydown($event)',
     }
 })
-export class BuildQueryComponent implements OnDestroy, OnInit {
+export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     /**
      * Query engine for determining capabilities.
@@ -102,6 +100,18 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      */
     @Input()
     form: FormGroup;
+
+    /**
+     * Event emitted to return to the previous step
+     */
+    @Output()
+    back = new EventEmitter<void>();
+
+    /**
+     * Event emitted to advance to the next step
+     */
+    @Output()
+    next = new EventEmitter<void>();
 
     /**
      * Indicates if the UI is in advanced mode
@@ -210,7 +220,6 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
     constructor(private _dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,
                 private _loadingService: TdLoadingService,
-                private stateService:StateService,
                 @Inject("HiveService") private hiveService: HiveService,
                 @Inject("SideNavService") private sideNavService: SideNavService,
                 @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
@@ -820,7 +829,7 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
      * callback after a user selects a file from the local file system
      */
     onFileUploaded() {
-        this.goForward();
+        this.next.emit();
     }
 
     // -----------------
@@ -841,6 +850,17 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
         }
         if (this.onDeleteConnectionSubscription) {
             this.onDeleteConnectionSubscription.unsubscribe();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.model && !changes.model.firstChange) {
+            // Setup the flowchart Model
+            this.setupFlowChartModel();
+            this.addPreviewDataSets();
+
+            // Validate when the page loads
+            this.validate();
         }
     }
 
@@ -914,13 +934,5 @@ export class BuildQueryComponent implements OnDestroy, OnInit {
 
     onAutocompleteRefreshCache() {
         this.hiveService.refreshTableCache();
-    }
-
-    cancel(){
-        this.stateService.go("home")
-    }
-
-    goForward() {
-        this.stepper.next();
     }
 }

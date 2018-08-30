@@ -9,7 +9,7 @@ import {KyloObject} from "../../../../../common/common.model";
 
 export namespace FlowChart {
 
-	export class FlowchartModelBase {
+    export class FlowchartModelBase {
         // Width of a node.
         static defaultNodeWidth = 250;
         // Amount of space reserved for displaying the node's name.
@@ -149,118 +149,118 @@ export namespace FlowChart {
         }
     }
 
-	export interface ConnectionCallbackResponse {
+    export interface ConnectionCallbackResponse {
         connectionViewModel: ConnectionViewModel;
         connectionDataModel:any;
         src:NodeViewModel;
         dest:NodeViewModel;
         inputConnector?:ConnectorViewModel;
         outputConnector?:ConnectorViewModel;
-	}
+    }
 
-	// View model for a connector.
-	export class ConnectorViewModel extends FlowchartModelBase {
+    // View model for a connector.
+    export class ConnectorViewModel extends FlowchartModelBase {
 
-		data : any;
-		_parentNode : any;
-		_x : any;
-		_y : any;
-		TRIANGLE_SIZE : number = 30;
-		constructor(connectorDataModel: any, x: any, y: any, parentNode: any) {
-			super();
-			this.data = connectorDataModel;
-			this._parentNode = parentNode;
-			this._x = x;
-			this._y = y;
-			this.TRIANGLE_SIZE = 30;
+        data : any;
+        _parentNode : any;
+        _x : any;
+        _y : any;
+        TRIANGLE_SIZE : number = 30;
+        constructor(connectorDataModel: any, x: any, y: any, parentNode: any) {
+            super();
+            this.data = connectorDataModel;
+            this._parentNode = parentNode;
+            this._x = x;
+            this._y = y;
+            this.TRIANGLE_SIZE = 30;
 
-		}
-		// The name of the connector.
-		name () {
-			return this.data.name;
-		}
-		trianglePoints() {
-			var start: any = "";
-			var end: any = "";
-			var point: any = "";
-			var point2: any = "";
-			if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.BOTTOM) {
-				start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
-				end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
-				point = this.x() + "," + (this.y() + this.TRIANGLE_SIZE);
-				//point2 = this.x()+","+(this.y()+this.TRIANGLE_SIZE);
-			}
-			else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.TOP) {
-				start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
-				end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
-				point = this.x() + "," + (this.y() - this.TRIANGLE_SIZE);
-			}
-			if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.LEFT) {
-				start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
-				end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
-				point = (this.x() - this.TRIANGLE_SIZE) + "," + this.y();
-			}
-			else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.RIGHT) {
-				start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
-				end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
-				point = (this.x() + this.TRIANGLE_SIZE) + "," + this.y();
-			}
-			return start + " " + end + " " + point;
+        }
+        // The name of the connector.
+        name () {
+            return this.data.name;
+        }
+        trianglePoints() {
+            var start: any = "";
+            var end: any = "";
+            var point: any = "";
+            var point2: any = "";
+            if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.BOTTOM) {
+                start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
+                end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
+                point = this.x() + "," + (this.y() + this.TRIANGLE_SIZE);
+                //point2 = this.x()+","+(this.y()+this.TRIANGLE_SIZE);
+            }
+            else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.TOP) {
+                start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
+                end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
+                point = this.x() + "," + (this.y() - this.TRIANGLE_SIZE);
+            }
+            if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.LEFT) {
+                start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
+                end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
+                point = (this.x() - this.TRIANGLE_SIZE) + "," + this.y();
+            }
+            else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.RIGHT) {
+                start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
+                end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
+                point = (this.x() + this.TRIANGLE_SIZE) + "," + this.y();
+            }
+            return start + " " + end + " " + point;
 
-		}
+        }
 
-		location() {
-			return this.data.location;
-		}
-		id(){
-			return this.data.id;
-		}
-		// X coordinate of the connector.
-		x(){
-			return this._x;
-		};
+        location() {
+            return this.data.location;
+        }
+        id(){
+            return this.data.id;
+        }
+        // X coordinate of the connector.
+        x(){
+            return this._x;
+        };
 
-		//
-		// Y coordinate of the connector.
-		//
-		y(){
-			return this._y ;
-		}
+        //
+        // Y coordinate of the connector.
+        //
+        y(){
+            return this._y ;
+        }
 
-		//
-		// The parent node that the connector is attached to.
-		//
-		parentNode(){
-			return this._parentNode;
-		}
-	};
+        //
+        // The parent node that the connector is attached to.
+        //
+        parentNode(){
+            return this._parentNode;
+        }
+    };
 
-	//
-	// View model for a node.
-	//
-	export class NodeViewModel extends FlowchartModelBase{
+    //
+    // View model for a node.
+    //
+    export class NodeViewModel extends FlowchartModelBase{
 
-		data : any;
-		connectors : FlowChart.ConnectorViewModel[] = [];
-		leftConnectors : any[] = [];
-		rightConnectors : any[] = [];
-		bottomConnectors : any[] = [];
-		topConnectors : any[] = [];
-		// Set to true when the node is selected.
-		_selected : boolean = false;
+        data : any;
+        connectors : FlowChart.ConnectorViewModel[] = [];
+        leftConnectors : any[] = [];
+        rightConnectors : any[] = [];
+        bottomConnectors : any[] = [];
+        topConnectors : any[] = [];
+        // Set to true when the node is selected.
+        _selected : boolean = false;
 
-		inputConnectors:any;
-		outputConnectors:any;
+        inputConnectors:any;
+        outputConnectors:any;
 
-		constructor(nodeDataModel: any) {
-			super();
-			this.data = nodeDataModel;
-			// set the default width value of the node
-			if (!this.data.width || this.data.width < 0) {
-				this.data.width = NodeViewModel.defaultNodeWidth;
-			}
-			this.createConnectors();
-		}
+        constructor(nodeDataModel: any) {
+            super();
+            this.data = nodeDataModel;
+            // set the default width value of the node
+            if (!this.data.width || this.data.width < 0) {
+                this.data.width = NodeViewModel.defaultNodeWidth;
+            }
+            this.createConnectors();
+        }
 
         /**
          * generate the id for the connector
@@ -268,267 +268,267 @@ export namespace FlowChart {
          * @return {string}
          * @private
          */
-		private _newId(index:number){
-			return this.data.id+"|"+index;
-		}
+        private _newId(index:number){
+            return this.data.id+"|"+index;
+        }
 
-		createConnectors(){
-			var connectors: any = this.data.connectors;
-			var leftConnector: any = connectors.left;
-			if (leftConnector) {
-				leftConnector.location = NodeViewModel.CONNECTOR_LOCATION.LEFT;
-				leftConnector.id = this._newId(0);//NodeViewModel.nextConnectorID++;
-				var connectorViewModel = NodeViewModel.createConnectorViewModel(leftConnector, 0, this.height() / 2, this);
-				this.leftConnectors.push(connectorViewModel);
-				this.connectors.push(connectorViewModel);
-			}
-			var rightConnector = connectors.right;
-			if (rightConnector) {
-				rightConnector.location = NodeViewModel.CONNECTOR_LOCATION.RIGHT;
-				rightConnector.id =  this._newId(1);//NodeViewModel.nextConnectorID++;
-				var connectorViewModel = NodeViewModel.createConnectorViewModel(rightConnector, this.data.width, this.height() / 2, this);
-				this.rightConnectors.push(connectorViewModel);
-				this.connectors.push(connectorViewModel);
-			}
-			var topConnector = connectors.top;
-			if (topConnector) {
-				topConnector.location = NodeViewModel.CONNECTOR_LOCATION.TOP;
-				topConnector.id =  this._newId(2); //NodeViewModel.nextConnectorID++;
-				var connectorViewModel  = NodeViewModel.createConnectorViewModel(topConnector, this.data.width / 2, 0, this);
-				this.topConnectors.push(connectorViewModel);
-				this.connectors.push(connectorViewModel);
-			}
-			var bottomConnector = connectors.bottom;
-			if (bottomConnector) {
-				bottomConnector.location = NodeViewModel.CONNECTOR_LOCATION.BOTTOM;
-				bottomConnector.id =  this._newId(3); //NodeViewModel.nextConnectorID++;
-				var connectorViewModel = NodeViewModel.createConnectorViewModel(bottomConnector, this.data.width / 2, this.height(), this);
-				this.bottomConnectors.push(connectorViewModel);
-				this.connectors.push(connectorViewModel);
-			}
-		}
-		// Name of the node.
-		name(){
-			return this.data.name || "";
-		}
-		// X coordinate of the node.
-		x = () => {
-			return this.data.x;
-		}
-		// Y coordinate of the node.
-		y(){
-			return this.data.y;
-		}
+        createConnectors(){
+            var connectors: any = this.data.connectors;
+            var leftConnector: any = connectors.left;
+            if (leftConnector) {
+                leftConnector.location = NodeViewModel.CONNECTOR_LOCATION.LEFT;
+                leftConnector.id = this._newId(0);//NodeViewModel.nextConnectorID++;
+                var connectorViewModel = NodeViewModel.createConnectorViewModel(leftConnector, 0, this.height() / 2, this);
+                this.leftConnectors.push(connectorViewModel);
+                this.connectors.push(connectorViewModel);
+            }
+            var rightConnector = connectors.right;
+            if (rightConnector) {
+                rightConnector.location = NodeViewModel.CONNECTOR_LOCATION.RIGHT;
+                rightConnector.id =  this._newId(1);//NodeViewModel.nextConnectorID++;
+                var connectorViewModel = NodeViewModel.createConnectorViewModel(rightConnector, this.data.width, this.height() / 2, this);
+                this.rightConnectors.push(connectorViewModel);
+                this.connectors.push(connectorViewModel);
+            }
+            var topConnector = connectors.top;
+            if (topConnector) {
+                topConnector.location = NodeViewModel.CONNECTOR_LOCATION.TOP;
+                topConnector.id =  this._newId(2); //NodeViewModel.nextConnectorID++;
+                var connectorViewModel  = NodeViewModel.createConnectorViewModel(topConnector, this.data.width / 2, 0, this);
+                this.topConnectors.push(connectorViewModel);
+                this.connectors.push(connectorViewModel);
+            }
+            var bottomConnector = connectors.bottom;
+            if (bottomConnector) {
+                bottomConnector.location = NodeViewModel.CONNECTOR_LOCATION.BOTTOM;
+                bottomConnector.id =  this._newId(3); //NodeViewModel.nextConnectorID++;
+                var connectorViewModel = NodeViewModel.createConnectorViewModel(bottomConnector, this.data.width / 2, this.height(), this);
+                this.bottomConnectors.push(connectorViewModel);
+                this.connectors.push(connectorViewModel);
+            }
+        }
+        // Name of the node.
+        name(){
+            return this.data.name || "";
+        }
+        // X coordinate of the node.
+        x = () => {
+            return this.data.x;
+        }
+        // Y coordinate of the node.
+        y(){
+            return this.data.y;
+        }
 
-		//
-		// Width of the node.
-		//
-		width(){
-			return this.data.width;
-		}
-		//
-		// Height of the node.
-		//
-		height() {
-			let h = this.data.height;
-			if (h) {
-				//
-			}
-			else if (this.data.nodeAttributes && this.data.nodeAttributes.attributes) {
-				h = 95 + NodeViewModel.attributeHeight * this.data.nodeAttributes.attributes.length;
-			}
-			else {
-				var numConnectors =
-					Math.max(
-						this.inputConnectors.length,
-						this.outputConnectors.length);
-				h = NodeViewModel.computeConnectorY(numConnectors);
-			}
+        //
+        // Width of the node.
+        //
+        width(){
+            return this.data.width;
+        }
+        //
+        // Height of the node.
+        //
+        height() {
+            let h = this.data.height;
+            if (h) {
+                //
+            }
+            else if (this.data.nodeAttributes && this.data.nodeAttributes.attributes) {
+                h = 95 + NodeViewModel.attributeHeight * this.data.nodeAttributes.attributes.length;
+            }
+            else {
+                var numConnectors =
+                    Math.max(
+                        this.inputConnectors.length,
+                        this.outputConnectors.length);
+                h = NodeViewModel.computeConnectorY(numConnectors);
+            }
 
-			return FlowchartModelBase.maxHeight == -1 ? h : (h < FlowchartModelBase.maxHeight ? h : FlowchartModelBase.maxHeight);
-		}
-		// Select the node.
-		select(){
-			this._selected = true;
-		}
+            return FlowchartModelBase.maxHeight == -1 ? h : (h < FlowchartModelBase.maxHeight ? h : FlowchartModelBase.maxHeight);
+        }
+        // Select the node.
+        select(){
+            this._selected = true;
+        }
 
-		// Deselect the node.
-		deselect(){
-			this._selected = false;
-		}
+        // Deselect the node.
+        deselect(){
+            this._selected = false;
+        }
 
-		//
-		// Toggle the selection state of the node.
-		//
-		toggleSelected(){
-			this._selected = !this._selected;
-		}
+        //
+        // Toggle the selection state of the node.
+        //
+        toggleSelected(){
+            this._selected = !this._selected;
+        }
 
-		//
-		// Returns true if the node is selected.
-		//
-		selected() {
-			return this._selected;
-		}
+        //
+        // Returns true if the node is selected.
+        //
+        selected() {
+            return this._selected;
+        }
 
-		//
-		// Internal function to add a connector.
-		_addConnector(connectorDataModel: any, x: any, connectorsDataModel: any, connectorsViewModel: any){
-			var connectorViewModel: any =
-				new FlowChart.ConnectorViewModel(connectorDataModel, x,
-					NodeViewModel.computeConnectorY(connectorsViewModel.length), this);
+        //
+        // Internal function to add a connector.
+        _addConnector(connectorDataModel: any, x: any, connectorsDataModel: any, connectorsViewModel: any){
+            var connectorViewModel: any =
+                new FlowChart.ConnectorViewModel(connectorDataModel, x,
+                    NodeViewModel.computeConnectorY(connectorsViewModel.length), this);
 
-			connectorsDataModel.push(connectorDataModel);
+            connectorsDataModel.push(connectorDataModel);
 
-			// Add to node's view model.
-			connectorsViewModel.push(connectorViewModel);
-		}
+            // Add to node's view model.
+            connectorsViewModel.push(connectorViewModel);
+        }
 
-		//
-		// Add an input connector to the node.
-		//TODO change to AddTop, addLeft, addRight,..etc
-		//
-		addInputConnector(connectorDataModel: any){
+        //
+        // Add an input connector to the node.
+        //TODO change to AddTop, addLeft, addRight,..etc
+        //
+        addInputConnector(connectorDataModel: any){
 
-			if (!this.data.inputConnectors) {
-				this.data.inputConnectors = [];
-			}
-			this._addConnector(connectorDataModel, 0, this.data.inputConnectors, this.inputConnectors);
-		}
+            if (!this.data.inputConnectors) {
+                this.data.inputConnectors = [];
+            }
+            this._addConnector(connectorDataModel, 0, this.data.inputConnectors, this.inputConnectors);
+        }
 
-		//
-		// Add an ouput connector to the node.
-		//
-		addOutputConnector(connectorDataModel: any){
-			if (!this.data.outputConnectors) {
-				this.data.outputConnectors = [];
-			}
-			this._addConnector(connectorDataModel, this.data.width, this.data.outputConnectors, this.outputConnectors);
-		}
-		getAllConnectors(){
-			return this.connectors;
-		}
-	}
-	//
-	// View model for a connection.
-	//
-	export class ConnectionViewModel extends FlowchartModelBase{
+        //
+        // Add an ouput connector to the node.
+        //
+        addOutputConnector(connectorDataModel: any){
+            if (!this.data.outputConnectors) {
+                this.data.outputConnectors = [];
+            }
+            this._addConnector(connectorDataModel, this.data.width, this.data.outputConnectors, this.outputConnectors);
+        }
+        getAllConnectors(){
+            return this.connectors;
+        }
+    }
+    //
+    // View model for a connection.
+    //
+    export class ConnectionViewModel extends FlowchartModelBase{
 
-		data : any;
-		source : any;
-		dest : any;
-		_selected : boolean;
+        data : any;
+        source : any;
+        dest : any;
+        _selected : boolean;
 
-		constructor(connectionDataModel: any, sourceConnector: any = undefined, destConnector: any = undefined) {
-			super();
-			this.data = connectionDataModel;
-			this.source = sourceConnector;
-			this.dest = destConnector;
-			// Set to true when the connection is selected.
-			this._selected = false;
+        constructor(connectionDataModel: any, sourceConnector: any = undefined, destConnector: any = undefined) {
+            super();
+            this.data = connectionDataModel;
+            this.source = sourceConnector;
+            this.dest = destConnector;
+            // Set to true when the connection is selected.
+            this._selected = false;
 
-		}
+        }
 
         name() {
             return this.data.name || "";
         }
 
-		sourceCoordX() {
-			return this.source.parentNode().x() + this.source.x();
-		}
+        sourceCoordX() {
+            return this.source.parentNode().x() + this.source.x();
+        }
 
-		sourceCoordY(){
-			return this.source.parentNode().y() + this.source.y();
-		};
+        sourceCoordY(){
+            return this.source.parentNode().y() + this.source.y();
+        };
 
-		edit(){
-			this.data.edit(this);
-		}
-
-
-		sourceCoord() {
-			return {
-				x: this.sourceCoordX(),
-				y: this.sourceCoordY()
-			};
-		}
-
-		sourceTangentX(){
-			return ConnectionViewModel.computeConnectionSourceTangentX(this.sourceCoord(), this.destCoord());
-		}
-
-		sourceTangentY(){
-			return ConnectionViewModel.computeConnectionSourceTangentY(this.sourceCoord(), this.destCoord());
-		}
-
-		destCoordX(){
-			return this.dest.parentNode().x() + this.dest.x();
-		}
-
-		destCoordY(){
-			return this.dest.parentNode().y() + this.dest.y();
-		}
-
-		destCoord(){
-			return {
-				x: this.destCoordX(),
-				y: this.destCoordY()
-			};
-		}
-
-		destTangentX(){
-			return ConnectionViewModel.computeConnectionDestTangentX(this.sourceCoord(), this.destCoord());
-		}
-
-		destTangentY() {
-			return ConnectionViewModel.computeConnectionDestTangentY(this.sourceCoord(), this.destCoord());
-		}
-
-		middleX(scale: any){
-			if (typeof (scale) == "undefined")
-				scale = 0.5;
-			return this.sourceCoordX() * (1 - scale) + this.destCoordX() * scale;
-		}
-
-		middleY(scale: any){
-			if (typeof (scale) == "undefined")
-				scale = 0.5;
-			return this.sourceCoordY() * (1 - scale) + this.destCoordY() * scale;
-		}
+        edit(){
+            this.data.edit(this);
+        }
 
 
-		//
-		// Select the connection.
-		//
-		select(){
-			this._selected = true;
-		}
+        sourceCoord() {
+            return {
+                x: this.sourceCoordX(),
+                y: this.sourceCoordY()
+            };
+        }
 
-		//
-		// Deselect the connection.
-		//
-		deselect(){
-			this._selected = false;
-		}
+        sourceTangentX(){
+            return ConnectionViewModel.computeConnectionSourceTangentX(this.sourceCoord(), this.destCoord());
+        }
 
-		//
-		// Toggle the selection state of the connection.
-		//
-		toggleSelected(){
-			this._selected = !this._selected;
-		}
+        sourceTangentY(){
+            return ConnectionViewModel.computeConnectionSourceTangentY(this.sourceCoord(), this.destCoord());
+        }
 
-		//
-		// Returns true if the connection is selected.
-		//
-		selected(){
-			return this._selected;
-		}
+        destCoordX(){
+            return this.dest.parentNode().x() + this.dest.x();
+        }
 
-	}
-	export class ChartDataModel  implements KyloObject{
-		nodes:any[];
-		connections:any[];
+        destCoordY(){
+            return this.dest.parentNode().y() + this.dest.y();
+        }
+
+        destCoord(){
+            return {
+                x: this.destCoordX(),
+                y: this.destCoordY()
+            };
+        }
+
+        destTangentX(){
+            return ConnectionViewModel.computeConnectionDestTangentX(this.sourceCoord(), this.destCoord());
+        }
+
+        destTangentY() {
+            return ConnectionViewModel.computeConnectionDestTangentY(this.sourceCoord(), this.destCoord());
+        }
+
+        middleX(scale: any){
+            if (typeof (scale) == "undefined")
+                scale = 0.5;
+            return this.sourceCoordX() * (1 - scale) + this.destCoordX() * scale;
+        }
+
+        middleY(scale: any){
+            if (typeof (scale) == "undefined")
+                scale = 0.5;
+            return this.sourceCoordY() * (1 - scale) + this.destCoordY() * scale;
+        }
+
+
+        //
+        // Select the connection.
+        //
+        select(){
+            this._selected = true;
+        }
+
+        //
+        // Deselect the connection.
+        //
+        deselect(){
+            this._selected = false;
+        }
+
+        //
+        // Toggle the selection state of the connection.
+        //
+        toggleSelected(){
+            this._selected = !this._selected;
+        }
+
+        //
+        // Returns true if the connection is selected.
+        //
+        selected(){
+            return this._selected;
+        }
+
+    }
+    export class ChartDataModel  implements KyloObject{
+        nodes:any[];
+        connections:any[];
 
         public static OBJECT_TYPE:string = 'ChartDataModel'
 
@@ -537,31 +537,27 @@ export namespace FlowChart {
         public constructor(init?: Partial<ChartDataModel>) {
             Object.assign(this, init);
             if(this.nodes == undefined){
-            	this.nodes = []
-			}
+                this.nodes = []
+            }
             if(this.connections == undefined){
                 this.connections = []
             }
         }
 
 
-	}
-	/**
-	 * View model for the chart.
-	 *
-	 * @public
-	 * @constructor
-	 * @param {Object} chartDataModel the data model for the chart
-	 */
-	export class ChartViewModel extends FlowchartModelBase{
+    }
+    /**
+     * View model for the chart.
+     *
+     * @public
+     * @constructor
+     * @param {Object} chartDataModel the data model for the chart
+     */
+    export class ChartViewModel extends FlowchartModelBase{
 
-		data: ChartDataModel;
-		nodes: NodeViewModel[] = [];
-		connections: ConnectionViewModel[] = [];
-
-        nodeMap: {[key: string]: NodeViewModel} = {}
-
-        connectorMap: {[key: string]: ConnectorViewModel}  = {}
+        data: ChartDataModel;
+        nodes: NodeViewModel[] = [];
+        connections: ConnectionViewModel[] = [];
 
         connectionMap: {[key: string]: ConnectionViewModel} = {}
 
@@ -602,14 +598,14 @@ export namespace FlowChart {
 
 
 
-		constructor(private chartDataModel: ChartDataModel) {
-			super();
-			// Reference to the underlying data.
-			this.data = chartDataModel;
-			// Create a view-model for nodes.
-			this._createNodesViewModel(this.data.nodes);
-			// Create a view-model for connections.
-			this.connections = this._createConnectionsViewModel(this.data.connections);
+        constructor(private chartDataModel: ChartDataModel) {
+            super();
+            // Reference to the underlying data.
+            this.data = chartDataModel;
+            // Create a view-model for nodes.
+            this.nodes = this._createNodesViewModel(this.data.nodes);
+            // Create a view-model for connections.
+            this.connections = this._createConnectionsViewModel(this.data.connections);
 
             this.onEditConnectionSubject = new Subject<ConnectionCallbackResponse>();
             this.onEditConnection$ = this.onEditConnectionSubject.asObservable();
@@ -621,422 +617,416 @@ export namespace FlowChart {
             this.onDeleteSelectedSubject = new Subject<any>();
             this.onDeleteSelected$ = this.onDeleteSelectedSubject.asObservable();
 
-		};
+        };
 
 
-		//
-		// Create a view model for a new connection.
-		//
-		createNewConnection(startConnector: any, endConnector: any){
-			var connectionsDataModel: any = this.data.connections;
-			if (!connectionsDataModel) {
-				connectionsDataModel = this.data.connections = [];
-			}
-			var connectionsViewModel: any = this.connections;
-			if (!connectionsViewModel) {
-				connectionsViewModel = this.connections = [];
-			}
+        //
+        // Create a view model for a new connection.
+        //
+        createNewConnection(startConnector: any, endConnector: any){
+            var connectionsDataModel: any = this.data.connections;
+            if (!connectionsDataModel) {
+                connectionsDataModel = this.data.connections = [];
+            }
+            var connectionsViewModel: any = this.connections;
+            if (!connectionsViewModel) {
+                connectionsViewModel = this.connections = [];
+            }
 
-			var startNode: any = startConnector.parentNode();
-			var startNodeConnectors: any = startNode.getAllConnectors();
-			var startConnectorIndex: any = startNodeConnectors.indexOf(startConnector);
-			var startConnectorType: any = 'input';
-			if (startConnectorIndex == -1) {
-				throw new Error("Failed to find source connector within either inputConnectors or outputConnectors of source node.");
-			}
+            var startNode: any = startConnector.parentNode();
+            var startNodeConnectors: any = startNode.getAllConnectors();
+            var startConnectorIndex: any = startNodeConnectors.indexOf(startConnector);
+            var startConnectorType: any = 'input';
+            if (startConnectorIndex == -1) {
+                throw new Error("Failed to find source connector within either inputConnectors or outputConnectors of source node.");
+            }
 
-			var endNode: any = endConnector.parentNode();
-			var endNodeConnectors: any = endNode.getAllConnectors();
-			var endConnectorIndex: any = endNodeConnectors.indexOf(endConnector);
-			var endConnectorType: any = 'input';
-			if (endConnectorIndex == -1) {
-				throw new Error("Failed to find dest connector within inputConnectors or outputConnectors of dest node.");
-			}
+            var endNode: any = endConnector.parentNode();
+            var endNodeConnectors: any = endNode.getAllConnectors();
+            var endConnectorIndex: any = endNodeConnectors.indexOf(endConnector);
+            var endConnectorType: any = 'input';
+            if (endConnectorIndex == -1) {
+                throw new Error("Failed to find dest connector within inputConnectors or outputConnectors of dest node.");
+            }
 
-			if (startConnectorType == endConnectorType) {
-				//	throw new Error("Failed to create connection. Only output to input connections are allowed.")
-			}
+            if (startConnectorType == endConnectorType) {
+                //	throw new Error("Failed to create connection. Only output to input connections are allowed.")
+            }
 
-			if (startNode == endNode) {
-				throw new Error("Failed to create connection. Cannot link a node with itthis.")
-			}
+            if (startNode == endNode) {
+                throw new Error("Failed to create connection. Cannot link a node with itthis.")
+            }
 
-			var startNode: any = {
-				nodeID: startNode.data.id,
-				connectorIndex: startConnectorIndex,
-				connectorID: startConnector.data.id
-			}
+            var startNode: any = {
+                nodeID: startNode.data.id,
+                connectorIndex: startConnectorIndex,
+                connectorID: startConnector.data.id
+            }
 
-			var endNode: any = {
-				nodeID: endNode.data.id,
-				connectorIndex: endConnectorIndex,
-				connectorId: endConnector.data.id
-			}
+            var endNode: any = {
+                nodeID: endNode.data.id,
+                connectorIndex: endConnectorIndex,
+                connectorId: endConnector.data.id
+            }
 
-			var connectionDataModel: any = {
-				id:_.uniqueId('connection-'),
-				source: startConnectorType == 'output' ? startNode : endNode,
-				dest: startConnectorType == 'output' ? endNode : startNode
-			};
-			connectionsDataModel.push(connectionDataModel);
+            var connectionDataModel: any = {
+                id:_.uniqueId('connection-'),
+                source: startConnectorType == 'output' ? startNode : endNode,
+                dest: startConnectorType == 'output' ? endNode : startNode
+            };
+            connectionsDataModel.push(connectionDataModel);
 
-			var outputConnector: any = startConnectorType == 'output' ? startConnector : endConnector;
-			var inputConnector: any = startConnectorType == 'output' ? endConnector : startConnector;
+            var outputConnector: any = startConnectorType == 'output' ? startConnector : endConnector;
+            var inputConnector: any = startConnectorType == 'output' ? endConnector : startConnector;
 
-			var src: any = this.findNode(connectionDataModel.source.nodeID);
-			var dest: any = this.findNode(connectionDataModel.dest.nodeID);
-			//connectionDataModel.name = src.name()+" - "+dest.name();
-			connectionDataModel.joinKeys = {};
+            var src: any = this.findNode(connectionDataModel.source.nodeID);
+            var dest: any = this.findNode(connectionDataModel.dest.nodeID);
+            //connectionDataModel.name = src.name()+" - "+dest.name();
+            connectionDataModel.joinKeys = {};
             var connectionViewModel = new FlowChart.ConnectionViewModel(connectionDataModel, outputConnector, inputConnector);
-			connectionDataModel.edit = (viewModel: any) => {
-			    console.log('EDIT CONNECTION ',viewModel)
-				this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest})
-			}
-			connectionsViewModel.push(connectionViewModel);
-			this.connectionMap[connectionDataModel.id] = connectionViewModel;
+            connectionDataModel.edit = (viewModel: any) => {
+                console.log('EDIT CONNECTION ',viewModel)
+                this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest})
+            }
+            connectionsViewModel.push(connectionViewModel);
+            this.connectionMap[connectionDataModel.id] = connectionViewModel;
             this.onCreateConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest, inputConnector:inputConnector, outputConnector:outputConnector})
 
-		}
-		//
-		// Add a node to the view model.
-		//
-		addNode(nodeDataModel: any){
-			if (!this.data.nodes) {
-				this.data.nodes = [];
-			}
-			// 
-			// Update the data model.
-			//
-			this.data.nodes.push(nodeDataModel);
+        }
+        //
+        // Add a node to the view model.
+        //
+        addNode(nodeDataModel: any){
+            if (!this.data.nodes) {
+                this.data.nodes = [];
+            }
 
-			// 
-			// Update the view model.
-			//
-			let nodeViewModel =new FlowChart.NodeViewModel(nodeDataModel)
-                //populate the connector map
-                nodeViewModel.connectors.forEach((connectorViewModel:FlowChart.ConnectorViewModel) => {
-                    this.connectorMap[connectorViewModel.data.id] = connectorViewModel;
-                })
-			this.nodes.push(nodeViewModel);
-			this.nodeMap[nodeViewModel.data.id] = nodeViewModel;
+            //
+            // Update the data model.
+            //
+            this.data.nodes.push(nodeDataModel);
 
-		}
+            //
+            // Update the view model.
+            //
+            this.nodes.push(new NodeViewModel(nodeDataModel));
+        }
 
-		//
-		// Select all nodes and connections in the chart.
-		//
-		selectAll(){
-			console.log('SELECT ALL!!!')
-			var nodes = this.nodes;
-			for (var i = 0; i < nodes.length; ++i) {
-				var node = nodes[i];
-				node.select();
-			}
-			var connections = this.connections;
-			for (var i = 0; i < connections.length; ++i) {
-				var connection = connections[i];
-				connection.select();
-			}
-		}
+        //
+        // Select all nodes and connections in the chart.
+        //
+        selectAll(){
+            console.log('SELECT ALL!!!')
+            var nodes = this.nodes;
+            for (var i = 0; i < nodes.length; ++i) {
+                var node = nodes[i];
+                node.select();
+            }
+            var connections = this.connections;
+            for (var i = 0; i < connections.length; ++i) {
+                var connection = connections[i];
+                connection.select();
+            }
+        }
 
-		//
-		// Deselect all nodes and connections in the chart.
-		//
-		deselectAll(){
-			var nodes = this.nodes;
-			for (var i = 0; i < nodes.length; ++i) {
-				var node = nodes[i];
-				node.deselect();
-			}
+        //
+        // Deselect all nodes and connections in the chart.
+        //
+        deselectAll(){
+            var nodes = this.nodes;
+            for (var i = 0; i < nodes.length; ++i) {
+                var node = nodes[i];
+                node.deselect();
+            }
 
-			var connections = this.connections;
-			for (var i = 0; i < connections.length; ++i) {
-				var connection = connections[i];
-				connection.deselect();
-			}
-		}
+            var connections = this.connections;
+            for (var i = 0; i < connections.length; ++i) {
+                var connection = connections[i];
+                connection.deselect();
+            }
+        }
 
-		//
-		// Update the location of the node and its connectors.
-		//
-		updateSelectedNodesLocation(deltaX: any, deltaY: any){
-			var selectedNodes: any = this.getSelectedNodes();
-			for (var i = 0; i < selectedNodes.length; ++i) {
-				var node = selectedNodes[i];
-				node.data.x += deltaX;
-				node.data.y += deltaY;
-			}
-		}
-		// Handle mouse click on a particular node.
-		//
-		handleNodeClicked(node: any, ctrlKey: any){
-			if (ctrlKey) {
-				node.toggleSelected();
-			}
-			else {
-				this.deselectAll();
-				node.select();
-			}
+        //
+        // Update the location of the node and its connectors.
+        //
+        updateSelectedNodesLocation(deltaX: any, deltaY: any){
+            var selectedNodes: any = this.getSelectedNodes();
+            for (var i = 0; i < selectedNodes.length; ++i) {
+                var node = selectedNodes[i];
+                node.data.x += deltaX;
+                node.data.y += deltaY;
+            }
+        }
+        // Handle mouse click on a particular node.
+        //
+        handleNodeClicked(node: any, ctrlKey: any){
+            if (ctrlKey) {
+                node.toggleSelected();
+            }
+            else {
+                this.deselectAll();
+                node.select();
+            }
 
-			// Move node to the end of the list so it is rendered after all the other.
-			// This is the way Z-order is done in SVG.
+            // Move node to the end of the list so it is rendered after all the other.
+            // This is the way Z-order is done in SVG.
 
-			var nodeIndex = this.nodes.indexOf(node);
-			if (nodeIndex == -1) {
-				throw new Error("Failed to find node in view model!");
-			}
-			this.nodes.splice(nodeIndex, 1);
-			this.nodes.push(node);
-		}
+            var nodeIndex = this.nodes.indexOf(node);
+            if (nodeIndex == -1) {
+                throw new Error("Failed to find node in view model!");
+            }
+            this.nodes.splice(nodeIndex, 1);
+            this.nodes.push(node);
+        }
 
-		//
-		// Handle mouse down on a connection.
-		//
-		handleConnectionMouseDown(connection: any, ctrlKey: any){
-			if (ctrlKey) {
-				connection.toggleSelected();
-			}
-			else {
-				this.deselectAll();
-				connection.select();
-			}
-		}
+        //
+        // Handle mouse down on a connection.
+        //
+        handleConnectionMouseDown(connection: any, ctrlKey: any){
+            if (ctrlKey) {
+                connection.toggleSelected();
+            }
+            else {
+                this.deselectAll();
+                connection.select();
+            }
+        }
 
-		//
-		// Delete all nodes and connections that are selected.
-		//
-		deleteSelected(){
+        //
+        // Delete all nodes and connections that are selected.
+        //
+        deleteSelected(){
 
-			var newNodeViewModels: any = [];
-			var newNodeDataModels: any = [];
-			var deletedNodeIds: any = [];
-			// Sort nodes into:
-			//		nodes to keep and 
-			//		nodes to delete.
+            var newNodeViewModels: any = [];
+            var newNodeDataModels: any = [];
+            var deletedNodeIds: any = [];
+            // Sort nodes into:
+            //		nodes to keep and
+            //		nodes to delete.
 
-			for (var nodeIndex = 0; nodeIndex < this.nodes.length; ++nodeIndex) {
-				var node: FlowChart.NodeViewModel = this.nodes[nodeIndex];
-				if (!node.selected()) {
-					// Only retain non-selected nodes.
-					newNodeViewModels.push(node);
-					newNodeDataModels.push(node.data);
-				}
-				else {
-					// Keep track of nodes that were deleted, so their connections can also
-					// be deleted.
-					deletedNodeIds.push(node.data.id);
+            for (var nodeIndex = 0; nodeIndex < this.nodes.length; ++nodeIndex) {
+                var node: FlowChart.NodeViewModel = this.nodes[nodeIndex];
+                if (!node.selected()) {
+                    // Only retain non-selected nodes.
+                    newNodeViewModels.push(node);
+                    newNodeDataModels.push(node.data);
+                }
+                else {
+                    // Keep track of nodes that were deleted, so their connections can also
+                    // be deleted.
+                    deletedNodeIds.push(node.data.id);
+                }
+            }
 
-					delete this.nodeMap[node.data.id];
-					node.connectors.forEach(connector => delete this.connectorMap[connector.data.id]);
-				}
-			}
+            var newConnectionViewModels: any = [];
+            var newConnectionDataModels: any = [];
 
-			var newConnectionViewModels: any = [];
-			var newConnectionDataModels: any = [];
+            //
+            // Remove connections that are selected.
+            // Also remove connections for nodes that have been deleted.
+            //
+            for (var connectionIndex = 0; connectionIndex < this.connections.length; ++connectionIndex) {
 
-			//
-			// Remove connections that are selected.
-			// Also remove connections for nodes that have been deleted.
-			//
-			for (var connectionIndex = 0; connectionIndex < this.connections.length; ++connectionIndex) {
+                var connection: any = this.connections[connectionIndex];
+                if (!connection.selected() &&
+                    deletedNodeIds.indexOf(connection.data.source.nodeID) === -1 &&
+                    deletedNodeIds.indexOf(connection.data.dest.nodeID) === -1) {
+                    //
+                    // The nodes this connection is attached to, where not deleted,
+                    // so keep the connection.
+                    //
+                    newConnectionViewModels.push(connection);
+                    newConnectionDataModels.push(connection.data);
+                }
+                else {
+                    //deleted
+                    delete this.connectionMap[connection.data.id];
+                }
+            }
 
-				var connection: any = this.connections[connectionIndex];
-				if (!connection.selected() &&
-					deletedNodeIds.indexOf(connection.data.source.nodeID) === -1 &&
-					deletedNodeIds.indexOf(connection.data.dest.nodeID) === -1) {
-					//
-					// The nodes this connection is attached to, where not deleted,
-					// so keep the connection.
-					//
-					newConnectionViewModels.push(connection);
-					newConnectionDataModels.push(connection.data);
-				}
-				else {
-					//deleted
-					delete this.connectionMap[connection.data.id];
-				}
-			}
+            //
+            // Update nodes and connections.
+            //
+            this.nodes = newNodeViewModels;
+            this.data.nodes = newNodeDataModels;
+            this.connections = newConnectionViewModels;
+            this.data.connections = newConnectionDataModels;
 
-			//
-			// Update nodes and connections.
-			//
-			this.nodes = newNodeViewModels;
-			this.data.nodes = newNodeDataModels;
-			this.connections = newConnectionViewModels;
-			this.data.connections = newConnectionDataModels;
+            this.onDeleteSelectedSubject.next();
 
-			this.onDeleteSelectedSubject.next();
+        }
 
-		}
+        //
+        // Select nodes and connections that fall within the selection rect.
+        //
+        applySelectionRect(selectionRect: any){
+            this.deselectAll();
+            for (var i = 0; i < this.nodes.length; ++i) {
+                var node = this.nodes[i];
+                if (node.x() >= selectionRect.x &&
+                    node.y() >= selectionRect.y &&
+                    node.x() + node.width() <= selectionRect.x + selectionRect.width &&
+                    node.y() + node.height() <= selectionRect.y + selectionRect.height) {
+                    // Select nodes that are within the selection rect.
+                    node.select();
+                }
+            }
 
-		//
-		// Select nodes and connections that fall within the selection rect.
-		//
-		applySelectionRect(selectionRect: any){
-			this.deselectAll();
-			for (var i = 0; i < this.nodes.length; ++i) {
-				var node = this.nodes[i];
-				if (node.x() >= selectionRect.x &&
-					node.y() >= selectionRect.y &&
-					node.x() + node.width() <= selectionRect.x + selectionRect.width &&
-					node.y() + node.height() <= selectionRect.y + selectionRect.height) {
-					// Select nodes that are within the selection rect.
-					node.select();
-				}
-			}
+            for (var i = 0; i < this.connections.length; ++i) {
+                var connection: any = this.connections[i];
+                if (connection.source.parentNode().selected() &&
+                    connection.dest.parentNode().selected()) {
+                    // Select the connection if both its parent nodes are selected.
+                    connection.select();
+                }
+            }
 
-			for (var i = 0; i < this.connections.length; ++i) {
-				var connection: any = this.connections[i];
-				if (connection.source.parentNode().selected() &&
-					connection.dest.parentNode().selected()) {
-					// Select the connection if both its parent nodes are selected.
-					connection.select();
-				}
-			}
+        }
+        // Get the array of nodes that are currently selected.
+        getSelectedNodes(){
+            var selectedNodes: any = [];
 
-		}
-		// Get the array of nodes that are currently selected.
-		getSelectedNodes(){
-			var selectedNodes: any = [];
+            for (var i = 0; i < this.nodes.length; ++i) {
+                var node = this.nodes[i];
+                if (node.selected()) {
+                    selectedNodes.push(node);
+                }
+            }
+            return selectedNodes;
+        }
 
-			for (var i = 0; i < this.nodes.length; ++i) {
-				var node = this.nodes[i];
-				if (node.selected()) {
-					selectedNodes.push(node);
-				}
-			}
-			return selectedNodes;
-		}
+        //
+        // Get the array of connections that are currently selected.
+        //
+        getSelectedConnections(){
+            var selectedConnections: any = [];
 
-		//
-		// Get the array of connections that are currently selected.
-		//
-		getSelectedConnections(){
-			var selectedConnections: any = [];
+            for (var i = 0; i < this.connections.length; ++i) {
+                var connection: any = this.connections[i];
+                if (connection.selected()) {
+                    selectedConnections.push(connection);
+                }
+            }
+            return selectedConnections;
+        }
 
-			for (var i = 0; i < this.connections.length; ++i) {
-				var connection: any = this.connections[i];
-				if (connection.selected()) {
-					selectedConnections.push(connection);
-				}
-			}
-			return selectedConnections;
-		}
+        findConnectorById(connectorId:string){
+        	const [nodeId, connectorIndex] = connectorId.split("|");
+            return this.findConnector(nodeId, connectorIndex);
+        }
 
-		findConnectorById(connectorId:string){
-			return this.connectorMap[connectorId];
-		}
+        findConnection(connectionId:string){
+            return this.connectionMap[connectionId];
+        }
+        //
+        // Find a specific node within the chart.
+        //
+        findNode(nodeID: any){
 
-		findConnection(connectionId:string){
-			return this.connectionMap[connectionId];
-		}
-		//
-		// Find a specific node within the chart.
-		//
-		findNode(nodeID: any){
+            for (var i = 0; i < this.nodes.length; ++i) {
+                var node = this.nodes[i];
+                if (node.data.id == nodeID) {
+                    return node;
+                }
+            }
 
-			for (var i = 0; i < this.nodes.length; ++i) {
-				var node = this.nodes[i];
-				if (node.data.id == nodeID) {
-					return node;
-				}
-			}
+            throw new Error("Failed to find node " + nodeID);
+        }
 
-			throw new Error("Failed to find node " + nodeID);
-		}
+        findConnector(nodeID: any, connectorIndex: any){
 
-		findConnector(nodeID: any, connectorIndex: any){
+            var node = this.findNode(nodeID);
 
-			var node = this.findNode(nodeID);
+            if (!node.connectors || node.connectors.length <= connectorIndex) {
+                throw new Error("Node " + nodeID + " has invalid input connectors.");
+            }
 
-			if (!node.connectors || node.connectors.length <= connectorIndex) {
-				throw new Error("Node " + nodeID + " has invalid input connectors.");
-			}
-
-			return node.connectors[connectorIndex];
-		}
+            return node.connectors[connectorIndex];
+        }
 
 
-		//
-		// Find a specific input connector within the chart.
-		//
-		findInputConnector(nodeID: any, connectorIndex: any){
+        //
+        // Find a specific input connector within the chart.
+        //
+        findInputConnector(nodeID: any, connectorIndex: any){
 
-			var node: any = this.findNode(nodeID);
+            var node: any = this.findNode(nodeID);
 
-			if (!node.inputConnectors || node.inputConnectors.length <= connectorIndex) {
-				throw new Error("Node " + nodeID + " has invalid input connectors.");
-			}
+            if (!node.inputConnectors || node.inputConnectors.length <= connectorIndex) {
+                throw new Error("Node " + nodeID + " has invalid input connectors.");
+            }
 
-			return node.inputConnectors[connectorIndex];
-		}
+            return node.inputConnectors[connectorIndex];
+        }
 
-		//
-		// Find a specific output connector within the chart.
-		//
-		findOutputConnector(nodeID: any, connectorIndex: any){
+        //
+        // Find a specific output connector within the chart.
+        //
+        findOutputConnector(nodeID: any, connectorIndex: any){
 
-			var node: any = this.findNode(nodeID);
+            var node: any = this.findNode(nodeID);
 
-			if (!node.outputConnectors || node.outputConnectors.length <= connectorIndex) {
-				throw new Error("Node " + nodeID + " has invalid output connectors.");
-			}
+            if (!node.outputConnectors || node.outputConnectors.length <= connectorIndex) {
+                throw new Error("Node " + nodeID + " has invalid output connectors.");
+            }
 
-			return node.outputConnectors[connectorIndex];
-		}
+            return node.outputConnectors[connectorIndex];
+        }
 
-		//
-		// Create a view model for connection from the data model.
-		//
-		private _createConnectionViewModel(connectionDataModel: any) : ConnectionViewModel {
+        //
+        // Create a view model for connection from the data model.
+        //
+        private _createConnectionViewModel(connectionDataModel: any) : ConnectionViewModel {
 
-			// Create connection view
-			var sourceConnector: any = this.findConnector(connectionDataModel.source.nodeID, connectionDataModel.source.connectorIndex);
-			var destConnector: any = this.findConnector(connectionDataModel.dest.nodeID, connectionDataModel.dest.connectorIndex);
-			var connectionViewModel: any = new FlowChart.ConnectionViewModel(connectionDataModel, sourceConnector, destConnector);
+            // Create connection view
+            var sourceConnector: any = this.findConnector(connectionDataModel.source.nodeID, connectionDataModel.source.connectorIndex);
+            var destConnector: any = this.findConnector(connectionDataModel.dest.nodeID, connectionDataModel.dest.connectorIndex);
+            var connectionViewModel: any = new FlowChart.ConnectionViewModel(connectionDataModel, sourceConnector, destConnector);
 
-			// Set callback function for editing the connection
-			var source = this.findNode(connectionDataModel.source.nodeID);
-			var dest = this.findNode(connectionDataModel.dest.nodeID);
-			connectionDataModel.edit = () => {
-					this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:source, dest:dest});
-			};
+            // Set callback function for editing the connection
+            var source = this.findNode(connectionDataModel.source.nodeID);
+            var dest = this.findNode(connectionDataModel.dest.nodeID);
+            connectionDataModel.edit = () => {
+                    this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:source, dest:dest});
+            };
 
-			// Return connection view
-			return connectionViewModel;
-		}
+            // Return connection view
+            return connectionViewModel;
+        }
 
-		//
-		// Wrap the connections data-model in a view-model.
-		//
-		private _createConnectionsViewModel(connectionsDataModel: any) {
-			var connectionsViewModel: any = [];
-			if (connectionsDataModel) {
-				for (var i = 0; i < connectionsDataModel.length; ++i) {
-					//ensure the id exists
-					let connectionDataModel = connectionsDataModel[i];
-					if(connectionDataModel.id == undefined) {
+        //
+        // Wrap the connections data-model in a view-model.
+        //
+        private _createConnectionsViewModel(connectionsDataModel: any) {
+            var connectionsViewModel: any = [];
+            if (connectionsDataModel) {
+                for (var i = 0; i < connectionsDataModel.length; ++i) {
+                    //ensure the id exists
+                    let connectionDataModel = connectionsDataModel[i];
+                    if(connectionDataModel.id == undefined) {
                         connectionDataModel.id = _.uniqueId("connection-");
-					}
-					let connectionViewModel = this._createConnectionViewModel(connectionDataModel);
-					connectionsViewModel.push(connectionViewModel);
-					this.connectionMap[connectionViewModel.data.id] = connectionViewModel;
-				}
-			}
-			return connectionsViewModel;
-		};
+                    }
+                    let connectionViewModel = this._createConnectionViewModel(connectionDataModel);
+                    connectionsViewModel.push(connectionViewModel);
+                    this.connectionMap[connectionViewModel.data.id] = connectionViewModel;
+                }
+            }
+            return connectionsViewModel;
+        };
 
         //
         // Wrap the nodes data-model in a view-model.
         //
-        private _createNodesViewModel(nodesDataModel: any){
+        private _createNodesViewModel(nodesDataModel: any): NodeViewModel[] {
+            const nodesViewModel = [];
+
             if (nodesDataModel) {
-                for (var i = 0; i < nodesDataModel.length; ++i) {
-                	this.addNode(nodesDataModel);
+                for (let i = 0; i < nodesDataModel.length; ++i) {
+                	nodesViewModel.push(new NodeViewModel(nodesDataModel[i]));
                 }
             }
+
+            return nodesViewModel;
         }
-
-
     }
 }

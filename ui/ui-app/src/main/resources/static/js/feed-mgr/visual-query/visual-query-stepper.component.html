@@ -1,14 +1,12 @@
-<mat-horizontal-stepper [linear]="true" #stepper class="mat-stepper-no-header">
-  <mat-step [stepControl]="buildQueryFormGroup">
-    <form [formGroup]="buildQueryFormGroup" fxFlex="1 1 auto" fxLayout="column">
-      <ng-template matStepLabel>Build Query</ng-template>
-      <build-query-ng2 [form]="buildQueryFormGroup" [stepper]="stepper" [engine]="engine" [model]="dataModel.model" [showDatasources]="showDatasources" *ngIf="engine != undefined"></build-query-ng2>
-    </form>
+<mat-horizontal-stepper #stepper *ngIf="engine != null" [linear]="true" class="mat-stepper-no-header">
+  <mat-step>
+    <ng-template matStepLabel>Build Query</ng-template>
+    <build-query-ng2 [engine]="engine" [model]="dataModel.model" [showDatasources]="showDatasources" (back)="onCancel()" (next)="stepper.next()"></build-query-ng2>
   </mat-step>
   <mat-step>
     <ng-template matStepLabel>Transform Data</ng-template>
-    <thinkbig-visual-query-transform [warnWhenLeaving]="false" [active]="stepper.selectedIndex == 1" [stepper]="stepper" [engine]="engine" [model]="dataModel.model" heightOffset="64"
-                                     *ngIf="engine != null">
+    <thinkbig-visual-query-transform [warnWhenLeaving]="false" [active]="stepper.selectedIndex == 1" [engine]="engine" [model]="dataModel.model" heightOffset="64"
+                                     [nextButton]="showSaveStep ? 'Next' : 'Save'" [feedModel]="feed" (back)="stepper.previous()" (next)="showSaveStep ? stepper.next() : save.emit()">
     </thinkbig-visual-query-transform>
   </mat-step>
   <mat-step *ngIf="showSaveStep">

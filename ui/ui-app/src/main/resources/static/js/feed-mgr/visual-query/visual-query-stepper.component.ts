@@ -1,9 +1,8 @@
-import {Component, Inject, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {MatStepper} from "@angular/material/stepper";
+import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
 
 import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
 import {FeedDataTransformation} from "../model/feed-data-transformation";
+import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 
@@ -16,18 +15,10 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     static readonly LOADER = "VisualQueryComponent.LOADER";
 
     /**
-     * Query engine and data transformation model
-     */
-    dataModel: { engine: QueryEngine<any>, model: FeedDataTransformation };
-
-    /**
      * Query engine for the data model
      */
     @Input()
     engineName: string;
-
-    @ViewChild("stepper")
-    stepper: MatStepper;
 
     /**
      * Allow the user to change data sources and query for tables/files etc
@@ -46,43 +37,42 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     toggleSideNavOnDestroy: boolean = true;
 
     /**
+     * Event emitted to cancel the model changes
+     */
+    @Output()
+    cancel = new EventEmitter<void>();
+
+    /**
+     * Event emitted to save the model changes
+     */
+    @Output()
+    save = new EventEmitter<void>();
+
+    /**
+     * Query engine and data transformation model
+     */
+    dataModel: { engine: QueryEngine<any>, model: FeedDataTransformation };
+
+    /**
      * The Query Engine
      */
     engine: QueryEngine<any>;
 
     /**
-     * Form Group for the drag and drop build query
+     * Feed model from NgModel
      */
-    buildQueryFormGroup: FormGroup;
-
-    /**
-     * Form Group for the wrangler
-     */
-    transformDataFormGroup: FormGroup;
-
-    /**
-     * Form group for the save step
-     */
-    saveStepFormGroup: FormGroup;
+    feed: Feed;
 
     /**
      * Constructs a {@code VisualQueryComponent}.
      */
-    constructor(private _formBuilder: FormBuilder, @Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
+    constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
                 @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory) {
-        // Manage the sidebar navigation
         console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
 
+        // Manage the sidebar navigation
         this.sideNavService.hideSideNav();
-        this.initFormGroups();
-    }
-
-    /**
-     * Navigates to the Feeds page when the stepper is cancelled.
-     */
-    cancelStepper() {
-        this.stateService.navigateToHome();
     }
 
     /**
@@ -111,11 +101,29 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
         });
     }
 
-    private initFormGroups() {
-        this.buildQueryFormGroup = this._formBuilder.group({});
-        this.transformDataFormGroup = this._formBuilder.group({
-        });
-        this.saveStepFormGroup = this._formBuilder.group({});
+    /**
+     * Emits a cancel event or navigates to the Feeds page when the stepper is cancelled.
+     */
+    onCancel() {
+        if (this.cancel.observers.length !== 0) {
+            this.cancel.emit();
+        } else {
+            this.stateService.navigateToHome();
+        }
+    }
+
+    /**
+     * Sets the feed for the transformations.
+     */
+    setFeed(feed: Feed) {
+        if (feed != null) {
+            this.feed = feed;
+
+            if (typeof feed.dataTransformation !== "object" || feed.dataTransformation === null) {
+                feed.dataTransformation = this.dataModel.model;
+            } else {
+                this.dataModel.model = feed.dataTransformation;
+            }
+        }
     }
 }
-

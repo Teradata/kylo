@@ -53,6 +53,7 @@ import {WranglerTableService} from "./transform-data/services/wrangler-table.ser
 import {TransformDataComponent} from "./transform-data/transform-data.component";
 import {VisualQueryPainterService} from "./transform-data/visual-query-table/visual-query-painter.service";
 import {VisualQueryTable} from "./transform-data/visual-query-table/visual-query-table.component";
+import {VisualQueryControlDirective} from "./visual-query-control.directive";
 import {visualQueryStates} from "./visual-query-states";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import {INJECTOR} from "./wrangler/api/index";
@@ -74,6 +75,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         SaveOptionsComponent,
         TransformDataComponent,
         UploadSampleFileComponent,
+        VisualQueryControlDirective,
         VisualQueryProfileStatsController,
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
@@ -89,6 +91,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         BuildQueryComponent,
         ConnectionDialog,
         UploadSampleFileComponent,
+        VisualQueryControlDirective,
         VisualQueryStepperComponent
     ],
     imports: [
@@ -130,8 +133,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         ReactiveFormsModule,
         SqlEditorModule,
         TranslateModule.forChild(),
-        WranglerModule,
-        UIRouterModule.forChild({states: visualQueryStates})
+        WranglerModule
     ],
     providers: [
         {provide: INJECTOR, useFactory: () => QueryEngineFactory.$$wranglerInjector},
@@ -151,4 +153,13 @@ export class VisualQueryModule {
             ]
         });
     }
+}
+
+@NgModule({
+    imports: [
+        VisualQueryModule,
+        UIRouterModule.forChild({states: visualQueryStates})
+    ]
+})
+export class VisualQueryRouterModule {
 }

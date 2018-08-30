@@ -53,8 +53,8 @@
         <button mat-raised-button class="mat-accent" (click)="onAddFunction()" [disabled]="!currentFormula" class="text-upper">Add</button>
         <span fxFlex="1 1 auto"></span>
         <div fxLayout="row">
-          <button mat-button (click)="goBack()" type="button" class="text-upper">Back</button>
-          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid" class="text-upper">Next</button>
+          <button mat-button (click)="back.emit()" type="button" class="text-upper">Back</button>
+          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid" class="text-upper">{{nextButton}}</button>
         </div>
       </div>
     </mat-toolbar>

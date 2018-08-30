@@ -1,5 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Inject, Input, OnChanges, OnInit, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
-import {MatStepper} from "@angular/material/stepper";
+import {AfterViewInit, Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {CodemirrorComponent} from "ng2-codemirror";
 import {Subject} from "rxjs/Subject";
@@ -10,6 +9,7 @@ import {CloneUtil} from "../../../common/utils/clone-util";
 import BroadcastService from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {FeedService} from '../../services/FeedService';
@@ -65,13 +65,34 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     engine: QueryEngine<any>;
 
     /**
+     * Feed model
+     */
+    @Input()
+    feedModel: Feed;
+
+    /**
      * Data transformation model
      */
     @Input()
     model: FeedDataTransformation;
 
+    /**
+     * Label for the "NEXT" button
+     */
     @Input()
-    stepper: MatStepper;
+    nextButton: string;
+
+    /**
+     * Event emitted to return to the previous step
+     */
+    @Output()
+    back = new EventEmitter<void>();
+
+    /**
+     * Event emitted to advance to the next step
+     */
+    @Output()
+    next = new EventEmitter<void>();
 
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
@@ -207,7 +228,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     heightOffset: string = "0";
 
     @Input()
-    warnWhenLeaving?:boolean = true;
+    warnWhenLeaving?: boolean = true;
 
     /**
      * Validation results for current transformation.
@@ -252,7 +273,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     }
 
     ngOnInit(): void {
-        if(this.warnWhenLeaving) {
+        if (this.warnWhenLeaving) {
             // Display prompt on window unload
             this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
@@ -1133,7 +1154,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         // Add unsaved filters
 
         // Check if updates are necessary
-        let feedModel = this.feedService.createFeedModel;
+        let feedModel = (this.feedModel != null) ? this.feedModel : this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
             return new Promise((resolve, reject) => reject(true));
@@ -1250,11 +1271,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.executingQuery = false;
     }
 
-    goBack() {
-        this.stepper.previous();
-    }
-
     goForward() {
-        this.stepper.next();
+        this.saveToFeedModel().then(() => this.next.emit());
     }
 }

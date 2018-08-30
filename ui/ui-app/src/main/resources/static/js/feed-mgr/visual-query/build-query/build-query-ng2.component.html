@@ -61,8 +61,8 @@
           <div fxFlex *ngIf="advancedMode" ></div>
 
           <div fxLayout="row">
-            <button mat-button (click)="cancel()" type="button" *ngIf="showCancel" class="text-upper">Cancel</button>
-            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!form.valid" class="text-upper">Next</button>
+            <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" class="text-upper">Cancel</button>
+            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="next.emit()" type="button" [disabled]="!form.valid" class="text-upper">Next</button>
           </div>
         </div>
 
