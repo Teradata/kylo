@@ -1,6 +1,6 @@
 import AccessConstants from "../../constants/AccessConstants";
 import { Ng2StateDeclaration } from "@uirouter/angular";
-import { JobsPageController } from "./JobsPageController.component";
+import { JobsPageComponent } from "./JobsPage.component";
 
 export const jobStates: Ng2StateDeclaration[] = [ 
     { 
@@ -12,7 +12,7 @@ export const jobStates: Ng2StateDeclaration[] = [
         },
         views: {
             'content': {
-                component: JobsPageController
+                component: JobsPageComponent
             }
         },
         data:{

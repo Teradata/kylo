@@ -1,5 +1,4 @@
 import * as _ from 'underscore';
-import "../module";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import { Injectable } from "@angular/core";
 import { ObjectUtils } from '../../common/utils/object-utils';

@@ -40,8 +40,8 @@ import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import * as angular from "angular";
-import { JobsPageController } from "./JobsPageController.component";
-import { JobsCardController, abandonAllDialogController, JobFilterHelpPanelMenuCtrl } from "./JobsCardController.component";
+import { JobsPageComponent } from "./JobsPage.component";
+import { JobsCardComponent, abandonAllDialogController, JobFilterHelpPanelMenuCtrl } from "./JobsCard.component";
 import TabService from "../services/TabService";
 import OpsManagerJobService from "../services/OpsManagerJobService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
@@ -50,14 +50,14 @@ import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
 
 @NgModule({
     declarations: [
-        JobsPageController,
-        JobsCardController,
+        JobsPageComponent,
+        JobsCardComponent,
         abandonAllDialogController,
         JobFilterHelpPanelMenuCtrl
     ],
     entryComponents: [
-        JobsPageController,
-        JobsCardController,
+        JobsPageComponent,
+        JobsCardComponent,
         JobFilterHelpPanelMenuCtrl
     ],
     imports: [
@@ -94,6 +94,10 @@ import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
         MatTabsModule,
         OpsManagerServicesModule,
         UIRouterModule.forChild({states: jobStates})
+    ],
+    exports:[
+        JobsPageComponent,
+        JobsCardComponent,
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [ {provide: "$injector", useFactory: () => angular.element(document.body).injector()}

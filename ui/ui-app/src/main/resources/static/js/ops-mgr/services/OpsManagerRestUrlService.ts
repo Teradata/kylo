@@ -1,6 +1,3 @@
-import * as angular from "angular";
-// import {moduleName} from "../module-name";
-// import "../module";
 import { Injectable } from "@angular/core";
 
 @Injectable()

@@ -1,4 +1,6 @@
-import 'angular';
+import * as angular from 'angular';
+import {moduleName} from './module-name';
+
 import "./services/AlertsService";
 import "./services/AlertsServiceV2";
 import "./services/EventService";
@@ -12,3 +14,28 @@ import "./services/ProvenanceEventStatsService";
 import "./services/ServicesStatusService";
 import "./services/TabService";
 import "./services/OpsManagerDashboardService";
+import { downgradeInjectable } from '@angular/upgrade/static';
+import AlertsService from './services/AlertsService';
+import AlertsServiceV2 from './services/AlertsServiceV2';
+import ChartJobStatusService from './services/ChartJobStatusService';
+import IconService from './services/IconStatusService';
+import Nvd3ChartService from './services/Nvd3ChartService';
+import OpsManagerDashboardService from './services/OpsManagerDashboardService';
+import { OpsManagerFeedService } from './services/OpsManagerFeedService';
+import OpsManagerRestUrlService from './services/OpsManagerRestUrlService';
+import ProvenanceEventStatsService from './services/ProvenanceEventStatsService';
+import ServicesStatusData from './services/ServicesStatusService';
+import TabService from './services/TabService';
+
+
+angular.module(moduleName) .service('AlertsService',downgradeInjectable(AlertsService));
+angular.module(moduleName) .service('AlertsServiceV2',downgradeInjectable(AlertsServiceV2));
+angular.module(moduleName) .service('ChartJobStatusService',downgradeInjectable(ChartJobStatusService));
+angular.module(moduleName) .service('IconService',downgradeInjectable(IconService));
+angular.module(moduleName) .service('Nvd3ChartService',downgradeInjectable(Nvd3ChartService));
+angular.module(moduleName) .service('OpsManagerDashboardService',downgradeInjectable(OpsManagerDashboardService));
+angular.module(moduleName) .service('OpsManagerFeedService',downgradeInjectable(OpsManagerFeedService));
+angular.module(moduleName) .service('OpsManagerRestUrlService',downgradeInjectable(OpsManagerRestUrlService));
+angular.module(moduleName) .service('ProvenanceEventStatsService',downgradeInjectable(ProvenanceEventStatsService));
+angular.module(moduleName) .service('ServicesStatusData',downgradeInjectable(ServicesStatusData));
+angular.module(moduleName) .service('TabService',downgradeInjectable(TabService));

@@ -6,7 +6,7 @@ import { StateService } from "@uirouter/core";
     selector: 'jobs-page-controller',
     templateUrl: 'js/ops-mgr/jobs/jobs.html'
 })
-export class JobsPageController implements ng.IComponentController{
+export class JobsPageComponent implements ng.IComponentController{
 
     filter: any;
     tab: any;

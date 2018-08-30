@@ -1,6 +1,8 @@
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export default class ProvenanceEventStatsService{
     loading : boolean = false;
     constructor(

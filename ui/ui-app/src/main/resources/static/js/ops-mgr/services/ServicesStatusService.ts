@@ -1,7 +1,9 @@
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 import IconService from "./IconStatusService";
 import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export default class ServicesStatusData {
 
     SERVICES_URL: string = this.opsManagerRestUrlService.SERVICES_URL;

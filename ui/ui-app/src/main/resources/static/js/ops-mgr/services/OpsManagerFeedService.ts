@@ -1,4 +1,5 @@
 import * as moment from "moment";
+import * as _ from "underscore";
 import IconService from "./IconStatusService";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 import { HttpClient } from "@angular/common/http";
@@ -7,8 +8,6 @@ import { Injectable } from "@angular/core";
 @Injectable()
 export class OpsManagerFeedService {
     FEED_HEALTH_URL: string = this.opsManagerRestUrlService.FEED_HEALTH_URL;
-    FEED_NAMES_URL:string =  this.opsManagerRestUrlService.FEED_NAMES_URL;
-    FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL: string = this.opsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL;
     FEED_HEALTH_COUNT_URL: string =  this.opsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
     FETCH_FEED_HEALTH_INTERVAL: number = 5000;
     fetchFeedHealthInterval: any = null;
@@ -94,7 +93,7 @@ export class OpsManagerFeedService {
             if (response) {
                response.forEach((feedHealth: any)=> {
                     if (this.feedHealth[feedHealth.feed]) {
-                       this.feedHealth[feedHealth.feed] = [...this.feedHealth[feedHealth.feed], ...feedHealth];
+                       this.feedHealth[feedHealth.feed] = _.extend(this.feedHealth[feedHealth.feed], feedHealth);
                     }
                     else {
                         this.feedHealth[feedHealth.feed] = feedHealth;
