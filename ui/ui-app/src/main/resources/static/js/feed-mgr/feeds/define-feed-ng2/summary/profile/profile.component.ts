@@ -27,7 +27,6 @@ export class ProfileComponent extends AbstractLoadFeedComponent implements OnIni
     }
 
     ngOnInit() {
-        console.log("on init");
         let feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.initializeFeed(feedId);
     }

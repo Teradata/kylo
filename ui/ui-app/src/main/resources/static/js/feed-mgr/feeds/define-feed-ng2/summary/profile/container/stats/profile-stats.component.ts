@@ -301,7 +301,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * Updates the profile data with changes to the model.
      */
     onModelChange = () => {
-        console.log('onModelChange');
         // Determine column names
         if (angular.isArray(this.model) && this.model.length > 0) {
             if (angular.isDefined(this.model[0].columnName)) {
@@ -363,8 +362,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * @returns {Array.<Object>} the graph data
      */
     getPercData = () => {
-        console.log('percData');
-
         var values = [];
 
         values.push({ label: "Nulls", value: this.findNumericStat(this.filtered, 'PERC_NULL_VALUES') });
@@ -512,8 +509,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * @returns {Array.<Object>} the graph data
      */
     getSummaryData() {
-        console.log('getSummaryData');
-
         var nulls = this.findNumericStat(this.filtered, 'NULL_COUNT');
         var empty = this.findNumericStat(this.filtered, 'EMPTY_COUNT');
         var unique = this.findNumericStat(this.filtered, 'UNIQUE_COUNT');
@@ -543,7 +538,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * Updates the Summary and Relative Statistics charts.
      */
     updateCharts = () => {
-        console.log('updateCharts');
         if (angular.isDefined(this.summaryApi.update)) {
             this.summaryApi.update();
         }

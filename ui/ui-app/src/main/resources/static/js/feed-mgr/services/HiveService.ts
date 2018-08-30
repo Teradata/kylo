@@ -14,7 +14,6 @@ export class HiveService {
     static $inject = ["$q", "$http", "$mdDialog"];
 
     constructor(private $q: angular.IQService, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService) {
-        console.log("created Hive Service");
     }
 
     refreshTableCache() {
