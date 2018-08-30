@@ -5,6 +5,7 @@ import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
+import {StepperSelectionEvent} from "@angular/cdk/stepper";
 
 @Component({
     selector: 'visual-query-stepper',
@@ -64,6 +65,11 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     feed: Feed;
 
     /**
+     * Indicates if the transform step has been visited
+     */
+    visitedTransform = false;
+
+    /**
      * Constructs a {@code VisualQueryComponent}.
      */
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
@@ -109,6 +115,15 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
             this.cancel.emit();
         } else {
             this.stateService.navigateToHome();
+        }
+    }
+
+    /**
+     * Called when the selected step changes.
+     */
+    onStepChange(selection: StepperSelectionEvent) {
+        if (selection.selectedIndex === 1) {
+            this.visitedTransform = true;
         }
     }
 
