@@ -69,5 +69,4 @@ export enum SaveResponseStatus {
     ERROR = "ERROR",
     PENDING = "PENDING",
     SUCCESS = "SUCCESS",
-    LIVY_PENDING = "LIVY_PENDING"
 }

@@ -78,7 +78,6 @@ public class SimpleResponse {
          * Transformation is in-progress
          */
         PENDING,
-        LIVY_PENDING,
 
         /**
          * Transformation was successful

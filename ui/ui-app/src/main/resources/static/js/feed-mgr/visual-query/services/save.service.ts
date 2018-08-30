@@ -111,7 +111,7 @@ export class VisualQuerySaveService {
         let notification = this.notifications[response.id];
         if (notification == null && response.status !== SaveResponseStatus.SUCCESS) {
             notification = this.notificationService.addNotification(this.getMessage(request), "transform");
-            notification.loading = (response.status === SaveResponseStatus.PENDING || response.status === SaveResponseStatus.LIVY_PENDING);
+            notification.loading = (response.status === SaveResponseStatus.PENDING);
             this.notifications[response.id] = notification;
         }
 
