@@ -854,5 +854,40 @@
             "DATA_TRANSFORMATIONS": "Data Transformations",
             "QUERY": "Query"
         }
+    },
+
+    "Profile": {
+        "Stats": {
+            "ShowOnlyProfiled": "Show Only Profiled",
+            "NoResults": "No results found",
+            "Summary": "Summary",
+            "RelativeStats": "Relative Statistics",
+            "TopValues": "Top Values",
+            "Value": "Value",
+            "Count": "Count",
+            "NumericStats": "Numeric Stats",
+            "StringStats": "String Stats",
+            "TimeStats": "Time Stats",
+            "Nulls": "Nulls",
+            "Unique": "Unique",
+            "Duplicates": "Duplicates",
+            "Minimum": "Minimum",
+            "Maximum": "Maximim",
+            "Mean": "Mean",
+            "StdDev": "StdDev",
+            "Variance": "Variance",
+            "Sum": "Sum",
+            "Longest": "Longest",
+            "Shortest": "Shortest",
+            "MinCaseSensitive": "Min (Case Sensitive)",
+            "MaxCaseSensitive": "Max (Case Sensitive)",
+            "MinCaseInsensitive": "Min (Case Insensitive)",
+            "MaxCaseInsensitive": "Max (Case Insensitive)",
+            "Total": "Total",
+            "Valid": "Valid",
+            "Invalid": "Invalid",
+            "Missing": "Missing"
+        }
     }
+
 }

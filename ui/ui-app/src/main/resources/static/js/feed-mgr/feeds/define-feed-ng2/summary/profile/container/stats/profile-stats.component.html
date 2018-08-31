@@ -1,7 +1,7 @@
 <div fxFlex fxLayout="row" layout-xs="column" class="profile-stats-panel">
   <div fxFlex="20" flex-xs="100">
     <mat-checkbox aria-label="Profiled" [(ngModel)]="showOnlyProfiled">
-      <span class="hint">Show Only Profiled</span>
+      <span class="hint" translate>Profile.Stats.ShowOnlyProfiled</span>
     </mat-checkbox>
 
     <mat-nav-list class="profile-columns">
@@ -18,7 +18,7 @@
             <mat-divider *ngIf="!$last"></mat-divider>
           </div>
         </ng-template>
-        <a mat-list-item *ngIf="data.length == 0">No results found</a>
+        <a mat-list-item *ngIf="data.length == 0" translate>Profile.Stats.NoResults</a>
       </td-virtual-scroll-container>
     </mat-nav-list>
   </div>
@@ -28,7 +28,7 @@
       <div *ngIf="selectedRow.columnName == '(ALL)'" fxLayout="row" fxFlex="100">
         <div fxLayout="column" fxFlex="33">
           <div fxFlex="100">
-            <div class="subhead">Summary</div>
+            <div class="subhead" translate>Profile.Stats.Summary</div>
             <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
           </div>
         </div>
@@ -37,12 +37,12 @@
       <div *ngIf="selectedRow.columnName != '(ALL)'" fxLayout="row" layout-xs="column" fxFlex="100">
         <div fxLayout="column" fxFlex="33" flex-xs="100" class="stats-panel">
           <div fxFlex="100">
-            <div class="subhead">Summary</div>
+            <div class="subhead" translate>Profile.Stats.Summary</div>
             <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
           </div>
         </div>
         <div fxLayout="column" fxFlex="33" flex-xs="100" class="stats-panel">
-          <div class="subhead">Relative Statistics</div>
+          <div class="subhead" translate>Profile.Stats.RelativeStats</div>
           <div>
             <nvd3 flex [options]="percOptions" [data]="percData"></nvd3>
           </div>
@@ -51,15 +51,15 @@
         <div fxLayout="column" fxFlex="33" flex-xs="100">
 
           <div class="stats-panel">
-            <div class="subhead">Top Values</div>
+            <div class="subhead" translate>Profile.Stats.TopValues</div>
             <mat-list>
               <mat-list-item>
                 <div fxFlex="90" fxLayout="row">
                   <div fxFlex="90">
-                    <span class="hint">Value</span>
+                    <span class="hint" translate>Profile.Stats.Value</span>
                   </div>
                   <div fxFlex="10">
-                    <span class="hint">Count</span>
+                    <span class="hint" translate>Profile.Stats.Count</span>
                   </div>
                 </div>
                 <mat-divider></mat-divider>
@@ -76,13 +76,12 @@
                 </div>
                 <mat-divider *ngIf="!isLast"></mat-divider>
               </mat-list-item>
-              <mat-list-item *ngIf="topvalues && topvalues.length == 0">No results found</mat-list-item>
+              <mat-list-item *ngIf="topvalues && topvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
             </mat-list>
           </div>
 
-          <!-- Numeric stats -->
           <div *ngIf="selectedRow.profile == 'Numeric'" fxLayout="column" fxFlex="100" class="stats-panel">
-            <div class="subhead">Numeric Stats</div>
+            <div class="subhead" translate>Profile.Stats.NumericStats</div>
             <mat-list>
               <mat-list-item class="md-secondary" *ngFor="let row of numericvalues; last as isLast;">
                 <div fxLayout="row" fxFlex="90">
@@ -95,13 +94,12 @@
                 </div>
                 <mat-divider *ngIf="!isLast"></mat-divider>
               </mat-list-item>
-              <mat-list-item *ngIf="numericvalues.length == 0">No results found</mat-list-item>
+              <mat-list-item *ngIf="numericvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
             </mat-list>
           </div>
 
-          <!-- String stats -->
           <div *ngIf="selectedRow.profile == 'String'" fxLayout="column" fxFlex="100" class="stats-panel">
-            <div class="subhead">String Stats</div>
+            <div class="subhead" translate>Profile.Stats.StringStats</div>
             <mat-list>
               <mat-list-item *ngFor="let row of stringvalues; last as isLast;" class="string-stats-item">
                 <div fxLayout="row" fxFlex="90">
@@ -114,12 +112,11 @@
                 </div>
                 <mat-divider *ngIf="!$last"></mat-divider>
               </mat-list-item>
-              <mat-list-item *ngIf="stringvalues.length == 0">No results found</mat-list-item>
+              <mat-list-item *ngIf="stringvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
             </mat-list>
 
-            <!-- Numeric stats -->
             <div *ngIf="selectedRow.profile == 'Time'" fxLayout="column" fxFlex="100" class="stats-panel">
-              <div class="subhead">Time Stats</div>
+              <div class="subhead" translate>Profile.Stats.TimeStats</div>
               <mat-list>
                 <mat-list-item *ngFor="let row of timevalues; last as isLast;">
                   <div fxLayout="row" fxFlex="100">
@@ -132,7 +129,7 @@
                   </div>
                   <mat-divider *ngIf="!isLast"></mat-divider>
                 </mat-list-item>
-                <mat-list-item *ngIf="timevalues.length == 0">No results found</mat-list-item>
+                <mat-list-item *ngIf="timevalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
               </mat-list>
             </div>
           </div>

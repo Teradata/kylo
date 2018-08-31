@@ -4,16 +4,10 @@ import * as _ from 'underscore';
 import 'd3';
 import 'nvd3';
 import {OnChanges, SimpleChanges} from '@angular/core/src/metadata/lifecycle_hooks';
+import {TranslateService} from '@ngx-translate/core';
 
 declare let d3: any;
 
-
-export class ProfileMetric {
-    private columnName: string;
-    private metricType: string;
-    private metricValue: string;
-    private processing_dttm: string;
-}
 
 @Component({
     selector: "profile-stats2",
@@ -115,13 +109,51 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
 
     private summaryData: { key: string; values: any[] }[];
     private percData: { key: string; values: any[] }[];
+    private labelNulls: string;
+    private labelUnique: string;
+    private labelDuplicates: string;
+    private labelMinimum: string;
+    private labelMaximum: string;
+    private labelMean: string;
+    private labelStdDev: string;
+    private labelVariance: string;
+    private labelSum: string;
+    private labelLongest: string;
+    private labelShortest: string;
+    private labelMinCaseSensitive: string;
+    private labelMaxCaseSensitive: string;
+    private labelMinCaseInsensitive: string;
+    private labelMaxCaseInsensitive: string;
+    private labelTotal: string;
+    private labelValid: string;
+    private labelInvalid: string;
+    private labelMissing: string;
 
-
-    constructor(private $$angularInjector: Injector) {
+    constructor(private $$angularInjector: Injector, private translateService: TranslateService) {
         this.$timeout = $$angularInjector.get("$timeout");
         this.hiveService = $$angularInjector.get("HiveService");
 
-            /**
+        this.labelNulls = this.translateService.instant("Profile.Stats.Nulls");
+        this.labelUnique = this.translateService.instant("Profile.Stats.Unique");
+        this.labelDuplicates = this.translateService.instant("Profile.Stats.Duplicates");
+        this.labelMinimum = this.translateService.instant("Profile.Stats.Minimum");
+        this.labelMaximum = this.translateService.instant("Profile.Stats.Maximum");
+        this.labelMean = this.translateService.instant("Profile.Stats.Mean");
+        this.labelStdDev = this.translateService.instant("Profile.Stats.StdDev");
+        this.labelVariance = this.translateService.instant("Profile.Stats.Variance");
+        this.labelSum = this.translateService.instant("Profile.Stats.Sum");
+        this.labelLongest = this.translateService.instant("Profile.Stats.Longest");
+        this.labelShortest = this.translateService.instant("Profile.Stats.Shortest");
+        this.labelMinCaseSensitive = this.translateService.instant("Profile.Stats.MinCaseSensitive");
+        this.labelMaxCaseSensitive = this.translateService.instant("Profile.Stats.MaxCaseSensitive");
+        this.labelMinCaseInsensitive = this.translateService.instant("Profile.Stats.MinCaseInsensitive");
+        this.labelMaxCaseInsensitive = this.translateService.instant("Profile.Stats.MaxCaseInsensitive");
+        this.labelTotal = this.translateService.instant("Profile.Stats.Total");
+        this.labelValid = this.translateService.instant("Profile.Stats.Valid") ;
+        this.labelInvalid = this.translateService.instant("Profile.Stats.Invalid");
+        this.labelMissing = this.translateService.instant("Profile.Stats.Missing");
+
+        /**
          * Options for the Relative Statistics chart.
          * @type {Object}
          */
@@ -356,6 +388,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         }, this.chartDuration);
     };
 
+
     /**
      * Gets the data for the Relative Statistics graph.
      *
@@ -364,9 +397,9 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     getPercData = () => {
         var values = [];
 
-        values.push({ label: "Nulls", value: this.findNumericStat(this.filtered, 'PERC_NULL_VALUES') });
-        values.push({ label: "Unique", value: this.findNumericStat(this.filtered, 'PERC_UNIQUE_VALUES') });
-        values.push({ label: "Duplicates", value: this.findNumericStat(this.filtered, 'PERC_DUPLICATE_VALUES') });
+        values.push({ label: this.labelNulls, value: this.findNumericStat(this.filtered, 'PERC_NULL_VALUES') });
+        values.push({ label: this.labelUnique, value: this.findNumericStat(this.filtered, 'PERC_UNIQUE_VALUES') });
+        values.push({ label: this.labelDuplicates, value: this.findNumericStat(this.filtered, 'PERC_DUPLICATE_VALUES') });
 
         return [{ key: "Stats", values: values }];
     };
@@ -398,12 +431,12 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         this.numericvalues = values;
 
         if (this.selectedRow.profile === "Numeric") {
-            values.push({ "name": "Minimum", "value": this.findNumericStat(this.filtered, 'MIN') });
-            values.push({ "name": "Maximum", "value": this.findNumericStat(this.filtered, 'MAX') });
-            values.push({ "name": "Mean", "value": this.findNumericStat(this.filtered, 'MEAN') });
-            values.push({ "name": "Std Dev", "value": this.findNumericStat(this.filtered, 'STDDEV') });
-            values.push({ "name": "Variance", "value": this.findNumericStat(this.filtered, 'VARIANCE') });
-            values.push({ "name": "Sum", "value": this.findNumericStat(this.filtered, 'SUM') });
+            values.push({ "name": this.labelMinimum, "value": this.findNumericStat(this.filtered, 'MIN') });
+            values.push({ "name": this.labelMaximum, "value": this.findNumericStat(this.filtered, 'MAX') });
+            values.push({ "name": this.labelMean, "value": this.findNumericStat(this.filtered, 'MEAN') });
+            values.push({ "name": this.labelStdDev, "value": this.findNumericStat(this.filtered, 'STDDEV') });
+            values.push({ "name": this.labelVariance, "value": this.findNumericStat(this.filtered, 'VARIANCE') });
+            values.push({ "name": this.labelSum, "value": this.findNumericStat(this.filtered, 'SUM') });
         }
 
     };
@@ -442,12 +475,12 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         var vals: any = [];
         this.stringvalues = vals;
         if (this.selectedRow.profile === "String") {
-            vals.push({ name: "Longest", value: this.findStat(this.filtered, 'LONGEST_STRING') });
-            vals.push({ name: "Shortest", value: this.findStat(this.filtered, 'SHORTEST_STRING') });
-            vals.push({ name: "Min (Case Sensitive)", value: this.findStat(this.filtered, 'MIN_STRING_CASE') });
-            vals.push({ name: "Max (Case Sensitive)", value: this.findStat(this.filtered, 'MAX_STRING_CASE') });
-            vals.push({ name: "Min (Case Insensitive)", value: this.findStat(this.filtered, 'MIN_STRING_ICASE') });
-            vals.push({ name: "Max (Case Insensitive)", value: this.findStat(this.filtered, 'MAX_STRING_ICASE') });
+            vals.push({ name: this.labelLongest, value: this.findStat(this.filtered, 'LONGEST_STRING') });
+            vals.push({ name: this.labelShortest, value: this.findStat(this.filtered, 'SHORTEST_STRING') });
+            vals.push({ name: this.labelMinCaseSensitive, value: this.findStat(this.filtered, 'MIN_STRING_CASE') });
+            vals.push({ name: this.labelMaxCaseSensitive, value: this.findStat(this.filtered, 'MAX_STRING_CASE') });
+            vals.push({ name: this.labelMinCaseInsensitive, value: this.findStat(this.filtered, 'MIN_STRING_ICASE') });
+            vals.push({ name: this.labelMaxCaseInsensitive, value: this.findStat(this.filtered, 'MAX_STRING_ICASE') });
         }
     };
 
@@ -458,8 +491,8 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         var timeVals: any = [];
         this.timevalues = timeVals;
         if (this.selectedRow.profile === "Time") {
-            timeVals.push({ name: "Maximum", value: this.findStat(this.filtered, 'MAX_TIMESTAMP') });
-            timeVals.push({ name: "Minimum", value: this.findStat(this.filtered, 'MIN_TIMESTAMP') });
+            timeVals.push({ name: this.labelMaximum, value: this.findStat(this.filtered, 'MAX_TIMESTAMP') });
+            timeVals.push({ name: this.labelMinimum, value: this.findStat(this.filtered, 'MIN_TIMESTAMP') });
         }
     };
 
@@ -522,13 +555,13 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         }
 
         var values = [];
-        values.push({ "label": "Total", "value": this.totalRows });
-        values.push({ "label": "Valid", "value": valid, "color": color });
-        values.push({ "label": "Invalid", "value": invalid });
+        values.push({ "label": this.labelTotal, "value": this.totalRows });
+        values.push({ "label": this.labelValid, "value": valid, "color": color });
+        values.push({ "label": this.labelInvalid, "value": invalid });
 
         if (this.selectedRow.columnName !== '(ALL)') {
-            values.push({ "label": "Unique", "value": unique });
-            values.push({ "label": "Missing", "value": nulls + empty });
+            values.push({ "label": this.labelUnique, "value": unique });
+            values.push({ "label": this.labelMissing, "value": nulls + empty });
         }
 
         return [{ key: "Summary", values: values }];
