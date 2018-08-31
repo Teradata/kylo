@@ -4,6 +4,8 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 
 @Component({
     selector: "define-feed-overview",
@@ -14,11 +16,17 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
 
     static LOADER = "OverviewComponent.LOADER";
 
+    static LINK_NAME = "Summary"
+
     @Input() stateParams: any;
 
 
-    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService) {
-        super(feedLoadingService, stateService, defineFeedService);
+    getLinkName(){
+        return OverviewComponent.LINK_NAME;
+    }
+
+    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService) {
+        super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
      }
 
     ngOnInit() {
@@ -27,9 +35,11 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
     }
 
     onStepSelected(step: Step) {
-        if (!step.isDisabled()) {
+      //  if (!step.isDisabled()) {
             let params = {"feedId": this.feed.id};
             this.stateService.go(step.sref, params, {location: "replace"})
-        }
+        //}
     }
+
+
 }

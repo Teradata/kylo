@@ -1,4 +1,4 @@
-import {Component, Injector, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
+import {Component, ContentChild, Injector, Input, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 import {DefineFeedService} from "../../services/define-feed.service";
@@ -13,20 +13,10 @@ import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent"
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedLink} from "../../shared/feed-link.model";
 
 
-export class FeedLink{
-    sref:string;
-    constructor(public label:string,sref:string, private icon:string,isShort:boolean = true) {
-        if(isShort) {
-            this.sref = FEED_DEFINITION_SECTION_STATE_NAME+"."+sref;
-        }
-        else {
-            this.sref = sref;
-        }
-    }
-
-}
 
 
 @Component({
@@ -39,9 +29,13 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     @Input()
     stateParams :any;
 
-    public savingFeed:boolean;
+    @Input()
+    toolbarActionLinks:TemplateRef<any>;
 
-    feedLinks:FeedLink[] = [new FeedLink("Lineage",'feed-lineage',"graphic_eq",),new FeedLink("Profile","profile","track_changes"),new FeedLink("SLA","sla","beenhere"),new FeedLink("Versions","version-history","history")];
+    @ViewChild("defaultToolbarActionLinks")
+    defaultToolbarActionLinks:TemplateRef<any>;
+
+    public savingFeed:boolean;
 
     /**
      * copy of the feed name.
@@ -49,11 +43,15 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
      */
     public feedName:string;
 
+    currentLink:FeedLink = FeedLink.emptyLink() ;
+
     constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
-                private viewContainerRef: ViewContainerRef,public snackBar: MatSnackBar) {
-        super(feedLoadingService, stateService,defineFeedService);
+                private viewContainerRef: ViewContainerRef,public snackBar: MatSnackBar,
+                feedSideNavService:FeedSideNavService) {
+        super(feedLoadingService, stateService,defineFeedService, feedSideNavService);
           let sideNavService = $$angularInjector.get("SideNavService");
           sideNavService.hideSideNav();
+          this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
     }
 
     ngOnInit() {
@@ -63,6 +61,13 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
 
     ngOnDestroy() {
 
+    }
+
+    onFeedLinkChanged(link:FeedLinkSelectionChangedEvent){
+        this.currentLink = link.newLink;
+        //see if we have an action template
+        let templateRef = this.feedSideNavService.getLinkTemplateRef(this.currentLink.label);
+        this.toolbarActionLinks = templateRef;
     }
 
 

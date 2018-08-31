@@ -6,6 +6,7 @@ import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FeedSideNavService} from "./feed-side-nav.service";
 
 
 export abstract class AbstractLoadFeedComponent  {
@@ -14,9 +15,20 @@ export abstract class AbstractLoadFeedComponent  {
 
     public feed: Feed;
 
-    protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService){
+    protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
 
     }
+
+    /**
+     * return the label of the side nav link
+     * @return {string}
+     */
+    getLinkName():string {
+        return "";
+    }
+
+
+
 
     private loadFeed(feedId:string) :Observable<Feed>{
         this.registerLoading();
@@ -49,6 +61,12 @@ export abstract class AbstractLoadFeedComponent  {
     }
 
     initializeFeed(feedId:string){
+
+        let linkName =this.getLinkName();
+        if(linkName && linkName != ''){
+            //attempt to select it
+            this.feedSideNavService.selectLinkByName(linkName);
+        }
         if(this.feed == undefined) {
             let feed = this.defineFeedService.getFeed();
             if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {

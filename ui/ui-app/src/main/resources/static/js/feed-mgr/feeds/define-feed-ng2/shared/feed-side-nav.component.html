@@ -1,24 +1,23 @@
 <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">Feeds</mat-toolbar>
 <div td-sidenav-content>
   <mat-nav-list>
-    <a mat-list-item [ngClass]="{'selected-step': (isSummarySelected())}" (click)="onSummarySelected()" >
+    <a mat-list-item [ngClass]="{'selected-step': summaryLink.selected}" (click)="onLinkSelected(summaryLink)" >
       <h3 matLine>Summary</h3>
       <span></span>
     </a>
     <h3 mat-subheader>Feed Definition</h3>
     <mat-divider></mat-divider>
-    <ng-template let-step let-last="last" ngFor [ngForOf]="feed.steps">
-      <a mat-list-item (click)="onStepSelected(step)" class="pad-left-sm" [ngClass]="{'selected-step': (isSelectedStep(step)), 'disabled-step':step.disabled}">
-        <h3 matLine>{{step.name}}</h3>
+    <ng-template let-link let-last="last" ngFor [ngForOf]="stepLinks">
+      <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
+        <h3 matLine>{{link.label}}</h3>
         <span></span>
-        <mat-icon color="accent" *ngIf="step.complete">check</mat-icon>
       </a>
     </ng-template>
 
     <mat-divider></mat-divider>
     <h3 mat-subheader>Links</h3>
     <ng-template let-link let-last="last" ngFor [ngForOf]="feedLinks">
-      <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': (isSelected(link.sref))}">
+      <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
         <mat-icon mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
         <div matLine>{{link.label}}</div>
         <span></span>

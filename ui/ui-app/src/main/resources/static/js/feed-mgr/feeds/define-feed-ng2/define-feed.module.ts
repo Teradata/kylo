@@ -67,7 +67,6 @@ import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-fe
 import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-sample/define-feed-step-source-sample-datasource.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
-import {DefineFeedSummaryComponent} from "./summary/define-feed-summary.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
 import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
@@ -75,13 +74,17 @@ import {ProfileStatsComponent} from './summary/profile/container/stats/profile-s
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 import {ProfileComponent} from './summary/profile/profile.component';
 
+import {DatasetCollectionPreviewDialogComponent} from "./steps/source-sample/dataset-collection-preview-dialog.component";
+import {DatasetCollectionPreviewCartComponent} from "./steps/source-sample/dataset-collection-preview-cart.component";
+import {MatExpansionModule} from "@angular/material/expansion";
+import {FeedSideNavService} from "./shared/feed-side-nav.service";
+
 @NgModule({
     declarations: [
         ProfileContainerComponent,
         ProfileHistoryComponent,
         DefineFeedComponent,
         DefineFeedSelectTemplateComponent,
-        DefineFeedSummaryComponent,
         DefineFeedContainerComponent,
         DefineFeedStepCardComponent,
         DefineFeedStepGeneralInfoComponent,
@@ -101,16 +104,20 @@ import {ProfileComponent} from './summary/profile/profile.component';
         CategoryAutocompleteComponent,
         SystemFeedNameComponent,
         NewFeedDialogComponent,
-        FeedSideNavComponent
+        FeedSideNavComponent,
+        DatasetCollectionPreviewCartComponent,
+        DatasetCollectionPreviewDialogComponent
     ],
-    entryComponents: [
+    entryComponents:[
         NewFeedDialogComponent,
+        DatasetCollectionPreviewDialogComponent
     ],
-    providers: [
-        DefineFeedService,
-        FeedLoadingService,
+    providers:[
+      DefineFeedService,
+      FeedLoadingService,
         FeedSourceSampleChange,
-        FilterPartitionFormulaPipe
+      FilterPartitionFormulaPipe,
+        FeedSideNavService
     ],
     imports: [
         CommonModule,
@@ -162,6 +169,7 @@ import {ProfileComponent} from './summary/profile/profile.component';
         VisualQueryModule,
         NvD3Module,
         MatStepperModule,
+        MatExpansionModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

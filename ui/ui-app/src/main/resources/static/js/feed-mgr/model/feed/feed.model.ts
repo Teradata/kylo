@@ -17,6 +17,8 @@ import {KyloObject} from "../../../common/common.model";
 import {SourceTableSchema} from "./feed-source-table-schema.model";
 import {UserProperty, UserPropertyUtil} from "../user-property.model";
 import * as _ from "underscore";
+import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
+import {TableSchemaUpdateMode} from "../../feeds/define-feed-ng2/services/define-feed.service";
 
 
 export interface TableOptions {
@@ -572,6 +574,71 @@ export class Feed  implements KyloObject{
 
         }
         return copy;
+    }
+
+    /**
+     * updates the target and or source with the schem provided in the sourceDataSet
+     * @param {TableSchemaUpdateMode} mode
+     */
+    setSourceDataSetAndUpdateTarget(sourceDataSet:SparkDataSet,mode:TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET  ){
+
+        if(sourceDataSet){
+            this.sourceDataSets = [sourceDataSet];
+            let dataSet = sourceDataSet
+            let sourceColumns: TableColumnDefinition[] = [];
+            let targetColumns: TableColumnDefinition[] = [];
+            let feedColumns: TableColumnDefinition[] = [];
+
+            let columns: TableColumn[] = dataSet.schema
+            if(columns) {
+                columns.forEach(col => {
+                    let def = _.extend({}, col);
+                    def.derivedDataType = def.dataType;
+                    //sample data
+                    if (dataSet.preview) {
+                        let sampleValues: string[] = dataSet.preview.columnData(def.name)
+                        def.sampleValues = sampleValues
+                    }
+                    sourceColumns.push(new TableColumnDefinition((def)));
+                    targetColumns.push(new TableColumnDefinition((def)));
+                    feedColumns.push(new TableColumnDefinition((def)));
+                });
+            }
+            else {
+                //WARN Columns are empty.
+                console.log("EMPTY columns for ",dataSet);
+            }
+            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+                this.table.sourceTableSchema.fields = sourceColumns;
+            }
+            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+                this.table.feedTableSchema.fields = feedColumns;
+                this.table.tableSchema.fields = targetColumns;
+                this.table.fieldPolicies = targetColumns.map(field => {
+                    let policy = TableFieldPolicy.forName(field.name);
+                    policy.field = field;
+                    field.fieldPolicy = policy;
+                    return policy;
+                });
+                //flip the changed flag
+                this.table.schemaChanged = true;
+            }
+
+
+        }
+        else {
+            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+                this.sourceDataSets = [];
+                this.table.sourceTableSchema.fields = [];
+            }
+            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+                this.table.feedTableSchema.fields = [];
+                this.table.tableSchema.fields = [];
+                this.table.fieldPolicies = [];
+            }
+        }
+
+
     }
 
 

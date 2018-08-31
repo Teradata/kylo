@@ -270,4 +270,12 @@ export class SelectionService {
     hasPolicy<T extends SelectionPolicy>(type: { new(): T ;}):boolean {
         return (<DefaultSelectionStrategy>this.selectionStrategy).hasPolicy(type);
     }
+
+    isSingleSelection(){
+        return this.hasPolicy(SingleSelectionPolicy);
+    }
+
+    isMultiSelection(){
+        return !this.isSingleSelection();
+    }
 }

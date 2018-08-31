@@ -17,6 +17,8 @@ import {PreviewJdbcDataSet} from "../model/preview-jdbc-data-set";
 import {Subject} from "rxjs/Subject";
 import {AbstractSchemaTransformService} from "./abstract-schema-transform-service";
 import {TransformResponseTableBuilder} from "./transform-response-table-builder";
+import {DataSource} from "../../../api/models/datasource";
+import {PreviewDatasetCollectionService} from "../../../api/services/preview-dataset-collection.service";
 
 
 
@@ -33,7 +35,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
 
 
-    constructor(http: HttpClient, transformResponeTableBuilder:TransformResponseTableBuilder) {
+    constructor(http: HttpClient, transformResponeTableBuilder:TransformResponseTableBuilder,  private previewDatasetCollectionService : PreviewDatasetCollectionService) {
         super(http,transformResponeTableBuilder)
     }
 
@@ -55,18 +57,18 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
      * @param {PreviewDataSet} previewDataSet
      * @param {DataSetPreviewRequest} previewRequest
      */
-    preview(previewDataSet: PreviewDataSet, previewRequest: PreviewDataSetRequest):Observable<PreviewDataSet>{
+    preview(previewDataSet: PreviewDataSet, previewRequest: PreviewDataSetRequest, collect:boolean = false):Observable<PreviewDataSet>{
 
-
-
-
-        if (!previewDataSet.hasPreview()) {
+if (!previewDataSet.hasPreview()) {
 
             //Show Progress Bar
             previewDataSet.loading = true;
 
             let previewDataSetSource = new Subject<PreviewDataSet>()
             let previewedDataSet$ = previewDataSetSource.asObservable();
+            if(!previewRequest.hasPreviewPath()){
+                previewDataSet.applyPreviewRequestProperties(previewRequest);
+            }
 
             this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: TransformResponse) => {
                 let preview = this.transformResponeTableBuilder.buildTable(data);
@@ -76,6 +78,9 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSet.preview =preview;
 
                 this.cache[this.cacheKey(previewDataSet.dataSource.id, previewDataSet.key)] = previewDataSet;
+                if(collect){
+                    this.addToCollection(previewDataSet);
+                }
                 previewDataSetSource.next(previewDataSet)
             }, error1 => {
                 previewDataSet.finishedLoading()
@@ -85,8 +90,27 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
             return previewedDataSet$;
         }
         else {
+            if(collect){
+                this.previewDatasetCollectionService.addDataSet(previewDataSet);
+            }
             return Observable.of(previewDataSet);
         }
+    }
+
+
+    /**
+     *  this.selectedDataSet.previewError("unable to preview dataset ");
+     if(this.selectedDataSet.allowsRawView) {
+                    this.loadRawData();
+                }
+     */
+
+    /**
+     * add the dataset
+     * @param {PreviewDataSet} dataset
+     */
+    addToCollection(dataset: PreviewDataSet){
+        this.previewDatasetCollectionService.addDataSet(dataset);
     }
 
 

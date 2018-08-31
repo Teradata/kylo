@@ -1,0 +1,56 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Datasets</span>
+  <span fxFlex></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<mat-dialog-content>
+
+<ng-container  *ngIf="data.mode == 'cart' ">
+
+
+  <mat-accordion >
+    <mat-expansion-panel  *ngFor="let dataset of datasets; let $index = index; let $first = first; let $last = last" [expanded]="step === $index" (opened)="setStep($index)" hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+        {{dataset.key}}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <!-- preview table -->
+      <div style="overflow:scroll;height:200px;" class="pad-right-md">
+        <dataset-simple-table class="small" [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" *ngIf="dataset.hasPreview()"></dataset-simple-table>
+      </div>
+      <mat-action-row>
+        <button mat-icon-button (click)="fullscreen(dataset)" color="accent" title="Fullscreen">
+          <mat-icon>fullscreen</mat-icon>
+        </button>
+        <span fxFlex></span>
+        <button mat-icon-button (click)="removeDataSet(dataset)" color="warn" title="Delete dataset">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="prevStep()" *ngIf="!$first" title="Previous dataset">
+          <mat-icon>navigate_before</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="nextStep()" *ngIf="!$last" title="Next dataset">
+          <mat-icon>navigate_next</mat-icon>
+        </button>
+      </mat-action-row>
+    </mat-expansion-panel>
+  </mat-accordion>
+</ng-container>
+
+  <div fxLayout="column" fxFlex *ngIf="(data.mode == 'preview' || data.mode =='preview_cart') && dataset != null ">
+    <h3 class="mat-subheading-2">{{dataset.key}}</h3>
+    <div style="overflow:scroll; height:450px;">
+      <dataset-simple-table  [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" *ngIf="dataset.hasPreview()"></dataset-simple-table>
+    </div>
+  </div>
+
+
+</mat-dialog-content>
+
+<mat-dialog-actions class="mat-dialog-actions">
+  <span fxFlex></span>
+  <button mat-button (click)="cancel()">Close</button>
+</mat-dialog-actions>

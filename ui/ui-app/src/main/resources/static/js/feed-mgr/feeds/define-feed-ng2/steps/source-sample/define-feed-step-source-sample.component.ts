@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
+import {Component, ContentChild, Input, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
 import {DataSource} from "../../../../catalog/api/models/datasource";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
@@ -14,6 +14,7 @@ import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/mode
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -32,6 +33,9 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     @Input()
     public stateParams : any;
 
+    @ViewChild("toolbarActionTemplate")
+    public toolbarActionTemplate: TemplateRef<any>
+
     public paths:string[] = [];
 
 
@@ -46,8 +50,9 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
 
     constructor(defineFeedService:DefineFeedService,stateService: StateService, private selectionService: SelectionService,
                 dialogService: TdDialogService,
-                feedLoadingService:FeedLoadingService,) {
-        super(defineFeedService,stateService, feedLoadingService,dialogService);
+                feedLoadingService:FeedLoadingService,
+                feedSideNavService:FeedSideNavService) {
+        super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.sourceSample = new FormGroup({})
        this.defineFeedService.ensureSparkShell();
 
@@ -57,13 +62,16 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
         return FeedStepConstants.STEP_SOURCE_SAMPLE;
     }
 
+    getToolbarTemplateRef(){
+        return this.toolbarActionTemplate;
+    }
+
     init(){
         this.paths = this.feed.getSourcePaths();
         //always show the catalog if no paths are available to preview
         if(this.paths == undefined || this.paths.length ==0) {
             this.showCatalog = true;
         }
-
 
     }
 

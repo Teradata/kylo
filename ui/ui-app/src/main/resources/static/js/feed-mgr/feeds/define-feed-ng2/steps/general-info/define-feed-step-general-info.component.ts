@@ -31,6 +31,7 @@ import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import { TranslateService } from '@ngx-translate/core';
 import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/preview-dataset-collection.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 @Component({
     selector: "define-feed-step-general-info",
@@ -74,9 +75,10 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
                 stateService: StateService,
                 feedLoadingService:FeedLoadingService,
                 dialogService: TdDialogService,
+                feedSideNavService:FeedSideNavService,
                 private _translateService: TranslateService,
                 private $$angularInjector: Injector) {
-        super(defineFeedService, stateService, feedLoadingService, dialogService);
+        super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.categoriesService = $$angularInjector.get("CategoriesService");
         this.feedService = $$angularInjector.get("FeedService");
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");

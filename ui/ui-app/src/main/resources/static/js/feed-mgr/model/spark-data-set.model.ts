@@ -1,6 +1,6 @@
 import {DataSource} from "../catalog/api/models/datasource";
 import {Common} from "../../common/CommonTypes";
-import {TableColumn} from "../catalog/datasource/preview-schema/model/table-view-model";
+import {TableColumn, TableViewModel} from "../catalog/datasource/preview-schema/model/table-view-model";
 
 /**
  * DataSet used by the Data Wrangler
@@ -12,6 +12,8 @@ export class SparkDataSet {
     public options: Common.Map<string>;
     public paths: string[];
     public schema:TableColumn[];
+    public preview?:TableViewModel;
+    public previewPath?:string;
 
     public constructor(init?:Partial<SparkDataSet>) {
         this.initialize();

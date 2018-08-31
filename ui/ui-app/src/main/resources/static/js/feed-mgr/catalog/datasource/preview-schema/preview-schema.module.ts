@@ -54,7 +54,8 @@ import {UpgradeModule} from "@angular/upgrade/static";
         SchemaParseSettingsDialog
     ],
     exports:[
-        PreviewSchemaComponent
+        PreviewSchemaComponent,
+        SimpleTableComponent
     ],
     imports: [
         CommonModule,

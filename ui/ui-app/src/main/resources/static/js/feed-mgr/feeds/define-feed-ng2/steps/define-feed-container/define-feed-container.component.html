@@ -2,10 +2,18 @@
 <td-layout *ngIf="feed != undefined">
     <td-layout-manage-list opened="true" mode="side">
       <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
+      <mat-toolbar >
+        <div>Feed {{feed.feedName}} - {{currentLink.label}}</div>
+        <span fxFlex="100"></span>
+        <ng-container
+            [ngTemplateOutlet]="toolbarActionLinks ? toolbarActionLinks: defaultToolbarActionLinks">
+        </ng-container>
+      </mat-toolbar>
       <ui-view></ui-view>
-
     </td-layout-manage-list>
 
 
 </td-layout>
 
+<ng-template #defaultToolbarActionLinks>
+</ng-template>

@@ -8,6 +8,7 @@ import {VisualQueryStepperComponent} from "../../../../visual-query/visual-query
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 @Component({
     selector: "define-feed-step-wrangler",
@@ -24,8 +25,8 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
                 stateService: StateService,
                 private _translateService: TranslateService,
                 private $$angularInjector: Injector, feedLoadingService: FeedLoadingService,
-                dialogService: TdDialogService) {
-        super(defineFeedService, stateService, feedLoadingService, dialogService);
+                dialogService: TdDialogService, feedSideNavService:FeedSideNavService) {
+        super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
     }
 
     init() {

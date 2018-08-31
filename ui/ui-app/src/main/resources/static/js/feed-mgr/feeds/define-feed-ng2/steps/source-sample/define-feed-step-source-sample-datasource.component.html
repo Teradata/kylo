@@ -1,40 +1,38 @@
-<mat-card>
-        <mat-card-content>
+<mat-card class="mat-typography">
+  <mat-card-header>
+    <mat-card-title>{{datasource.title}}</mat-card-title>
+    <span fxFlex></span>
+  </mat-card-header>
+  <mat-card-content>
+    <div fxLayout="column" *ngIf="!feed.readonly">
+      <form  fxFlex="1 1 auto" fxLayout="column">
+        <remote-files [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" >
+        </remote-files>
+      </form>
+    </div>
 
-                <mat-horizontal-stepper [linear]="true"  (selectionChange)="onStepSelectionChanged($event)" >
-                        <ng-container *ngFor="let tab of tabs">
-                                <mat-step *ngIf="tab.sref == '.browse'">
-                                        <form  fxFlex="1 1 auto" fxLayout="column">
-                                                <ng-template matStepLabel>{{tab.label}}</ng-template>
-                                                <remote-files [fileRowTemplate]="fileRowTemplate" *ngIf="selectedTab && selectedTab.sref =='.browse'" [datasource]="datasource" [useRouterStates]="false" [params]="params"     >
+    <div *ngIf="feed.readonly" fxLayout="column" >
+      No source(s) has been selected for this feed.
+    </div>
 
-
-
-                                                </remote-files>
-                                        </form>
-                                </mat-step>
-
-                                <mat-step *ngIf="tab.sref =='.preview'">
-                                        <form  fxFlex="1 1 auto" fxLayout="column">
-                                                <ng-template matStepLabel>{{tab.label}}</ng-template>
-                                                <preview-schema *ngIf="selectedTab && selectedTab.sref =='.preview'" [paths]="paths" [datasource]="datasource" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" (customDatasetAddition)="onDatasetAdd($event)" (customDatasetRemoval)="onDatasetRemoval($event)"></preview-schema>
-                                        </form>
-                                </mat-step>
-
-
-                        </ng-container>
-                </mat-horizontal-stepper>
-        </mat-card-content>
+  </mat-card-content>
+  <mat-card-actions *ngIf="!feed.readonly">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <span fxFlex></span>
+    <button mat-button color="primary"(click)="onSave()" >Save</button>
+  </mat-card-actions>
 </mat-card>
 
+<ng-template #toolbarActionTemplate>
+  <dataset-collection-preview-cart ></dataset-collection-preview-cart>
+</ng-template>
 
 <ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
 
         <td td-data-table-cell>
-              <button mat-button>Add </button>
-          <mat-checkbox [checked]="parent.isChildSelected(file.name)"
-                        [disabled]="parent.isSelectChildDisabled(file.name)"
-                        (change)="parent.onToggleChild($event, file)"></mat-checkbox>
+              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name) && !parent.isChildSelected(file.name)" (click)="addDataSet($event,file,parent)">{{addDataSetButtonText}} </button>
+              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name) && parent.isChildSelected(file.name)" (click)="removeDataSet($event,file,parent)">Remove </button>
+              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name)" (click)="preview(file)">Preview </button>
           <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
                                  [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
 

@@ -40,4 +40,8 @@ export class PreviewDataSetRequest {
         this.pageSpec.numRows= 20;
     }
 
+    hasPreviewPath(){
+        return this.previewPath != undefined;
+    }
+
 }

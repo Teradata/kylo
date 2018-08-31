@@ -3,7 +3,7 @@ import {Feed} from "../../../model/feed/feed.model";
 import {FeedStepValidator} from "../../../model/feed/feed-step-validator";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {Input, OnDestroy, OnInit} from "@angular/core";
+import {Input, OnDestroy, OnInit, TemplateRef} from "@angular/core";
 import {ISubscription} from "rxjs/Subscription";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {FormGroup} from "@angular/forms";
@@ -11,6 +11,7 @@ import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {FeedSideNavService} from "../shared/feed-side-nav.service";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -34,7 +35,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
    // private feedSavedSubscription : ISubscription;
 
     protected constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
-                protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService) {
+                protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService,
+                          protected feedSideNavService:FeedSideNavService) {
 
     }
     ngOnInit() {
@@ -75,6 +77,14 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     public destroy(){
 
+    }
+
+    /**
+     * Override and return a template ref that will be displayed and used in the toolbar
+     * @return {TemplateRef<any>}
+     */
+    getToolbarTemplateRef():TemplateRef<any> {
+        return undefined;
     }
 
     /**
@@ -147,6 +157,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
 
     public initData(){
+
+
         if(this.feed == undefined) {
             this.feed = this.defineFeedService.getFeed();
             if (this.feed == undefined) {
@@ -156,6 +168,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
             if (this.step) {
                 this.step.visited = true;
+                //register any custom toolbar actions
+                let toolbarActionTemplate = this.getToolbarTemplateRef();
+                if(toolbarActionTemplate) {
+                    this.feedSideNavService.registerToolbarActionTemplate(this.step.name, toolbarActionTemplate)
+                }
                 this.defineFeedService.setCurrentStep(this.step)
             }
             else {

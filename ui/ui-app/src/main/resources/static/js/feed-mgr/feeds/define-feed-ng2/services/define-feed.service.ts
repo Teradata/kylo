@@ -14,7 +14,7 @@ import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
 import 'rxjs/add/observable/forkJoin'
-import {PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
+import {DatasetChangeEvent, PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
 import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
@@ -34,6 +34,7 @@ import {FeedSourceSampleChange} from "./feed-source-sample-change-listener";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
 
 
 export enum TableSchemaUpdateMode {
@@ -105,6 +106,17 @@ export class DefineFeedService {
 
     }
 
+    toPreviewDataSet(dataset:SparkDataSet):PreviewDataSet{
+        let preview = new PreviewDataSet();
+        preview.displayKey =dataset.id;
+        preview.dataSource = dataset.dataSource;
+        preview.schema = dataset.schema;
+        preview.preview = dataset.preview;
+        preview.items = [dataset.previewPath];
+        return preview;
+
+    }
+
     /**
      * Load a feed based upon its UUID and return a copy to the subscribers
      *
@@ -122,6 +134,11 @@ export class DefineFeedService {
             observable.subscribe((feed) => {
                 //reset the collection service
                 this.previewDatasetCollectionService.reset();
+                //set the collectionService
+                if(feed.sourceDataSets){
+                    feed.sourceDataSets.map(ds => this.toPreviewDataSet(ds)).forEach(previewDataSet => this.previewDatasetCollectionService.addDataSet(previewDataSet));
+                }
+
                 this.selectionService.reset()
                 //convert it to our needed class
                 let feedModel = new Feed(feed)
@@ -131,8 +148,6 @@ export class DefineFeedService {
                 this.initializeFeedSteps(feedModel);
                 feedModel.validate(true);
                 this.feed = feedModel;
-                //reset the dataset collection service
-                this.previewDatasetCollectionService.reset();
                 //notify subscribers of a copy
                 loadFeedSubject.next(feedModel.copy());
 
@@ -259,6 +274,18 @@ export class DefineFeedService {
 
     subscribeToStepChanges(observer:PartialObserver<Step>) :ISubscription{
       return  this.currentStepSubject.subscribe(observer);
+    }
+
+    markFeedAsEditable(){
+        if(this.feed){
+            this.feed.readonly = false;
+        }
+    }
+
+    markFeedAsReadonly(){
+        if(this.feed){
+            this.feed.readonly = true;
+        }
     }
 
     /**
@@ -413,8 +440,8 @@ export class DefineFeedService {
      * Listener for changes from the collection service
      * @param {PreviewDataSet[]} dataSets
      */
-    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
-        this.feedSourceSampleChange.dataSetCollectionChanged(dataSets,this.feed)
+    onDataSetCollectionChanged(event:DatasetChangeEvent){
+     //   this.feedSourceSampleChange.dataSetCollectionChanged(event.allDataSets,this.feed)
     }
 
 

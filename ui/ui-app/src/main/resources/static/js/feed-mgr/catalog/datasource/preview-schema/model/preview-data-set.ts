@@ -91,6 +91,8 @@ export class PreviewDataSet {
         sparkDataSet.dataSource = this.dataSource;
         sparkDataSet.options = {};
         sparkDataSet.schema = this.schema;
+        sparkDataSet.preview = this.preview;
+        sparkDataSet.previewPath = this.getPreviewItemPath();
         return sparkDataSet;
     }
 

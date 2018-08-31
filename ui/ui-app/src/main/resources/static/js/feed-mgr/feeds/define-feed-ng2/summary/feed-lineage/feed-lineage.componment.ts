@@ -3,6 +3,7 @@ import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 @Component({
     selector: "feed-lineage",
@@ -13,11 +14,17 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     static LOADER = "FeedLineage.LOADER";
 
+    static LINK_NAME = "Lineage"
+
     @Input() stateParams:any;
 
 
-    constructor(feedLoadingService: FeedLoadingService, stateService: StateService,  defineFeedService:DefineFeedService) {
-        super(feedLoadingService, stateService,defineFeedService);
+    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService) {
+        super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
+    }
+
+    getLinkName(){
+        return FeedLineageComponment.LINK_NAME;
     }
 
     ngOnInit() {

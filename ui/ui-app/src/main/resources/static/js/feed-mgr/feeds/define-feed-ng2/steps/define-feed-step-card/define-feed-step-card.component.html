@@ -1,14 +1,9 @@
-<mat-toolbar *ngIf="displayToolbar">
-  <div>{{feed.feedName}} {{step.name}}</div>
-  <span fxFlex="100"></span>
-</mat-toolbar>
-
   <mat-card class="mat-typography">
     <mat-card-header>
       <mat-card-title>{{step.name}}</mat-card-title>
       <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
       <span fxFlex></span>
-      <button mat-icon-button (click)="feed.readonly = false" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
+      <button mat-icon-button (click)="onEdit()" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
     </mat-card-header>
     <mat-card-content>
       <ng-content select="feed-step-readonly-content" *ngIf="feed.readonly  && mode == 'normal'"></ng-content>

@@ -37,6 +37,7 @@ import {DynamicFormFieldGroupBuilder} from "../../../../shared/dynamic-form/serv
 import {ConfigurationFieldBuilder, FieldConfigBuilder} from "../../../../shared/dynamic-form/services/field-config-builder";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 
 export class FieldConfigurationState {
@@ -302,8 +303,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     constructor(  defineFeedService:DefineFeedService,  stateService:StateService, private http:HttpClient,
                   private $$angularInjector: Injector,
                   private dynamicFormService:DynamicFormService, feedLoadingService:FeedLoadingService,
-                  dialogService: TdDialogService) {
-    super(defineFeedService,stateService, feedLoadingService,dialogService);
+                  dialogService: TdDialogService, feedSideNavService:FeedSideNavService) {
+    super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.feedService = $$angularInjector.get("FeedService");
         this.registerTemplatePropertyService = this.$$angularInjector.get("RegisterTemplatePropertyService");
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");

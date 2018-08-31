@@ -37,7 +37,7 @@ export class DefineFeedStepCardComponent implements OnInit {
     @Output()
     cancelEdit:EventEmitter<any> = new EventEmitter<any>();
 
-    constructor() {
+    constructor(private defineFeedService:DefineFeedService) {
 
     }
 
@@ -52,7 +52,14 @@ export class DefineFeedStepCardComponent implements OnInit {
     }
 
     onCancel(){
+        this.defineFeedService.markFeedAsReadonly();
         this.cancelEdit.emit();
+    }
+
+    onEdit(){
+        this.feed.readonly = false;
+        this.defineFeedService.markFeedAsEditable();
+
     }
 
 

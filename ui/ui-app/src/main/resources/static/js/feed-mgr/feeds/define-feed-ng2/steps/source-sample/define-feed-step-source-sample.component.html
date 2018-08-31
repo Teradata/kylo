@@ -4,7 +4,6 @@
       <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
       <span class="pad-top"><button mat-raised-button (click)="goToDataSet(feed.sourceDataSets[0])">{{feed.sourceDataSets[0].resolvePath()}}</button></span>
       <span class="pad-top"><button mat-raised-button (click)="browseCatalog()" *ngIf="!feed.readonly">Change source</button></span>
-      <preview-schema [paths]="paths" [datasource]="feed.sourceDataSets[0].dataSource" [editable]="!feed.readonly" [autoCollect]="true" addToCollectionButtonName="Select as source"  removeFromCollectionButtonName="Remove source" ></preview-schema>
     </div>
 
     <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && feed.readonly" fxLayout="column">
@@ -22,3 +21,7 @@
 
   </form>
 </define-feed-step-card>
+
+<ng-template #toolbarActionTemplate>
+  <dataset-collection-preview-cart></dataset-collection-preview-cart>
+</ng-template>
