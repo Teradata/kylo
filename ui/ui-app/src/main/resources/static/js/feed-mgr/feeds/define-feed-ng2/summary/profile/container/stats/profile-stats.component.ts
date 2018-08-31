@@ -479,7 +479,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
                 return { value: value, count: count };
             });
         }
-        this.topvalues = topVals;
+        this.topvalues = topVals.slice(0, 10);
     };
 
     /**

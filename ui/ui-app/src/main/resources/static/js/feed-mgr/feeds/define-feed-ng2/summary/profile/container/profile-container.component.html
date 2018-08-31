@@ -1,4 +1,4 @@
-<mat-card class="mat-typography">
+<mat-card class="mat-typography" fxFlex>
   <mat-card-header>
     <mat-card-title>Profile Stats: {{timeInMillis | date:'full'}}</mat-card-title>
     <mat-card-subtitle>Profile Stats as of {{timeInMillis | timeAgo:reference}}</mat-card-subtitle>
@@ -7,7 +7,7 @@
 
 
   <mat-card-content>
-    <div fxFlex>
+    <div>
       <mat-tab-group [selectedIndex]="selected.value">
         <mat-tab label="Profile">
           <profile-stats2 [model]="profileData"></profile-stats2>
