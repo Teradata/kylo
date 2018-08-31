@@ -7,7 +7,7 @@
     <mat-nav-list class="profile-columns">
       <td-virtual-scroll-container #virtualScroll [data]="sorted" fxFlex>
         <ng-template let-row="row" let-last="last" tdVirtualScrollRow>
-          <a mat-list-item (click)="selectRowAndUpdateCharts($event, row)">
+          <a mat-list-item (click)="selectRowAndUpdateCharts($event, row)" [ngClass]="{'selected-column': isSelected(row)}">
             <div style="white-space: nowrap">
               {{row[columns.columnName]}}
               <span flex> </span>

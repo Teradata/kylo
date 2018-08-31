@@ -350,7 +350,11 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
             });
             if (this.sorted && this.sorted.length > 1) {
                 //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
-                this.selectRow(this.sorted[1]);
+                if (this.sorted[0][this.columns.columnName] == "(ALL)") {
+                    this.selectRow(this.sorted[1]);
+                } else {
+                    this.selectRow(this.sorted[0]);
+                }
             } else if (this.sorted && this.sorted.length > 0) {
                 //fall back to selecting first column if no other exist
                 this.selectRow(this.sorted[1]);
@@ -433,6 +437,10 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         }
 
     };
+
+    isSelected(row): boolean {
+        return this.selectedRow.columnName === row[this.columns.columnName];
+    }
 
     /**
      * Selects the specified row.
