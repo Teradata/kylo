@@ -438,7 +438,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
 
     };
 
-    isSelected(row): boolean {
+    isSelected(row: any): boolean {
         return this.selectedRow.columnName === row[this.columns.columnName];
     }
 
