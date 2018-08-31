@@ -301,16 +301,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     };
 
     /**
-     * Indicates if the specified column should be displayed.
-     *
-     * @param {Object} column the column
-     * @returns {boolean} true if the column should be displayed, or false otherwise
-     */
-    hasProfile = (column: any) => {
-        return (!this.showOnlyProfiled || column.isProfiled);
-    };
-
-    /**
      * Indicates if the specified column has profile statistics.
      *
      * @param {Object} item the column
@@ -354,6 +344,10 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         if (angular.isArray(this.data.rows) && this.data.rows.length > 0) {
             var unique = _.uniq(this.data.rows, _.property(this.columns.columnName));
             this.sorted = _.sortBy(unique, _.property(this.columns.columnName));
+            const self = this;
+            this.sorted = _.filter(this.sorted, function(column) {
+                return (!self.showOnlyProfiled || column.isProfiled)
+            });
             if (this.sorted && this.sorted.length > 1) {
                 //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
                 this.selectRow(this.sorted[1]);
@@ -387,7 +381,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
             this.nextChartUpdate = null;
         }, this.chartDuration);
     };
-
 
     /**
      * Gets the data for the Relative Statistics graph.
@@ -580,5 +573,11 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
         this.summaryData = this.getSummaryData();
         this.percData = this.getPercData();
     };
+
+
+    showOnlyProfiledChange(): void {
+        this.showOnlyProfiled = !this.showOnlyProfiled;
+        this.onModelChange();
+    }
 
 }
