@@ -213,7 +213,7 @@
     - usr:mandatory (BOOLEAN)
     - usr:order (LONG)
     
-[tba:Iconed] mixin
+[tba:Iconable] mixin
     - tba:icon (STRING)
     - tba:iconColor (STRING)
 
@@ -246,7 +246,7 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconed, mix:referenceable, tba:accessControlled, mix:lockable
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconable, mix:referenceable, tba:accessControlled, mix:lockable
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -261,7 +261,7 @@
 [tba:indexControlled] mixin
 	- tba:allowIndexing (STRING) = 'Y' mandatory
 
-[tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled, tba:indexControlled
+[tba:category] > tba:extensibleEntity, tba:propertied, tba:Iconable, mix:referenceable, mix:title, tba:accessControlled, tba:indexControlled
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	+ tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
@@ -333,7 +333,7 @@
     - tba:identityString (STRING) // string defining this identity
 
 // @deprecated This type is being superceded in the Catalog schema
-[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+[tba:datasource] > tba:extensibleEntity, tba:Iconable, mix:referenceable, mix:title, tba:propertied
     - tba.datasourceDefinition (REFERENCE)
     - tba:systemName (STRING) mandatory
     - tba:feedSources (WEAKREFERENCE) multiple
@@ -399,7 +399,7 @@
  	- tba:controlerServiceId (STRING)
  	- tba:password (STRING)
 
-[tba:domainType] > mix:referenceable, mix:title, tba:Iconed
+[tba:domainType] > mix:referenceable, mix:title, tba:Iconable
 	- tba:fieldJson (STRING)
 	- tba:fieldNameFlags (STRING)
 	- tba:fieldNamePattern (STRING)
@@ -407,7 +407,7 @@
 	- tba:regexFlags (STRING)
 	- tba:regexPattern (STRING)
 
-[tba:project] > tba:entity, mix:title, tba:accessControlled, tba:propertied
+[tba:project] > tba:entity, tba:Iconable, mix:title, tba:accessControlled, tba:propertied
     - tba:systemName (STRING)
     - tba:icon (STRING)
     - tba:iconColor (STRING)
@@ -419,7 +419,7 @@
 [tba:DataSetSparkParamsSupplier] mixin
     + tba:sparkParams (tba:DataSetSparkParams) = tba:DataSetSparkParams autocreated mandatory
 
-[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled
     - tba:isActive (BOOLEAN) = true
     - tba:pluginId (STRING) mandatory
     + dataSources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory

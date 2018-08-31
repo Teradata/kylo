@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.api.project;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
 
@@ -31,7 +32,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public interface Project extends AccessControlled, Auditable, SystemEntity, Taggable {
+public interface Project extends AccessControlled, Auditable, Iconable, SystemEntity, Taggable {
 
     Project.ID getId();
 
@@ -44,16 +45,6 @@ public interface Project extends AccessControlled, Auditable, SystemEntity, Tagg
     String getContainerImage();
 
     void setContainerImage(String image);
-
-    @Nullable
-    String getIcon();
-
-    void setIcon(String icon);
-
-    @Nullable
-    String getIconColor();
-
-    void setIconColor(String iconColor);
 
     interface ID extends Serializable {
 

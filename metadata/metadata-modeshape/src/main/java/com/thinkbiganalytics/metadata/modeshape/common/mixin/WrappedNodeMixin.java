@@ -210,7 +210,12 @@ public interface WrappedNodeMixin extends Propertied {
     }
 
     default <T> T getProperty(String name, Class<T> type) {
-        return getProperty(name, type, null);
+        if (type == null) {
+            // The null value for type was meant to be the default value but wasn't cast as one.
+            return JcrPropertyUtil.getProperty(getNode(), name, true);
+        } else {
+            return getProperty(name, type, null);
+        }
     }
 
     default <T> T getProperty(String name, Class<T> type, T defaultValue) {

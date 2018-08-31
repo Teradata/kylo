@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.domaintype.DomainType;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 
 import java.io.Serializable;
@@ -36,7 +37,7 @@ import javax.jcr.RepositoryException;
  * An implementation of {@link DomainType} backed by a JCR store.
  */
 @SuppressWarnings("squid:S2055")
-public class JcrDomainType extends JcrEntity<JcrDomainType.DomainTypeId> implements DomainType, AuditableMixin, SystemEntityMixin {
+public class JcrDomainType extends JcrEntity<JcrDomainType.DomainTypeId> implements DomainType, AuditableMixin, IconableMixin, SystemEntityMixin {
 
     /**
      * JCR node type
@@ -62,16 +63,6 @@ public class JcrDomainType extends JcrEntity<JcrDomainType.DomainTypeId> impleme
      * Name of field policy JCR field
      */
     private final static String FIELD_POLICY_JSON = "tba:fieldPolicyJson";
-
-    /**
-     * Name of icon JCR field
-     */
-    private final static String ICON = "tba:icon";
-
-    /**
-     * Name of icon color JCR field
-     */
-    private final static String ICON_COLOR = "tba:iconColor";
 
     /**
      * Name of regex flags JCR field
@@ -137,26 +128,6 @@ public class JcrDomainType extends JcrEntity<JcrDomainType.DomainTypeId> impleme
     @Override
     public void setFieldPolicyJson(final String value) {
         setProperty(FIELD_POLICY_JSON, value);
-    }
-
-    @Override
-    public String getIcon() {
-        return getProperty(ICON, String.class);
-    }
-
-    @Override
-    public void setIcon(final String value) {
-        setProperty(ICON, value);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public void setIconColor(final String value) {
-        setProperty(ICON_COLOR, value);
     }
 
     @Override

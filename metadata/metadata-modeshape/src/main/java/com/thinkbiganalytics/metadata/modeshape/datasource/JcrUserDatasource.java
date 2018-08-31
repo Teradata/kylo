@@ -141,26 +141,6 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
         setProperty(TYPE, type);
     }
 
-    @Override
-    public String getIcon() {
-        return getProperty(ICON, String.class);
-    }
-
-    @Override
-    public void setIcon(final String icon) {
-        setProperty(ICON, icon);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public void setIconColor(final String iconColor) {
-        setProperty(ICON_COLOR, iconColor);
-    }
-
     @Nonnull
     private Optional<Node> getDetailsNode() {
         try {

@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -44,7 +45,7 @@ import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAll
 
 /**
  */
-public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implements FeedManagerTemplate, AuditableMixin, SystemEntityMixin, AccessControlledMixin {
+public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implements FeedManagerTemplate, AuditableMixin, IconableMixin, SystemEntityMixin, AccessControlledMixin {
 
     public static final String NODE_TYPE = "tba:feedTemplate";
 
@@ -52,8 +53,6 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     public static final String DEFINE_TABLE = "tba:defineTable";
     public static final String DATA_TRANSFORMATION = "tba:dataTransformation";
     public static final String ALLOW_PRECONDITIONS = "tba:allowPreconditions";
-    public static final String ICON = "tba:icon";
-    public static final String ICON_COLOR = "tba:iconColor";
     public static final String NIFI_TEMPLATE_ID = "tba:nifiTemplateId";
     public static final String FEEDS = "tba:feeds";
     public static final String ORDER = "tba:order";
@@ -127,26 +126,6 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     @Override
     public void setAllowPreconditions(boolean allowedPreconditions) {
         setProperty(ALLOW_PRECONDITIONS, allowedPreconditions);
-    }
-
-    @Override
-    public String getIcon() {
-        return getProperty(ICON, String.class);
-    }
-
-    @Override
-    public void setIcon(String icon) {
-        setProperty(ICON, icon);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public void setIconColor(String iconColor) {
-        setProperty(ICON_COLOR, iconColor);
     }
 
     @Override

@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -31,7 +32,7 @@ import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 /**
  */
-public interface FeedManagerTemplate extends AccessControlled, Auditable, SystemEntity, Taggable {
+public interface FeedManagerTemplate extends AccessControlled, Auditable, Iconable, SystemEntity, Taggable {
 
     List<Feed> getFeeds();
 
@@ -60,14 +61,6 @@ public interface FeedManagerTemplate extends AccessControlled, Auditable, System
     boolean isAllowPreconditions();
 
     void setAllowPreconditions(boolean allowedPreconditions);
-
-    String getIcon();
-
-    void setIcon(String icon);
-
-    String getIconColor();
-
-    void setIconColor(String iconColor);
 
     String getJson();
 
