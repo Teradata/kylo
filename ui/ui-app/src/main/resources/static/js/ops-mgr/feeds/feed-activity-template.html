@@ -17,25 +17,23 @@
   limitations under the License.
   #L%
   -->
-<card-layout>
-    <header-section transclude-to="head" layout="row" style="width:100%;">
-        <div class="card-title" style="white-space:nowrap" flex>{{"views.feed-activity-template.JA" | translate}}</div>
-        <span flex  layout-align="end top" class="md-button-group">
-              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-D'}" ng-click="vm.dateSelection = '3-D'">{{"views.feed-activity-template.3D" | translate}}</md-button>
-          <!--  <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '10-day'}" ng-click="vm.dateSelection = '10-day'">{{"views.feed-activity-template.10D" | translate}}</md-button> -->
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-M'}" ng-click="vm.dateSelection = '1-M'">{{"views.feed-activity-template.1M" | translate}}</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-M'}" ng-click="vm.dateSelection = '3-M'">{{"views.feed-activity-template.3M" | translate}}</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-Y'}" ng-click="vm.dateSelection = '1-Y'">{{"views.feed-activity-template.1Y" | translate}}</md-button>
+<mat-card>
+    <mat-card-title style="width:100%;">
+        <span class="card-title" style="white-space:nowrap">{{"views.feed-activity-template.JA" | translate}}</span>
+        <span fxFlexAlign="end" class="btn-group">
+            <button mat-button class="btn-border" [ngClass]="{'selected': dateSelection == '3-D'}" (click)="changeDate('3-D')">{{"views.feed-activity-template.3D" | translate}}</button>
+            <!--  <mat-button flex="none" class="border-btn small"  ng-class="{'selected': dateSelection == '10-day'}" ng-click="dateSelection = '10-day'">{{"views.feed-activity-template.10D" | translate}}</mat-button> -->
+            <button mat-button  class="btn-border" [ngClass]="{'selected': dateSelection == '1-M'}" (click)="changeDate('1-M')">{{"views.feed-activity-template.1M" | translate}}</button>
+            <button mat-button  class="btn-border" [ngClass]="{'selected': dateSelection == '3-M'}" (click)="changeDate('3-M')">{{"views.feed-activity-template.3M" | translate}}</button>
+            <button mat-button  class="btn-border" [ngClass]="{'selected': dateSelection == '1-Y'}" (click)="changeDate('1-Y')">{{"views.feed-activity-template.1Y" | translate}}</button>
         </span>
-    </header-section>
-    <body-section transclude-to="body" id="feed-activity-chart" ng-cloak>
-        <div ng-if="vm.dataLoaded">
-            <nvd3 options="vm.chartOptions" data="vm.chartData"  api="vm.chartApi"></nvd3>
-
+    </mat-card-title>
+    <mat-card-content>
+        <div *ngIf="dataLoaded">
+            <nvd3 [options]="chartOptions" [data]="chartData" ></nvd3>
         </div>
-        <div ng-if="!vm.dataLoaded" layout-align="center center" layout="column">
-            <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div *ngIf="!dataLoaded" layout-align="center center" layout="column">
+            <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
         </div>
-
-    </body-section>
-</card-layout>
+    </mat-card-content>
+</mat-card>

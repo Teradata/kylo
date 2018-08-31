@@ -9,7 +9,8 @@ export default class ChartJobStatusService {
 
     toChartData = (jobStatusCountResponse: any) => {
         return this.Nvd3ChartService.toLineChartData(jobStatusCountResponse,
-            [{ label: 'status', value: 'count' }], 'date', this.IconService.colorForJobStatus);
+            [{ label: 'status', value: 'count' }], 'date',
+            (status : any) => {this.IconService.colorForJobStatus(status)});
     }
 
     shouldManualUpdate = (chart: any) => {

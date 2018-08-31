@@ -85,10 +85,7 @@ export class FeedCreationErrorService {
                 this.feedError.feedErrorsCount = count;
 
                 if (this.feedError.feedErrorsCount == 1) {
-                    //@TODO Ahmad Hassan use angular 5 internationalization
-                    var errorMessage:string = "";
-                    (() => { return this.translate.get('views.FeedCreationErrorService.iiwf').toPromise().then(value => {return errorMessage = value})})();
-                    this.feedError.message = this.feedError.feedErrorsCount + errorMessage;
+                    this.feedError.message = this.feedError.feedErrorsCount + this.translate.instant('views.FeedCreationErrorService.iiwf');
                     this.feedError.isValid = false;
                 }
                 else if (this.feedError.feedErrorsCount >=2  || this.feedError.feedErrorsCount <= 4) {

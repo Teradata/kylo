@@ -258,16 +258,7 @@ class Route {
             params: {
                 feedName: null
             },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('ops-feed-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading ops-feed-details ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/feeds/ops-mgr-feeds.module#OpsManagerFeedsModule'
         });
 
         $stateProvider.state({

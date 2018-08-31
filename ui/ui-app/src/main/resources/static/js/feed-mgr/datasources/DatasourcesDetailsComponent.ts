@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
-import { Transition, StateService } from '@uirouter/core';
+import { StateService } from '@uirouter/core';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { Component, ViewContainerRef, Inject, OnInit } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
