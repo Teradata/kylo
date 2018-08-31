@@ -120,12 +120,6 @@ public class SparkLivyProcess implements SparkShellProcess {
     }
 
     public static SparkLivyProcess newInstance(String hostname, Integer port, Long timeout) {
-        if (!StringUtils.isNotEmpty(hostname)) {
-            throw new LivyException("Attempt to contact Livy server when Livy hostname not configured");
-        }
-        if (port == null || port <= 0) {
-            throw new LivyException("Attempt to contact Livy server when Livy port not configured, or invalid");
-        }
         return new SparkLivyProcess(hostname, port, timeout);
     }
 

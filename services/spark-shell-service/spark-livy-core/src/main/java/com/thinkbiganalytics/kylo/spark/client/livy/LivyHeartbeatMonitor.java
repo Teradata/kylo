@@ -77,6 +77,8 @@ public final class LivyHeartbeatMonitor {
 
     private LivyServer livyServer;
 
+    private LivyProperties livyProperties;
+
     private Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache;
 
     /**
@@ -92,16 +94,19 @@ public final class LivyHeartbeatMonitor {
         this.livyServer = livyServer;
         this.clientSessionCache = clientSessionCache;
 
+        this.livyProperties = livyProperties;
         this.DELAY_CHECK_ON_FAIL = livyProperties.getDelayCheckOnFail();
         this.MAX_DELAY_CHECK_ON_FAIL = livyProperties.getMaxDelayCheckOnFail();
         this.TRIES_UNTIL_NOT_FOUND = livyProperties.getTriesUntilNotFound();
         this.HEARTBEAT_INTERVAL = livyProperties.getHeartbeatInterval();
     }
 
-    public Disposable monitorSession(SparkShellProcess sparkShellProcess) {
-        // kick off heart beat
-        connectionStatusMap.put(sparkShellProcess, new AtomicBoolean(true));
-        return checkSessionWithBackoff(sparkShellProcess);
+    public void monitorSession(SparkShellProcess sparkShellProcess) {
+        if (livyProperties.isMonitorLivy()) {
+            // kick off heart beat
+            connectionStatusMap.put(sparkShellProcess, new AtomicBoolean(true));
+            checkSessionWithBackoff(sparkShellProcess);
+        }
     }
 
     //private static AtomicBoolean connectionAlive =  new AtomicBoolean(true); // TODO: one per sparkShellProcess

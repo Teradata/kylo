@@ -164,7 +164,7 @@ public class TestLivyHeartbeatMonitor {
 
         clientSessionCache.put(sparkProcess, sessionId);
 
-        Disposable subscription = livyHeartbeatMonitor.monitorSession(sparkProcess);
+        livyHeartbeatMonitor.monitorSession(sparkProcess);
         assertThat(livyServer.getLivyServerStatus()).isEqualTo(LivyServerStatus.not_found);
 
         Thread.sleep(1015);
@@ -212,7 +212,6 @@ public class TestLivyHeartbeatMonitor {
         assertThat(livyServer.getLivyServerStatus()).isEqualTo(LivyServerStatus.not_found);
         assertThat(livyServer.getLivySessionState(sessionId)).isNull();
 
-        subscription.dispose();
         // 2. Loop for max number seconds waiting for session to be ready..
         //     only checking livyServerState
         return;

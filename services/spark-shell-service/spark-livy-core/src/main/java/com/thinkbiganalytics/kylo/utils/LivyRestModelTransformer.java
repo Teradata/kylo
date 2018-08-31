@@ -37,6 +37,7 @@ import com.thinkbiganalytics.kylo.spark.client.model.enums.LivySessionStatus;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyDeserializationException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivySaveException;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementOutputResponse;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
@@ -49,6 +50,7 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
+import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
@@ -349,7 +351,11 @@ public class LivyRestModelTransformer {
             return response;
         }
 
-        return serializeStatementOutputResponse(sor, SaveResponse.class);
+        SaveResponse saveResponse = serializeStatementOutputResponse(sor, SaveResponse.class);
+        if( saveResponse.getStatus() == SaveResponse.Status.ERROR ) {
+            throw new SparkLivySaveException(saveResponse.getMessage(), saveResponse.getId());
+        }
+        return saveResponse;
     }
 
     private static TransformResponse prepTransformResponse(Statement statement, String transformId) {

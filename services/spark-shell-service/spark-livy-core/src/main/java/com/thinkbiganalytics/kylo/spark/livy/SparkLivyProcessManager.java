@@ -271,9 +271,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         clientSessionCache.put(sparkLivyProcess, currentSession.getId());
 
         // begin monitoring this session if configured to do so..
-        if (livyProperties.isMonitorLivy()) {
-            heartbeatMonitor.monitorSession(sparkLivyProcess);
-        }
+        heartbeatMonitor.monitorSession(sparkLivyProcess);
 
         return currentSession;
     }
