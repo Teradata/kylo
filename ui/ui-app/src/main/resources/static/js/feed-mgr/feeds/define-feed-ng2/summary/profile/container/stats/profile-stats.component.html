@@ -1,6 +1,8 @@
 <div fxFlex fxLayout="row" layout-xs="column" class="profile-stats-panel">
   <div fxFlex="20" flex-xs="100">
-    <mat-checkbox aria-label="Profiled" [(ngModel)]="showOnlyProfiled"><span class="hint">Show Only Profiled</span></mat-checkbox>
+    <mat-checkbox aria-label="Profiled" [(ngModel)]="showOnlyProfiled">
+      <span class="hint">Show Only Profiled</span>
+    </mat-checkbox>
 
     <mat-nav-list class="profile-columns">
       <td-virtual-scroll-container #virtualScroll [data]="sorted" fxFlex>
@@ -10,7 +12,7 @@
               <div style="white-space: nowrap">
                 {{row[columns.columnName]}}
                 <span flex> </span>
-                <mat-icon *ngIf="isProfiled(row)" [style.font-size.px]="10" class="profile column icon">insert_chart</mat-icon>
+                <mat-icon *ngIf="isProfiled(row)" class="profiled-icon">insert_chart</mat-icon>
               </div>
             </a>
             <mat-divider *ngIf="!$last"></mat-divider>
@@ -53,10 +55,10 @@
             <mat-list>
               <mat-list-item>
                 <div fxFlex="90" fxLayout="row">
-                  <div fxFlex="90" class="item-column md-list-item-text">
+                  <div fxFlex="90">
                     <span class="hint">Value</span>
                   </div>
-                  <div fxFlex="10" class="item-column md-list-item-text">
+                  <div fxFlex="10">
                     <span class="hint">Count</span>
                   </div>
                 </div>
@@ -64,11 +66,11 @@
               </mat-list-item>
               <mat-list-item *ngFor="let row of topvalues; last as isLast;">
                 <div fxFlex="90" fxLayout="row">
-                  <div fxFlex="90" class="item-column md-list-item-text">
+                  <div fxFlex="90">
                     <span class="">{{row['value']}}</span>
 
                   </div>
-                  <div fxFlex="10" class="item-column md-list-item-text">
+                  <div fxFlex="10">
                     <span class="">{{row['count']}}</span>
                   </div>
                 </div>
@@ -81,7 +83,7 @@
           <!-- Numeric stats -->
           <div *ngIf="selectedRow.profile == 'Numeric'" fxLayout="column" fxFlex="100" class="stats-panel">
             <div class="subhead">Numeric Stats</div>
-            <mat-list class="list-item-table">
+            <mat-list>
               <mat-list-item class="md-secondary" *ngFor="let row of numericvalues; last as isLast;">
                 <div fxLayout="row" fxFlex="90">
                   <div fxFlex="30" >
@@ -100,15 +102,14 @@
           <!-- String stats -->
           <div *ngIf="selectedRow.profile == 'String'" fxLayout="column" fxFlex="100" class="stats-panel">
             <div class="subhead">String Stats</div>
-            <mat-list class="list-item-table">
+            <mat-list>
               <mat-list-item *ngFor="let row of stringvalues; last as isLast;" class="string-stats-item">
                 <div fxLayout="row" fxFlex="90">
                   <div fxFlex="30">
                     <span class="hint">{{row['name']}}</span>
                   </div>
                   <div fxFlex="70">
-                    <!--<span class="" title="{{row['value']}}">{{row['value'] | characters:50}}</span>-->
-                    <span class="" title="{{row['value']}}">{{row['value']}}</span>
+                    <span class="" title="{{row['value']}}">{{row['value'] | truncate:50}}</span>
                   </div>
                 </div>
                 <mat-divider *ngIf="!$last"></mat-divider>
@@ -119,8 +120,8 @@
             <!-- Numeric stats -->
             <div *ngIf="selectedRow.profile == 'Time'" fxLayout="column" fxFlex="100" class="stats-panel">
               <div class="subhead">Time Stats</div>
-              <mat-list class="list-item-table">
-                <mat-list-item class="md-secondary" *ngFor="let row of timevalues; last as isLast;">
+              <mat-list>
+                <mat-list-item *ngFor="let row of timevalues; last as isLast;">
                   <div fxLayout="row" fxFlex="100">
                     <div fxFlex="40">
                       <span class="hint">{{row['name']}}</span>
