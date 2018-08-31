@@ -5,12 +5,13 @@ import {Program} from "estree";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/observable/interval";
-import "rxjs/add/operator/catch";
 import "rxjs/add/operator/expand";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/mergeMap";
-import "rxjs/add/operator/take";
 import {Observable} from "rxjs/Observable";
+import {catchError} from "rxjs/operators/catchError";
+import {mergeMap} from "rxjs/operators/mergeMap";
+import {take} from "rxjs/operators/take";
 import {Subject} from "rxjs/Subject";
 import * as _ from "underscore";
 
@@ -295,8 +296,16 @@ export class SparkQueryEngine extends QueryEngine<string> {
             .expand(response => {
                 if (response.status === SaveResponseStatus.PENDING ) {
                     return Observable.interval(1000)
-                        .take(1)
-                        .mergeMap(() => this.$http.get<SaveResponse>(this.apiUrl + "/transform/" + transformId + "/save/" + response.id, {responseType: "json"}));
+                        .pipe(
+                            take(1),
+                            mergeMap(() => this.$http.get<SaveResponse>(this.apiUrl + "/transform/" + transformId + "/save/" + response.id, {responseType: "json"})),
+                            catchError((error: SaveResponse) => {
+                                if (error.id == null) {
+                                    error.id = response.id;
+                                }
+                                return Observable.throw(error);
+                            })
+                        );
                 } else if (response.status === SaveResponseStatus.SUCCESS) {
                     return Observable.empty();
                 } else {
