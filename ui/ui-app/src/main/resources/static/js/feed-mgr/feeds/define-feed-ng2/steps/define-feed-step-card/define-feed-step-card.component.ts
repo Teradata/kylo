@@ -6,6 +6,7 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {FormsModule} from '@angular/forms'
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
+import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 
 @Component({
     selector: "define-feed-step-card",
@@ -26,6 +27,10 @@ export class DefineFeedStepCardComponent implements OnInit {
     @Input()
     public displayEditActions?:boolean = true;
 
+    @Input()
+    public singleCardView:boolean;
+
+    public disabledDependsUponStep:Step = null;
 
 
     @Input()
@@ -37,7 +42,7 @@ export class DefineFeedStepCardComponent implements OnInit {
     @Output()
     cancelEdit:EventEmitter<any> = new EventEmitter<any>();
 
-    constructor(private defineFeedService:DefineFeedService) {
+    constructor(private defineFeedService:DefineFeedService, private feedSideNavService:FeedSideNavService) {
 
     }
 
@@ -45,6 +50,7 @@ export class DefineFeedStepCardComponent implements OnInit {
         if(this.mode == undefined){
             this.mode = 'normal'
         }
+        this.disabledDependsUponStep = this.step.findFirstIncompleteDependentStep();
     }
 
     onSave(){
@@ -52,7 +58,6 @@ export class DefineFeedStepCardComponent implements OnInit {
     }
 
     onCancel(){
-        this.defineFeedService.markFeedAsReadonly();
         this.cancelEdit.emit();
     }
 
@@ -62,6 +67,11 @@ export class DefineFeedStepCardComponent implements OnInit {
 
     }
 
+    goToDependsUponStep(){
+        if(this.disabledDependsUponStep != null){
+            this.feedSideNavService.gotoStep(this.disabledDependsUponStep,this.feed.id)
+        }
+    }
 
 
 }

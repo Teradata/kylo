@@ -1,4 +1,4 @@
-<define-feed-step-card [feed]="feed" [step]="step" mode="custom" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
+<define-feed-step-card  [feed]="feed" [step]="step" [singleCardView]="true"  mode="custom" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
   <form class="source-sample-container" [formGroup]="sourceSample">
     <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && !feed.readonly" fxLayout="column" >
       <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>

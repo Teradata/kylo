@@ -195,7 +195,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
     /**
      * Save the form back to the feed
      */
-    updateModel(){
+    updateModel(): Feed{
         let formModel = this.scheduleForm.value;
         let scheduleStrategyValue = this.scheduleForm.get("scheduleStrategy").value;
         this.feed.schedule.schedulingStrategy = formModel.scheduleStrategy;
@@ -205,6 +205,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         else {
             this.feed.schedule.schedulingPeriod = formModel.timerAmount+" "+formModel.timerUnits;
         }
+        return this.feed;
     }
 
     /**

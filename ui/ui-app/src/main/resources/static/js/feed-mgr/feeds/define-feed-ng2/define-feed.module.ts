@@ -78,6 +78,16 @@ import {DatasetCollectionPreviewDialogComponent} from "./steps/source-sample/dat
 import {DatasetCollectionPreviewCartComponent} from "./steps/source-sample/dataset-collection-preview-cart.component";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FeedSideNavService} from "./shared/feed-side-nav.service";
+import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
+import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
+import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
+
+import {FeedInfoItemComponent} from "./summary/overview/feed-info-item.component";
+import {FeedInfoScheduleComponent} from "./summary/overview/feed-info-schedule/feed-info-schedule.component";
+import {FeedInfoDescriptionComponent} from "./summary/overview/feed-info-description/feed-info-description.component";
+import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/feed-info-category.component";
+import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
+import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
 
 @NgModule({
     declarations: [
@@ -106,7 +116,15 @@ import {FeedSideNavService} from "./shared/feed-side-nav.service";
         NewFeedDialogComponent,
         FeedSideNavComponent,
         DatasetCollectionPreviewCartComponent,
-        DatasetCollectionPreviewDialogComponent
+        DatasetCollectionPreviewDialogComponent,
+        DefineFeedStepCustomContentComponent,
+        DefineFeedPermissionsComponent,
+        DefineFeedPropertiesComponent,
+        FeedInfoItemComponent,
+        FeedInfoNameComponent,
+        FeedInfoScheduleComponent,
+        FeedInfoDescriptionComponent,
+        FeedInfoCategoryComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,
@@ -117,7 +135,8 @@ import {FeedSideNavService} from "./shared/feed-side-nav.service";
       FeedLoadingService,
         FeedSourceSampleChange,
       FilterPartitionFormulaPipe,
-        FeedSideNavService
+        FeedSideNavService,
+        FeedItemInfoService
     ],
     imports: [
         CommonModule,

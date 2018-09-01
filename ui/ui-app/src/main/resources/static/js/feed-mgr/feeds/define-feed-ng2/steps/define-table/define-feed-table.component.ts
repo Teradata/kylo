@@ -206,6 +206,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         //listen when the form is valid or invalid
         this.subscribeToFormChanges(this.defineTableForm);
 
+        this.subscribeToFormDirtyCheck(this.defineTableForm);
+
 
 
     }

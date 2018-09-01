@@ -15,6 +15,9 @@ export class SystemFeedNameComponent implements OnInit, OnDestroy{
     @Input()
     feed?:Feed;
 
+    @Input()
+    layout:string = "row"
+
 
     constructor(@Inject("FeedService") private feedService:FeedService) {
 
@@ -51,5 +54,9 @@ export class SystemFeedNameComponent implements OnInit, OnDestroy{
 
     ngOnDestroy(){
 
+    }
+
+    resetForm(){
+        this.formGroup.reset({"feedName":this.feed.feedName,"systemFeedName":this.feed.systemFeedName})
     }
 }

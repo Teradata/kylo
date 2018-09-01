@@ -1,11 +1,11 @@
 
 
-<div fxLayout="row" fxLayoutAlign="start" [formGroup]="formGroup">
-  <mat-form-field fxFlex="50" >
+<div [fxLayout]="layout" fxLayoutAlign="start" [formGroup]="formGroup">
+  <mat-form-field [fxFlex]="layout=='row' ? '100' : '50'" >
     <input matInput formControlName="feedName" placeholder="Feed name"  >
   </mat-form-field>
 
-  <mat-form-field fxFlex="50" class="pad-left">
+  <mat-form-field [fxFlex]="layout=='row' ? '100' : '50'" [class.pad-left]="layout == 'row'">
     <input matInput placeholder="System Feed name"  formControlName="systemFeedName">
   </mat-form-field>
 

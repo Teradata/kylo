@@ -6,6 +6,7 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
 import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 
 @Component({
     selector: "define-feed-overview",
@@ -20,6 +21,10 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
 
     @Input() stateParams: any;
 
+    requiredSteps:Step[] = [];
+
+    optionalSteps:Step[] = [];
+
 
     getLinkName(){
         return OverviewComponent.LINK_NAME;
@@ -27,11 +32,20 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
+        this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
      }
 
     ngOnInit() {
         let feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.initializeFeed(feedId);
+        this.feed.steps.forEach(step => {
+            if(step.required){
+                this.requiredSteps.push(step);
+            }
+            else {
+                this.optionalSteps.push(step);
+            }
+        })
     }
 
     onStepSelected(step: Step) {
@@ -40,6 +54,16 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
             this.stateService.go(step.sref, params, {location: "replace"})
         //}
     }
+
+    onFeedSaved(response:SaveFeedResponse){
+        if(response.success){
+            //update this feed
+            this.feed = response.feed;
+            console.log('Feed saved overview component ',this.feed)
+        }
+    }
+
+
 
 
 }

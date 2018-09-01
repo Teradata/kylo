@@ -6,6 +6,7 @@ import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
+import {StateRegistry, StateService} from "@uirouter/angular";
 
 
 export class FeedLinkSelectionChangedEvent{
@@ -24,7 +25,7 @@ export class FeedSideNavService {
 
     private sideNavSelectionChangedSubject: Subject<FeedLinkSelectionChangedEvent>;
 
-    constructor(){
+    constructor(private stateService:StateService){
         this.sideNavSelectionChangedSubject = new Subject<FeedLinkSelectionChangedEvent>();
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
     }
@@ -54,7 +55,7 @@ export class FeedSideNavService {
     }
 
     setStepSelected(step:Step){
-        let stepLink = this.feedLinks.find((link) => link.isStepLink() && link.step.name == step.name);
+        let stepLink = this._findStepLink(step);
         if(stepLink){
             this.setSelected(stepLink);
         }
@@ -65,6 +66,10 @@ export class FeedSideNavService {
         if(link){
             this.setSelected(link);
         }
+    }
+
+    private _findStepLink(step:Step):FeedLink{
+        return this.feedLinks.find((link) => link.isStepLink() && link.step.name == step.name);
     }
 
     private _findLinkByName(linkName:string){
@@ -87,6 +92,13 @@ export class FeedSideNavService {
         }
         this.selectedLink = feedLink;
 
+    }
+
+    gotoStep(step:Step,feedId:string){
+        let link = this._findStepLink(step);
+        if(link){
+            this.stateService.go(link.sref,{feedId:feedId})
+        }
     }
 
     buildStepLinks(feed:Feed):FeedLink[]{

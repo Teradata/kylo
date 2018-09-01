@@ -31,6 +31,9 @@ export class FeedLink{
         let link = new FeedLink(step.name);
         link.sref =step.sref;
         link.step = step;
+        if(step.icon){
+            link.icon = step.icon;
+        }
         link.type = FeedLinkType.STEP
         return link;
     }

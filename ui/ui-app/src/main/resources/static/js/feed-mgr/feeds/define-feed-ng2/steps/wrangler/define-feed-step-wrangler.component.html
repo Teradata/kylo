@@ -1,4 +1,4 @@
-<define-feed-step-card [(feed)]="feed" [(step)]="step" (saved)="onSave()" [fxHide]="!feed.readonly">
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (saved)="onSave()" [fxHide]="!feed.readonly">
   <feed-step-readonly-content>
     <div fxLayout="column">
       <div class="read-only-row" fxLayout="row">

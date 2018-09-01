@@ -52,6 +52,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
           let sideNavService = $$angularInjector.get("SideNavService");
           sideNavService.hideSideNav();
           this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
+        this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
     }
 
     ngOnInit() {
@@ -98,10 +99,6 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
             }
         });
 
-
-
-
-
     }
     private openSnackBar(message:string, duration?:number){
         if(duration == undefined){
@@ -111,6 +108,16 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
             duration: duration,
         });
     }
+
+
+
+    onFeedSaved(response:SaveFeedResponse){
+        if(response.success){
+            //update this feed
+            this.feed = response.feed;
+        }
+    }
+
 
 
 }

@@ -1,0 +1,13 @@
+<feed-info-item [feed]="feed" name="{{feed.description || 'None defined'}}" description="Description" icon="subject" (cancel)="cancel()" (save)="save()" [editable]="true" [(editing)]="editing">
+<form [formGroup]="formGroup">
+
+  <mat-form-field class="pad-top-sm" style="width:100%">
+    <textarea matInput  formControlName="description" placeholder="Description" >
+      {{feed.description}}
+    </textarea>
+  </mat-form-field>
+</form>
+</feed-info-item>
+
+
+

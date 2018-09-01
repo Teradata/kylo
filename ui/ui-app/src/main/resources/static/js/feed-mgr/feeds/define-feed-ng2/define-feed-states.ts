@@ -20,6 +20,8 @@ import {OverviewComponent} from './summary/overview/overview.component';
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
+import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
+import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
 
 
 const resolveFeed :any =
@@ -83,8 +85,19 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".general-info",
         url: "/:feedId/general-info",
-        component: DefineFeedStepGeneralInfoComponent
+        component: DefineFeedStepGeneralInfoComponent,
 
+
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-permissions",
+        url: "/:feedId/feed-permissions",
+        component: DefineFeedPermissionsComponent
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-properties",
+        url: "/:feedId/feed-properties",
+        component: DefineFeedPropertiesComponent
     },
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-details",

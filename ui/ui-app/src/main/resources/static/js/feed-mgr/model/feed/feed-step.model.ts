@@ -10,12 +10,14 @@ export class Step {
     description: string;
     complete: boolean;
     valid: boolean;
+    dirty:boolean = false;
     sref: string;
     required?: boolean;
     dependsUponSteps?: string[] = [];
     allSteps: Step[];
     disabled: boolean;
     visited: boolean;
+    icon:string;
     validator: FeedStepValidator
 
     validate(feed: Feed): boolean {
@@ -28,6 +30,14 @@ export class Step {
 
     }
 
+    markDirty(){
+        this.dirty = true;
+    }
+
+    isDirty(){
+        return this.dirty;
+    }
+
     updateStepState() {
         let disabled = !this.complete;
         //update dependent step states
@@ -35,6 +45,19 @@ export class Step {
         if (dependentSteps) {
             dependentSteps.forEach(step => step.disabled = disabled);
         }
+    }
+
+    /**
+     * Return the first step that this feed depends upon that is not complete
+     * @return {Step | null}
+     */
+    findFirstIncompleteDependentStep(){
+        let dependentSteps = this.findDependsUponSteps();
+        if (dependentSteps) {
+         let step = dependentSteps.sort((x:Step,y:Step) =>  x.number > y.number ? 1 : 0).find(step => step.complete == false);
+         return step != undefined ? step : null
+        }
+        return null;
     }
 
 
@@ -57,6 +80,18 @@ export class Step {
         }
     }
 
+    /**
+     * return an array of Step objects that this step depends upon
+     * @return {(Step | undefined)[]}
+     */
+    findDependsUponSteps() {
+       return  this.dependsUponSteps.map(stepName => this.allSteps.find(step => step.systemName == stepName))
+    }
+
+    /**
+     * Return an array of objects that depend upon this step
+     * @return {Step[]}
+     */
     findDependentSteps() {
         return this.allSteps.filter(step => step.dependsUponSteps.find(name => this.systemName == name) != undefined);
     }
@@ -67,110 +102,6 @@ export class Step {
 
     shallowCopy():Step{
         return Object.assign(Object.create(this),this)
-    }
-
-
-}
-
-
-
-
-export class StepBuilder {
-    number: number;
-    systemName: string;
-    name: string;
-    description: string;
-    complete: boolean;
-    sref: string;
-    required?: boolean;
-    dependsUponSteps?: string[] = [];
-    allSteps: Step[];
-    disabled: boolean;
-    validator: FeedStepValidator;
-
-    setNumber(num: number): StepBuilder {
-        this.number = num;
-        return this;
-    }
-
-    setSystemName(sysName: string) {
-        this.systemName = sysName;
-        if (this.name == undefined) {
-            this.name = this.systemName;
-        }
-        return this;
-    }
-
-    setName(name: string) {
-        this.name = name;
-        if (this.systemName == undefined) {
-            this.systemName = this.name;
-        }
-        return this;
-    }
-
-    setDescription(description: string) {
-        this.description = description;
-        return this;
-    }
-
-    setSref(sref: string) {
-        this.sref = sref;
-        return this;
-    }
-
-    setRequired(required: boolean) {
-        this.required = required;
-        return this;
-    }
-
-    addDependsUpon(systemName: string) {
-        this.dependsUponSteps.push(systemName);
-        return this;
-    }
-
-    setDependsUpon(systemNames: string[]) {
-        this.dependsUponSteps = systemNames;
-        return this;
-    }
-
-    setAllSteps(steps: Step[]) {
-        this.allSteps = steps;
-        return this;
-    }
-
-    setDisabled(disabled: boolean) {
-        this.disabled = disabled;
-        return this;
-    }
-
-    setValidator(feedStepValidator: FeedStepValidator) {
-        this.validator = feedStepValidator;
-        return this;
-    }
-
-    build() {
-        let step = new Step({
-            number: this.number,
-            name: this.name,
-            systemName: this.systemName,
-            description: this.description,
-            sref: FEED_DEFINITION_SECTION_STATE_NAME+"." + this.sref,
-            complete: false,
-            dependsUponSteps: this.dependsUponSteps,
-            required: this.required
-        });
-        step.allSteps = this.allSteps;
-        step.disabled = this.disabled;
-        step.validator = this.validator;
-        if (step.validator == undefined) {
-            //add a default one
-            step.validator = new FeedStepValidator();
-        }
-        if (step.validator) {
-            step.validator.setStep(step)
-        }
-        return step;
     }
 
 

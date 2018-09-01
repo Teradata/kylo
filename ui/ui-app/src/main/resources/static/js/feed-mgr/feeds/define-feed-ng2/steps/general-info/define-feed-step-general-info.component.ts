@@ -92,11 +92,8 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
 
     init() {
         super.init();
-        if(this.feed.isNew()){
-            //clear the selections
-            this.previewDatasetCollectionService.reset();
-        }
         this.registerFormControls();
+         this.subscribeToFormDirtyCheck(this.formGroup);
     }
     destroy(){
 

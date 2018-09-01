@@ -1,10 +1,11 @@
 import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
 import {Feed} from "../../../model/feed/feed.model";
-import {Step, StepBuilder} from "../../../model/feed/feed-step.model";
+import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
 import {Observable} from "rxjs/Observable";
+import {StateRegistry, StateService, Transition} from "@uirouter/angular";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {HttpClient} from "@angular/common/http";
@@ -35,6 +36,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
+import {FeedStepBuilderUtil} from "./feed-step-builder-util";
+
 
 
 export enum TableSchemaUpdateMode {
@@ -68,7 +71,10 @@ export class DefineFeedService {
      */
     private currentStepSubject: Subject<Step>;
 
-
+    /**
+     * The datasets subject for listening
+     */
+    private savedFeedSubject: Subject<SaveFeedResponse>;
 
 
     private uiComponentsService :UiComponentsService;
@@ -96,6 +102,8 @@ export class DefineFeedService {
 
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
+
+        this.savedFeedSubject = new Subject<SaveFeedResponse>();
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
@@ -276,6 +284,11 @@ export class DefineFeedService {
       return  this.currentStepSubject.subscribe(observer);
     }
 
+    subscribeToFeedSaveEvent(observer:PartialObserver<SaveFeedResponse>) :ISubscription{
+        return  this.savedFeedSubject.subscribe(observer);
+    }
+
+
     markFeedAsEditable(){
         if(this.feed){
             this.feed.readonly = false;
@@ -315,67 +328,50 @@ export class DefineFeedService {
      */
     initializeFeedSteps(feed:Feed){
         let templateTableOption = feed.getTemplateType()
+        let stepUtil = new FeedStepBuilderUtil(this._translateService);
         if(feed.isDefineTable()){
-            feed.steps = this.newDefineTableFeedSteps();
+            feed.steps = stepUtil.defineTableFeedSteps();
         }
         else if(feed.isDataTransformation()){
-          feed.steps = this.newDataTransformationSteps();
+          feed.steps = stepUtil.dataTransformationSteps()
          }
         else {
-            feed.steps = this.newSimpleFeedSteps();
+            feed.steps = stepUtil.simpleFeedSteps();
         }
     }
 
 
-    generalInfoStep(steps:Step[]):Step{
-        let name = this._translateService.instant("views.define-feed-stepper.GeneralInfo")
-        return new StepBuilder().setNumber(1).setName(name).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Describe the feed, assign properties and schedule").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
+
+
+    /**
+     * is the user allowed to leave this component and transition to a new state?
+     * @return {boolean}
+     */
+    uiCanExit(step:Step,newTransition: Transition) :(Promise<any> | boolean) {
+        if(step.isDirty()){
+
+            let observable =  this._dialogService.openConfirm({
+                message: 'You have unsaved changes.  Are you sure you want to exit? ',
+                disableClose: true,
+                title: 'Unsaved Changes', //OPTIONAL, hides if not provided
+                cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                width: '500px', //OPTIONAL, defaults to 400px
+            }).afterClosed();
+            observable.subscribe((accept: boolean) => {
+                if (accept) {
+                    return true;
+                } else {
+                    // no op
+                    return false;
+                }
+            });
+            return observable.toPromise();
+        }
+        else {
+            return true;
+        }
     }
-
-    feedDetailsStep(steps:Step[], stepNumber:number):Step {
-        let name = this._translateService.instant("views.define-feed-stepper.FeedDetails")
-        return new StepBuilder().setNumber(stepNumber).setName(name).setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
-    }
-
-    private newDefineTableFeedSteps() :Step[] {
-        let steps :Step[] = []
-        let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator(this.previewDatasetCollectionService)).build();
-        let table = new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
-        let feedDetails = this.feedDetailsStep(steps,4);
-        steps.push(generalInfoStep);
-        steps.push(sourceSampleStep);
-        steps.push(table)
-        steps.push(feedDetails);
-        return steps;
-    }
-
-    private newDataTransformationSteps() :Step[] {
-        let steps :Step[] = []
-        let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator(this.previewDatasetCollectionService)).build();
-        let wranglerStep =  new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("wrangler").setDisabled(true).setRequired(true).build();
-        let table = new StepBuilder().setNumber(4).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_WRANGLER).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
-        let feedDetails = this.feedDetailsStep(steps,5);
-        steps.push(generalInfoStep);
-        steps.push(sourceSampleStep);
-        steps.push(wranglerStep);
-        steps.push(table)
-        steps.push(feedDetails);
-        return steps;
-    }
-
-
-    private newSimpleFeedSteps() :Step[] {
-        let steps :Step[] = []
-        let generalInfoStep = this.generalInfoStep(steps);
-        let feedDetails = this.feedDetailsStep(steps,2);
-        steps.push(generalInfoStep);
-        steps.push(feedDetails);
-        return steps;
-    }
-
-
 
     /**
      * Call kylo-services and save the feed
@@ -385,8 +381,8 @@ export class DefineFeedService {
     private _saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
         let body = feed.copyModelForSave();
 
-        let savedFeedSubject = new Subject<SaveFeedResponse>();
-        let savedFeedObservable$ = savedFeedSubject.asObservable();
+        let subject = new Subject<SaveFeedResponse>();
+        let savedFeedObservable$ = subject.asObservable();
 
 
         let newFeed = body.id == undefined;
@@ -424,11 +420,17 @@ export class DefineFeedService {
             this.feed = savedFeed;
             let saveFeedResponse = new SaveFeedResponse(savedFeed,true,message);
             saveFeedResponse.newFeed = newFeed;
-            savedFeedSubject.next(saveFeedResponse);
+            //notify any subscribers to this single function
+            subject.next(saveFeedResponse)
+            //notify any global subscribers
+            this.savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
             console.error("Error",error);
             let response = new SaveFeedResponse(feed,false,"Error saving feed "+feed.feedName+". You have validation errors");
-            savedFeedSubject.next(response);
+            //notify any subscribers to this single function
+            subject.next(response)
+            //notify any global subscribers
+            this.savedFeedSubject.next(response);
         });
         return savedFeedObservable$
     }

@@ -1,4 +1,8 @@
-  <mat-card class="mat-typography">
+<!-- if this page has more than 1 card and its not disabled show all the content -->
+<ng-content select="feed-step-custom-content" *ngIf="!singleCardView && disabledDependsUponStep == null "></ng-content>
+
+<!-- if this page has a single card and its not disabled -->
+<mat-card class="mat-typography" *ngIf="singleCardView && disabledDependsUponStep == null " >
     <mat-card-header>
       <mat-card-title>{{step.name}}</mat-card-title>
       <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
@@ -8,7 +12,7 @@
     <mat-card-content>
       <ng-content select="feed-step-readonly-content" *ngIf="feed.readonly  && mode == 'normal'"></ng-content>
       <ng-content select="feed-step-edit-content" *ngIf="!feed.readonly && mode == 'normal'"></ng-content>
-      <ng-content *ngIf="mode=='custom'"></ng-content>
+      <ng-content *ngIf=" mode =='custom' "></ng-content>
     </mat-card-content>
     <mat-card-actions *ngIf="!feed.readonly && displayEditActions">
       <button mat-button (click)="onCancel()">Cancel</button>
@@ -16,3 +20,24 @@
       <button mat-button color="primary"(click)="onSave()" >Save</button>
     </mat-card-actions>
   </mat-card>
+
+
+<!-- if this page is disabled -->
+
+  <mat-card class="mat-typography" *ngIf="disabledDependsUponStep != null">
+    <mat-card-header>
+      <mat-card-title>{{step.name}}</mat-card-title>
+      <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
+      <span fxFlex></span>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="step-disabled" fxLayout="column" fxLayoutAlign="center center">
+        <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+        <h2>This step requires {{disabledDependsUponStep.name}} to be completed first</h2>
+            <button mat-raised-button color="primary" (click)="goToDependsUponStep()">Go to {{disabledDependsUponStep.name}}</button>
+      </div>
+    </mat-card-content>
+
+  </mat-card>
+
+
