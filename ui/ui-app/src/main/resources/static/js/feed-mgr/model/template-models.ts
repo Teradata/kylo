@@ -6,6 +6,8 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
 import TemplateProcessorDatasourceDefinition = Templates.TemplateProcessorDatasourceDefinition;
 import { Property } from "estree";
 
+
+
 export interface SaveTemplate {
 
     properties: properties[];

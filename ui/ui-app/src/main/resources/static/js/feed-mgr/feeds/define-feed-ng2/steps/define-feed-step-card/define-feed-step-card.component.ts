@@ -54,6 +54,7 @@ export class DefineFeedStepCardComponent implements OnInit {
     }
 
     onSave(){
+        this.step.dirty=false;
         this.saved.emit();
     }
 

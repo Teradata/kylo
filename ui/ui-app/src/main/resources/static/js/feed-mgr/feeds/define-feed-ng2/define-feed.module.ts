@@ -88,6 +88,7 @@ import {FeedInfoDescriptionComponent} from "./summary/overview/feed-info-descrip
 import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/feed-info-category.component";
 import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
+import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
 
 @NgModule({
     declarations: [
@@ -124,7 +125,8 @@ import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
         FeedInfoNameComponent,
         FeedInfoScheduleComponent,
         FeedInfoDescriptionComponent,
-        FeedInfoCategoryComponent
+        FeedInfoCategoryComponent,
+        FeedInfoTagsComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,
@@ -133,10 +135,10 @@ import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
     providers:[
       DefineFeedService,
       FeedLoadingService,
-        FeedSourceSampleChange,
+      FeedSourceSampleChange,
       FilterPartitionFormulaPipe,
-        FeedSideNavService,
-        FeedItemInfoService
+      FeedSideNavService,
+      FeedItemInfoService
     ],
     imports: [
         CommonModule,

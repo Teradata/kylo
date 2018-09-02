@@ -25,7 +25,13 @@ export class Step {
             return true;
         }
         else {
-            return this.validator ? this.validator.validate(feed) : true;
+            if(this.validator){
+                this.validator.step = this;
+                return this.validator.validate(feed);
+            }
+            else {
+                return true;
+            }
         }
 
     }
@@ -38,12 +44,22 @@ export class Step {
         return this.dirty;
     }
 
-    updateStepState() {
+    /**
+     * updates the state of any dependent steps based upon the state of this feed and returns any steps that are disabled due to this feed not being complete
+     * @return {Step[]}
+     */
+    updateStepState() :Step[]{
         let disabled = !this.complete;
         //update dependent step states
         let dependentSteps = this.findDependentSteps();
         if (dependentSteps) {
             dependentSteps.forEach(step => step.disabled = disabled);
+        }
+        if(disabled) {
+           return dependentSteps;
+        }
+        else {
+            return [];
         }
     }
 
@@ -102,6 +118,12 @@ export class Step {
 
     shallowCopy():Step{
         return Object.assign(Object.create(this),this)
+    }
+
+    update(step:Step) {
+            this.complete = step.complete;
+            this.visited = step.visited;
+
     }
 
 

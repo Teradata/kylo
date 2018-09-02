@@ -3,7 +3,7 @@
     <td-layout-manage-list opened="true" mode="side">
       <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
       <mat-toolbar >
-        <div>Feed {{feed.feedName}} - {{currentLink.label}}</div>
+        <div>Feed {{feed.feedName}}</div>
         <span fxFlex="100"></span>
         <ng-container
             [ngTemplateOutlet]="toolbarActionLinks ? toolbarActionLinks: defaultToolbarActionLinks">

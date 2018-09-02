@@ -46,12 +46,18 @@ export enum FeedState {
 }
 
 
+export enum FeedTemplateType {
+    DEFINE_TABLE="DEFINE_TABLE", DATA_TRANSFORMATION="DATA_TRANSFORMATION",SIMPLE_FEED="SIMPLE_FEED"
+}
+
 export class Feed  implements KyloObject{
 
 
     public static OBJECT_TYPE:string = 'Feed'
 
     public objectType:string = Feed.OBJECT_TYPE;
+
+    static UI_STATE_STEPS_KEY = "STEPS";
 
     /**
      * internal id to track feed instances
@@ -283,6 +289,11 @@ export class Feed  implements KyloObject{
 
     isValid:boolean;
 
+    /**
+     * map of userinterface state objects persisted to the feed
+     */
+    uiState:{[key:string]: any;}
+
 
     public constructor(init?: Partial<Feed>) {
         this.initialize();
@@ -292,6 +303,9 @@ export class Feed  implements KyloObject{
             this.sourceDataSets = this.sourceDataSets.map(ds => {
                 return new SparkDataSet(ds);
             });
+        }
+        if(this.uiState == undefined){
+            this.uiState = {}
         }
 
 
@@ -355,7 +369,8 @@ export class Feed  implements KyloObject{
                 active: {disabled: false},
                 executionNode: {disabled: false},
                 preconditions: {disabled: false}
-            }
+            },
+            uiState :{}
         };
     }
 
@@ -374,12 +389,15 @@ export class Feed  implements KyloObject{
     validate(updateStepState?: boolean): boolean {
         let valid = true;
         let model = this;
+        let disabledSteps :Step[] = [];
         this.steps.forEach((step: Step) => {
             valid = valid && step.validate(<Feed>this);
             if (updateStepState) {
-                step.updateStepState();
+                step.updateStepState().forEach(step => disabledSteps.push(step));
             }
         });
+        let  enabledSteps = this.steps.filter(step => disabledSteps.indexOf(step) == -1);
+        enabledSteps.forEach(step => step.disabled = false);
         this.isValid = valid;
         return valid;
     }
@@ -393,7 +411,7 @@ export class Feed  implements KyloObject{
      * @return {boolean}
      */
     isDefineTable(){
-        return "DEFINE_TABLE" == this.getTemplateType();
+        return FeedTemplateType.DEFINE_TABLE == this.getTemplateType();
     }
 
     /**
@@ -401,7 +419,7 @@ export class Feed  implements KyloObject{
      * @return {boolean}
      */
     isDataTransformation(){
-        return "DATA_TRANSFORMATION" == this.getTemplateType();
+        return FeedTemplateType.DATA_TRANSFORMATION == this.getTemplateType();
     }
 
     /**
@@ -555,7 +573,6 @@ export class Feed  implements KyloObject{
             copy.table.fieldPolicies = newPolicies;
             copy.table.tableSchema.fields = tableFields;
 
-            //TODO move init logic for undefind schema to a FeedTable class constuctor so its handled prior to this step
             if (copy.table.sourceTableSchema == undefined) {
                 copy.table.sourceTableSchema = new SourceTableSchema();
             }

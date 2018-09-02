@@ -168,6 +168,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     private boolean allowIndexing = true;
     private String historyReindexingStatus = "";
 
+
+
+    /**
+     * Additional key / value pairs for used by the user interface
+     * @since 0.9.2
+     */
+    private Map<String, Object> uiState;
+
     public String getHistoryReindexingStatus() {
         return historyReindexingStatus;
     }
@@ -599,6 +607,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.sourceDataSets = sourceDataSets;
     }
 
+    public Map<String, Object> getUiState() {
+        return uiState;
+    }
+
+    public void setUiState(Map<String, Object> uiState) {
+        this.uiState = uiState;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(
@@ -636,7 +652,8 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             version,
             versionName,
             allowIndexing,
-            historyReindexingStatus
+            historyReindexingStatus,
+            uiState
         );
     }
 
@@ -689,7 +706,8 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             Objects.equals(version, other.version) &&
             Objects.equals(versionName, other.versionName) &&
             Objects.equals(allowIndexing, other.allowIndexing) &&
-            Objects.equals(historyReindexingStatus, other.historyReindexingStatus);
+            Objects.equals(historyReindexingStatus, other.historyReindexingStatus) &&
+            Objects.equals(uiState,other.uiState);
     }
 
 

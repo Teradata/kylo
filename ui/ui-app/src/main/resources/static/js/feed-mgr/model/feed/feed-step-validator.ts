@@ -15,10 +15,20 @@ export class FeedStepValidator  {
     }
 
     public validate(feed:Feed) : boolean{
-        console.log("Validating ",this.step.name)
-        this.step.setComplete(true);
-        this.step.valid = true;
+        if(!this.step.visited) {
+            this.step.setComplete(false);
+        }
+
+        if(this.hasFormErrors){
+            this.step.setComplete(false);
+            this.step.valid = false;
+        }
+        else {
+            this.step.valid = true;
+        }
         return this.step.valid;
     }
+
+
 
 }

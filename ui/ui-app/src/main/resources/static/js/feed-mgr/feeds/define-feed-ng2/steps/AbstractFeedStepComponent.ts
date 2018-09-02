@@ -81,7 +81,6 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
-            this.step.markDirty();
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;
@@ -232,6 +231,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         }
             this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
             if (this.step) {
+                this.step.dirty=false;
                 this.step.visited = true;
                 //register any custom toolbar actions
                 let toolbarActionTemplate = this.getToolbarTemplateRef();

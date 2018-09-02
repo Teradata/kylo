@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
-import {Feed} from "../../../model/feed/feed.model";
+import {Feed, FeedTemplateType} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -37,6 +37,7 @@ import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {FeedStepBuilderUtil} from "./feed-step-builder-util";
+import {CloneUtil} from "../../../../common/utils/clone-util";
 
 
 
@@ -149,11 +150,27 @@ export class DefineFeedService {
 
                 this.selectionService.reset()
                 //convert it to our needed class
+                let uiState = feed.uiState;
+
                 let feedModel = new Feed(feed)
                 //reset the propertiesInitalized flag
                 feedModel.propertiesInitialized = false;
 
-                this.initializeFeedSteps(feedModel);
+                //get the steps back from the model
+                let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
+                //merge in the saved steps
+                let savedStepJSON = feedModel.uiState[Feed.UI_STATE_STEPS_KEY] || "[]";
+                let steps :Step[] = JSON.parse(savedStepJSON);
+                //group by stepName
+                let savedStepMap = _.indexBy(steps,'systemName')
+                let mergedSteps:Step[] = defaultSteps.map(step => {
+                    if(savedStepMap[step.systemName]){
+                       step.update(savedStepMap[step.systemName]);
+                    }
+                    return step;
+                });
+                feedModel.steps = mergedSteps;
+
                 feedModel.validate(true);
                 this.feed = feedModel;
                 //notify subscribers of a copy
@@ -327,16 +344,28 @@ export class DefineFeedService {
      * @param {Feed} feed
      */
     initializeFeedSteps(feed:Feed){
-        let templateTableOption = feed.getTemplateType()
+        let templateType = feed.getTemplateType()
+        return this.getStepsForTemplate(templateType)
+    }
+
+    /**
+     * Initialize the Feed Steps based upon the feed template type
+     * @param {Feed} feed
+     */
+    getStepsForTemplate(templateType:string){
+
         let stepUtil = new FeedStepBuilderUtil(this._translateService);
-        if(feed.isDefineTable()){
-            feed.steps = stepUtil.defineTableFeedSteps();
+        if(templateType){
+            templateType == FeedTemplateType.SIMPLE_FEED;
         }
-        else if(feed.isDataTransformation()){
-          feed.steps = stepUtil.dataTransformationSteps()
-         }
+        if(FeedTemplateType.DEFINE_TABLE == templateType){
+            return stepUtil.defineTableFeedSteps();
+        }
+        else if(FeedTemplateType.DATA_TRANSFORMATION == templateType){
+            return stepUtil.dataTransformationSteps()
+        }
         else {
-            feed.steps = stepUtil.simpleFeedSteps();
+            return  stepUtil.simpleFeedSteps();
         }
     }
 
@@ -387,7 +416,15 @@ export class DefineFeedService {
 
         let newFeed = body.id == undefined;
         //remove circular steps
+        let steps :Step[] = CloneUtil.deepCopy(body.steps);
+        steps.forEach(step => {
+            delete step.allSteps;
+            delete step.validator;
+        })
+        //push the steps into the new uiState object on the feed to persist the step status
+        body.uiState[Feed.UI_STATE_STEPS_KEY] = JSON.stringify(steps);
         delete body.steps;
+
         let observable : Observable<Feed> = <Observable<Feed>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});

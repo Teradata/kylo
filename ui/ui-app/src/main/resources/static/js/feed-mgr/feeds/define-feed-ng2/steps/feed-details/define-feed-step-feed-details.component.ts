@@ -330,6 +330,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
         //listen when the form is valid or invalid
         this.subscribeToFormChanges(this.form);
+
     }
 
     /**
@@ -373,6 +374,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
         //set the old value
         this.oldInputProcessorId = event.value;
+        this.step.markDirty();
     }
 
     private getInputProcessorFieldGroup():FieldGroup {
@@ -422,7 +424,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                     this.buildForm();
                     this.feed.propertiesInitialized = true;
 
-                    //   this.validate();
+                    this.subscribeToFormDirtyCheck(this.form);
                 }
 
             }, (err: any) =>{});
@@ -432,6 +434,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             this.inputProcessor = this.feed.inputProcessor;
             this.inputProcessors = this.feed.inputProcessors;
             this.buildForm();
+            this.subscribeToFormDirtyCheck(this.form);
 
         }
     }
@@ -465,6 +468,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                         this.inputProcessor = feed.inputProcessor;
                         this.inputProcessors = feed.inputProcessors;
                         this.buildForm();
+                        this.subscribeToFormDirtyCheck(this.form);
 
                         //@TODO add in  access control
 
@@ -504,6 +508,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             this.inputProcessor = feed.inputProcessor;
             this.inputProcessors = feed.inputProcessors;
             this.buildForm();
+            this.subscribeToFormDirtyCheck(this.form);
             }
     }
 

@@ -23,6 +23,10 @@ export abstract class AbstractFeedInfoItemComponent {
     formGroup:FormGroup;
 
     protected  constructor(protected defineFeedService:DefineFeedService, protected feedItemInfoService:FeedItemInfoService){
+    this.initForm();
+
+    }
+    initForm(){
         this.formGroup = new FormGroup({})
     }
 

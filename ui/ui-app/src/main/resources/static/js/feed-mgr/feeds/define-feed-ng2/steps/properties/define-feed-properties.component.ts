@@ -16,6 +16,8 @@ import {PropertyListComponent} from "../../../../shared/property-list/property-l
 })
 export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
 
+    displayEditActions:boolean
+
     /**
      * The form for this step
      */
@@ -35,10 +37,27 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
 
     init() {
         super.init();
-        this.subscribeToFormDirtyCheck(this.formGroup);
+
+
+
+
+        if(!this.feed.readonly && this.feed.properties.length >0){
+            this.displayEditActions = true;
+        }
     }
     destroy(){
 
+    }
+
+    ngAfterViewInit(){
+        this.subscribeToFormDirtyCheck(this.formGroup);
+
+        this.formGroup.get('userPropertyForm').valueChanges.subscribe(changes => {
+            console.log('form changes',changes)
+            if(!this.feed.readonly){
+                this.displayEditActions = true;
+            }
+        });
     }
 
     /**

@@ -19,21 +19,20 @@
   -->
 
 
-<div *ngIf="editable" >
-  <div class="section-header">{{title}}</div>
+<ng-container *ngIf="editable">
+  <div class="section-header" *ngIf="title">{{title}}</div>
 
 
-  <div *ngIf="properties.length > 0; else editEmpty">
-
-    <ng-template ngFor let-property let-$index="index" [ngForOf]="properties"  >
+  <div *ngIf="properties.length > 0">
+    <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
       <div fxLayout="row" [formGroup]="userPropertyForm">
 
         <mat-form-field fxFlex *ngIf="property.locked">
-          <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
+          <input matInput [formControlName]="property.id+'_value'" [placeholder]="property.displayName">
         </mat-form-field>
 
         <mat-form-field fxFlex="50" *ngIf="!property.locked">
-          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" >
+          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name">
           <mat-error *ngIf="hasError(property,'systemName')">
             {{getErrorMessage(property,'systemName')}}
           </mat-error>
@@ -48,34 +47,32 @@
           <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
         </mat-form-field>
 
-        <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
+        <button mat-button class="primary" (click)="removeProperty($index)">
+          <mat-icon>delete</mat-icon>
+        </button>
       </div>
     </ng-template>
-
-
   </div>
 
+  <div *ngIf="properties.length ==0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <mat-icon matListAvatar class="text-super push-bottom">find_in_page</mat-icon>
+    <h2>No properties</h2>
+    <h3>You have not added any properties</h3>
+  </div>
 
-  <ng-template #editEmpty>
-   <div class="pad-top pad-bottom"> No properties exist</div>
-  </ng-template>
-
-
-
-
-  <button mat-raised-button (click)="addProperty()">Add Property</button>
+  <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
 
 
-</div>
+</ng-container>
 
-
-<div *ngIf="!editable && properties.length >0" fxLayout="column" fxFlex >
-  <div class="section-header" >{{title}}</div>
-  <div>
-      <ng-template ngFor  let-property let-$index="index" [ngForOf]="properties">
-        <div fxLayout="row" >
-          <div *ngIf="property.locked" fxLayout="column" fxFlex="25" >
-            <span  >{{property.displayName}}</span>
+<ng-container *ngIf="!editable">
+  <div *ngIf="properties.length >0;" fxLayout="column" fxFlex>
+    <div class="section-header" *ngIf="title">{{title}}</div>
+    <div>
+      <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
+        <div fxLayout="row">
+          <div *ngIf="property.locked" fxLayout="column" fxFlex="25">
+            <span>{{property.displayName}}</span>
             <span class="hint">{{property.description}}</span>
           </div>
           <div *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</div>
@@ -83,7 +80,13 @@
           <div fxFlex>{{property.value}}</div>
         </div>
       </ng-template>
-
+    </div>
   </div>
 
-</div>
+  <div *ngIf="properties.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <mat-icon matListAvatar class="text-super push-bottom">find_in_page</mat-icon>
+    <h2>No properties</h2>
+    <h3>You have not added any properties</h3>
+  </div>
+
+</ng-container>
