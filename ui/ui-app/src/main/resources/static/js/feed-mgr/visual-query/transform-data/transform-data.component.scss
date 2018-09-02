@@ -123,9 +123,10 @@ thinkbig-visual-query-transform {
 
   /* Override toolbar buttons */
   .md-kylo-powerui button {
-    $height: 27px;
-    min-height: $height;
-    height: $height;
+    margin-left:10px;
+    margin-top:0px;
+    min-height: 25px;
+    height: 25px;
     line-height: 27px;
     font-size: 12px;
   }

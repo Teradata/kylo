@@ -6,20 +6,22 @@ import {ColumnController} from "../../column-controller";
 
 export class OrderByForm extends ColumnForm {
 
+    title: string;
 
-
-    constructor(column:any, grid:any,controller:ColumnController,private title:string,private callback?:Function, value?:string ){
-        super(column,grid,controller,value)
+    constructor(column:any, grid:any,controller:ColumnController,private title:string,private callback?:Function){
+        super(column,grid,controller)
+        this.title = title;
 
     }
 
     buildForm() {
         const DEFAULT = "(default)";
-        return new DynamicFormBuilder().setTitle(this.title)
+        return new DynamicFormBuilder().setTitle("Ordering (optional)")
             .column()
             .select().setKey("orderBy1")
             .setPlaceholder("Order field")
             .setValue(DEFAULT)
+            .setRequired(false)
             .setOptions(this.getColumnNames().map(col => {
                 return {label:col,value:col};
             })).done()
