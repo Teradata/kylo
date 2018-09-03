@@ -8,7 +8,7 @@
         <mat-card-title>{{step.name}}</mat-card-title>
         <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
         <span fxFlex></span>
-        <button mat-icon-button (click)="onEdit()" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
+        <button mat-icon-button class="pad-right pad-top" color="accent" (click)="onEdit()" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
       </mat-card-header>
       <mat-card-content>
         <ng-content select="feed-step-readonly-content" *ngIf="feed.readonly  && mode == 'normal'"></ng-content>
