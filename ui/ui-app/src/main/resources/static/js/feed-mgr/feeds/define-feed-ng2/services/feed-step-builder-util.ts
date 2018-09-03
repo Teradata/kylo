@@ -48,7 +48,7 @@ export class FeedStepBuilderUtil {
 
     sourceSampleStep():StepBuilder {
         let name = FeedStepConstants.STEP_SOURCE_SAMPLE;
-        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").setSref("datasources").setRequired(true);
+        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").setSref("datasources").setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator());
     }
 
     wranglerStep():StepBuilder {

@@ -15,6 +15,7 @@ import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "
 import {Template} from "../../../model/template-models";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {LocalStorageService} from "../../../../common/local-storage/local-storage.service";
+import {FeedLoadingService} from "../services/feed-loading-service";
 
 
 @Component({
@@ -94,7 +95,8 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
     constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService, private localStorageService:LocalStorageService,
-                  private $$angularInjector: Injector) {
+                  private $$angularInjector: Injector,
+                  protected feedLoadingService:FeedLoadingService) {
 
         this.model = new Feed();
         /**
@@ -148,6 +150,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * @param template
          */
         createFeed(newFeedData:NewFeedDialogResponse) {
+            this.feedLoadingService.registerLoading()
             let template = newFeedData.template;
             let feedName = newFeedData.feedName;
             let systemFeedName = newFeedData.systemFeedName;
@@ -217,7 +220,11 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             this.model.systemFeedName = systemFeedName
             this.model.category = newFeedData.category;
             this.defineFeedService.saveFeed(this.model).subscribe((response :SaveFeedResponse)=> {
+                this.feedLoadingService.resolveLoading()
                 this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview", {"feedId": response.feed.id})
+            }, error1 => {
+                this.feedLoadingService.resolveLoading()
+                //TODO ERROR unable to create feed!!!
             });
 
         };

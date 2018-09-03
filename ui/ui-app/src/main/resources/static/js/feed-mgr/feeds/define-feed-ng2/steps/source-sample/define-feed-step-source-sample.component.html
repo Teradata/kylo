@@ -2,6 +2,8 @@
   <form class="source-sample-container" [formGroup]="sourceSample">
     <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && !feed.readonly" fxLayout="column" >
       <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
+
+
       <span class="pad-top"><button mat-raised-button (click)="goToDataSet(feed.sourceDataSets[0])">{{feed.sourceDataSets[0].resolvePath()}}</button></span>
       <span class="pad-top"><button mat-raised-button (click)="browseCatalog()" *ngIf="!feed.readonly">Change source</button></span>
     </div>
@@ -23,5 +25,6 @@
 </define-feed-step-card>
 
 <ng-template #toolbarActionTemplate>
+  blah<br/>
   <dataset-collection-preview-cart></dataset-collection-preview-cart>
 </ng-template>

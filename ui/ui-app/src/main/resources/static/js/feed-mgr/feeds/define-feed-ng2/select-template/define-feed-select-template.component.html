@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-
+<div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 <div fxLayoutAlign="center center" fxLayout="row">
   <div fxFlex="110px" *ngIf="allowImport"></div>
   <div class="mat-padding import-feed-text" fxLayout="row" fxFlex fxLayoutAlign="center center">
@@ -56,4 +56,5 @@
       </mat-grid-tile-footer>
     </mat-grid-tile>
   </mat-grid-list>
+</div>
 </div>

@@ -599,7 +599,7 @@ export class Feed  implements KyloObject{
      */
     setSourceDataSetAndUpdateTarget(sourceDataSet:SparkDataSet,mode:TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET  ){
 
-        if(sourceDataSet){
+        if(sourceDataSet && sourceDataSet != null){
             this.sourceDataSets = [sourceDataSet];
             let dataSet = sourceDataSet
             let sourceColumns: TableColumnDefinition[] = [];

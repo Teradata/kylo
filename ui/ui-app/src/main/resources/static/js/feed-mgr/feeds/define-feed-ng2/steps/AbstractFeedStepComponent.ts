@@ -180,6 +180,9 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         //notify the subscribers on the actual save call so they can listen when the save finishes
         this.defineFeedService.saveFeed(this.feed).subscribe((response:SaveFeedResponse) => {
             this.defineFeedService.openSnackBar("Saved the feed ",3000);
+            this.resolveLoading();
+        }, error1 => {
+            this.resolveLoading()
         })
     }
 

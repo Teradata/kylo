@@ -29,13 +29,6 @@ import {PreviewDataSetRequest} from "../../../../catalog/datasource/preview-sche
 import {DatasetCollectionPreviewCartComponent} from "./dataset-collection-preview-cart.component";
 import {MatDialogConfig} from "@angular/material";
 import {FeedSideNavService} from "../../shared/feed-side-nav.service";
-import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
-import {Observable} from "rxjs/Observable";
-import "rxjs/add/observable/empty";
-import "rxjs/add/observable/of";
-import 'rxjs/add/observable/forkJoin'
-import { catchError } from 'rxjs/operators';
-import {FeedLoadingService} from "../../services/feed-loading-service";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -61,8 +54,12 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
     @Input()
     public params:any = {};
 
+    //@ViewChild("datasetCollectionCart")
+   // datasetCollectionCart:DatasetCollectionPreviewCartComponent;
+
     @ViewChild("toolbarActionTemplate")
     public toolbarActionTemplate: TemplateRef<any>
+
 
     /**
      * an array of paths used for the preview tab
@@ -82,8 +79,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
         private _dialogService: TdDialogService,
                 private _fileMetadataTransformService: FileMetadataTransformService,
                 private previewSchemaService:PreviewSchemaService,
-                private feedSideNavService:FeedSideNavService,
-                private feedLoadingService:FeedLoadingService
+                private feedSideNavService:FeedSideNavService
                 ) {
        super(state,stateRegistry,selectionService,previewDatasetCollectionService);
       this.singleSelection = this.selectionService.isSingleSelection();
@@ -214,7 +210,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
      * @param {BrowserObject} file
      */
     preview(file:BrowserObject){
-        this._previewDataSet(file);
+        this._previewDataSet(file, DataSetPreviewMode.PREVIEW);
     }
 
     getCartDialogConfig():MatDialogConfig{
@@ -224,174 +220,112 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
 
     }
 
-
-    private  _previewDataSet(file:BrowserObject){
-        let dialogConfig:MatDialogConfig = DatasetCollectionPreviewDialogComponent.DIALOG_CONFIG()
-        this._fileMetadataTransformService.detectFormatForPaths([file.getPath()],this.datasource).subscribe((response:FileMetadataTransformResponse) => {
-            let obj = response.results.datasets;
-            if(obj && Object.keys(obj).length >0){
-                let dataSet = obj[Object.keys(obj)[0]];
-                let previewRequest = new PreviewDataSetRequest();
-                previewRequest.dataSource = this.datasource;
-                this.previewSchemaService.preview(dataSet,previewRequest);
-                //open side dialog
-                let dialogData:DatasetCollectionPreviewDialogData = new DatasetCollectionPreviewDialogData(DataSetPreviewMode.PREVIEW,dataSet)
-                dialogConfig.data = dialogData;
-                this._dialogService.open(DatasetCollectionPreviewDialogComponent,dialogConfig);
-            }
-        } )
-    }
-
-    private _saveFeed(){
-        this.step.setComplete(true)
-        this.defineFeedService.saveFeed(this.feed).subscribe(result => {
-           this.feedLoadingService.resolveLoading()
-
-            this.backToCatalog();
-        },error1 =>
-        {
-            this.step.setComplete(false)
-            this.feedLoadingService.resolveLoading()
-            this._dialogService.openAlert({
-                message:"There was an error saving the source selection "+error1,
-                title:"Error saving source selection"
-            });
-        });
-    }
-
     onSave(){
-        this.feedLoadingService.registerLoading();
-       let feedDataSets = this.feed.sourceDataSets;
-       let node:Node =  this.selectionService.get(this.datasource.id);
-       if(node.countSelectedDescendants() >0){
-           /// preview and save to feed
-           this._fileMetadataTransformService.detectFormatForNode(node, this.datasource).subscribe((response:FileMetadataTransformResponse) => {
-               let dataSetMap = response.results.datasets;
-               let previews: Observable<PreviewDataSet>[] = [];
 
-               if (dataSetMap) {
-                   let keys = Object.keys(dataSetMap);
-                   keys.forEach(key => {
-                       let dataSet: PreviewDataSet = dataSetMap[key];
-                       let previewRequest = new PreviewDataSetRequest();
-                       previewRequest.dataSource = this.datasource;
-                       previews.push(this.previewSchemaService.preview(dataSet, previewRequest));
-                   })
-               }
-               Observable.forkJoin(previews).subscribe((results: PreviewDataSet[]) => {
-                   let errors: PreviewDataSet[] = [];
+        let datasets = this.previewDatasetCollectionService.datasets;
+        //determine if the datasets differ from those on the feed
+        let feedDatasets = this.feed.sourceDataSets;
+        if(feedDatasets){
+            let feedDatasetKeys  = feedDatasets.map(ds => ds.id).sort().toString();
+            let newDatasetKeys = datasets.map(ds => ds.key).sort().toString();
+            if(feedDatasetKeys != newDatasetKeys){
+                //WARN different datasets
+                this._dialogService.openConfirm({
+                    message: 'The dataset you have selected differs from the one existing on this feed. Switching the source will result in a new target schema.  Are you sure you want to do this?',
+                    disableClose: true,
+                    title: 'Confirm source dataset change', //OPTIONAL, hides if not provided
+                    cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                    acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                    width: '500px', //OPTIONAL, defaults to 400px
+                }).afterClosed().subscribe((accept: boolean) => {
+                    if (accept) {
+                        if(this.singleSelection) {
+                            this.feed.setSourceDataSetAndUpdateTarget(datasets.map(ds => ds.toSparkDataSet())[0])
+                        }
+                        else {
+                            //wrangler feed
+                            this.feed.sourceDataSets = datasets.map(ds => ds.toSparkDataSet());
+                            //TODO reset feed.tableSchema
 
-                   results.forEach(result => {
-
-                       if (result.hasPreviewError()) {
-                           errors.push(result);
-                       }
-
-                   });
-                   if (errors.length > 0) {
-                       let dataSetNames = errors.map(ds => ds.key).join(",");
-                       let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
-                       if (this.singleSelection) {
-                           message += " You will need to manually create the target schema. Proceed or Cancel and select a new source?"
-                       }
-                       //WARN different datasets
-                       this._dialogService.openConfirm({
-                           message: message,
-                           disableClose: true,
-                           title: 'Error parsing source selection',
-                       }).
-                       afterClosed().subscribe((accept: boolean) => {
-                           if (accept) {
-                               //set the source and target to empty
-                               this.feed.setSourceDataSetAndUpdateTarget(null);
-                              this._saveFeed()
-                           }
-                           else {
-                               //stay here
-                               this.feedLoadingService.resolveLoading();
-                           }
-
-                       });
-
-                   }
-                   else {
-                       //good to save.
-
-                       //check to see if schema differs
-                       if (feedDataSets && feedDataSets.length >0) {
-                           let feedDatasetKeys = feedDataSets.map(ds => ds.id).sort().toString();
-                           let newDatasetKeys = results.map(ds => ds.key).sort().toString();
-                           if (feedDatasetKeys != "" && feedDatasetKeys != newDatasetKeys) {
-                               //WARN different datasets
-                               this._dialogService.openConfirm({
-                                   message: 'The dataset you have selected differs from the one existing on this feed. Switching the source will result in a new target schema.  Are you sure you want to do this?',
-                                   disableClose: true,
-                                   title: 'Confirm source dataset change',
-                               }).afterClosed().subscribe((accept: boolean) => {
-                                   if (accept) {
-                                       if (this.singleSelection) {
-                                           this.feed.setSourceDataSetAndUpdateTarget(results.map(ds => ds.toSparkDataSet())[0])
-                                       }
-                                       else {
-                                           //wrangler feed
-                                           this.feed.sourceDataSets = results.map(ds => ds.toSparkDataSet());
-                                           //TODO reset feed.tableSchema
-
-                                       }
-                                       this._saveFeed();
-                                   } else {
-                                       // no op
-                                       this.feedLoadingService.resolveLoading();
-                                   }
-                               });
+                        }
+                        this.defineFeedService.saveFeed(this.feed)
+                    } else {
+                        // no op
+                    }
+                });
 
 
-                           }
+            }
 
-                       }
-                       else {
-                           //modify the source and target schemas
-                           if (this.singleSelection) {
-                               this.feed.setSourceDataSetAndUpdateTarget(results.map(ds => ds.toSparkDataSet())[0])
-                           }
-                           else {
-                               //wrangler feed
-                               this.feed.sourceDataSets = results.map(ds => ds.toSparkDataSet());
-                               //TODO reset feed.tableSchema
+        }
+        else {
+            if(this.singleSelection) {
+                this.feed.setSourceDataSetAndUpdateTarget(datasets.map(ds => ds.toSparkDataSet())[0])
+            }
+            else {
+                //wrangler feed
+                this.feed.sourceDataSets = datasets.map(ds => ds.toSparkDataSet());
+                //TODO reset feed.tableSchema
 
-                           }
-                           this._saveFeed();
-                       }
-
-                   }
-
-
-               },
-                   err => {
-                   console.error(err)
-                       this._dialogService.openAlert({
-                           message: "ERROR "+err,
-                           disableClose: true,
-                           title: 'Error parsing source selection',
-                       })
-               }
-               );
-           });
-
-       }
-       else {
-           this._dialogService.openAlert({
-               message: 'You need to select a source before saving',
-               disableClose: true,
-               title: 'A selection is needed'
-           });
-       }
+            }
+            //modify the source and target schemas
+            this.defineFeedService.saveFeed(this.feed)
+        }
     }
 
     onCancel(){
 
     }
 
+  private  _previewDataSet(file:BrowserObject,mode:DataSetPreviewMode){
+        let collect:boolean = DataSetPreviewMode.CART == mode ? true : false;
+        let dialogConfig:MatDialogConfig = DataSetPreviewMode.CART == mode ? this.getCartDialogConfig(): DatasetCollectionPreviewDialogComponent.DIALOG_CONFIG()
+        this._fileMetadataTransformService.detectFormatForPaths([file.getPath()],this.datasource).subscribe((response:FileMetadataTransformResponse) => {
+            let obj = response.results.datasets;
+            if(obj && Object.keys(obj).length >0){
+                let dataSet = obj[Object.keys(obj)[0]];
+                //auto preview and add
+                let previewRequest = new PreviewDataSetRequest();
+                previewRequest.dataSource = this.datasource;
+                this.previewSchemaService.preview(dataSet,previewRequest,collect);
+                //open side dialog
+                let dialogData:DatasetCollectionPreviewDialogData = new DatasetCollectionPreviewDialogData(mode,dataSet)
+                if(mode == DataSetPreviewMode.CART){
+                    //save the cart position back to the data for reference
+                    dialogData.dialogPosition = dialogConfig.position;
+                }
+                dialogConfig.data = dialogData;
+                this._dialogService.open(DatasetCollectionPreviewDialogComponent,dialogConfig);
+            }
+        } )
+    }
+
+    /**
+     *
+     * @param {BrowserObject} file
+     * @param {BrowserComponent} parent
+     */
+    addDataSet(event:MouseEvent,file:BrowserObject, parent:BrowserComponent){
+        parent.onToggleChild({checked:true}, file)
+        if(this.singleSelection) {
+            //remove everything else and then add this one
+            this.previewDatasetCollectionService.reset();
+        }
+        this._previewDataSet(file, DataSetPreviewMode.CART);
+    }
+
+    removeDataSet(event:MouseEvent,file:BrowserObject, parent:BrowserComponent){
+        parent.onToggleChild({checked:false}, file)
+        let path = file.getPath();
+        let existingDataSets = this.previewDatasetCollectionService.findByPath(path);
+        if(existingDataSets){
+            existingDataSets.forEach((ds) => {
+                this.previewDatasetCollectionService.remove(ds);
+            });
+        }
+
+        //invalidate if the datasets are empty
+    }
 
 }
 

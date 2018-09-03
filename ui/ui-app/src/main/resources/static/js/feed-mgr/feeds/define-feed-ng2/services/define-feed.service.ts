@@ -345,7 +345,7 @@ export class DefineFeedService {
      */
     initializeFeedSteps(feed:Feed){
         let templateType = feed.getTemplateType()
-        return this.getStepsForTemplate(templateType)
+        feed.steps = this.getStepsForTemplate(templateType)
     }
 
     /**

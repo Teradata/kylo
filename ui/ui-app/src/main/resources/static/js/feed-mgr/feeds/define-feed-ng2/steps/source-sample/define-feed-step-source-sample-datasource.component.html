@@ -24,15 +24,20 @@
 </mat-card>
 
 <ng-template #toolbarActionTemplate>
-  <dataset-collection-preview-cart ></dataset-collection-preview-cart>
+  <div *ngIf="!feed.readonly">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <span fxFlex></span>
+    <button mat-button color="primary"(click)="onSave()" >Save</button>
+  </div>
 </ng-template>
 
 <ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
 
         <td td-data-table-cell>
-              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name) && !parent.isChildSelected(file.name)" (click)="addDataSet($event,file,parent)">{{addDataSetButtonText}} </button>
-              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name) && parent.isChildSelected(file.name)" (click)="removeDataSet($event,file,parent)">Remove </button>
-              <button mat-button *ngIf="!parent.isSelectChildDisabled(file.name)" (click)="preview(file)">Preview </button>
+          <mat-checkbox [checked]="parent.isChildSelected(file.name)"
+                        [disabled]="parent.isSelectChildDisabled(file.name)"
+                        (change)="parent.onToggleChild($event, file)"></mat-checkbox>
+
           <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
                                  [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
 
@@ -45,5 +50,8 @@
                         <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
                 </div>
         </td>
+  <td td-data-table-cell>
+    <button mat-icon-button  color="accent" *ngIf="!parent.isSelectChildDisabled(file.name)" (click)="preview(file)"><mat-icon>find_in_page</mat-icon> </button>
+  </td>
 </ng-template>
 
