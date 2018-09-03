@@ -48,7 +48,10 @@
             </mat-form-field>
             <mat-error *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-error>
           </div>
-          <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary" (click)="onAddTable()" class="pad-left text-upper">Add Table</button>
+          <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary"
+                  (click)="onAddTable()"
+                  class="pad-left text-upper" style="margin-right:10px">Add
+            Table</button>
 
           <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" class="text-upper">Edit SQL</button>
 

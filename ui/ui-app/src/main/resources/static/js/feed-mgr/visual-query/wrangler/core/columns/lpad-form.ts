@@ -3,6 +3,7 @@ import {ColumnForm} from "./column-form";
 import {ColumnController} from "../../column-controller";
 import {ColumnUtil} from "../column-util";
 import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {FormGroup} from "@angular/forms";
 
 export class LpadForm extends ColumnForm {
     constructor(column: any, grid: any, controller: ColumnController, length?: string) {

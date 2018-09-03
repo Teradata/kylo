@@ -20,6 +20,7 @@ import {ReplaceNanForm} from "./core/columns/replace-nan-form";
 import {ReplaceValueForm} from "./core/columns/replace-value-form";
 import {RescaleForm} from "./core/columns/rescale-form";
 import {RoundNumberForm} from "./core/columns/round-number-form";
+import {AnalyzeColumnDialog} from "../transform-data/profile-stats/analyze-column-dialog";
 
 /**
  * Categories for data types.
@@ -357,7 +358,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     showAnalyzeColumn(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.controller.showAnalyzeColumn(fieldName);
+       this.controller.showAnalyzeColumn(fieldName);
     }
 
     /**
@@ -950,7 +951,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     orderByDialog(column: any, grid: any, title: string, cb: Function) {
 
-        let form = new OrderByForm(column, grid, this.controller, title, cb);
+        let form = new OrderByForm(column, grid, this.controller, cb);
         this.dialog.openColumnForm(form);
 
     }
@@ -1095,27 +1096,27 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Missing values...', operationFn: self.replaceMissing}
             );
             transforms.ml.push(
-                {description: 'Bin values', name: 'Bin values...', operationFn: self.binValues},
-                {description: 'Identify outliers',  name: 'Identify outliers', operationFn: self.identifyOutliers},
-                {description: 'Impute missing with mean',  name: 'Impute using mean...', operationFn: self.imputeMeanColumn},
-                {description: 'Replace empty with a specified value',  name: 'Replace missing...', operationFn: self.replaceMissing},
-                {description: 'Rescale min/max',  name: 'Rescale min/max...', operationFn: self.rescaleMinMax},
-                {description: 'Convert to a numerical array for ML',  name: 'Vectorize', operationFn: self.vectorizeColumn}
+                {description: 'Bin values', name: 'Bin values...',icon:'', operationFn: self.binValues},
+                {description: 'Identify outliers',  name: 'Identify outliers',icon:'', operationFn: self.identifyOutliers},
+                {description: 'Impute missing with mean',  name: 'Impute using mean...',icon:'', operationFn: self.imputeMeanColumn},
+                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'', operationFn: self.replaceMissing},
+                {description: 'Rescale min/max',  name: 'Rescale min/max...',icon:'', operationFn: self.rescaleMinMax},
+                {description: 'Convert to a numerical array for ML',  name: 'Vectorize',icon:'', operationFn: self.vectorizeColumn}
             );
             transforms.format.push(
-                {description: 'Round up',  name: 'Round up', operation: 'ceil'},
-                {description: 'Round down',  name: 'Round down', operation: 'floor'},
-                {description: 'Round number',  name: 'Round...', operationFn: self.roundNumeric});
+                {description: 'Round up',  name: 'Round up',icon:'', operation: 'ceil'},
+                {description: 'Round down',  name: 'Round down',icon:'', operation: 'floor'},
+                {description: 'Round number',  name: 'Round...',icon:'', operationFn: self.roundNumeric});
 
             transforms.calculate.push(
-                {description: 'Degrees of',  name: 'To Degrees', operation: 'toDegrees'},
-                {description: 'Radians of',  name: 'To Radians', operation: 'toRadians'},
-                {description: 'Log',  name: 'Log10', operation: 'log10'},
-                {description: 'Logit transform', name: 'Logit', operationFn: self.logitTransform},
-                {description: 'Running average',  name: 'Running average...', operationFn: self.runningAverage},
-                {description: 'Running total',  name: 'Running total...', operationFn: self.runningTotal},
-                {description: 'Difference from previous', name: 'Difference from prev value...', operationFn: self.diffFromPrevious},
-                {description: '% difference', name: '% Difference from prev value...', operationFn: self.percDiffFromPrevious}
+                {description: 'Degrees of',  name: 'To Degrees',icon:'', operation: 'toDegrees'},
+                {description: 'Radians of',  name: 'To Radians',icon:'', operation: 'toRadians'},
+                {description: 'Log',  name: 'Log10',icon:'', operation: 'log10'},
+                {description: 'Logit transform', name: 'Logit',icon:'', operationFn: self.logitTransform},
+                {description: 'Running average',  name: 'Running average...',icon:'', operationFn: self.runningAverage},
+                {description: 'Running total',  name: 'Running total...',icon:'', operationFn: self.runningTotal},
+                {description: 'Difference from previous', name: 'Difference from prev value...',icon:'', operationFn: self.diffFromPrevious},
+                {description: '% difference', name: '% Difference from prev value...',icon:'', operationFn: self.percDiffFromPrevious}
             );
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab', operationFn: self.crosstabColumn},
@@ -1131,27 +1132,27 @@ export class ColumnDelegate implements IColumnDelegate {
             );
 
             transforms.extract.push(
-                {description: 'Extract numeric', name: 'Numbers', operationFn: self.extractNumeric},
-                {description: 'Extract regex',  name: 'Regex pattern', operationFn: self.extractRegexPattern},
-                {description: 'Extract delimiters', name: 'Between delimiters', operationFn: self.extractDelimiters},
+                {description: 'Extract numeric', name: 'Numbers',icon:'', operationFn: self.extractNumeric},
+                {description: 'Extract regex',  name: 'Regex pattern',icon:'', operationFn: self.extractRegexPattern},
+                {description: 'Extract delimiters', name: 'Between delimiters',icon:'', operationFn: self.extractDelimiters},
             );
 
             transforms.ml.push(
-                {description: 'Impute missing values by fill-forward', name: 'Impute missing values...', operationFn: self.imputeMissingColumn},
-                {description: 'Index labels', name: 'Index labels', operationFn: self.indexColumn},
-                {description: 'One hot encode (or pivot) categorical values',  name: 'One hot encode', operationFn: self.oneHotEncodeColumn},
-                {description: 'Replace NAN with a specified value', name: 'Replace NaN...', operationFn: self.replaceNaNWithValue},
-                {description: 'Replace empty with a specified value',  name: 'Replace missing...', operationFn: self.replaceMissing});
+                {description: 'Impute missing values by fill-forward', name: 'Impute missing values...',icon:'', operationFn: self.imputeMissingColumn},
+                {description: 'Index labels', name: 'Index labels',icon:'', operationFn: self.indexColumn},
+                {description: 'One hot encode (or pivot) categorical values',  name: 'One hot encode',icon:'', operationFn: self.oneHotEncodeColumn},
+                {description: 'Replace NAN with a specified value', name: 'Replace NaN...',icon:'', operationFn: self.replaceNaNWithValue},
+                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'', operationFn: self.replaceMissing});
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});
 
         } else if (dataCategory === DataCategory.ARRAY) {
             transforms.defaults.push(
-                {description: 'Extract to columns',  name: 'Extract to columns', operationFn: self.extractArrayItems},
-                {description: 'Extract item to column',  name: 'Extract item...', operationFn: self.extractArrayItem},
-                {description: 'Convert array elements to rows',  name: 'Explode to rows', operation: 'explode'},
-                {description: 'Sort', name: 'Sort array', operation: 'sort_array'}
+                {description: 'Extract to columns',  name: 'Extract to columns',icon:'', operationFn: self.extractArrayItems},
+                {description: 'Extract item to column',  name: 'Extract item...',icon:'', operationFn: self.extractArrayItem},
+                {description: 'Convert array elements to rows',  name: 'Explode to rows',icon:'', operation: 'explode'},
+                {description: 'Sort', name: 'Sort array',icon:'', operation: 'sort_array'}
             );
         }
         else if (dataCategory === DataCategory.BINARY) {
@@ -1173,12 +1174,12 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
         }
         else if (dataCategory == DataCategory.STRUCT) {
-            transforms.defaults.push({description: 'Flatten struct', name: 'Flatten struct', operationFn: self.flattenStructColumn});
+            transforms.defaults.push({description: 'Flatten struct', name: 'Flatten struct',icon:'', operationFn: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
-            transforms.defaults.push({description: 'Explode array to rows', name: 'Explode', operation: 'explode'});
+            transforms.defaults.push({description: 'Explode array to rows', name: 'Explode',icon:'', operation: 'explode'});
         } else if (dataCategory === DataCategory.BOOLEAN) {
-            transforms.defaults.push({description: 'Flip boolean',  name: 'Negate boolean', operationFn: self.negateBoolean});
+            transforms.defaults.push({description: 'Flip boolean',  name: 'Negate boolean',icon:'', operationFn: self.negateBoolean});
         }
         return transforms;
     }

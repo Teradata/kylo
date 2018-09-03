@@ -991,9 +991,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     showAnalyzeColumn(fieldName: string): any {
         this.pushFormulaToEngine(`select(${fieldName})`, {});
         this.query(false, PageSpec.emptyPage(), true, true).then(() => {
-            let profileStats = this.engine.getProfile();
+            let profileStats = new ProfileHelper(fieldName, this.engine.getProfile());
             this.engine.pop();
-
             this.$mdDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}, width: "800px"});
         });
 

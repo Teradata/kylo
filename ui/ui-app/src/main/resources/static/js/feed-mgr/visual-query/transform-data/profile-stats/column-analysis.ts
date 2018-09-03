@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from "@angular/core";
 import * as d3 from "d3";
+import {ProfileHelper} from "../../wrangler/api/profile-helper";
 
 @Component({
     selector: "column-analysis",
@@ -9,45 +10,25 @@ import * as d3 from "d3";
 export class ColumnAnalysisController implements OnInit {
 
     data: Array<any> = [];
-    @Input() profile: any;
+    @Input() profile: ProfileHelper;
     @Input() field: string;
-    totalCount: string;
-    unique: string;
-    maxLen: string;
-    minLen: string;
-    percUnique: number;
-    percEmpty: number;
-    emptyCount: string;
-    columnDataType: string;
-    nullCount: string;
-    percNull: number;
-    max: string;
-    min: string;
-    sum: string;
-    mean: string;
-    stddev: string;
-    variance: string;
-    histo: object;
-    validCount: number;
-    invalidCount: string;
-    showValid: boolean = false;
 
     ngOnInit(): void {
         this.show();
     }
 
     show(): void {
-        this.initializeStats();
+
+        let data = this.data = this.profile.topN;
 
         // populate metrics
-        if (this.data && this.data.length > 0) {
-            this.data.sort(this.compare);
+        if (data && data.length > 0) {
 
             // rescale bar
-            let total: number = parseInt(this.totalCount);
-            let scaleFactor: number = (1 / (this.data[0].count / total));
+            let total: number = parseInt(this.profile.totalCount);
+            let scaleFactor: number = (1 / (data[0].count / total));
             let cummCount: number = 0;
-            this.data.forEach(item => {
+            data.forEach((item : any) => {
                 let frequency = (item.count / total);
                 item.frequency = frequency * 100;
                 cummCount += item.frequency;
@@ -55,100 +36,6 @@ export class ColumnAnalysisController implements OnInit {
                 item.width = item.frequency * scaleFactor;
             });
         }
-    }
-
-    initializeStats(): void {
-        if (this.profile != null) {
-            this.profile.forEach((value: any) => {
-                if (value.columnName == this.field) {
-
-                    switch (value.metricType) {
-                        case 'TOP_N_VALUES':
-                            let values = value.metricValue.split("^B");
-                            values.forEach((item: string) => {
-                                if (item != '') {
-                                    let e = item.split("^A");
-                                    this.data.push({domain: e[1], count: parseInt(e[2])});
-                                }
-                            });
-                            break;
-                        case 'TOTAL_COUNT':
-                            this.totalCount = value.metricValue;
-                            break;
-                        case 'UNIQUE_COUNT':
-                            this.unique = value.metricValue;
-                            break;
-                        case 'EMPTY_COUNT':
-                            this.emptyCount = value.metricValue;
-                            break;
-                        case 'NULL_COUNT':
-                            this.nullCount = value.metricValue;
-                            break;
-                        case 'COLUMN_DATATYPE':
-                            this.columnDataType = value.metricValue;
-                            break;
-                        case 'MAX_LENGTH':
-                            this.maxLen = value.metricValue;
-                            break;
-                        case 'MIN_LENGTH':
-                            this.minLen = value.metricValue;
-                            break;
-                        case 'MAX':
-                            this.max = value.metricValue;
-                            break;
-                        case 'MIN':
-                            this.min = value.metricValue;
-                            break;
-                        case 'SUM':
-                            this.sum = value.metricValue;
-                            break;
-                        case 'MEAN':
-                            this.mean = value.metricValue;
-                            break;
-                        case 'STDDEV':
-                            this.stddev = value.metricValue;
-                            break;
-                        case 'VARIANCE':
-                            this.variance = value.metricValue;
-                            break;
-                        case 'HISTO':
-                            this.histo = JSON.parse(value.metricValue);
-                            break;
-                        case 'VALID_COUNT':
-                            this.validCount = value.metricValue;
-                            this.showValid = true;
-                            break;
-                        case 'INVALID_COUNT':
-                            this.invalidCount = value.metricValue;
-                            this.showValid = true;
-                            break;
-                    }
-                }
-            });
-        }
-        if (this.unique != null) {
-            this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount))
-        }
-        if (this.emptyCount != null) {
-            this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount));
-        }
-        if (this.nullCount != null) {
-            this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount));
-        }
-        if (this.showValid) {
-            this.validCount = (parseInt(this.totalCount) - parseInt(this.invalidCount));
-        }
-    }
-
-    /**
-     * Comparator function for model reverse sort
-     */
-    compare(a: any, b: any): number {
-        if (a.count < b.count)
-            return 1;
-        if (a.count > b.count)
-            return -1;
-        return 0;
     }
 }
 

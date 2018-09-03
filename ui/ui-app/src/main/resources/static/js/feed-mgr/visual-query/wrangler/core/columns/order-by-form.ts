@@ -6,12 +6,9 @@ import {ColumnController} from "../../column-controller";
 
 export class OrderByForm extends ColumnForm {
 
-    title: string;
 
-    constructor(column:any, grid:any,controller:ColumnController,private title:string,private callback?:Function){
+    constructor(column:any, grid:any,controller:ColumnController, private callback?:Function){
         super(column,grid,controller)
-        this.title = title;
-
     }
 
     buildForm() {
