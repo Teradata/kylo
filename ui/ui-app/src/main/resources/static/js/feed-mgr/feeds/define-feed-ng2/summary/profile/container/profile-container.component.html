@@ -10,13 +10,19 @@
     <div>
       <mat-tab-group [selectedIndex]="selected.value">
         <mat-tab label="Profile">
-          <profile-stats2 [model]="profileData"></profile-stats2>
+          <div class="profile-tab">
+            <profile-stats2 [feedId]="feedId" [processingdttm]="processingdttm"></profile-stats2>
+          </div>
         </mat-tab>
-        <mat-tab label="Valid">
-          Valid contents
+        <mat-tab label="Valid" class="profile-tab">
+          <div class="profile-tab">
+            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm"></profile-valid>
+          </div>
         </mat-tab>
-        <mat-tab label="Invalid">
-          Invalid contents
+        <mat-tab label="Invalid" class="profile-tab">
+          <div class="profile-tab">
+            Invalid contents
+          </div>
         </mat-tab>
       </mat-tab-group>
     </div>

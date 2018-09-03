@@ -3,8 +3,8 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'd3';
 import 'nvd3';
-import {OnChanges, SimpleChanges} from '@angular/core/src/metadata/lifecycle_hooks';
 import {TranslateService} from '@ngx-translate/core';
+import {HttpClient} from '@angular/common/http';
 
 declare let d3: any;
 
@@ -14,7 +14,7 @@ declare let d3: any;
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.html"
 })
-export class ProfileStatsComponent implements OnInit, OnChanges {
+export class ProfileStatsComponent implements OnInit {
 
     static LOADER = "ProfileStatsComponent.LOADER";
 
@@ -102,10 +102,16 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     hideColumns: any;
 
     $timeout: angular.ITimeoutService;
-    hiveService: any;
+    private hiveService: any;
+    private restUrlService: any;
 
     @Input()
-    model: any;
+    private feedId: string;
+
+    @Input()
+    private processingdttm: string;
+
+    private model: any;
 
     private summaryData: { key: string; values: any[] }[];
     private percData: { key: string; values: any[] }[];
@@ -128,10 +134,12 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     private labelValid: string;
     private labelInvalid: string;
     private labelMissing: string;
+    private loading = false;
 
-    constructor(private $$angularInjector: Injector, private translateService: TranslateService) {
+    constructor(private $$angularInjector: Injector, private translateService: TranslateService, private http: HttpClient) {
         this.$timeout = $$angularInjector.get("$timeout");
         this.hiveService = $$angularInjector.get("HiveService");
+        this.restUrlService = $$angularInjector.get("RestUrlService");
 
         this.labelNulls = this.translateService.instant("Profile.Stats.Nulls");
         this.labelUnique = this.translateService.instant("Profile.Stats.Unique");
@@ -230,13 +238,25 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.getProfileStats();
         this.onModelChange();
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-        this.model = changes.model.currentValue;
-        this.onModelChange();
-    }
+    private getProfileStats() {
+        console.log('getProfileStats');
+        this.loading = true;
+        const successFn = (response: any) => {
+            console.log('got profile stats');
+            this.loading = false;
+            this.model = response;
+        };
+        const errorFn = (err: any) => {
+            this.loading = false;
+        };
+        const promise = this.http.get(this.restUrlService.FEED_PROFILE_STATS_URL(this.feedId), {params: {'processingdttm': this.processingdttm}}).toPromise();
+        promise.then(successFn, errorFn);
+    };
+
 
     /**
      * Finds the metric value for the specified metric type.
@@ -323,6 +343,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * Updates the profile data with changes to the model.
      */
     onModelChange = () => {
+        console.log('onModelChange');
         // Determine column names
         if (angular.isArray(this.model) && this.model.length > 0) {
             if (angular.isDefined(this.model[0].columnName)) {
@@ -501,6 +522,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges {
      * Sets the values for the Top Values table.
      */
     selectTopValues = () => {
+        console.log('selectTopValues');
         var topN = this.findStat(this.filtered, 'TOP_N_VALUES');
         var topVals: any = [];
         if (_.isUndefined(topN)) {

@@ -78,6 +78,7 @@ import {DatasetCollectionPreviewDialogComponent} from "./steps/source-sample/dat
 import {DatasetCollectionPreviewCartComponent} from "./steps/source-sample/dataset-collection-preview-cart.component";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FeedSideNavService} from "./shared/feed-side-nav.service";
+import {ProfileValidComponent} from './summary/profile/container/valid/profile-valid.component';
 import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
@@ -92,8 +93,6 @@ import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info
 
 @NgModule({
     declarations: [
-        ProfileContainerComponent,
-        ProfileHistoryComponent,
         DefineFeedComponent,
         DefineFeedSelectTemplateComponent,
         DefineFeedContainerComponent,
@@ -107,8 +106,11 @@ import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info
         DefineFeedStepWranglerComponent,
         DefineFeedTableComponent,
         OverviewComponent,
+        ProfileHistoryComponent,
         ProfileComponent,
+        ProfileContainerComponent,
         ProfileStatsComponent,
+        ProfileValidComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe,
         FeedLineageComponment,

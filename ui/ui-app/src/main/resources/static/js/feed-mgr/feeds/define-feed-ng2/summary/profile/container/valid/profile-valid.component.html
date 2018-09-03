@@ -1,0 +1,19 @@
+<div>
+  <div *ngIf="loading">
+    <!--<md-progress-linear md-mode="indeterminate"></md-progress-linear>-->
+    <span> Loading ...</span>
+  </div>
+  <div>
+
+    <mat-form-field>
+      <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange()">
+        <mat-option *ngFor="let opt of limitOptions;" [value]="opt">
+          {{opt}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div id="validProfile" [style.height.px]="900"></div>
+
+  </div>
+</div>
