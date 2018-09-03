@@ -1,8 +1,8 @@
 <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">Feeds</mat-toolbar>
 <div td-sidenav-content>
   <mat-nav-list>
-    <a mat-list-item [ngClass]="{'selected-step': summaryLink.selected}" (click)="onLinkSelected(summaryLink)" >
-      <mat-icon mat-list-icon>dashboard</mat-icon>
+    <a mat-list-item  [ngClass]="{'selected-step': summaryLink.selected}" (click)="onLinkSelected(summaryLink)" >
+      <mat-icon [color]=" summaryLink.selected ? 'accent': ''" mat-list-icon>dashboard</mat-icon>
       <h3 matLine>Summary</h3>
       <span></span>
     </a>
@@ -10,7 +10,7 @@
     <mat-divider></mat-divider>
     <ng-template let-link let-last="last" ngFor [ngForOf]="stepLinks">
       <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
-        <mat-icon mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
+        <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
         <div mat-line>{{link.label}}</div>
         <span></span>
       </a>
@@ -21,7 +21,7 @@
       <h3 mat-subheader>Links</h3>
       <ng-template let-link let-last="last" ngFor [ngForOf]="feedLinks">
         <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
-          <mat-icon mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
+          <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
           <div mat-line>{{link.label}}</div>
           <span></span>
         </a>
