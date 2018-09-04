@@ -61,7 +61,7 @@ public class RepositoryConfig {
     public RepositoryMonitor repositoryMonitor() { return new RepositoryMonitor(); }
 
     @Bean
-    public Cache<String, Long> templateUpdateInfoCache() {
+    public Cache<String, Boolean> templateUpdateInfoCache() {
         CacheBuilder builder = CacheBuilder.newBuilder();
 
         if(expireRepositoryCache){

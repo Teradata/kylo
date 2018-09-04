@@ -117,6 +117,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         saveAbleTemplate.roleMembershipsUpdated = this.model.roleMembershipsUpdated;
         saveAbleTemplate.templateTableOption = this.model.templateTableOption;
         saveAbleTemplate.timeBetweenStartingBatchJobs = this.model.timeBetweenStartingBatchJobs;
+        saveAbleTemplate.changeComment = this.model.changeComment;
         return saveAbleTemplate;
     }
 
@@ -660,6 +661,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
         }
 
         if (registeredTemplateId != null) {
+            console.log('reset');
             this.resetModel();
             //get the templateId for the registeredTemplateId
             this.model.id = registeredTemplateId;
@@ -670,6 +672,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
         if (this.model.nifiTemplateId != null) {
             this.model.loading = true;
             let successFn = (response: angular.IHttpResponse<any>) => {
+                console.log("running success function", this.model.changeComment);
                 var templateData = response.data;
                 transformPropertiesToArray(templateData.properties);
                 this.model.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;
@@ -700,7 +703,9 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
                 this.model.allowedActions = templateData.allowedActions;
                 this.model.roleMemberships = templateData.roleMemberships;
                 this.model.templateTableOption = templateData.templateTableOption;
-                this.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
+                this.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs;
+                this.model.changeComments = templateData.changeComments;
+
                 if (templateData.state == 'ENABLED') {
                     this.model.stateIcon = 'check_circle'
                 }

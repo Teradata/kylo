@@ -131,7 +131,7 @@ public class TemplatesRestController {
     private NifiFlowCache nifiFlowCache;
 
     @Inject
-    private Cache<String, Long> templateUpdateInfoCache;
+    private Cache<String, Boolean> templateUpdateInfoCache;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -372,8 +372,8 @@ public class TemplatesRestController {
         List<RegisteredTemplate> templates = getMetadataService().getRegisteredTemplates();
 
         templates.forEach(t -> {
-            Long latest = templateUpdateInfoCache.getIfPresent(t.getTemplateName());
-            t.setUpdateAvailable(latest != null && latest > t.getUpdateDate().getTime());
+            Boolean updateAvailable = templateUpdateInfoCache.getIfPresent(t.getTemplateName());
+            t.setUpdateAvailable(updateAvailable != null && updateAvailable);
         });
 
         return Response.ok(templates).build();

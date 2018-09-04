@@ -305,6 +305,7 @@ export class RegisterCompleteRegistrationController {
      */
     registerTemplate() {
 
+        console.log('register', this.registerTemplateService.model.changeComment);
         this.showRegistrationInProgressDialog();
         let successFn = (response: any) => {
             this.$mdDialog.hide();

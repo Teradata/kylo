@@ -9,9 +9,9 @@ package com.thinkbiganalytics.repository.filesystem;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,7 +52,6 @@ import javax.inject.Inject;
  * Monitors the default repository and any repositories configured in repositories.json.
  * Generates json metadata for any .zip templates, if not already present.
  * Monitors only for any file creations or deletions.
- *
  */
 @Component
 public class RepositoryMonitor {
@@ -61,7 +60,7 @@ public class RepositoryMonitor {
     ObjectMapper mapper;
 
     @Inject
-    Cache<String, Long> templateUpdateInfoCache;
+    Cache<String, Boolean> templateUpdateInfoCache;
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryMonitor.class);
 
@@ -74,7 +73,7 @@ public class RepositoryMonitor {
         WatchService watcher = null;
         try {
             watcher = FileSystems.getDefault().newWatchService();
-        }catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error trying to setup watch service for template repositories", e);
         }
         this.watcher = watcher;
@@ -90,13 +89,13 @@ public class RepositoryMonitor {
 
                 for (WatchEvent<?> event : key.pollEvents()) {
                     WatchEvent<Path> ev = cast(event);
-                    if(ev.context().getFileName().toString().endsWith(".zip")){
+                    if (ev.context().getFileName().toString().endsWith(".zip")) {
                         WatchEvent.Kind kind = event.kind();
-                        Path repositoryPath = (Path)key.watchable();
+                        Path repositoryPath = (Path) key.watchable();
 
-                        if(kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+                        if (kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
                             createMetadata(repositoryPath.resolve(ev.context()));
-                        } else if(kind == StandardWatchEventKinds.ENTRY_DELETE) {
+                        } else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
                             Files.deleteIfExists(getMetadataFileName(repositoryPath.resolve(ev.context())));
                             log.info("{}: {} and its metadata.", ev.kind(), ev.context());
                         }
@@ -124,33 +123,36 @@ public class RepositoryMonitor {
             ImportTemplate importTemplate = ImportUtil.openZip(templateFilePath.getFileName().toString(), inputStream);
             RegisteredTemplate tmplt = importTemplate.getTemplateToImport();
 
-            boolean updateRequired = false;
-            //no changes required if template is not updated
-            if(templateUpdateInfoCache.getIfPresent(tmplt.getTemplateName()) !=null){
-               if(templateUpdateInfoCache.getIfPresent(tmplt.getTemplateName()) >= tmplt.getUpdateDate().getTime())
-                   return;
-
-               updateRequired = true;
-            }
-
+            File json = getMetadataFileName(templateFilePath).toFile();
+            //create new
             TemplateMetadata metadata = new TemplateMetadata(tmplt.getTemplateName(), tmplt.getDescription(),
                                                              templateFilePath.getFileName().toString(), DigestUtils.md5DigestAsHex(content),
-                                                             tmplt.isStream(), updateRequired, tmplt.getUpdateDate().getTime());
+                                                             tmplt.isStream(), false, tmplt.getUpdateDate().getTime());
+            //update: no changes required if template is not updated
+            Boolean updated = templateUpdateInfoCache.getIfPresent(tmplt.getTemplateName());
+            if (updated != null) {
+                metadata = mapper.readValue(json, TemplateMetadata.class);
+                if (metadata.getLastModified() >= tmplt.getUpdateDate().getTime()) {
+                    return;
+                }
+
+                metadata.setUpdateAvailable(true);
+                templateUpdateInfoCache.put(tmplt.getTemplateName(), true);
+            }
             log.info("Writing metadata for {} template.", tmplt.getTemplateName());
-            File json = getMetadataFileName(templateFilePath).toFile();
             mapper.writerWithDefaultPrettyPrinter().writeValue(json, metadata);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("Error occurred while trying to generate metadata a template file.", e);
         }
     }
 
     private void generateMissingMetadata(Path repositoryPath) throws Exception {
         Files.find(repositoryPath, 1, (path, attrs) -> attrs.isRegularFile() && path.toString().endsWith(".zip"))
-        .forEach(templateZip -> {
-            if(Files.notExists(getMetadataFileName(templateZip))){
-                createMetadata(templateZip);
-            }
-        });
+            .forEach(templateZip -> {
+                if (Files.notExists(getMetadataFileName(templateZip))) {
+                    createMetadata(templateZip);
+                }
+            });
     }
 
     private void addMonitorToRepository(Path repositoryPath) {

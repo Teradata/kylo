@@ -159,10 +159,23 @@
                 </div>
             </div>
 
-            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.remoteProcessGroupValidation.valid && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
-                                   final-step="Register"
-                                   on-click-final-button="vm.registerTemplate()">
-            </thinkbig-step-buttons>
+            <div layout="row" layout-align="space-between start" layout-fill>
+            <div flex="100" layout="column">
+                <md-subheader class="md-subhead left-aligned">Comment</md-subheader>
+                <div layout="column">
+                    <md-input-container class="md-block" flex="100">
+                        <label>Give short description of changes made to this template.</label>
+                        <input name="changeComment" ng-model="vm.model.changeComment" type="text"  />
+                    </md-input-container>
+                </div>
+            </div>
+
+        </div>
+
+        <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.remoteProcessGroupValidation.valid && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
+                               final-step="Register"
+                               on-click-final-button="vm.registerTemplate()">
+        </thinkbig-step-buttons>
 
         </ng-form>
     </body-section>

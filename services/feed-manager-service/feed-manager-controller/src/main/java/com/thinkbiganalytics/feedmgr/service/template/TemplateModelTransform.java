@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateChangeComment;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
@@ -30,6 +31,8 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.support.FeedNameUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -138,6 +141,9 @@ public class TemplateModelTransform {
                     // make enabled by default
                 }
                 domain.setState(state);
+                FeedManagerTemplate finalDomain = domain;
+                if(StringUtils.isNotBlank(registeredTemplate.getChangeComment()))
+                    finalDomain.addChangeComment(registeredTemplate.getChangeComment());
 
                 //assign the id back to the ui model
                 registeredTemplate.setId(domainId.toString());
@@ -194,6 +200,7 @@ public class TemplateModelTransform {
                 }
                 template.setOrder(domain.getOrder());
                 template.setTemplateTableOption(domain.getTemplateTableOption());
+                domain.getChangeComments().forEach(c -> template.addChangeComment(new TemplateChangeComment(c.getComment(), c.getCreatedTime())));
 
                 securityTransform.applyAccessControl(domain, template);
 

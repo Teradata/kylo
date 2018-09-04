@@ -80,6 +80,10 @@ public interface FeedManagerTemplate extends AccessControlled, Auditable, Iconab
 
     String getTemplateTableOption();
 
+    List<ChangeComment> getChangeComments();
+
+    ChangeComment addChangeComment(String comment);
+
     void setTemplateTableOption(String templateTableOption);
 
     enum State {

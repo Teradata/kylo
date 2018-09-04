@@ -104,6 +104,8 @@ export class SaveAbleTemplate implements SaveTemplate {
     templateOrder : any[];
     order : number;
     registeredDatasourceDefinitions : any;
+    changeComment: string;
+    changeComments: any[];
     
 };
 export class EmptyTemplate implements Template {
@@ -134,6 +136,8 @@ export class EmptyTemplate implements Template {
     owner: any;
     roleMembershipsUpdated: boolean = false;
     templateTableOption:string= '';
+    changeComment:string= '';
+    changeComments: any[] = [];
 }
 export class ExtendedTemplate implements Template {
     id: string = null;
@@ -171,4 +175,6 @@ export class ExtendedTemplate implements Template {
     registeredDatasourceDefinitions : any;
     allowedActions : any;
     valid : boolean = false;
+    changeComment: string;
+    changeComments: any[];
 }

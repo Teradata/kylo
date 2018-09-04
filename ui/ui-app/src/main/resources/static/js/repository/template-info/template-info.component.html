@@ -43,6 +43,19 @@
           <div class="hint">Feeds</div>
           <div>  {{template.feedsCount}}</div>
         </div>
+        <div layout="column" class="layout-padding-top-bottom">
+          <div class="hint">Change History</div>
+          <div>
+            <mat-list>
+              <mat-list-item *ngFor="let change of template.changeComments">
+                <div fxFlex fxLayout="row" fxLayoutAlign="start center">
+                  <div fxFlex="30" class="md-subhead">{{change.createDateTime | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
+                  <div fxFlex>{{change.comment}}</div>
+                </div>
+              </mat-list-item>
+            </mat-list>
+          </div>
+        </div>
         <div fxLayout="row" fxLayoutAlign="end center">
           <button mat-button color="primary" *ngIf="allowEdit" (click)="editTemplate()">
             <ng-md-icon icon="edit" size="20" style="fill:#F08C38"> </ng-md-icon>

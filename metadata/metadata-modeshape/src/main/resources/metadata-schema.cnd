@@ -246,6 +246,9 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
+[tba:ChangeComment] > nt:hierarchyNode, mix:created
+    - tba:comment
+
 [tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconable, mix:referenceable, tba:accessControlled, mix:lockable
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
@@ -257,6 +260,7 @@
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
     - tba:templateTableOption (STRING)
+    + tba:changeComments (tba:ChangeComment) sns
 
 [tba:indexControlled] mixin
 	- tba:allowIndexing (STRING) = 'Y' mandatory

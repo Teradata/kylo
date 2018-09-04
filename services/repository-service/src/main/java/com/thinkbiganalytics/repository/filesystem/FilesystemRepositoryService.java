@@ -105,7 +105,7 @@ public class FilesystemRepositoryService implements RepositoryService {
     ResourceLoader resourceLoader;
 
     @Inject
-    Cache<String, Long> templateUpdateInfoCache;
+    Cache<String, Boolean> templateUpdateInfoCache;
 
     @Inject
     MetadataEventService eventService;
@@ -216,12 +216,13 @@ public class FilesystemRepositoryService implements RepositoryService {
         Path metadataPath = Paths.get(repository.get().getLocation() + "/" + baseName + ".json");
         TemplateMetadata templateMetadata = mapper.readValue(metadataPath.toFile(), TemplateMetadata.class);
         templateMetadata.setChecksum(checksum);
-        templateMetadata.setLastModified(filePath.toFile().lastModified());
+        long updateTime = importTemplate.getTemplateToImport().getUpdateDate().getTime();
+        templateMetadata.setLastModified(updateTime);
         templateMetadata.setUpdateAvailable(false);
         mapper.writer(new DefaultPrettyPrinter()).writeValue(metadataPath.toFile(), templateMetadata);
         log.info("Generated checksum for {} - {}", templateMetadata.getTemplateName(), checksum);
 
-        templateUpdateInfoCache.put(templateMetadata.getTemplateName(), filePath.toFile().lastModified());
+        templateUpdateInfoCache.put(templateMetadata.getTemplateName(), false);
         return importTemplate;
     }
 
@@ -346,13 +347,20 @@ public class FilesystemRepositoryService implements RepositoryService {
     @Override
     public List<TemplateMetadataWrapper> listTemplatesByRepository(String repositoryType, String repositoryName) throws Exception {
         TemplateRepository repo = getRepositoryByNameAndType(repositoryName, repositoryType);
+
         return listTemplatesByRepository(repo);
     }
 
     private List<TemplateMetadataWrapper> listTemplatesByRepository(TemplateRepository repository) throws Exception {
         List<TemplateMetadataWrapper> repositoryItems = new ArrayList<>();
+
+        Set<String> registeredTemplates = registeredTemplateService
+            .getRegisteredTemplates()
+            .stream().map(t -> t.getTemplateName())
+            .collect(Collectors.toSet());
+
         getMetadataFilesInRepository(repository).stream()
-            .map((p) -> jsonToMetadata(p, repository, Optional.empty()))
+            .map((p) -> jsonToMetadata(p, repository, Optional.of(registeredTemplates)))
             .forEach(repositoryItems::add);
 
         return repositoryItems;
@@ -377,24 +385,20 @@ public class FilesystemRepositoryService implements RepositoryService {
             TemplateMetadataWrapper wrapper = new TemplateMetadataWrapper(tmpltMetaData);
 
             Path templatePath = Paths.get(repository.getLocation() + "/" + tmpltMetaData.getFileName());
-            long latest = templatePath.toFile().lastModified();
 
             if (registeredTemplates.isPresent() && registeredTemplates.get().contains(tmpltMetaData.getTemplateName())) {
-                long lastModified = templateUpdateInfoCache.get(tmpltMetaData.getTemplateName(), () -> tmpltMetaData.getLastModified());
+                long latest = templatePath.toFile().lastModified();
+                templateUpdateInfoCache.get(tmpltMetaData.getTemplateName(), () -> tmpltMetaData.isUpdateAvailable());
                 //init checksum if not already set
                 //set updated flag if file is modified.
-                if (StringUtils.isBlank(tmpltMetaData.getChecksum()) || lastModified < latest) {
+                if (tmpltMetaData.getLastModified() < latest) {
                     String checksum = DigestUtils.md5DigestAsHex(Files.readAllBytes(templatePath));
 
                     //capturing checksum first time or it has actually changed?
-                    boolean templateModified = StringUtils.isNotBlank(tmpltMetaData.getChecksum()) && !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
+                    boolean templateModified = !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
 
-                    if (StringUtils.isBlank(tmpltMetaData.getChecksum())) {
-                        tmpltMetaData.setChecksum(checksum);
-                    }
                     tmpltMetaData.setUpdateAvailable(templateModified);
-                    tmpltMetaData.setLastModified(latest);
-                    templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), latest);
+                    templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), templateModified);
 
                     mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), tmpltMetaData);
                     wrapper = new TemplateMetadataWrapper(tmpltMetaData);
@@ -435,11 +439,10 @@ public class FilesystemRepositoryService implements RepositoryService {
                 RegisteredTemplate foundTemplate = registeredTemplateService.findRegisteredTemplateByName(change.getDescription());
 
                 if (StringUtils.equals(metadata.getTemplateName(), foundTemplate.getTemplateName())) {
-                    long millis = event.getTimestamp().getMillis();
                     metadata.setLastModified(foundTemplate.getUpdateDate().getTime());
                     metadata.setUpdateAvailable(false);
                     mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), metadata);
-                    templateUpdateInfoCache.put(change.getDescription(), millis);
+                    templateUpdateInfoCache.put(change.getDescription(), false);
                     return true;
                 }
             } catch (Exception e) {

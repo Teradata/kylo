@@ -34,7 +34,7 @@ export class TemplateInfoComponent implements OnInit {
     ngOnInit(): void {
         this.templateId = this.state.params.registeredTemplateId;
         this.registerTemplateService.loadTemplateWithProperties(this.templateId, this.nifiTemplateId).then((response: any) => {
-            this.template = this.registerTemplateService.model;
+            this.template = response.data;
             this.loading = false;
         }, (err: any) => {
             console.log("Error retrieving template", err);

@@ -33,8 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +83,10 @@ public final class RegisteredTemplate extends EntityAccessControl {
     private Long order;
 
     private List<String> templateOrder;
+
+    private String changeComment;
+
+    private List<TemplateChangeComment> changeComments = new LinkedList<>();
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -151,6 +158,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
         this.setTimeBetweenStartingBatchJobs(registeredTemplate.getTimeBetweenStartingBatchJobs());
         this.initializeProcessors();
+        this.changeComments.addAll(registeredTemplate.getChangeComments());
     }
 
     @JsonIgnore
@@ -638,4 +646,22 @@ public final class RegisteredTemplate extends EntityAccessControl {
     public void setUpdateAvailable(boolean updateAvailable) {
         this.updateAvailable = updateAvailable;
     }
+
+    public String getChangeComment() {
+        return this.changeComment;
+    }
+
+    public void setChangeComment(String changeComment) {
+        this.changeComment = changeComment;
+    }
+
+    public void addChangeComment(TemplateChangeComment changeComment) {
+        this.changeComments.add(changeComment);
+    }
+
+    public List<TemplateChangeComment> getChangeComments() {
+        Collections.sort(this.changeComments);
+        return this.changeComments;
+    }
+
 }

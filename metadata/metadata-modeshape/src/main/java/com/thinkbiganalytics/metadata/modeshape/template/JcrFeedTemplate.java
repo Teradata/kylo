@@ -30,6 +30,7 @@ import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -41,6 +42,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrLockingUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
 
 /**
@@ -62,6 +64,8 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     public static final String IS_STREAM = "tba:isStream";
 
     public static final String TEMPLATE_TABLE_OPTION = "tba:templateTableOption";
+
+    public static final String CHANGE_COMMENTS = "tba:changeComments";
 
 
     public JcrFeedTemplate(Node node) {
@@ -212,6 +216,16 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     @Override
     public String getTemplateTableOption() {
         return getProperty(TEMPLATE_TABLE_OPTION, String.class);
+    }
+
+    @Override
+    public List<ChangeComment> getChangeComments() {
+        return new ArrayList<>(JcrUtil.getJcrObjects(getNode(), CHANGE_COMMENTS, JcrChangeComment.class));
+    }
+
+    @Override
+    public ChangeComment addChangeComment(String comment) {
+        return JcrUtil.addJcrObject(getNode(), CHANGE_COMMENTS, JcrChangeComment.NODE_TYPE, JcrChangeComment.class, comment);
     }
 
     @Override
