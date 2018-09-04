@@ -1,8 +1,8 @@
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Injector, Input, OnInit, ViewChild} from "@angular/core";
 import 'd3';
 import 'nvd3';
-import {OnChanges, SimpleChanges} from '@angular/core/src/metadata/lifecycle_hooks';
 import {HttpClient} from '@angular/common/http';
+import * as $ from "jquery";
 
 declare let d3: any;
 
@@ -12,7 +12,7 @@ declare let d3: any;
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.html"
 })
-export class ProfileValidComponent implements OnInit {
+export class ProfileValidComponent implements OnInit, AfterViewInit {
 
     @Input()
     feedId: string;
@@ -20,9 +20,12 @@ export class ProfileValidComponent implements OnInit {
     @Input()
     processingdttm: string;
 
+    @Input()
+    offsetHeight: string;
+
     loading: boolean = false;
-    limitOptions: Array<Number> = [10, 50, 100, 500, 1000];
-    limit: Number = this.limitOptions[2];
+    limitOptions: Array<string> = ['10', '50', '100', '500', '1000'];
+    limit: string = this.limitOptions[2];
     headers: any;
     rows: any;
     queryResults: any = null;
@@ -31,13 +34,19 @@ export class ProfileValidComponent implements OnInit {
     private hiveService: any;
     private fattableService: any;
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient) {
+    private tableId = 'validProfile';
+
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private hostElement: ElementRef) {
 
         this.feedService = this.$$angularInjector.get("FeedService");
         this.restUrlService = this.$$angularInjector.get("RestUrlService");
         this.hiveService = this.$$angularInjector.get("HiveService");
         this.fattableService = this.$$angularInjector.get("FattableService");
 
+    }
+
+    ngAfterViewInit(): void {
+        this.setTableHeight();
     }
 
     ngOnInit(): void {
@@ -64,23 +73,31 @@ export class ProfileValidComponent implements OnInit {
             this.loading = false;
         };
 
-        //todo , 'limit': this.limit
-        const promise = this.http.get(this.restUrlService.FEED_PROFILE_VALID_RESULTS_URL(this.feedId), {params: {'processingdttm': this.processingdttm}}).toPromise();
+        const promise = this.http.get(this.restUrlService.FEED_PROFILE_VALID_RESULTS_URL(this.feedId), {params: {'processingdttm': this.processingdttm, 'limit': this.limit}}).toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }
 
     private setupTable() {
-        console.log('setup table');
-        this.fattableService.setupTable({
-            tableContainerId: "validProfile",
-            headers: this.headers,
-            rows: this.rows
-        });
+        console.log('setup valid table');
+        if (this.rows && this.rows.length > 0) {
+            this.fattableService.setupTable({
+                tableContainerId: this.tableId,
+                headers: this.headers,
+                rows: this.rows
+            });
+        }
     }
 
     private init() {
         this.getProfileValidation().then(this.setupTable.bind(this));
+    }
+
+    private setTableHeight() {
+        const windowHeight = $(window).height();
+        const tableHeight = windowHeight - this.offsetHeight;
+        const table = this.hostElement.nativeElement.querySelector('#' + this.tableId);
+        table.style = 'height: ' + tableHeight + 'px';
     }
 
 }

@@ -1,19 +1,19 @@
-<div>
-  <div *ngIf="loading">
-    <!--<md-progress-linear md-mode="indeterminate"></md-progress-linear>-->
-    <span> Loading ...</span>
+<div fxFlex style="height: 100%">
+
+  <mat-form-field>
+    <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange()">
+      <mat-option *ngFor="let opt of limitOptions;" [value]="opt">
+        {{opt}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div *ngIf="(rows && rows.length == 0) || loading" class="no-data" fxLayout="column" fxLayoutAlign="center center">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2 *ngIf="(rows && rows.length == 0) && !loading">There are no valid rows</h2>
+    <h2 *ngIf="loading">Loading...</h2>
   </div>
-  <div>
 
-    <mat-form-field>
-      <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange()">
-        <mat-option *ngFor="let opt of limitOptions;" [value]="opt">
-          {{opt}}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <div id="validProfile"></div>
 
-    <div id="validProfile" [style.height.px]="900"></div>
-
-  </div>
 </div>

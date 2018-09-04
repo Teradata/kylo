@@ -14,14 +14,14 @@
             <profile-stats2 [feedId]="feedId" [processingdttm]="processingdttm"></profile-stats2>
           </div>
         </mat-tab>
-        <mat-tab label="Valid" class="profile-tab">
+        <mat-tab label="Valid">
           <div class="profile-tab">
-            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm"></profile-valid>
+            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm" [offsetHeight]="400"></profile-valid>
           </div>
         </mat-tab>
-        <mat-tab label="Invalid" class="profile-tab">
+        <mat-tab label="Invalid">
           <div class="profile-tab">
-            Invalid contents
+            <profile-invalid [feedId]="feedId" [processingdttm]="processingdttm" fxFlex></profile-invalid>
           </div>
         </mat-tab>
       </mat-tab-group>

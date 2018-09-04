@@ -69,15 +69,15 @@ import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
-import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
-import {ProfileStatsComponent} from './summary/profile/container/stats/profile-stats.component';
-import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
-import {ProfileComponent} from './summary/profile/profile.component';
-
 import {DatasetCollectionPreviewDialogComponent} from "./steps/source-sample/dataset-collection-preview-dialog.component";
 import {DatasetCollectionPreviewCartComponent} from "./steps/source-sample/dataset-collection-preview-cart.component";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FeedSideNavService} from "./shared/feed-side-nav.service";
+import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
+import {ProfileStatsComponent} from './summary/profile/container/stats/profile-stats.component';
+import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
+import {ProfileComponent} from './summary/profile/profile.component';
+import {ProfileInvalidComponent} from './summary/profile/container/invalid/profile-invalid.component';
 import {ProfileValidComponent} from './summary/profile/container/valid/profile-valid.component';
 import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
@@ -110,6 +110,7 @@ import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info
         ProfileComponent,
         ProfileContainerComponent,
         ProfileStatsComponent,
+        ProfileInvalidComponent,
         ProfileValidComponent,
         FeedScheduleComponent,
         FilterPartitionFormulaPipe,
