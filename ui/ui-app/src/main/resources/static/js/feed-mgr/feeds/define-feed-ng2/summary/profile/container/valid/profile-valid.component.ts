@@ -21,7 +21,7 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
     processingdttm: string;
 
     @Input()
-    offsetHeight: string;
+    offsetHeight: number;
 
     @Input()
     private active: boolean;
