@@ -104,4 +104,7 @@
   <mat-tab label="Numerical" [disabled]="profile.histo == undefined">
     <column-histogram *ngIf="profile.histo != undefined" [chart-data]="profile.histo"></column-histogram>
   </mat-tab>
+  <mat-tab label="Fun" [disabled]="profile.histo == undefined">
+    <column-histogram *ngIf="profile.histo != undefined" [chart-data]="profile.histo"></column-histogram>
+  </mat-tab>
 </mat-tab-group>

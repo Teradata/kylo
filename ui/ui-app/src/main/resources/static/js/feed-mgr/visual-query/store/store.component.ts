@@ -177,6 +177,9 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         // Wait for completion
         Promise.all([kyloSourcesPromise, sparkSourcesPromise])
             .then(() => this.loading = false, () => this.error = "Invalid response from server.");
+
+        this.destination = "DOWNLOAD";
+
     }
 
     /**
