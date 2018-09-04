@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Injector, Input, OnInit, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Injector, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from "@angular/core";
 import 'd3';
 import 'nvd3';
 import {HttpClient} from '@angular/common/http';
@@ -12,7 +12,7 @@ declare let d3: any;
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.html"
 })
-export class ProfileValidComponent implements OnInit, AfterViewInit {
+export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  {
 
     @Input()
     feedId: string;
@@ -22,6 +22,10 @@ export class ProfileValidComponent implements OnInit, AfterViewInit {
 
     @Input()
     offsetHeight: string;
+
+    @Input()
+    private active: boolean;
+    private activated: boolean = false;
 
     loading: boolean = false;
     limitOptions: Array<string> = ['10', '50', '100', '500', '1000'];
@@ -50,7 +54,14 @@ export class ProfileValidComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
-        this.init();
+
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.active.currentValue && !this.activated) {
+            this.activated = true;
+            this.init();
+        }
     }
 
     onLimitChange() {

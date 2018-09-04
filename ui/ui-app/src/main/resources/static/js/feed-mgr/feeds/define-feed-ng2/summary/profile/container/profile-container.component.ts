@@ -1,6 +1,5 @@
 import {Component, Injector, Input, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {FormControl} from '@angular/forms';
+import {MatTabChangeEvent} from '@angular/material/tabs';
 
 @Component({
     selector: 'profile-container',
@@ -18,7 +17,7 @@ export class ProfileContainerComponent implements OnInit {
     private timeInMillis: number | Date;
 
     private tabs = ['stats', 'valid', 'invalid'];
-    private selected = new FormControl(0);
+    private selected = 0;
 
     constructor(private $$angularInjector: Injector) {
         this.hiveService = $$angularInjector.get("HiveService");
@@ -29,6 +28,11 @@ export class ProfileContainerComponent implements OnInit {
         this.processingdttm = this.stateParams ? this.stateParams.processingdttm : undefined;
         this.timeInMillis = this.hiveService.getUTCTime(this.processingdttm);
         this.type = this.stateParams ? this.stateParams.t : this.tabs[0];
-        this.selected.setValue(this.tabs.indexOf(this.type));
+        this.selected = this.tabs.indexOf(this.type);
+    }
+
+    onSelectedTabChange(event: MatTabChangeEvent) {
+        console.log('onSelectedTabChange index = ' + event.index);
+        this.selected = event.index;
     }
 }

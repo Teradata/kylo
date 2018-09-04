@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Injector, Input, OnInit} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import 'd3';
 import 'nvd3';
 import {HttpClient} from '@angular/common/http';
@@ -14,7 +14,7 @@ declare let d3: any;
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.html"
 })
-export class ProfileInvalidComponent implements OnInit, AfterViewInit {
+export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges  {
 
     @Input()
     feedId: string;
@@ -24,6 +24,10 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit {
 
     @Input()
     offsetHeight: string;
+
+    @Input()
+    private active: boolean;
+    private activated: boolean = false;
 
     private feedService: any;
     private restUrlService: any;
@@ -62,7 +66,13 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
-        this.init();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.active.currentValue && !this.activated) {
+            this.activated = true;
+            this.init();
+        }
     }
 
     onLimitChange() {

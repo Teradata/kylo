@@ -1,4 +1,4 @@
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'd3';
@@ -14,7 +14,7 @@ declare let d3: any;
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.html"
 })
-export class ProfileStatsComponent implements OnInit {
+export class ProfileStatsComponent implements OnInit, OnChanges  {
 
     static LOADER = "ProfileStatsComponent.LOADER";
 
@@ -110,6 +110,10 @@ export class ProfileStatsComponent implements OnInit {
 
     @Input()
     private processingdttm: string;
+
+    @Input()
+    private active: boolean;
+    private activated: boolean = false;
 
     private model: any;
 
@@ -238,7 +242,13 @@ export class ProfileStatsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.getProfileStats().then(this.onModelChange);
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.active.currentValue && !this.activated) {
+            this.activated = true;
+            this.getProfileStats().then(this.onModelChange);
+        }
     }
 
     private getProfileStats() {

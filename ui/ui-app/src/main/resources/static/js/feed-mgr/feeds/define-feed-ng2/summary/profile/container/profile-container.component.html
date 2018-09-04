@@ -8,20 +8,20 @@
 
   <mat-card-content>
     <div>
-      <mat-tab-group [selectedIndex]="selected.value">
+      <mat-tab-group [selectedIndex]="selected" (selectedTabChange)="onSelectedTabChange($event)">
         <mat-tab label="Profile">
           <div class="profile-tab">
-            <profile-stats2 [feedId]="feedId" [processingdttm]="processingdttm"></profile-stats2>
+            <profile-stats2 [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 0"></profile-stats2>
           </div>
         </mat-tab>
         <mat-tab label="Valid">
           <div class="profile-tab">
-            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm" [offsetHeight]="400"></profile-valid>
+            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 1" [offsetHeight]="400"></profile-valid>
           </div>
         </mat-tab>
         <mat-tab label="Invalid">
           <div class="profile-tab">
-            <profile-invalid [feedId]="feedId" [processingdttm]="processingdttm" fxFlex></profile-invalid>
+            <profile-invalid [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 2" [offsetHeight]="400"></profile-invalid>
           </div>
         </mat-tab>
       </mat-tab-group>
