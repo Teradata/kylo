@@ -5,6 +5,8 @@ import {HttpClient} from '@angular/common/http';
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import * as $ from "jquery";
+import {ProfileValidComponent} from '../valid/profile-valid.component';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 
 declare let d3: any;
 
@@ -15,6 +17,8 @@ declare let d3: any;
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.html"
 })
 export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges  {
+
+    private static topOfPageLoader: string = "ProfileInvalidComponent.topOfPageLoader";
 
     @Input()
     feedId: string;
@@ -52,13 +56,19 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
 
     private tableId = 'invalidProfile';
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient, private hostElement: ElementRef) {
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private loadingService: TdLoadingService, private hostElement: ElementRef) {
 
         this.feedService = this.$$angularInjector.get("FeedService");
         this.restUrlService = this.$$angularInjector.get("RestUrlService");
         this.hiveService = this.$$angularInjector.get("HiveService");
         this.fattableService = this.$$angularInjector.get("FattableService");
 
+        this.loadingService.create({
+            name: ProfileInvalidComponent.topOfPageLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
     }
 
     ngAfterViewInit(): void {
@@ -94,7 +104,11 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
             this.filterOptions = _.union(this.filterOptions, response.data);
             this.loadingFilterOptions = false;
         };
-        this.http.get(this.restUrlService.AVAILABLE_VALIDATION_POLICIES, {params: {'cache': 'true'}}).toPromise().then(filterOptionsOk, this.errorFn);
+        const errorFn = (err: any) => {
+            this.loadingFilterOptions = false;
+        };
+
+        this.http.get(this.restUrlService.AVAILABLE_VALIDATION_POLICIES, {params: {'cache': 'true'}}).toPromise().then(filterOptionsOk, errorFn);
     }
 
     private setupTable() {
@@ -182,12 +196,9 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
         }
     };
 
-    private errorFn(err: any) {
-        this.loadingData = false;
-    };
-
     private getProfileValidation() {
         console.log('get invalid profile');
+        this.loadingService.register(ProfileInvalidComponent.topOfPageLoader);
         this.loadingData = true;
 
         const successFn = (response: any) => {
@@ -199,6 +210,12 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
             });
             this.rows = result.rows;
 
+            this.loadingService.resolve(ProfileInvalidComponent.topOfPageLoader);
+            this.loadingData = false;
+        };
+
+        const errorFn = (err: any) => {
+            this.loadingService.resolve(ProfileInvalidComponent.topOfPageLoader);
             this.loadingData = false;
         };
 
@@ -212,7 +229,7 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
                         'filter': _.isUndefined(this.filter) ? '' : this.filter.objectShortClassType
                     }
             }).toPromise();
-        return promise.then(successFn, this.errorFn);
+        return promise.then(successFn, errorFn);
     }
 
 

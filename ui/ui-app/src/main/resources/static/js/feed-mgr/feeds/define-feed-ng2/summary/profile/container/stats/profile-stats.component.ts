@@ -5,6 +5,9 @@ import 'd3';
 import 'nvd3';
 import {TranslateService} from '@ngx-translate/core';
 import {HttpClient} from '@angular/common/http';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {ProfileValidComponent} from '../valid/profile-valid.component';
+import {ProfileInvalidComponent} from '../invalid/profile-invalid.component';
 
 declare let d3: any;
 
@@ -16,7 +19,7 @@ declare let d3: any;
 })
 export class ProfileStatsComponent implements OnInit, OnChanges  {
 
-    static LOADER = "ProfileStatsComponent.LOADER";
+    private static topOfPageLoader: string = "ProfileStatsComponent.topOfPageLoader";
 
     /**
      * Name of the column that represents all columns.
@@ -140,7 +143,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
     private labelMissing: string;
     private loading = false;
 
-    constructor(private $$angularInjector: Injector, private translateService: TranslateService, private http: HttpClient) {
+    constructor(private $$angularInjector: Injector, private translateService: TranslateService, private http: HttpClient, private loadingService: TdLoadingService) {
         this.$timeout = $$angularInjector.get("$timeout");
         this.hiveService = $$angularInjector.get("HiveService");
         this.restUrlService = $$angularInjector.get("RestUrlService");
@@ -164,6 +167,13 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
         this.labelValid = this.translateService.instant("Profile.Stats.Valid") ;
         this.labelInvalid = this.translateService.instant("Profile.Stats.Invalid");
         this.labelMissing = this.translateService.instant("Profile.Stats.Missing");
+
+        this.loadingService.create({
+            name: ProfileStatsComponent.topOfPageLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
 
         /**
          * Options for the Relative Statistics chart.
@@ -254,12 +264,15 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
     private getProfileStats() {
         console.log('getProfileStats');
         this.loading = true;
+        this.loadingService.register(ProfileStatsComponent.topOfPageLoader);
         const successFn = (response: any) => {
             console.log('got profile stats');
+            this.loadingService.resolve(ProfileStatsComponent.topOfPageLoader);
             this.loading = false;
             this.model = response;
         };
         const errorFn = (err: any) => {
+            this.loadingService.resolve(ProfileStatsComponent.topOfPageLoader);
             this.loading = false;
         };
         const promise = this.http.get(this.restUrlService.FEED_PROFILE_STATS_URL(this.feedId), {params: {'processingdttm': this.processingdttm}}).toPromise();

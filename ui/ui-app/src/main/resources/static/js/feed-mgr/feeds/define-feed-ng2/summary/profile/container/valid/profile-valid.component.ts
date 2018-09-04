@@ -3,6 +3,8 @@ import 'd3';
 import 'nvd3';
 import {HttpClient} from '@angular/common/http';
 import * as $ from "jquery";
+import {ConnectorComponent} from '../../../../../../catalog/connector/connector.component';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 
 declare let d3: any;
 
@@ -13,6 +15,8 @@ declare let d3: any;
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.html"
 })
 export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  {
+
+    private static topOfPageLoader: string = "ProfileValidComponent.topOfPageLoader";
 
     @Input()
     feedId: string;
@@ -40,13 +44,19 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
 
     private tableId = 'validProfile';
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient, private hostElement: ElementRef) {
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private loadingService: TdLoadingService, private hostElement: ElementRef) {
 
         this.feedService = this.$$angularInjector.get("FeedService");
         this.restUrlService = this.$$angularInjector.get("RestUrlService");
         this.hiveService = this.$$angularInjector.get("HiveService");
         this.fattableService = this.$$angularInjector.get("FattableService");
 
+        this.loadingService.create({
+            name: ProfileValidComponent.topOfPageLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
     }
 
     ngAfterViewInit(): void {
@@ -70,6 +80,8 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
 
     private getProfileValidation() {
         console.log("getProfileValidation");
+        this.loadingService.register(ProfileValidComponent.topOfPageLoader);
+
         this.loading = true;
 
         const successFn = (response: any) => {
@@ -77,10 +89,12 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
             const result = this.queryResults = this.hiveService.transformResultsToUiGridModel({data: response});
             this.headers = result.columns;
             this.rows = result.rows;
+            this.loadingService.resolve(ProfileValidComponent.topOfPageLoader);
             this.loading = false;
         };
         const errorFn = (err: any) => {
             console.error('error', err);
+            this.loadingService.resolve(ProfileValidComponent.topOfPageLoader);
             this.loading = false;
         };
 
