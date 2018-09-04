@@ -112,7 +112,6 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
     }
 
     private setupTable() {
-        console.log('setupTable invalid');
         if (this.rows && this.rows.length > 0) {
             const parameters = {
                 tableContainerId: this.tableId,
@@ -169,7 +168,6 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
     }
 
     private transformFn(row: any, columns: any, displayColumns: any) {
-        console.log('transformFn invalid');
         const invalidFields: Array<any> = [];
         const invalidFieldMap: Object = {};
         row.invalidFields = invalidFields;
@@ -197,12 +195,10 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
     };
 
     private getProfileValidation() {
-        console.log('get invalid profile');
         this.loadingService.register(ProfileInvalidComponent.topOfPageLoader);
         this.loadingData = true;
 
         const successFn = (response: any) => {
-            console.log('got invalid profile');
             const result = this.queryResults = this.hiveService.transformResultsToUiGridModel({data: response}, [], this.transformFn.bind(this));
             this.headers = result.columns;
             this.headers = _.reject(this.headers, (col: any) => {

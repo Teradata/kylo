@@ -79,13 +79,11 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
     }
 
     private getProfileValidation() {
-        console.log("getProfileValidation");
         this.loadingService.register(ProfileValidComponent.topOfPageLoader);
 
         this.loading = true;
 
         const successFn = (response: any) => {
-            console.log("got result");
             const result = this.queryResults = this.hiveService.transformResultsToUiGridModel({data: response});
             this.headers = result.columns;
             this.rows = result.rows;
@@ -93,7 +91,6 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
             this.loading = false;
         };
         const errorFn = (err: any) => {
-            console.error('error', err);
             this.loadingService.resolve(ProfileValidComponent.topOfPageLoader);
             this.loading = false;
         };
@@ -104,7 +101,6 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
     }
 
     private setupTable() {
-        console.log('setup valid table');
         if (this.rows && this.rows.length > 0) {
             this.fattableService.setupTable({
                 tableContainerId: this.tableId,

@@ -32,7 +32,6 @@ export class ProfileContainerComponent implements OnInit {
     }
 
     onSelectedTabChange(event: MatTabChangeEvent) {
-        console.log('onSelectedTabChange index = ' + event.index);
         this.selected = event.index;
     }
 }

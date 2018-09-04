@@ -262,11 +262,9 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
     }
 
     private getProfileStats() {
-        console.log('getProfileStats');
         this.loading = true;
         this.loadingService.register(ProfileStatsComponent.topOfPageLoader);
         const successFn = (response: any) => {
-            console.log('got profile stats');
             this.loadingService.resolve(ProfileStatsComponent.topOfPageLoader);
             this.loading = false;
             this.model = response;
@@ -365,7 +363,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
      * Updates the profile data with changes to the model.
      */
     onModelChange = () => {
-        console.log('onModelChange');
         // Determine column names
         if (angular.isArray(this.model) && this.model.length > 0) {
             if (angular.isDefined(this.model[0].columnName)) {
@@ -545,7 +542,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
      * Sets the values for the Top Values table.
      */
     selectTopValues = () => {
-        console.log('selectTopValues');
         var topN = this.findStat(this.filtered, 'TOP_N_VALUES');
         var topVals: any = [];
         if (_.isUndefined(topN)) {
