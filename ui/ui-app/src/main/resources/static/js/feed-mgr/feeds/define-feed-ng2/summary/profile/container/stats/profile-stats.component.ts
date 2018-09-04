@@ -238,8 +238,7 @@ export class ProfileStatsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.getProfileStats();
-        this.onModelChange();
+        this.getProfileStats().then(this.onModelChange);
     }
 
     private getProfileStats() {
@@ -254,7 +253,7 @@ export class ProfileStatsComponent implements OnInit {
             this.loading = false;
         };
         const promise = this.http.get(this.restUrlService.FEED_PROFILE_STATS_URL(this.feedId), {params: {'processingdttm': this.processingdttm}}).toPromise();
-        promise.then(successFn, errorFn);
+        return promise.then(successFn, errorFn);
     };
 
 
@@ -359,7 +358,8 @@ export class ProfileStatsComponent implements OnInit {
 
         // Process the model
         var hideColumnsVar = angular.isArray(this.hideColumns) ? this.hideColumns : [];
-        this.data = this.hiveService.transformResults2({ data: this.model }, hideColumnsVar, this.formatRow);
+        const clone = JSON.parse(JSON.stringify(this.model));
+        this.data = this.hiveService.transformResults2({ data: clone }, hideColumnsVar, this.formatRow);
 
         // Sort by column name
         if (angular.isArray(this.data.rows) && this.data.rows.length > 0) {
@@ -367,7 +367,7 @@ export class ProfileStatsComponent implements OnInit {
             this.sorted = _.sortBy(unique, _.property(this.columns.columnName));
             const self = this;
             this.sorted = _.filter(this.sorted, function(column) {
-                return (!self.showOnlyProfiled || column.isProfiled)
+                return (!self.showOnlyProfiled || self.isProfiled(column))
             });
             if (this.sorted && this.sorted.length > 1) {
                 //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
