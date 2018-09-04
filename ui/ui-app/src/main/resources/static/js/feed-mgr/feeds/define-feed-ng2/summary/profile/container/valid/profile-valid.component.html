@@ -1,6 +1,6 @@
 <div>
   <mat-form-field>
-    <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange($event)">
+    <mat-select placeholder="{{'Profile.Valid.Limit' | translate}}" [ngModel]="limit" (change)="onLimitChange($event)">
       <mat-option *ngFor="let opt of limitOptions;" [value]="opt">
         {{opt}}
       </mat-option>

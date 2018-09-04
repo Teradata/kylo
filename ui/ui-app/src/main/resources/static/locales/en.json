@@ -859,11 +859,14 @@
     "Profile": {
         "Valid": {
             "NoValidRows": "There are no valid rows",
-            "Loading": "Loading..."
+            "Loading": "Loading...",
+            "Limit": "Limit"
         },
         "Invalid": {
             "NoInvalidRows": "There are no invalid rows",
-            "Loading": "Loading..."
+            "Loading": "Loading...",
+            "Limit": "Limit",
+            "Filter": "Filter By Rule Violation"
         },
         "Stats": {
             "ShowOnlyProfiled": "Show Only Profiled",
