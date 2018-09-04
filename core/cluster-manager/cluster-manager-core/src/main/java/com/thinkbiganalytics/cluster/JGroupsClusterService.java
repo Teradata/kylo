@@ -121,7 +121,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
             try {
                 channel = new JChannel(jgroupsConfigFile);
                 String name = Util.generateLocalName();
-                channel.setName("Kylo - " + name);
+                channel.setName(name);
                 channel.setReceiver(this);
                 channel.addChannelListener(new Listener());
                 channel.connect(CLUSTER_NAME);
