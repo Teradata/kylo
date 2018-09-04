@@ -857,6 +857,14 @@
     },
 
     "Profile": {
+        "Valid": {
+            "NoValidRows": "There are no valid rows",
+            "Loading": "Loading..."
+        },
+        "Invalid": {
+            "NoInvalidRows": "There are no invalid rows",
+            "Loading": "Loading..."
+        },
         "Stats": {
             "ShowOnlyProfiled": "Show Only Profiled",
             "NoResults": "No results found",
