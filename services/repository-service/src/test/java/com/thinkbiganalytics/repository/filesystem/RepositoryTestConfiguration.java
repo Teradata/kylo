@@ -110,7 +110,7 @@ public class RepositoryTestConfiguration {
     public NiFiObjectCache niFiObjectCache() {return Mockito.mock(NiFiObjectCache.class); }
 
     @Bean
-    public Cache<String, Long> templateUpldateInfoCache() {return Mockito.mock(Cache.class); }
+    public Cache<String, Boolean> templateUpldateInfoCache() {return Mockito.mock(Cache.class); }
 
     @Bean
     public MetadataEventService eventService() { return Mockito.mock(MetadataEventService.class); }
