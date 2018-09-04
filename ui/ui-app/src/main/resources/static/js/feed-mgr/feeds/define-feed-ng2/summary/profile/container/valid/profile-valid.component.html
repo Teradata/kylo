@@ -1,7 +1,7 @@
 <div fxFlex style="height: 100%">
 
   <mat-form-field>
-    <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange()">
+    <mat-select placeholder="Limit" [ngModel]="limit" (change)="onLimitChange($event)">
       <mat-option *ngFor="let opt of limitOptions;" [value]="opt">
         {{opt}}
       </mat-option>

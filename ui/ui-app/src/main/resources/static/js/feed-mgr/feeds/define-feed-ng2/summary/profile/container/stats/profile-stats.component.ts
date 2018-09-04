@@ -256,6 +256,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.active.currentValue && !this.activated) {
+            //lazy loading, i.e. loading only when tab is opened for the first time
             this.activated = true;
             this.getProfileStats().then(this.onModelChange);
         }

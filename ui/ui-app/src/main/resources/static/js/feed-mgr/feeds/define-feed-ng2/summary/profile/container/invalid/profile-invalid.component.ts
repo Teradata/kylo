@@ -7,6 +7,7 @@ import * as _ from 'underscore';
 import * as $ from "jquery";
 import {ProfileValidComponent} from '../valid/profile-valid.component';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {MatSelectChange} from '@angular/material/select';
 
 declare let d3: any;
 
@@ -80,16 +81,19 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.active.currentValue && !this.activated) {
+            //lazy loading, i.e. loading only when tab is opened for the first time
             this.activated = true;
             this.init();
         }
     }
 
-    onLimitChange() {
+    onLimitChange(event: MatSelectChange): void {
+        this.limit = event.value;
         this.init();
     }
 
-    onFilterChange() {
+    onFilterChange(event: MatSelectChange) {
+        this.filter = event.value;
         this.init();
     }
 

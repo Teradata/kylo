@@ -1,6 +1,6 @@
 <div>
   <mat-form-field>
-    <mat-select [ngModel]="limit" (change)="onLimitChange()" placeholder="Limit">
+    <mat-select [ngModel]="limit" (change)="onLimitChange($event)" placeholder="Limit">
       <mat-option *ngFor="let opt of limitOptions" [value]="opt">
         {{opt}}
       </mat-option>
@@ -8,7 +8,7 @@
   </mat-form-field>
 
   <mat-form-field [style.min-width.px]="170">
-    <mat-select [ngModel]="filter" (change)="onFilterChange()" placeholder="Filter By Rule Violation">
+    <mat-select [ngModel]="filter" (change)="onFilterChange($event)" placeholder="Filter By Rule Violation">
       <mat-option *ngFor="let opt of filterOptions" [value]="opt">
         {{opt.name}}
       </mat-option>
