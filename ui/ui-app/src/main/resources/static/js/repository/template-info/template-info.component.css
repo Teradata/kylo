@@ -1,0 +1,8 @@
+/deep/.mat-list .mat-list-item, .mat-list .mat-list-item .mat-list-item-content {
+
+  font-size: 14px;
+}
+
+/deep/.mat-list .mat-list-item .mat-list-item-content {
+  padding: 0px 0px 0px 0px!important;
+}

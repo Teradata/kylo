@@ -6,6 +6,7 @@ import {MatDialog} from "@angular/material/dialog";
 
 @Component({
     selector: "template-info",
+    styleUrls: ["js/repository/template-info/template-info.component.css"],
     templateUrl: "js/repository/template-info/template-info.component.html"
 })
 export class TemplateInfoComponent implements OnInit {
@@ -45,8 +46,11 @@ export class TemplateInfoComponent implements OnInit {
         this.disabling = true;
         if (this.template.id) {
             this.registerTemplateService.disableTemplate(this.template.id).then((response: any) => {
+                console.log(response);
+                this.template = response.data;
                 this.disabling = false;
             }, (error: any) => {
+                console.log(error);
                 this.disabling = false;
             });
         }
@@ -56,8 +60,11 @@ export class TemplateInfoComponent implements OnInit {
         this.enabling = true;
         if (this.template.id) {
             this.registerTemplateService.enableTemplate(this.template.id).then((response: any) => {
+                console.log(response);
+                this.template = response.data;
                 this.enabling = false;
             }, (error: any) => {
+                console.log(error);
                 this.enabling = false;
             });
         }

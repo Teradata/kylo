@@ -34,6 +34,7 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
@@ -60,7 +61,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -305,7 +306,7 @@ public class FilesystemRepositoryService implements RepositoryService {
                 .collect(Collectors.toList());
 
         } catch (Exception e) {
-            log.error("Unable to read repositories", e);
+            log.error("Error reading template repositories", e);
         }
 
         return new ArrayList<>();
@@ -381,27 +382,35 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     private TemplateMetadataWrapper jsonToMetadata(Path path, TemplateRepository repository, Optional<Set<String>> registeredTemplates) {
         try {
-            TemplateMetadata tmpltMetaData = mapper.readValue(path.toFile(), TemplateMetadata.class);
-            TemplateMetadataWrapper wrapper = new TemplateMetadataWrapper(tmpltMetaData);
+            TemplateMetadata templateMetaData = mapper.readValue(path.toFile(), TemplateMetadata.class);
+            TemplateMetadataWrapper wrapper = new TemplateMetadataWrapper(templateMetaData);
 
-            Path templatePath = Paths.get(repository.getLocation() + "/" + tmpltMetaData.getFileName());
+            Path templatePath = Paths.get(repository.getLocation() + "/" + templateMetaData.getFileName());
 
-            if (registeredTemplates.isPresent() && registeredTemplates.get().contains(tmpltMetaData.getTemplateName())) {
-                long latest = templatePath.toFile().lastModified();
-                templateUpdateInfoCache.get(tmpltMetaData.getTemplateName(), () -> tmpltMetaData.isUpdateAvailable());
+            if (registeredTemplates.isPresent() && registeredTemplates.get().contains(templateMetaData.getTemplateName())) {
+
+                byte[] content = ImportUtil.streamToByteArray(new FileInputStream(templatePath.toFile()));
+                InputStream inputStream = new ByteArrayInputStream(content);
+                ImportTemplate importTemplate = ImportUtil.openZip(templatePath.getFileName().toString(), inputStream);
+                RegisteredTemplate template = importTemplate.getTemplateToImport();
+
+                templateUpdateInfoCache.get(templateMetaData.getTemplateName(), () -> templateMetaData.isUpdateAvailable());
                 //init checksum if not already set
                 //set updated flag if file is modified.
-                if (tmpltMetaData.getLastModified() < latest) {
-                    String checksum = DigestUtils.md5DigestAsHex(Files.readAllBytes(templatePath));
+                if (templateMetaData.getLastModified() < template.getUpdateDate().getTime()) {
+                    String checksum = DigestUtils.md5DigestAsHex(content);
 
                     //capturing checksum first time or it has actually changed?
-                    boolean templateModified = !StringUtils.equals(tmpltMetaData.getChecksum(), checksum);
+                    boolean templateModified = !StringUtils.equals(templateMetaData.getChecksum(), checksum);
 
-                    tmpltMetaData.setUpdateAvailable(templateModified);
-                    templateUpdateInfoCache.put(tmpltMetaData.getTemplateName(), templateModified);
+                    templateMetaData.setUpdateAvailable(templateModified);
+                    templateUpdateInfoCache.put(templateMetaData.getTemplateName(), templateModified);
 
-                    mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), tmpltMetaData);
-                    wrapper = new TemplateMetadataWrapper(tmpltMetaData);
+                    mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), templateMetaData);
+                    wrapper = new TemplateMetadataWrapper(templateMetaData);
+                }
+                if(wrapper.isUpdateAvailable()){
+                    wrapper.getUpdates().addAll(template.getChangeComments());
                 }
                 wrapper.setInstalled(true);
             }
@@ -432,6 +441,11 @@ public class FilesystemRepositoryService implements RepositoryService {
         }
 
         private boolean updateLastModifiedDate(TemplateChangeEvent event, TemplateChange change, Path path) {
+            if(change.getChange() == MetadataChange.ChangeType.DELETE){
+                templateUpdateInfoCache.invalidate(change.getDescription());
+                return false;
+            }
+
             TemplateMetadata metadata = null;
             try {
                 metadata = mapper.readValue(path.toFile(), TemplateMetadata.class);

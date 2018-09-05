@@ -129,6 +129,7 @@ public class TemplateModelTransform {
                 domain.setOrder(registeredTemplate.getOrder());
                 domain.setStream(registeredTemplate.isStream());
                 domain.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
+                domain.getChangeComments().clear();
                 prepareForSave(registeredTemplate);
                 String json = ObjectMapperSerializer.serialize(registeredTemplate);
                 domain.setJson(json);

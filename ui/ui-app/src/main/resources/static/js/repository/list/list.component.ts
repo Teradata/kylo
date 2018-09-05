@@ -6,6 +6,9 @@ import {StateService} from "@uirouter/angular";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
+import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
+import {MatDialog} from "@angular/material/dialog";
+import {TemplateUpdatesDialog} from "../dialog/template-updates-dialog";
 
 /**
  * List templates from repository ready for installation.
@@ -18,7 +21,8 @@ export class ListTemplatesComponent implements OnInit {
 
     constructor(private templateService: TemplateService,
                 private dataTableService: TdDataTableService,
-                private state: StateService) {
+                private state: StateService,
+                private dialog: MatDialog) {
     }
 
     loading:boolean = true;
@@ -101,5 +105,13 @@ export class ListTemplatesComponent implements OnInit {
 
     search(filter: string): void {
         this.dataSource.filter = filter.trim().toLowerCase();
+    }
+
+    viewUpdates(template: TemplateMetadata): void {
+
+        this.dialog.open(TemplateUpdatesDialog, {
+            data: {updates: template.updates},
+            width: '40%'
+        });
     }
 }
