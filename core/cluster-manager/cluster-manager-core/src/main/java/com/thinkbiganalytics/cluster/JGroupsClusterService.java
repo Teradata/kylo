@@ -100,8 +100,6 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
 
     Cache<String, MessageDeliveryStatus> ensureMessageDeliveryMap = CacheBuilder.newBuilder().expireAfterWrite(pendingMessageAcknowledgeTime, TimeUnit.MINUTES).build();
 
-    //  private Map<String, MessageDeliveryStatus> ensureMessageDeliveryMap = new ConcurrentHashMap<>();
-
     private DefaultClusterNodeSummary clusterNodeSummary;
 
 
@@ -121,12 +119,13 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
             try {
                 channel = new JChannel(jgroupsConfigFile);
                 String name = Util.generateLocalName();
-                channel.setName("Kylo - " + name);
+                channel.setName(name);
                 channel.setReceiver(this);
                 channel.addChannelListener(new Listener());
-                channel.connect(CLUSTER_NAME);
                 channel.enableStats(true);
+                // do this before connecting, once connected messages may be in flight and methods in clusterSummary will be called
                 clusterNodeSummary = new DefaultClusterNodeSummary(channel.getAddressAsString());
+                channel.connect(CLUSTER_NAME);
                 clusterNodeSummary.connected();
             } catch (FileNotFoundException e) {
                 log.error("Unable to find the jgroups cluster configuration file {}.  Kylo is not clustered ", jgroupsConfigFile);

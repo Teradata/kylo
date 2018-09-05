@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from "@angular/core";
 import * as d3 from "d3";
-import {ProfileHelper} from "../../wrangler/api/profile-helper";
+import {ColumnProfile} from "../../wrangler/api/column-profile";
 
 @Component({
     selector: "column-analysis",
@@ -10,7 +10,7 @@ import {ProfileHelper} from "../../wrangler/api/profile-helper";
 export class ColumnAnalysisController implements OnInit {
 
     data: Array<any> = [];
-    @Input() profile: ProfileHelper;
+    @Input() profile: ColumnProfile;
     @Input() field: string;
 
     ngOnInit(): void {

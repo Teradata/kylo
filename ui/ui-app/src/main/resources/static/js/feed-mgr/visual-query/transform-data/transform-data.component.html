@@ -33,15 +33,19 @@
         <mat-menu #actionMenu="matMenu" class="md-kylo-theme">
           <button mat-menu-item (click)="toggleFunctionHistory()">History<span *ngIf="functionHistory.length>0" style="padding-left:10px;">({{functionHistory.length}})</span></button>
           <button mat-menu-item (click)="toggleSampleMenu()">Sample</button>
-          <button mat-menu-item (click)="showProfileDialog()">Profile</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
         </button>
-        <button mat-raised-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true" class="text-upper">
-          History<span *ngIf="functionHistory.length>0" fxShow.gt-lg="true" fxHide="true" style="padding-left:10px;">({{functionHistory.length}})</span>
+        <button matTooltip="History" mat-raised-button mat-icon-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+               <ng-md-icon icon="history" class="function-icon"></ng-md-icon>
         </button>
-        <button mat-raised-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true" class="text-upper">Sample</button>
+        <button matTooltip="Sample size" mat-raised-button mat-icon-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+          <ng-md-icon icon="filter_list" class="function-icon"></ng-md-icon>
+        </button>
+        <button matTooltip="Show columns profile" mat-raised-button mat-icon-button (click)="showQuickColumnAnalysis()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+          <ng-md-icon icon="assessment" class="function-icon"></ng-md-icon>
+        </button>
         <span fxFlex="1 1 auto"></span>
         <mat-menu #formulaMenu="matMenu" class="md-kylo-theme">
           <button *ngFor="let item of sampleFormulas" mat-menu-item (click)="setFormula(item.formula)">{{item.name}}</button>

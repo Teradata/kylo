@@ -61,6 +61,8 @@ import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
 import VisualQueryProfileStatsController from "./transform-data/profile-stats/VisualQueryProfileStats";
 import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
+import {QuickColumnsDialog} from "./transform-data/profile-stats/quick-columns-dialog";
+import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/mini-analysis";
 
 registerQueryEngine('spark', SparkQueryEngine);
 
@@ -79,13 +81,17 @@ registerQueryEngine('spark', SparkQueryEngine);
         VisualQueryProfileStatsController,
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
-        VisualQueryTable
+        VisualQueryTable,
+        MiniCategoricalComponent,
+        MiniHistogramComponent,
+        QuickColumnsDialog
     ],
     entryComponents: [
         AnalyzeColumnDialog,
         ConnectionDialog,
         SaveOptionsComponent,
-        VisualQueryProfileStatsController
+        VisualQueryProfileStatsController,
+        QuickColumnsDialog
     ],
     exports: [
         BuildQueryComponent,
