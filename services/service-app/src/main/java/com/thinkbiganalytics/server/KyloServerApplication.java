@@ -98,7 +98,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
                 String[] beanNames = ctx.getBeanDefinitionNames();
                 Arrays.sort(beanNames);
                 for (String beanName : beanNames) {
-                    log.trace("Bean name='{}', type='{}'", beanName, ctx.getBean(beanName).getClass());
+                    log.trace("Bean name='{}', type='{}'", beanName);
                 }
             }
         };
