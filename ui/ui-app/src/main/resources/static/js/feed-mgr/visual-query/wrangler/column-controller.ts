@@ -1,4 +1,4 @@
-import {ProfileHelper} from "./api/profile-helper";
+import {ColumnProfile} from "./api/column-profile";
 import {ChainedOperation} from "./column-delegate";
 import {PageSpec} from "./index";
 
@@ -37,9 +37,9 @@ export interface ColumnController {
     /**
      * Generates column statistics
      * @param {string} fieldName the fieldname
-     * @returns {Promise<ProfileHelper>} profile data
+     * @returns {Promise<ColumnProfile>} profile data
      */
-    extractColumnStatistics(fieldName: string): Promise<ProfileHelper>;
+    extractColumnStatistics(fieldName: string): Promise<ColumnProfile>;
 
     /**
      * Executes a query returning a single value

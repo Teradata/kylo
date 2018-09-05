@@ -14,16 +14,18 @@ import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {FeedService} from '../../services/FeedService';
 import {ApplyTableDomainTypesDialog} from "../../shared/apply-domain-type/apply-table-domain-types.component";
-import {ProfileHelper} from "../wrangler/api/profile-helper";
+import {ColumnProfile, ColumnProfileHelper} from "../wrangler/api/column-profile";
 import {ColumnController} from "../wrangler/column-controller";
 import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column-delegate";
-import {ScriptState, StringUtils} from "../wrangler/index";
+import {ProfileOutputRow, ScriptState, StringUtils} from "../wrangler/index";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {AnalyzeColumnDialog} from "./profile-stats/analyze-column-dialog";
 import VisualQueryProfileStatsController from "./profile-stats/VisualQueryProfileStats";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {VisualQueryTable} from "./visual-query-table/visual-query-table.component";
+import {QuickColumnsDialog, QuickColumnsDialogData} from "./profile-stats/quick-columns-dialog";
+import {ColumnUtil} from "../wrangler/core/column-util";
 
 declare const CodeMirror: any;
 
@@ -953,7 +955,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Executes a formula, gathers the value and reverses
      * @param {string} fieldName
      * @param {string} formula
-     * @returns {Promise<ProfileHelper>}
+     * @returns {Promise<ColumnProfile>}
      */
     extractFormulaResult(formula: string, sample: number): Promise<any> {
         const self = this;
@@ -973,13 +975,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
     }
 
-    extractColumnStatistics(fieldName: string): Promise<ProfileHelper> {
+    extractColumnStatistics(fieldName: string): Promise<ColumnProfile> {
         const self = this;
         self.pushFormulaToEngine(`select(${fieldName})`, {});
         return self.query(false, PageSpec.emptyPage(), true, true).then(function () {
             let profileStats = self.engine.getProfile();
             self.engine.pop();
-            return new ProfileHelper(fieldName, profileStats);
+            return new ColumnProfile(fieldName, profileStats);
         });
     }
 
@@ -991,12 +993,34 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     showAnalyzeColumn(fieldName: string): any {
         this.pushFormulaToEngine(`select(${fieldName})`, {});
         this.query(false, PageSpec.emptyPage(), true, true).then(() => {
-            let profileStats = new ProfileHelper(fieldName, this.engine.getProfile());
+            let profileStats = new ColumnProfile(fieldName, this.engine.getProfile());
             this.engine.pop();
             this.$mdDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}, width: "800px"});
         });
-
     };
+
+    /**
+     * Generates and displays a categorical histogram
+     *
+     * @return {Promise} a promise for when the query completes
+     */
+    showQuickColumnAnalysis(): any {
+
+        let fieldNames : string[] = [];
+        _.each(this.engine.getColumns(),  (item:any) => {
+            fieldNames.push(ColumnUtil.getColumnFieldName(item));
+        });
+
+        this.pushFormulaToEngine(`select(${fieldNames.join(',')})`, {});
+        this.query(false, PageSpec.emptyPage(), true, true).then(() => {
+            let profileRows : ProfileOutputRow[] = this.engine.getProfile();
+            let profiles : ColumnProfile[] = ColumnProfileHelper.createColumnProfiles(profileRows);
+            this.engine.pop();
+            let dialogData = new QuickColumnsDialogData(profiles);
+            return  this.$mdDialog.open(QuickColumnsDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}});
+        });
+    };
+
 
     /**
      * Sets the formula in the function bar to the specified value.

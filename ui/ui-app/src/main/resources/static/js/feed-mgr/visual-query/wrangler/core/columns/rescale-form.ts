@@ -4,7 +4,7 @@ import {ColumnController} from "../../column-controller";
 import {AbstractControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {InputType} from "../../../../shared/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
-import {ProfileHelper} from "../../api/profile-helper";
+import {ColumnProfile} from "../../api/column-profile";
 import {FormValidators} from "../../../../shared/dynamic-form/form-validators/form-validators";
 
 
@@ -49,7 +49,7 @@ export class RescaleForm extends ColumnForm {
                 let maxScale: number = values.maxScale;
                 let fieldName = this.fieldName;
 
-                this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+                this.controller.extractColumnStatistics(fieldName).then((profileData: ColumnProfile) => {
                     let min = profileData.min;
                     let max = profileData.max;
                     let algo: string;

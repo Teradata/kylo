@@ -3,7 +3,7 @@ import * as _ from "underscore";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {ColumnDelegate as IColumnDelegate, DataType as DT} from "./api/column";
-import {ProfileHelper} from "./api/profile-helper";
+import {ColumnProfile} from "./api/column-profile";
 import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
 import {ColumnUtil} from "./core/column-util";
@@ -383,7 +383,7 @@ export class ColumnDelegate implements IColumnDelegate {
     leftPad(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ColumnProfile) => {
 
             let form = new LpadForm(column, grid, this.controller, profileData.maxLen);
             this.dialog.openColumnForm(form);
@@ -492,7 +492,7 @@ export class ColumnDelegate implements IColumnDelegate {
 
         const fieldName = ColumnUtil.getColumnFieldName(column);
 
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ColumnProfile) => {
             if (profileData.percNull > 0) {
                 this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;
@@ -563,7 +563,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     identifyOutliers(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ColumnProfile) => {
             if (profileData.percNull > 0) {
                 this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;
@@ -591,7 +591,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     binValues(column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        this.controller.extractColumnStatistics(fieldName).then((profileData: ProfileHelper) => {
+        this.controller.extractColumnStatistics(fieldName).then((profileData: ColumnProfile) => {
             if (profileData.percNull > 0) {
                 this.controller.displayError("Error", "Column must be clean of empty/NaN to use this function");
                 return;

@@ -1,9 +1,34 @@
 import {ProfileOutputRow} from "..";
 
+export class ColumnProfileHelper {
+
+    static createColumnProfiles(profileData: ProfileOutputRow[]): ColumnProfile[] {
+        let result: ColumnProfile[] = [];
+        let i = 0;
+        let firstRow;
+        let lastField = null;
+        let column: ColumnProfile;
+        for (let item of profileData) {
+            if (lastField == null) {
+                lastField = item.columnName;
+                firstRow = i;
+            } else if (lastField != item.columnName || (i == profileData.length - 1)) {
+                if (lastField != '(ALL)') {
+                    result.push(new ColumnProfile(lastField, profileData.slice(firstRow, i - 1)));
+                }
+                lastField = item.columnName;
+                firstRow = i;
+            }
+            i++;
+        }
+        return result;
+    }
+}
+
 /**
  * Helper class for working with profile statistics
  */
-export class ProfileHelper {
+export class ColumnProfile {
 
     /**
      * Sorted top n values
@@ -37,7 +62,7 @@ export class ProfileHelper {
     invalidCount: string;
     showValid: boolean = false;
 
-    constructor(fieldName:string, profileData:ProfileOutputRow[]) {
+    constructor(fieldName: string, profileData: ProfileOutputRow[]) {
         this._profile = profileData;
         this.field = fieldName;
         this.initializeStats();
@@ -56,7 +81,8 @@ export class ProfileHelper {
                                 let e = item.split("^A");
                                 self.topN.push({domain: e[1], count: parseInt(e[2])});
                             }
-                        };
+                        }
+                        ;
                         break;
                     case 'TOTAL_COUNT':
                         self.totalCount = value.metricValue;
@@ -111,15 +137,16 @@ export class ProfileHelper {
 
                 }
             }
-        };
+        }
+        ;
         if (this.unique != null) {
-            this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount))*100;
+            this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount)) * 100;
         }
         if (this.emptyCount != null) {
-            this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount))*100;
+            this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount)) * 100;
         }
         if (this.nullCount != null) {
-            this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount))*100;
+            this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount)) * 100;
         }
         if (this.showValid) {
             this.validCount = (parseInt(this.totalCount) - parseInt(this.invalidCount));

@@ -1,6 +1,7 @@
 import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {ProfileHelper} from "../../wrangler/api/profile-helper";
+import {ColumnProfile} from "../../wrangler/api/column-profile";
+
 
 @Component({
     templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html'
@@ -9,7 +10,7 @@ export class AnalyzeColumnDialog {
     /**
      * Additional details about the error.
      */
-    profile: ProfileHelper;
+    profile: ColumnProfile;
     fieldName: any;
 
     // @ts-ignore

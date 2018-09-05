@@ -14,9 +14,9 @@
           <tbody>
           <tr td-data-table-row *ngFor="let row of profile.topN">
             <td td-data-table-cell>
-              <div class="truncate" fxFlex="1 1 100%" fxLayout="column" fxLayoutAlign="start">
-                {{row.domain}}
-                <span class="bar bar-success" [style.width]="row.width.toFixed(0) + '%'"></span>
+              <div class="truncate" fxLayout="column" fxLayoutAlign="start">
+                <span class="truncate">{{row.domain}}</span>
+                <span class="bar bar-info" [style.width]="row.width.toFixed(0) + '%'"></span>
               </div>
             </td>
             <td td-data-table-cell numeric="true">{{row.count}}</td>
@@ -104,7 +104,5 @@
   <mat-tab label="Numerical" [disabled]="profile.histo == undefined">
     <column-histogram *ngIf="profile.histo != undefined" [chart-data]="profile.histo"></column-histogram>
   </mat-tab>
-  <mat-tab label="Fun" [disabled]="profile.histo == undefined">
-    <column-histogram *ngIf="profile.histo != undefined" [chart-data]="profile.histo"></column-histogram>
-  </mat-tab>
+
 </mat-tab-group>
