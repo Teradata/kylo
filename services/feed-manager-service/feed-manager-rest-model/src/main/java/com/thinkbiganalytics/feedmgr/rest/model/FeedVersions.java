@@ -36,15 +36,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class FeedVersions {
 
     private String feedId;
+    private String deployedVersionId;
     private List<EntityVersion> versions = new ArrayList<>();
     
     public FeedVersions() {
         super();
     }
     
-    public FeedVersions(String feedId) {
+    public FeedVersions(String feedId, String deployedId) {
         super();
         this.feedId = feedId;
+        this.deployedVersionId = deployedId;
     }
 
     public String getFeedId() {
@@ -53,6 +55,14 @@ public class FeedVersions {
 
     public void setFeedId(String feedId) {
         this.feedId = feedId;
+    }
+    
+    public String getDeployedVersionId() {
+        return deployedVersionId;
+    }
+    
+    public void setDeployedVersionId(String deployedVersionId) {
+        this.deployedVersionId = deployedVersionId;
     }
 
     public List<EntityVersion> getVersions() {

@@ -129,9 +129,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
     private FeedProcessingOptions options;
-    //deprecated
-    private Long version;
-    private String versionName;
     private RegisteredTemplate registeredTemplate;
 
     // private NifiProcessGroup nifiProcessGroup;
@@ -341,31 +338,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    public Long getVersion() {
-        if (StringUtils.isNotBlank(versionName)) {
-            try {
-                return new Long(versionName);
-            } catch (NumberFormatException e) {
-                return 0L;
-            }
-        } else {
-            return version;
-        }
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-        setVersionName(version + "");
-    }
-
-    public String getVersionName() {
-        return this.versionName;
-    }
-
-    public void setVersionName(String versionName) {
-        this.versionName = versionName;
     }
 
     @JsonIgnore
@@ -649,8 +621,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             usedByFeeds,
             userDatasources,
             userProperties,
-            version,
-            versionName,
             allowIndexing,
             historyReindexingStatus,
             uiState
@@ -703,8 +673,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             Objects.equals(usedByFeeds, other.usedByFeeds) &&
             Objects.equals(userDatasources, other.userDatasources) &&
             Objects.equals(userProperties, other.userProperties) &&
-            Objects.equals(version, other.version) &&
-            Objects.equals(versionName, other.versionName) &&
             Objects.equals(allowIndexing, other.allowIndexing) &&
             Objects.equals(historyReindexingStatus, other.historyReindexingStatus) &&
             Objects.equals(uiState,other.uiState);
