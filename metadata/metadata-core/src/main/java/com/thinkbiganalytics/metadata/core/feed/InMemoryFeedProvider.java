@@ -670,4 +670,41 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#hasDraftVersion(java.io.Serializable)
+     */
+    @Override
+    public boolean hasDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public EntityVersion<Feed> createDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createDraftVersion(java.io.Serializable, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID, boolean)
+     */
+    @Override
+    public EntityVersion<Feed> createDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId,
+                                                  boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public EntityVersion<Feed> createVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

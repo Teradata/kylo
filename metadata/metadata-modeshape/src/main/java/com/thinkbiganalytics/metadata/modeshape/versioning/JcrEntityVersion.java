@@ -91,6 +91,13 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
     public Optional<E> getEntity() {
         return this.entity;
     }
+    
+    /**
+     * @return the version
+     */
+    public Version getVersion() {
+        return version;
+    }
 
     protected void setId(VersionId id) {
         this.id = id;

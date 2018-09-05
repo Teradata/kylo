@@ -24,7 +24,6 @@ package com.thinkbiganalytics.metadata.modeshape.common.mixin;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -37,49 +36,42 @@ import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
-import com.thinkbiganalytics.metadata.modeshape.versioning.JcrLatestEntityVersion;
 
 /**
  * A mixin interface to be implemented by any JCR entity provider that supports versionable entities.
  */
 public interface VersionProviderMixin<T, PK extends Serializable> extends EntityVersionProvider<T, PK> {
     
+    @Override
     default EntityVersion.ID resolveVersion(Serializable ser) {
         return new JcrEntityVersion.VersionId(ser);
     }
 
+    @Override
     default Optional<List<EntityVersion<T>>> findVersions(PK entityId, boolean includeContent) {
+        BiFunction<EntityVersion<T>,EntityVersion<T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
+        
         return findVersionableNode(entityId)
-                        .map(node -> {
-                            List<EntityVersion<T>> result = new ArrayList<>();
-                            // The "current" version may not be needed as it should be equal to the latest version.
-                            // TODO verify upgrades from versions earlier than 0.8.4 have at least one version.
-//                            result.add(new JcrLatestEntityVersion<>(node, includeContent ? asEntity(entityId, node) : null));
-                            
-                            BiFunction<EntityVersion<T>,EntityVersion<T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
-                            List<EntityVersion<T>> versions = JcrVersionUtil.getVersions(node).stream()
-                                            .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                                            .map(ver -> new JcrEntityVersion<>(ver, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
-                                            .sorted(desc::apply)
-                                            .collect(Collectors.toList());
-                            result.addAll(versions);
-                            
-                            return result;
-                        });
+                        .map(node -> JcrVersionUtil.getVersions(node).stream()
+                                        .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
+                                        .map(ver -> new JcrEntityVersion<>(ver, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                                        .sorted(desc::apply)
+                                        .collect(Collectors.toList()));
     }
     
+    @Override
     default Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includedContent) {
         return findVersions(entityId, includedContent)
-                        .flatMap(list -> {
-                            return list.stream()
-                                .filter(ver -> ver.getId().equals(versionId))
-                                .findFirst();
-                        });
+                .flatMap(list -> list.stream()
+                             .filter(ver -> ver.getId().equals(versionId))
+                             .findFirst());
     }
 
-    default Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includedContent) {
+    @Override
+    default Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includeContent) {
         return findVersionableNode(entityId)
-                        .map(node -> new JcrLatestEntityVersion<>(node, includedContent ? asEntity(null, node) : null));
+                .flatMap(node -> Optional.ofNullable(JcrVersionUtil.getLatestVersion(node)))
+                .map(ver -> new JcrEntityVersion<>(ver, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null));
     }
     
 

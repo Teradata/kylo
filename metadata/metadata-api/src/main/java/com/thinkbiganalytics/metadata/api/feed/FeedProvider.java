@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -22,11 +20,12 @@ import com.thinkbiganalytics.metadata.api.BaseProvider;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.BaseProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -37,7 +36,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersionProvider<Feed, Feed.ID> {
+public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVersionProvider<Feed, Feed.ID> {
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
 

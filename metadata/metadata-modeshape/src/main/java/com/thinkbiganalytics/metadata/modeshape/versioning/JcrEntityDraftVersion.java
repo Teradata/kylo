@@ -32,11 +32,11 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 /**
  *
  */
-public class JcrLatestEntityVersion<E> extends JcrEntityVersion<E> {
+public class JcrEntityDraftVersion<E> extends JcrEntityVersion<E> {
 
     private DateTime created;
     
-    public JcrLatestEntityVersion(Node versionable, E entity) {
+    public JcrEntityDraftVersion(Node versionable, E entity) {
         super(null, entity);
         setId(new VersionId(JcrPropertyUtil.getIdentifier(versionable)));
         this.created = JcrPropertyUtil.getProperty(versionable, "jcr:lastModified");
@@ -44,7 +44,7 @@ public class JcrLatestEntityVersion<E> extends JcrEntityVersion<E> {
 
     @Override
     public String getName() {
-        return "current";
+        return "draft";
     }
 
     @Override

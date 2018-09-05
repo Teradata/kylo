@@ -26,9 +26,12 @@ import java.lang.reflect.Proxy;
 import javax.jcr.Node;
 
 public class VersionableNodeInvocationHandler extends NodeModificationInvocationHandler {
+    
+    private final boolean autoCheckin;
 
-    public VersionableNodeInvocationHandler(Node node, Class<?>[] types) {
+    public VersionableNodeInvocationHandler(Node node, Class<?>[] types, boolean autoCheckin) {
         super(node, types);
+        this.autoCheckin = autoCheckin;
     }
     
     /* (non-Javadoc)
@@ -44,6 +47,6 @@ public class VersionableNodeInvocationHandler extends NodeModificationInvocation
      */
     @Override
     protected Node createChildProxy(Node node) {
-        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), getTypes(), new VersionableNodeInvocationHandler(node, getTypes()));
+        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), getTypes(), new VersionableNodeInvocationHandler(node, getTypes(), this.autoCheckin));
     }
 }
