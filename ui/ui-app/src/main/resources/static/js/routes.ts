@@ -261,22 +261,28 @@ class Route {
             loadChildren: 'ops-mgr/feeds/ops-mgr-feeds.module#OpsManagerFeedsModule'
         });
 
+        // $stateProvider.state({
+        //     name: 'feed-stats.**',
+        //     url: '/feed-stats/{feedName}',
+        //     params: {
+        //         feedName: null
+        //     },
+        //     lazyLoad: (transition: any) => {
+        //         transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('feed-stats', transition.params())
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading feed-stats ", err);
+        //             return err;
+        //         });
+        //     }
+        // });
+
         $stateProvider.state({
             name: 'feed-stats.**',
             url: '/feed-stats/{feedName}',
-            params: {
-                feedName: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('feed-stats', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading feed-stats ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/feeds/feed-stats/feed-stats.module#FeedStatsModule'
         });
 
         $stateProvider.state({

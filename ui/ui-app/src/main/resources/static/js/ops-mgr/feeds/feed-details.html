@@ -18,13 +18,13 @@
   #L%
   -->
 
-<div layout="row" layout-sm="column" layout-xs="column" *ngIf="!loading">
-    <div layout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
+<div  fxLayout="row" layout-sm="column" layout-xs="column" *ngIf="!loading">
+    <div  fxLayout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
         <tba-feed-activity [feedName]="feedName"></tba-feed-activity>
-        <tba-jobs [hideFeedColumn]="true" cardTitle='titleToBeUpdated' [feedFilter]="feedName"  [feed]="feed" [pageName]="feed-job-details" (onJobAction)="onJobAction($event)"></tba-jobs>
+        <tba-jobs [hideFeedColumn]="true" [cardTitle]='"views.feeds.feed-details.Jobs" | translate' [feedFilter]="feedName"  [feed]="feed" [pageName]="feed-job-details" (onJobAction)="onJobAction($event)"></tba-jobs>
     </div>
 
-    <div layout="column" flex="100" flex-gt-sm="30" style="margin:8px;" flex-order="2" flex-order-xs="1" flex-order-sm="1">
+    <div  fxLayout="column" flex="100" flex-gt-sm="30" style="margin:8px;" flex-order="2" flex-order-xs="1" flex-order-sm="1">
         <mat-card>
             <mat-card-title style="white-space:nowrap" class="card-title" flex>
                 {{"views.feeds.feed-details.FD" | translate}}
@@ -32,11 +32,11 @@
             <mat-card-content flex mat-scroll-y>
                 <mat-list flex>
                     <mat-list-item style="padding: 16px;">
-                        <div layout="column" class="listItemTitle ">
+                        <div  fxLayout="column" class="listItemTitle ">
                             <span class="item-title">
                                 {{feedName}}
                             </span>
-                            <div layout="row" layout-align="space-between center" class="{{feed.iconstyle}} column-title-bottom">
+                            <div  fxLayout="row" layout-align="space-between center" class="{{feed.iconstyle}} column-title-bottom">
                                 <div>
                                     <mat-icon size="20" *ngIf="feed.icon">{{feed.icon}}</mat-icon>
                                     {{feed.healthText | translate}}
@@ -47,7 +47,7 @@
                     <mat-divider></mat-divider>
 
                     <mat-list-item style="padding: 16px;">
-                        <div layout="column" class="listItemTitle ">
+                        <div  fxLayout="column" class="listItemTitle ">
 
                             <span class="item-title" [ngClass]="{'healthy':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING','error':feed.displayStatus == 'FAILED'}">
                                 {{feed.displayStatus | translate}}</span>
@@ -59,7 +59,7 @@
                     <mat-divider></mat-divider>
 
                     <mat-list-item style="padding: 16px;">
-                        <div layout="column" class="listItemTitle ">
+                        <div  fxLayout="column" class="listItemTitle ">
                             <span class="item-title">
                                 <kylo-timer start-time="feed.timeSinceEndTime"></kylo-timer>
                             </span>
@@ -69,7 +69,7 @@
                     <mat-divider></mat-divider>
 
                     <mat-list-item style="padding: 16px;">
-                        <div layout="column" class="listItemTitle ">
+                        <div  fxLayout="column" class="listItemTitle ">
                             <span class="item-title">{{feed.runTimeString}}</span>
                             <span class="column-title column-title-bottom">{{"views.feeds.feed-details.LRT" | translate}}</span>
                         </div>
@@ -77,7 +77,7 @@
                 </mat-list>
                 <mat-divider></mat-divider>
 
-                <div layout="column" class="layout-padding-top-bottom layout-padding-left-right" layout-align="space-between start">
+                <div  fxLayout="column" class="layout-padding-top-bottom layout-padding-left-right" layout-align="space-between start">
                     <!-- <div class="md-subhead layout-padding-bottom">Links</div> -->
                     <div class="layout-padding-left ">
                         <button mat-button color="primary" class="md-link" (click)="gotoFeedDetails($event)">{{"views.feeds.feed-details.FeedD" | translate}}</button>
@@ -91,12 +91,12 @@
 
 </div>
 
-<div layout="row" layout-sm="column" layout-xs="column" *ngIf="loading">
+<div  fxLayout="row" layout-sm="column" layout-xs="column" *ngIf="loading">
     <mat-card layout-fill>
         <mat-card-title layout-align="center center" flex>
             {{"views.feeds.feed-details.LF" | translate}}
         </mat-card-title>
-        <div layout-align="center center" layout="column">
+        <div layout-align="center center"  fxLayout="column">
             <mat-spinner mode="indeterminate" diameter="30"></mat-spinner>
         </div>
     </mat-card>

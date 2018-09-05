@@ -1,0 +1,15 @@
+.md-slider-container{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    box-orient: horizontal;
+    box-direction: normal;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+}
+mat-card {
+    padding: 8 px;
+}

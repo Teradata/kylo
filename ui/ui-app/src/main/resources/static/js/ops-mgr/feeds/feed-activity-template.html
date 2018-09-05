@@ -32,7 +32,7 @@
         <div *ngIf="dataLoaded">
             <nvd3 [options]="chartOptions" [data]="chartData" ></nvd3>
         </div>
-        <div *ngIf="!dataLoaded" layout-align="center center" layout="column">
+        <div *ngIf="!dataLoaded" layout-align="center center" fxLayout="column">
             <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
         </div>
     </mat-card-content>

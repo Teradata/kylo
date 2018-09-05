@@ -18,75 +18,77 @@
   #L%
   -->
 <div class="feed-stats">
-  <div layout="column" ng-if="vm.dataLoaded" layout-padding>
+  <div fxLayout="column" *ngIf="dataLoaded" layout-padding>
 
 
-    <md-card layout-align="center center">
-      <md-card-content layout="column" style="width:100%;">
-        <div layout="row" class="" layout-align="start start">
-          <div flex="100" layout="column" layout-align="center stretch">
-            <div layout="column" layout-align="start start">
-              <div layout="row" layout-align="space-between start" layout-fill>
-                <span class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</span>
-                <span style="margin-top: 5px;">Date Range: {{vm.minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{vm.maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+    <mat-card style="padding : 8px;" fxLayoutAlign="center center">
+      <mat-card-content fxLayout="column" style="width:100%;">
+        <div fxLayout="row" class="">
+          <div flex="100" fxLayout="column">
+            <div fxLayout="column">
+              <div fxLayout="row" fxLayoutAlign="space-between start" layout-fill>
+                <span class="card-title right-card-title-text">{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
+                <span style="margin-top: 5px;">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
               </div>
             </div>
             <div flex>
-              <md-slider-container >
-                <span class="hint">{{vm.timeFrameOptions[0].label}}</span>
-                <md-slider ng-change="vm.onTimeFrameChanged()" flex ng-model="vm.timeFrameOptionIndex" min="0" max="{{vm.timeFrameOptionIndexLength - 1}}" aria-label="Time Frame"></md-slider>
-                <span class="hint">{{vm.timeFrameOptions[vm.timeFrameOptionIndexLength - 1].label}}</span>
-              </md-slider-container>
-            </div>
-            <label ng-if="vm.isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}'</label>
-          </div>
-          <span flex style="padding-left: 40px"></span>
-          <div layout="column">
-            <div layout="row">
-              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-if="!vm.autoRefresh" ng-click="vm.onRefreshButtonClick()">
-                <md-button> Refresh</md-button>
+              <div class="md-slider-container" >
+                <span class="hint">{{timeFrameOptions[0].label}}</span>
+                <mat-slider (change)="onTimeFrameChanged()" flex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
               </div>
             </div>
-            <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.autoRefresh" >
+            <label *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
+          </div>
+          <span flex style="padding-left: 40px"></span>
+          <div fxLayout="column">
+            <div fxLayout="row">
+              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()">
+                <button mat-button> Refresh</button>
+              </div>
+            </div>
+            <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
               Auto Refresh
-            </md-switch>
+            </mat-slide-toggle>
           </div>
         </div>
 
-      </md-card-content>
-    </md-card>
+      </mat-card-content>
+    </mat-card>
 
-    <div ng-if="vm.feedProcessorErrors.visibleData.length >0">
-      <md-card>
-        <md-toolbar class="md-table-toolbar md-default" layout="column">
+    <div *ngIf="feedProcessorErrors.visibleData.length >0">
+      <mat-card>
+        <mat-toolbar class="md-table-toolbar md-default" fxLayout="column">
           <div class="md-toolbar-tools">
             <span> {{"views.feed-stats-charts.EM" | translate}} </span>
             <span flex="5"></span>
             <div flex style="margin-top:25px">
-              <md-input-container flex layout-fill>
-                <label> {{"views.feed-stats-charts.Filter" | translate}} </label>
-                <input ng-model="vm.feedProcessorErrorsTable.filter" ng-model-options="{debounce:1000}"/>
-              </md-input-container>
+              <mat-form-field>
+                <mat-input-container flex layout-fill>
+                    <label> {{"views.feed-stats-charts.Filter" | translate}} </label>
+                    <input [(ngModel)]="feedProcessorErrorsTable.filter" [ngModelOptions]="{debounce:1000}"/>
+                </mat-input-container>
+              </mat-form-field>
             </div>
             <span flex="5"></span>
-            <div layout="column" layout-align="end end">
-              <div layout="row">
-                <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.feedProcessorErrors.autoRefresh"
-                           ng-change="vm.toggleFeedProcessorErrorsRefresh(vm.feedProcessorErrors.autoRefresh)">
-                  Auto Refresh: {{vm.feedProcessorErrors.autoRefreshMessage}}
-                </md-switch>
-                <md-button class="md-icon-button" ng-if="vm.feedProcessorErrors.autoRefresh == false" ng-click="vm.viewNewFeedProcessorErrors()">
-                  <ng-md-icon icon="refresh"></ng-md-icon>
-                </md-button>
+            <div fxLayout="column" fxLayoutAlign="end end">
+              <div fxLayout="row">
+                <mat-slide-toggle class="md-primary" md-no-ink [aria-label]="'Auto Refresh'" [(ngModel)]="feedProcessorErrors.autoRefresh"
+                           (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
+                  Auto Refresh: {{feedProcessorErrors.autoRefreshMessage}}
+                </mat-slide-toggle>
+                <button mat-button class="md-icon-button" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
+                  <mat-icon>refresh</mat-icon>
+                </button>
               </div>
-              <span ng-if="vm.feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{vm.feedProcessorErrors.newErrorCount}} new errors exist.</span>
+              <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
             </div>
           </div>
-        </md-toolbar>
+        </mat-toolbar>
 
-        <md-table-container ng-if="vm.feedProcessorErrors.visibleData.length >0">
+        <md-table-container *ngIf="feedProcessorErrors.visibleData.length >0">
           <table md-table>
-            <thead md-head md-order="vm.feedProcessorErrorsTable.sortOrder">
+            <thead md-head md-order="feedProcessorErrorsTable.sortOrder">
             <tr md-row>
               <th md-column name="Processor" md-order-by="processorName"><span>{{"views.feed-stats-charts.Processor" | translate}}</span></th>
               <th md-column name="Errors" md-order-by="errorMessages"><span>{{"views.feed-stats-charts.Errors" | translate}}</span></th>
@@ -95,7 +97,7 @@
             </thead>
             <tbody md-body>
             <tr md-row
-                ng-repeat="item in vm.feedProcessorErrors.visibleData | filter: vm.feedProcessorErrorsTable.filter | orderBy:  vm.feedProcessorErrorsTable.sortOrder | limitTo: vm.feedProcessorErrorsTable.rowLimit : (vm.feedProcessorErrorsTable.page -1) * vm.feedProcessorErrorsTable.rowLimit">
+                ng-repeat="item in feedProcessorErrors.visibleData | filter: feedProcessorErrorsTable.filter | orderBy:  feedProcessorErrorsTable.sortOrder | limitTo: feedProcessorErrorsTable.rowLimit : (feedProcessorErrorsTable.page -1) * feedProcessorErrorsTable.rowLimit">
               <td md-cell>{{item.processorName}}</td>
               <td md-cell>{{item.errorMessages}}</td>
               <td md-cell>{{item.errorMessageTimestamp | date:'HH:mm:ss'}}</td>
@@ -103,225 +105,223 @@
             </tbody>
           </table>
         </md-table-container>
-        <md-table-pagination md-limit="vm.feedProcessorErrorsTable.rowLimit" md-limit-options="[5,10,15,20,50,100]" md-page="vm.feedProcessorErrorsTable.page"
-                             md-total="{{vm.feedProcessorErrors.visibleData.length}}" md-page-select="true" md-boundary-links="false"></md-table-pagination>
-      </md-card>
+        <md-table-pagination md-limit="feedProcessorErrorsTable.rowLimit" md-limit-options="[5,10,15,20,50,100]" md-page="feedProcessorErrorsTable.page"
+                             md-total="{{feedProcessorErrors.visibleData.length}}" md-page-select="true" md-boundary-links="false"></md-table-pagination>
+      </mat-card>
 
     </div>
 
 
-    <div layout="row" layout-sm="column" layout-xs="column">
-      <div layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
+    <div fxLayout="row" layout-sm="column" layout-xs="column">
+      <div fxLayout="column" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
         <!-- THE KPIs -->
-        <div layout="row" layout-xs="column" layout-wrap layout-align="space-between center" class="kpi-row">
+        <div fxLayout="row" fxLayout.xs="column" layout-wrap fxLayoutAlign="space-between center" class="kpi-row">
 
           <div flex-gt-md="33" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap>
-            <md-card layout-align="center center" class="kpi">
-              <md-card-title layout="column" layout-align="center center" style="width:100%;">
-                <span class="md-display-1">{{vm.eventSuccessKpi.value}}% </span>
-              </md-card-title>
-              <md-card-title-media class="icon">
+            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column" class="kpi">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{eventSuccessKpi.value}}% </span>
                 <div class="md-media-sm card-media">
-                  <ng-md-icon icon="{{vm.eventSuccessKpi.icon}}" ng-style="{'fill':vm.eventSuccessKpi.color}" size="50">
-                  </ng-md-icon>
+                  <mat-icon [ngStyle]="{'fill':eventSuccessKpi.color}" size="50">
+                      eventSuccessKpi.icon
+                  </mat-icon>
                 </div>
-              </md-card-title-media>
-              <md-card-content layout="column" layout-align="center center">
-                <span class="md-title"> {{"views.feed-stats-charts.SR" | translate}} </span>
-              </md-card-content>
-            </md-card>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <span class="mat-title"> {{"views.feed-stats-charts.SR" | translate}} </span>
+              </mat-card-content>
+            </mat-card>
           </div>
 
           <div flex-gt-md="33" flex-gt-xs="50" class="kpi" layout-wrap>
-            <md-card layout-align="center center">
-              <md-card-title layout="column" layout-align="center center" style="width:100%;">
-                <span class="md-display-1">{{vm.flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</span>
-              </md-card-title>
-              <md-card-title-media class="icon">
+            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</span>
                 <div class="md-media-sm card-media">
-                  <ng-md-icon icon="{{vm.flowRateKpi.icon}}" ng-style="{'fill':vm.flowRateKpi.color}" size="50">
-                  </ng-md-icon>
+                  <mat-icon [ngStyle]="{'fill':flowRateKpi.color}" size="50">
+                      flowRateKpi.icon
+                  </mat-icon>
                 </div>
-              </md-card-title-media>
-              <md-card-content layout="column" layout-align="center center">
-                <span class="md-title">{{"views.feed-stats-charts.IFR" | translate}}</span>
-              </md-card-content>
-            </md-card>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayourAlign="center center">
+                <span class="mat-title">{{"views.feed-stats-charts.IFR" | translate}}</span>
+              </mat-card-content>
+            </mat-card>
           </div>
 
           <div flex-gt-md="33" flex-gt-xs="50" class="kpi" layout-wrap>
-            <md-card layout-align="center center">
-              <md-card-title layout="column" layout-align="center center" style="width:100%;">
-                <span class="md-display-1">{{vm.avgDurationKpi.value}}</span>
-              </md-card-title>
-              <md-card-title-media class="icon">
+            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{avgDurationKpi.value}}</span>
                 <div class="md-media-sm card-media">
-                  <ng-md-icon icon="{{vm.avgDurationKpi.icon}}" ng-style="{'fill':vm.avgDurationKpi.color}" size="50">
-                  </ng-md-icon>
+                  <mat-icon [ngStyle]="{'fill':avgDurationKpi.color}" size="50">
+                      avgDurationKpi.icon
+                  </mat-icon>
                 </div>
-              </md-card-title-media>
-              <md-card-content layout="column" layout-align="center center">
-                <span class="md-title">{{"views.feed-stats-charts.FD" | translate}}</span>
-              </md-card-content>
-            </md-card>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <span class="mat-title">{{"views.feed-stats-charts.FD" | translate}}</span>
+              </mat-card-content>
+            </mat-card>
           </div>
         </div>
         <!-- END KPIs -->
 
         <div>
-          <md-card layout-align="start start" style="margin: 0">
-            <md-card-content flex="100" style="width: 100%; padding: 0">
-              <div flex layout="row" layout-align="start end">
-                <span flex ng-if="vm.feedTimeChartLoading">
-                  <md-progress-linear ng-disabled="false" md-mode="indeterminate"></md-progress-linear>
+          <mat-card style="padding : 8px;"fxLayoutAlign="start start" style="margin: 0">
+            <mat-card-content flex="100" style="width: 100%; padding: 0">
+              <div flex fxLayout="row" fxLayoutAlign="start end">
+                <span flex *ngIf="feedTimeChartLoading">
+                  <mat-progress-bar [disabled]="false" [mode]="indeterminate"></mat-progress-bar>
                 </span>
-                <span flex ng-if="!vm.feedTimeChartLoading">
-                  <md-progress-linear ng-disabled="true" md-mode="indeterminate"></md-progress-linear>
+                <span flex *ngIf="!feedTimeChartLoading">
+                  <mat-progress-bar [disabled]="true" [mode]="indeterminate"></mat-progress-bar>
                 </span>
               </div>
-              <div layout="row" layout-align="space-between center">
-                <div flex layout="column">
+              <div fxLayout="row" fxLayoutAlign="space-between center">
+                <div flex fxLayout="column">
                   <span class="card-title kpi-header layout-padding-left">{{"views.feed-stats-charts.AFR" | translate}}</span>
-                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left" ng-show="vm.zoomEnabled">Zoom in/out and pan left/right to see custom time frame</span>
+                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left" [hidden]="!zoomEnabled">Zoom in/out and pan left/right to see custom time frame</span>
                 </div>
-                  <md-button ng-click="vm.onResetZoom()" ng-show="vm.zoomEnabled">Reset Zoom</md-button>
+                  <button mat-button (click)="onResetZoom()" [hidden]="!zoomEnabled">Reset Zoom</button>
               </div>
 
-              <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
+              <nvd3 [options]="feedChartOptions" [data]="feedChartData"></nvd3>
 
-            </md-card-content>
-          </md-card>
+            </mat-card-content>
+          </mat-card>
         </div>
 
 
         <div>
-          <md-card layout-align="center center" style="margin-left: 0px;margin-right: 0px;">
-            <md-card-content layout-fill>
+          <mat-card style="padding : 8px;"fxLayoutAlign="center center" style="margin-left: 0px;margin-right: 0px;">
+            <mat-card-content layout-fill>
 
-              <div layout="column" layout-align="start start">
+              <div fxLayout="column" fxLayoutAlign="start start">
                 <span class="card-title kpi-header">{{"views.feed-stats-charts.FPM" | translate}}</span>
               </div>
 
-              <md-input-container class="md-block layout-padding-top-bottom">
+              <mat-input-container class="md-block layout-padding-top-bottom">
                 <label class="md-container-ignore label-small layout-padding-top">{{"views.feed-stats-charts.PM" | translate}}</label>
-                <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
-                  <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions" ng-init="vOpt = 'views.feed-stats-charts.' + opt">{{ vOpt | translate}}</md-option>
-                </md-select>
-              </md-input-container>
+                <mat-select [(ngModel)]="selectedProcessorStatisticFunction" (change)="onProcessorChartFunctionChanged()" aria-label="Rule Type">
+                  <mat-option [value]="opt" *ngFor="let opt of processorStatsFunctions">{{  'views.feed-stats-charts.' + opt | translate}}</mat-option>
+                </mat-select>
+              </mat-input-container>
 
-              <nvd3 flex options="vm.processorChartOptions" data="vm.processorChartData" api="vm.processorChartApi" config="{deepWatchOptions:true}"></nvd3>
+              <nvd3 flex [options]="processorChartOptions" [data]="processorChartData" config="{deepWatchOptions:true}"></nvd3>
 
-            </md-card-content>
-          </md-card>
+            </mat-card-content>
+          </mat-card>
         </div>
 
 
       </div>
 
       <div flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left" style="margin-top:-5px;">
-        <card-layout class="right-card" >
-          <header-section>
-            <div layout="column">
+        <mat-card style="padding : 8px;"class="right-card" >
+          <mat-card-title>
+            <div fxLayout="column">
               <div class="card-title right-card-title-text">{{"views.feed-stats-charts.FeedD" | translate}}</div>
             </div>
-            <div layout="column">
-              <span class="item-title" class="layout-padding-top-bottom">{{vm.feedName}}</span>
+            <div fxLayout="column">
+              <span class="item-title" class="layout-padding-top-bottom">{{feedName}}</span>
             </div>
-          </header-section>
-          <body-section>
+          </mat-card-title>
+          <mat-card-content>
             <div>
-              <md-divider></md-divider>
-              <md-list layout-fill layout="column" class="list-item-table">
+              <mat-divider></mat-divider>
+              <mat-list layout-fill fxLayout="column" class="list-item-table">
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                        <span class="item-title" ng-class="{'healthy':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING'}">
-                         {{vm.feed.displayStatus}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                        <span class="item-title" [ngClass]="{'healthy':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING'}">
+                         {{feed.displayStatus}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.Status" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                        {{vm.minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{vm.maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div>  
+                    <span fxLayout="column" class="item-column mat-list-item-text ">
+                        {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
                     <span class="column-title column-title-bottom">Date Range</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
 
 
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.summaryStatistics.flowsStarted | number}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{summaryStatistics.flowsStarted | number}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FS" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.summaryStatistics.flowsFinished | number}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{summaryStatistics.flowsFinished | number}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FF" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.summaryStatistics.flowsRunning | number}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{summaryStatistics.flowsRunning | number}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FlowsR" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.summaryStatistics.flowsStartedPerSecond | number}} / {{"views.feed-stats-charts.sec" | translate}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{summaryStatistics.flowsStartedPerSecond | number}} / {{"views.feed-stats-charts.sec" | translate}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FlowsRate" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.avgDurationKpi.value}}</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{avgDurationKpi.value}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FD2" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="item-column md-list-item-text ">
-                    <span class="item-title">{{vm.eventSuccessKpi.value }}%</span>
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{eventSuccessKpi.value }}%</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.SE" | translate}}</span>
                   </div>
-                  <md-divider></md-divider>
-                </md-list-item>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
 
-                <md-list-item>
-                  <div layout="column" class="layout-padding-top-bottom layout-padding-left-right" layout-align="space-between start">
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="layout-padding-top-bottom layout-padding-left-right" fxLayoutAlign="space-between start">
                     <div class="md-subhead layout-padding-bottom">Links</div>
                     <div class="layout-padding-left ">
-                       <md-button class="md-primary md-link" ng-click="vm.gotoFeedDetails($event)">{{"views.feed-stats-charts.FeedD" | translate}}</md-button>
+                       <button mat-button color="primary" (click)="gotoFeedDetails($event)">{{"views.feed-stats-charts.FeedD" | translate}}</button>
                     </div>
                   </div>
-                </md-list-item>
+                </mat-list-item>
 
 
-              </md-list>
+              </mat-list>
             </div>
-          </body-section>
-        </card-layout>
+          </mat-card-content>
+        </mat-card>
       </div>
 
     </div>
 
 
   </div>
-  <div ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">
-    <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+  <div *ngIf="!dataLoaded" class="kpi-loading" fxLayoutAlign="center center" fxLayout="column">
+    <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
   </div>
 </div>
