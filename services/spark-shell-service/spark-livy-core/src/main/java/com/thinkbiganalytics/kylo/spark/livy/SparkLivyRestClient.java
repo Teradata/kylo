@@ -52,6 +52,7 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.ext.XLogger;
@@ -146,21 +147,24 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Override
     public Optional<SparkJobResponse> getJobResult(@Nonnull final SparkShellProcess process, @Nonnull final String id) {
         logger.entry(process, id);
+        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getJobResult called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
 
         // Request result from Livy
         final JerseyRestClient client = sparkLivyProcessManager.getClient(process);
         final Integer statementId = sparkLivyProcessManager.getStatementId(id);
 
-        final Statement statement = livyClient.getStatement(client, process, statementId);
+        final Statement statement = livyClient.getStatement(client, sparkLivyProcess, statementId);
         sparkLivyProcessManager.setStatementId(id, statement.getId());
 
         // Generate response
         final SparkJobResponse response = LivyRestModelTransformer.toJobResponse(id, statement);
 
         if (response.getStatus() != TransformResponse.Status.ERROR) {
-            return Optional.of(response);
+            return logger.exit(Optional.of(response));
         } else {
-            throw new SparkException(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
+            throw logger.throwing(new SparkException(String.format("Unexpected error found in transform response:\n%s",
+                                                                   response.getMessage())));
         }
     }
 
@@ -201,7 +205,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             || statement.getState() == StatementState.waiting) {
             statement = getStatement(client, process, statement.getId());
         } else {
-            throw new LivyException("Unexpected error");
+            throw logger.throwing(new LivyException("Unexpected error"));
         }
 
         URI uri = LivyRestModelTransformer.toUri(statement);
@@ -253,12 +257,14 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public Optional<TransformResponse> getTransformResult(@Nonnull SparkShellProcess process, @Nonnull String
         transformId) {
         logger.entry(process, transformId);
+        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getTransformResult called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
         Integer stmtId = sparkLivyProcessManager.getStatementId(transformId);
 
-        Statement statement = livyClient.getStatement(client, process, stmtId);
+        Statement statement = livyClient.getStatement(client, sparkLivyProcess, stmtId);
 
         sparkLivyProcessManager.setStatementId(transformId, statement.getId());
 
@@ -283,13 +289,16 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public Optional<SaveResponse> getTransformSave(@Nonnull SparkShellProcess process, @Nonnull String
         transformId, @Nonnull String saveId) {
         logger.entry(process, transformId, saveId);
+        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getTransformSave called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
+
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
         SaveResponse response;
         Integer stmtId = transformIdsToLivyId.getIfPresent(transformId);
         if (stmtId != null ) {
-            Statement statement = livyClient.getStatement(client, process, stmtId);
+            Statement statement = livyClient.getStatement(client, sparkLivyProcess, stmtId);
             response = LivyRestModelTransformer.toSaveResponse(statement);
             if (statement.getState() == StatementState.available) {
                 transformIdsToLivyId.invalidate(transformId);
@@ -329,9 +338,12 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     }
 
     Statement submitCode(JerseyRestClient client, String script, SparkShellProcess process) {
+        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.submitCode called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
+
         StatementsPost sp = new StatementsPost.Builder().code(script).kind("spark").build();
 
-        return livyClient.postStatement(client, process, sp);
+        return livyClient.postStatement(client, sparkLivyProcess, sp);
     }
 
 
@@ -376,7 +388,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             || statement.getState() == StatementState.waiting) {
             statement = getStatement(client, process, statement.getId());
         } else {
-            throw new LivyException("Unexpected error");
+            throw logger.throwing(new LivyException("Unexpected error"));
         }
 
         // call with null so a transformId will be generated for this query
@@ -387,15 +399,22 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public ServerStatusResponse serverStatus(SparkShellProcess sparkShellProcess) {
-        Integer sessionId = sparkLivyProcessManager.getLivySessionId(sparkShellProcess);
+        logger.entry(sparkShellProcess);
 
-        return LivyRestModelTransformer.toServerStatusResponse(livyServer, sessionId);
+        if( sparkShellProcess instanceof SparkLivyProcess) {
+            return logger.exit(LivyRestModelTransformer.toServerStatusResponse(livyServer, ((SparkLivyProcess) sparkShellProcess).getSessionId()));
+        } else {
+            throw logger.throwing(new IllegalStateException("SparkLivyRestClient.serverStatus called on non Livy Process"));
+        }
     }
 
     // TODO: is there a better way to wait for a response than synchronous?  UI could poll?
     @VisibleForTesting
     Statement getStatement(JerseyRestClient jerseyClient, SparkShellProcess sparkShellProcess, Integer stmtId) {
-        return LivyUtils.getStatement(livyClient, jerseyClient, sparkShellProcess, stmtId);
+        Validate.isInstanceOf(SparkLivyProcess.class,sparkShellProcess, "SparkLivyRestClient.getStatement called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)sparkShellProcess;
+
+        return LivyUtils.getStatement(livyClient, jerseyClient, sparkLivyProcess, stmtId);
     }
 
 

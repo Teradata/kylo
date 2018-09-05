@@ -20,6 +20,7 @@ package com.thinkbiganalytics.kylo.spark.client;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
@@ -56,17 +57,17 @@ public class ReliableLivyClient implements LivyClient {
 
 
     @Override
-    public Statement postStatement(JerseyRestClient client, SparkShellProcess sparkShellProcess, StatementsPost sp) {
+    public Statement postStatement(JerseyRestClient client, SparkLivyProcess sparkLivyProcess, StatementsPost sp) {
         // What happens if session is missing?
         try {
-            return livyClient.postStatement(client, sparkShellProcess, sp);
+            return livyClient.postStatement(client, sparkLivyProcess, sp);
         } catch( WebApplicationException we ) {
             if( we.getResponse().getStatus() == 404 ) {
                 // session is gone, or not able to perform work..
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 processManager.start(auth.getName());
 
-                return livyClient.postStatement(client, sparkShellProcess, sp);
+                return livyClient.postStatement(client, sparkLivyProcess, sp);
             }
 
             throw we;
@@ -75,16 +76,16 @@ public class ReliableLivyClient implements LivyClient {
 
 
     @Override
-    public Statement getStatement(JerseyRestClient client, SparkShellProcess sparkShellProcess, Integer statementId) {
+    public Statement getStatement(JerseyRestClient client, SparkLivyProcess sparkLivyProcess, Integer statementId) {
         try {
-            return livyClient.getStatement(client, sparkShellProcess, statementId);
+            return livyClient.getStatement(client, sparkLivyProcess, statementId);
         } catch( WebApplicationException we ) {
             if( we.getResponse().getStatus() == 404 ) {
                 // session is gone, or not able to perform work..
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 processManager.start(auth.getName());
 
-                return livyClient.getStatement(client, sparkShellProcess, statementId);
+                return livyClient.getStatement(client, sparkLivyProcess, statementId);
             }
 
             throw we;
@@ -105,7 +106,7 @@ public class ReliableLivyClient implements LivyClient {
 
 
     @Override
-    public Session getSession(JerseyRestClient client, SparkShellProcess sessionId) {
-        return livyClient.getSession(client, sessionId);
+    public Session getSession(JerseyRestClient client, SparkLivyProcess sparkLivyProcess) {
+        return livyClient.getSession(client, sparkLivyProcess);
     }
 }

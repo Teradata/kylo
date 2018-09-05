@@ -30,6 +30,7 @@ import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,10 +51,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestSparkLivyRestClient.Config.class, SparkLivyConfig.class},
-        loader = AnnotationConfigContextLoader.class)
+                      loader = AnnotationConfigContextLoader.class)
 @TestPropertySource("classpath:kerberos-client.properties")
 @ActiveProfiles("kylo-livy")
 public class TestSparkLivyRestClient {
+
     private static final Logger logger = LoggerFactory.getLogger(TestSparkLivyRestClient.class);
 
     @Resource
@@ -66,12 +68,7 @@ public class TestSparkLivyRestClient {
     private SparkLivyRestClient livyRestProvider;
 
     /**
-     * This test assumes:
-     *   1) you have configured a Livy Server for Kerberos and that it is running at 8998
-     *   2) that server has the library 'kylo-spark-shell-client-v1-0.9.2-SNAPSHOT.jar' installed
-     *
-     * @throws JsonProcessingException
-     * @throws InterruptedException
+     * This test assumes: 1) you have configured a Livy Server for Kerberos and that it is running at 8998 2) that server has the library 'kylo-spark-shell-client-v1-0.9.2-SNAPSHOT.jar' installed
      */
     @Test
     @Ignore // ignore, for now, because this is an integration test that requires livy configured on the test system
@@ -96,9 +93,7 @@ public class TestSparkLivyRestClient {
         sparkLivyProcessManager.start("kylo");
 
         Integer stmtId = 0;
-        Integer sessionId = sparkLivyProcessManager.getLivySessionId(sparkProcess);
-
-        Statement statement = livyRestProvider.getStatement(client,sparkProcess,stmtId);
+        Statement statement = livyRestProvider.getStatement(client, sparkProcess, stmtId);
         logger.debug("statement={}", statement);
 
         assertThat(statement.getState()).isEqualTo(StatementState.available);
@@ -107,6 +102,7 @@ public class TestSparkLivyRestClient {
 
     @Configuration
     static class Config {
+
         @Bean
         public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
             return new PropertySourcesPlaceholderConfigurer();

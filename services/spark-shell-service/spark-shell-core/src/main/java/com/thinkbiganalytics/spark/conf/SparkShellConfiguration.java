@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.conf;
 
 import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.shell.DefaultProcessManager;
@@ -30,8 +32,6 @@ import com.thinkbiganalytics.spark.shell.MultiUserProcessManager;
 import com.thinkbiganalytics.spark.shell.ServerProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
-import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
-import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

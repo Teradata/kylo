@@ -35,5 +35,10 @@
       <groupId>org.reactivestreams</groupId>
       <artifactId>reactive-streams</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-cluster-manager-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 </project>

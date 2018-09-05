@@ -22,10 +22,10 @@ package com.thinkbiganalytics.spark.shell;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
-import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -173,18 +173,36 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
         }
     }
 
+    /**
+     * @implNote implementation of SparkShellProcessListener.processReady
+     *
+     * @param process the Spark Shell process
+     */
     @Override
     public void processReady(@Nonnull final SparkShellProcess process) {
+        // currently this method is only called from SparkLauncherSparkShellProcess
         listeners.forEach(listener -> listener.processReady(process));
     }
 
+    /**
+     * @implNote implementation of SparkShellProcessListener.processStarted
+     *
+     * @param process the Spark Shell process
+     */
     @Override
     public void processStarted(@Nonnull final SparkShellProcess process) {
+        // currently this method is only called from SparkLauncherSparkShellProcess
         listeners.forEach(listener -> listener.processReady(process));
     }
 
+    /**
+     * @implNote implementation of SparkShellProcessListener.processStopped
+     *
+     * @param process the Spark Shell process
+     */
     @Override
     public void processStopped(@Nonnull final SparkShellProcess process) {
+        // currently this method is only called from SparkLauncherSparkShellProcess
         if (process instanceof SparkLauncherSparkShellProcess) {
             final SparkLauncherSparkShellProcess launcherProcess = (SparkLauncherSparkShellProcess) process;
             launcherProcess.removeListener(this);

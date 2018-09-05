@@ -20,18 +20,16 @@ package com.thinkbiganalytics.kylo.spark.client.livy;
  * #L%
  */
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.spark.client.DefaultLivyClient;
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
 import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -56,15 +54,12 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.net.SocketTimeoutException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
-
-import io.reactivex.disposables.Disposable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,9 +74,6 @@ public class TestLivyHeartbeatMonitor {
 
     @Resource
     private LivyServer livyServer;
-
-    @Resource
-    private Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache;
 
     @Resource
     private LivyClient livyClient;
@@ -127,7 +119,7 @@ public class TestLivyHeartbeatMonitor {
             }
         });
 
-        Mockito.when(mockLivyClient.getSession(Mockito.any(), Mockito.any(SparkShellProcess.class))).thenAnswer(invocation -> {
+        Mockito.when(mockLivyClient.getSession(Mockito.any(), Mockito.any(SparkLivyProcess.class))).thenAnswer(invocation -> {
             int responseNum = numResponse.addAndGet(1);
             logger.debug("Number of responses return from mockLivyClient:: numResponse={}", responseNum);
 
@@ -140,10 +132,10 @@ public class TestLivyHeartbeatMonitor {
                 throw new ProcessingException(new SSLHandshakeException("Server is not HTTPS"));
             }
 
-            return livyClient.getSession(client, (SparkShellProcess) invocation.getArguments()[1]);
+            return livyClient.getSession(client, (SparkLivyProcess) invocation.getArguments()[1]);
         });
 
-        return new LivyHeartbeatMonitor(mockLivyClient, client, livyServer, clientSessionCache, livyProperties);
+        return new LivyHeartbeatMonitor(mockLivyClient, client, livyServer, livyProperties);
     }
 
     /**
@@ -155,14 +147,12 @@ public class TestLivyHeartbeatMonitor {
         LivyHeartbeatMonitor livyHeartbeatMonitor = livyHeartbeatMonitor();
 
         // 1. start a session...   through startLivySession.startLivySession, which will now delegate to LivyClient
-        SparkShellProcess sparkProcess = Mockito.mock(SparkShellProcess.class);
+        SparkLivyProcess sparkProcess = Mockito.mock(SparkLivyProcess.class);
         assertThat(sparkProcess).isNotNull();
 
         // DO ONE:
         //sparkLivyProcessManager.start(sparkProcess);
         Integer sessionId = 1;
-
-        clientSessionCache.put(sparkProcess, sessionId);
 
         livyHeartbeatMonitor.monitorSession(sparkProcess);
         assertThat(livyServer.getLivyServerStatus()).isEqualTo(LivyServerStatus.not_found);
@@ -230,13 +220,6 @@ public class TestLivyHeartbeatMonitor {
         @Bean
         public LivyServer livyServer() {
             return new LivyServer("someHost", 8998);
-        }
-
-        @Bean
-        public Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache() {
-            Cache<SparkShellProcess, Integer> cache = CacheBuilder.newBuilder()
-                .build();
-            return cache.asMap();
         }
 
         @Bean

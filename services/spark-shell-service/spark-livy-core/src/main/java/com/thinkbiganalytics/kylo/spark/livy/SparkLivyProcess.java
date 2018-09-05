@@ -29,6 +29,7 @@ import org.joda.time.DateTimeUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -36,15 +37,17 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-public class SparkLivyProcess implements SparkShellProcess {
+public class SparkLivyProcess implements Serializable, SparkShellProcess {
 
     private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyProcess.class);
 
-    private UUID id;
+    private Integer sessionId;
 
     final private String hostname;
 
     final private int port;
+
+    final private String user;  // can be null if system process
 
     private transient CountDownLatch startSignal;
 
@@ -58,12 +61,17 @@ public class SparkLivyProcess implements SparkShellProcess {
      */
     private long readyTime;
 
-    private SparkLivyProcess(String hostname, Integer port, Long waitForStart) {
+    private SparkLivyProcess(String hostname, Integer port, String user, Long waitForStart) {
         this.hostname = hostname;
         this.port = port;
-        this.id = UUID.randomUUID();
+        this.user = user;
 
         this.waitForStart = waitForStart;
+    }
+
+
+    public static SparkLivyProcess newInstance(String hostname, Integer port, String user, Long timeout) {
+        return new SparkLivyProcess(hostname, port, user, timeout);
     }
 
     /**
@@ -96,11 +104,19 @@ public class SparkLivyProcess implements SparkShellProcess {
         }
     }
 
-
     @Nonnull
     @Override
     public String getClientId() {
-        return id.toString();
+        return String.valueOf(sessionId);
+    }
+
+    @Nonnull
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Integer sessionId) {
+        this.sessionId = sessionId;
     }
 
     @Nonnull
@@ -114,13 +130,13 @@ public class SparkLivyProcess implements SparkShellProcess {
         return port;
     }
 
+    public String getUser() {
+        return user;
+    }
+
     @Override
     public boolean isLocal() {
         return true;
-    }
-
-    public static SparkLivyProcess newInstance(String hostname, Integer port, Long timeout) {
-        return new SparkLivyProcess(hostname, port, timeout);
     }
 
     @Override
@@ -132,18 +148,20 @@ public class SparkLivyProcess implements SparkShellProcess {
             return false;
         }
         SparkLivyProcess that = (SparkLivyProcess) o;
-        return Objects.equals(id, that.id);
+        return Objects.equals(sessionId, that.sessionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(sessionId);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SparkLivyProcess{");
-        sb.append("id=").append(id);
+        sb.append("sessionId=").append(sessionId);
+        sb.append(", hostname='").append(hostname).append('\'');
+        sb.append(", port=").append(port);
         sb.append('}');
         return sb.toString();
     }
