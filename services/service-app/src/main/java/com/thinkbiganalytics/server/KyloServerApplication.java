@@ -30,10 +30,12 @@ import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +43,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
+import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -69,9 +72,8 @@ public class KyloServerApplication implements SchedulingConfigurer {
             log.info("Beginning upgrade from version {} ...", currentVersion == null ? "unknown" : currentVersion);
             upgrader.upgrade();
             log.info("*****  Upgrading complete  *****");
-        }
-        else {
-            log.info("Kylo v{} is up to date.  Starting the application.",KyloVersionUtil.getBuildVersion());
+        } else {
+            log.info("Kylo v{} is up to date.  Starting the application.", KyloVersionUtil.getBuildVersion());
         }
 
         // Run services
@@ -87,6 +89,19 @@ public class KyloServerApplication implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
+    }
+
+    @Bean
+    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+        return args -> {
+            if (log.isTraceEnabled()) {
+                String[] beanNames = ctx.getBeanDefinitionNames();
+                Arrays.sort(beanNames);
+                for (String beanName : beanNames) {
+                    log.trace("Bean name='{}', type='{}'", beanName, ctx.getBean(beanName).getClass());
+                }
+            }
+        };
     }
 
 }

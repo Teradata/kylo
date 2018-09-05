@@ -24,13 +24,19 @@ import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
-import com.thinkbiganalytics.spark.shell.*;
+import com.thinkbiganalytics.spark.shell.DefaultProcessManager;
+import com.thinkbiganalytics.spark.shell.JerseySparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.MultiUserProcessManager;
+import com.thinkbiganalytics.spark.shell.ServerProcessManager;
+import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
+import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.embedded.Ssl;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -39,12 +45,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.Properties;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
@@ -62,7 +69,7 @@ public class SparkShellConfiguration {
      * Listens for cluster events and updates the process manager.
      */
     @Bean
-    @ConditionalOnBean(SparkShellClusterDelegate.class)
+    @ConditionalOnProperty("kylo.cluster.jgroupsConfigFile")
     public SparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkShellClusterDelegate delegate) {
         final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, delegate);
         if (delegate instanceof SparkShellProcessManager) {
