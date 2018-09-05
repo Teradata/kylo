@@ -72,6 +72,10 @@ export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges
         });
     }
 
+    ngOnDestroy() {
+        this.fattableService.destroy(this.tableId);
+    }
+
     ngAfterViewInit(): void {
         this.setTableHeight();
     }
