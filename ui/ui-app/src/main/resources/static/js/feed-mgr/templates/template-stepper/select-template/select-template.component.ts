@@ -134,8 +134,7 @@ export class RegisterSelectTemplateController implements OnInit {
                 private snackBar: MatSnackBar,
                 private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
-                private http: HttpClient
-                /*@Inject("$injector") private $injector: any*/) {
+                private http: HttpClient) {
     }
 
     // setup the Stepper types

@@ -28,21 +28,21 @@ import { Subscription } from "rxjs";
 export class JobsCardComponent extends BaseFilteredPaginatedTableView implements OnChanges {
 
     allowAdmin: boolean;
-    loading: any;
-    showProgress: any;
+    loading: boolean;
+    showProgress: boolean;
     jobIdMap: any;
     timeoutMap: any;
     paginationData: any;
-    viewType: any;
     tabs: any;
     tabMetadata: any;
     sortOptions: any;
     abandonAllMenuOption: any;
     additionalMenuOptions: any;
     selectedAdditionalMenuOptionVar: any;
-    loaded: any;
-
-    refreshing: any;
+    loaded: boolean;
+    total: number = 0;
+    page: number = 1;
+    refreshing: boolean;
 
     activeJobRequests: Subscription[] = [];
 
@@ -100,8 +100,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
 
         //Pagination and view Type (list or table)
         this.paginationData = this.PaginationDataService.paginationData(this.pageName);
-        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
-        this.viewType = this.PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
         var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned'] //, 'Stopped'];
@@ -306,6 +304,7 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
             };
             var successFn = (response: any, canceler : Subscription) => {
                 if (response) {
+                    this.total = response.recordsTotal;
                     this.fetchFeedNames(response.data).then((feeds:any) => transformJobs(feeds,canceler));
                 }
             };
@@ -315,10 +314,10 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
             var filter = this.filterJob;
 
             let params = new HttpParams();
-            params.set('start', start.toString());
-            params.set('limit', limit);
-            params.set('sort', sort);
-            params.set('filter', filter);
+            params = params.append('start', start.toString());
+            params = params.append('limit', limit);
+            params = params.append('sort', sort);
+            params = params.append('filter', filter);
 
             if (this.feedFilter) {
                 if (!params.get('filter')) {
@@ -339,10 +338,10 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
 
             // {timeout: canceler.promise}
             var jobsSubscription = this.http.get(this.OpsManagerJobService.JOBS_QUERY_URL + "/" + query, { params: params })
-                                            .subscribe(
-                                                (response)=> {successFn(response,jobsSubscription)},
-                                                (err : any) => {errorFn(err,jobsSubscription)}
-                                            );
+                .subscribe(
+                    (response)=> {successFn(response,jobsSubscription)},
+                    (err : any) => {errorFn(err,jobsSubscription)}
+                );
             this.activeJobRequests.push(jobsSubscription);
             this.showProgress = true;
         }
@@ -431,12 +430,36 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
         });
 
         super.setSortBy('jobName');
-        
         super.setDataAndColumnSchema(this.TabService.getActiveTab(this.pageName).data.content, this.columns);
         super.filter();
 
         return jobs;
 
+    }
+
+    onChangeLinks = (page: any) => {
+        this.loaded = false;
+        this.TabService.getActiveTab(this.pageName).currentPage = page;
+        this.loadJobs(true);
+    }
+
+    onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+
+        if(this.page != pagingEvent.page) {
+            this.page = pagingEvent.page;
+            this.onChangeLinks(pagingEvent.page);
+        }
+        else {
+            this.paginationData.rowsPerPage = pagingEvent.pageSize;
+            this.loadJobs(true);
+            this.onPageSizeChange(pagingEvent);
+        }
+
+    }
+
+    onSearchTable = (searchTerm: string) => {
+        this.filterJob = searchTerm;
+        this.loadJobs(true);
     }
 
     clearAllTimeouts() {

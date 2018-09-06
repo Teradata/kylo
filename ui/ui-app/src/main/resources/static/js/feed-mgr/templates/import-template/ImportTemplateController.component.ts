@@ -501,9 +501,6 @@ export class ImportTemplateController {
         }
 
         if (delay != null && delay != undefined) {
-            // this.$injector.get("$timeout")(() => {
-            //     stopStatusCheck();
-            // }, delay)
             setTimeout(() => {
                 stopStatusCheck()
             }, 5000);
@@ -531,16 +528,6 @@ export class ImportTemplateController {
             });
         }, 500);
 
-        // this.uploadStatusCheck = this.$injector.get("$interval")(() => {
-        //     //poll for status
-        //     this.http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).toPromise().then((response: angular.IHttpResponse<any>) => {
-        //         if (response && response.data && response.data != null) {
-        //             this.uploadStatusMessages = response.data.messages;
-        //             this.uploadProgress = response.data.percentComplete;
-        //         }
-        //     }, (err: any) => {
-        //     });
-        // }, 500);
     }
 
 
@@ -634,7 +621,7 @@ export class ImportTemplateController {
             var names = _.map(portsToRemove, (port) => {
                 return port.inputPortName
             }).join(",");
-
+            
             var confirm = this.$injector.get("$mdDialog").confirm()
                 .title('Warning You are about to delete template items.')
                 .htmlContent('The following \'remote input ports\' exist, but are not selected to be imported:<br/><br/> <b>' + names

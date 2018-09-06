@@ -13,6 +13,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import AccessControlService from "../../../services/AccessControlService";
 import AngularModuleExtensionService from "../../../services/AngularModuleExtensionService";
 import { TranslateService } from "@ngx-translate/core";
+import { Subscription } from "rxjs/Subscription";
 
 
 class PageState {
@@ -176,7 +177,7 @@ export class JobDetailsDirectiveController {
     /**
      * Track active requests and be able to cancel them if needed
      */
-    activeJobRequests: angular.IDeferred<any>[] = [];
+    activeJobRequests: Subscription[] = [];
 
     /**
      *
@@ -242,8 +243,6 @@ export class JobDetailsDirectiveController {
     constructor(private http: HttpClient,
                 private $state: StateService,
                 private snackBar: MatSnackBar,
-                // private $q: angular.IQService,
-                // private $filter: angular.IFilterService,
                 private translate: TranslateService,
                 @Inject("$injector") private $injector: any,
                 private OpsManagerRestUrlService: OpsManagerRestUrlService,
@@ -398,7 +397,6 @@ export class JobDetailsDirectiveController {
     private cancelLoadJobDataTimeout() {
         if (this.refreshTimeout != null) {
             clearTimeout(this.refreshTimeout);
-            // this.$injector.get("$timeout").cancel(this.refreshTimeout);
             this.refreshTimeout = null;
         }
     }
@@ -410,16 +408,15 @@ export class JobDetailsDirectiveController {
         if (force || !this.pageState.refreshing) {
             this.unableToFindJob = false;
             if (force) {
-                angular.forEach(this.activeJobRequests, (canceler: any, i: any) => {
-                    canceler.resolve();
+                this.activeJobRequests.forEach((subscription: Subscription)=> {
+                    subscription.unsubscribe();
                 });
                 this.activeJobRequests = [];
             }
 
             this.pageState.refreshing = true;
             var sortOptions = '';
-            var canceler = this.$injector.get("$q").defer();
-            var successFn = (response: any) => {
+            var successFn = (response: any, loadJobsSubscription : Subscription) => {
 
                 if (response) {
                     //transform the data for UI
@@ -429,9 +426,6 @@ export class JobDetailsDirectiveController {
                         this.refreshTimeout = setTimeout(()=>{
                             this.loadJobData();
                         }, 1000);
-                        // this.refreshTimeout = this.$injector.get("$timeout")(() => {
-                        //     this.loadJobData()
-                        // }, 1000);
                     }
                     this.pageState.finishedLoading();
                 }
@@ -439,39 +433,39 @@ export class JobDetailsDirectiveController {
                     this.unableToFindJob = true;
                 }
 
-                this.finishedRequest(canceler);
+                this.finishedRequest(loadJobsSubscription);
 
             }
-            var errorFn = (err: any) => {
-                this.finishedRequest(canceler);
+            var errorFn = (err: any, loadJobsSubscription : Subscription) => {
+                this.finishedRequest(loadJobsSubscription);
                 this.unableToFindJob = true;
                 this.addJobErrorMessage(err)
             }
             var finallyFn = () => {
 
             }
-            this.activeJobRequests.push(canceler);
-            this.deferred = canceler;
 
             let params = new HttpParams();
             params = params.append('includeSteps', 'true');
 
-            // , {timeout: canceler.promise, params: params}
-            this.http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId), {params: params}).toPromise().then(successFn, errorFn);
-        }
 
-        return this.deferred;
+            var loadJobsObservable = this.http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId),{params: params});
+            var loadJobsSubscription = loadJobsObservable.subscribe(
+                (response : any) => {successFn(response,loadJobsSubscription)},
+                (error: any)=>{ errorFn(error,loadJobsSubscription)
+            });
+            this.activeJobRequests.push(loadJobsSubscription);
+        }
 
     }
 
-    private finishedRequest(canceler: angular.IDeferred<any>){
-        var index = _.indexOf(this.activeJobRequests, canceler);
+    private finishedRequest(subscription : Subscription){
+        var index = _.indexOf(this.activeJobRequests, subscription);
         if (index >= 0) {
             this.activeJobRequests.splice(index, 1);
         }
         this.tabAnimationControl.enableTabAnimation();
-        canceler.resolve();
-        canceler = null;
+        subscription.unsubscribe();
         this.pageState.finished();
     }
 
@@ -601,7 +595,7 @@ export class JobDetailsDirectiveController {
         step.displayStatus = step.exitCode;
 
         if (step.exitDescription == undefined || step.exitDescription == '') {
-            step.exitDescription = this.$injector.get("$filter")('translate')('views.JobDetailsDirective.Nda')
+            step.exitDescription = this.translate.instant('views.JobDetailsDirective.Nda')
         }
 
         var style = this.IconService.iconStyleForJobStatus(step.displayStatus);

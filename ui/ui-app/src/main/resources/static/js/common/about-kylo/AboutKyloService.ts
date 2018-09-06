@@ -4,6 +4,7 @@ import {Component, Inject, ElementRef, Input, Injectable} from "@angular/core";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 import "../module";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
     selector: "about-kylo-dialog-controller",
@@ -54,11 +55,9 @@ export default class AboutKyloDialogController {
     @Input() cancel: any;
 
     ngOnInit() {
-        this.$injector.get("$http")({
-            method: "GET",
-            url: "/proxy/v1/about/version"
-        }).then((response: any) => {
-            this.version = response.data;
+        this.http.get("/proxy/v1/about/version", {responseType: 'text'}).toPromise()
+        .then((response: any) => {
+            this.version = response;
         },(response: any)=>{
             this.version = "Not Available"
         });
@@ -69,8 +68,8 @@ export default class AboutKyloDialogController {
             this.dialogRef.close();
         };
     }
-    constructor(@Inject("$injector") private $injector: any,
-    private dialogRef: MatDialogRef<AboutKyloDialogController>){}
+    constructor(private http: HttpClient,
+                private dialogRef: MatDialogRef<AboutKyloDialogController>){}
 }
 
 @Injectable()
