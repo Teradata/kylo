@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.security;
+package com.thinkbiganalytics.security.role;
 
 /*-
  * #%L
@@ -28,7 +28,6 @@ import java.util.Set;
 
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
-import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**
  *

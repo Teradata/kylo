@@ -24,8 +24,10 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.security.AccessControlException;
@@ -70,12 +72,9 @@ public class DefaultAccessController implements AccessController {
     @Override
     public void checkPermission(String moduleName, Set<Action> actions) {
         this.metadata.read(() -> {
-            return this.actionsProvider.getAllowedActions(moduleName)
-                .map((allowed) -> {
-                    allowed.checkPermission(actions);
-                    return moduleName;
-                })
-                .<AccessControlException>orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
+            AllowedActions allowed = this.actionsProvider.getAllowedActions(moduleName)
+                .orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
+            allowed.checkPermission(actions);
         });
     }
 
@@ -93,6 +92,19 @@ public class DefaultAccessController implements AccessController {
             return true;
         } catch (AccessControlException e) {
             return false;
+        }
+    }
+    
+    @Override
+    public void checkPermission(AccessControlled accessControlled, Action action, Action... others) {
+        checkPermission(accessControlled, Stream.concat(Stream.of(action), 
+                                                        Arrays.stream(others)).collect(Collectors.toSet()));   
+    }
+    
+    @Override
+    public void checkPermission(AccessControlled accessControlled, Set<Action> actions) {
+        if (isEntityAccessControlled()) {
+            accessControlled.getAllowedActions().checkPermission(actions);
         }
     }
 

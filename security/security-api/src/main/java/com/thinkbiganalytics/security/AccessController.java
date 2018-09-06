@@ -66,6 +66,26 @@ public interface AccessController {
      */
     boolean hasPermission(String moduleName, Action action, Action... others);
 
+    /**
+     * Check whether an access controlled entity is permitted the specified actions. Does not perform 
+     * a permission check if entity access control is disabled.  Must be called within a transaction 
+     * allowing access to the entity.
+     *  
+     * @param accessControlled the access controlled entity
+     * @param action an action to check
+     * @param others additional actions
+     */
+    void checkPermission(AccessControlled accessControlled, Action action, Action... others);
+    
+    /**
+     * Check whether an access controlled entity is permitted the specified actions. Does not perform 
+     * a permission check if entity access control is disabled.  Must be called within a transaction 
+     * allowing access to the entity.
+     *  
+     * @param accessControlled the access controlled entity
+     * @param actions the actions being checked
+     */
+    void checkPermission(AccessControlled accessControlled, Set<Action> actions);
 
     /**
      * Returns true if setup to use Entity access control, false if not

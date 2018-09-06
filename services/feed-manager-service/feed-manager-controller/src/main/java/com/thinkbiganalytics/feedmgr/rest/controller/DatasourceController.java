@@ -39,7 +39,6 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvide
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -47,6 +46,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.UserDatasource;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;

@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.security.rest.controller;
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowableAction;
@@ -123,7 +123,7 @@ public class SecurityModelTransform {
         return (securityRoles) -> securityRoles.stream().map(toRole()).collect(Collectors.toList());
     }
 
-    public Function<com.thinkbiganalytics.metadata.api.security.RoleMembership, RoleMembership> toRoleMembership() {
+    public Function<com.thinkbiganalytics.security.role.RoleMembership, RoleMembership> toRoleMembership() {
         return (domain) -> {
             RoleMembership membership = new RoleMembership();
             membership.setRole(toRole().apply(domain.getRole()));

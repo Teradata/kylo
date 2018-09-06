@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.metadata.api.security;
+package com.thinkbiganalytics.security;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -28,6 +28,7 @@ import java.util.Set;
  */
 
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 /**
  * Defines the ability to access an entity.  Top-level entities may implement this interface to advertise
