@@ -57,11 +57,6 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
-    /**
-     * COMPLETE or DRAFT
-     */
-    private String DEFAULT_MODE = "COMPLETE";
-
     boolean isNew = false;
     private String id;
 
@@ -120,8 +115,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     private boolean active = true;
 
     private String state;
-
-    private String mode;
 
     private String nifiProcessGroupId;
 
@@ -440,17 +433,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.state = state;
     }
 
-    public String getMode() {
-        if(mode == null){
-            mode = DEFAULT_MODE;
-        }
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
     /**
      * Gets the user-defined business metadata for this feed.
      *
@@ -505,10 +487,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public boolean isNew() {
         return isNew;
-    }
-
-    public boolean isDraft() {
-        return this.mode != null && MODE.DRAFT.name().equalsIgnoreCase(this.mode);
     }
 
     public void setIsNew(boolean isNew) {

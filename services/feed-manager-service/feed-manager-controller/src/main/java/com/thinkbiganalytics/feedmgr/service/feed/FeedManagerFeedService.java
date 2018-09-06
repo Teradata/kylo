@@ -113,6 +113,40 @@ public interface FeedManagerFeedService {
 
     /**
      * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param versionId
+     * @return
+     */
+    FeedVersions deployFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @return
+     */
+    FeedVersions versionDraftFeed(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent);
+    
+    /**
+     * @param feedId
      * @param versionId1
      * @param versionId2
      * @return

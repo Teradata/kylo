@@ -27,6 +27,7 @@ import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -101,6 +102,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
@@ -275,15 +277,6 @@ public class FeedRestController {
     public Response createFeed(@Nonnull final FeedMetadata feedMetadata) {
         NifiFeed feed;
         try {
-            if(StringUtils.isBlank(feedMetadata.getMode())) {
-                if(StringUtils.isBlank(feedMetadata.getId())){
-                    //TODO change this to default to DRAFT mode in the metadata itself once it is fully implemented
-                    feedMetadata.setMode(FeedMetadata.MODE.COMPLETE.name());
-                }
-                else {
-                    feedMetadata.setMode(FeedMetadata.MODE.COMPLETE.name());
-                }
-            }
             feed = getMetadataService().createFeed(feedMetadata);
         }
         catch (FeedHistoryDataReindexingNotEnabledException e) {
@@ -579,6 +572,52 @@ public class FeedRestController {
 
         return Response.ok(feed).build();
     }
+    
+    @GET
+    @Path("/{feedId}/versions/latest")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
+        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response getLatestFeedVersion(@PathParam("feedId") String feedId,
+                                         @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+        try {
+            return getMetadataService().getLatestFeedVersion(feedId, includeContent)
+                            .map(version -> Response.ok(version).build())
+                            .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
+    @GET
+    @Path("/{feedId}/versions/latest")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
+        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response getDeployedFeedVersion(@PathParam("feedId") String feedId,
+                                           @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+        try {
+            return getMetadataService().getDeployedFeedVersion(feedId, includeContent)
+                            .map(version -> Response.ok(version).build())
+                            .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
 
     @GET
     @Path("/{feedId}/versions/{versionId}")
@@ -598,6 +637,81 @@ public class FeedRestController {
                 .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
+    @POST
+    @Path("/{feedId}/versions/{versionId}/deploy")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deploys a feed version.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Feed was successfully deployed", response = FeedMetadata.class),
+        @ApiResponse(code = 400, message = "Indicates the feed or version to be deployed does not exist", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response deployFeedVersion(@PathParam("feedId") String feedId,
+                                   @PathParam("versionId") String versionId) {
+        try {
+            // TODO deploy the version
+            return getMetadataService().getFeedVersion(feedId, versionId, true)
+                            .map(version -> Response.ok(version).build())
+                            .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
+    public enum Action { DEPLOY, DREAFT, REMOVE, VERSION }
+    
+    @POST
+    @Path("/{feedId}/versions/{versionId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deploys a feed version.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Feed was successfully deployed", response = FeedMetadata.class),
+        @ApiResponse(code = 400, message = "Indicates the feed or version to be deployed does not exist", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response feedVersionAction(@PathParam("feedId") String feedId,
+                                      @PathParam("versionId") String versionId,
+                                      @QueryParam("action") String actionStr) {
+        try {
+            Action action = Action.valueOf(actionStr.toUpperCase());
+            FeedVersions versions;
+            
+            switch (action) {
+                case DEPLOY:
+                    versions = getMetadataService().deployFeedVersion(feedId, versionId, true);
+                    break;
+                case REMOVE:
+//                    versions = getMetadataService().removeFeedVersion(feedId, versionId, true);
+//                    break;
+                    return getMetadataService().getFeedVersion(feedId, versionId, true)
+                                    .map(version -> Response.ok(version).build())
+                                    .orElse(Response.status(Status.NOT_FOUND).build());
+                case DREAFT:
+//                    versions = getMetadataService().createDraftFromVersion(feedId, versionId, true);
+//                    break;
+                    return getMetadataService().getFeedVersion(feedId, versionId, true)
+                                    .map(version -> Response.ok(version).build())
+                                    .orElse(Response.status(Status.NOT_FOUND).build());
+                default:
+                    return Response.status(Status.BAD_REQUEST).entity("Unsupported action for feed version: " + actionStr).build();
+            }
+            
+            return Response.ok(versions).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Status.BAD_REQUEST).entity("Unrecognized action parameter: " + actionStr).build();
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Version not found: " + versionId).build();
         } catch (Exception e) {
             log.error("Unexpected exception retrieving the feed version", e);
             throw new InternalServerErrorException("Unexpected exception retrieving the feed version");

@@ -64,7 +64,6 @@ public class FeedSummary extends EntityAccessControl implements UIFeed {
         this.categoryIconColor = feedMetadata.getCategoryIconColor();
         this.active = feedMetadata.isActive();
         this.state = feedMetadata.getState();
-        this.mode = feedMetadata.getMode();
         this.templateId = feedMetadata.getTemplateId();
         this.templateName = feedMetadata.getTemplateName();
     }

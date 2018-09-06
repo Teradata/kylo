@@ -540,6 +540,26 @@ public class FeedManagerMetadataService implements MetadataService {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }
 
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getLatestFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getDraftFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public FeedVersions deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return feedProvider.deployFeedVersion(feedId, versionId, includeContent);
+    }
+
+    @Override
+    public FeedVersions versionDraftFeed(String feedId, boolean includeContent) {
+        return feedProvider.versionDraftFeed(feedId, includeContent);
+    }
+
     @Nonnull
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {

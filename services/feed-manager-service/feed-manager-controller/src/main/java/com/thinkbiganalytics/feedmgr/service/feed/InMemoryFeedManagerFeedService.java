@@ -201,11 +201,11 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
-        FeedVersions versions = new FeedVersions(feedId);
+        FeedVersions versions = new FeedVersions(feedId, feedId);
         FeedMetadata feed = getFeedById(feedId);
         
         if (feed != null) {
-            EntityVersion version = versions.addNewVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate());
+            EntityVersion version = versions.addNewVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), feedId);
             if (includeContent) {
                 version.setEntity(feed);
             }
@@ -219,7 +219,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         EntityVersion version = null;
         
         if (feed != null) {
-            version = new EntityVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate());
+            version = new EntityVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), feedId);
             if (includeContent) {
                 version.setEntity(feed);
             }
@@ -271,11 +271,9 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
     public void saveFeed(FeedMetadata feed) {
         if (feed.getId() == null || !feeds.containsKey(feed.getId())) {
             feed.setId(UUID.randomUUID().toString());
-            feed.setVersion(new Long(1));
         } else {
             FeedMetadata previousFeed = feeds.get(feed.getId());
             feed.setId(previousFeed.getId());
-            feed.setVersion(previousFeed.getVersion() + 1L);
         }
 
         //match up the related category
@@ -373,5 +371,48 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public void updateAllFeedsDatasources() {
         throw new UnsupportedOperationException();
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#getDraftFeedVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent) {
+        return Optional.empty();
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#getLatestFeedVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        return Optional.empty();
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#getDeployedFeedVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#deployFeedVersion(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public FeedVersions deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#versionDraftFeed(java.lang.String, boolean)
+     */
+    @Override
+    public FeedVersions versionDraftFeed(String feedId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
