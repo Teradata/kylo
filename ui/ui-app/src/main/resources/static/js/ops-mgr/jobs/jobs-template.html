@@ -54,13 +54,15 @@
                             [sortOrder]="sortOrder"
                             [clickable]="true"
                             [filteredData]="filteredData"
-                            [onSortChange]="sort"
                             [firstLast]="false"
                             [pageSize]="pageSize"
                             [filteredTotal]="filteredTotal"
                             [onPageSizeChange]="onPageSizeChange"
                             [allowedPageSize]="[5,10,20,50]"
-                            [onRowClick]="jobDetails">
+                            (rowClicked)="jobDetails($event)"
+                            (sortChanged)="sort($event)"
+                            (pageSizeChanged)="onPageSizeChange($event)"
+                            >
 
                                 <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
                                     <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">

@@ -19,7 +19,7 @@
                     [sortOrder]="sortOrder"
                     [sortBy]="sortBy"
                     (sortChange)="sort($event)"
-                    (rowClick)="rowClicked($event)">
+                    (rowClick)="onRowClick($event)">
                         <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
                             <h3>No results to display.</h3>
                         </div>

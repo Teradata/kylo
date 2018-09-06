@@ -24,14 +24,14 @@
     [sortOrder]="sortOrder"
     [clickable]="true"
     [cardTitle]="cardTitle"
-    [onSearchDebounce]="search"
     [filteredData]="filteredData"
-    [onSortChange]="sort"
     [firstLast]="false"
     [pageSize]="pageSize"
     [filteredTotal]="filteredTotal"
-    [onPageSizeChange]="onPageSizeChange"
-    [allowedPageSize]="[5,10,20,50]">
+    [allowedPageSize]="[5,10,20,50]"
+    (sortChanged)="sort($event)"
+    (searchDebounced)="search($event)"
+    (pageSizeChanged)="onPageSizeChange($event)">
 
         <ng-template tdDataTableTemplate="templateName" let-value="value" let-row="row" let-column="column">
             <div (click)="templateInfo(row)" style="display:flex">

@@ -1,18 +1,18 @@
 <filtered-paginated-table-view      
       [cardTitle]="cardTitle"
-      [onSearchDebounce]="search"
       [filteredData]="filteredData"
       [columns]="columns"
       [clickable]="true"
       [sortable]="true"
       [sortOrder]="sortOrder"
       [sortBy]="sortBy"
-      [onSortChange]="sort"
-      [onRowClick]="editDatasource"
       [firstLast]="false"
       [pageSize]="pageSize"
       [filteredTotal]="filteredTotal"
-      [onPageSizeChange]="onPageSizeChange"
       [allowedPageSize]="[5,10,20,50]"
+      (rowClicked)="editDatasource($event)"
+      (sortChanged)="sort($event)"
+      (searchDebounced)="search($event)"
+      (pageSizeChanged)="onPageSizeChange($event)"
       >
 </filtered-paginated-table-view>
