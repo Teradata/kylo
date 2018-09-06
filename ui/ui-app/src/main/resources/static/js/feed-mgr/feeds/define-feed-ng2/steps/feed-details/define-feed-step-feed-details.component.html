@@ -1,41 +1,27 @@
-<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true"  (cancelEdit)="onCancelEdit()" (saved)="onSave()">
-    <feed-step-readonly-content>
-    Feed Details.<br/>
+<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
+  <feed-step-readonly-content>
+    <form [formGroup]="form" fxLayout="column" fxLayoutGap="20px">
 
-        <mat-radio-group [ngModel]="inputProcessorId" [disabled]="true">
-            <ng-template ngFor let-inputProcessor let-index="index" let-last="last" [ngForOf]="inputProcessors">
-                <mat-radio-button [value]="inputProcessor.id">{{inputProcessor.name}}</mat-radio-button>
-            </ng-template>
-        </mat-radio-group>
+      <mat-radio-group [formControl]="inputProcessorControl">
+        <mat-radio-button *ngFor="let processor of inputProcessors" [value]="processor">{{processor.name}}</mat-radio-button>
+      </mat-radio-group>
 
-        <form [formGroup]="form">
-            <dynamic-form [form]="form" [fieldGroups]="inputProcessorFieldGroups" [readonly]="feed.readonly"></dynamic-form>
+      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
+      <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly"></feed-details-processor-field>
 
-            <dynamic-form [form]="form" [fieldGroups]="nonInputProcessorFieldGousp" [readonly]="feed.readonly"></dynamic-form>
-        </form>
+    </form>
+  </feed-step-readonly-content>
+  <feed-step-edit-content>
+    <form [formGroup]="form" fxLayout="column" fxLayoutGap="20px">
 
-    </feed-step-readonly-content>
-    <feed-step-edit-content>
+      <span>Choose a source</span>
+      <mat-radio-group [formControl]="inputProcessorControl">
+        <mat-radio-button *ngFor="let processor of inputProcessors" [value]="processor">{{processor.name}}</mat-radio-button>
+      </mat-radio-group>
 
-        <div fxLayout="column">
+      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
+      <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly"></feed-details-processor-field>
 
-            <span>Choose a source</span>
-            <mat-radio-group [(ngModel)]="inputProcessorId" (change)="onInputProcessorChange($event)">
-                <ng-template ngFor let-inputProcessor let-index="index" let-last="last" [ngForOf]="inputProcessors">
-                <mat-radio-button [value]="inputProcessor.id">{{inputProcessor.name}}</mat-radio-button>
-                </ng-template>
-            </mat-radio-group>
-
-      <form [formGroup]="form">
-          <dynamic-form [form]="form" [fieldGroups]="inputProcessorFieldGroups" [readonly]="feed.readonly"></dynamic-form>
-
-          <dynamic-form [form]="form" [fieldGroups]="nonInputProcessorFieldGoups" [readonly]="feed.readonly"></dynamic-form>
-     </form>
-
-        </div>
-
-
-
-
-    </feed-step-edit-content>
+    </form>
+  </feed-step-edit-content>
 </define-feed-step-card>

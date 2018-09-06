@@ -1,12 +1,9 @@
-import * as angular from "angular";
 import {Feed} from "../../../model/feed/feed.model";
-import {FeedStepValidator} from "../../../model/feed/feed-step-validator";
 import {DefineFeedService} from "../services/define-feed.service";
-import {StateRegistry, StateService, Transition} from "@uirouter/angular";
-import {Input, OnDestroy, OnInit, TemplateRef} from "@angular/core";
-import {ISubscription} from "rxjs/Subscription";
+import {StateService, Transition} from "@uirouter/angular";
+import {OnDestroy, OnInit, TemplateRef} from "@angular/core";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
-import {FormGroup} from "@angular/forms";
+import {AbstractControl, FormGroup} from "@angular/forms";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedLoadingService} from "../services/feed-loading-service";
@@ -74,7 +71,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * @param {FormGroup} formGroup
      * @param {number} debounceTime
      */
-    subscribeToFormChanges(formGroup:FormGroup, debounceTime:number = 500) {
+    subscribeToFormChanges(formGroup:AbstractControl, debounceTime:number = 500) {
         this.subscribingToFormChanges = true;
         // initialize stream
         const formValueChanges$ = formGroup.statusChanges;
@@ -90,7 +87,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     }
 
-    subscribeToFormDirtyCheck(formGroup:FormGroup,debounceTime:number = 500){
+    subscribeToFormDirtyCheck(formGroup:AbstractControl,debounceTime:number = 500){
         //watch for form changes and mark dirty
             //start watching for form changes after init time
             formGroup.valueChanges.debounceTime(debounceTime).subscribe(change => {
