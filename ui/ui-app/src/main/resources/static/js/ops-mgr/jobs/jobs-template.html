@@ -56,11 +56,11 @@
                             [filteredData]="filteredData"
                             [firstLast]="false"
                             [pageSize]="pageSize"
-                            [filteredTotal]="filteredTotal"
+                            [filteredTotal]="total"
                             [allowedPageSize]="[5,10,20,50]"
                             (rowClicked)="jobDetails($event)"
                             (sortChanged)="sort($event)"
-                            (pageSizeChanged)="onPageSizeChange($event)"
+                            (pageSizeChanged)="onPaginationChange($event)"
                             >
 
                                 <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
@@ -80,8 +80,8 @@
                                 </ng-template>
 
                                 <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
-                                    <md-button class="border-btn action-btn" *ngIf="row.status !='COMPLETED' && row.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
-                                    <md-button class="border-btn action-btn" *ngIf="row.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
+                                    <md-button style="padding-top: 7px;" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" *ngIf="row.status !='COMPLETED' && row.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
+                                    <md-button style="padding-top: 7px;" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" *ngIf="row.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
                                     <span *ngIf="row.errorMessage != ''">
                                         <br/>
                                         <span class="md-warn md-caption">{{row.errorMessage}}</span>

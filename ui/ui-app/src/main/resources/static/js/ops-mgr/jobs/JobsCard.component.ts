@@ -463,10 +463,12 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
     }
 
     clearAllTimeouts() {
-        Object.keys(this.timeoutMap).forEach((instanceId: any) => {
-            clearTimeout(this.timeoutMap[instanceId]);
-            delete this.timeoutMap[instanceId];
-        });
+        if (this.timeoutMap) {
+            Object.keys(this.timeoutMap).forEach((instanceId: any) => {
+                clearTimeout(this.timeoutMap[instanceId]);
+                delete this.timeoutMap[instanceId];
+            });
+        }
         this.timeoutMap = {};
 
     }
