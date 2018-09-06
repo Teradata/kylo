@@ -41,23 +41,24 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 /**
  *
  */
-public class JcrEntityVersion<E> implements EntityVersion<E> {
+public class JcrEntityVersion<I, E> implements EntityVersion<I, E> {
 
     private Version version;
     private VersionId id;
-    private Optional<E> entity;
+    private I entityId;
+    private E entity;
     
-    public JcrEntityVersion(Version version) {
-        this(version, null);
+    public JcrEntityVersion(Version version, I entId) {
+        this(version, entId, null);
     }
     
-    public JcrEntityVersion(Version version, E entity) {
+    public JcrEntityVersion(Version version, I entId, E entity) {
         if (version != null) {
             this.version = version;
             this.id = new VersionId(JcrPropertyUtil.getIdentifier(JcrUtil.getNode(version, "jcr:frozenNode")));
-//        this.id = new VersionId(JcrPropertyUtil.getIdentifier(version));
         }
-        this.entity = Optional.ofNullable(entity);
+        this.entityId = entId;
+        this.entity = entity;
     }
 
     /* (non-Javadoc)
@@ -83,13 +84,21 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
     public DateTime getCreatedDate() {
         return JcrPropertyUtil.getProperty(this.version, "jcr:created");
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getEntityId()
+     */
+    @Override
+    public I getEntityId() {
+        return this.entityId;
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getEntity()
      */
     @Override
     public Optional<E> getEntity() {
-        return this.entity;
+        return Optional.ofNullable(this.entity);
     }
     
     /**

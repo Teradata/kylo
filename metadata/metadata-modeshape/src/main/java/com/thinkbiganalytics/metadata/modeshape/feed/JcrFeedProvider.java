@@ -629,51 +629,31 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
         }
     }
-
-//
-//    @Override
-//    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
-//        try {
-//            Node node = getSession().getNodeByIdentifier(id.toString());
-//
-//            if (node != null) {
-//                return JcrUtil.createJcrObject(node, JcrFeedSource.class);
-//            }
-//        } catch (RepositoryException e) {
-//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public FeedDestination getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID id) {
-//        try {
-//            Node node = getSession().getNodeByIdentifier(id.toString());
-//
-//            if (node != null) {
-//                return JcrUtil.createJcrObject(node, JcrFeedDestination.class);
-//            }
-//        } catch (RepositoryException e) {
-//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-//        }
-//        return null;
-//
-//    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(ID feedId, boolean includeContent) {
+        final JcrFeed feed = (JcrFeed) super.findById(feedId);
+        
+        if (feed != null) {
+            return feed.getDeployedVersion()
+                    .map(version -> {
+                            return findVersionableNode(feedId)
+                                .filter(node -> includeContent)
+                                .map(node -> new JcrEntityVersion<>(version, feedId, asEntity(feedId, node)))
+                                .orElse(new JcrEntityVersion<>(version, feedId));
+                        });
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
+    }
 
     @Override
     public Feed.ID resolveFeed(Serializable fid) {
         return resolveId(fid);
     }
-//
-//    @Override
-//    public com.thinkbiganalytics.metadata.api.feed.FeedSource.ID resolveSource(Serializable sid) {
-//        return new JcrFeedSource.FeedSourceId((sid));
-//    }
-//
-//    @Override
-//    public com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID resolveDestination(Serializable sid) {
-//        return new JcrFeedDestination.FeedDestinationId(sid);
-//    }
 
     @Override
     public boolean enableFeed(Feed.ID id) {
@@ -754,6 +734,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         this.opsAccessProvider.revokeAllAccess(feed.getId());
 
         super.delete(feed);
+    }
+    
+    @Override
+    public void setDeployed(ID feedId, EntityVersion.ID versionId) {
+        final JcrFeed feed = (JcrFeed) super.findById(feedId);
+        
+        if (feed != null) {
+            if (accessController.isEntityAccessControlled()) {
+                // TODO: Add deploy feed action?
+                feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+            }
+            
+            findVersion(feedId, versionId, false)
+                .map(JcrEntityVersion.class::cast)
+                .map(JcrEntityVersion::getVersion)
+                .ifPresent(version -> {
+                    feed.setDeployedVersion(version);
+                });
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
     }
 
     public Feed.ID resolveId(Serializable fid) {

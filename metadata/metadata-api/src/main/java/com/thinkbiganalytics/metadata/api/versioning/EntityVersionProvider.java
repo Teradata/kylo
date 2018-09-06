@@ -39,7 +39,7 @@ public interface EntityVersionProvider<T, PK extends Serializable> {
      * @param includedContent
      * @return
      */
-    Optional<List<EntityVersion<T>>> findVersions(PK id, boolean includeContent);
+    Optional<List<EntityVersion<PK, T>>> findVersions(PK id, boolean includeContent);
     
     /**
      * @param entityId
@@ -47,12 +47,12 @@ public interface EntityVersionProvider<T, PK extends Serializable> {
      * @param includedContent
      * @return
      */
-    Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
+    Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
     /**
      * @param entityId
      * @param includedContent
      * @return
      */
-    Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includeContent);
+    Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent);
 }

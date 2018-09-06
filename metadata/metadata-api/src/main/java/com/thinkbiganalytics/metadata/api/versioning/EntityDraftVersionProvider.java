@@ -33,9 +33,9 @@ public interface EntityDraftVersionProvider<T, PK extends Serializable> extends 
 
     boolean hasDraftVersion(PK entityId);
     
-    EntityVersion<T> createDraftVersion(PK entityId, boolean includeContent);
+    EntityVersion<PK, T> createDraftVersion(PK entityId, boolean includeContent);
     
-    EntityVersion<T> createDraftVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
+    EntityVersion<PK, T> createDraftVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
-    EntityVersion<T> createVersion(PK entityId, boolean includeContent);
+    EntityVersion<PK, T> createVersion(PK entityId, boolean includeContent);
 }

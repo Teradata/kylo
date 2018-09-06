@@ -29,16 +29,33 @@ import java.util.Optional;
 import org.joda.time.DateTime;
 
 /**
- *
+ * Generic definition of info about an entity version.
  */
-public interface EntityVersion<E> {
+public interface EntityVersion<I, E> {
     
+    /**
+     * @return the ID of this version
+     */
     ID getId();
 
+    /**
+     * @return the name of this version
+     */
     String getName();
     
+    /**
+     * @return the date the version was created
+     */
     DateTime getCreatedDate();
     
+    /**
+     * @return the ID of the entity
+     */
+    I getEntityId();
+    
+    /**
+     * @return the optional state of the entity for this version
+     */
     Optional<E> getEntity();
     
 

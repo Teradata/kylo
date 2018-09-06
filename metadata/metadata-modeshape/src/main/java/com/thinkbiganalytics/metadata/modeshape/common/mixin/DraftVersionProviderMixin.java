@@ -51,12 +51,12 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
 
     
     @Override
-    default Optional<List<EntityVersion<T>>> findVersions(PK entityId, boolean includeContent) {
-        BiFunction<EntityVersion<T>,EntityVersion<T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
+    default Optional<List<EntityVersion<PK, T>>> findVersions(PK entityId, boolean includeContent) {
+        BiFunction<EntityVersion<PK, T>,EntityVersion<PK, T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
         
         return findVersionableNode(entityId)
                         .map(node -> JcrVersionUtil.getVersions(node).stream()
-                                        .map(ver -> new JcrEntityVersion<>(ver, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                                        .map(ver -> new JcrEntityVersion<>(ver, entityId, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
                                         .sorted(desc::apply)
                                         .collect(Collectors.toList()));
 //        return findVersionableNode(entityId)
@@ -71,7 +71,7 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     }
 
     @Override
-    default Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includeContent) {
+    default Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent) {
         // TODO Auto-generated method stub
         return VersionProviderMixin.super.findLatestVersion(entityId, includeContent);
     }
@@ -82,24 +82,24 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     }
 
     @Override
-    default EntityVersion<T> createDraftVersion(PK entityId, boolean includeContent) {
+    default EntityVersion<PK, T> createDraftVersion(PK entityId, boolean includeContent) {
         Node versionable = createDraftEntity(entityId);
         T entity = includeContent ? asEntity(entityId, versionable) : null;
-        return new JcrEntityDraftVersion<>(versionable, entity);
+        return new JcrEntityDraftVersion<>(versionable, entityId, entity);
     }
 
     @Override
-    default EntityVersion<T> createDraftVersion(PK entityId, ID versionId, boolean includeContent) {
+    default EntityVersion<PK, T> createDraftVersion(PK entityId, ID versionId, boolean includeContent) {
         Node versionable = createDraftEntity(entityId, versionId);
         T entity = includeContent ? asEntity(entityId, versionable) : null;
-        return new JcrEntityDraftVersion<>(versionable, entity);
+        return new JcrEntityDraftVersion<>(versionable, entityId, entity);
     }
 
     @Override
-    default EntityVersion<T> createVersion(PK entityId, boolean includeContent) {
+    default EntityVersion<PK, T> createVersion(PK entityId, boolean includeContent) {
         Version version = createVersionedEntity(entityId);
         T entity = includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(version)) : null;
-        return new JcrEntityVersion<>(version, entity);
+        return new JcrEntityVersion<>(version, entityId, entity);
     }
     
     /**

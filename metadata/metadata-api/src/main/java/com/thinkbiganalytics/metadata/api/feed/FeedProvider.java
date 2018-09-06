@@ -26,12 +26,14 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -108,6 +110,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVe
      * @throws RuntimeException if the feed cannot be deleted
      */
     void deleteFeed(Feed.ID feedId);
+    
+    void setDeployed(Feed.ID feedId, EntityVersion.ID versionId);
 
     Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla);
 
@@ -138,6 +142,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVe
     List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId);
 
     List<? extends Feed> findByCategoryId(Category.ID categoryId);
+    
+    Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(Feed.ID feedId, boolean includeContent);
 
     // TODO Methods to add policy info to source
 }

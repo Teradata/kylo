@@ -47,6 +47,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -65,6 +66,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
@@ -75,6 +77,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
 
     public static final String NODE_TYPE = "tba:feed";
 
+    public static final String DEPLOYED_VERSION = "tba:deployedVersion";
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
 
@@ -108,8 +111,19 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
         this(node, opsAccessProvider);
     }
-
-
+    
+    public Optional<Version> getDeployedVersion() {
+        return Optional.ofNullable(JcrPropertyUtil.getProperty(getNode(), DEPLOYED_VERSION, null));
+    }
+    
+    public void setDeployedVersion(Version version) {
+        if (version == null) {
+            setProperty(DEPLOYED_VERSION, null);
+        } else {
+            setProperty(DEPLOYED_VERSION, JcrPropertyUtil.getIdentifier(version));
+        }
+    }
+    
     /**
      * This should be set after an instance of this type is created to allow the change
      * of a feed's operations access control.

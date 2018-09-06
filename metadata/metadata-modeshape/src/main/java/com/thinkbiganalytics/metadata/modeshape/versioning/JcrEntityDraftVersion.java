@@ -32,12 +32,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 /**
  *
  */
-public class JcrEntityDraftVersion<E> extends JcrEntityVersion<E> {
+public class JcrEntityDraftVersion<I, E> extends JcrEntityVersion<I, E> {
 
     private DateTime created;
     
-    public JcrEntityDraftVersion(Node versionable, E entity) {
-        super(null, entity);
+    public JcrEntityDraftVersion(Node versionable, I entityId, E entity) {
+        super(null, entityId, entity);
         setId(new VersionId(JcrPropertyUtil.getIdentifier(versionable)));
         this.created = JcrPropertyUtil.getProperty(versionable, "jcr:lastModified");
     }
