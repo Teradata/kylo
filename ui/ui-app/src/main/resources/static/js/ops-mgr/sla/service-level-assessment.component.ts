@@ -1,9 +1,14 @@
-import * as angular from "angular";
-import {moduleName} from "./module-name";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import { Transition } from "@uirouter/core";
+import { HttpClient } from "@angular/common/http";
+import { Component } from "@angular/core";
+import { StateService } from "@uirouter/angular";
+import StateServices from '../../services/StateService';
 
-export class controller implements ng.IComponentController {
+@Component({
+    selector: 'service-level-assessment',
+    templateUrl: 'js/ops-mgr/sla/assessment.html'
+})
+export class serviceLevelAssessmentComponent {
 
 
     /**
@@ -29,28 +34,21 @@ export class controller implements ng.IComponentController {
      */
     agreementNotFound: boolean = false;
 
-
-    static readonly $inject = ['$transition$', '$http', 'OpsManagerRestUrlService', 'StateService'];
-
-    constructor(private $transition$: Transition,
-                private $http: angular.IHttpService,
-                private opsManagerRestUrlService: any,
-                private stateService: any) {
+    constructor(private http: HttpClient,
+                private opsManagerRestUrlService: OpsManagerRestUrlService,
+                private transition: StateService,
+                private stateService: StateServices) {
 
 
-    }
-
-    $onInit() {
-        this.ngOnInit();
     }
 
     ngOnInit() {
-        this.assessmentId = this.$transition$.params().assessmentId;
+        this.assessmentId = this.transition.params.assessmentId;
 
         if (this.assessmentId != null) {
             let successFn = (response: any) => {
-                if (response.data && response.data != '') {
-                    this.assessment = response.data;
+                if (response && response != '') {
+                    this.assessment = response;
                     this.assessmentNotFound = false;
                     this.getSlaById(this.assessment.agreement.id).then((response: any) => {
                         this.agreementNotFound = response.status === 404;
@@ -69,36 +67,25 @@ export class controller implements ng.IComponentController {
             };
 
             this.loading = true;
-            this.$http.get(this.opsManagerRestUrlService.GET_SLA_ASSESSMENT_URL(this.assessmentId)).then(successFn, errorFn);
+            this.http.get(this.opsManagerRestUrlService.GET_SLA_ASSESSMENT_URL(this.assessmentId))
+            .toPromise().then(successFn, errorFn);
         }
 
     }
 
     private getSlaById(slaId: string) {
-        let successFn = (response: angular.IHttpResponse<any>) => {
-            return response.data;
+        let successFn = (response: any) => {
+            return response;
         };
         let errorFn = (err: any) => {
             console.log('ERROR ', err)
         };
-        var promise = this.$http.get(this.opsManagerRestUrlService.GET_SLA_BY_ID_URL(slaId));
-        promise.then(successFn, errorFn);
-        return promise;
+        return this.http.get(this.opsManagerRestUrlService.GET_SLA_BY_ID_URL(slaId))
+        .toPromise().then(successFn, errorFn);
     }
 
     serviceLevelAgreement() {
         this.stateService.FeedManager().Sla().navigateToServiceLevelAgreement(this.assessment.agreement.id);
     }
 
-
 }
-
-angular.module(moduleName).component("serviceLevelAssessmentController", {
-    controller: controller,
-    bindings: {
-        $transition$: "<"
-    },
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/sla/assessment.html"
-});
-

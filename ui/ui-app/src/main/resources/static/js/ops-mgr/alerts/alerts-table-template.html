@@ -17,121 +17,97 @@
   limitations under the License.
   #L%
   -->
-<card-layout header-css="filter-header">
-    <header-section>
-        <tba-card-filter-header flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-            [additional-options]="vm.additionalMenuOptions" [on-selected-additional-option]="vm.selectedAdditionalMenuOption"
-            [on-selected-option]="vm.selectedTableOption" card-controller="vm" [custom-filter-template]="js/ops-mgr/alerts/alert-type-filter-select.html"
-            [(filter-model)]="vm.filter" filter-model-options="{debounce:1000}">
-        </tba-card-filter-header>
 
-    </header-section>
-    <body-section>
-        <md-tabs flex md-selected="vm.tabMetadata.selectedIndex" md-align-tabs="top" layout-fill md-dynamic-height>
+<mat-card class="filter-header">
+    <mat-card-title style="font-size:smaller;">
 
-            <md-tab ng-repeat="tab in vm.tabs" ng-disabled="tab.disabled" md-on-select="vm.onTabSelected(tab)" flex>
-                <md-tab-label>{{tab.title}}</md-tab-label>
-                <md-tab-body>
-                    <md-divider></md-divider>
-                    <div ng-show="vm.viewType == 'list'">
-                        <div ng-if="vm.showProgress" class="md-list-table-progress">
-                            <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                            <br/><br/>
+        <mat-toolbar style="display:flex">
+            <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
+            <span flex="5"></span>
+            <div style="margin-top:-10px;width: 180px;align-items: center;" layout="row">
+                <div class="md-block condensed flex-gt-sm">
+                    <mat-label class="label-small md-container-ignore">Alert Type</mat-label>
+                    <mat-select [(ngModel)]="filterAlertType" (change)="onFilterAlertTypeChange(filterAlertType)"  class="md-no-underline" style="display:inline">
+                        <mat-option *ngFor="let opt of alertTypes;" [value]="opt">
+                            {{opt.label}}
+                        </mat-option>
+                    </mat-select>
+                </div>
+                
+                <div class="md-block condensed flex-gt-sm">
+                    <mat-label class="label-small md-container-ignore">AlertState</mat-label>
+                    <mat-select [(ngModel)]="filterAlertState" (change)="onFilterAlertStateChange(filterAlertState)"  class="md-no-underline" style="display:inline">
+                        <mat-option *ngFor="let opt of alertStates;" [value]="opt">
+                            {{opt.label}}
+                        </mat-option>
+                    </mat-select>
+                </div>
+            </div>
+
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            </td-search-box>
+
+            <button md-butto aria-label="Filter Help" class="md-icon-button md-button md-kylo-theme md-ink-ripple filter-help-button" [matMenuTriggerFor]="menu">
+                <mat-icon md-icon size="15" style="color:grey;">more_vert</mat-icon>
+            </button>
+
+            <mat-menu class="options-menu md-menu-content width-3 md-kylo-theme" #menu>
+
+                <div class="md-menu-item" style="padding: 10px;">
+                        <span md-menu-align-target class="md-subheader md-menu-item-header">Actions</span>
+                        <div class="optionsDialog" (click)="showFilterHelpPanel()">
+                            <span style="float:left;padding:6px 8px;">{{menuLabel}}</span>
                         </div>
-                        <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
-                            <md-list-item dir-paginate="alert in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total"
-                                          current-page="tab.currentPage">
-                                <div layout="row" layout-fill>
-                                    <div flex="10" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">
-                                            {{alert.level}}
-                                        </span>
-                                        <span class="column-title column-title-bottom">Level</span>
-                                    </div>
+                </div>
+            </mat-menu>
+        </mat-toolbar>
+    </mat-card-title>
 
-                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.state }}</span>
-                                        <span class="column-title column-title-bottom">State</span>
-                                    </div>
-                                    <div flex="10" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.typeDisplay }}</span>
-                                        <span class="column-title column-title-bottom">Type</span>
-                                    </div>
-                                    <div flex="5" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)" ng-if="vm.showCleared">
-                                        <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
-                                        <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
-                                        <span class="column-title column-title-bottom">Cleared</span>
-                                    </div>
+    <mat-card-content>
 
-                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.createdTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
-                                        <span class="column-title column-title-bottom">Start Time</span>
-                                    </div>
+        <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
+                            (selectedIndexChange)="onTabSelected($event)"
+                            layout-fill  dynamicHeight>
 
-                                    <div flex="35" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.description }}</span>
-                                        <span class="column-title column-title-bottom">Description</span>
-                                    </div>
+                <mat-tab *ngFor="let tab of tabs"
+                        [disabled]="tab.disabled" flex>
+                        <ng-template mat-tab-label>{{tab.title}}</ng-template>
+                    <div>
+                        <mat-divider></mat-divider>
+                        
+                        <filtered-paginated-table-view 
+                            [showToolbar]="false"
+                            [columns]="columns"
+                            [sortable]="true"
+                            [sortBy]="sortBy"
+                            [sortOrder]="sortOrder"
+                            [clickable]="true"
+                            [cardTitle]="cardTitle"
+                            [filteredData]="filteredData"
+                            [firstLast]="false"
+                            [pageSize]="pageSize"
+                            [filteredTotal]="total"
+                            [showTotal] = "false"
+                            (sortChanged)="sort($event)"
+                            (pageSizeChanged)="onPaginationChange($event)"
+                            (rowClicked)="alertDetails($event)"
+                            [allowedPageSize]="[5,10,20,50]"
+                        >
+                      
+                            <ng-template tdDataTableTemplate="cleared" let-value="value" let-row="row" let-column="column">
+                                  <ng-md-icon style="margin: 0;" class="primary-color-1" icon="check_box" *ngIf="row.cleared"></ng-md-icon>
+                                  <ng-md-icon style="margin: 0;" class="primary-color-1" icon="check_box_outline_blank" *ngIf="!row.cleared"></ng-md-icon>
+                            </ng-template>
+                            <ng-template tdDataTableTemplate="startTime" let-value="value" let-row="row" let-column="column">
+                                  {{row.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
+                            </ng-template>
+                      
+                      </filtered-paginated-table-view>
 
-                                </div>
-                                <md-divider ng-if="!$last"></md-divider>
-
-                            </md-list-item>
-                            <md-item ng-show="vm.showProgress == false && tab.data.content.length == 0" style="padding:10px">
-                                No results found
-                            </md-item>
-                            <md-divider></md-divider>
-                        </md-list>
                     </div>
+                </mat-tab>
+            </mat-tab-group>
+        </mat-card-content>
+    </mat-card>
+        
 
-                    <div ng-show="vm.viewType == 'table'">
-                        <md-table-container>
-                            <table md-table md-progress="vm.deferred.promise">
-                                <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
-                                    <tr md-row>
-                                        <th md-column  md-order-by="level" name="Level">Level</th>
-                                        <th md-column  md-order-by="state" name="State">State</th>
-                                        <th md-column  md-order-by="type" name="Type">Type</th>
-                                        <th md-column name="Cleared" ng-if="vm.showCleared">Cleared</th>
-                                        <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>Start Time</th>
-                                        <th md-column name="Description">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody md-body>
-                                    <tr md-row ng-repeat="alert in tab.data.content" ng-click="vm.alertDetails($event,alert)">
-                                        <td md-cell>{{alert.level}}</td>
-                                        <td md-cell>{{alert.state}}</td>
-                                        <td md-cell>{{alert.typeDisplay}}</td>
-                                        <td md-cell ng-if="vm.showCleared">
-                                            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
-                                            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
-                                        </td>
-                                        <td md-cell hide show-gt-sm>{{alert.createdTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
-                                        <td md-cell>{{alert.description}}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </md-table-container>
-                        <div ng-if="vm.showProgress == false && tab.data.content.length == 0" layout="column" layout-align="center center">
-                            No results found
-                        </div>
-                        <md-divider></md-divider>
-                    </div>
-
-                    <dir-pagination-controls pagination-id="vm.paginationId(tab)"
-                                             auto-hide="false"
-                                             max-size="5"
-                                             direction-links="true"
-                                             boundary-links="false"
-                                             template-url="js/ops-mgr/alerts/alerts-pagination.tpl.html"
-                                             on-page-change="vm.onPaginationChange(newPageNumber)"
-                                             label='{{"views.all-page.Rows_per_page" | translate}}'
-                                             rows-per-page="vm.paginationData.rowsPerPage"
-                                             rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                             class="pagination-row">
-                    </dir-pagination-controls>
-                </md-tab-body>
-            </md-tab>
-        </md-tabs>
-    </body-section>
-</card-layout>

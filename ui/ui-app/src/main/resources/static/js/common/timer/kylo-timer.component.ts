@@ -28,7 +28,7 @@ export class KyloTimerDirective {
         this.clearInterval();
       }
 
-      update(): void {
+      update = () => {
         this.time += this.refreshTime;
         //format it
         this.format();

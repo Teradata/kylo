@@ -48,11 +48,23 @@ export class ObjectUtils {
         if (ObjectUtils.isUndefined(obj)) return undefined;
         return JSON.stringify(obj);
     }
+    static fromJson(obj : any) : any {
+        if (ObjectUtils.isUndefined(obj)) return undefined;
+        return JSON.parse(obj);
+    }
     static isDefined(value : any) : boolean {
         return !ObjectUtils.isUndefined(value);
     }
     static isString(value : any) : boolean {
         return typeof value === 'string';
+    }
+
+    static isNumber(value : any) : boolean {
+        return typeof value === 'number';
+    }
+
+    static isArray(value : any) : boolean {
+        return typeof value === 'object';
     }
     static isFunction(value : any) : boolean {
         return typeof value === 'function';

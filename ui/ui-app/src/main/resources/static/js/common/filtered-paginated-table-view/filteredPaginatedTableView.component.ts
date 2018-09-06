@@ -22,6 +22,7 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     @Input() allowedPageSize: number[] = [5, 10, 20, 50];
     @ViewChild(TdDataTableComponent) dataTable: TdDataTableComponent;
     @Input() showToolbar: boolean = true;
+    @Input() showTotal: boolean = true;
 
     @Output() searchDebounced: EventEmitter<any> = new EventEmitter<string>();
     @Output() sortChanged:  EventEmitter<any> = new EventEmitter<string>();
@@ -29,28 +30,18 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     @Output() pageSizeChanged:  EventEmitter<any> = new EventEmitter<string>();
 
     pageSizeChange(pagingEvent: IPageChangeEvent): void {
-        // if(typeof this.onPageSizeChange === 'function' && pagingEvent){
-        //     this.onPageSizeChange(pagingEvent);
-        // }
         this.pageSizeChanged.emit(pagingEvent);
     }
 
     search(searchTerm: string): void {
-        // this.onSearchDebounce(searchTerm);
         this.searchDebounced.emit(searchTerm);
     }
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
-        // if(typeof this.onSortChange === 'function' && sortEvent){
-        //     this.onSortChange(sortEvent);
-        // }
         this.sortChanged.emit(sortEvent);
     }
 
     onRowClick(clickEvent: any) {
-        // if(typeof this.onRowClick === 'function' && clickEvent){
-        //     this.onRowClick(clickEvent);
-        // }
         this.rowClicked.emit(clickEvent);
     }
 

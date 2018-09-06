@@ -229,6 +229,57 @@ export default class ServiceLevelAgreements {
             }
         });
 
+        if (this.newSla == null && this.newSla == undefined) {
+            this.newSla = false;
+        }
+
+        this.newSlaObserver.subscribe(() => {
+            this.onNewSla();
+            this.newSla = false;
+            this.loading = false;
+        });
+
+        // Register Add button
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                if (this.accessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
+                    this.addButtonService.registerAddButton("service-level-agreements", () => {
+                        this.onNewSla();
+                    });
+                    this.allowCreate = true;
+                }
+            });
+
+        if (this.feed != null) {
+            this.pageSize = 100;
+        }
+        else {
+            this.pageSize = 5;
+        }
+        if (this.slaId) {
+            //fetch the sla
+            this.SlaService.getSlaForEditForm(this.slaId).then((response: any) => {
+                this.applyEditPermissionsToSLA(response);
+                if (this.allowEdit) {
+                    this.editSla = response;
+                    this.applyAccessPermissions()
+                    this.editSlaId = this.slaId;
+                    this.onEditSla(this.editSla);
+                }
+                else {
+                    //
+                }
+            })
+
+        }
+        else {
+            /**
+             * Initiall load the SLA list
+             */
+            this.loadSlas();
+        }
+        this.applyAccessPermissions();
+
         /**
          * Loading message
          */
@@ -253,61 +304,7 @@ export default class ServiceLevelAgreements {
         private _dataTableService: TdDataTableService,
         private snackBar: MatSnackBar,
         private _tdDialogService: TdDialogService,
-        private viewContainerRef: ViewContainerRef) {
-
-        //if the newSLA flag is tripped then show the new SLA form and then reset it
-
-        if (this.newSla == null && this.newSla == undefined) {
-            this.newSla = false;
-        }
-
-        this.newSlaObserver.subscribe(() => {
-            this.onNewSla();
-            this.newSla = false;
-            this.loading = false;
-        });
-
-        // Register Add button
-        this.accessControlService.getUserAllowedActions()
-            .then((actionSet: any) => {
-                if (accessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
-                    this.addButtonService.registerAddButton("service-level-agreements", () => {
-                        this.onNewSla();
-                    });
-                    this.allowCreate = true;
-                }
-            });
-
-        // if (this.feed != null) {
-        //     this.pageSize = 100;
-        // }
-        // else {
-        //     this.pageSize = 5;
-        // }
-        if (this.slaId) {
-            //fetch the sla
-            SlaService.getSlaForEditForm(this.slaId).then((response: any) => {
-                this.applyEditPermissionsToSLA(response);
-                if (this.allowEdit) {
-                    this.editSla = response;
-                    this.applyAccessPermissions()
-                    this.editSlaId = this.slaId;
-                    this.onEditSla(this.editSla);
-                }
-                else {
-                    //
-                }
-            })
-
-        }
-        else {
-            /**
-             * Initiall load the SLA list
-             */
-            this.loadSlas();
-        }
-        this.applyAccessPermissions();
-    }
+        private viewContainerRef: ViewContainerRef) {}
 
     /**
      * Fetch the SLAs and populate the list.

@@ -1,5 +1,3 @@
-import * as angular from "angular";
-import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import IconService from "../services/IconStatusService";
@@ -8,274 +6,206 @@ import AccessControlService from "../../services/AccessControlService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import BroadcastService from "../../services/broadcast-service";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
+import { HttpClient, HttpParams } from "@angular/common/http";
+import StateService from "../../services/StateService";
+import { Component, Input } from "@angular/core";
+import { ObjectUtils } from '../../common/utils/object-utils';
+import { Subscription } from 'rxjs/Subscription';
+import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
+import { ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent, TdDataTableSortingOrder } from '@covalent/core/data-table';
+import { IPageChangeEvent } from '@covalent/core';
 
-export class controller implements ng.IComponentController{
-pageName: any = angular.isDefined(this.pageName) ? this.pageName : 'service-level-assessments';
-loaded: boolean = false;
-refreshing: any;
-deferred: any;
-showProgress: boolean;
-promise: any;
-loading: boolean;
-/**
- * The filter supplied in the page
- * @type {string}
- */
-filter: string;
-viewType: string;
-paginationId: any;
-currentPage: any;
-//Track active requests and be able to cancel them if needed
-activeRequests: any[] = [];
-paginationData: any;
-tabs: any;
-tabMetadata: any;
-tabNames : string[] = ['All', 'Failure', 'Warning','Success'];
-sortOptions: any; 
-allowAdmin: boolean;
-
-static readonly $inject = ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerRestUrlService","DefaultTableOptionsService","DefaultPaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService"];
-
-$onInit() {
-    this.ngOnInit();
-}
-
-ngOnInit() {
-
-    this.filter = angular.isUndefined(this.filter) ? '' : this.filter;
-    this.viewType = this.paginationDataService.viewType(this.pageName);
-    this.paginationId = (tab: any) =>{
-        return this.paginationDataService.paginationId(this.pageName, tab.title);
-    }
-    this.currentPage  = (tab: any)=> {
-        return this.paginationDataService.currentPage(this.pageName, tab.title);
-    }
-
-    //Pagination and view Type (list or table)
-    this.paginationData = this.paginationDataService.paginationData(this.pageName);
-    this.paginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
-
-    //Setup the Tabs
-    // let tabNames = ['All', 'Failure', 'Warning','Success'];
-    this.tabs = this.tabService.registerTabs(this.pageName, this.tabNames, this.paginationData.activeTab);
-    this.tabMetadata= this.tabService.metadata(this.pageName);
-    this.sortOptions= this.loadSortOptions();
+@Component({
+    selector: 'kylo-service-level-assessments',
+    templateUrl: 'js/ops-mgr/sla/service-level-assessments-template.html'
+})
+export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView {
+    
+    @Input() pageName: string = ObjectUtils.isDefined(this.pageName) ? this.pageName : 'service-level-assessments';
+    @Input() cardTitle: string
+    loaded: boolean = false;
+    refreshing: boolean;
+    showProgress: boolean = true;
     /**
-     * Indicates that admin operations are allowed.
-     * @type {boolean}
-    */
-    this.allowAdmin = false;
+     * The filter supplied in the page
+     * @type {string}
+     */
+    @Input() filterSLA: string;
+    //Track active requests and be able to cancel them if needed
+    activeRequests: Subscription[] = [];
+    paginationData: any;
+    tabs: any;
+    tabMetadata: any;
+    tabNames : string[] = ['All', 'Failure', 'Warning','Success'];
+    allowAdmin: boolean = false;
+    sortSLA: any;
+    page: number = 1;
 
+    columns: ITdDataTableColumn[] = [
+        { name: 'name',  label: 'SLA Name', sortable: true, filter: true },
+        { name: 'result', label: 'Result', sortable: true, filter: true },
+        { name: 'createdTime', label: 'Created', sortable: true, filter: true},
+        { name: 'message', label: 'Message', sortable: true, filter: true},
+      ];
 
-    //Page State
-    this.loading = true;
-    this.showProgress= true;
-            // Fetch allowed permissions
-    this.accessControlService.getUserAllowedActions()
-            .then((actionSet: any)=>{
-                this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
-            });
+    ngOnInit() {
 
-}
+        this.sortSLA = "createdTime";
+        this.filterSLA = ObjectUtils.isUndefined(this.filterSLA) || this.filterSLA == null ? '' : this.filterSLA;
 
-constructor(private $scope: angular.IScope,
-            private $http: angular.IHttpService,
-            private $timeout: angular.ITimeoutService,
-            private $q: angular.IQService,
-            private $mdToast: angular.material.IToastService,
-            private $mdPanel: angular.material.IPanelService,
-            private opsManagerRestUrlService: OpsManagerRestUrlService,
-            private tableOptionsService: DefaultTableOptionsService,
-            private paginationDataService: DefaultPaginationDataService,
-            private StateService: any,
-            private iconService: IconService,
-            private tabService: TabService,
-            private accessControlService: AccessControlService,
-            private broadcastService: BroadcastService){
-
-            $scope.$watch(()=> {return this.viewType;},
-                                    (newVal: any)=> {this.onViewTypeChange(newVal);}
-                               );
-
-            $scope.$watch(()=> {return this.filter;},
-                                    (newVal: any, oldVal: any)=> {
-                                                        if (newVal != oldVal) {
-                                                            return this.loadAssessments(true).promise;
-                                                        }
-
-                            });
-
-        } // end of constructor
-         /**
-         * Build the possible Sorting Options
-         * @returns {*[]}
-         */
-        loadSortOptions(){
-            var options = {'Name': 'serviceLevelAgreementDescription.name', 'Time':'createdTime','Status': 'result'};
-
-            var sortOptions = this.tableOptionsService.newSortOptions(this.pageName, options, 'createdTime', 'desc');
-            var currentOption = this.tableOptionsService.getCurrentSort(this.pageName);
-            if (currentOption) {
-                this.tableOptionsService.saveSortOption(this.pageName, currentOption)
-            }
-            return sortOptions;
-        }
+        //Pagination
+        this.paginationData = this.paginationDataService.paginationData(this.pageName);
         
-       onViewTypeChange=(viewType: any) =>{
-            this.paginationDataService.viewType(this.pageName, viewType);
-        }
+        //Setup the Tabs
+        this.tabs = this.tabService.registerTabs(this.pageName, this.tabNames, this.paginationData.activeTab);
+        this.tabMetadata= this.tabService.metadata(this.pageName);
 
-        //Tab Functions
+        // Fetch allowed permissions
+        this.accessControlService.getUserAllowedActions()
+                .then((actionSet: any)=>{
+                    this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                });
 
-        onTabSelected=(tab: any)=>{
-            this.tabService.selectedTab(this.pageName, tab);
-            return this.loadAssessments(true).promise;
-        };
+        this.loadAssessments(true);
+    }
 
-        onOrderChange=(order: any)=>{
-            this.paginationDataService.sort(this.pageName, order);
-            this.tableOptionsService.setSortOption(this.pageName, order);
-            return this.loadAssessments(true).promise;
-            //return self.deferred.promise;
-        };
+    constructor(private http: HttpClient,
+                private opsManagerRestUrlService: OpsManagerRestUrlService,
+                private tableOptionsService: DefaultTableOptionsService,
+                private paginationDataService: DefaultPaginationDataService,
+                private StateService: StateService,
+                private iconService: IconService,
+                private tabService: TabService,
+                private accessControlService: AccessControlService,
+                private broadcastService: BroadcastService,
+                public _dataTableService: TdDataTableService){
+                    super(_dataTableService);
+    } // end of constructor
+    
+    //Tab Functions
+    onTabSelected=(tab: any)=>{
+        this.loaded = false;
+        this.tabService.selectedTab(this.pageName, this.tabs[tab]);
+        return this.loadAssessments(true);
+    };
 
-        onPaginate=(page: any,limit: any)=>{
+    assessmentDetails= (event: any)=> {
+            this.StateService.OpsManager().Sla().navigateToServiceLevelAssessment(event.row.id);
+    }
+
+    //Load Jobs
+    loadAssessments= (force: any) =>{
+        if (force || !this.refreshing) {
+
+            if (force) {
+                this.activeRequests.forEach((subscription: Subscription)=> {
+                    subscription.unsubscribe();
+                });
+                this.activeRequests = [];
+            }
             var activeTab = this.tabService.getActiveTab(this.pageName);
-            //only trigger the reload if the initial page has been loaded.
-            //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
-            //on load the query will be triggered via onTabSelected() method
-            if(this.loaded) {
-                activeTab.currentPage = page;
-                this.paginationDataService.currentPage(this.pageName, activeTab.title, page);
-                return this.loadAssessments(true).promise;
+
+            this.refreshing = true;
+            var tabTitle = activeTab.title;
+            var filters = {tabTitle: tabTitle};
+            var limit = this.paginationData.rowsPerPage;
+
+            var start = (limit * activeTab.currentPage) - limit;
+
+            var successFn=(response: any, loadAssessmentsSubscription : Subscription)=>{
+                if (response) {
+                    this.transformAssessments(tabTitle,response.data)
+                    this.tabService.setTotal(this.pageName, tabTitle, response.recordsFiltered)
+                }
+
+                this.finishedRequest(loadAssessmentsSubscription);
+
             }
-        }
-
-        onPaginationChange=(page: any, limit: any)=> {
-            if(this.viewType == 'list') {
-                this.onPaginate(page,limit);
+            var errorFn=(err: any, loadAssessmentsSubscription : Subscription)=>{
+                this.finishedRequest(loadAssessmentsSubscription);
             }
-        };
-
-        onDataTablePaginationChange= (page: any, limit: any)=>{
-            if(this.viewType == 'table') {
-               this.onPaginate(page,limit);
+            var finallyFn= ()=>{
             }
-        };
-
-
-
-
-        assessmentDetails= (event: any, assessment: any)=> {
-                this.StateService.OpsManager().Sla().navigateToServiceLevelAssessment(assessment.id);
-        }
-
-                /**
-         * Called when a user Clicks on a table Option
-         * @param option
-         */
-        selectedTableOption= (option: any)=> {
-            var sortString = this.tableOptionsService.toSortString(option);
-            this.paginationDataService.sort(this.pageName, sortString);
-            var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
-            this.tableOptionsService.setSortOption(this.pageName, sortString);
-            this.loadAssessments(true);
-        }
-
-        //Load Jobs
-
-        loadAssessments= (force: any) =>{
-            if (force || !this.refreshing) {
-
-                if (force) {
-                    angular.forEach(this.activeRequests, function(canceler, i) {
-                        canceler.resolve();
-                    });
-                    this.activeRequests = [];
+            var filter = this.filterSLA;
+            if(tabTitle.toUpperCase() != 'ALL'){
+                if(filter != null && ObjectUtils.isDefined(filter) && filter != '') {
+                    filter +=','
                 }
-                var activeTab = this.tabService.getActiveTab(this.pageName);
-
-                this.refreshing = true;
-                var sortOptions = '';
-                var tabTitle = activeTab.title;
-                var filters = {tabTitle: tabTitle};
-                var limit = this.paginationData.rowsPerPage;
-
-                var start = (limit * activeTab.currentPage) - limit; //self.query.page(self.selectedTab));
-
-                var sort = this.paginationDataService.sort(this.pageName);
-                var canceler = this.$q.defer();
-                var successFn=(response: any)=>{
-                    if (response.data) {
-                        this.transformAssessments(tabTitle,response.data.data)
-                        this.tabService.setTotal(this.pageName, tabTitle, response.data.recordsFiltered)
-
-                        if (this.loading) {
-                            this.loading = false;
-                        }
-                    }
-
-                    this.finishedRequest(canceler);
-
-                }
-                var errorFn=(err: any)=>{
-                    this.finishedRequest(canceler);
-                }
-                var finallyFn= ()=>{
-                }
-                this.activeRequests.push(canceler);
-                this.deferred = canceler;
-                this.promise = this.deferred.promise;
-                var filter = this.filter;
-                if(tabTitle.toUpperCase() != 'ALL'){
-                    if(filter != null && angular.isDefined(filter) && filter != '') {
-                        filter +=','
-                    }
-                    filter += 'result=='+tabTitle.toUpperCase();
-                }
-                var params = {start: start, limit: limit, sort: sort, filter:filter};
-                this.$http.get(this.opsManagerRestUrlService.LIST_SLA_ASSESSMENTS_URL,
-                               {timeout: canceler.promise, params: params})
-                           .then(successFn, errorFn);
+                filter += 'result=='+tabTitle.toUpperCase();
             }
-            this.showProgress = true;
-            return this.deferred;
-        }
+            let params = new HttpParams();
+            params = params.append('start', start.toString());
+            params = params.append('limit', limit);
+            params = params.append('sort', this.sortSLA);
+            params = params.append('filter', filter);
 
-        transformAssessments (tabTitle: any, assessments: any){
-            //first clear out the arrays
-            this.tabService.clearTabs(this.pageName);
-            angular.forEach(assessments, (assessment, i) =>{
-                this.tabService.addContent(this.pageName, tabTitle, assessment);
+            var loadAssessmentsObservable = this.http.get(this.opsManagerRestUrlService.LIST_SLA_ASSESSMENTS_URL,{params: params});
+            var loadAssessmentsSubscription = loadAssessmentsObservable.subscribe(
+                (response : any) => {successFn(response,loadAssessmentsSubscription)},
+                (error: any)=>{ errorFn(error,loadAssessmentsSubscription)
             });
-            return assessments;
-
+            this.activeRequests.push(loadAssessmentsSubscription);
         }
+        this.showProgress = true;
+    }
 
+    transformAssessments (tabTitle: any, assessments: any){
+        //first clear out the arrays
+        this.tabService.clearTabs(this.pageName);
+        assessments.forEach((assessment: any, i: number) =>{
+            this.tabService.addContent(this.pageName, tabTitle, assessment);
+        });
 
-        finishedRequest(canceler: any){
-            var index = _.indexOf(this.activeRequests, canceler);
-            if (index >= 0) {
-                this.activeRequests.splice(index, 1);
-            }
-            canceler.resolve();
-            canceler = null;
-            this.refreshing = false;
-            this.showProgress = false;
-            this.loaded = true;
+        super.setSortBy('createdTime');
+        super.setDataAndColumnSchema(this.tabService.getActiveTab(this.pageName).data.content,this.columns);
+        super.filter();
+
+        return assessments;
+
+    }
+
+    finishedRequest(subscription : Subscription){
+        var index = _.indexOf(this.activeRequests, subscription);
+        if (index >= 0) {
+            this.activeRequests.splice(index, 1);
         }
+        subscription.unsubscribe();
+        this.refreshing = false;
+        this.showProgress = false;
+        this.loaded = true;
+    }
 
+    onChangeLinks = (page: any) => {
+        this.loaded = false;
+        this.tabService.getActiveTab(this.pageName).currentPage = page;
+        this.loadAssessments(true);
+    }
 
+    onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+        if(this.page != pagingEvent.page) {
+            this.page = pagingEvent.page;
+            this.onChangeLinks(pagingEvent.page);
+        }
+        else {
+            this.paginationData.rowsPerPage = pagingEvent.pageSize;
+            this.loadAssessments(true);
+            this.onPageSizeChange(pagingEvent);
+        }
+    }
+
+    onSearchTable = (searchTerm: string) => {
+        this.filterSLA = searchTerm;
+        this.loadAssessments(true);
+    }
+
+    onSortChange = (sortEvent: ITdDataTableSortChangeEvent) => {
+        this.loaded = false;
+        this.sortSLA = sortEvent.name;
+        if(sortEvent.order == TdDataTableSortingOrder.Descending) {
+            this.sortSLA = "-" + this.sortSLA;
+        }
+        this.loadAssessments(true);
+    }
 
 }
 
-angular.module(moduleName).component("kyloServiceLevelAssessments", {
-    controller: controller,
-    bindings: {
-        cardTitle: "@",
-        pageName: '@',
-        filter:'@'
-    },
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/sla/service-level-assessments-template.html"
-});

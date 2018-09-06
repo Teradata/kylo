@@ -18,44 +18,44 @@
   #L%
   -->
 <div flex layout="row">
-    <card-layout flex>
-        <header-section transclude-to="head" flex layout>
-            <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
-        </header-section>
-        <body-section transclude-to="body" transclude-replace="true">
-            <md-content>
+    <mat-card flex>
+        <mat-card-title flex>
+            <div style="white-space:nowrap" class="card-title" flex>{{cardTitle}}</div>
+        </mat-card-title>
+        <mat-card-content>
+            <div *ngIf="!loading">
                 <div layout="column" class="layout-padding-bottom layout-padding-left-16">
                     <div layout="row">
                         <div flex="20" layout="column">
                             <span class="item-title">
-                                {{vm.alertData.level}}
+                                {{alertData.level}}
                             </span>
                             <span class="column-title column-title-bottom">Level</span>
                         </div>
 
                         <div flex="50" layout="column">
                             <span class="item-title">
-                                {{vm.alertData.type}}
+                                {{alertData.type}}
                             </span>
                             <span class="column-title column-title-bottom">Type</span>
                         </div>
 
                         <div flex="30" layout="column">
                             <span class="item-title">
-                                {{vm.alertData.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                {{alertData.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
                             </span>
                             <span class="column-title column-title-bottom">Start Time</span>
                         </div>
                     </div>
 
-
-
                     <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Description</div>
-                    <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;padding-right:16px;">{{vm.alertData.description}}</div>
+                    <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;padding-right:16px;">
+                        {{alertData.description}}
+                    </div>
 
-                    <md-list class="list-item-table">
-                        <md-divider></md-divider>
-                        <md-list-item>
+                    <mat-list class="list-item-table">
+                        <mat-divider></mat-divider>
+                        <mat-list-item>
                             <div flex="60" class="item-column md-list-item-text accent-color-3">
                                 Comment
                             </div>
@@ -65,10 +65,11 @@
                             <div flex="25" class="item-column md-list-item-text accent-color-3">
                                 Create Time
                             </div>
-                            <md-divider></md-divider>
-                        </md-list-item>
-                        <md-list-item ng-repeat="item in vm.alertData.events | orderBy:'createTime'">
-                            <div flex="60" class="item-column md-list-item-text" layout="column" ng-if="item.description.length > 0">
+                            <mat-divider></mat-divider>
+                        </mat-list-item>
+                        <!--  | orderBy:'createTime' -->
+                        <mat-list-item *ngFor="let item of alertData.events; let last = last;" style="margin: 16px 0 16px 0;height: auto;">
+                            <div flex="60" class="item-column md-list-item-text" layout="column" *ngIf="item.description">
                                 <span class="item-title" style="white-space: normal;">
                                     {{item.description}}
                                 </span>
@@ -77,7 +78,7 @@
                                     {{item.stateText}} {{item.contentSummary}}
                                 </span>
                             </div>
-                            <div flex="60" style="word-wrap:break-word;" class="item-column md-list-item-text {{item.stateClass}}" ng-if="item.description == null || item.description.length == 0">
+                            <div flex="60" style="word-wrap:break-word;" class="item-column md-list-item-text {{item.stateClass}}" *ngIf="item.description == null || item.description.length == 0">
                                 <ng-md-icon icon="{{item.stateIcon}}" size="20"></ng-md-icon>
                                 {{item.stateText}} {{item.contentSummary}}
                             </div>
@@ -87,56 +88,56 @@
                             <div flex="25" style="word-wrap:break-word;" class="item-column md-list-item-text">
                                 {{item.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
                             </div>
-                            <md-divider ng-if="!$last"></md-divider>
-                        </md-list-item>
-                    </md-list>
+                            <mat-divider *ngIf="!last"></mat-divider>
+                        </mat-list-item>
+                    </mat-list>
                 </div>
-            </md-content>
-        </body-section>
-    </card-layout>
+            </div>
+        </mat-card-content>
+    </mat-card>
 
-    <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body">
-        <header-section transclude-to="head" flex layout>
+    <mat-card flex="30">
+        <mat-card-title class="job-details-header" flex>
             <div style="white-space:nowrap" class="card-title">Alert Summary</div>
             <span flex></span>
-        </header-section>
-        <body-section transclude-to="body">
-            <md-content flex md-scroll-y>
+        </mat-card-title>
+        <mat-card-content class="job-details-right-body">
+            <div flex md-scroll-y *ngIf="!loading">
                 <div class="card-content">
-                    <md-button ng-if="vm.alertData.actionable && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showEventDialog($event)">UPDATE</md-button>
-                    <md-button ng-if="vm.alertData.cleared == false && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.hideAlert($event)">HIDE</md-button>
-                    <md-button ng-if="vm.alertData.cleared == true && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showAlert($event)">SHOW</md-button>
+                    <button *ngIf="alertData.actionable && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showEventDialog($event)">UPDATE</button>
+                    <button *ngIf="alertData.cleared == false && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="hideAlert($event)">HIDE</button>
+                    <button *ngIf="alertData.cleared == true && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showAlert($event)">SHOW</button>
                 </div>
 
-                <md-list flex layout-fill layout="column" class="list-item-table">
-                    <md-list-item>
+                <mat-list flex layout-fill layout="column" class="list-item-table">
+                    <mat-list-item style="height: auto;">
                         <div layout="column" class="item-column md-list-item-text">
-                            <span class="item-title {{vm.alertData.stateClass}}">
-                                <ng-md-icon icon="{{vm.alertData.stateIcon}}" size="20"></ng-md-icon>
-                                {{vm.alertData.stateText}}
+                            <span class="item-title {{alertData.stateClass}}">
+                                <ng-md-icon icon="{{alertData.stateIcon}}" size="20"></ng-md-icon>
+                                {{alertData.stateText}}
                             </span>
                             <span class="column-title column-title-bottom">State</span>
                         </div>
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item>
-                        <div layout="column"  class="item-column md-list-item-text ">
+                    </mat-list-item>
+                    <mat-divider></mat-divider>
+                    <mat-list-item style="height: auto;">
+                        <div layout="column" class="item-column md-list-item-text ">
                             <span class="item-title">
-                                <kylo-timer start-time="vm.alertData.createdTimeSince"></kylo-timer>
+                                <div kylo-timer [startTime]="alertData.createdTimeSince"></div>
                             </span>
                             <span class="column-title column-title-bottom">Since</span>
                         </div>
-                    </md-list-item>
-                </md-list>
-                <md-divider></md-divider>
-                <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="vm.alertData.links.length >0" style="padding-left:25px">
+                    </mat-list-item>
+                </mat-list>
+                <mat-divider></mat-divider>
+                <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" *ngIf="alertData.links.length >0" style="padding-left:25px">
 
                     <div class="md-subhead layout-padding-bottom">Links</div>
-                    <div ng-repeat="link in vm.alertData.links" layout="column" class="layout-padding-bottom">
-                        <md-button class="md-primary md-link" ui-sref="{{link.value}}">{{link.label}}</md-button>
+                    <div *ngFor="let link of alertData.links" layout="column" class="layout-padding-bottom">
+                        <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple layout-align-center-stretch" uiSref="{{link.value}}">{{link.label}}</button>
                     </div>
                 </div>
-            </md-content>
-        </body-section>
-    </card-layout>
+            </div>
+        </mat-card-content>
+    </mat-card>
 </div>

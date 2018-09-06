@@ -17,108 +17,70 @@
   limitations under the License.
   #L%
   -->
-<card-layout header-css="filter-header">
-  <header-section>
-      <tba-card-filter-header transclude-to="head" flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-            [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter" filter-model-options="{debounce:1000}">
-        </tba-card-filter-header>
-  </header-section>
-    <body-section transclude-to="body">
-            <md-tabs   md-selected="vm.tabMetadata.selectedIndex"
-                       md-align-tabs="top" layout-fill  md-dynamic-height>
 
-                <md-tab ng-repeat="tab in vm.tabs"
-                        ng-disabled="tab.disabled"
-                        md-on-select="vm.onTabSelected(tab)" flex>
-                    <md-tab-label> {{tab.title}} </md-tab-label>
-                    <md-tab-body>
-                        <md-divider></md-divider>
-                    <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-                        <div ng-if="vm.showProgress" class="md-list-table-progress">
-                        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                            <br/><br/>
-                        </div>
-                    <md-list layout-fill ng-show="vm.loading == false" class="list-item-table">
-                        <md-list-item  dir-paginate="assessment in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total" current-page="tab.currentPage" >
-                            <div layout="row" layout-fill>
-                                <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
-                                   <span class="item-title">
-                                       {{assessment.agreement.name}}
-                                   </span>
-                                   <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE','warn':assessment.result == 'WARNING'}" class="column-title-bottom">
-                                        <ng-md-icon ng-if="assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
-                                        <ng-md-icon ng-if="assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
-                                        <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
-                                       {{assessment.result}}</span>
-                                </div>
-                                <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
-                                    <span class="item-title">{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</span>
-                                    <span class="column-title column-title-bottom">Created</span>
-                                </div>
-                                <div flex="45" flex-gt-md="20" layout="column" hide show-gt-sm class="item-column  md-list-item-text" title="{{assessment.message}}">
-                                  <span class="item-title" title="{{assessment.message}}">{{assessment.message}}</span>
-                                  <span class="column-title column-title-bottom" title="{{assessment.message}}">Message</span>
-                                </div>
-                            </div>
-                            <md-divider ng-if="!$last"></md-divider>
-
-                        </md-list-item>
-                        <md-item  ng-show="vm.showProgress == false && tab.data.content.length ==0" style="padding:10px">
-                            No results found
-                        </md-item >
-                        <md-divider></md-divider>
-                        <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                            <dir-pagination-controls pagination-id="vm.paginationId(tab)" ng-if="vm.viewType == 'list'"
-                                                     auto-hide="false"
-                                                     max-size="5"
-                                                     direction-links="true"
-                                                     boundary-links="false"
-                                                     template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                     on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                     label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                     rows-per-page="vm.paginationData.rowsPerPage"
-                                                     rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                     class="pagination-row">
-                            </dir-pagination-controls>
-                        </md-list-item>
-
-
-                    </md-list>
-                    </div>
-                    <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
-
-                        <md-table-container>
-                            <table md-table md-progress="vm.deferred.promise">
-                                <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                                <tr md-row>
-                                    <th md-column name="SLA Name" md-order-by="agreement.name">SLA Name</th>
-                                    <th md-column  name="Result"  md-order-by="result">Result</th>
-                                    <th md-column  name="Created" md-order-by="createdTime">Created</th>
-                                    <th md-column  name="Message" md-order-by="message"   hide show-gt-sm >Message</th>
-                                </tr>
-                                </thead>
-                                <tbody md-body>
-                                <tr md-row ng-repeat="assessment in tab.data.content" ng-click="vm.assessmentDetails($event,assessment)">
-                                    <td md-cell>{{assessment.agreement.name}}</td>
-                                    <td md-cell>
-                               <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE','warn':assessment.result == 'WARNING'}">
-                                      <ng-md-icon ng-if="assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
-                                        <ng-md-icon ng-if="assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
-                                        <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
-                                       <span hide show-gt-md>{{assessment.result}}</span></span>
-                                    </td>
-                                    <td md-cell >{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</td>
-                                    <td md-cell >{{assessment.message}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </md-table-container>
-
-                        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onDataTablePaginationChange" md-limit-options="[5,10,20,50,100]"></md-table-pagination>
+  <mat-card class="filter-header">
+        <mat-card-title style="font-size:smaller;">
+    
+            <mat-toolbar style="display:flex">
+                <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
+                <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" [(ngModel)]="filterSLA" placeholder="Filter" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+                </td-search-box>
+            </mat-toolbar>
+        </mat-card-title>
+    
+        <mat-card-content>
+    
+            <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
+                                (selectedIndexChange)="onTabSelected($event)"
+                                layout-fill dynamicHeight>
+    
+                <mat-tab *ngFor="let tab of tabs"
+                        [disabled]="tab.disabled" flex>
+                        <ng-template mat-tab-label>{{tab.title}}</ng-template>
+                    <div>
+                        <mat-progress-bar mode="indeterminate" *ngIf="!loaded"></mat-progress-bar>
+                        <mat-divider></mat-divider>
+                        
+                        <filtered-paginated-table-view 
+                            [showToolbar]="false"
+                            [columns]="columns"
+                            [sortable]="true"
+                            [sortBy]="sortBy"
+                            [sortOrder]="sortOrder"
+                            [clickable]="true"
+                            [cardTitle]="cardTitle"
+                            [filteredData]="filteredData"
+                            [firstLast]="false"
+                            [pageSize]="pageSize"
+                            [filteredTotal]="tab.data.total"
+                            (sortChanged)="sort($event)"
+                            (pageSizeChanged)="onPaginationChange($event)"
+                            (rowClicked)="alertDetails($event)"
+                            [allowedPageSize]="[5,10,20,50,100]"
+                        >
+                        
+                            <ng-template  tdDataTableTemplate="name" let-value="value" let-row="row" let-column="column">
+                                {{row.agreement.name}}
+                            </ng-template>
+                            <ng-template tdDataTableTemplate="result" let-value="value" let-row="row" let-column="column">
+                                <span  [ngClass]="{'success':(row.result == 'SUCCESS'),'error':row.result == 'FAILURE','warn':row.result == 'WARNING'}">
+                                    <ng-md-icon *ngIf="row.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+                                    <ng-md-icon *ngIf="row.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+                                    <ng-md-icon *ngIf="row.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
+                                    <span hide show-gt-md>{{row.result}}</span>
+                                </span>
+                            </ng-template>
+                            <ng-template tdDataTableTemplate="createdTime" let-value="value" let-row="row" let-column="column">
+                                {{row.time | date: 'MMM d, yyyy HH:mm:ss'}}
+                            </ng-template>
+                            <ng-template tdDataTableTemplate="message" let-value="value" let-row="row" let-column="column">
+                                {{row.message}}
+                            </ng-template>
+                        
+                        </filtered-paginated-table-view>
 
                     </div>
-                        </md-tab-body>
-                </md-tab>
-            </md-tabs>
-            </body-section>
-            </card-layout>
+                </mat-tab>
+            </mat-tab-group>
+        </mat-card-content>
+    </mat-card>

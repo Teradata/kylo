@@ -17,59 +17,58 @@
   limitations under the License.
   #L%
   -->
-<div flex layout="row" ng-if="vm.assessmentNotFound == false">
-  <card-layout flex>
-    <header-section transclude-to="head" flex layout>
+<div flex layout="row" *ngIf="assessmentNotFound == false">
+  <mat-card flex>
+    <mat-card-title flex layout>
       <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment</div>
-    </header-section>
-    <body-section transclude-to="body" transclude-replace="true">
-      <md-content ng-if="vm.loading == false">
+    </mat-card-title>
+    <mat-card-content >
+      <div *ngIf="loading == false">
         <div layout="column" class="layout-padding-bottom layout-padding-left-16">
           <div layout="row">
 
             <div flex="70" layout="column">
-                   <span class="item-title">
-                   {{vm.assessment.agreement.name}}
-                   </span>
-              <span class="column-title-bottom">
-                <ng-md-icon ng-if="vm.assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
-                <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
-                <ng-md-icon ng-if="vm.assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
-                {{vm.assessment.result}}
+              <span class="item-title">
+                {{assessment.agreement.name}}
               </span>
-
-
+              <span class="column-title-bottom">
+                <ng-md-icon *ngIf="assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+                <ng-md-icon *ngIf="assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+                <ng-md-icon *ngIf="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
+                {{assessment.result}}
+              </span>
             </div>
 
             <div flex="30" layout="column">
-                                               <span class="item-title">{{vm.assessment.time | date:'MMM d, yyyy HH:mm:ss'}}
-                                               </span>
+              <span class="item-title">
+                {{assessment.time | date:'MMM d, yyyy HH:mm:ss'}}
+              </span>
               <span class="column-title column-title-bottom">Created</span>
             </div>
           </div>
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Service Level Agreement Description</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.agreement.description"
-               ng-tt-chars-threshold="500">
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+            {{assessment.agreement.description  | truncate: 500}}
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Assessment</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.message"
-               ng-tt-chars-threshold="500">
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+            {{assessment.message  | truncate: 500}}
           </div>
         </div>
-        <div ng-if="vm.assessment.obligationAssessments != null && vm.assessment.obligationAssessments.length >0" class="layout-padding-bottom layout-padding-left-16" >
+        <div *ngIf="assessment.obligationAssessments != null && assessment.obligationAssessments.length >0" class="layout-padding-bottom layout-padding-left-16" >
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Assessment Details</div>
-          <div ng-repeat="obligation in vm.assessment.obligationAssessments">
-            <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}. Obligation Assessment Message</div>
-            <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="obligation.message"
-                 ng-tt-chars-threshold="500">
+          <div *ngFor="let obligation of assessment.obligationAssessments; let index = index;">
+            <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}. Obligation Assessment Message</div>
+            <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+              {{obligation.message | truncate: 500}}
             </div>
 
-            <div ng-if="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
-              <div ng-repeat="metric in obligation.metricAssessments ">
-                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}.Metric Assessment Message</div>
-                <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="metric.message"
-                     ng-tt-chars-threshold="500">
+            <div *ngIf="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
+              <div *ngFor="let metric of obligation.metricAssessments ">
+                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}.Metric Assessment Message</div>
+                <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+                  {{metric.message | truncate: 500}}
                 </div>
 
               </div>
@@ -80,58 +79,54 @@
 
         </div>
 
-
-
-
-      </md-content>
-      <md-content ng-if="vm.loading == true" style="min-height:300px">
+      </div>
+      <div *ngIf="loading == true" style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
         <span class="md-subhead">
-        Loading Service Level Assessment
-          </span>
+          Loading Service Level Assessment
+        </span>
 
         </div>
-      </md-content>
-    </body-section>
-  </card-layout>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
-  <card-layout flex="30" card-toolbar="false" header-css="assessment-details-header card-toolbar2" body-css="assessment-details-right-body" ng-if="vm.loading == false">
-    <header-section>
+  <mat-card flex="30" card-toolbar="false" *ngIf="loading == false" style="height:fit-content">
+    <mat-card-title class="assessment-details-header card-toolbar2">
       <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
       <span flex="5"></span>
-    </header-section>
-    <body-section >
-      <md-content flex md-scroll-y>
-        <md-list flex layout-fill layout="column" class="list-item-table">
+    </mat-card-title>
+    <mat-card-content class="assessment-details-right-body" style="padding: 0 0 16px 0;">
+      <div flex>
+        <mat-list flex layout-fill layout="column" class="list-item-table" style="padding:0">
 
-          <md-list-item>
-            <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title" ng-if="vm.agreementNotFound" >Service Level Agreement not found
-                                               </span>
-              <md-button class="md-primary md-link" ng-if="!vm.agreementNotFound" ng-click="vm.serviceLevelAgreement()">Service Level Agreement</md-button>
+          <mat-list-item style="padding:0">
+            <div layout="column" class="item-column md-list-item-text">
+              <span class="item-title" *ngIf="agreementNotFound" >Service Level Agreement not found
+              </span>
+              <button class="md-primary md-link md-button ng-scope md-kylo-theme md-ink-ripple" *ngIf="!agreementNotFound" (click)="serviceLevelAgreement()">Service Level Agreement</button>
             </div>
-          </md-list-item>
+          </mat-list-item>
 
-        </md-list>
+        </mat-list>
 
-
-      </md-content>
-    </body-section>
-  </card-layout>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>
-<div flex layout="column" ng-if="vm.assessmentNotFound == true && vm.loading == false">
-  <card-layout flex>
-    <header-section  flex layout>
+<div flex layout="column" *ngIf="assessmentNotFound == true && loading == false">
+  <mat-card flex>
+    <mat-card-title  flex layout>
       <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment</div>
-    </header-section>
-    <body-section >
-  <md-content  style="min-height:300px">
-    <div layout="column" layout-align="center center" flex>
-        <span class="md-subhead">
-        Unable to find the service level assessment.  This assessment either doesn't exist or you do not have access to view it.
-          </span>
-    </div>
-  </md-content>
-  </body-section>
-  </card-layout>
+    </mat-card-title>
+    <mat-card-content>
+      <div style="min-height:300px">
+        <div layout="column" layout-align="center center" flex>
+            <span class="md-subhead">
+              Unable to find the service level assessment. This assessment either doesn't exist or you do not have access to view it.
+            </span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

@@ -1219,6 +1219,9 @@ md-select.rows-per-page .md-select-value {
   width: auto;
 }
 
+.filter-help .mat-dialog-container {
+  padding: 0 !important;
+}
 
 
 /**

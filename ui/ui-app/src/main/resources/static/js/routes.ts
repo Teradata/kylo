@@ -363,35 +363,10 @@ class Route {
             }
         })
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'alerts.**',
             url: '/alerts',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('alerts', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading alerts ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'alert-details.**',
-            url: '/alert-details/{alertId}',
-            params: {
-                alertId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('alert-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading alert-details ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/alerts/alerts.module#AlertsModule' 
         });
 
         $stateProvider.state({
@@ -439,42 +414,16 @@ class Route {
             }
         });
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'service-level-assessment.**',
             url: '/service-level-assessment/{assessmentId}',
-            params: {
-                assessmentId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessment', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessment ", err);
-                    return err;
-                });
-
-            }
+            loadChildren: 'ops-mgr/sla/sla.module#SLAModule' 
         });
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'service-level-assessments.**',
             url: '/service-level-assessments',
-            params: {
-                filter: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessments', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessments ", err);
-                    return err;
-                });
-
-            }
+            loadChildren: 'ops-mgr/sla/sla.module#SLAModule' 
         });
 
         $stateProvider.state('jcr-query.**', {

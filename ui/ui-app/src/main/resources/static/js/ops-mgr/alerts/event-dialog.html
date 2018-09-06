@@ -17,25 +17,25 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Event dialog">
-    <md-dialog-content layout="column" layout-padding>
+<div mat-dialog aria-label="Event dialog">
+    <mat-dialog-content layout="column" layout-padding>
         <h4 class="md-title" style="margin-bottom:0px;">Update Alert Details</h4>
         <form name="actionUpdateForm" layout="column">
-            <md-input-container layout="row">
-                <md-select ng-model="state" placeholder="State">
-                    <md-option ng-value="'UNHANDLED'">Unhandled</md-option>
-                    <md-option ng-value="'IN_PROGRESS'">In Progress</md-option>
-                    <md-option ng-value="'HANDLED'">Handled</md-option>
-                </md-select>
-            </md-input-container>
-            <md-input-container layout="row">
-                <label>Comment</label>
-                <input ng-model="description" name="description" size="50" flex>
-            </md-input-container>
+            <mat-form-field layout="row">
+                <mat-select [(ngModel)]="state" placeholder="State" name="state">
+                    <mat-option [value]="'UNHANDLED'">Unhandled</mat-option>
+                    <mat-option [value]="'IN_PROGRESS'">In Progress</mat-option>
+                    <mat-option [value]="'HANDLED'">Handled</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field layout="row">
+                <mat-label>Comment</mat-label>
+                <input matInput [(ngModel)]="description" name="description" size="50" flex>
+            </mat-form-field>
         </form>
-    </md-dialog-content>
-    <md-dialog-actions>
-        <md-button ng-click="closeDialog()">Cancel</md-button>
-        <md-button class="md-primary md-raised" ng-click="saveDialog()" ng-disabled="saving">Save</md-button>
-    </md-dialog-actions>
-</md-dialog>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button class="md-button md-kylo-theme md-ink-ripple" (click)="closeDialog()">Cancel</button>
+        <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="saveDialog()" [disabled]="saving">Save</button>
+    </mat-dialog-actions>
+</div>

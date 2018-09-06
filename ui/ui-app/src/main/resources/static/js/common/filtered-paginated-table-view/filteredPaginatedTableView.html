@@ -26,7 +26,7 @@
                         <ng-content></ng-content>
                     </td-data-table>
                     <!-- paging not working because of this bug in mat-select https://github.com/angular/material2/issues/11063 -->
-                    <td-paging-bar #pagingBar
+                    <td-paging-bar #pagingBar 
                         [firstLast]="false"
                         [pageSize]="pageSize"
                         [total]="filteredTotal"
@@ -38,7 +38,7 @@
                                 </mat-option>
                             </mat-select>
                             {{pagingBar.range}}
-                            <span hide-xs>of {{pagingBar.total}}</span>
+                            <span hide-xs *ngIf="showTotal">of {{pagingBar.total}}</span>
                     </td-paging-bar>
                 </mat-card-content>
             </mat-card>

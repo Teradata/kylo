@@ -4,6 +4,7 @@ import * as _ from "underscore";
 import {Component, Input, Output, Inject, ElementRef} from "@angular/core";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import { RestUrlService } from "../../feed-mgr/services/RestUrlService";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
     selector: "icon-picker-dialog",
@@ -37,10 +38,10 @@ export class IconPickerDialog implements ng.IComponentController{
         this.fetchColors();
 
     }
-    constructor(@Inject("$injector") private $injector: any,
-            private dialogRef: MatDialogRef<IconPickerDialog>,
-            private RestUrlService: RestUrlService,
-            @Inject(MAT_DIALOG_DATA) private data: any){}
+    constructor(private http: HttpClient,
+                private dialogRef: MatDialogRef<IconPickerDialog>,
+                private RestUrlService: RestUrlService,
+                @Inject(MAT_DIALOG_DATA) private data: any){}
 
     selectIcon = (tile: any) => {
         this.selectedIconTile = tile;
@@ -70,9 +71,9 @@ export class IconPickerDialog implements ng.IComponentController{
 
     fetchIcons =( ) => {
         this.loadingIcons = true;
-        this.$injector.get("$http").get(this.RestUrlService.ICONS_URL).then((response: any) =>{
+        this.http.get(this.RestUrlService.ICONS_URL).toPromise().then((response: any) =>{
 
-            var icons = response.data;
+            var icons = response;
             angular.forEach(icons,  (icon: any) =>{
                 var tile = {title: icon};
                 this.iconTiles.push(tile);
@@ -86,8 +87,8 @@ export class IconPickerDialog implements ng.IComponentController{
 
     fetchColors=() => {
         this.loadingColors = true;
-        this.$injector.get("$http").get(this.RestUrlService.ICON_COLORS_URL).then( (response: any) =>{
-            var colors = response.data;
+        this.http.get(this.RestUrlService.ICON_COLORS_URL).toPromise().then( (response: any) =>{
+            var colors = response;
             angular.forEach(colors, (color: any)=>{
 
                 var tile = {title: color.name, background: color.color};
