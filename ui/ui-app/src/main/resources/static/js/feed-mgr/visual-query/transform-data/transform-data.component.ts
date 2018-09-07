@@ -26,6 +26,7 @@ import {WranglerDataService} from "./services/wrangler-data.service";
 import {VisualQueryTable} from "./visual-query-table/visual-query-table.component";
 import {QuickColumnsDialog, QuickColumnsDialogData} from "./profile-stats/quick-columns-dialog";
 import {ColumnUtil} from "../wrangler/core/column-util";
+import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./profile-stats/schema-layout-dialog";
 
 declare const CodeMirror: any;
 
@@ -999,7 +1000,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
     };
 
-    /**
+   /**
      * Generates and displays a categorical histogram
      *
      * @return {Promise} a promise for when the query completes
@@ -1021,6 +1022,36 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
     };
 
+    /**
+     * Shows columns dialog
+     */
+    /**
+     * Generates and displays a categorical histogram
+     *
+     * @return {Promise} a promise for when the query completes
+     */
+    showSchemaLayout(): void {
+
+         let dialogData = new SchemaLayoutDialogData(this.engine.getColumns());
+
+         this.$mdDialog.open(SchemaLayoutDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
+             .subscribe((columns: ColumnItem[]) => {
+                    if (columns != null) {
+                        let formulaFields : string[] = [];
+                        columns.forEach((col:ColumnItem) => {
+                            if (col.isChanged()) {
+                                let castClause = (col.isTypeChanged() ? `.cast("${col.newType}")` : '');
+                                formulaFields.push(`${col.origName}${castClause}.as("${col.newName}")`);
+                            } else {
+                                formulaFields.push(`${col.origName}`);
+                            }
+                        });
+                        const formula = `select(${formulaFields.join(",")}`;
+                        this.pushFormula(formula, {formula: formula, icon: 'reorder', name: 'Modify schema'}, true);
+                    }
+         });
+
+    };
 
     /**
      * Sets the formula in the function bar to the specified value.

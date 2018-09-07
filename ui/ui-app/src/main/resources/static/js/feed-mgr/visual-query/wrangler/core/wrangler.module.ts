@@ -18,6 +18,7 @@ import {DateFormatDialog} from "./columns/date-format.component";
 import {WranglerDialogService} from "./services/dialog.service";
 import {DomSanitizer} from "@angular/platform-browser";
 import {DynamicFormModule} from "../../../shared/dynamic-form/dynamic-form.module";
+import {CovalentVirtualScrollModule} from "@covalent/core";
 /**
  *
  */

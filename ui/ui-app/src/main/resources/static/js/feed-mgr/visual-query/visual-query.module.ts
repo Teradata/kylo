@@ -26,6 +26,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
+import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
 import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 import {CodemirrorModule} from "ng2-codemirror";
@@ -62,7 +63,10 @@ import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-f
 import VisualQueryProfileStatsController from "./transform-data/profile-stats/VisualQueryProfileStats";
 import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
 import {QuickColumnsDialog} from "./transform-data/profile-stats/quick-columns-dialog";
-import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/mini-analysis";
+import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/quick-column-components";
+import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-dialog";
+//import {DndListModule} from "ngx-drag-and-drop-lists";
+
 
 registerQueryEngine('spark', SparkQueryEngine);
 
@@ -84,14 +88,16 @@ registerQueryEngine('spark', SparkQueryEngine);
         VisualQueryTable,
         MiniCategoricalComponent,
         MiniHistogramComponent,
-        QuickColumnsDialog
+        QuickColumnsDialog,
+        SchemaLayoutDialog
     ],
     entryComponents: [
         AnalyzeColumnDialog,
         ConnectionDialog,
         SaveOptionsComponent,
         VisualQueryProfileStatsController,
-        QuickColumnsDialog
+        QuickColumnsDialog,
+        SchemaLayoutDialog
     ],
     exports: [
         BuildQueryComponent,
@@ -108,6 +114,8 @@ registerQueryEngine('spark', SparkQueryEngine);
         CovalentFileModule,
         CovalentLayoutModule,
         CovalentLoadingModule,
+        CovalentVirtualScrollModule,
+        //DndListModule,
         DynamicFormModule,
         FieldPoliciesModule,
         FlexLayoutModule,

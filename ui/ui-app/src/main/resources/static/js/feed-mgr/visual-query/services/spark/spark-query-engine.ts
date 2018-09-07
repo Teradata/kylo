@@ -1,4 +1,4 @@
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {Inject, Injectable, Injector} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {Program} from "estree";
@@ -469,7 +469,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 deferred.complete();
             }
         };
-        let errorCallback = function (response: TransformResponse) {
+        let errorCallback = function (response: HttpErrorResponse) {
             // Update state
             let state = self.states_[index];
             state.columns = [];
@@ -479,8 +479,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Respond with error message
             let message;
 
-            if (typeof response.message == "string") {
-                message = self.decodeError(response.message);
+            if (response.error !== undefined && response.error.message != null) {
+                message = self.decodeError(response.error.message.toString());
                 message = (message.length <= 1024) ? message : message.substr(0, 1021) + "...";
             } else {
                 message = "An unknown error occurred.";

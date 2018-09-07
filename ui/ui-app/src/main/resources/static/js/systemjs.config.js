@@ -181,6 +181,7 @@ System.config({
         "underscore":"bower:underscore/underscore-min",
         "vis":"bower:vis/dist/vis.min",
         "mdPickers":"bower:mdPickers/dist/mdPickers.min"
+        //,"ngx-drag-and-drop-lists":"npm:ngx-drag-and-drop-lists/index"
     },
     meta: {
         "@angular/core": {deps:["angular"]},
