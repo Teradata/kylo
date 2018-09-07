@@ -597,7 +597,7 @@ public class FeedRestController {
     }
     
     @GET
-    @Path("/{feedId}/versions/latest")
+    @Path("/{feedId}/versions/deployed")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Updates a feed with the latest template metadata.")
     @ApiResponses({
@@ -642,30 +642,30 @@ public class FeedRestController {
             throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
         }
     }
-    
-    @POST
-    @Path("/{feedId}/versions/{versionId}/deploy")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Deploys a feed version.")
-    @ApiResponses({
-        @ApiResponse(code = 200, message = "Feed was successfully deployed", response = FeedMetadata.class),
-        @ApiResponse(code = 400, message = "Indicates the feed or version to be deployed does not exist", response = FeedMetadata.class),
-        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
-    })
-    public Response deployFeedVersion(@PathParam("feedId") String feedId,
-                                   @PathParam("versionId") String versionId) {
-        try {
-            // TODO deploy the version
-            return getMetadataService().getFeedVersion(feedId, versionId, true)
-                            .map(version -> Response.ok(version).build())
-                            .orElse(Response.status(Status.NOT_FOUND).build());
-        } catch (VersionNotFoundException e) {
-            return Response.status(Status.NOT_FOUND).build();
-        } catch (Exception e) {
-            log.error("Unexpected exception retrieving the feed version", e);
-            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
-        }
-    }
+//    
+//    @POST
+//    @Path("/{feedId}/versions/{versionId}/deploy")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiOperation("Deploys a feed version.")
+//    @ApiResponses({
+//        @ApiResponse(code = 200, message = "Feed was successfully deployed", response = FeedMetadata.class),
+//        @ApiResponse(code = 400, message = "Indicates the feed or version to be deployed does not exist", response = FeedMetadata.class),
+//        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+//    })
+//    public Response deployFeedVersion(@PathParam("feedId") String feedId,
+//                                   @PathParam("versionId") String versionId) {
+//        try {
+//            // TODO deploy the version
+//            return getMetadataService().getFeedVersion(feedId, versionId, true)
+//                            .map(version -> Response.ok(version).build())
+//                            .orElse(Response.status(Status.NOT_FOUND).build());
+//        } catch (VersionNotFoundException e) {
+//            return Response.status(Status.NOT_FOUND).build();
+//        } catch (Exception e) {
+//            log.error("Unexpected exception retrieving the feed version", e);
+//            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+//        }
+//    }
     
     public enum Action { DEPLOY, DREAFT, REMOVE, VERSION }
     

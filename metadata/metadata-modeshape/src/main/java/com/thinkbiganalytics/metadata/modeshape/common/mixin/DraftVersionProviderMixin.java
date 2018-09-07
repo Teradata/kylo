@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.version.Version;
@@ -52,28 +53,35 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     
     @Override
     default Optional<List<EntityVersion<PK, T>>> findVersions(PK entityId, boolean includeContent) {
-        BiFunction<EntityVersion<PK, T>,EntityVersion<PK, T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
+        List<EntityVersion<PK, T>> result = new ArrayList<>();
         
-        return findVersionableNode(entityId)
-                        .map(node -> JcrVersionUtil.getVersions(node).stream()
-                                        .map(ver -> new JcrEntityVersion<>(ver, entityId, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
-                                        .sorted(desc::apply)
-                                        .collect(Collectors.toList()));
-//        return findVersionableNode(entityId)
-//                .map(node -> {
-//                    List<EntityVersion<T>> result = new ArrayList<>();
-//                    if (JcrVersionUtil.isCheckedOut(node)) {
-//                        result.add(new JcrEntityDraftVersion<>(node, includeContent ? asEntity(entityId, node) : null));
-//                    }
-//                    VersionProviderMixin.super.findVersions(entityId, includeContent).ifPresent(result::addAll);
-//                    return result;
-//                });
+        findVersionableNode(entityId)
+            .filter(node -> JcrVersionUtil.isCheckedOut(node))
+            .ifPresent(draft -> {
+                T entity = includeContent ? asEntity(entityId, draft) : null;
+                result.add(new JcrEntityDraftVersion<PK, T>(draft, entityId, entity));
+            });
+        
+        VersionProviderMixin.super.findVersions(entityId, includeContent)
+            .ifPresent(result::addAll);
+        
+        return result.size() != 0 ? Optional.of(result) : Optional.empty();
     }
 
     @Override
     default Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent) {
-        // TODO Auto-generated method stub
-        return VersionProviderMixin.super.findLatestVersion(entityId, includeContent);
+        Optional<EntityVersion<PK, T>> draftOption = findVersionableNode(entityId)
+            .filter(node -> JcrVersionUtil.isCheckedOut(node))
+            .map(draft -> {
+                T entity = includeContent ? asEntity(entityId, draft) : null;
+                return (EntityVersion<PK, T>) new JcrEntityDraftVersion<PK, T>(draft, entityId, entity);
+            });
+        
+        if (draftOption.isPresent()) {
+            return draftOption;
+        } else {
+            return VersionProviderMixin.super.findLatestVersion(entityId, includeContent);
+        }
     }
 
     @Override

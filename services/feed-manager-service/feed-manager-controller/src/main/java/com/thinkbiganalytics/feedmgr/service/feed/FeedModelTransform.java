@@ -304,7 +304,8 @@ public class FeedModelTransform {
      */
     @Nonnull
     public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId) {
-        FeedVersions feedVersions = new FeedVersions(feedId.toString(), deployedId.toString());
+        String deployed = deployedId != null ? deployedId.toString() : null;
+        FeedVersions feedVersions = new FeedVersions(feedId.toString(), deployed);
         versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer)));
         return feedVersions;
     }

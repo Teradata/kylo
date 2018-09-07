@@ -39,7 +39,7 @@ public class VersionableNodeInvocationHandler extends NodeModificationInvocation
      */
     @Override
     protected void beforeUpdate(Method method, Object[] args) {
-        JcrVersionUtil.ensureCheckoutNode(getWrappedNode());
+        JcrVersionUtil.ensureCheckoutNode(getWrappedNode(), this.autoCheckin);
     }
     
     /* (non-Javadoc)
