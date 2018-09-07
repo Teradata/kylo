@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Compiler, Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, SimpleChanges, Type} from "@angular/core";
+import {Compiler, Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, OnDestroy, SimpleChanges, Type} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {Observable} from "rxjs/Observable";
 import {ArrayObservable} from "rxjs/observable/ArrayObservable";
@@ -11,6 +11,7 @@ import {filter} from "rxjs/operators/filter";
 import {find} from "rxjs/operators/find";
 import {map} from "rxjs/operators/map";
 import {single} from "rxjs/operators/single";
+import {Subscription} from "rxjs/Subscription";
 import {EmptyError} from "rxjs/util/EmptyError";
 
 import {ProcessorControl} from "../../../../../../lib/feed/processor/processor-control";
@@ -29,7 +30,7 @@ enum State {
     selector: "feed-details-processor-field",
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/feed-details/feed-details-processor-field.component.html"
 })
-export class FeedDetailsProcessorFieldComponent implements OnChanges {
+export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy {
 
     @Input()
     processor: ProcessorRef;
@@ -43,14 +44,34 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges {
     error: string;
     form = new FormGroup({});
     state = State.LOADING;
+    statusSubscription: Subscription;
 
     constructor(private compiler: Compiler, private http: HttpClient, private injector: Injector, private moduleFactoryLoader: NgModuleFactoryLoader,
                 @Inject("UiComponentsService") private uiComponentsService: UiComponentsService) {
     }
 
+    ngOnDestroy(): void {
+        if (this.statusSubscription != null) {
+            this.statusSubscription.unsubscribe();
+        }
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.processor) {
+            // Unsubscribe from form status changes
+            if (this.statusSubscription != null) {
+                this.statusSubscription.unsubscribe();
+            }
+
             if (changes.processor.currentValue) {
+                // Ensure form state matches readonly state
+                this.statusSubscription = this.processor.form.statusChanges.subscribe(status => {
+                    if (this.readonly === true && status !== "DISABLED") {
+                        this.processor.form.disable();
+                    }
+                });
+
+                // Fetch template and update state
                 this.getProcessorTemplate().pipe(
                     single(),
                     catchError(err => {
@@ -75,6 +96,15 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges {
                 }
             }
         }
+
+        // Ensure form state matches readonly state
+        if (changes.readonly && this.processor != null) {
+            if (this.readonly) {
+                this.processor.form.disable();
+            } else {
+                this.processor.form.enable();
+            }
+        }
     }
 
     private getProcessorTemplate(): Observable<void> {
@@ -93,7 +123,8 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges {
             map(moduleFactory => {
                 const module = moduleFactory.create(this.injector);
                 const processorControl = module.injector.get(ProcessorControl);
-                this.childInjector = this.injector;
+                // this.childInjector = this.injector;
+                this.childInjector = Injector.create([{provide: ProcessorRef, useValue: this.processor}], this.injector);
                 this.childModule = moduleFactory;
                 this.childType = processorControl[0].component;
                 this.state = State.TEMPLATE;
