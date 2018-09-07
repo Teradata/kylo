@@ -24,6 +24,7 @@ import com.thinkbiganalytics.kylo.hadoop.FileSystemUtil;
 import com.thinkbiganalytics.kylo.protocol.hadoop.Handler;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.jetbrains.annotations.Contract;
@@ -138,7 +139,7 @@ public class HadoopClassLoader extends URLClassLoader {
      */
     @Contract("null, _ -> false")
     protected boolean addURL(@Nullable final String path, final boolean reload) {
-        if (path != null) {
+        if (StringUtils.isNotEmpty(path)) {
             final URL url = FileSystemUtil.parseUrl(path, conf);
             return addURL(url, reload);
         } else {
