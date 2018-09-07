@@ -87,6 +87,11 @@ import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/f
 import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
+import {SlaComponent} from './summary/sla/sla.componment';
+import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
+import {SlaFormComponent} from './summary/sla/details/sla-form.componment';
+import {SlaListComponent} from './summary/sla/list/sla-list.componment';
+import {SlaRowComponent} from './summary/sla/list/sla-row.componment';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {FeedNifiPropertiesService} from "./services/feed-nifi-properties.service";
 import {FeedNifiPropertiesComponent} from "./steps/feed-details/feed-nifi-properties.component";
@@ -131,6 +136,12 @@ import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog
         FeedInfoScheduleComponent,
         FeedInfoDescriptionComponent,
         FeedInfoCategoryComponent,
+        FeedInfoTagsComponent,
+        SlaComponent,
+        SlaListComponent,
+        SlaRowComponent,
+        SlaDetailsComponent,
+        SlaFormComponent,
         FeedInfoTagsComponent,
         FeedNifiPropertiesComponent,
         FeedInfoTagsComponent,

@@ -1,5 +1,5 @@
 
-<div *ngFor="let group of fieldGroups" fxLayout="{{group.layout}}">
+<div *ngFor="let group of fieldGroups" fxLayout="{{group.layout}}" fxLayoutAlign="{{group.layoutAlign}}">
     <div *ngFor="let field of group.fields" class="form-row">
       <dynamic-form-field [field]="field" [form]="form" [readonly]="readonly"></dynamic-form-field>
     </div>

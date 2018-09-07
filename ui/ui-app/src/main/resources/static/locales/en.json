@@ -389,7 +389,7 @@
     "views.feed-service-level-agreements.ASLA": "Add SLA",
 
     "views.service-level-agreement-form.BtL": "Back to List",
-    "views.service-level-agreement-form.SA": "Sla Assessments",
+    "views.service-level-agreement-form.SlaAssessments": "SLA Assessments",
     "views.service-level-agreement-form.Name": "Name",
     "views.service-level-agreement-form.Req": "This field is required.",
     "views.service-level-agreement-form.Description": "Description",
@@ -398,7 +398,7 @@
     "views.service-level-agreement-form.OR": "OR",
     "views.service-level-agreement-form.AC": "Add Condition",
     "views.service-level-agreement-form.Condition": "Condition",
-    "views.service-level-agreement-form.SNC": "Select New Condition",
+    "views.service-level-agreement-form.SelectNewCondition": "Select New Condition",
     "views.service-level-agreement-form.SLAA": "Actions",
     "views.service-level-agreement-form.ASLAvwgaA": "All SLA violations will generate an Alert.",
     "views.service-level-agreement-form.AddAction": "Click the 'Add Action' button to add additional actions when an SLA is violated",
@@ -923,6 +923,22 @@
             "Valid": "Valid",
             "Invalid": "Invalid",
             "Missing": "Missing"
+        }
+    },
+
+
+    "Sla": {
+        "ServiceLevelAgreements": "Service Level Agreements",
+        "RelatedFeeds": "Related Feeds",
+        "AddSla": "Add SLA",
+        "NoData": "No Service Level Agreements",
+        "Loading": "Loading...",
+
+        "Details": {
+            "EditSla": "Edit SLA",
+            "CreateNewSla": "Create New SLA",
+            "Save": "Save",
+            "Cancel": "Cancel"
         }
     }
 

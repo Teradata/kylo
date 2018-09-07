@@ -1,0 +1,165 @@
+<div *ngIf="editSla != null"  >
+  <div fxLayout="row" fxLayoutAlign="start start">
+    <div fxFlex></div>
+    <button mat-button (click)="viewSlaAssessments($event)" color="primary" *ngIf="feed && mode != 'NEW'" translate>views.service-level-agreement-form.SlaAssessments</button>
+  </div>
+
+  <form [formGroup]="slaForm">
+      <span class="md-subhead">Conditions</span>
+
+      <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
+        <div fxLayout="row">
+          <div class="layout-padding-right md-body-2">{{(idx+1)}}.</div>
+          <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
+            <span>{{rule.name}}</span>
+            <span class="hint">{{rule.description}}</span>
+          </div>
+          <div>
+            <div>
+              <button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaMetric(idx)" *ngIf="rule.editable">
+                <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+        <policy-input-form [parentFormGroup]="slaForm" [rule]="rule" [mode]="'EDIT'" [index]="idx"></policy-input-form>
+
+        <mat-divider *ngIf="!isLast"></mat-divider>
+
+      </div>
+
+      <div *ngIf="addingSlaCondition == false" fxLayout="row" class="layout-padding-top-20 layout-padding-bottom-15">
+        <button mat-button mat-raised-button (click)="addNewCondition()">Add Condition</button>
+        <span fxFlex></span>
+      </div>
+
+
+    <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="layout-padding-top-20 layout-padding-bottom-15 layout-padding-left-right">
+      <mat-select placeholder="{{'views.service-level-agreement-form.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
+        <mat-option *ngFor="let opt of options;" [value]="opt">
+          {{opt.name}}
+        </mat-option>
+      </mat-select>
+      <span fxFlex></span>
+      <button mat-button (click)="addingSlaCondition = false" *ngIf="editSla != null && editSla.rules.length >0">
+        <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+      </button>
+    </div>
+
+
+
+
+
+    <div class="layout-padding-top-20">
+      <div>
+        Form Value: {{ slaForm.value | json }}
+      </div>
+      <div>
+        Form Status: {{ slaForm.status }}
+      </div>
+    </div>
+
+      <!--<div>-->
+        <!--<span class="md-subhead">{{"views.service-level-agreement-form.SLAA" | translate}}</span>-->
+
+        <!--<div *ngIf="editSla.actionConfigurations.length ==0" fxLayout="column" class="layout-padding">-->
+          <!--<span>{{"views.service-level-agreement-form.ASLAvwgaA" | translate}}</span>-->
+          <!--<span *ngIf="showActionOptions">{{"views.service-level-agreement-form.AddAction" | translate}}</span>-->
+        <!--</div>-->
+
+        <!--<div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column" class="layout-padding-left-right">-->
+          <!--<div class="error md-title bold layout-padding-left" fxLayout="row">-->
+            <!--<div class="layout-padding-left">-->
+              <!--<mat-icon icon="warning" [style.font-size.px]="20" class="error">WARNING</mat-icon>-->
+            <!--</div>-->
+            <!--<span>{{"views.service-level-agreement-form.Errors-found" | translate}}</span>-->
+          <!--</div>-->
+
+          <!--<div *ngFor="let error of editSla.actionErrors" fxLayout="column" class="layout-padding-left">-->
+            <!--<span class="error">{{error}}</span>-->
+          <!--</div>-->
+        <!--</div>-->
+
+        <!--<div *ngFor="let rule of editSla.actionConfigurations" fxLayout="column" class="layout-padding">-->
+
+          <!--<div fxLayout="row" class="">-->
+            <!--<div class="layout-padding-right md-body-2">{{($index+1)}}.</div>-->
+
+            <!--<div fxLayout="column" fxFlex class="layout-padding-left md-body-2">-->
+              <!--<span>{{rule.name}}</span>-->
+              <!--<span class="hint">{{rule.description}}</span>-->
+              <!--<span *ngIf="rule.validConfiguration == false" class="error"><strong>{{"views.service-level-agreement-form.Warning" | translate}}</strong>  {{"views.service-level-agreement-form.Warning2" | translate}} {{rule.validationMessage}}</span>-->
+            <!--</div>-->
+            <!--<div>-->
+              <!--<div>-->
+                <!--<button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaAction($index)" *ngIf="rule.editable">-->
+                  <!--<mat-icon icon="delete" [style.font-size.px]="20" style="fill:grey;"></mat-icon>-->
+                <!--</button>-->
+              <!--</div>-->
+            <!--</div>-->
+          <!--</div>-->
+
+
+          <!--<thinkbig-policy-input-form the-form="slaForm" rule="rule" allow-edit="allowEdit" on-property-change="onPropertyChange"></thinkbig-policy-input-form>-->
+          <!--<mat-divider *ngIf="!$last"></mat-divider>-->
+        <!--</div>-->
+
+        <!--<div *ngIf="addingSlaAction" class="layout-padding-left-right" fxLayout="row">-->
+          <!--<md-input-container class="md-block layout-padding-top-bottom condensed">-->
+            <!--<label class="md-container-ignore label-small layout-padding-top">{{"views.service-level-agreement-form.SNA" | translate}}</label>-->
+            <!--<md-select ng-model="slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="onAddSlaActionChange()" aria-label="Rule Type">-->
+              <!--<md-option ng-value="opt" *ngFor="let opt of slaActionOptions">{{ opt.name }}</md-option>-->
+            <!--</md-select>-->
+          <!--</md-input-container>-->
+          <!--<button mat-button class="icon-btn md-icon-button auto-height" (click)="addingSlaAction = false">-->
+            <!--<mat-icon icon="delete" [style.font-size.px]="20" style="fill:grey;"></mat-icon>-->
+          <!--</button>-->
+        <!--</div>-->
+
+        <!--<div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">-->
+          <!--<button mat-button color="primary" (click)="addingSlaAction = true" *ngIf="showActionOptions" ng-disabled="editSla.rules.length ==0">{{"views.service-level-agreement-form.AA" | translate}}</button>-->
+          <!--<span fxFlex></span>-->
+        <!--</div>-->
+
+      <!--</div>-->
+
+      <!--<div fxLayout="column" class="layout-padding-top">-->
+        <!--<span class="md-subhead">Description</span>-->
+        <!--<div class="layout-padding-top-bottom">-->
+
+        <!--</div>-->
+
+        <!--<div class="layout-padding">-->
+          <!--<md-input-container class="md-block condensed" >-->
+            <!--<label>Name</label>-->
+            <!--<input name="slaName" type="text" ng-model="editSla.name" md-placeholder="SLA name" ng-disabled="!allowEdit" ng-change="onNameChange()"-->
+                   <!--required/>-->
+
+            <!--<div ng-messages="slaForm.slaName.$error " md-auto-hide="false">-->
+              <!--<div ng-message="required">This field is required.</div>-->
+            <!--</div>-->
+          <!--</md-input-container>-->
+          <!--<md-input-container class="md-block condensed">-->
+            <!--<label>Description</label>-->
+            <!--<input name="slaDescription" type="text" ng-model="editSla.description" md-placeholder="SLA Description" ng-disabled="!allowEdit" ng-change="onDescriptionChange()"-->
+                   <!--required/>-->
+
+            <!--<div ng-messages="slaForm.slaDescription.$error " md-auto-hide="false">-->
+              <!--<div ng-message="required">This field is required.</div>-->
+            <!--</div>-->
+          <!--</md-input-container>-->
+        <!--</div>-->
+      <!--</div>-->
+
+      <!--<div class="layout-padding-top-bottom" fxFlex fxLayout="row">-->
+        <!--<button mat-button (click)="onDeleteSla($event)" *ngIf="editSla != null && editSlaIndex != null && allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</button>-->
+        <!--<span fxFlex></span>-->
+        <!--<button mat-button  (click)="cancelEditSla()" *ngIf="editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</button>-->
+        <!--<button mat-button class="md-primary md-raised" (click)="saveSla()" *ngIf="editSla != null && allowEdit" ng-disabled="editSla.rules.length ==0 || slaForm.$invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</button>-->
+      <!--</div>-->
+
+     <!--</div>-->
+
+  </form>
+
+</div>

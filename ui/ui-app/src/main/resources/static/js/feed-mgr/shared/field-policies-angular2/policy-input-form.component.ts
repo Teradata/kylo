@@ -37,6 +37,9 @@ export interface RuleGroupWithFieldConfig {
 export class PolicyInputFormComponent implements OnInit {
 
     @Input()
+    index: number;
+
+    @Input()
     rule: any;
 
     @Input()
@@ -46,10 +49,10 @@ export class PolicyInputFormComponent implements OnInit {
     formGroup: FormGroup;
 
     @Input()
-    feed?: string
+    feed?: string;
 
     @Input()
-    mode: string //NEW or EDIT
+    mode: string; //NEW or EDIT
 
     @Output()
     onPropertyChange: EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
@@ -72,6 +75,7 @@ export class PolicyInputFormComponent implements OnInit {
     initialized:boolean = false;
 
     constructor(private policyInputFormService: PolicyInputFormService, private dynamicFormService: DynamicFormService) {
+        console.log('constructor');
         this.editChips = {};
         this.editChips.selectedItem = null;
         this.editChips.searchText = null;
@@ -86,8 +90,9 @@ export class PolicyInputFormComponent implements OnInit {
     }
 
     ngOnInit() {
+        console.log('ngOnInit');
         if(this.parentFormGroup != undefined) {
-            this.parentFormGroup.registerControl("policyForm", this.formGroup);
+            this.parentFormGroup.registerControl("policyForm_" + this.index, this.formGroup);
         }
 
 
@@ -102,7 +107,7 @@ export class PolicyInputFormComponent implements OnInit {
               });
           }
           */
-        console.log(this.rule, this.mode, this.feed);
+        console.log("rule, mode, feed", this.rule, this.mode, this.feed);
         if (this.rule) {
             this.buildAndSetFieldGroups();
         }
@@ -113,6 +118,7 @@ export class PolicyInputFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        console.log('ngOnChanges');
         if (changes && changes.rule && this.initialized) {
           //  setTimeout(() => {
 

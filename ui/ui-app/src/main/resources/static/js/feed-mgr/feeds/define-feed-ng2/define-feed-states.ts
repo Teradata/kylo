@@ -21,6 +21,9 @@ import {ProfileContainerComponent} from './summary/profile/container/profile-con
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
+import {SlaComponent} from './summary/sla/sla.componment';
+import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
+import {SlaListComponent} from './summary/sla/list/sla-list.componment';
 import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
 
 
@@ -244,6 +247,55 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-lineage",
         url: "/:feedId/feed-lineage",
         component: FeedLineageComponment,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla",
+        url: "/:feedId/sla",
+        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".sla.list",
+        component: SlaComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.list",
+        url: "/list",
+        component: SlaListComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.new",
+        url: "/new",
+        component: SlaDetailsComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.edit",
+        url: "/:slaId",
+        component: SlaDetailsComponent,
         resolve: [
             {
                 token: 'stateParams',

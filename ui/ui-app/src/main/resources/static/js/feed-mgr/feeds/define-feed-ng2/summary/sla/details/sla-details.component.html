@@ -1,0 +1,19 @@
+<mat-card class="mat-typography">
+
+  <mat-card-header>
+    <mat-card-title *ngIf="isEditing" translate>Sla.Details.EditSla</mat-card-title>
+    <mat-card-title *ngIf="isCreating" translate>Sla.Details.CreateNewSla</mat-card-title>
+    <span fxFlex></span>
+  </mat-card-header>
+
+  <mat-card-content>
+    <sla-form [sla]="sla" [feed]="feedModel"></sla-form>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-button (click)="onCancelSaveSla()">{{"Sla.Details.Cancel" | translate}}</button>
+    <button mat-button color="primary" (click)="onSaveSla()">{{"Sla.Details.Save" | translate}}</button>
+  </mat-card-actions>
+
+</mat-card>
+

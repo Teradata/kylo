@@ -7,9 +7,10 @@
       <h3  class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
-    <div *ngIf="field.controlType == 'static-text'" [innerHTML]="field.staticText" fxLayout="column" class="pad-top-sm">
+    <div *ngIf="field.controlType == 'static-text'" fxLayout="column" class="pad-top-sm">
       <mat-divider *ngIf="field.showDivider"></mat-divider>
       <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
+      <mat-hint *ngIf="field.hint">{{field.hint}}</mat-hint>
     </div>
 
     <div fxLayout="column" *ngIf="field.controlType != 'section-header' && field.controlType != 'static-text'" class="pad-top-sm">
@@ -30,10 +31,15 @@
       <h3 class="subheading-2">{{field.placeholder}}</h3>
     </section>
 
+    <div *ngSwitchCase="'icon'" class="pad-top-sm" fxLayout="column">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <mat-icon [style.font-size.px]="field.size">{{field.name}}</mat-icon>
+    </div>
 
-    <div *ngSwitchCase="'static-text'" [innerHTML]="field.staticText" class="pad-top-sm" fxLayout="column">
+    <div *ngSwitchCase="'static-text'" class="pad-top-sm" fxLayout="column">
       <mat-divider *ngIf="field.showDivider"></mat-divider>
       <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
+      <mat-hint *ngIf="field.hint">{{field.hint}}</mat-hint>
     </div>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm" >

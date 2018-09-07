@@ -77,7 +77,7 @@ export class FieldConfig<T> {
 
     }
     isStaticText(){
-        return this.controlType == "static-text" || this.controlType == "section-header"
+        return this.controlType == "static-text" || this.controlType == "section-header" || this.controlType == "icon";
     }
 
     setModelValue(value:any){

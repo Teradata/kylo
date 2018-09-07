@@ -21,7 +21,7 @@
   <div layout="row" layout-align="start start">
   <!--  <md-button ng-click="vm.onBackToList($event)"  class="md-primary">{{"views.service-level-agreement-form.BtL" | translate}}</md-button>-->
     <div flex/>
-    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</md-button>
+    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">{{"views.service-level-agreement-form.SlaAssessments" | translate}}</md-button>
   </div>
 
   <ng-form name="vm.slaForm" >
@@ -74,7 +74,7 @@
               </md-input-container>
               -->
         <md-input-container class="md-block layout-padding-top-bottom">
-          <label class="md-container-ignore label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SNC" | translate}}</label>
+          <label class="md-container-ignore label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SelectNewCondition" | translate}}</label>
           <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
             <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
           </md-select>

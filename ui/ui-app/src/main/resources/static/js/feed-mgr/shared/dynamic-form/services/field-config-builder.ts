@@ -11,6 +11,7 @@ import {ObjectUtils} from "../../../../common/utils/object-utils";
 import {DynamicFormFieldGroupBuilder} from "./dynamic-form-field-group-builder";
 import {FormGroup} from "@angular/forms";
 import {StaticText} from "../model/StaticText";
+import {Icon} from '../model/Icon';
 
 
 
@@ -255,41 +256,38 @@ export class ConfigurationFieldBuilder extends FieldConfigBuilder<any> {
 
 }
 
-    export class SelectFieldBuilder extends FieldConfigBuilder<Select> {
+export class SelectFieldBuilder extends FieldConfigBuilder<Select> {
 
-        options: {label: string, value: string}[] = [];
-        public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
-           super(formGroupBuilder)
-        }
+    options: {label: string, value: string}[] = [];
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+       super(formGroupBuilder)
+    }
 
-        getObjectType():any {
-            return Select;
-        }
-        setOptions(options:{label: string, value: string}[]):SelectFieldBuilder {
-            this.options = options;
-            return this;
-        }
+    getObjectType():any {
+        return Select;
+    }
+    setOptions(options:{label: string, value: string}[]):SelectFieldBuilder {
+        this.options = options;
+        return this;
+    }
 
-        setOptionsArray(options:any[]){
-            this.options = options.map(item => {
-                return {label:item,value:item};
-            });
-            return this;
-        }
+    setOptionsArray(options:any[]){
+        this.options = options.map(item => {
+            return {label:item,value:item};
+        });
+        return this;
+    }
 
-        addOption(label: string, value: string): SelectFieldBuilder{
-            this.options.push({label: label, value: value});
-            return this;
-        }
+    addOption(label: string, value: string): SelectFieldBuilder{
+        this.options.push({label: label, value: value});
+        return this;
+    }
 
-        protected buildOptions(){
-            let options = super.buildOptions();
-            options.options = this.options;
-            return options;
-        }
-
-
-
+    protected buildOptions(){
+        let options = super.buildOptions();
+        options.options = this.options;
+        return options;
+    }
 }
 
 
@@ -507,4 +505,35 @@ export  class TextareaFieldBuilder extends FieldConfigBuilder<Textarea> {
         return options;
     }
 
+}
+
+export class IconFieldBuilder extends FieldConfigBuilder<Icon> {
+
+    private name: string;
+    private size: number;
+
+    public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
+        super(formGroupBuilder)
+    }
+
+    getObjectType():any {
+        return Icon;
+    }
+
+    setName(name:string){
+        this.name = name;
+        return this;
+    }
+
+    setSize(size:number){
+        this.size = size;
+        return this;
+    }
+
+    protected buildOptions(){
+        let options = super.buildOptions();
+        options.name = this.name;
+        options.size = this.size;
+        return options;
+    }
 }

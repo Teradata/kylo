@@ -93,15 +93,34 @@ export class DynamicFormBuilder {
         return this;
     }
 
-    row(){
+    /**
+     * Append a new row, optionally insert a new row at given index
+     * @param {number} index - optional index at which to create the row
+     * @returns {DynamicFormFieldGroupBuilder}
+     */
+    row(index?: number){
         let rowBuilder = new DynamicFormFieldGroupBuilder(this,Layout.ROW);
-        this.formFieldBuilders.push(rowBuilder);
+        if (index) {
+            this.formFieldBuilders.splice(index, 0, rowBuilder);
+        } else {
+            this.formFieldBuilders.push(rowBuilder);
+        }
         return rowBuilder;
     }
 
-    column(){
+    /**
+     * Append a new column, optionally insert a new column at given index
+     * @param {number} index - optional index at which to insert a new column
+     * @returns {DynamicFormFieldGroupBuilder}
+     */
+    column(index?: number){
         let columnBuilder = new DynamicFormFieldGroupBuilder(this,Layout.COLUMN);
-        this.formFieldBuilders.push(columnBuilder);
+        if (index) {
+            this.formFieldBuilders.splice(index, 0, columnBuilder);
+        } else {
+            this.formFieldBuilders.push(columnBuilder);
+        }
+
         return columnBuilder;
     }
 
@@ -131,8 +150,7 @@ export class DynamicFormBuilder {
 
     buildFieldConfiguration():FieldGroup[]{
         //set the fields
-        let fieldGroups: FieldGroup[] = this.formFieldBuilders.map(builder => builder.build())
-        return fieldGroups;
+        return this.formFieldBuilders.map(builder => builder.build());
     }
 
 
@@ -150,8 +168,7 @@ export class DynamicFormBuilder {
         formConfig.form = this.form;
 
         //set the fields
-        let fieldGroups: FieldGroup[] = this.buildFieldConfiguration();
-        formConfig.fieldGroups = fieldGroups;
+        formConfig.fieldGroups = this.buildFieldConfiguration();
 
         //set the callbacks
         formConfig.onApplyFn = this.onApplyFn;
