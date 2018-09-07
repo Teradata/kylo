@@ -32,6 +32,7 @@
                 <entry key="initSession">
                     <value>
                         <![CDATA[
+val sqlContext = org.apache.spark.sql.SQLContext.getOrCreate(sc)
 val ctx = com.thinkbiganalytics.spark.LivyWrangler.createSpringContext(sc, sqlContext)
 val profiler = ctx.getBean(classOf[com.thinkbiganalytics.spark.dataprofiler.Profiler])
 val transformService =

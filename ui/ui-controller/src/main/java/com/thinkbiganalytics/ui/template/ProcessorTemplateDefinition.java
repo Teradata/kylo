@@ -45,6 +45,11 @@ public class ProcessorTemplateDefinition implements ProcessorTemplate {
      */
     private String feedDetailsTemplateUrl;
 
+    /**
+     * The URI for the Angular module
+     */
+    private String module;
+
     public List getProcessorTypes() {
         return processorTypes;
     }
@@ -76,5 +81,14 @@ public class ProcessorTemplateDefinition implements ProcessorTemplate {
 
     public void setProcessorDisplayName(String processorDisplayName) {
         this.processorDisplayName = processorDisplayName;
+    }
+
+    @Override
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
     }
 }

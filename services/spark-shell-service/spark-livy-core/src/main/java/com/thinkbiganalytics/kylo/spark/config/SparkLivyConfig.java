@@ -21,15 +21,17 @@ package com.thinkbiganalytics.kylo.spark.config;
  */
 
 import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.kylo.spark.client.DefaultLivyClient;
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.client.ReliableLivyClient;
 import com.thinkbiganalytics.kylo.spark.client.jersey.LivyRestClient;
 import com.thinkbiganalytics.kylo.spark.client.livy.LivyHeartbeatMonitor;
+import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
-import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.utils.KerberosUtils;
 import com.thinkbiganalytics.kylo.utils.LivyRestModelTransformer;
 import com.thinkbiganalytics.kylo.utils.ProcessRunner;
@@ -38,10 +40,11 @@ import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
-import com.thinkbiganalytics.spark.shell.SparkShellProcess;
+import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -59,8 +62,9 @@ import javax.annotation.PostConstruct;
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @ImportResource("classpath:/config/applicationContext-livy.xml")
 @EnableConfigurationProperties  // needed for populating configuration POJOs
-@AllProfiles( { "kylo-livy", "!kyloUpgrade" })
+@AllProfiles({"kylo-livy", "!kyloUpgrade"})
 public class SparkLivyConfig {
+
     /**
      * Loads the properties for acquiring a Kerberos ticket.
      *
@@ -102,7 +106,6 @@ public class SparkLivyConfig {
     }
 
     /**
-     * @return
      * @implNote required to start Kylo
      */
     @Bean
@@ -141,16 +144,19 @@ public class SparkLivyConfig {
 
     @Bean
     public Map<String /* transformId */, Integer /* stmntId */> statementIdCache() {
-         Cache<String,Integer> cache = LivyRestModelTransformer.statementIdCache;
-         return cache.asMap();
+        Cache<String, Integer> cache = LivyRestModelTransformer.statementIdCache;
+        return cache.asMap();
     }
 
+    /**
+     * Listens for spark process events and updates the cluster.
+     */
     @Bean
-    public Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache() {
-        // cache is emptied by heartbeat service.
-        Cache<SparkShellProcess,Integer> cache = CacheBuilder.newBuilder()
-            .build();
-        return cache.asMap();
+    @ConditionalOnProperty("kylo.cluster.jgroupsConfigFile")
+    public SparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkLivyProcessManager sparkLivyProcessManager) {
+        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, sparkLivyProcessManager);
+        sparkLivyProcessManager.addListener(clusterListener);
+        return clusterListener;
     }
 
     @Bean
@@ -171,14 +177,11 @@ public class SparkLivyConfig {
         LivyRestClient.setKerberosSparkProperties(kerberosSparkProperties());  // all clients will have kerberos
         JerseyRestClient livyRestClient = new LivyRestClient(config);
 
-        return new LivyHeartbeatMonitor(livyClient(), livyRestClient, livyServer(livyProperties()), clientSessionCache(), livyProperties());
+        return new LivyHeartbeatMonitor(livyClient(), livyRestClient, livyServer(livyProperties()), livyProperties());
     }
 
     /**
-     * status kept up to date by:  Heartbeat thread.  Entries are removed if Livy no
-     *  longer aware of the session
-     *
-     * @return
+     * status kept up to date by:  Heartbeat thread.  Entries are removed if Livy no longer aware of the session
      */
     @Bean
     public LivyServer livyServer(LivyProperties livyProperties) {
@@ -188,12 +191,12 @@ public class SparkLivyConfig {
 
     /* Do any property validation/manipulation here */
     @PostConstruct
-    public  void postConstruct() {
+    public void postConstruct() {
         // find a suitable kinit path
         KerberosSparkProperties ksp = kerberosSparkProperties();
-        if( ksp.isKerberosEnabled() ) {
+        if (ksp.isKerberosEnabled()) {
             File actualKinitPath = kerberosUtils().getKinitPath(ksp.getKinitPath());
-            if( actualKinitPath == null ) {
+            if (actualKinitPath == null) {
                 throw new IllegalStateException("Kerberos is enabled yet cannot find a valid path for kinit.  Check 'kerberos.spark.kinitPath' property");
             }
             ksp.setKinitPath(actualKinitPath);

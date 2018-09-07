@@ -21,6 +21,7 @@ import {MatStepperModule} from "@angular/material/stepper";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {CovalentChipsModule} from "@covalent/core/chips";
 import {CovalentCommonModule} from '@covalent/core/common';
 import {CovalentDataTableModule} from "@covalent/core/data-table";
@@ -28,6 +29,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMediaModule} from "@covalent/core/media";
+import {CovalentMessageModule} from "@covalent/core/message";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 import {CovalentSearchModule} from "@covalent/core/search";
 import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
@@ -63,6 +65,7 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
+import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
 import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
 import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-sample/define-feed-step-source-sample-datasource.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
@@ -82,7 +85,6 @@ import {ProfileValidComponent} from './summary/profile/container/valid/profile-v
 import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
-
 import {FeedInfoItemComponent} from "./summary/overview/feed-info-item.component";
 import {FeedInfoScheduleComponent} from "./summary/overview/feed-info-schedule/feed-info-schedule.component";
 import {FeedInfoDescriptionComponent} from "./summary/overview/feed-info-description/feed-info-description.component";
@@ -90,6 +92,7 @@ import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/f
 import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
+import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 
 @NgModule({
     declarations: [
@@ -129,7 +132,8 @@ import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info
         FeedInfoScheduleComponent,
         FeedInfoDescriptionComponent,
         FeedInfoCategoryComponent,
-        FeedInfoTagsComponent
+        FeedInfoTagsComponent,
+        FeedDetailsProcessorFieldComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,
@@ -194,6 +198,9 @@ import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info
         NvD3Module,
         MatStepperModule,
         MatExpansionModule,
+        CovalentMessageModule,
+        MatProgressSpinnerModule,
+        KyloFeedModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

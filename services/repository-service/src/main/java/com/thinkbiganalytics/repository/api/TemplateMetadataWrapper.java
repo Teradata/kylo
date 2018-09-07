@@ -20,8 +20,10 @@ package com.thinkbiganalytics.repository.api;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateChangeComment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TemplateMetadataWrapper {
 
@@ -29,11 +31,14 @@ public class TemplateMetadataWrapper {
     private String description;
     private String fileName;
     private String checksum;
+    private String update;
     private boolean installed;
     private boolean stream;
 
     private boolean updateAvailable = false;
     private TemplateRepository repository;
+
+    private List<TemplateChangeComment> updates = new ArrayList<>();
 
     public TemplateMetadataWrapper(TemplateMetadata m){
 
@@ -83,5 +88,9 @@ public class TemplateMetadataWrapper {
 
     public void setInstalled(boolean installed) {
         this.installed = installed;
+    }
+
+    public List<TemplateChangeComment> getUpdates() {
+        return updates;
     }
 }

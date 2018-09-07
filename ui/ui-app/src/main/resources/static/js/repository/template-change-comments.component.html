@@ -1,0 +1,31 @@
+<!--<div fxLayout="column" class="info-item" *ngFor="let update of updates">-->
+<!--<div fxLayout="row" class="info-item-row">-->
+<!--<div fxLayout="column" class="info-item-text">-->
+<!--<div fxLayout="row">-->
+<!--<div class="info-item-title">{{update.createDateTime | date: 'MM/dd/yyyy h:mm:ssa'}}</div>-->
+<!--</div>-->
+<!--<div class="info-item-title"-->
+<!--title="{{update.comment}}">{{update.comment | truncate:50}}</div>-->
+<!--</div>-->
+<!--<span fxFlex></span>-->
+<!--</div>-->
+<!--<mat-divider></mat-divider>-->
+<!--</div>-->
+
+
+<div fxLayout="row" fxLayoutAlign="space-evenly center">
+  <h4 fxFlex="30">Date</h4>
+  <h4 fxFlex="30">Comment</h4>
+  <span flex></span>
+</div>
+<mat-list>
+  <td-virtual-scroll-container #virtualScroll [style.height.px]="200" [data]="updates">
+    <ng-template let-row="row" let-last="last" tdVirtualScrollRow>
+      <mat-list-item fxLayout="row" fxLayoutAlign="start center">
+        <div fxFlex="30" class="info-item-text">{{row.createDateTime | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
+        <div fxFlex title="{{row.comment}}" class="info-item-text">{{row.comment | truncate:50}}</div>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </ng-template>
+  </td-virtual-scroll-container>
+</mat-list>

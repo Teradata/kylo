@@ -52,7 +52,7 @@ public class SessionsGetResponse {
 
     public Optional<Session> getSessionWithId(Integer id) {
         return sessions.stream().
-                filter(session -> session.getId() == id).findFirst();
+                filter(session -> session.getId().equals(id)).findFirst();
     }
 
     @Override

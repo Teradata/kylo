@@ -20,6 +20,7 @@ package com.thinkbiganalytics.kylo.spark.client;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
@@ -30,13 +31,13 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 
 public interface LivyClient {
 
-    Statement postStatement(JerseyRestClient client, SparkShellProcess sparkShellProcess, StatementsPost sp);
+    Statement postStatement(JerseyRestClient client, SparkLivyProcess sparkLivyProcess, StatementsPost sp);
 
-    Statement getStatement(JerseyRestClient client,  SparkShellProcess sparkShellProcess, Integer statementId);
+    Statement getStatement(JerseyRestClient client,  SparkLivyProcess sparkLivyProcess, Integer statementId);
 
     SessionsGetResponse getSessions(JerseyRestClient client);
 
     Session postSessions(JerseyRestClient client, SessionsPost sessionsPost);
 
-    Session getSession(JerseyRestClient client,  SparkShellProcess sparkShellProcess);
+    Session getSession(JerseyRestClient client, SparkLivyProcess sparkLivyProcess);
 }

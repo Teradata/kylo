@@ -1,10 +1,10 @@
-package com.thinkbiganalytics.spark.shell.cluster;
+package com.thinkbiganalytics.kylo.spark.cluster;
 
 /*-
  * #%L
- * Spark Shell Core
+ * Spark Shell Service API
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.shell.cluster;
  * #L%
  */
 
+
+
 import com.thinkbiganalytics.cluster.ClusterMessage;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceListener;
@@ -30,7 +32,6 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcessListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

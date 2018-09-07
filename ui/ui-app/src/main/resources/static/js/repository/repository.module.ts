@@ -37,6 +37,12 @@ import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatSortModule} from "@angular/material/sort";
 import {MatInputModule} from "@angular/material/input";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
+import {CovalentExpansionPanelModule} from "@covalent/core/expansion-panel";
+import {TemplateUpdatesDialog} from "./dialog/template-updates-dialog";
+import {MatExpansionModule} from "@angular/material/expansion";
+import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
+import {MatChipsModule} from "@angular/material/chips";
+import {TemplateChangeCommentsComponent} from "./template-change-comments.component";
 
 const moduleName: string = require("feed-mgr/templates/module-name");
 
@@ -45,7 +51,9 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         ListTemplatesComponent,
         RepositoryComponent,
         TemplateInfoComponent,
+        TemplateChangeCommentsComponent,
         TemplatePublishDialog,
+        TemplateUpdatesDialog,
         ImportTemplateComponent,
         ImportTemplateDirective
     ],
@@ -60,6 +68,8 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         CovalentSearchModule,
         CovalentPagingModule,
         CovalentNotificationsModule,
+        CovalentExpansionPanelModule,
+        CovalentVirtualScrollModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatCardModule,
@@ -75,16 +85,18 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         MatSortModule,
         MatInputModule,
         MatProgressSpinnerModule,
+        MatExpansionModule,
         CdkTableModule,
         MatMenuModule,
         MatProgressBarModule,
         MatRadioModule,
+        MatChipsModule,
         UIRouterModule.forChild({states: repositoryStates})
     ],
     providers:[
         TemplateService
     ],
-    entryComponents: [TemplatePublishDialog]
+    entryComponents: [TemplatePublishDialog, TemplateUpdatesDialog]
 })
 export class RepositoryModule {
 

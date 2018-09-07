@@ -1,0 +1,31 @@
+.info-item-text {
+  font-size: 14px;
+  /*padding-left: 16px;*/
+}
+
+.info-item-row {
+  /*padding: 0 16px;*/
+  align-items: center;
+}
+
+.item-info-row .mat-icon {
+  /*width: 20px;*/
+  height: 20px;
+  font-size: 20px;
+}
+
+.info-item:first {
+  padding-bottom:10px;
+}
+/*.info-item:not(first) {*/
+  /*padding: 10px 0;*/
+/*}*/
+
+.info-item {
+  min-height: 40px;
+
+}
+
+/deep/.mat-list .mat-list-item .mat-list-item-content {
+  width: 100%;
+}

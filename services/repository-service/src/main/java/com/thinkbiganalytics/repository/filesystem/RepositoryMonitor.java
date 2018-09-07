@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.repository.api.TemplateMetadata;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -74,7 +75,7 @@ public class RepositoryMonitor {
         try {
             watcher = FileSystems.getDefault().newWatchService();
         } catch (Exception e) {
-            log.error("Error trying to setup watch service for template repositories", e);
+            log.error("Error in Template Repository watch service setup", e);
         }
         this.watcher = watcher;
     }
@@ -96,7 +97,10 @@ public class RepositoryMonitor {
                         if (kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
                             createMetadata(repositoryPath.resolve(ev.context()));
                         } else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
-                            Files.deleteIfExists(getMetadataFileName(repositoryPath.resolve(ev.context())));
+                            Path json = getMetadataFileName(repositoryPath.resolve(ev.context()));
+                            TemplateMetadata metadata = mapper.readValue(json.toFile(), TemplateMetadata.class);
+                            templateUpdateInfoCache.invalidate(metadata.getTemplateName());
+                            Files.deleteIfExists(json);
                             log.info("{}: {} and its metadata.", ev.kind(), ev.context());
                         }
                     }
@@ -108,7 +112,7 @@ public class RepositoryMonitor {
                 }
             }
         } catch (Exception e) {
-            log.error("Error occurred while monitoring repository changes", e);
+            log.error("Error occurred monitoring repository changes", e);
         }
     }
 
@@ -117,18 +121,21 @@ public class RepositoryMonitor {
     }
 
     private void createMetadata(Path templateFilePath) {
+        RegisteredTemplate tmplt = null;
         try {
-            byte[] content = ImportUtil.streamToByteArray(new FileInputStream(templateFilePath.toFile()));
+            File templateZipFile = templateFilePath.toFile();
+            byte[] content = ImportUtil.streamToByteArray(new FileInputStream(templateZipFile));
             InputStream inputStream = new ByteArrayInputStream(content);
             ImportTemplate importTemplate = ImportUtil.openZip(templateFilePath.getFileName().toString(), inputStream);
-            RegisteredTemplate tmplt = importTemplate.getTemplateToImport();
+            tmplt = importTemplate.getTemplateToImport();
 
             File json = getMetadataFileName(templateFilePath).toFile();
+            String checksum = DigestUtils.md5DigestAsHex(content);
             //create new
             TemplateMetadata metadata = new TemplateMetadata(tmplt.getTemplateName(), tmplt.getDescription(),
-                                                             templateFilePath.getFileName().toString(), DigestUtils.md5DigestAsHex(content),
+                                                             templateFilePath.getFileName().toString(), checksum,
                                                              tmplt.isStream(), false, tmplt.getUpdateDate().getTime());
-            //update: no changes required if template is not updated
+            //update: no changes required if template was not updated
             Boolean updated = templateUpdateInfoCache.getIfPresent(tmplt.getTemplateName());
             if (updated != null) {
                 metadata = mapper.readValue(json, TemplateMetadata.class);
@@ -136,13 +143,20 @@ public class RepositoryMonitor {
                     return;
                 }
 
+                if (StringUtils.equals(metadata.getChecksum(), checksum)) {
+                    return;
+                }
+
                 metadata.setUpdateAvailable(true);
                 templateUpdateInfoCache.put(tmplt.getTemplateName(), true);
             }
-            log.info("Writing metadata for {} template.", tmplt.getTemplateName());
+            log.info("Writing template metadata for {}.", tmplt.getTemplateName());
             mapper.writerWithDefaultPrettyPrinter().writeValue(json, metadata);
         } catch (Exception e) {
-            log.error("Error occurred while trying to generate metadata a template file.", e);
+            log.error("Error occurred trying to generate template metadata.", e);
+            if (tmplt != null) {
+                templateUpdateInfoCache.invalidate(tmplt.getTemplateName());
+            }
         }
     }
 

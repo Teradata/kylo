@@ -134,6 +134,7 @@ System.config({
         '@covalent/core/steps': 'npm:@covalent/core/bundles/covalent-core-steps.umd.min',
         '@covalent/core/virtual-scroll': 'npm:@covalent/core/bundles/covalent-core-virtual-scroll.umd.min',
         '@covalent/dynamic-forms': 'npm:@covalent/dynamic-forms/bundles/covalent-dynamic-forms.umd',
+        "@kylo/feed": "../lib/feed/index",
         '@kylo/wrangler': 'feed-mgr/visual-query/wrangler/index',
         '@kylo/wrangler/api': 'feed-mgr/visual-query/wrangler/api/index',
         '@ngx-translate/core': 'npm:@ngx-translate/core/bundles/core.umd.min',
