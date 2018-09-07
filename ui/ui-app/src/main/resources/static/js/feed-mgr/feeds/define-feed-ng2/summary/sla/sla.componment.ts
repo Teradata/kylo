@@ -13,6 +13,7 @@ export class Sla {
     rules: Array<any>;
     canEdit: boolean;
     actionConfigurations: Array<any>;
+    actionErrors: Array<any>;
 }
 
 

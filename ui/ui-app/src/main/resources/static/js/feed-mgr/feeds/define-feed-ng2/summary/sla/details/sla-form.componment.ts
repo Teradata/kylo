@@ -1,7 +1,6 @@
 import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import {Sla} from '../sla.componment';
-import {DynamicFormBuilder, FormConfig} from '../../../../../shared/dynamic-form/services/dynamic-form-builder';
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Feed} from '../../../../../model/feed/feed.model';
 import * as _ from 'underscore';
 import {PolicyInputFormService} from '../../../../../shared/field-policies-angular2/policy-input-form.service';
@@ -26,8 +25,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
 
     @Input('sla') editSla: Sla;
     @Input('feed') feedModel: Feed;
-
-    formConfig: FormConfig;
 
     /**
      * The Default Condition to be applied to the new Rule
@@ -64,20 +61,24 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * @type {{}}
      */
     slaForm: FormGroup = new FormGroup({});
+    slaName = new FormControl({});
+    slaDescription = new FormControl({});
+
     private slaService: any;
     options: any;
     private allowCreate = true;
-    private allowEdit = true;
+    allowEdit = true;
     private feed: null;
 
 
     constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService) {
         console.log('constructor');
         this.slaService = $$angularInjector.get("SlaService");
+
     }
 
     ngOnInit(): void {
-        console.log('ngOnInit, slaForm', this.slaForm);
+        console.log('ngOnInit, editSla', this.editSla);
 
         /**
          * Load up the Metric Options for defining SLAs
@@ -97,7 +98,14 @@ export class SlaFormComponent implements OnInit, OnChanges {
 
 
     ngOnChanges(changes: SimpleChanges): void {
-        console.log('ngOnChanges, slaForm', this.slaForm);
+        console.log('ngOnChanges, editSla', this.editSla);
+
+        if (this.editSla) {
+            this.slaName = new FormControl(this.editSla.name, Validators.required);
+            this.slaDescription = new FormControl(this.editSla.description, Validators.required);
+            this.slaForm.addControl('slaName', this.slaName);
+            this.slaForm.addControl('slaDescription', this.slaDescription);
+        }
     }
 
     addNewCondition() {
@@ -151,6 +159,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
                 this.editSla.description = this.deriveDescription();
             }
         }
+        this.validateForm();
     }
 
     private deriveSlaName() {
@@ -180,6 +189,14 @@ export class SlaFormComponent implements OnInit, OnChanges {
             desc += " for " + feedNamesString;
         }
         return desc;
+    }
+
+    onNameChange(): void {
+        this.userSuppliedName = true;
+    }
+
+    onDescriptionChange(): void {
+        this.userSuppliedDescription = true;
     }
 
     onDeleteSlaMetric(index: number) {
