@@ -1,6 +1,7 @@
 {
-  "processorDisplayName":"Filesystem",
-  "processorTypes":["org.apache.nifi.processors.standard.GetFile"],
-  "stepperTemplateUrl":"js/plugin/processor-templates/GetFile/get-file-processor.html",
-  "feedDetailsTemplateUrl":"js/plugin/processor-templates/GetFile/get-file-processor.html"
+  "processorDisplayName": "Filesystem",
+  "processorTypes": [
+    "org.apache.nifi.processors.standard.GetFile"
+  ],
+  "module": "plugin/processor-templates/GetFile/bundle/get-file.umd.min#GetFileModule"
 }

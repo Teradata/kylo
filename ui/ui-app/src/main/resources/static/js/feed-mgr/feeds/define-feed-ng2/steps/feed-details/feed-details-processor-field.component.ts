@@ -121,12 +121,17 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
             filter(template => typeof template !== "undefined"),
             concatMap(template => this.moduleFactoryLoader.load(template.module)),
             map(moduleFactory => {
+                // Find processor control
                 const module = moduleFactory.create(this.injector);
-                const processorControl = module.injector.get(ProcessorControl);
-                // this.childInjector = this.injector;
+                const processorControl = module.injector.get<ProcessorControl[]>(ProcessorControl as any).find(control => control.supportsProcessorType(this.processor.type));
+                if (typeof processorControl === "undefined" || processorControl == null) {
+                    throw new Error("Missing ProcessorControl provider for processor type: " + this.processor.type);
+                }
+
+                // Load component and update state
                 this.childInjector = Injector.create([{provide: ProcessorRef, useValue: this.processor}], this.injector);
                 this.childModule = moduleFactory;
-                this.childType = processorControl[0].component;
+                this.childType = processorControl.component;
                 this.state = State.TEMPLATE;
                 return null;
             })
