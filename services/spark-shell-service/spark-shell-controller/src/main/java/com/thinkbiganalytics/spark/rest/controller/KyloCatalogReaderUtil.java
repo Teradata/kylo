@@ -84,7 +84,9 @@ public class KyloCatalogReaderUtil {
         request.setJars(jars);
         request.setFormat(format);
         request.setOptions(options);
-       // request.setPaths(paths);
+        if(previewRequest.getPreviewItem() != null && previewRequest.isAddPreviewItemToPath()) {
+         request.addPath(previewRequest.getPreviewItem());
+        }
         PageSpec pageSpec = previewRequest.getPageSpec();
         if(pageSpec == null){
             pageSpec = new PageSpec();
