@@ -724,4 +724,13 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#findDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<com.thinkbiganalytics.metadata.api.feed.Feed.ID, Feed>> findDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.NoDraftVersionException;
 import com.thinkbiganalytics.metadata.api.versioning.VersionAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityDraftVersion;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
@@ -37,9 +36,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.version.Version;
@@ -66,6 +62,17 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
             .ifPresent(result::addAll);
         
         return result.size() != 0 ? Optional.of(result) : Optional.empty();
+    }
+    
+    @Override
+    default Optional<EntityVersion<PK, T>> findDraftVersion(PK entityId, boolean includeContent) {
+        return findVersionableNode(entityId)
+            .filter(node -> JcrVersionUtil.isCheckedOut(node))
+            .map(draft -> {
+                T entity = includeContent ? asEntity(entityId, draft) : null;
+                return (EntityVersion<PK, T>) new JcrEntityDraftVersion<PK, T>(draft, entityId, entity);
+            });
+
     }
 
     @Override

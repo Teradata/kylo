@@ -117,11 +117,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     }
     
     public void setDeployedVersion(Version version) {
-        if (version == null) {
-            setProperty(DEPLOYED_VERSION, null);
-        } else {
-            setProperty(DEPLOYED_VERSION, JcrPropertyUtil.getIdentifier(version));
-        }
+        JcrPropertyUtil.setProperty(getNode(), DEPLOYED_VERSION, version);
     }
     
     /**

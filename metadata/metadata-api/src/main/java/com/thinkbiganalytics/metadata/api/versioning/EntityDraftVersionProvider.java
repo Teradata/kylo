@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.api.versioning;
  */
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Interface to be extended by providers that provide versionable entities, and whose
@@ -32,6 +33,8 @@ import java.io.Serializable;
 public interface EntityDraftVersionProvider<T, PK extends Serializable> extends EntityVersionProvider<T, PK> {
 
     boolean hasDraftVersion(PK entityId);
+    
+    Optional<EntityVersion<PK, T>> findDraftVersion(PK entityId, boolean includeContent);
     
     EntityVersion<PK, T> createDraftVersion(PK entityId, boolean includeContent);
     

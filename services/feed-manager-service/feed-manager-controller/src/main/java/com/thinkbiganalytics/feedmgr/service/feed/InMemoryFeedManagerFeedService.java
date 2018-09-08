@@ -402,7 +402,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
      * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#deployFeedVersion(java.lang.String, java.lang.String, boolean)
      */
     @Override
-    public FeedVersions deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+    public EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -411,7 +411,25 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
      * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#versionDraftFeed(java.lang.String, boolean)
      */
     @Override
-    public FeedVersions versionDraftFeed(String feedId, boolean includeContent) {
+    public EntityVersion versionDraftFeed(String feedId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#saveDraftFeed(com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata)
+     */
+    @Override
+    public FeedMetadata saveDraftFeed(FeedMetadata feedMetadata) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#createDraftFromFeedVersion(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public EntityVersion createDraftFromFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }

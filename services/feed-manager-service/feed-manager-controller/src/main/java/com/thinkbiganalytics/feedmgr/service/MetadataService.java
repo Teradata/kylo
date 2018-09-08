@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service;
 
-import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
-
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -113,6 +111,14 @@ public interface MetadataService {
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
+
+    /**
+     * Save the feed as a draft version.
+     * 
+     * @param feedMetadata metadata about the feed
+     * @return an object with status information about the newly created feed, or error information if unsuccessful
+     */
+    FeedMetadata saveDraftFeed(FeedMetadata feedMetadata);
 
     /**
      * Deletes the specified feed.
@@ -307,6 +313,14 @@ public interface MetadataService {
     Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent);
 
     /**
+     * Get the draft version of the feed (if any.)
+     * @param feedId the feed ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     */
+    Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent);
+
+    /**
      * Get the version of the feed that is currently deployed (if any.)
      * @param feedId the feed ID
      * @param includeContent indicates whether the feed content should be included in the version
@@ -321,7 +335,7 @@ public interface MetadataService {
      * @param includeContent indicates whether the feed content should be included in the version
      * @return the current state of feed versions; including which is version is deployed
      */
-    FeedVersions deployFeedVersion(String feedId, String versionId, boolean includeContent);
+    EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
     
     /**
      * Creates a new version from the current draft version of a feed.  If the feed does not
@@ -330,7 +344,16 @@ public interface MetadataService {
      * @param includeContent indicates whether the feed content should be included in the version
      * @return the current state of feed versions (no feed content)
      */
-    FeedVersions versionDraftFeed(String feedId, boolean includeContent);
+    EntityVersion versionDraftFeed(String feedId, boolean includeContent);
+
+    /**
+     * Creates a new draft feed from a specific feed version.
+     * @param feedId the feed ID
+     * @param versionId the version ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return the current state of feed versions (no feed content)
+     */
+    EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent);
 
     /**
      * @param feedId1
