@@ -171,7 +171,7 @@ angular.extend(SqlBuilder.prototype, {
                     break;
 
                 case VisualQueryService.JoinType.FULL_JOIN:
-                    sql += "FULL JOIN";
+                    sql += "FULL OUTER JOIN";
                     break;
 
                 default:
@@ -262,6 +262,8 @@ angular.extend(SqlBuilder.prototype, {
             joinType = VisualQueryService.JoinType.JOIN_LEFT;
         } else if (connection.joinType === "RIGHT JOIN") {
             joinType = VisualQueryService.JoinType.JOIN_RIGHT;
+        } else if (connection.joinType === "FULL JOIN") {
+            joinType = VisualQueryService.JoinType.FULL_JOIN;
         } else {
             throw new Error("Not a supported join type: " + connection.joinType);
         }
@@ -275,10 +277,10 @@ angular.extend(SqlBuilder.prototype, {
                 type: VisualQueryService.NodeTag.A_Expr,
                 name: "=",
                 lexpr: {
-                    fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey]
+                    fields: [TABLE_PREFIX + src.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey]
                 },
                 rexpr: {
-                    fields: [TABLE_PREFIX + src.id, (connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey]
+                    fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey]
                 }
             }
         };

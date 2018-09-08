@@ -6,6 +6,8 @@ import {PreviewDataSetRequest} from "./preview-data-set-request"
 import {TableViewModel, TableColumn} from "./table-view-model";
 import {Common} from "../../../../../common/CommonTypes";
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
+import * as _ from "underscore";
+import {CloneUtil} from "../../../../../common/utils/clone-util";
 
 
 export enum DatasetCollectionStatus {
@@ -67,6 +69,11 @@ export class PreviewDataSet {
      */
     public type:string = 'PreviewDataSet';
 
+    /**
+     * map of the spark options needed to preview this dataset
+     */
+    public sparkOptions?:{ [key: string]: string } = {}
+
 
     public collectionStatus:DatasetCollectionStatus = DatasetCollectionStatus.NEW;
 
@@ -81,6 +88,29 @@ export class PreviewDataSet {
     }
 
     /**
+     * If no schemaparser is on this request, but it has spark options, then apply them to the request
+     * @param {PreviewDataSetRequest} previewRequest
+     */
+    public applySparkOptions(previewRequest:PreviewDataSetRequest){
+        if(!previewRequest.schemaParser){
+            if(this.sparkOptions && !_.isEmpty(this.sparkOptions)){
+                Object.keys(this.sparkOptions).forEach(k => {
+                    if(k == "format" && (this.dataSource.template.format == undefined || this.dataSource.template.format == '')  ){
+                        let format = this.sparkOptions[k]
+                        previewRequest.dataSource= CloneUtil.deepCopy(previewRequest.dataSource);
+                        previewRequest.dataSource.template.format = format;
+                    }
+                    else {
+                        previewRequest.properties[k] = this.sparkOptions[k];
+                    }
+                });
+            }
+            //apply the format if found
+        }
+
+    }
+
+    /**
      * Create a SparkDataSet object from the Preview
      * This is used with the Data Wrangler/VisualQuery
      * @return {SparkDataSet}
@@ -89,9 +119,9 @@ export class PreviewDataSet {
         let sparkDataSet = new SparkDataSet();
         sparkDataSet.id = this.displayKey;
         sparkDataSet.dataSource = this.dataSource;
-        sparkDataSet.options = {};
+        sparkDataSet.options = this.sparkOptions
         sparkDataSet.schema = this.schema;
-        sparkDataSet.preview = this.preview;
+        sparkDataSet.preview = this;
         sparkDataSet.previewPath = this.getPreviewItemPath();
         return sparkDataSet;
     }
@@ -101,6 +131,12 @@ export class PreviewDataSet {
     public constructor(init?:Partial<PreviewDataSet>) {
         this.collectionStatus = DatasetCollectionStatus.NEW;
         Object.assign(this, init);
+        if(this.raw){
+            this.raw = new TableViewModel(this.raw)
+        }
+        if(this.preview){
+            this.preview = new TableViewModel(this.preview)
+        }
     }
 
     public isCollected(){
@@ -163,6 +199,10 @@ export class PreviewDataSet {
 
     public  getPreviewItemPath() :string{
         return this.items != undefined && this.items.length >0 ? this.items[0] : "";
+    }
+
+    hasSparkOptions(){
+        return this.sparkOptions != undefined && !_.isEmpty(this.sparkOptions)
     }
 
 }

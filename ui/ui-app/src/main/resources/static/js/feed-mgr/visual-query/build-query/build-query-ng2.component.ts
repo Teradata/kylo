@@ -27,6 +27,10 @@ import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
+import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
+import {MatDialogConfig} from "@angular/material/dialog";
+import {DatasetPreviewDialogComponent} from "../../catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component";
+import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 
 /**
  * Code for the delete key.
@@ -395,13 +399,20 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         }
     }
 
-
     addPreviewDataSets() {
         if (this.model.datasets && this.model.datasets.length > 0) {
-            this.model.datasets.forEach((dataset: SparkDataSet) => {
+            this.addSparkDataSets(this.model.datasets)
+        }
+    }
+
+    addSparkDataSets(datasets:SparkDataSet[]) {
+        if(datasets && datasets.length >0) {
+            datasets.forEach((dataset: SparkDataSet) => {
                 let tableSchema: any = {};
-                tableSchema.schemaName = dataset.id;
-                tableSchema.name = dataset.id;
+
+                tableSchema.schemaName = dataset.getSchemaName();
+                tableSchema.tableName=dataset.getTableName();
+                tableSchema.name = dataset.getTableName();
                 tableSchema.fields = dataset.schema.map(tableColumn => {
                     let field: any = {};
                     field.name = tableColumn.name;
@@ -411,8 +422,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
                     return field;
                 });
-                let nodeName = tableSchema.name;
-
+                let nodeName = dataset.getDisplayIdentifier()
                 this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
 
             });
@@ -728,6 +738,15 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 }
             ]
         };
+        //ensure the dataset is part of the model
+        if(dataset){
+            if(_.isUndefined(this.model.datasets)){
+                this.model.datasets = [];
+            }
+            if(this.model.datasets.find(ds => ds.id == dataset.id) == undefined){
+                this.model.datasets.push(dataset);
+            }
+        }
         this.prepareNode(newNodeDataModel);
         this.chartViewModel.addNode(newNodeDataModel);
         this.validate();
@@ -809,19 +828,21 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
         return this._dialogService.open(ConnectionDialog, {data: config, panelClass: "full-screen-dialog"})
             .afterClosed().subscribe((response: ConnectionDialogResponse) => {
-                if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {
-                    connectionViewModel.select();
-                    this.chartViewModel.deleteSelected();
+                if(response) {
+                    if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {
+                        connectionViewModel.select();
+                        this.chartViewModel.deleteSelected();
+                    }
+                    else if (response.status == ConnectionDialogResponseStatus.SAVE) {
+                        // connectionDataModel = response.connectionDataModel;
+                        let viewConnection = this.chartViewModel.findConnection(response.id);
+                        viewConnection.data.joinType = response.joinType;
+                        viewConnection.data.name = response.connectionName;
+                        viewConnection.data.joinKeys.sourceKey = response.source;
+                        viewConnection.data.joinKeys.destKey = response.dest;
+                    }
+                    this.validate()
                 }
-                else if (response.status == ConnectionDialogResponseStatus.SAVE) {
-                    // connectionDataModel = response.connectionDataModel;
-                    let viewConnection = this.chartViewModel.findConnection(response.id);
-                    viewConnection.data.joinType = response.joinType;
-                    viewConnection.data.name = response.connectionName;
-                    viewConnection.data.joinKeys.sourceKey = response.source;
-                    viewConnection.data.joinKeys.destKey = response.dest;
-                }
-                this.validate()
             })
     }
 
@@ -934,5 +955,18 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     onAutocompleteRefreshCache() {
         this.hiveService.refreshTableCache();
+    }
+
+    openCatalogBrowser(){
+        let data = new DatasetPreviewStepperDialogData("Add");
+        let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
+        dialogConfig.data = data;
+        this._dialogService.open(DatasetPreviewStepperDialogComponent,dialogConfig)
+            .afterClosed()
+            .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
+                //add these to the canvas
+            let sparkDataSets =response.previews.map(ds => ds.toSparkDataSet())
+            this.addSparkDataSets(sparkDataSets);
+            });
     }
 }

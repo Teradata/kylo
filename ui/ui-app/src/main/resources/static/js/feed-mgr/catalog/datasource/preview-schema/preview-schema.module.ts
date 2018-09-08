@@ -38,8 +38,10 @@ import {FileMetadataTransformService} from "./service/file-metadata-transform.se
 import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
 import {KyloServicesModule} from "../../../../services/services.module";
 import {UpgradeModule} from "@angular/upgrade/static";
-//import {VisualQuery2Module} from "../../../visual-query/visual-query.ng2.module";
-//import {WranglerModule} from "../../../visual-query/wrangler/core/wrangler.module";
+import {MatStepperModule} from "@angular/material/stepper";
+import {MatExpansionModule} from "@angular/material/expansion";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {RemoteFilesModule} from "../files/remote-files.module";
 
 @NgModule({
     declarations: [
@@ -55,7 +57,9 @@ import {UpgradeModule} from "@angular/upgrade/static";
     ],
     exports:[
         PreviewSchemaComponent,
-        SimpleTableComponent
+        SimpleTableComponent,
+        SchemaParseSettingsDialog,
+        SchemaDefinitionComponent
     ],
     imports: [
         CommonModule,
@@ -65,6 +69,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
         FormsModule,
         KyloCommonModule,
         MatButtonModule,
+        MatCheckboxModule,
         MatDatepickerModule,
         MatDialogModule,
         MatDividerModule,
@@ -77,6 +82,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
         MatTabsModule,
         MatSelectModule,
         MatSlideToggleModule,
+        MatStepperModule,
         ReactiveFormsModule,
         CovalentChipsModule,
         FieldPoliciesModule,

@@ -88,7 +88,7 @@ export class EntityAccessControlController {
          * Flag that the user has updated the role memberships
          * @type {boolean}
          */
-        this.entity.roleMembershipsUpdated = angular.isUndefined(this.entity.roleMembershipsUpdated) ? false : this.entity.roleMembershipsUpdated;
+        this.entity.roleMembershipsUpdated = _.isUndefined(this.entity.roleMembershipsUpdated) ? false : this.entity.roleMembershipsUpdated;
 
         /**
          * Flag to indicate we should query for the roles from the server.

@@ -1,3 +1,17 @@
+mat-card-header .mat-card-title, ::ng-deep mat-card-header .mat-card-title  {
+  font-size: 20px;
+}
+
+mat-card-header .mat-card-subtitle, ::ng-deep mat-card-header .mat-card-title{
+  font-size: 14px;
+}
+
+mat-card-header .mat-card-header-text, ::ng-deep mat-card-header .mat-card-header-text {
+  margin: 0px;
+}
+
+
+
 .selected-step{
   color:black;
 }
@@ -10,18 +24,18 @@
   cursor: pointer;
 }
 .completed-step {
-  text-decoration: line-through;
+
 }
 
 .mat-card-header {
   align-items: center;
 }
 
-.mat-card-header .mat-card-title {
-  font-size: 20px;
+.mat-card-title {
+  font-size: 24px;
 }
 
-.mat-card-header .mat-card-subtitle{
+.mat-card-subtitle{
   font-size: 14px;
 }
 
@@ -34,7 +48,7 @@
 }
 
 
-.mat-card.steps .mat-card-header .mat-card-header-text {
+.mat-card.steps .mat-card-header-text {
   margin:0 !important;
 }
 

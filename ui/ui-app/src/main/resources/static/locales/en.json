@@ -856,6 +856,31 @@
         }
     },
 
+    "FeedDefinition":{
+        "Steps":{
+            "Sample":{
+               "Name":"Sample",
+                "SourceDetails":"Source Details",
+                "SourceDetailsDescription":"Assign the true source of the data"
+            },
+            "Target":{
+             "Name":"Target"
+            },
+            "AdditionalDetails":{
+             "Name":"AdditionalDetails"
+            },
+            "Properties": {
+                "Name":"Properties"
+            },
+            "Permissions":{
+                "Name":"Permissions"
+            },
+            "Wrangler":{
+                "Name":"Wrangler"
+            }
+        }
+    },
+
     "Profile": {
         "Valid": {
             "NoValidRows": "There are no valid rows",

@@ -7,6 +7,7 @@ import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {Component} from "@angular/core";
+import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: "define-feed-example-step",
@@ -57,10 +58,11 @@ export class ExampleStepComponent extends AbstractFeedStepComponent {
     /**
      * Update the feed model with the form values
      */
-    protected  applyUpdatesToFeed() {
+    protected  applyUpdatesToFeed() :(Observable<any>| null){
         //update the model
         let formModel = this.formGroup.value;
         //this.feed. .... = formModel. ...
+        return null;
     }
 
 

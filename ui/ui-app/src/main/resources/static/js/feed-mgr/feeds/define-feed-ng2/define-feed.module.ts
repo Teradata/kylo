@@ -39,7 +39,6 @@ import {UIRouterModule} from "@uirouter/angular";
 import {NvD3Module} from 'ng2-nvd3';
 
 import {KyloCommonModule} from "../../../common/common.module";
-import {CatalogModule} from "../../catalog/catalog.module";
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
 import {PreviewSchemaModule} from "../../catalog/datasource/preview-schema/preview-schema.module";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
@@ -55,7 +54,6 @@ import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.componen
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
 import {DefineFeedService} from "./services/define-feed.service";
 import {FeedLoadingService} from "./services/feed-loading-service";
-import {FeedSourceSampleChange} from "./services/feed-source-sample-change-listener";
 import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.component";
 import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
 import {SystemFeedNameComponent} from "./shared/system-feed-name.component";
@@ -67,13 +65,10 @@ import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/defi
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
 import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
-import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-sample/define-feed-step-source-sample-datasource.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
-import {DatasetCollectionPreviewDialogComponent} from "./steps/source-sample/dataset-collection-preview-dialog.component";
-import {DatasetCollectionPreviewCartComponent} from "./steps/source-sample/dataset-collection-preview-cart.component";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FeedSideNavService} from "./shared/feed-side-nav.service";
 import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
@@ -92,7 +87,13 @@ import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/f
 import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {FeedNifiPropertiesService} from "./services/feed-nifi-properties.service";
+import {FeedNifiPropertiesComponent} from "./steps/feed-details/feed-nifi-properties.component";
+import {DefineFeedSourceSampleService} from "./steps/source-sample/define-feed-source-sample.service";
+import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
+import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
 
 @NgModule({
     declarations: [
@@ -101,8 +102,8 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         DefineFeedContainerComponent,
         DefineFeedStepCardComponent,
         DefineFeedStepGeneralInfoComponent,
+        DefineFeedStepSourceComponent,
         DefineFeedStepSourceSampleComponent,
-        DefineFeedStepSourceSampleDatasourceComponent,
         DefineFeedStepFeedDetailsComponent,
         DefineFeedStepReadonlyContentComponent,
         DefineFeedStepEditContentComponent,
@@ -122,8 +123,6 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         SystemFeedNameComponent,
         NewFeedDialogComponent,
         FeedSideNavComponent,
-        DatasetCollectionPreviewCartComponent,
-        DatasetCollectionPreviewDialogComponent,
         DefineFeedStepCustomContentComponent,
         DefineFeedPermissionsComponent,
         DefineFeedPropertiesComponent,
@@ -133,19 +132,21 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         FeedInfoDescriptionComponent,
         FeedInfoCategoryComponent,
         FeedInfoTagsComponent,
+        FeedNifiPropertiesComponent,
+        FeedInfoTagsComponent,
         FeedDetailsProcessorFieldComponent
     ],
     entryComponents:[
-        NewFeedDialogComponent,
-        DatasetCollectionPreviewDialogComponent
+        NewFeedDialogComponent
     ],
     providers:[
       DefineFeedService,
       FeedLoadingService,
-      FeedSourceSampleChange,
       FilterPartitionFormulaPipe,
       FeedSideNavService,
-      FeedItemInfoService
+      FeedItemInfoService,
+        FeedNifiPropertiesService,
+        DefineFeedSourceSampleService
     ],
     imports: [
         CommonModule,
@@ -163,11 +164,9 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
-        CatalogModule,
         RemoteFilesModule,
         FieldPoliciesModule,
         FeedPreconditionModule,
-        PreviewSchemaModule,
         MatCardModule,
         FormsModule,
         DynamicFormModule,
@@ -191,6 +190,7 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         MatSnackBarModule,
         MatDialogModule,
         MatGridListModule,
+        MatProgressBarModule,
         MatTooltipModule,
         PropertyListModule,
         TranslateModule,
@@ -200,6 +200,7 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         MatExpansionModule,
         CovalentMessageModule,
         MatProgressSpinnerModule,
+        CatalogDatasetPreviewModule,
         KyloFeedModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]

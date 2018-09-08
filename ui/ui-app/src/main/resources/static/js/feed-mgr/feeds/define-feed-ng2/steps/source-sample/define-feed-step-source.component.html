@@ -1,0 +1,47 @@
+<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="false" [displayEditActions]="false">
+  <feed-step-custom-content>
+    <form class="source-sample-container" [formGroup]="sourceForm">
+      <mat-card class="feed-card source-sample-card" fxFlex>
+        <mat-card-header>
+          <mat-card-title>Source Sample</mat-card-title>
+          <mat-card-subtitle>Choose a sample file to help build the target schema</mat-card-subtitle>
+          <span fxFlex></span>
+          <button mat-icon-button class="pad-right pad-top" color="accent" (click)="onEdit()" *ngIf="feed.readonly" ><mat-icon>edit</mat-icon></button>
+        </mat-card-header>
+        <mat-card-content class="pad-top-none ">
+          <define-feed-step-source-sample [(showCatalog)]="showCatalog" (previewSaved)="onSampleSourceSaved($event)"  [feed]="feed" [step]="step"></define-feed-step-source-sample>
+        </mat-card-content>
+
+      </mat-card>
+
+    </form>
+    <mat-card class="feed-card" fxFlex *ngIf="!showCatalog">
+      <mat-card-header>
+        <mat-card-title>Source Details</mat-card-title>
+        <mat-card-subtitle>Modify the source location</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="sourcePropertiesForm">
+          <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT"  *ngIf="!showCatalog"></feed-nifi-properties>
+        </form>
+      </mat-card-content>
+      <mat-card-actions *ngIf="!feed.readonly && !showCatalog">
+        <button mat-button (click)="onCancelEdit()">Cancel</button>
+        <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+      </mat-card-actions>
+    </mat-card>
+
+
+
+
+  </feed-step-custom-content>
+</define-feed-step-card>
+
+<!--
+<ng-template #toolbarActionTemplate>
+  <div *ngIf="!feed.readonly">
+    <button mat-button (click)="onCancelEdit()">Cancel</button>
+    <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+  </div>
+</ng-template>
+-->

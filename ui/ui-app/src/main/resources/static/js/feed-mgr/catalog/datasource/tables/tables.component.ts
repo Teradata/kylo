@@ -3,7 +3,13 @@ import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../../api/models/browser-object';
 import {BrowserColumn} from '../../api/models/browser-column';
 import {Node} from '../../api/models/node';
+import {Component} from "@angular/core";
 
+@Component({
+    selector: "catalog-table-browser",
+    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
+})
 export class TablesComponent extends BrowserComponent {
 
     init(): void {

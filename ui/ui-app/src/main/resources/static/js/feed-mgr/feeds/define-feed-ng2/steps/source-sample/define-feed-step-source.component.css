@@ -1,0 +1,12 @@
+.source-sample-container {
+
+}
+
+
+.feed-card.source-sample-card .mat-card-content {
+  padding-top:0px !important;
+}
+
+::ng-deep dataset-preview-stepper  .mat-horizontal-stepper-header {
+  height:32px !important;
+}

@@ -13,7 +13,7 @@ import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent"
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
-import {FeedLinkSelectionChangedEvent, FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../shared/feed-side-nav.service";
 import {FeedLink} from "../../shared/feed-link.model";
 
 
@@ -45,14 +45,19 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
 
     currentLink:FeedLink = FeedLink.emptyLink() ;
 
+    feedLinkSelectionChangeSubscription:ISubscription;
+    onFeedSaveSubscription:ISubscription;
+    toolbarActionTemplateChangeSubscription:ISubscription;
+
     constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,public snackBar: MatSnackBar,
                 feedSideNavService:FeedSideNavService) {
         super(feedLoadingService, stateService,defineFeedService, feedSideNavService);
           let sideNavService = $$angularInjector.get("SideNavService");
           sideNavService.hideSideNav();
-          this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
-        this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
+        this.feedLinkSelectionChangeSubscription =  this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
+        this.onFeedSaveSubscription =  this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
+        this.toolbarActionTemplateChangeSubscription =this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
     }
 
     ngOnInit() {
@@ -61,7 +66,17 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     }
 
     ngOnDestroy() {
+        this.feedLinkSelectionChangeSubscription.unsubscribe();
+        this.onFeedSaveSubscription.unsubscribe();
+        this.toolbarActionTemplateChangeSubscription.unsubscribe();
+    }
 
+    onTemplateActionTemplateChanged(change:ToolbarActionTemplateChangedEvent){
+        console.log('TEMPLATE CHANGED!!!!')
+        if(this.toolbarActionLinks != change.templateRef) {
+         console.log('RESET template!!!')
+            this.toolbarActionLinks = change.templateRef;
+        }
     }
 
     onFeedLinkChanged(link:FeedLinkSelectionChangedEvent){

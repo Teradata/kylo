@@ -8,6 +8,7 @@ import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {Component, ViewChild} from "@angular/core";
 import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
+import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: "define-feed-properties",
@@ -76,7 +77,7 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
     /**
      * Update the feed model with the form values
      */
-    protected  applyUpdatesToFeed() {
+    protected  applyUpdatesToFeed() :(Observable<any>| null){
         //update the model
         let formModel = this.formGroup.value;
 
@@ -84,6 +85,7 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
             this.propertyList.updateModel();
         }
         //this.feed. .... = formModel. ...
+        return null;
     }
 
 

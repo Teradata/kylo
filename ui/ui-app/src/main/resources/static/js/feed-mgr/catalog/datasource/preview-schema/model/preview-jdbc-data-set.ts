@@ -19,14 +19,21 @@ export class PreviewJdbcDataSet extends PreviewDataSet {
 
     // TODO: use qualifiedIdentifier from REST API instead of reconstructing a different one
     public getPreviewItemPath(): string {
-        const itemMap = this.getItemMap();
-        if (itemMap["name"]) {
-            const schema = itemMap["catalog"] != undefined ? itemMap["catalog"] : itemMap["schema"];
-            return schema + "." + itemMap["name"];
-        } else {
-            //error
-            return "";
+        let path = "";
+        if (this.items && this.items.length > 0) {
+            path = this.items[0]
         }
+        if(path == "") {
+            const itemMap = this.getItemMap();
+            if (itemMap["name"]) {
+                const schema = itemMap["catalog"] != undefined ? itemMap["catalog"] : itemMap["schema"];
+                path = schema + "." + itemMap["name"];
+            } else {
+                //error
+                path = "";
+            }
+        }
+        return path;
     }
 
     public applyPreviewRequestProperties(previewRequest: PreviewDataSetRequest) {

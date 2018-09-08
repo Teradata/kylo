@@ -65,6 +65,7 @@ import {ConnectionErrorValidatorDirective} from "./store/connection-error-valida
 import {QuickColumnsDialog} from "./transform-data/profile-stats/quick-columns-dialog";
 import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/quick-column-components";
 import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-dialog";
+import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 //import {DndListModule} from "ngx-drag-and-drop-lists";
 
 
@@ -146,6 +147,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         PropertyListModule,
         ReactiveFormsModule,
         SqlEditorModule,
+        CatalogDatasetPreviewModule,
         TranslateModule.forChild(),
         WranglerModule
     ],

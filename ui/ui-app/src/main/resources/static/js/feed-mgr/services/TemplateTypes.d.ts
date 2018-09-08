@@ -55,6 +55,7 @@ declare namespace Templates {
         propertyDescriptor?:any;
         hidden?:false;
         required?:boolean;
+        uniqueId?:string;
 
     }
 

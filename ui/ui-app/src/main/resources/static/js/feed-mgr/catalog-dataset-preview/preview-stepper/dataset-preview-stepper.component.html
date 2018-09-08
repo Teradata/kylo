@@ -1,0 +1,69 @@
+     <mat-horizontal-stepper [linear]="true" #stepper >
+            <mat-step [stepControl]="chooseDataSourceForm">
+              <ng-template matStepLabel >Choose data source</ng-template>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+              </div>
+                <catalog-datasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" *ngIf="datasourcesReady"></catalog-datasources>
+              <!-- hidden form to prevent next step from being selected until datasource is chosen-->
+              <form [formGroup]="chooseDataSourceForm">
+                <input type="hidden" formControlName="hiddenValidFormCheck" required >
+              </form>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+              </div>
+            </mat-step>
+            <mat-step [stepControl]="sourceSample">
+                <ng-template matStepLabel>Select sample</ng-template>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                <span fxFlex></span>
+                <button mat-button matStepperPrevious>Back</button>
+                <div fxLayout="column">
+                  <button mat-button matStepperNext  [disabled]="!sourceSampleValid">Next</button>
+                  <span *ngIf="sourceSampleValid" class="warn">A selection is required</span>
+                </div>
+              </div>
+<!---->
+                <select-dataset-step [formGroup]="sourceSample"  [datasource]="activeDataSource" [params]="activeParams" *ngIf="datasourceReady"></select-dataset-step>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                <span fxFlex></span>
+                <button mat-button matStepperPrevious>Back</button>
+                <div fxLayout="column">
+                  <button mat-button matStepperNext  [disabled]="!sourceSampleValid">Next</button>
+                  <span *ngIf="sourceSampleValid" class="warn">A selection is required</span>
+                </div>
+              </div>
+            </mat-step>
+            <mat-step [stepControl]="previewForm">
+              <ng-template matStepLabel>Preview</ng-template>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                <span fxFlex></span>
+                <button mat-button matStepperPrevious>Back</button>
+                <div fxLayout="column">
+                  <button mat-button (click)="onSave()" [disabled]="!previewFormValid">{{saveLabel}}</button>
+                  <span *ngIf="previewFormValid" class="warn">A selection is required</span>
+                </div>
+              </div>
+              <!--*ngIf="activeDataSource && stepper.selectedIndex ==2"-->
+              <preview-dataset-step #preview [formGroup]="previewForm" [datasource]="activeDataSource"  *ngIf="datasourceReady && stepper.selectedIndex ==2"></preview-dataset-step>
+              <!-- Action buttons-->
+              <div fxLayout="row" fxFlex>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                <span fxFlex></span>
+                <button mat-button matStepperPrevious>Back</button>
+                <div fxLayout="column">
+                  <button mat-button (click)="onSave()" [disabled]="!previewFormValid">{{saveLabel}}</button>
+                  <span *ngIf="previewFormValid" class="warn">A selection is required</span>
+                </div>
+              </div>
+            </mat-step>
+          </mat-horizontal-stepper>
+

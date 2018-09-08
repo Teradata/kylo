@@ -1,0 +1,12 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>{{data.title}}</span>
+  <span fxFlex></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<mat-dialog-content fxFlex="100%">
+<dataset-preview-stepper (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
+
+</mat-dialog-content>
+

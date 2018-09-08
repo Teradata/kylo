@@ -9,6 +9,7 @@ import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../shared/feed-side-nav.service";
+import {Observable} from "rxjs/Observable";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -141,8 +142,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     /**
      * Called before save to apply updates to the feed model
      */
-    protected applyUpdatesToFeed():void{
-
+    protected applyUpdatesToFeed():(Observable<any>| null){
+        return null;
     }
 
 
@@ -173,14 +174,28 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     onSave(){
         this.registerLoading();
-        this.applyUpdatesToFeed();
-        //notify the subscribers on the actual save call so they can listen when the save finishes
-        this.defineFeedService.saveFeed(this.feed).subscribe((response:SaveFeedResponse) => {
-            this.defineFeedService.openSnackBar("Saved the feed ",3000);
-            this.resolveLoading();
-        }, error1 => {
-            this.resolveLoading()
-        })
+
+        let saveCall = () => {
+            //notify the subscribers on the actual save call so they can listen when the save finishes
+            this.defineFeedService.saveFeed(this.feed).subscribe((response:SaveFeedResponse) => {
+                this.defineFeedService.openSnackBar("Saved the feed ",3000);
+                this.resolveLoading();
+            }, error1 => {
+                this.resolveLoading()
+                this.defineFeedService.openSnackBar("Error saving the feed ",3000);
+            })
+        }
+
+      let updates =  this.applyUpdatesToFeed();
+      if(updates && updates instanceof Observable){
+          updates.subscribe((response:any) => {
+              saveCall();
+          })
+      }
+      else {
+          saveCall();
+      }
+
     }
 
 

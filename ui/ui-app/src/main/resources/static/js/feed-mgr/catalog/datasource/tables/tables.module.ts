@@ -29,6 +29,9 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
     entryComponents: [
         TablesComponent,
     ],
+    exports:[
+        TablesComponent
+    ],
     imports: [
         BrowserModule,
         FormsModule,

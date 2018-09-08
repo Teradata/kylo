@@ -31,14 +31,14 @@ import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {TranslateService} from "@ngx-translate/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {SelectionService} from "../../../catalog/api/services/selection.service";
-import {FeedSourceSampleChange} from "./feed-source-sample-change-listener";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {FeedStepBuilderUtil} from "./feed-step-builder-util";
 import {CloneUtil} from "../../../../common/utils/clone-util";
-
+import {timeout} from 'rxjs/operators/timeout';
+import {TimeoutError} from "rxjs/Rx";
 
 
 export enum TableSchemaUpdateMode {
@@ -80,26 +80,14 @@ export class DefineFeedService {
 
     private uiComponentsService :UiComponentsService;
 
-    private registerTemplatePropertyService :RegisterTemplatePropertyService;
 
     private feedService :FeedService;
-
-
-
-
-    /**
-     * Listen for when a user chooses a new source
-     */
-    private previewDatasetCollectionService:PreviewDatasetCollectionService;
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
                 private selectionService: SelectionService,
-                private feedSourceSampleChange:FeedSourceSampleChange,
                 private snackBar: MatSnackBar){
 
-        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
-        this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
 
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
@@ -108,7 +96,6 @@ export class DefineFeedService {
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
-        this.registerTemplatePropertyService = $$angularInjector.get("RegisterTemplatePropertyService");
 
         this.feedService = $$angularInjector.get("FeedService");
 
@@ -116,12 +103,16 @@ export class DefineFeedService {
     }
 
     toPreviewDataSet(dataset:SparkDataSet):PreviewDataSet{
-        let preview = new PreviewDataSet();
+        let existingPreview = dataset.preview || {}
+        let preview = new PreviewDataSet(existingPreview);
         preview.displayKey =dataset.id;
         preview.dataSource = dataset.dataSource;
         preview.schema = dataset.schema;
-        preview.preview = dataset.preview;
-        preview.items = [dataset.previewPath];
+        preview.items = [dataset.previewPath ? dataset.previewPath : dataset.resolvePath()];
+        preview.sparkOptions = dataset.options;
+        if(preview.sparkOptions) {
+            preview.sparkOptions['format'] = dataset.format;
+        }
         return preview;
 
     }
@@ -141,12 +132,6 @@ export class DefineFeedService {
 
             let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
             observable.subscribe((feed) => {
-                //reset the collection service
-                this.previewDatasetCollectionService.reset();
-                //set the collectionService
-                if(feed.sourceDataSets){
-                    feed.sourceDataSets.map(ds => this.toPreviewDataSet(ds)).forEach(previewDataSet => this.previewDatasetCollectionService.addDataSet(previewDataSet));
-                }
 
                 this.selectionService.reset()
                 //convert it to our needed class
@@ -155,6 +140,7 @@ export class DefineFeedService {
                 let feedModel = new Feed(feed)
                 //reset the propertiesInitalized flag
                 feedModel.propertiesInitialized = false;
+
 
                 //get the steps back from the model
                 let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
@@ -197,53 +183,7 @@ export class DefineFeedService {
 
 
 
-    sortAndSetupFeedProperties(feed:Feed){
-        if((feed.inputProcessors == undefined || feed.inputProcessors.length == 0) && feed.registeredTemplate){
-            feed.inputProcessors = feed.registeredTemplate.inputProcessors;
-        }
 
-        feed.inputProcessors= _.sortBy(feed.inputProcessors, 'name')
-        // Find controller services
-        _.chain(feed.inputProcessors.concat(feed.nonInputProcessors))
-            .pluck("properties")
-            .flatten(true)
-            .filter((property) => {
-                return property != undefined && property.propertyDescriptor && property.propertyDescriptor.identifiesControllerService && (typeof property.propertyDescriptor.identifiesControllerService == 'string' );
-            })
-            .each((property:any) => this.feedService.findControllerServicesForProperty(property));
-
-        //find the input processor associated to this feed
-        feed.inputProcessor = feed.inputProcessors.find((processor: Templates.Processor) => {
-            if (feed.inputProcessorName) {
-                return   feed.inputProcessorType == processor.type && feed.inputProcessorName.toLowerCase() == processor.name.toLowerCase()
-            }
-            else {
-                return    feed.inputProcessorType == processor.type;
-            }
-        });
-        if(feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
-            feed.inputProcessor = feed.inputProcessors[0];
-        }
-    }
-
-    setupFeedProperties(feed:Feed,template:any, mode:string) {
-        if(feed.isNew()){
-            this.registerTemplatePropertyService.initializeProperties(template, 'create', feed.properties);
-        }
-        else {
-            this.registerTemplatePropertyService.initializeProperties(template, "edit", []);
-        }
-
-      this.sortAndSetupFeedProperties(feed);
-
-
-        // this.inputProcessors = template.inputProcessors;
-        feed.allowPreconditions = template.allowPreconditions;
-
-        //merge the non input processors
-        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
-
-    }
 
 
     /**
@@ -425,9 +365,11 @@ export class DefineFeedService {
         body.uiState[Feed.UI_STATE_STEPS_KEY] = JSON.stringify(steps);
         delete body.steps;
 
+
         let observable : Observable<Feed> = <Observable<Feed>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
+
         observable.subscribe((response: any)=> {
 
             let updatedFeed = response.feedMetadata;
@@ -462,26 +404,17 @@ export class DefineFeedService {
             //notify any global subscribers
             this.savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
+
             console.error("Error",error);
             let response = new SaveFeedResponse(feed,false,"Error saving feed "+feed.feedName+". You have validation errors");
             //notify any subscribers to this single function
-            subject.next(response)
+            subject.error(response)
             //notify any global subscribers
-            this.savedFeedSubject.next(response);
+            this.savedFeedSubject.error(response);
         });
         return savedFeedObservable$
     }
 
-
-
-
-    /**
-     * Listener for changes from the collection service
-     * @param {PreviewDataSet[]} dataSets
-     */
-    onDataSetCollectionChanged(event:DatasetChangeEvent){
-     //   this.feedSourceSampleChange.dataSetCollectionChanged(event.allDataSets,this.feed)
-    }
 
 
     public openSnackBar(message:string, duration?:number){

@@ -1,30 +1,26 @@
-<define-feed-step-card  [feed]="feed" [step]="step" [singleCardView]="true"  mode="custom" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
-  <form class="source-sample-container" [formGroup]="sourceSample">
-    <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && !feed.readonly" fxLayout="column" >
-      <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
+<ng-container *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 ">
+ <h4 class="mat-subheading-1" class="pad-right">Current samples</h4>
+  <mat-list dense>
+    <mat-list-item *ngFor="let dataset of feed.sourceDataSets; let last=last">
+      <h4 mat-line>{{dataset.dataSource.title}}</h4>
+      <p mat-line>{{dataset.resolvePath()}}</p>
+      <button mat-icon-button color="accent" (click)="browseCatalog()" *ngIf="!feed.readonly" matTooltip="Choose a different sample"><mat-icon>edit</mat-icon></button>
+    </mat-list-item>
+    <mat-divider  *ngIf="!last"></mat-divider>
+  </mat-list>
 
 
-      <span class="pad-top"><button mat-raised-button (click)="goToDataSet(feed.sourceDataSets[0])">{{feed.sourceDataSets[0].resolvePath()}}</button></span>
-      <span class="pad-top"><button mat-raised-button (click)="browseCatalog()" *ngIf="!feed.readonly">Change source</button></span>
-    </div>
+</ng-container>
 
-    <div *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 && feed.readonly" fxLayout="column">
-      <span> Current source: {{feed.sourceDataSets[0].dataSource.title}}</span>
-      <span>Selected source:{{feed.sourceDataSets[0].resolvePath()}}</span>
-    </div>
+<div *ngIf="showCatalog && feed.readonly" fxLayout="column">
+  No source(s) has been selected for this feed.
+</div>
 
-    <div *ngIf="showCatalog">
-     <catalog-datasources [datasources]="datasources" [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" *ngIf="!feed.readonly"></catalog-datasources>
-    </div>
+<ng-container *ngIf="showCatalog && !feed.readonly">
 
-    <div *ngIf="showCatalog && feed.readonly" fxLayout="column" >
-      No source(s) has been selected for this feed.
-    </div>
+  <dataset-preview-stepper (previewSaved)="onSave($event)" (previewCanceled)="onCancel()"></dataset-preview-stepper>
 
-  </form>
-</define-feed-step-card>
+</ng-container>
 
-<ng-template #toolbarActionTemplate>
-  blah<br/>
-  <dataset-collection-preview-cart></dataset-collection-preview-cart>
-</ng-template>
+
+

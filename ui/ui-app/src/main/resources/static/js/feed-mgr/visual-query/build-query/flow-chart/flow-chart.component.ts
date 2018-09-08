@@ -113,6 +113,7 @@ export class FlowChartComponent implements  OnInit{
                  return;
         }
 
+
         let ele: JQuery;
         // Figure out if the mouse is over a connection.
         ele = FlowchartUtils.checkForHit(mouseOverElement, this.connectionClass);
@@ -150,7 +151,7 @@ export class FlowChartComponent implements  OnInit{
      * @param {DragResponse} dragResponse
      */
     onDragStart(response: DragResponse) {
-        if(!this.dragState.isDraggingNodeOrConnection() && !this.mouseOverState.isType(MouseOverType.CONNECTOR)) {
+        if(!this.dragState.isDraggingNodeOrConnection() && !this.mouseOverState.isType(MouseOverType.CONNECTOR)  && !this.mouseOverState.isType(MouseOverType.CONNECTION)) {
             //Set the state to selecting
             this.dragState.dragSelect();
             //get the starting point and create the rect object with the starting 

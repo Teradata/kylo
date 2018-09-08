@@ -12,6 +12,10 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 export class FeedLinkSelectionChangedEvent{
     constructor(public newLink:FeedLink, public oldLink?:FeedLink){}
 }
+
+export class ToolbarActionTemplateChangedEvent{
+    constructor(public link:FeedLink,public templateRef:TemplateRef<any>){}
+}
 @Injectable()
 export class FeedSideNavService {
 
@@ -25,9 +29,15 @@ export class FeedSideNavService {
 
     private sideNavSelectionChangedSubject: Subject<FeedLinkSelectionChangedEvent>;
 
+    public toolbarActionTemplateChanged$: Observable<ToolbarActionTemplateChangedEvent>;
+
+    private toolbarActionTemplateChangedSubject: Subject<ToolbarActionTemplateChangedEvent>;
+
     constructor(private stateService:StateService){
         this.sideNavSelectionChangedSubject = new Subject<FeedLinkSelectionChangedEvent>();
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
+
+        this.toolbarActionTemplateChangedSubject = new Subject<ToolbarActionTemplateChangedEvent>();
     }
 
     feedLinks:FeedLink[];
@@ -36,11 +46,17 @@ export class FeedSideNavService {
 
     toolbarActionTemplateRefMap:{ [key: string]: TemplateRef<any> } = {}
 
+    subscribeToToolbarActionTemplateChanges(o:PartialObserver<ToolbarActionTemplateChangedEvent>){
+        return this.toolbarActionTemplateChangedSubject.subscribe(o);
+    }
+
     registerToolbarActionTemplate(linkName:string,templateRef:TemplateRef<any>){
         let link = this._findLinkByName(linkName);
         if(link){
             this.toolbarActionTemplateRefMap[linkName] = templateRef;
             //fire link changed event?
+            console.log("LINK CHANGED!!!!", templateRef)
+            this.toolbarActionTemplateChangedSubject.next(new ToolbarActionTemplateChangedEvent(link,templateRef))
         }
     }
 

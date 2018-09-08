@@ -1,0 +1,28 @@
+<form [formGroup]="form">
+  <div fxLayout="column" *ngIf="(mode=='INPUT' || mode == 'ALL')">
+    <ng-container *ngIf="!feed.readonly">
+
+        <mat-form-field fxFlex="50">
+          <mat-select placeholder="Choose a source" [formControl]="inputProcessorControl">
+            <mat-option *ngFor="let inputProcessor of inputProcessors" [value]="inputProcessor">
+              {{inputProcessor.name}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+    </ng-container>
+
+    <ng-container *ngIf="feed.readonly && inputProcessor">
+      <h3 mat-subheader> {{inputProcessor.name}}</h3>
+    </ng-container>
+
+    <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
+
+
+  </div>
+
+  <ng-container *ngIf="mode=='ADDITIONAL' || mode == 'ALL'">
+  <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly" ></feed-details-processor-field>
+  </ng-container>
+</form>
+
+

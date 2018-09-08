@@ -78,14 +78,13 @@ export class SparkQueryParser extends QueryParser {
         // Build table script
         let script = "";
 
-        //add in the imports for kylo catalog
-
-
         _.keys(tablesByAlias).sort().forEach(function (alias) {
             let table = tablesByAlias[alias];
 
             script += "val " + alias + " = ";
-            if (typeof table.datasourceId === "string" && table.datasourceId !== SparkConstants.HIVE_DATASOURCE ) {
+            //TODO for A2A release change this logic to use table.dataset first
+            //This check here will use hive sqlContext instead of the kyloCatalog for Hive data sources
+            if (typeof table.datasourceId === "string" && table.datasourceId.toLowerCase() !== SparkConstants.HIVE_DATASOURCE.toLowerCase() ) {
                 if(table.dataset != undefined) {
                     script += DATASET_PROVIDER +".read(\""+table.dataset.id+"\")";
                 }else {
@@ -161,7 +160,9 @@ export class SparkQueryParser extends QueryParser {
                     script += "\"left_outer\"";
                 } else if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_RIGHT) {
                     script += "\"right_outer\"";
-                } else {
+                } else if (joinExpr.jointype === VisualQueryService.JoinType.FULL_JOIN) {
+                    script += "\"fullouter\"";
+                  }   else {
                     throw new Error("Not a supported join type: " + joinExpr.jointype);
                 }
             }

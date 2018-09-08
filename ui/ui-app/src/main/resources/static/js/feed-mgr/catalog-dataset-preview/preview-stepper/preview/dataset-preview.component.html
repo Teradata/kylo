@@ -1,0 +1,39 @@
+<ng-container *ngIf="displayTitle">
+<h4>DataSource: {{dataset.dataSource.title}}<br/>
+  {{dataset.key}}
+</h4>
+</ng-container>
+<mat-tab-group (selectedTabChange)="onTabChange($event)">
+  <mat-tab label="Preview" >
+    <div fxLayout="column">
+      <button mat-raised-button (click)="openSchemaParseSettingsDialog()" *ngIf="dataset.schemaParser">Settings</button>
+      <ng-container *ngIf="dataset.preview && dataset.preview.error == false">
+        <dataset-simple-table class="small" [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" ></dataset-simple-table>
+      </ng-container>
+      <div *ngIf="!dataset.preview || dataset.preview.error == true" fxLayout="column">
+        <span>There was an error previewing the data</span>
+        <span *ngIf="dataset.schemaParser">Try altering the schema parser settings and regenerating the preview</span>
+      </div>
+
+    </div>
+
+
+  </mat-tab>
+  <mat-tab label="Raw">
+
+      <div *ngIf="dataset.raw && rawReady">
+        <dataset-simple-table class="small" [(columns)]="dataset.raw.columns" [rows]="dataset.raw.rows" ></dataset-simple-table>
+      </div>
+      <div *ngIf="!dataset.raw || dataset.raw.error == true">
+        Unable to view raw data
+      </div>
+  </mat-tab>
+  <mat-tab label="Schema">
+      <dataset-schema-definition  [(columns)]="dataset.schema" *ngIf="dataset.schema"></dataset-schema-definition>
+
+    <div *ngIf="!dataset.schema">
+      Unable to review schema
+    </div>
+  </mat-tab>
+</mat-tab-group>
+

@@ -1,42 +1,24 @@
-<mat-card class="mat-typography">
-  <mat-card-header>
-    <mat-card-title>{{datasource.title}}</mat-card-title>
-    <span fxFlex></span>
-  </mat-card-header>
-  <mat-card-content>
-    <div fxLayout="column" *ngIf="!feed.readonly">
-      <form  fxFlex="1 1 auto" fxLayout="column">
-        <remote-files [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" >
-        </remote-files>
+  <h4>{{datasource.title}}</h4>
+    <div fxLayout="column" >
+      <form [formGroup]="formGroup" fxFlex="1 1 auto" fxLayout="column">
+        <catalog-file-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="datasourceSref=='.browse'">
+        </catalog-file-browser>
+
+        <catalog-table-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="datasourceSref=='.connection'">
+        </catalog-table-browser>
+
+        <local-files [datasource]="datasource" *ngIf="datasourceSref=='.upload'"></local-files>
+
+        <input type="hidden" formControlName="hiddenValidFormCheck" required >
       </form>
     </div>
-
-    <div *ngIf="feed.readonly" fxLayout="column" >
-      No source(s) has been selected for this feed.
-    </div>
-
-  </mat-card-content>
-  <mat-card-actions *ngIf="!feed.readonly">
-    <button mat-button (click)="onCancel()">Cancel</button>
-    <span fxFlex></span>
-    <button mat-button color="primary"(click)="onSave()" >Save</button>
-  </mat-card-actions>
-</mat-card>
-
-<ng-template #toolbarActionTemplate>
-  <div *ngIf="!feed.readonly">
-    <button mat-button (click)="onCancel()">Cancel</button>
-    <span fxFlex></span>
-    <button mat-button color="primary"(click)="onSave()" >Save</button>
-  </div>
-</ng-template>
 
 <ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
 
         <td td-data-table-cell>
           <mat-checkbox [checked]="parent.isChildSelected(file.name)"
                         [disabled]="parent.isSelectChildDisabled(file.name)"
-                        (change)="parent.onToggleChild($event, file)"></mat-checkbox>
+                        (change)="onToggleChange($event,file,parent)"></mat-checkbox>
 
           <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
                                  [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>

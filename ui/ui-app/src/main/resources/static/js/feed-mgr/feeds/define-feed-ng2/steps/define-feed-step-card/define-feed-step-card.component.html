@@ -3,7 +3,7 @@
   <ng-content select="feed-step-custom-content" *ngIf="!singleCardView && disabledDependsUponStep == null "></ng-content>
 
   <!-- if this page has a single card and its not disabled -->
-  <mat-card class="mat-typography" *ngIf="singleCardView && disabledDependsUponStep == null " >
+  <mat-card class="feed-card" *ngIf="singleCardView && disabledDependsUponStep == null " >
       <mat-card-header>
         <mat-card-title>{{step.name}}</mat-card-title>
         <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
@@ -25,7 +25,7 @@
 
   <!-- if this page is disabled -->
 
-  <mat-card  *ngIf="disabledDependsUponStep != null">
+  <mat-card  *ngIf="disabledDependsUponStep != null" class="feed-card">
     <mat-card-header>
       <mat-card-title>{{step.name}}</mat-card-title>
       <mat-card-subtitle>{{step.description}}</mat-card-subtitle>

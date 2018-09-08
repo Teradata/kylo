@@ -1,4 +1,4 @@
-
+import * as _ from "underscore"
 export interface TableColumn {
     name:string;
     label:string;
@@ -62,7 +62,18 @@ export class TableViewModel{
 
     columnData(colName:string) :string[]{
         if(this.columns && this.columns.filter(col => col.name == colName).length >0) {
-            return this.rows.map(row => row[colName]);
+            return this.rows.map(row => {
+                let columnValue = row[colName];
+                if(_.isUndefined(columnValue) || columnValue == null){
+                    return "";
+                }
+                else if(_.isObject(columnValue) || _.isArray(columnValue)){
+                    return JSON.stringify(columnValue);
+                }
+                else {
+                    return columnValue.toString();
+                }
+            });
         }
         else {
             return [];
