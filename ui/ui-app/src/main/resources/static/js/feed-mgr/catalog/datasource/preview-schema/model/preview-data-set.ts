@@ -20,6 +20,8 @@ export enum DatasetCollectionStatus {
  */
 export class PreviewDataSet {
 
+    static EMPTY = new PreviewDataSet();
+
     /**
      * items in the dataset
      */

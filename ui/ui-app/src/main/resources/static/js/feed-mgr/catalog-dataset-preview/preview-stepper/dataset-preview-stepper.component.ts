@@ -3,7 +3,7 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {MatStepper} from "@angular/material/stepper";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {PreviewDatasetStepComponent} from "./preview-dataset-step.component";
-import {DataSourceSelectedEvent} from "../../catalog/datasources/datasources.component";
+import {DataSourcesComponent, DataSourceSelectedEvent} from "../../catalog/datasources/datasources.component";
 import {SelectionService} from "../../catalog/api/services/selection.service";
 import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 import {DataSource} from "../../catalog/api/models/datasource";
@@ -32,18 +32,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     /***
      * the datasources to choose
      */
-    public datasources: DataSource[];
-
-    /**
-     * flag to indicate the datasources are populated
-     */
-    public datasourcesReady:boolean;
-
-    /**
-     * flag set when a user selects a datasource
-     */
-    public datasourceReady:boolean;
-
+    public datasources: DataSource[] = [];
 
     @Output()
     previewSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
@@ -74,13 +63,8 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     @ViewChild("preview")
     preview:PreviewDatasetStepComponent
 
-    activeDataSource:DataSource;
-
-    activeParams:any;
-
-    sourceSampleValid:boolean;
-
-    previewFormValid:boolean;
+    @ViewChild("catalogDatasources")
+    catalogDatasources:DataSourcesComponent
 
     /**
      * is this a single selection mode  (or multi)
@@ -99,46 +83,50 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
         this.previewForm = new FormGroup({})
 
         this.sourceSample.statusChanges.debounceTime(10).subscribe(changes =>{
-            this.sourceSampleValid = changes == "VALID"
+        //    this.sourceSampleValid = changes == "VALID"
         });
 
         this.previewForm.statusChanges.debounceTime(10).subscribe(changes =>{
-            this.previewFormValid = changes == "VALID"
+       //     this.previewFormValid = changes == "VALID"
         });
 
 
     }
 
 
-
+    /**
+     * Callback when the user selects a datasource
+     * set the datasource to the shared stepper service and jump to the next step
+     * @param {DataSourceSelectedEvent} event
+     */
     onDatasourceSelected(event:DataSourceSelectedEvent) {
-        this.activeDataSource = event.dataSource;
-        this.activeParams = event.params;
         this.dataSourceService.setDataSource(event.dataSource, event.params);
-
-        this.chooseDataSourceForm.get("hiddenValidFormCheck").setValue(this.activeDataSource.id);
+        this.chooseDataSourceForm.get("hiddenValidFormCheck").setValue(event.dataSource.id);
         this.stepper.next();
     }
 
+    /**
+     * Callback when the user changes a step
+     * @param {StepperSelectionEvent} event
+     */
     onStepSelectionChanged(event:StepperSelectionEvent){
         let idx = event.selectedIndex;
         this.dataSourceService.setStepIndex(idx)
-        if(idx == 1 || idx == 2){
-            this.datasourceReady = true;
-        }
-        else {
-            this.datasourceReady = false;
-        }
     }
 
 
 
     ngOnInit(){
-
+       //clear any previous selections
        this.selectionService.reset();
+       //get the datasources
        this.catalogService.getDataSources().subscribe(datasources =>  {
-           this.datasources = datasources;
-           this.datasourcesReady = true;
+           datasources.forEach(ds => {
+               this.datasources.push(ds);
+           })
+           //this.datasources = datasources;
+           //manually notify the view to check for changes
+           this.catalogDatasources.search(" ")
            this.cd.markForCheck();
        })
 
@@ -146,16 +134,21 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     }
 
     ngOnDestroy(){
-      //  this.defineFeedSourceSampleService.viewingNone();
+
     }
 
-
+    /**
+     * Callback when the user clicks the "Save/Add" button from the last step to do something with one or more datasets with previews
+     */
     onSave(){
         let previews = this.preview.previews || [];
         let event = new DatasetPreviewStepperSavedEvent(previews,this.singleSelection);
         this.previewSaved.emit(event);
     }
 
+    /**
+     * When a user cancels the stepper
+     */
     onCancel(){
         this.previewCanceled.emit();
     }

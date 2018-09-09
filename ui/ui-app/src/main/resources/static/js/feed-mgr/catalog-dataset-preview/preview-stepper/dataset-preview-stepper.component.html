@@ -5,7 +5,7 @@
               <div fxLayout="row" fxFlex>
                 <button mat-button (click)="onCancel()">Cancel</button>
               </div>
-                <catalog-datasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" *ngIf="datasourcesReady"></catalog-datasources>
+                <catalog-datasources #catalogDatasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams"></catalog-datasources>
               <!-- hidden form to prevent next step from being selected until datasource is chosen-->
               <form [formGroup]="chooseDataSourceForm">
                 <input type="hidden" formControlName="hiddenValidFormCheck" required >

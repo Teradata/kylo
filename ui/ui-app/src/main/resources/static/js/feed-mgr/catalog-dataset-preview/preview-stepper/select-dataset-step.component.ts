@@ -7,7 +7,6 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {DatasourceComponent} from "../../catalog/datasource/datasource.component";
 import {SelectionService} from "../../catalog/api/services/selection.service";
 import {PreviewDatasetCollectionService} from "../../catalog/api/services/preview-dataset-collection.service";
-import {FileMetadataTransformService} from "../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
 import {PreviewSchemaService} from "../../catalog/datasource/preview-schema/service/preview-schema.service";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {BrowserComponent} from "../../catalog/datasource/api/browser.component";
@@ -18,7 +17,7 @@ import {FileMetadataTransformResponse} from "../../catalog/datasource/preview-sc
 import {Node} from "../../catalog/api/models/node";
 import {DataSource} from "../../catalog/api/models/datasource";
 import {Observable} from "rxjs/Observable";
-import {DatasetPreviewStepperService, DataSourceChangedEvent} from "./dataset-preview-stepper.service";
+import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
 
 export enum DataSetMode {
@@ -39,9 +38,6 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     @Input()
     public params:any = {};
 
-
-    public showPreview:boolean;
-
     /**
      * flag to indicate only single selection is supported
      */
@@ -56,8 +52,6 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
 
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,previewDatasetCollectionService: PreviewDatasetCollectionService,
         private _dialogService: TdDialogService,
-                private _fileMetadataTransformService: FileMetadataTransformService,
-                private previewSchemaService:PreviewSchemaService,
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef
@@ -79,15 +73,13 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         else {
         this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
         }
-/*
-        if (this.plugin && this.plugin.tabs) {
-            this.tabs = angular.copy(this.plugin.tabs);
-        }
-        // Add system tabs
-        this.tabs.push({label: "Preview", sref: ".preview"});
-*/
+
     }
 
+    /**
+     * when a datasource changes, reinit the datasource
+     * @param {DataSourceChangedEvent} $event
+     */
     private onDataSourceChanged($event:DataSourceChangedEvent){
         this.datasource = $event.dataSource;
         this.params = $event.params
@@ -97,6 +89,10 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         console.log("DS Changed!!!")
     }
 
+    /**
+     * initialize the selected datasource and get any plugin tabs associated with the source
+     * When complete notify the view changed
+     */
     private initDataSource(){
         this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
             //???
@@ -112,6 +108,9 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         this.cd.markForCheck()
     }
 
+    /**
+     * destroy and unsubscribe the events
+     */
     ngOnDestroy(){
         super.ngOnDestroy();
         if(this.dataSourceChangedSubscription){
@@ -120,7 +119,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     }
 
     /**
-     *
+     * inline preview the data
      * @param {BrowserObject} file
      */
     preview(file:BrowserObject){
@@ -143,23 +142,10 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         }
     }
 
-    private  _previewDataSet(file:BrowserObject){
-        let dialogConfig:MatDialogConfig = DatasetPreviewDialogComponent.DIALOG_CONFIG()
-        this._fileMetadataTransformService.detectFormatForPaths([file.getPath()],this.datasource).subscribe((response:FileMetadataTransformResponse) => {
-            let obj = response.results.datasets;
-            if(obj && Object.keys(obj).length >0){
-                let dataSet = obj[Object.keys(obj)[0]];
-                let previewRequest = new PreviewDataSetRequest();
-                previewRequest.dataSource = this.datasource;
-                this.previewSchemaService.preview(dataSet,previewRequest,false);
-                //open side dialog
-                let dialogData:DatasetPreviewDialogData = new DatasetPreviewDialogData(dataSet)
-                dialogConfig.data = dialogData;
-                this._dialogService.open(DatasetPreviewDialogComponent,dialogConfig);
-            }
-        } )
-    }
+    public _previewDataSet(file: BrowserObject) {
+        this.dataSourceService.showPreviewDialog(file,this.datasource);
 
+    }
 
 }
 

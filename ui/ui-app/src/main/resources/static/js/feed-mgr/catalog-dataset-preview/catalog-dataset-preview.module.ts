@@ -38,6 +38,7 @@ import {DatasetPreviewStepperDialogComponent} from "./preview-stepper/dataset-pr
 import {TablesModule} from "../catalog/datasource/tables/tables.module";
 import {UploadModule} from "../catalog/datasource/upload/upload.module";
 import {DatasetPreviewStepperService} from "./preview-stepper/dataset-preview-stepper.service";
+import {CovalentDialogsModule} from "@covalent/core/dialogs";
 
 @NgModule({
     declarations: [
@@ -66,6 +67,7 @@ import {DatasetPreviewStepperService} from "./preview-stepper/dataset-preview-st
         CommonModule,
         CovalentDataTableModule,
         CovalentNotificationsModule,
+        CovalentDialogsModule,
         FlexLayoutModule,
         FormsModule,
         KyloCommonModule,

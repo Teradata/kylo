@@ -6,8 +6,6 @@ import 'rxjs/add/operator/map';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SelectionService} from "../../catalog/api/services/selection.service";
-import {FileMetadataTransformService} from "../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
-import {PreviewSchemaService} from "../../catalog/datasource/preview-schema/service/preview-schema.service";
 import {DatasetCollectionStatus, PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 import {PreviewDataSetRequest} from "../../catalog/datasource/preview-schema/model/preview-data-set-request";
 import {FileMetadataTransformResponse} from "../../catalog/datasource/preview-schema/model/file-metadata-transform-response";
@@ -17,12 +15,10 @@ import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/
 import {Subject} from "rxjs/Subject";
 import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/preview-hive-data-set";
 import {DatabaseObject, DatabaseObjectType} from "../../catalog/datasource/tables/database-object";
-import {DatasetPreviewStepperService, DataSourceChangedEvent} from "./dataset-preview-stepper.service";
+import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
 
-export enum DataSetType {
-    FILE=1,HIVE=2,JDBC=3
-}
+
 
 @Component({
     selector: "preview-dataset-step",
@@ -60,8 +56,6 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
 
     constructor(private selectionService: SelectionService,
                 private _dialogService: TdDialogService,
-                private _fileMetadataTransformService: FileMetadataTransformService,
-                private previewSchemaService: PreviewSchemaService,
                 private dataSourceService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef
     ) {
@@ -114,104 +108,6 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
         }
     }
 
-    preparePreviewFiles(node: Node) :Observable<PreviewDataSet[]> {
-        let subject = new Subject<PreviewDataSet[]>();
-        this._fileMetadataTransformService.detectFormatForNode(node, this.datasource).subscribe((response: FileMetadataTransformResponse) => {
-            let dataSetMap = response.results.datasets;
-            let previews: PreviewDataSet[] = [];
-
-            if (dataSetMap) {
-                let keys = Object.keys(dataSetMap);
-                keys.forEach(key => {
-                    let dataSet: PreviewDataSet = dataSetMap[key];
-                    previews.push(dataSet);
-                })
-            }
-            subject.next(previews);
-            //TODO HANDLE ERRORS
-        }, error1 => {
-
-                this._dialogService.openAlert({
-                    message: 'Error parsing the file datasets',
-                    disableClose: true,
-                    title: 'Error parsing the file datasets'
-                });
-        });
-            return subject.asObservable();
-    }
-
-    preparePreviewTables(node: Node,type:DataSetType):Observable<PreviewDataSet[]> {
-        let datasets:PreviewDataSet[] = [];
-        let selectedNodes  = node.getSelectedDescendants();
-
-
-        if(selectedNodes) {
-
-            selectedNodes.forEach(node => {
-                let dbObject:DatabaseObject = <DatabaseObject> node.getBrowserObject();
-                if(DatabaseObjectType.isTableType(dbObject.type)) {
-                let dataSet = null;
-                if(DataSetType.HIVE == type) {
-                    dataSet = new PreviewHiveDataSet();
-                }
-                else { //if(DataSetType.JDBC == type) {
-                    dataSet = new PreviewJdbcDataSet()
-                }
-
-
-                    let schema = dbObject.schema ? dbObject.schema : dbObject.catalog;
-                    let table = dbObject.name
-                    let key = schema+"."+table;
-                    dataSet.items = [key];
-                    dataSet.displayKey = key;
-                    dataSet.key = key;
-                    dataSet.allowsRawView = false;
-                    dataSet.updateDisplayKey();
-                    datasets.push(dataSet);
-                    //add in any cached preview responses
-                    //this.previewSchemaService.updateDataSetsWithCachedPreview([dataSet])
-                }
-            });
-        }
-        else {
-            console.error("CANT FIND PATH!!!!!!")
-        }
-        return Observable.of(datasets);
-
-    }
-
-
-    getDataSetType():DataSetType{
-        if (!this.datasource.connector.template.format) {
-          return DataSetType.FILE;
-        }
-        else if (this.datasource.connector.template.format == "jdbc") {
-            return DataSetType.JDBC;
-        }
-        else if (this.datasource.connector.template.format == "hive") {
-            return DataSetType.HIVE;
-        }
-        else {
-            console.log("Unsupported type, defaulting to file ",this.datasource.connector.template.format)
-            return DataSetType.FILE;
-        }
-    }
-
-    preparePreviewDataSets(node:Node)  :Observable<PreviewDataSet[]> {
-
-        let type:DataSetType = this.getDataSetType();
-
-        if(DataSetType.FILE == type){
-            return this.preparePreviewFiles(node);
-        }
-        else if(DataSetType.HIVE == type || DataSetType.JDBC == type){
-            return this.preparePreviewTables(node, type);
-        }
-        else {
-            console.log("unsupported datasets")
-            return Observable.of([]);
-        }
-    }
 
     private _previewSelection() {
         if (this.datasource) {
@@ -220,80 +116,55 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
             this.formGroup.get("hiddenValidFormCheck").setValue("")
             this.startLoading();
             let node: Node = this.selectionService.get(this.datasource.id);
-            if (node.countSelectedDescendants() > 0) {
-                this.showNoDatasetsExistScreen = false;
-                this.cd.markForCheck();
-                /// preview and save to feed
-                this.preparePreviewDataSets(node).subscribe(dataSets => {
-                    let previews: Observable<PreviewDataSet>[] = [];
-                    if (dataSets) {
-                        dataSets.forEach(dataSet => {
-                            let previewRequest = new PreviewDataSetRequest();
-                            previewRequest.dataSource = this.datasource;
-                            previews.push(this.previewSchemaService.preview(dataSet, previewRequest).catch((e: any, obs: Observable<PreviewDataSet>) => Observable.of(e)));
-                        })
-                    }
-                    Observable.forkJoin(previews).subscribe((results: PreviewDataSet[]) => {
-                            let errors: PreviewDataSet[] = [];
-                            this.previews = results
+            this.dataSourceService.prepareAndPopulatePreview(node, this.datasource).subscribe((ev:PreviewDataSetResultEvent) => {
 
-                            results.forEach(result => {
-
-                                if (result.hasPreviewError()) {
-                                    errors.push(result);
-                                }
-
-                            });
-                            if (errors.length > 0) {
-                                let dataSetNames = errors.map(ds => ds.key).join(",");
-                                let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
-                                if (this.singleSelection) {
-                                    message += " You will need to alter the preview settings or manually create the schema"
-                                }
-                                //WARN different datasets
-                                this._dialogService.openAlert({
-                                    message: message,
-                                    disableClose: true,
-                                    title: 'Error parsing source selection',
-                                });
-
-                            }
-                            else {
-                                this.formGroup.get("hiddenValidFormCheck").setValue("valid")
-
-                            }
-
-                            this.previewsReady = true;
-                            this.finishedLoading();
-                        },
-                        err => {
-
-                            console.error(err)
-                            this._dialogService.openAlert({
-                                message: "ERROR " + err,
-                                disableClose: true,
-                                title: 'Error parsing source selection',
-                            });
-                            this.previewsReady = true;
-                            this.finishedLoading();
+                if(ev.isEmpty()){
+                    //Show "Selection is needed" card
+                    this.showNoDatasetsExistScreen = true;
+                    this._dialogService.openAlert({
+                        message: 'You need to select a source',
+                        disableClose: true,
+                        title: 'A selection is needed'
+                    });
+                    this.finishedLoading();
+                }
+                else {
+                    this.previews = ev.dataSets;
+                    if(ev.hasError()){
+                        let dataSetNames = ev.errors.map((ds:PreviewDataSet) => ds.key).join(",");
+                        let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
+                        if (this.singleSelection) {
+                            message += " You will need to alter the preview settings or manually create the schema"
+                        }
+                        //WARN different datasets
+                        this._dialogService.openAlert({
+                            message: message,
+                            disableClose: true,
+                            title: 'Error parsing source selection',
                         });
+                    }
+                    else {
+                        this.formGroup.get("hiddenValidFormCheck").setValue("valid")
+
+                    }
+                    this.previewsReady = true;
+                    this.finishedLoading();
+                }
 
 
-                });
+            }, err => {
 
-
-            }
-            else {
-
-                //Show "Selection is needed" card
-                this.showNoDatasetsExistScreen = true;
+                console.error(err)
                 this._dialogService.openAlert({
-                    message: 'You need to select a source',
+                    message: "ERROR " + err,
                     disableClose: true,
-                    title: 'A selection is needed'
+                    title: 'Error parsing source selection',
                 });
+                this.previewsReady = true;
                 this.finishedLoading();
-            }
+            });
+
+
         }
     }
 
