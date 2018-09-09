@@ -1,3 +1,7 @@
+   <div *ngIf="loading">
+     Loading
+   </div>
+
      <datasets-preview-container [previews]="previews" *ngIf="previewsReady"></datasets-preview-container>
       <form [formGroup]="formGroup" >
         <input type="hidden" formControlName="hiddenValidFormCheck" required >

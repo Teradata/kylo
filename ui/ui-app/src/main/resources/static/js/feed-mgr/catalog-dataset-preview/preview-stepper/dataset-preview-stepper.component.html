@@ -1,4 +1,4 @@
-     <mat-horizontal-stepper [linear]="true" #stepper >
+     <mat-horizontal-stepper [linear]="true" #stepper  (selectionChange)="onStepSelectionChanged($event)">>
             <mat-step [stepControl]="chooseDataSourceForm">
               <ng-template matStepLabel >Choose data source</ng-template>
               <!-- Action buttons-->
@@ -16,27 +16,27 @@
               </div>
             </mat-step>
             <mat-step [stepControl]="sourceSample">
-                <ng-template matStepLabel>Select sample</ng-template>
+                <ng-template matStepLabel>Select data</ng-template>
               <!-- Action buttons-->
               <div fxLayout="row" fxFlex>
                 <button mat-button (click)="onCancel()">Cancel</button>
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button matStepperNext  [disabled]="!sourceSampleValid">Next</button>
-                  <span *ngIf="sourceSampleValid" class="warn">A selection is required</span>
+                  <button mat-button matStepperNext >Next</button>
+                <span *ngIf="sourceSample.invalid" class="warn">A selection is required</span>
                 </div>
               </div>
-<!---->
-                <select-dataset-step [formGroup]="sourceSample"  [datasource]="activeDataSource" [params]="activeParams" *ngIf="datasourceReady"></select-dataset-step>
-              <!-- Action buttons-->
+
+                <select-dataset-step [formGroup]="sourceSample"  ></select-dataset-step>
+              <!-- Action buttons -->
               <div fxLayout="row" fxFlex>
                 <button mat-button (click)="onCancel()">Cancel</button>
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button matStepperNext  [disabled]="!sourceSampleValid">Next</button>
-                  <span *ngIf="sourceSampleValid" class="warn">A selection is required</span>
+                  <button mat-button matStepperNext  [disabled]="sourceSample.invalid">Next</button>
+                  <span *ngIf="sourceSample.invalid" class="warn">A selection is required</span>
                 </div>
               </div>
             </mat-step>
@@ -48,20 +48,21 @@
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button (click)="onSave()" [disabled]="!previewFormValid">{{saveLabel}}</button>
-                  <span *ngIf="previewFormValid" class="warn">A selection is required</span>
+                  <button mat-button (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
+                  <span *ngIf="previewForm.invalid" class="warn">A selection is required</span>
                 </div>
               </div>
-              <!--*ngIf="activeDataSource && stepper.selectedIndex ==2"-->
-              <preview-dataset-step #preview [formGroup]="previewForm" [datasource]="activeDataSource"  *ngIf="datasourceReady && stepper.selectedIndex ==2"></preview-dataset-step>
+
+              <preview-dataset-step #preview [formGroup]="previewForm" ></preview-dataset-step>
+
               <!-- Action buttons-->
               <div fxLayout="row" fxFlex>
                 <button mat-button (click)="onCancel()">Cancel</button>
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button (click)="onSave()" [disabled]="!previewFormValid">{{saveLabel}}</button>
-                  <span *ngIf="previewFormValid" class="warn">A selection is required</span>
+                  <button mat-button (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
+                  <span *ngIf="previewForm.invalid" class="warn">A selection is required</span>
                 </div>
               </div>
             </mat-step>

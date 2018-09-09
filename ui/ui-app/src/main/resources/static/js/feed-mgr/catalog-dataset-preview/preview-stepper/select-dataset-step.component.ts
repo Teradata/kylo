@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {MatCheckboxChange} from "@angular/material/checkbox";
@@ -16,6 +16,10 @@ import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "./preview
 import {PreviewDataSetRequest} from "../../catalog/datasource/preview-schema/model/preview-data-set-request";
 import {FileMetadataTransformResponse} from "../../catalog/datasource/preview-schema/model/file-metadata-transform-response";
 import {Node} from "../../catalog/api/models/node";
+import {DataSource} from "../../catalog/api/models/datasource";
+import {Observable} from "rxjs/Observable";
+import {DatasetPreviewStepperService, DataSourceChangedEvent} from "./dataset-preview-stepper.service";
+import {ISubscription} from "rxjs/Subscription";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -23,7 +27,8 @@ export enum DataSetMode {
 
 @Component({
     selector: "select-dataset-step",
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/select-dataset-step.component.html"
+    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/select-dataset-step.component.html",
+    changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class SelectDatasetStepComponent  extends DatasourceComponent implements OnInit, OnDestroy {
 
@@ -47,11 +52,15 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
      */
     datasourceSref:string;
 
+    dataSourceChangedSubscription:ISubscription;
+
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,previewDatasetCollectionService: PreviewDatasetCollectionService,
         private _dialogService: TdDialogService,
                 private _fileMetadataTransformService: FileMetadataTransformService,
                 private previewSchemaService:PreviewSchemaService,
-                private catalogService:CatalogService
+                private catalogService:CatalogService,
+                private dataSourceService:DatasetPreviewStepperService,
+                private cd:ChangeDetectorRef
                 ) {
        super(state,stateRegistry,selectionService,previewDatasetCollectionService);
       this.singleSelection = this.selectionService.isSingleSelection();
@@ -63,24 +72,13 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
             this.formGroup = new FormGroup({});
         }
         this.formGroup.addControl("hiddenValidFormCheck",new FormControl())
+        if(this.datasource) {
+            this.initDataSource();
 
-        this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
-            //???
-            this.plugin = plugin;
-            if(this.plugin.tabs){
-                //find the first tab get the sref and determine the component to use for selecting
-               this.datasourceSref = this.plugin.tabs[0].sref
-            }
-            /*
-
-
-            if (this.plugin && this.plugin.tabs) {
-                this.tabs = angular.copy(this.plugin.tabs);
-            }
-            // Add system tabs
-            this.tabs.push({label: "Preview", sref: ".preview"});
-            */
-        })
+        }
+        else {
+        this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
+        }
 /*
         if (this.plugin && this.plugin.tabs) {
             this.tabs = angular.copy(this.plugin.tabs);
@@ -90,9 +88,35 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
 */
     }
 
+    private onDataSourceChanged($event:DataSourceChangedEvent){
+        this.datasource = $event.dataSource;
+        this.params = $event.params
+        this.initDataSource();
+
+
+        console.log("DS Changed!!!")
+    }
+
+    private initDataSource(){
+        this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
+            //???
+            this.plugin = plugin;
+            if (this.plugin.tabs) {
+                //find the first tab get the sref and determine the component to use for selecting
+                this.datasourceSref = this.plugin.tabs[0].sref
+            }
+
+            console.log("mark for check!!")
+            this.cd.markForCheck()
+        })
+        this.cd.markForCheck()
+    }
 
     ngOnDestroy(){
         super.ngOnDestroy();
+        if(this.dataSourceChangedSubscription){
+            this.dataSourceChangedSubscription.unsubscribe();
+        }
     }
 
     /**

@@ -37,6 +37,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {DatasetPreviewStepperDialogComponent} from "./preview-stepper/dataset-preview-stepper-dialog.component";
 import {TablesModule} from "../catalog/datasource/tables/tables.module";
 import {UploadModule} from "../catalog/datasource/upload/upload.module";
+import {DatasetPreviewStepperService} from "./preview-stepper/dataset-preview-stepper.service";
 
 @NgModule({
     declarations: [
@@ -95,6 +96,7 @@ import {UploadModule} from "../catalog/datasource/upload/upload.module";
         KyloServicesModule
     ],
     providers:[
+        DatasetPreviewStepperService
     ]
 
 })

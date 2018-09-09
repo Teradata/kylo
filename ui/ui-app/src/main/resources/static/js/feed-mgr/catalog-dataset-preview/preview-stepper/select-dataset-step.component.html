@@ -1,4 +1,5 @@
-  <h4>{{datasource.title}}</h4>
+<ng-container *ngIf="datasource">
+<h4 >{{datasource.title}}</h4>
     <div fxLayout="column" >
       <form [formGroup]="formGroup" fxFlex="1 1 auto" fxLayout="column">
         <catalog-file-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="datasourceSref=='.browse'">
@@ -12,7 +13,7 @@
         <input type="hidden" formControlName="hiddenValidFormCheck" required >
       </form>
     </div>
-
+</ng-container>
 <ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
 
         <td td-data-table-cell>

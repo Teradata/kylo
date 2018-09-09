@@ -14,7 +14,7 @@ export enum DatabaseObjectType {
 
 export namespace DatabaseObjectType {
     export function isTableType(type:DatabaseObjectType){
-        return type == DatabaseObjectType.Table || type == DatabaseObjectType.ManagedTable || type == DatabaseObjectType.ExternalTable
+        return type == DatabaseObjectType.Table || type == DatabaseObjectType.ManagedTable || type == DatabaseObjectType.ExternalTable || type == DatabaseObjectType.View
     }
     export function parse(type: string): DatabaseObjectType {
         return DatabaseObjectType[type];
