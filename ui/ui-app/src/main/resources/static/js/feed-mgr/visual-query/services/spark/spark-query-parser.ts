@@ -85,7 +85,7 @@ export class SparkQueryParser extends QueryParser {
             //TODO for A2A release change this logic to use table.dataset first
             //This check here will use hive sqlContext instead of the kyloCatalog for Hive data sources
             if (typeof table.datasourceId === "string" && table.datasourceId.toLowerCase() !== SparkConstants.HIVE_DATASOURCE.toLowerCase() ) {
-                if(table.dataset != undefined) {
+                if(table.dataset != undefined && !table.datasetMatchesUserDataSource ) {
                     script += DATASET_PROVIDER +".read(\""+table.dataset.id+"\")";
                 }else {
                     script += DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(table.schemaname + "." + table.relname) + "\", \"" + table.datasourceId

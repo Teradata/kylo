@@ -551,6 +551,7 @@ angular.extend(SqlBuilder.prototype, {
         }
         if(node.dataset){
             rangeVar.dataset = node.dataset;
+            rangeVar.datasetMatchesUserDataSource = node.datasetMatchesUserDataSource
         }
         return rangeVar;
     },
@@ -936,6 +937,11 @@ export interface RangeVar {
      * the dataset used on this node
      */
     dataset?:SparkDataSet;
+
+    /**
+     * if a dataset is a UserDataSource then this will be populated
+     */
+    datasetMatchesUserDataSource:boolean
 }
 
 /**
