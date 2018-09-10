@@ -78,7 +78,7 @@
   <div fxLayout="row wrap" tdMediaToggle="gt-xs" [mediaClasses]="['push']">
   <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
     <div [id]="template.templateName" fxFlex fxFlex.gt-lg="25%" fxFlex.gt-md="33%" fxFlex.md="33%" fxFlex.sm="50%" fxFlex.xs="50%">
-      <mat-card (click)="selectTemplate(template)" class="mat-card-colored">
+      <mat-card (click)="selectTemplate(template)" class="mat-card-colored template-card">
         <mat-toolbar [style.background]="template.iconColor" fxLayout="column" fxLayoutAlign="center center" layout-padding>
           <mat-icon>{{template.icon}}</mat-icon>
         </mat-toolbar>
