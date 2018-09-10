@@ -29,6 +29,12 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     @Input()
     public showCancel?:boolean = true;
 
+    @Input()
+    displayBottomActionButtons:boolean;
+
+    @Input()
+    displayTopActionButtons:boolean;
+
     /***
      * the datasources to choose
      */
@@ -48,7 +54,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     /**
      * second step form to choose the sample(s)
      */
-    sourceSample: FormGroup;
+    selectDataForm: FormGroup;
 
     /**
      * Final step to view the preview
@@ -79,15 +85,17 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
         this.singleSelection = this.selectionService.isSingleSelection();
         this.chooseDataSourceForm = new FormGroup({});
         this.chooseDataSourceForm.addControl("hiddenValidFormCheck",new FormControl())
-        this.sourceSample = new FormGroup({})
+        this.selectDataForm = new FormGroup({})
         this.previewForm = new FormGroup({})
 
-        this.sourceSample.statusChanges.debounceTime(10).subscribe(changes =>{
-        //    this.sourceSampleValid = changes == "VALID"
+        this.selectDataForm.statusChanges.debounceTime(10).subscribe(changes =>{
+        //    this.selectDataFormValid = changes == "VALID"
+            this.cd.markForCheck()
         });
 
         this.previewForm.statusChanges.debounceTime(10).subscribe(changes =>{
        //     this.previewFormValid = changes == "VALID"
+            this.cd.markForCheck()
         });
 
 
@@ -112,8 +120,72 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     onStepSelectionChanged(event:StepperSelectionEvent){
         let idx = event.selectedIndex;
         this.dataSourceService.setStepIndex(idx)
+        this.cd.markForCheck()
     }
 
+    /**
+     * go to next step
+     */
+    next(){
+        this.stepper.next();
+    }
+
+    /**
+     * go to prev step
+     */
+    previous(){
+        this.stepper.previous();
+    }
+
+    /**
+     * show the next button?
+     * @return {boolean}
+     */
+    showNext(){
+        let idx = this.dataSourceService.stepIndex;
+        //dont show next on first step.  Require them to select a data source
+        return idx != undefined && idx ==1;
+    }
+
+    showSave(){
+        let idx = this.dataSourceService.stepIndex;
+      // show on last step
+        return idx != undefined && idx ==2;
+    }
+
+
+    saveDisabled(){
+        return this.previewForm.invalid;
+    }
+
+    /**
+     * Show the back button
+     * @return {boolean}
+     */
+    showBack(){
+        //dont show back on first step.
+        let idx = this.dataSourceService.stepIndex;
+        return idx != undefined && idx >0;
+    }
+
+    /**
+     * is the next button disabled?
+     * @return {boolean}
+     */
+    nextDisabled(){
+        let idx = this.dataSourceService.stepIndex;
+        if(idx ==1){
+            //select data form
+            return this.selectDataForm.invalid;
+        }
+        else if(idx ==2) {
+            //preview data form
+            return this.previewForm.invalid;
+        }
+        else {
+            false;
+        }
+    }
 
 
     ngOnInit(){

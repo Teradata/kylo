@@ -14,6 +14,7 @@ import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading
 import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {NgForOfContext} from "@angular/common";
+import {BrowserService} from "./browser.service";
 
 @Component({
     selector: "remote-files",
@@ -69,7 +70,8 @@ export class BrowserComponent implements OnInit {
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
-                private dialog: MatDialog, private loadingService: TdLoadingService) {
+                private dialog: MatDialog, private loadingService: TdLoadingService,
+                private browserService:BrowserService) {
         this.columns = this.getColumns();
         this.sortBy = this.getSortByColumnName();
         this.selectionStrategy = selectionService.getSelectionStrategy();
@@ -367,5 +369,6 @@ export class BrowserComponent implements OnInit {
         newData = this.dataTableService.sortData(newData, this.sortBy, this.sortOrder);
         newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
         this.filteredFiles = newData;
+        this.browserService.onBrowserDataFiltered(newData)
     }
 }

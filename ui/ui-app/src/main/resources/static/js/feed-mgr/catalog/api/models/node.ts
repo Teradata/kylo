@@ -4,7 +4,7 @@ import {BrowserObject} from './browser-object';
  * Browser object hierarchy
  */
 export class Node {
-    private name: string;
+    public name: string;
     private isSelected: boolean = false;
     private childrenMap: Map<string, Node> = new Map<string, Node>();
     private parent: Node;

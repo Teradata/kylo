@@ -19,6 +19,7 @@ import {DataSource} from "../../catalog/api/models/datasource";
 import {Observable} from "rxjs/Observable";
 import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
+import {BrowserService} from "../../catalog/datasource/api/browser.service";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -50,16 +51,24 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
 
     dataSourceChangedSubscription:ISubscription;
 
+    browserComponentUpdatedSubscription:ISubscription;
+
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,previewDatasetCollectionService: PreviewDatasetCollectionService,
         private _dialogService: TdDialogService,
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
+                private browserService:BrowserService,
                 private cd:ChangeDetectorRef
                 ) {
        super(state,stateRegistry,selectionService,previewDatasetCollectionService);
       this.singleSelection = this.selectionService.isSingleSelection();
+     this.browserComponentUpdatedSubscription = this.browserService.subscribeToDataFiltered(this.onBrowserComponentFiltered.bind(this))
      }
 
+onBrowserComponentFiltered(files:BrowserObject[]){
+        console.log('FINISHED UPDATING COMPONENT ',files)
+    this.cd.markForCheck();
+}
 
     ngOnInit(){
         if(this.formGroup == undefined){
@@ -94,6 +103,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
      * When complete notify the view changed
      */
     private initDataSource(){
+        this.datasourceSref = '';
         this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
             //???
             this.plugin = plugin;
@@ -115,6 +125,9 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         super.ngOnDestroy();
         if(this.dataSourceChangedSubscription){
             this.dataSourceChangedSubscription.unsubscribe();
+        }
+        if(this.browserComponentUpdatedSubscription){
+            this.browserComponentUpdatedSubscription.unsubscribe();
         }
     }
 

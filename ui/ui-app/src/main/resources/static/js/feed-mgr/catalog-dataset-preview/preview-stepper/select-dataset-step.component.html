@@ -18,7 +18,7 @@
 
         <td td-data-table-cell>
           <mat-checkbox [checked]="parent.isChildSelected(file.name)"
-                        [disabled]="parent.isSelectChildDisabled(file.name)"
+                        [hidden]="parent.isSelectChildDisabled(file.name)"
                         (change)="onToggleChange($event,file,parent)"></mat-checkbox>
 
           <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
