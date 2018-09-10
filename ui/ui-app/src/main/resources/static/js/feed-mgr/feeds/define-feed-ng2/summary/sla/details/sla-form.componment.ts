@@ -23,6 +23,7 @@ export class RuleType {
 })
 export class SlaFormComponent implements OnInit, OnChanges {
 
+    @Input('formGroup') slaForm: FormGroup;
     @Input('sla') editSla: Sla;
     @Input('feed') feedModel: Feed;
 
@@ -43,6 +44,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * @type {null}
      */
     ruleType: FormControl;
+    slaAction: FormControl = new FormControl(this.EMPTY_RULE_TYPE);
 
     /**
      * did the user modify the name of the sla
@@ -60,7 +62,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * The Form for validation
      * @type {{}}
      */
-    slaForm: FormGroup = new FormGroup({});
     slaName = new FormControl({});
     slaDescription = new FormControl({});
 
@@ -68,38 +69,62 @@ export class SlaFormComponent implements OnInit, OnChanges {
     options: any;
     private allowCreate = true;
     allowEdit = true;
-    private feed: null;
+    private addingSlaAction = false;
+    private slaActionOptions: any;
+    private showActionOptions: boolean;
+    isDebug = false;
 
 
     constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService) {
-        console.log('constructor');
         this.slaService = $$angularInjector.get("SlaService");
-
     }
 
     ngOnInit(): void {
-        console.log('ngOnInit, editSla', this.editSla);
-
         /**
          * Load up the Metric Options for defining SLAs
          */
         this.slaService.getPossibleSlaMetricOptions().then((response: any) => {
             let currentFeedValue = null;
-            if (this.feed != null) {
-                currentFeedValue = this.policyInputFormService.currentFeedValue(this.feed);
+            if (this.feedModel != null) {
+                currentFeedValue = this.policyInputFormService.currentFeedValue(this.feedModel);
             }
             this.options = this.policyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
             if (this.allowCreate || this.allowEdit) {
                 this.policyInputFormService.stripNonEditableFeeds(this.options);
             }
-
         });
+
+        /**
+         * Get all possible SLA Action Options
+         */
+        this.slaService.getPossibleSlaActionOptions().then((response: any) => {
+            let currentFeedValue = null;
+            if (this.feedModel != null) {
+                currentFeedValue = this.policyInputFormService.currentFeedValue(this.feedModel);
+            }
+            this.slaActionOptions = this.policyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            if (this.slaActionOptions.length > 0) {
+                this.showActionOptions = true;
+
+                _.each(this.slaActionOptions, (action: any) => {
+                    //validate the rules
+                    this.slaService.validateSlaActionRule(action);
+                });
+
+                if (this.allowCreate || this.allowEdit) {
+                    this.policyInputFormService.stripNonEditableFeeds(this.slaActionOptions);
+                }
+
+            }
+            else {
+                this.showActionOptions = false;
+            }
+        });
+
     }
 
 
     ngOnChanges(changes: SimpleChanges): void {
-        console.log('ngOnChanges, editSla', this.editSla);
-
         if (this.editSla) {
             this.slaName = new FormControl(this.editSla.name, Validators.required);
             this.slaDescription = new FormControl(this.editSla.description, Validators.required);
@@ -108,34 +133,47 @@ export class SlaFormComponent implements OnInit, OnChanges {
         }
     }
 
+    onPolicyInputControlsAdded(): void {
+        this.validateForm2();
+    }
+
     addNewCondition() {
         this.ruleType = new FormControl(this.EMPTY_RULE_TYPE);
         //if editing one already validate, complete it and then add the new one
-        let valid = true;
-        if (this.editSla != null) {
-            valid = this.validateForm();
-        }
-        if (valid) {
+        if (!this.slaForm.invalid) {
             //this will display the drop down to select the correct new rule/metric to assign to this SLA
             this.addingSlaCondition = true;
         }
     }
 
-    /**
-     * Validate the form before adding/editing a Rule for an SLA
-     * @returns {boolean}
-     */
-    private validateForm() {
-        //loop through properties and determine if they are valid
-        //the following _.some routine returns true if the items are invalid
-        const ruleProperties: any[] = [];
-        _.each(this.editSla.rules, function (rule: any) {
-            _.each(rule.properties, function (property: any) {
-                ruleProperties.push(property);
-            });
-        });
+    private validateForm2() {
+        this.validateAllFormFields(this.slaForm);
+    }
 
-        return this.policyInputFormService.validateForm(this.slaForm, ruleProperties, true);
+    validateAllFormFields(formGroup: FormGroup) {
+        Object.keys(formGroup.controls).forEach(field => {
+            const control = formGroup.get(field);
+            if (control instanceof FormControl) {
+                (<FormControl>control).markAsTouched({ onlySelf: false });
+            } else if (control instanceof FormGroup) {
+                this.validateAllFormFields(control);
+            }
+        });
+    }
+
+    onAddSlaActionChange() {
+        if (this.slaAction.value != this.EMPTY_RULE_TYPE) {
+            //replace current sla rule if already editing
+            const newRule = angular.copy(this.slaAction.value);
+            newRule.mode = 'NEW';
+            //update property index
+            this.policyInputFormService.updatePropertyIndex(newRule);
+
+            newRule.editable = true;
+            this.editSla.actionConfigurations.push(newRule);
+            this.addingSlaAction = false;
+            this.slaAction.setValue(this.EMPTY_RULE_TYPE);
+        }
     }
 
     onAddConditionRuleTypeChange() {
@@ -159,7 +197,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
                 this.editSla.description = this.deriveDescription();
             }
         }
-        this.validateForm();
     }
 
     private deriveSlaName() {
@@ -204,6 +241,14 @@ export class SlaFormComponent implements OnInit, OnChanges {
         this.editSla.rules.splice(index, 1);
         if (this.editSla.rules.length == 0) {
             this.addingSlaCondition = true;
+        }
+    }
+
+    onDeleteSlaAction(index: number) {
+        //warn before delete
+        this.editSla.actionConfigurations.splice(index, 1);
+        if (this.editSla.actionConfigurations.length == 0) {
+            this.addingSlaAction = true;
         }
     }
 

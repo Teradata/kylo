@@ -6,6 +6,9 @@ import {Sla} from '../sla.componment';
 import {Feed} from '../../../../../model/feed/feed.model';
 import {Observable} from 'rxjs/Observable';
 import {FeedLoadingService} from '../../../services/feed-loading-service';
+import {FormGroup} from '@angular/forms';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {ProfileValidComponent} from '../../profile/container/valid/profile-valid.component';
 
 @Component({
     selector: "sla-details",
@@ -13,6 +16,9 @@ import {FeedLoadingService} from '../../../services/feed-loading-service';
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-details.component.html"
 })
 export class SlaDetailsComponent implements OnInit {
+
+    private static feedLoader: string = "SlaDetailsComponent.feedLoader";
+    private static slaLoader: string = "SlaDetailsComponent.slaLoader";
 
     @Input() stateParams:any;
 
@@ -26,15 +32,28 @@ export class SlaDetailsComponent implements OnInit {
     private allowEdit: boolean;
     private sla: Sla;
     private feedModel: Feed;
+    slaForm: FormGroup = new FormGroup({});
 
-        constructor(private $$angularInjector: Injector, private state: StateService, private feedLoadingService: FeedLoadingService) {
+    constructor(private $$angularInjector: Injector, private state: StateService, private feedLoadingService: FeedLoadingService, private loadingService: TdLoadingService) {
         this.slaService = $$angularInjector.get("SlaService");
         this.accessControlService = $$angularInjector.get("AccessControlService");
         this.policyInputFormService = $$angularInjector.get("PolicyInputFormService");
+
+        this.loadingService.create({
+            name: SlaDetailsComponent.feedLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
+        this.loadingService.create({
+            name: SlaDetailsComponent.slaLoader,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
     }
 
     ngOnInit() {
-        console.log("ngOnInit");
         this.slaId = this.stateParams ? this.stateParams.slaId : undefined;
         if (this.slaId) {
             this.isEditing = true;
@@ -45,24 +64,26 @@ export class SlaDetailsComponent implements OnInit {
             this.isCreating = true;
         }
         let feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        console.log('feedId = ' + feedId);
         this.loadFeed(feedId);
     }
 
     private loadFeed(feedId:string):void {
+        this.loadingService.register(SlaDetailsComponent.feedLoader);
+
         this.feedLoadingService.loadFeed(feedId).subscribe((feedModel:Feed) => {
-            console.log('loaded feed', feedModel);
             this.feedModel = feedModel;
+            this.loadingService.resolve(SlaDetailsComponent.feedLoader);
         },(error:any) =>{
+            this.loadingService.resolve(SlaDetailsComponent.feedLoader);
             console.log('error loading feed for id ' + feedId);
         });
     }
 
 
     loadSla(slaId: string) {
-        console.log("loading sla for id " + slaId);
+        this.loadingService.register(SlaDetailsComponent.slaLoader);
+
         this.slaService.getSlaForEditForm(slaId).then((response: any) => {
-            console.log('got sla', response.data);
             this.sla = response.data;
             this.applyEditPermissionsToSLA(this.sla);
             _.each(this.sla.rules, (rule: any) => {
@@ -81,9 +102,11 @@ export class SlaDetailsComponent implements OnInit {
                 this.slaService.validateSlaActionRule(rule);
 
             });
+            this.loadingService.resolve(SlaDetailsComponent.slaLoader);
             this.loading = false;
 
         }, (err: any) => {
+            this.loadingService.resolve(SlaDetailsComponent.slaLoader);
             const msg = err.data.message || 'Error loading the SLA';
             this.loading = false;
             console.error(msg);
@@ -119,8 +142,6 @@ export class SlaDetailsComponent implements OnInit {
 
 
     onSaveSla():void {
-        console.log('on save sla');
-        //todo
         this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
     }
 

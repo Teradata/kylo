@@ -132,7 +132,7 @@
 
         <div ng-if="vm.addingSlaAction" class="layout-padding-left-right" layout="row">
           <md-input-container class="md-block layout-padding-top-bottom condensed">
-            <label class="md-container-ignore label-small layout-padding-top">{{"views.service-level-agreement-form.SNA" | translate}}</label>
+            <label class="md-container-ignore label-small layout-padding-top">{{"views.service-level-agreement-form.SelectNewAction" | translate}}</label>
             <md-select ng-model="vm.slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddSlaActionChange()" aria-label="Rule Type">
               <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
             </md-select>
@@ -143,7 +143,7 @@
         </div>
 
         <div ng-if="vm.addingSlaAction == false" flex layout="row">
-          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">{{"views.service-level-agreement-form.AA" | translate}}</md-button>
+          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">{{"views.service-level-agreement-form.AddAction" | translate}}</md-button>
           <span flex></span>
         </div>
 

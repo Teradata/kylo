@@ -8,7 +8,7 @@
   <mat-card-content>
     <mat-nav-list *ngIf="allowCreate">
       <div *ngFor="let sla of serviceLevelAgreements; last as isLast;">
-        <a mat-list-item (click)="editExistingSla(sla)">
+        <a mat-list-item (click)="editExistingSla(sla)" class="sla-row">
           <sla-row [sla]="sla" fxFlex></sla-row>
         </a>
         <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>

@@ -86,7 +86,6 @@ export class DynamicFormFieldGroupBuilder {
     }
 
     build():FieldGroup{
-        console.log('build');
         let group = new FieldGroup(this.layout);
         group.setLayoutAlign(this.layoutAlign);
         group.fields = this.formFieldBuilder.build();

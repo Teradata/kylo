@@ -1,13 +1,10 @@
-import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from "@angular/core";
 import {PolicyInputFormService} from "./policy-input-form.service";
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {FieldConfig} from "../dynamic-form/model/FieldConfig";
-import {Select} from "../dynamic-form/model/Select";
-import {InputText, InputType} from "../dynamic-form/model/InputText";
+import {InputType} from "../dynamic-form/model/InputText";
 import {DynamicFormService} from "../dynamic-form/services/dynamic-form.service";
 import {FieldPolicyProperty} from "../../model/field-policy";
-import {Chip} from "../dynamic-form/model/Chip";
-import {Templates} from "../../services/TemplateTypes";
 import {DynamicFormFieldGroupBuilder} from "../dynamic-form/services/dynamic-form-field-group-builder";
 import {DynamicFormBuilder} from "../dynamic-form/services/dynamic-form-builder";
 import {FieldGroup, Layout} from "../dynamic-form/model/FieldGroup";
@@ -34,25 +31,42 @@ export interface RuleGroupWithFieldConfig {
     selector: "policy-input-form",
     templateUrl: "js/feed-mgr/shared/field-policies-angular2/policy-input-form.component.html"
 })
-export class PolicyInputFormComponent implements OnInit {
+export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
 
+
+    /**
+     * Optional arbitrary string which groups policy-input-forms where provided 'index' is unique.
+     * This is required if there are multiple policy-input-forms in the same 'parentFormGroup'.
+     */
+    @Input()
+    groupId?: string;
+
+    /**
+     * Unique index
+     */
     @Input()
     index: number;
 
     @Input()
     rule: any;
 
+    /**
+     * Parent form group which will host this form group
+     */
     @Input()
     parentFormGroup: FormGroup;
 
 
     formGroup: FormGroup;
 
+    /**
+     * Feed name
+     */
     @Input()
     feed?: string;
 
     @Input()
-    mode: string; //NEW or EDIT
+    mode: 'NEW' | 'EDIT';
 
     @Output()
     onPropertyChange: EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
@@ -73,9 +87,10 @@ export class PolicyInputFormComponent implements OnInit {
     fieldGroups:FieldGroup[] = [];
 
     initialized:boolean = false;
+    private POLICY_FORM = "policyForm_";
+    private policyFormId: string;
 
     constructor(private policyInputFormService: PolicyInputFormService, private dynamicFormService: DynamicFormService) {
-        console.log('constructor');
         this.editChips = {};
         this.editChips.selectedItem = null;
         this.editChips.searchText = null;
@@ -90,24 +105,10 @@ export class PolicyInputFormComponent implements OnInit {
     }
 
     ngOnInit() {
-        console.log('ngOnInit');
+        this.policyFormId = (this.groupId ? this.groupId + '_' : '') + this.POLICY_FORM + this.index;
         if(this.parentFormGroup != undefined) {
-            this.parentFormGroup.registerControl("policyForm_" + this.index, this.formGroup);
+            this.parentFormGroup.registerControl(this.policyFormId, this.formGroup);
         }
-
-
-
-        //call the onChange if the form initially sets the value
-        /*
-          if(this.onPropertyChange) {
-              _.each(this.rule.properties,  (property:any) => {
-                  if ((property.type == 'select' || property.type =='feedSelect' || property.type == 'currentFeed') && property.value != null) {
-                      this.onPropertyChange()(property);
-                  }
-              });
-          }
-          */
-        console.log("rule, mode, feed", this.rule, this.mode, this.feed);
         if (this.rule) {
             this.buildAndSetFieldGroups();
         }
@@ -118,21 +119,23 @@ export class PolicyInputFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log('ngOnChanges');
         if (changes && changes.rule && this.initialized) {
-          //  setTimeout(() => {
-
-                let propertiesAdded = this.buildAndSetFieldGroups();
-                this.dynamicForm.addFields();
-                if (propertiesAdded == 0) {
-                    //force the call to emit the formControlsAdded
-                    //otherwise it will be called from the dynamic-form component after adding to the formgroup
-                    this.onFormControlsAdded.emit([]);
-                }
-
-         //   })
+            let propertiesAdded = this.buildAndSetFieldGroups();
+            this.dynamicForm.addFields();
+            if (propertiesAdded == 0) {
+                //force the call to emit the formControlsAdded
+                //otherwise it will be called from the dynamic-form component after adding to the formgroup
+                this.onFormControlsAdded.emit([]);
+            }
         }
     }
+
+    ngOnDestroy(): void {
+        if (this.parentFormGroup != undefined) {
+            this.parentFormGroup.removeControl(this.policyFormId);
+        }
+    }
+
 
     formControlsAdded(controls: FormControl[]) {
         this.onFormControlsAdded.emit(controls);
@@ -219,7 +222,7 @@ export class PolicyInputFormComponent implements OnInit {
                 type = "email";
                 builder.addValidator(MultipleEmail)
             }
-            else if(type == "emaik"){
+            else if(type == "email"){
                 builder.addValidator(Validators.email)
             }
             else {
