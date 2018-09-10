@@ -16,3 +16,15 @@
 mat-grid-tile {
   cursor:pointer;
 }
+
+
+.card-content {
+  min-height: 64px;
+  box-sizing: border-box;
+}
+.mat-card-colored mat-toolbar {
+  height: 100px;
+}
+.mat-card-colored mat-toolbar mat-icon, .mat-card-colored mat-toolbar .mat-icon {
+  font-size: 64px;
+}

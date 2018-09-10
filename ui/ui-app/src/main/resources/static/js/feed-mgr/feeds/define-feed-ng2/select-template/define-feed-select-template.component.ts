@@ -20,7 +20,7 @@ import {FeedLoadingService} from "../services/feed-loading-service";
 
 @Component({
     selector: "define-feed-select-template",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.html"
 })
 export class DefineFeedSelectTemplateComponent implements OnInit {
