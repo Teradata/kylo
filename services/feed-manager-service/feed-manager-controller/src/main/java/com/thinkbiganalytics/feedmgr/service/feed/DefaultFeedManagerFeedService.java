@@ -382,27 +382,30 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public EntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
-        return metadataAccess.commit(() -> {
-            // TODO check access control for deploy
-            
-            Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
-            
-            return this.feedProvider.findVersion(feedId, versionId, true)
-                .map(ver -> {
-                    Feed feed = ver.getEntity().get();
-                    FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
+        Optional<Feed.ID> idOption = checkChangeVersions(feedIdStr);
+
+        return idOption
+            .map(domainFeedId -> {
+                return metadataAccess.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
                     
-                    deployFeed(feedMetadata, ver);
-                    return feedModelTransform.domainToFeedVersion(feedProvider.findVersion(feedId, versionId, includeContent).get());
-                })
-                .orElseThrow(() -> new FeedNotFoundException(feedId));
-        });
+                    return this.feedProvider.findVersion(domainFeedId, versionId, true)
+                        .map(ver -> {
+                            Feed feed = ver.getEntity().get();
+                            FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
+                            
+                            deployFeed(feedMetadata, ver);
+                            return feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
+                        })
+                        .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+                }, MetadataAccess.SERVICE);
+            })
+            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
     }
 
     @Override
     public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
 
         return idOption
             .map(domainFeedId -> {
@@ -416,7 +419,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     
     @Override
     public EntityVersion createDraftFromFeedVersion(String feedId, String versionIdStr, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
 
         return idOption
             .map(domainFeedId -> {
@@ -1215,15 +1218,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private void saveDeployedFeed(final FeedMetadata feed, com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
+        
         // Store the old security groups before saving because we need to compare afterward
-        if (!feed.isNew()) {
-            Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
-            Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
-            previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
-        }
+        Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
+        Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
+        previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
 
         //if this is the first time saving this feed create a new one
-        Feed domainFeed = feedModelTransform.feedToDomain(feed);
+        Feed domainFeed = version.getEntity().get();
         Feed.ID domainId = domainFeed.getId();
 
         if (domainFeed.getState() == null) {
@@ -1247,7 +1249,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         stopwatch.reset();
 
         // Update hadoop security group polices if the groups changed
-        if (!feed.isNew()  && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
+        if (! ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
             stopwatch.start();
             List<? extends HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
             List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
@@ -1280,7 +1282,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         // Update Kylo metastore
         stopwatch.start();
-        domainFeed = feedProvider.update(domainFeed);
         feedProvider.setDeployed(domainId, version.getId());
         
         stopwatch.stop();
