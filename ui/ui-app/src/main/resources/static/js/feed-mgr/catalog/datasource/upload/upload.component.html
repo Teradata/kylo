@@ -30,7 +30,7 @@
 <ng-container *ngIf="files.length > 0">
   <mat-divider></mat-divider>
   <mat-card-actions>
-    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()">Add more files</button>
-    <button *ngIf="isReady" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview">Continue</button>
+    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()" *ngIf="!singleFile">Add more files</button>
+    <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview" >Continue</button>
   </mat-card-actions>
 </ng-container>

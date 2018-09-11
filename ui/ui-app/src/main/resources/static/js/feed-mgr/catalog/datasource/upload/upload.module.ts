@@ -21,6 +21,9 @@ import {uploadStates} from "./upload.states";
     entryComponents: [
         UploadComponent
     ],
+    exports:[
+        UploadComponent
+    ],
     imports: [
         CatalogApiModule,
         CommonModule,

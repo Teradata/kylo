@@ -1,12 +1,24 @@
 import {BrowserObject} from '../../api/models/browser-object';
 import {BrowserColumn} from '../../api/models/browser-column';
 
+
 export enum DatabaseObjectType {
     Catalog = "CATALOG",
     Schema = "SCHEMA",
     Table = "TABLE",
     View = "VIEW",
-    Column = "COLUMN"
+    Column = "COLUMN",
+    ManagedTable = "MANAGED_TABLE",
+    ExternalTable = "EXTERNAL_TABLE"
+}
+
+export namespace DatabaseObjectType {
+    export function isTableType(type:DatabaseObjectType){
+        return type == DatabaseObjectType.Table || type == DatabaseObjectType.ManagedTable || type == DatabaseObjectType.ExternalTable || type == DatabaseObjectType.View
+    }
+    export function parse(type: string): DatabaseObjectType {
+        return DatabaseObjectType[type];
+    }
 }
 
 export class DatabaseObject extends BrowserObject {

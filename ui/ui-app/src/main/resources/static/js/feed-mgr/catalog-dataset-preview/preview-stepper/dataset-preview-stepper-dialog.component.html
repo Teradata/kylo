@@ -1,0 +1,31 @@
+<!--<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Browse for data</span>
+  <span fxFlex></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+-->
+<mat-dialog-content fxFlex="100%">
+<dataset-preview-stepper #datasetStepper (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [allowMultiSelection]="data.allowMultiSelection" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
+
+
+</mat-dialog-content>
+<mat-dialog-actions class="pad">
+  <!-- Action buttons -->
+  <div fxLayout="row" fxFlex>
+    <button mat-button (click)="cancel()">Cancel</button>
+    <span fxFlex></span>
+    <button mat-button (click)="onBack()" *ngIf="showBack()">Back</button>
+    <div fxLayout="column" *ngIf="showNext()">
+      <button mat-button (click)="onNext()" *ngIf="showNext()" [disabled]="nextDisabled()">Next</button>
+      <button mat-button (click)="onSave()" [hidden]="!showSave()" [disabled]="saveDisabled()">{{saveLabel}}</button>
+       <span [hidden]="!nextDisabled()" class="warn">A selection is required</span>
+    </div>
+    <div [hidden]="!showSave()">
+      <button mat-button (click)="onSave()" [disabled]="saveDisabled()">Add</button>
+    </div>
+  </div>
+
+</mat-dialog-actions>
+

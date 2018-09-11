@@ -20,13 +20,14 @@ package com.thinkbiganalytics.kylo.spark.config;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyConfigurationException;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionKind;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
@@ -42,7 +43,6 @@ import javax.annotation.PostConstruct;
 /**
  * Properties specific to configuring Livy
  */
-@Configuration
 public class LivyProperties {
 
     private static final Logger logger = LoggerFactory.getLogger(LivyProperties.class);
@@ -110,8 +110,7 @@ public class LivyProperties {
     private int maxDelayCheckOnFail = 10000;
 
     /**
-     * Time, in milliseconds, to wait for start of Livy session, if exceeded, blocked threads release
-     * and will produce an exception
+     * Time, in milliseconds, to wait for start of Livy session, if exceeded, blocked threads release and will produce an exception
      */
     private Long waitForStart = 120000l;
 
@@ -243,6 +242,17 @@ public class LivyProperties {
     private void postConstruct() {
         logger.debug("PostConstruct called for LivyProperties");
 
+        if (!Lists.newArrayList(env.getActiveProfiles()).contains("kylo-livy")) {
+            throw new IllegalStateException("Attempting to instantiate LivyProperties bean when 'kylo-livy' is not an active profile");
+        }
+
+        if (!StringUtils.isNotEmpty(hostname)) {
+            throw new LivyConfigurationException("Attempt to start when 'kylo-livy' is an active profile and property 'spark.livy.hostname' not defined, or invalid.");
+        }
+        if (port == null || port <= 0) {
+            throw new LivyConfigurationException("Attempt to start when 'kylo-livy' is an active profile and property 'spark.livy.port' not defined, or invalid.");
+        }
+
         logger.debug("determine the set of spark properties to pass to Livy");
         MutablePropertySources propSrcs = ((AbstractEnvironment) env).getPropertySources();
         StreamSupport.stream(propSrcs.spliterator(), false)
@@ -282,4 +292,6 @@ public class LivyProperties {
         sb.append('}');
         return sb.toString();
     }
+
+
 }

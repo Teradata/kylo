@@ -1,83 +1,103 @@
-import {Component, ContentChild, Input, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
-import {DataSource} from "../../../../catalog/api/models/datasource";
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
-import {StateRegistry, StateService} from "@uirouter/angular";
-import {FormBuilder,FormGroup} from "@angular/forms";
+import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
-import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {SelectionService, SingleSelectionPolicy} from "../../../../catalog/api/services/selection.service";
-import * as angular from 'angular';
-import {SparkDataSet} from "../../../../model/spark-data-set.model";
+import {SelectionService} from "../../../../catalog/api/services/selection.service";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedLoadingService} from "../../services/feed-loading-service";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
+import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {ISubscription} from "rxjs/Subscription";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 
 @Component({
     selector: "define-feed-step-source-sample",
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source-sample.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source-sample.component.html"
 })
-export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepComponent {
+export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
 
-    static LOADER = "DefineFeedStepSourceSampleComponent.LOADER";
-
-    @Input("datasources")
-    public datasources: DataSource[];
-
-    sourceSample: FormGroup;
 
     @Input()
-    public stateParams : any;
+    step:Step;
 
-    @ViewChild("toolbarActionTemplate")
-    public toolbarActionTemplate: TemplateRef<any>
+    @Input()
+    feed:Feed;
 
-    public paths:string[] = [];
-
-
-    feedDefintionDatasourceState:string = FEED_DEFINITION_SECTION_STATE_NAME+".datasource"
+    @Output()
+    previewSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
 
     /**
      * Flag that is toggled when a user is looking at a feed with a source already defined and they choose to browse the catalog to change the source
      * this will render the catalog selection/browse dialog
      */
+    @Input()
     public showCatalog:boolean = false;
 
+    @Output()
+    public showCatalogChange:EventEmitter<boolean> = new EventEmitter<boolean>();
 
-    constructor(defineFeedService:DefineFeedService,stateService: StateService, private selectionService: SelectionService,
-                dialogService: TdDialogService,
-                feedLoadingService:FeedLoadingService,
-                feedSideNavService:FeedSideNavService) {
-        super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
-        this.sourceSample = new FormGroup({})
-       this.defineFeedService.ensureSparkShell();
+    public showCancel:boolean;
+
+
+    singleSelection: boolean;
+
+    feedSavedSubscription:ISubscription;
+
+    constructor(private defineFeedService:DefineFeedService,private stateService: StateService, private selectionService: SelectionService,
+                private _dialogService: TdDialogService,
+                private defineFeedSourceSampleService:DefineFeedSourceSampleService,
+                private feedLoadingService: FeedLoadingService) {
+        this.singleSelection = this.selectionService.isSingleSelection();
+       this.feedSavedSubscription  = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
+    }
+
+
+    ngOnInit(){
+
+
 
     }
 
-    getStepName(){
-        return FeedStepConstants.STEP_SOURCE_SAMPLE;
-    }
-
-    getToolbarTemplateRef(){
-        return this.toolbarActionTemplate;
-    }
-
-    init(){
-        this.paths = this.feed.getSourcePaths();
-        //always show the catalog if no paths are available to preview
-        if(this.paths == undefined || this.paths.length ==0) {
-            this.showCatalog = true;
+    private init(){
+        this.feed =this.defineFeedService.getFeed();
+        if(this.feed.isDataTransformation()){
+            this.selectionService.multiSelectionStrategy();
         }
+        else {
+            this.selectionService.singleSelectionStrategy();
+        }
+        this.step = this.feed.steps.find(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE);
+        this.step.visited = true;
 
+
+
+        this.defineFeedSourceSampleService.viewingConnectors();
+        this.defineFeedSourceSampleService.setFeed(this.feed);
+        this.defineFeedSourceSampleService.setStep(this.step)
+
+        if(this.showCatalog && this.feed.sourceDataSets && this.feed.sourceDataSets.length){
+            this.showCancel = true;
+        }else {
+            this.showCancel = false;
+        }
     }
+
+    ngOnDestroy(){
+        this.feedSavedSubscription.unsubscribe();
+    }
+
+    onFeedSaved(resp:SaveFeedResponse){
+        this.init();
+    }
+
 
     browseCatalog(){
         if(this.feed.sourceDataSets && this.feed.sourceDataSets.length >0){
-            this.dialogService.openConfirm({
+            this._dialogService.openConfirm({
                 message: 'You already have a dataset defined for this feed. Switching the source will result in a new target schema. Are you sure you want to browse for a new dataset? ',
                 disableClose: true,
                 title: 'Source dataset already defined', //OPTIONAL, hides if not provided
@@ -86,26 +106,27 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
                 width: '500px', //OPTIONAL, defaults to 400px
             }).afterClosed().subscribe((accept: boolean) => {
                 if (accept) {
-                    this.showCatalog = true;
+                  this.showCatalog = true;
+                  this.showCatalogChange.emit(this.showCatalog);
                 } else {
                     // no op
+                  this.showCatalog = false;
+                    this.showCatalogChange.emit(this.showCatalog);
                 }
             });
         }
     }
 
-    goToDataSet(dataSet:SparkDataSet){
-        let params = angular.extend({},this.stateParams);
-        params["dataSource"]=dataSet.dataSource;
-        params["resetSelectionService"] = false;
-        params["datasourceId"]= dataSet.dataSource.id;
-        params["path"]= dataSet.resolvePath(false);
-        this.selectionService.reset(dataSet.dataSource.id);
-        this.selectionService.setLastPath(dataSet.dataSource.id,{path:dataSet.resolvePath()});
-       // this.selectionService.set()
-        this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".datasource",params)
+    onSave(previewEvent:DatasetPreviewStepperSavedEvent) {
+        this.previewSaved.emit(previewEvent)
     }
 
+    onCancel(){
+        //cancel it
+        this.showCatalog = false;
+        this.showCatalogChange.emit(this.showCatalog);
+        this.feed = this.defineFeedService.getFeed();
+    }
 
 
 }

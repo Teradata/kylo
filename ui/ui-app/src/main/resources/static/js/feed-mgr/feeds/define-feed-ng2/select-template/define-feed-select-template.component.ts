@@ -20,7 +20,7 @@ import {FeedLoadingService} from "../services/feed-loading-service";
 
 @Component({
     selector: "define-feed-select-template",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.html"
 })
 export class DefineFeedSelectTemplateComponent implements OnInit {
@@ -320,7 +320,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
      * @returns the date format string
      */
     openNewFeedDialog(config: NewFeedDialogData): Observable<NewFeedDialogResponse> {
-        return this.dialog.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",height:'100%',width:'800px'})
+        return this.dialog.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",width:'800px'})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

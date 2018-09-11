@@ -2,7 +2,7 @@
 <feed-step-custom-content>
 <div fxLayout="row">
 
-  <mat-card class="mat-typography" fxFlex="80">
+  <mat-card class="feed-card" fxFlex="80">
     <mat-card-header>
       <mat-card-title>{{step.name}}</mat-card-title>
       <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
@@ -157,7 +157,7 @@
 
   </mat-card>
 
-  <mat-card *ngIf="feed.table.tableSchema.fields.length >0" fxFlex="20">
+  <mat-card *ngIf="feed.table.tableSchema.fields.length >0" fxFlex="20" class="feed-card">
     <mat-card-header>
       <mat-card-title *ngIf="selectedColumn == undefined">Column Details</mat-card-title>
       <mat-card-title *ngIf="selectedColumn != undefined">{{selectedColumn.field.name}} </mat-card-title>
@@ -291,7 +291,7 @@
   </mat-card>
 </div>
 
-<mat-card>
+<mat-card class="feed-card">
   <mat-card-header>
     <mat-card-title>Table Partitions</mat-card-title>
     <mat-card-subtitle>Define partitions on the table</mat-card-subtitle>

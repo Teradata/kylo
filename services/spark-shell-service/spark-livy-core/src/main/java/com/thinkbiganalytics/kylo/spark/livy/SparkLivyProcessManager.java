@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.client.jersey.LivyRestClient;
 import com.thinkbiganalytics.kylo.spark.client.livy.LivyHeartbeatMonitor;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyServerNotReachableException;
@@ -57,7 +58,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
-public class SparkLivyProcessManager implements SparkShellProcessManager {
+public class SparkLivyProcessManager implements SparkShellProcessManager, SparkShellClusterDelegate, SparkShellProcessListener {
 
     private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyProcessManager.class);
 
@@ -78,9 +79,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
     @Resource
     private LivyHeartbeatMonitor heartbeatMonitor;
 
-    @Resource
-    private Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache;
-
     /**
      * Map of Spark Shell processes to Jersey REST clients
      */
@@ -91,13 +89,14 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
     private Map<String /* transformId */, Integer /* stmntId */> statementIdCache;
 
     @Nonnull
-    private final BiMap<String /* user */, SparkShellProcess> processCache = HashBiMap.create();
+    private final BiMap<String /* user */, SparkLivyProcess> processCache = HashBiMap.create();
 
     @Resource
     private SparkShellRestClient restClient;
 
     @Override
     public void addListener(@Nonnull SparkShellProcessListener listener) {
+        // currently only called in KyloHA mode, when SparkShellClusterListener bean is instantiated
         logger.debug("adding listener '{}", listener);
         listeners.add(listener);
     }
@@ -125,16 +124,17 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
     private SparkShellProcess getProcess(String username) {
         if (processCache.containsKey(username)) {
             // we have, created a process and put it in the cache before
-            SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) processCache.get(username);
+            SparkLivyProcess sparkLivyProcess = processCache.get(username);
             // wait for our sparkShellProcess if it is going through a restart...
             if (sparkLivyProcess.waitForStart()) {
+                this.processReady(sparkLivyProcess);  // notifies listeners
                 return sparkLivyProcess;
             } else {
                 throw new LivyException("Livy Session did not start");
             } // end if
         } else {
             // TODO:   username used for proxyUser?
-            SparkLivyProcess process = SparkLivyProcess.newInstance(livyProperties.getHostname(), livyProperties.getPort(), livyProperties.getWaitForStart());
+            SparkLivyProcess process = SparkLivyProcess.newInstance(livyProperties.getHostname(), livyProperties.getPort(), username, livyProperties.getWaitForStart());
             processCache.put(username, process);
             start(process);  // does not waitForStart..
             return process;
@@ -187,7 +187,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         // fetch or create new server session
         Session currentSession;
 
-        if (clientSessionCache.containsKey(sparkLivyProcess)) {
+        if (sparkLivyProcess.getSessionId() != null) {
             Optional<Session> optSession = getLivySession(sparkLivyProcess);
             if (optSession.isPresent()) {
                 currentSession = optSession.get();
@@ -213,18 +213,18 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         sparkLivyProcess.sessionStarted(); // notifies all and any waiting threads session is started, OK to call many times..
     }
 
-    public Optional<Session> getLivySession(SparkShellProcess sparkProcess) {
-        JerseyRestClient jerseyClient = getClient(sparkProcess);
+    public Optional<Session> getLivySession(SparkLivyProcess sparkLivyProcess) {
+        JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
         SessionsGetResponse sessions = livyClient.getSessions(jerseyClient);
 
         if (sessions == null) {
             throw new LivyServerNotReachableException("Livy server not reachable");
         }
-        Optional<Session> optSession = sessions.getSessionWithId(clientSessionCache.get(sparkProcess));
+        Optional<Session> optSession = sessions.getSessionWithId(sparkLivyProcess.getSessionId());
 
         if (!optSession.isPresent()) {
             // current client not found... let's make a new one
-            clearClientState(sparkProcess);
+            clearClientState(sparkLivyProcess);
         }
         return optSession;
     }
@@ -268,20 +268,13 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
             // NOTE: you can get "javax.ws.rs.ProcessingException: java.io.IOException: Error writing to server" on Ubuntu see: https://stackoverflow.com/a/39718929/154461
             throw new LivyException(e);
         }
-        clientSessionCache.put(sparkLivyProcess, currentSession.getId());
+        sparkLivyProcess.setSessionId(currentSession.getId());
+        this.processStarted(sparkLivyProcess);  // notifies listeners
 
         // begin monitoring this session if configured to do so..
-        if (livyProperties.isMonitorLivy()) {
-            heartbeatMonitor.monitorSession(sparkLivyProcess);
-        }
+        heartbeatMonitor.monitorSession(sparkLivyProcess);
 
         return currentSession;
-    }
-
-
-    @Nonnull
-    public Integer getLivySessionId(@Nonnull SparkShellProcess process) {
-        return clientSessionCache.get(process);
     }
 
 
@@ -302,26 +295,23 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
 
 
     private void clearClientState(SparkShellProcess sparkProcess) {
-        clientSessionCache.remove(sparkProcess);
         clients.remove(sparkProcess);
     }
 
 
-    private void initSession(SparkShellProcess sparkProcess) {
-        JerseyRestClient jerseyClient = getClient(sparkProcess);
+    private void initSession(SparkLivyProcess sparkLivyProcess) {
+        JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
         String script = scriptGenerator.script("initSession");
-
-        Integer sessionId = getLivySessionId(sparkProcess);
 
         StatementsPost sp = new StatementsPost.Builder()
             .kind("spark")
             .code(script)
             .build();
 
-        Statement statement = livyClient.postStatement(jerseyClient, sparkProcess, sp);
+        Statement statement = livyClient.postStatement(jerseyClient, sparkLivyProcess, sp);
 
         // TODO: why getStatement now?  so initSession blocks on result.
-        LivyUtils.getStatement(livyClient, jerseyClient, sparkProcess, statement.getId());
+        LivyUtils.getStatement(livyClient, jerseyClient, sparkLivyProcess, statement.getId());
     }
 
 
@@ -347,5 +337,90 @@ public class SparkLivyProcessManager implements SparkShellProcessManager {
         } while (!(optSession.isPresent() && optSession.get().getState().equals(SessionState.idle)));
 
         return true;
+    }
+
+    /**
+     * @implNote implementation of SparkShellClusterDelegate.getProcesses
+     *
+     */
+    @Nonnull
+    @Override
+    public List<SparkShellProcess> getProcesses() {
+        logger.entry();
+
+        return logger.exit(Lists.newArrayList(processCache.values()));
+    }
+
+    /**
+     * @implNote implementation of SparkShellClusterDelegate.updateProcess
+     *
+     * @param process the SparkLivyProcess coming as a SparkShellProcess
+     */
+    @Override
+    public void updateProcess(@Nonnull SparkShellProcess process) {
+        logger.entry(process);
+
+        if (process instanceof SparkLivyProcess) {
+            logger.info("############# Rcvd cluster message / Update process cache  ##########");
+            SparkLivyProcess livyProcess = (SparkLivyProcess) process;
+            processCache.put(livyProcess.getUser(), livyProcess);
+        } else {
+            throw logger.throwing(new IllegalStateException("SparkLivyProcessManager only processes SparkLivyProcesses"));
+        }
+
+        logger.exit();
+    }
+
+
+    /**
+     * @implNote implementation of SparkShellClusterDelegate.removeProcess
+     *
+     * @param clientId the sessionId of the process that was stopped on some node of the cluster
+     */
+    @Override
+    public void removeProcess(@Nonnull String clientId) {
+        logger.entry(clientId);
+
+        processCache.values().stream()
+            .filter(sparkLivyProcess -> sparkLivyProcess.getClientId() == clientId)
+            .forEach(sparkLivyProcess -> {
+                logger.debug("SparkLivyProcess will be remove: {}", sparkLivyProcess);
+                processCache.remove(sparkLivyProcess);
+            });
+
+        logger.exit();
+    }
+
+    /**
+     * @implNote implementation of SparkShellProcessListener.processReady
+     *
+     * @param process the Spark Shell process
+     */
+    @Override
+    public void processReady(@Nonnull SparkShellProcess process) {
+        // a SparkShell Process is changing state, notify the cluster listener, called internally to this class only.
+        listeners.forEach(listener -> listener.processReady(process));
+    }
+
+    /**
+     *  @implNote implementation SparkShellProcessListener.processStarted
+     *
+     * @param process the Spark Shell process
+     */
+    @Override
+    public void processStarted(@Nonnull SparkShellProcess process) {
+        // a SparkShell Process is changing state, notify the cluster listener, called internally to this class only.
+        listeners.forEach(listener -> listener.processStarted(process));
+    }
+
+    /**
+     * @implNote implementation of SparkShellProcessListener.processStopped
+     *
+     * @param process the Spark Shell process
+     */
+    @Override
+    public void processStopped(@Nonnull SparkShellProcess process) {
+        // a SparkShell Process is changing state, notify the cluster listener, called internally to this class only.
+        listeners.forEach(listener -> listener.processStopped(process));
     }
 }

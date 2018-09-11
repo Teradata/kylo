@@ -1,6 +1,6 @@
 <div fxLayout="row">
   <div fxFlex="60%">
-    <mat-card class="steps" >
+    <mat-card class="steps feed-card" >
       <mat-card-header >
         <mat-card-title>
           <mat-icon>playlist_add_check</mat-icon>
@@ -36,7 +36,7 @@
 
   <div fxLayout="column"  fxFlex="40%">
 
-    <mat-card *ngIf="feed.isDraft()">
+    <mat-card *ngIf="feed.isDraft()" >
       <mat-card-content>
         <div fxFlex="100" fxLayout="row">
         <mat-icon>playlist_play</mat-icon>
@@ -46,7 +46,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="feed-info-card" >
+    <mat-card class="feed-info-card feed-card" >
       <mat-card-header>
         <mat-card-title>Feed Info</mat-card-title>
         <mat-card-subtitle>Additional details</mat-card-subtitle>
@@ -86,7 +86,7 @@
 
 <ng-template #setupStepSummary let-step let-$last="$last">
   <mat-list-item (click)="onStepSelected(step)" [ngClass]="{'disabled-step':step.disabled}" class="overview-step">
-    <mat-icon mat-list-icon *ngIf="step.complete">check_circle</mat-icon>
+    <mat-icon mat-list-icon color="green" *ngIf="step.complete">check_circle</mat-icon>
     <mat-icon mat-list-icon color="accent" *ngIf="!step.complete && step.icon">{{step.icon}}</mat-icon>
     <h4 mat-line [ngClass]="{'completed-step':step.complete}">
      {{step.name}}

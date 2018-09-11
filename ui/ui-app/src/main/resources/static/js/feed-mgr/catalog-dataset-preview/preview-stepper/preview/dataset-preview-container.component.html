@@ -1,0 +1,39 @@
+<mat-accordion *ngIf="hasPreviews && !singleDataSet">
+  <mat-expansion-panel #accordion *ngFor="let dataset of previews; let $index = index; let $first = first; let $last = last" [expanded]="step === $index" (opened)="setStep($index)" hideToggle >
+    <mat-expansion-panel-header>
+      <mat-panel-title fxFlex="50">
+        {{dataset.displayKey}}
+      </mat-panel-title>
+      <mat-panel-description fxFlex="50" fxLayout="row" fxLayoutAlign="space-between start">
+        <span *ngIf="!accordion.expanded">Click to see preview</span>
+        <span *ngIf="accordion.expanded">Click to hide preview</span>
+        <mat-icon *ngIf="accordion.expanded">expand_less</mat-icon>
+        <mat-icon *ngIf="!accordion.expanded">expand_more</mat-icon>
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <!-- preview table -->
+     <dataset-preview #preview [displayTitle]="false" [dataset]="dataset"></dataset-preview>
+    <mat-action-row >
+      <button mat-icon-button (click)="preview.fullscreen(dataset)" color="accent" title="Fullscreen" *ngIf="accordionShowFullScreen">
+        <mat-icon>fullscreen</mat-icon>
+      </button>
+      <button mat-icon-button (click)="removeDataSet(dataset)" color="warn" title="Delete dataset" >
+        <mat-icon>delete</mat-icon>
+      </button>
+      <span fxFlex></span>
+      <button mat-icon-button color="accent" (click)="prevStep()" *ngIf="!$first" title="Previous dataset">
+        <mat-icon>navigate_before</mat-icon>
+      </button>
+      <button mat-icon-button color="accent" (click)="nextStep()" *ngIf="!$last" title="Next dataset">
+        <mat-icon>navigate_next</mat-icon>
+      </button>
+    </mat-action-row>
+  </mat-expansion-panel>
+
+
+</mat-accordion>
+<div  *ngIf="hasPreviews && singleDataSet && firstDataSet " fxLayout="column">
+
+<dataset-preview [displayTitle]="true" [dataset]="firstDataSet"></dataset-preview>
+
+</div>

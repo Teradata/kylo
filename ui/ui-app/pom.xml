@@ -13,8 +13,6 @@
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
-    <frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
-    <node.version>v8.11.4</node.version>
   </properties>
 
 
@@ -263,7 +261,6 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>${frontend-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>install node and npm</id>
@@ -291,6 +288,28 @@
             <phase>generate-resources</phase>
             <configuration>
               <arguments>run build</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm build lib</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <arguments>run build:lib</arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm link</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>install</phase>
+            <configuration>
+              <arguments>link</arguments>
+              <installDirectory>${project.basedir}</installDirectory>
+              <workingDirectory>${project.build.directory}/lib/feed</workingDirectory>
             </configuration>
           </execution>
         </executions>

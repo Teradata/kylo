@@ -19,6 +19,7 @@ import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import {BrowserService} from "./browser.service";
 
 @NgModule({
     declarations: [
@@ -26,6 +27,9 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
     ],
     entryComponents: [
         SelectionDialogComponent,
+    ],
+    providers:[
+        BrowserService
     ],
     imports: [
         FormsModule,

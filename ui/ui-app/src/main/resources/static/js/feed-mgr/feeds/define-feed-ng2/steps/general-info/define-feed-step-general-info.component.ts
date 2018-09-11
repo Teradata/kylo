@@ -116,7 +116,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
     /**
      * Update the feed model with the form values
      */
-   protected  applyUpdatesToFeed(){
+   protected  applyUpdatesToFeed():(Observable<any>| null){
        //update the model
      let formModel =   this.formGroup.value;
      this.feed.feedName = formModel.feedName;
@@ -131,6 +131,7 @@ export class DefineFeedStepGeneralInfoComponent extends AbstractFeedStepComponen
          this.propertyList.updateModel();
      }
 
+     return null;
     }
 
     /**

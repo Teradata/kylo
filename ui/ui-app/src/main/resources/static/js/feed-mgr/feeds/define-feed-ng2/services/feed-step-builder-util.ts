@@ -41,27 +41,27 @@ export class FeedStepBuilderUtil {
         return  new StepBuilder().setName(name).setIcon("assignment").setSystemName(FeedStepConstants.STEP_PROPERTIES).setDescription("Define and set extra properties for this feed").setSref("feed-properties").setValidator(new DefineFeedPropertiesValidator());
     }
 
-    targetTableStep():StepBuilder {
+    targetStep():StepBuilder {
         let name = FeedStepConstants.STEP_FEED_TARGET;
-        return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
+        return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
     }
 
-    sourceSampleStep():StepBuilder {
-        let name = FeedStepConstants.STEP_SOURCE_SAMPLE;
-        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").setSref("datasources").setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator());
+    sourceStep():StepBuilder {
+        let name = FeedStepConstants.STEP_FEED_SOURCE;
+        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Browse catalog for a sample and define the source location").setSref("datasources").setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator());
     }
 
     wranglerStep():StepBuilder {
         let name = FeedStepConstants.STEP_WRANGLER;
-        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setSref("wrangler").setRequired(true);
+        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).setSref("wrangler").setRequired(true);
     }
 
      defineTableFeedSteps() :Step[] {
 
         return this.add(this.propertiesStep())
             .add(this.permissionStep())
-            .add(this.sourceSampleStep())
-            .add(this.targetTableStep())
+            .add(this.sourceStep())
+            .add(this.targetStep())
             .add(this.feedDetailsStep())
             .build();
     }
@@ -70,9 +70,9 @@ export class FeedStepBuilderUtil {
 
          return this.add(this.propertiesStep())
              .add(this.permissionStep())
-             .add(this.sourceSampleStep())
+             .add(this.sourceStep())
              .add(this.wranglerStep())
-             .add(this.targetTableStep())
+             .add(this.targetStep())
              .add(this.feedDetailsStep())
              .build()
     }

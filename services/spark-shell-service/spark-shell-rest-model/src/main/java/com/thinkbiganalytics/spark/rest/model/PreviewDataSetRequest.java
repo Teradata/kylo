@@ -47,6 +47,8 @@ public class PreviewDataSetRequest {
      * A schema parser to be used.  this is optional
      */
     private SchemaParserDescriptor schemaParser;
+
+    private boolean addPreviewItemToPath;
     /**
      * A page spec for limiting
      *
@@ -110,5 +112,13 @@ public class PreviewDataSetRequest {
 
     public void setPageSpec(PageSpec pageSpec) {
         this.pageSpec = pageSpec;
+    }
+
+    public boolean isAddPreviewItemToPath() {
+        return addPreviewItemToPath;
+    }
+
+    public void setAddPreviewItemToPath(boolean addPreviewItemToPath) {
+        this.addPreviewItemToPath = addPreviewItemToPath;
     }
 }

@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.spark.client;
 
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
@@ -50,17 +51,13 @@ public class DefaultLivyClient implements LivyClient {
 
     private LivyServer livyServer;
 
-    @Resource
-    private Map<SparkShellProcess, Integer /* sessionId */> clientSessionCache;
-
-
     public DefaultLivyClient(LivyServer livyServer) {
         this.livyServer = livyServer;
     }
 
     @Override
-    public Statement postStatement(JerseyRestClient client, SparkShellProcess sparkShellProcess, StatementsPost sp) {
-        Integer sessionId = clientSessionCache.get(sparkShellProcess);
+    public Statement postStatement(JerseyRestClient client, SparkLivyProcess sparkLivyProcess, StatementsPost sp) {
+        Integer sessionId = sparkLivyProcess.getSessionId();
 
         try {
             Statement statement = client.post(STATEMENTS_URL(sessionId), sp, Statement.class);
@@ -76,8 +73,8 @@ public class DefaultLivyClient implements LivyClient {
     }
 
     @Override
-    public Statement getStatement(JerseyRestClient client, SparkShellProcess sparkShellProcess, Integer statementId) {
-        Integer sessionId = clientSessionCache.get(sparkShellProcess);
+    public Statement getStatement(JerseyRestClient client, SparkLivyProcess sparkLivyProcess, Integer statementId) {
+        Integer sessionId = sparkLivyProcess.getSessionId();
 
         try {
             Statement statement = client.get(STATEMENT_URL(sessionId, statementId), Statement.class);
@@ -125,8 +122,8 @@ public class DefaultLivyClient implements LivyClient {
     }
 
     @Override
-    public Session getSession(JerseyRestClient client, SparkShellProcess sparkShellProcess) {
-        Integer sessionId = clientSessionCache.get(sparkShellProcess);
+    public Session getSession(JerseyRestClient client, SparkLivyProcess sparkLivyProcess) {
+        Integer sessionId = sparkLivyProcess.getSessionId();
 
         try {
             Session session = client.get(SESSION_URL(sessionId), Session.class);

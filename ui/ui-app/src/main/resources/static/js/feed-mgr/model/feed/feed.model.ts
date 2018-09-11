@@ -300,9 +300,9 @@ export class Feed  implements KyloObject{
         Object.assign(this, init);
         if (this.sourceDataSets) {
             //ensure they are of the right class objects
-            this.sourceDataSets = this.sourceDataSets.map(ds => {
-                return new SparkDataSet(ds);
-            });
+            if(this.sourceDataSets) {
+                this.sourceDataSets = this.sourceDataSets.map(ds => new SparkDataSet(ds));
+            }
         }
         if(this.uiState == undefined){
             this.uiState = {}
@@ -612,8 +612,8 @@ export class Feed  implements KyloObject{
                     let def = _.extend({}, col);
                     def.derivedDataType = def.dataType;
                     //sample data
-                    if (dataSet.preview) {
-                        let sampleValues: string[] = dataSet.preview.columnData(def.name)
+                    if (dataSet.preview && dataSet.preview.preview) {
+                        let sampleValues: string[] = dataSet.preview.preview.columnData(def.name)
                         def.sampleValues = sampleValues
                     }
                     sourceColumns.push(new TableColumnDefinition((def)));

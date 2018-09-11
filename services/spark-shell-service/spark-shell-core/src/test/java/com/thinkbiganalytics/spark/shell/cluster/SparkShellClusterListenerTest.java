@@ -22,6 +22,10 @@ package com.thinkbiganalytics.spark.shell.cluster;
 
 import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellProcessChangedMessage;
+import com.thinkbiganalytics.kylo.spark.cluster.SparkShellProcessSyncMessage;
 import com.thinkbiganalytics.spark.shell.SparkLauncherSparkShellProcess;
 
 import org.junit.Assert;

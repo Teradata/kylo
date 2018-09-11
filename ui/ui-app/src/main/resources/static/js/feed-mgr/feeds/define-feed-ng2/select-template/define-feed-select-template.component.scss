@@ -1,0 +1,30 @@
+.material-icons, mat-icon.material-icons, mat-icon.material-icons.mat-icon {
+  width: 1em;
+  height: 1em;
+}
+.icon-component {
+  font-size: 7rem;
+}
+
+.import-feed-text * {
+  padding-right:3px;
+}
+.import-button{
+  float:right;
+}
+
+.template-card {
+  cursor:pointer;
+}
+
+
+.card-content {
+  min-height: 64px;
+  box-sizing: border-box;
+}
+.mat-card-colored mat-toolbar {
+  height: 100px;
+}
+.mat-card-colored mat-toolbar mat-icon, .mat-card-colored mat-toolbar .mat-icon {
+  font-size: 64px;
+}

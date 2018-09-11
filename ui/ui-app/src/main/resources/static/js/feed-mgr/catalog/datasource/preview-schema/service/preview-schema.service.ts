@@ -19,6 +19,9 @@ import {AbstractSchemaTransformService} from "./abstract-schema-transform-servic
 import {TransformResponseTableBuilder} from "./transform-response-table-builder";
 import {DataSource} from "../../../api/models/datasource";
 import {PreviewDatasetCollectionService} from "../../../api/services/preview-dataset-collection.service";
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
+import {PreviewRawService} from "./preview-raw.service";
 
 
 
@@ -35,7 +38,8 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
 
 
-    constructor(http: HttpClient, transformResponeTableBuilder:TransformResponseTableBuilder,  private previewDatasetCollectionService : PreviewDatasetCollectionService) {
+    constructor(http: HttpClient, transformResponeTableBuilder:TransformResponseTableBuilder,  private previewDatasetCollectionService : PreviewDatasetCollectionService,
+                private previewRawService:PreviewRawService) {
         super(http,transformResponeTableBuilder)
     }
 
@@ -51,6 +55,8 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
         })
     }
 
+
+
     /**
      *
      * Previews data abd populates the previewDataSet object
@@ -62,31 +68,65 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 if (!previewDataSet.hasPreview()) {
 
             //Show Progress Bar
-            previewDataSet.loading = true;
+            previewDataSet.previewLoading = true;
+            //set the spark options
+            if(!previewDataSet.hasSparkOptions() && previewRequest.schemaParser)
+            {
+                previewDataSet.sparkOptions = this.getSchemaParserSparkOptions(previewRequest.schemaParser);
+            }
+
+            if(!previewDataSet.hasSparkOptions() && previewDataSet instanceof PreviewFileDataSet){
+                previewDataSet.sparkOptions = this.getSchemaParserSparkOptions((<PreviewFileDataSet>previewDataSet).schemaParser);
+            }
 
             let previewDataSetSource = new Subject<PreviewDataSet>()
             let previewedDataSet$ = previewDataSetSource.asObservable();
             if(!previewRequest.hasPreviewPath()){
                 previewDataSet.applyPreviewRequestProperties(previewRequest);
+                previewDataSet.applySparkOptions(previewRequest);
             }
 
             this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: TransformResponse) => {
                 let preview = this.transformResponeTableBuilder.buildTable(data);
-                previewDataSet.finishedLoading()
+                previewDataSet.previewLoading = false;
                 previewDataSet.clearPreviewError()
                 previewDataSet.schema = preview.columns;
                 previewDataSet.preview =preview;
+                if(previewDataSet.dataSource == undefined && previewRequest.dataSource != undefined){
+                    previewDataSet.dataSource = previewRequest.dataSource;
+                }
+
+
 
                 this.cache[this.cacheKey(previewDataSet.dataSource.id, previewDataSet.key)] = previewDataSet;
                 if(collect){
                     this.addToCollection(previewDataSet);
                 }
                 previewDataSetSource.next(previewDataSet)
+                previewDataSetSource.complete();
             }, error1 => {
-                previewDataSet.finishedLoading()
+
                 previewDataSet.previewError("Error previewing the data " + error1);
-                previewDataSetSource.error(previewDataSet)
-            })
+                if(previewDataSet instanceof PreviewFileDataSet) {
+                    //attempt to get RAW data
+
+                    this.previewRawService.preview(<PreviewFileDataSet>previewDataSet).subscribe((res: PreviewDataSet) => {
+                        previewDataSet.previewLoading = false;
+                        previewDataSetSource.error(previewDataSet)
+                        previewDataSetSource.complete();
+                    }, (error2: any) => {
+                        previewDataSet.previewLoading = false;
+                        previewDataSetSource.error(previewDataSet)
+                        previewDataSetSource.complete();
+                    });
+                }
+                else {
+                    previewDataSet.previewLoading = false;
+                    previewDataSetSource.error(previewDataSet)
+                    previewDataSetSource.complete();
+                }
+
+            });
             return previewedDataSet$;
         }
         else {
@@ -114,6 +154,22 @@ if (!previewDataSet.hasPreview()) {
     }
 
 
-
+    getSchemaParserSparkOptions(schemaParser:SchemaParser){
+        let sparkOptions : { [key: string]: string } = {};
+        if(schemaParser){
+            if(schemaParser.properties){
+                schemaParser.properties.forEach(policy => {
+                    let value = policy.value;
+                    if(policy.additionalProperties) {
+                        let options = policy.additionalProperties.filter(p => "spark.option" == p.label).forEach(lv => {
+                            sparkOptions[lv.value] = value
+                        });
+                    }
+                })
+            }
+            sparkOptions["format"] = schemaParser.sparkFormat;
+        }
+        return sparkOptions;
+    }
 
 }

@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, Output, EventEmitter,OnInit} from "@angular/core";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading";
@@ -11,6 +11,10 @@ import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
+
+export class DataSourceSelectedEvent {
+    constructor(public dataSource:DataSource, public params:any, public stateRef:string){}
+}
 /**
  * Displays available datasources
  */
@@ -41,6 +45,12 @@ export class DataSourcesComponent implements OnInit {
 
     @Input()
     public stateParams:{}
+
+    @Input()
+    public displayInCard?:boolean = true;
+
+    @Output()
+    datasourceSelected :EventEmitter<DataSourceSelectedEvent> = new EventEmitter<DataSourceSelectedEvent>();
 
     /**
      * Filtered list of datasources to display
@@ -74,6 +84,7 @@ export class DataSourcesComponent implements OnInit {
             });
     }
 
+
     public ngOnInit() {
         this.filter();
     }
@@ -95,7 +106,12 @@ export class DataSourcesComponent implements OnInit {
         if(this.stateParams){
             angular.extend(params,this.stateParams);
         }
-        this.state.go(stateRef, params);
+        if(this.datasourceSelected.observers.length >0) {
+            this.datasourceSelected.emit(new DataSourceSelectedEvent(datasource, params, stateRef));
+        }
+        else {
+            this.state.go(stateRef, params);
+        }
     }
 
     isEditable(datasource: DataSource): boolean {

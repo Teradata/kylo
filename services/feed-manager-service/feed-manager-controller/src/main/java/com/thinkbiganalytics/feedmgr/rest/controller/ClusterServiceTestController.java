@@ -61,7 +61,7 @@ public class ClusterServiceTestController {
     @GET
     @Path("/simple")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets thet latest message sent to this cluster.")
+    @ApiOperation("Gets the latest message sent to this cluster.")
     public Response getSimpleMessage() {
         SimpleClusterMessageTest simpleClusterMessageTest = clusterServiceTester.getSimpleClusterMessage();
         if (simpleClusterMessageTest == null) {

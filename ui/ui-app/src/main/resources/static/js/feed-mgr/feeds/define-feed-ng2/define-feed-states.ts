@@ -4,7 +4,6 @@ import {finalize} from "rxjs/operators/finalize";
 
 import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
-import {DefineFeedStepSourceSampleDatasourceComponent} from "./steps/source-sample/define-feed-step-source-sample-datasource.component";
 import {DefineFeedComponent} from "./define-feed.component";
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
 import {TdLoadingService} from "@covalent/core/loading";
@@ -22,6 +21,7 @@ import {ProfileContainerComponent} from './summary/profile/container/profile-con
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
+import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
 
 
 const resolveFeed :any =
@@ -115,6 +115,12 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         component: DefineFeedStepWranglerComponent
     },
     {
+        name: FEED_DEFINITION_SECTION_STATE_NAME + ".datasources",
+        url: "/:feedId/source-sample",
+        component: DefineFeedStepSourceComponent,
+    },
+    /**
+    {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".datasources",
         url: "/:feedId/source-sample",
         component: DefineFeedStepSourceSampleComponent,
@@ -196,7 +202,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
 
             }
         ]
-    },
+    },*/
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".profile",
         url: "/:feedId/profile",

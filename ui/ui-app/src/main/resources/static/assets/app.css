@@ -1340,6 +1340,15 @@ md-input-container.global-search .md-input {
 }
 
 
+.full-screen-dialog-max-width .mat-dialog-container {
+  max-width: none;
+  width: 80vw;
+  height: 80vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+
 .versions-add {
   background-color: lightgreen;
 }
@@ -1381,4 +1390,23 @@ mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-stepper-header-co
 }
 mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container {
   padding: 0;
+}
+
+
+/** feed-definition **/
+
+.feed-card mat-card-header .mat-card-title  {
+  font-size: 20px;
+}
+
+.feed-card mat-card-header .mat-card-subtitle{
+  font-size: 14px;
+}
+
+.feed-card mat-card-header .mat-card-header-text{
+  margin: 0px;
+}
+
+.mat-icon.mat-green {
+  color: #009933;
 }

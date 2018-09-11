@@ -171,7 +171,16 @@ public class DataSourceProvider {
      */
     @Nonnull
     @SuppressWarnings("squid:S2259")
-    public Optional<DataSource> findDataSource(@Nonnull final String id) {
+    public Optional<DataSource> findDataSource(@Nonnull final String id){
+        return findDataSource(id,false);
+    }
+
+   /**
+    * Gets the connector with the specified id.
+    */
+    @Nonnull
+    @SuppressWarnings("squid:S2259")
+    public Optional<DataSource> findDataSource(@Nonnull final String id, final boolean includeCredentials) {
         // Find the data source
         DataSource dataSource = catalogDataSources.get(id);
         if (dataSource != null) {
@@ -179,7 +188,11 @@ public class DataSourceProvider {
         } else {
             try {
                 final Datasource feedDataSource = feedDataSourceProvider.getDatasource(feedDataSourceProvider.resolve(id));
-                dataSource = toDataSource(feedDataSource, DatasourceModelTransform.Level.FULL);
+                DatasourceModelTransform.Level level = DatasourceModelTransform.Level.FULL;
+                if(includeCredentials){
+                    level = DatasourceModelTransform.Level.ADMIN;
+                }
+                dataSource = toDataSource(feedDataSource, level);
             } catch (final IllegalArgumentException e) {
                 log.debug("Failed to resolve data source {}: {}", id, e, e);
             }

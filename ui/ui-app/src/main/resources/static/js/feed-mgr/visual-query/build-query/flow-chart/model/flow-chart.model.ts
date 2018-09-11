@@ -649,9 +649,6 @@ export namespace FlowChart {
                 throw new Error("Failed to find dest connector within inputConnectors or outputConnectors of dest node.");
             }
 
-            if (startConnectorType == endConnectorType) {
-                //	throw new Error("Failed to create connection. Only output to input connections are allowed.")
-            }
 
             if (startNode == endNode) {
                 throw new Error("Failed to create connection. Cannot link a node with itthis.")
@@ -668,29 +665,35 @@ export namespace FlowChart {
                 connectorIndex: endConnectorIndex,
                 connectorId: endConnector.data.id
             }
-
+/*
             var connectionDataModel: any = {
                 id:_.uniqueId('connection-'),
                 source: startConnectorType == 'output' ? startNode : endNode,
                 dest: startConnectorType == 'output' ? endNode : startNode
             };
+            */
+            var connectionDataModel: any = {
+                id:_.uniqueId('connection-'),
+                source: startNode,
+                dest: endNode
+            };
             connectionsDataModel.push(connectionDataModel);
 
-            var outputConnector: any = startConnectorType == 'output' ? startConnector : endConnector;
-            var inputConnector: any = startConnectorType == 'output' ? endConnector : startConnector;
+           // var outputConnector: any = startConnectorType == 'output' ? startConnector : endConnector;
+         //   var inputConnector: any = startConnectorType == 'output' ? endConnector : startConnector;
 
             var src: any = this.findNode(connectionDataModel.source.nodeID);
             var dest: any = this.findNode(connectionDataModel.dest.nodeID);
             //connectionDataModel.name = src.name()+" - "+dest.name();
             connectionDataModel.joinKeys = {};
-            var connectionViewModel = new FlowChart.ConnectionViewModel(connectionDataModel, outputConnector, inputConnector);
+            var connectionViewModel = new FlowChart.ConnectionViewModel(connectionDataModel, startConnector, endConnector);
             connectionDataModel.edit = (viewModel: any) => {
                 console.log('EDIT CONNECTION ',viewModel)
                 this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest})
             }
             connectionsViewModel.push(connectionViewModel);
             this.connectionMap[connectionDataModel.id] = connectionViewModel;
-            this.onCreateConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest, inputConnector:inputConnector, outputConnector:outputConnector})
+            this.onCreateConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest, inputConnector:startConnector, outputConnector:endConnector})
 
         }
         //
@@ -782,7 +785,7 @@ export namespace FlowChart {
         //
         // Handle mouse down on a connection.
         //
-        handleConnectionMouseDown(connection: any, ctrlKey: any){
+        handleConnectionMouseDown(connection: ConnectionViewModel, ctrlKey: any){
             if (ctrlKey) {
                 connection.toggleSelected();
             }

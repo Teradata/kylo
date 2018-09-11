@@ -38,7 +38,7 @@ import {PreviewDatasetCollectionService} from "../../api/services/preview-datase
 
 
 
-
+//NOT USED NOW!!!
 @Component({
     selector: "preview-schema",
     styleUrls: ["js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.css"],
@@ -158,7 +158,7 @@ export class PreviewSchemaComponent implements OnInit {
 
     public showAddToCollectionButton(dataSet:PreviewDataSet){
         let collectedSize = this.previewDatasetCollectionService.datasetCount();
-        return this.editable && !dataSet.isCollected() && dataSet.loading == false;
+        return this.editable && !dataSet.isCollected() && !dataSet.isLoading();
     }
 
     public showRemoveFromCollectionButton(dataSet:PreviewDataSet){
@@ -428,6 +428,7 @@ export class PreviewSchemaComponent implements OnInit {
     selector: 'dataset-simple-table',
     styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/dataset-simple-table.component.css"],
     template:`
+        <div class="dataset-simple-table">
     <table td-data-table >
       <thead>
       <tr td-data-table-column-row>
@@ -452,6 +453,7 @@ export class PreviewSchemaComponent implements OnInit {
       </tr>
       </tbody>
     </table>
+        </div>
     
     
     
@@ -543,60 +545,36 @@ export class SimpleTableComponent {
 @Component({
     selector:'dataset-schema-definition',
     template:`
-      <div *ngFor="let column of columns" fxLayout="row">
-
-          <mat-form-field>
-            <input matInput placeholder="Column Name" [(value)]="column.label">
-          </mat-form-field>
-        <span fxFlex="10"></span>
-          <mat-form-field>
-          <mat-select placeholder="Select"  [(value)]="column.dataType" (change)="onColumnChange(column)">
-            <mat-option [value]="option" *ngFor="let option of columnDataTypes">{{option}}</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-      </div>
+        <dataset-simple-table [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
     `
 
 })
 export class SchemaDefinitionComponent  implements OnInit {
 
-    private columnDataTypes: string[] = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary']
-
     @Input()
     columns:TableColumn[]
 
+    @Input()
+        smallView:boolean = true;
 
-    @Output()
-    columnsChange = new EventEmitter<TableColumn[]>();
+    schemaColumns:TableColumn[]
 
     constructor() {
 
+    }
+
+    private toDataTable(){
+        let schemaColumns :TableColumn[] = []
+        schemaColumns.push({"name":"name","label":"Column Name","dataType":"string","sortable":true})
+        schemaColumns.push({"name":"dataType","label":"Data Type","dataType":"string","sortable":true})
+       this.schemaColumns = schemaColumns;
     }
 
     ngOnInit(){
         if(this.columns == undefined){
             this.columns = [];
         }
-
-        this.columns.forEach(column => {
-            if(this.columnDataTypes.indexOf(column.dataType) == -1) {
-                this.columnDataTypes.push(column.dataType);
-            }
-        });
+        this.toDataTable();
     }
-
-    onColumnChange(column:TableColumn){
-        column.numeric = TableViewModel.isNumeric(column.dataType)
-        if(this.columnsChange){
-           this.columnsChange.emit(this.columns)
-        }
-    }
-
-
-    compareFn(x: string, y: string): boolean {
-        return x && y ? x == y : x ===y;
-    }
-
 
 }

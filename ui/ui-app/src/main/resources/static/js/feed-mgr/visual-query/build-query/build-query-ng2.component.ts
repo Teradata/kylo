@@ -27,6 +27,11 @@ import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
+import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
+import {MatDialogConfig} from "@angular/material/dialog";
+import {DatasetPreviewDialogComponent} from "../../catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component";
+import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {Subject} from "rxjs/Subject";
 
 /**
  * Code for the delete key.
@@ -299,7 +304,9 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Initialize state from services.
      */
-    private init() {
+    private init() :Observable<UserDatasource[]> {
+        let datasources$ = new Subject<UserDatasource[]>();
+
         // Get the list of data sources
         Promise.all([this.engine.getNativeDataSources(), this.datasourcesService.findAll()])
             .then(resultList => {
@@ -323,19 +330,23 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             })
             .then((datasources: UserDatasource[]) => {
                 this.updateAvailableDatasources(datasources);
+                this.allDatasources = datasources;
 
                 if (this.model.$selectedDatasourceId == null) {
                     this.model.$selectedDatasourceId = datasources[0].id;
                     this.form.get("datasource").setValue(this.model.$selectedDatasourceId);
                 }
                 this.validate();
+                datasources$.next(datasources);
             })
             .catch((err: string) => {
                 this.error = err;
+                datasources$.error(err);
             })
             .then(() => {
                 this.loadingPage = false;
             });
+        return datasources$.asObservable();
     }
 
     private updateAvailableDatasources(datasources?:UserDatasource[]){
@@ -395,13 +406,26 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         }
     }
 
-
     addPreviewDataSets() {
         if (this.model.datasets && this.model.datasets.length > 0) {
-            this.model.datasets.forEach((dataset: SparkDataSet) => {
+            this.addSparkDataSets(this.model.datasets)
+        }
+    }
+    isDataSetUserDataSource(dataSet:SparkDataSet){
+        if(dataSet == undefined){
+            return false;
+        }
+        return this.allDatasources.find(ds => ds.id == dataSet.dataSource.id) != undefined;
+    }
+
+    addSparkDataSets(datasets:SparkDataSet[]) {
+        if(datasets && datasets.length >0) {
+            datasets.forEach((dataset: SparkDataSet) => {
                 let tableSchema: any = {};
-                tableSchema.schemaName = dataset.id;
-                tableSchema.name = dataset.id;
+
+                tableSchema.schemaName = dataset.getSchemaName();
+                tableSchema.tableName=dataset.getTableName();
+                tableSchema.name = dataset.getTableName();
                 tableSchema.fields = dataset.schema.map(tableColumn => {
                     let field: any = {};
                     field.name = tableColumn.name;
@@ -411,8 +435,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
                     return field;
                 });
-                let nodeName = tableSchema.name;
-
+                let nodeName = dataset.getDisplayIdentifier()
                 this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
 
             });
@@ -691,6 +714,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         // Template for a new node.
         //
 
+
         const coord = this.getNewXYCoord();
 
         _.each(tableSchema.fields, (field: SchemaField) => {
@@ -704,6 +728,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             id: this.nextNodeID++,
             datasourceId: datasourceId,
             dataset: dataset,
+            datasetMatchesUserDataSource: dataset == undefined || this.isDataSetUserDataSource(dataset),
             x: coord.x,
             y: coord.y,
             nodeAttributes: {
@@ -728,6 +753,15 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 }
             ]
         };
+        //ensure the dataset is part of the model
+        if(dataset){
+            if(_.isUndefined(this.model.datasets)){
+                this.model.datasets = [];
+            }
+            if(this.model.datasets.find(ds => ds.id == dataset.id) == undefined){
+                this.model.datasets.push(dataset);
+            }
+        }
         this.prepareNode(newNodeDataModel);
         this.chartViewModel.addNode(newNodeDataModel);
         this.validate();
@@ -809,19 +843,21 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
         return this._dialogService.open(ConnectionDialog, {data: config, panelClass: "full-screen-dialog"})
             .afterClosed().subscribe((response: ConnectionDialogResponse) => {
-                if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {
-                    connectionViewModel.select();
-                    this.chartViewModel.deleteSelected();
+                if(response) {
+                    if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {
+                        connectionViewModel.select();
+                        this.chartViewModel.deleteSelected();
+                    }
+                    else if (response.status == ConnectionDialogResponseStatus.SAVE) {
+                        // connectionDataModel = response.connectionDataModel;
+                        let viewConnection = this.chartViewModel.findConnection(response.id);
+                        viewConnection.data.joinType = response.joinType;
+                        viewConnection.data.name = response.connectionName;
+                        viewConnection.data.joinKeys.sourceKey = response.source;
+                        viewConnection.data.joinKeys.destKey = response.dest;
+                    }
+                    this.validate()
                 }
-                else if (response.status == ConnectionDialogResponseStatus.SAVE) {
-                    // connectionDataModel = response.connectionDataModel;
-                    let viewConnection = this.chartViewModel.findConnection(response.id);
-                    viewConnection.data.joinType = response.joinType;
-                    viewConnection.data.name = response.connectionName;
-                    viewConnection.data.joinKeys.sourceKey = response.source;
-                    viewConnection.data.joinKeys.destKey = response.dest;
-                }
-                this.validate()
             })
     }
 
@@ -888,15 +924,17 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         // Wait for query engine to load
         const onLoad = () => {
             // Initialize state
-            this.init();
+            this.init().subscribe( (datasources:UserDatasource[]) => {
+                // Setup the flowchart Model
+                this.setupFlowChartModel();
 
-            // Setup the flowchart Model
-            this.setupFlowChartModel();
+                this.addPreviewDataSets();
 
-            this.addPreviewDataSets();
+                // Validate when the page loads
+                this.validate();
+            });
 
-            // Validate when the page loads
-            this.validate();
+
         };
 
         if (this.engine instanceof Promise) {
@@ -934,5 +972,18 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     onAutocompleteRefreshCache() {
         this.hiveService.refreshTableCache();
+    }
+
+    openCatalogBrowser(){
+        let data = new DatasetPreviewStepperDialogData(true,"Add");
+        let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
+        dialogConfig.data = data;
+        this._dialogService.open(DatasetPreviewStepperDialogComponent,dialogConfig)
+            .afterClosed()
+            .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
+                //add these to the canvas
+            let sparkDataSets =response.previews.map(ds => ds.toSparkDataSet())
+            this.addSparkDataSets(sparkDataSets);
+            });
     }
 }

@@ -34,6 +34,8 @@ export class PreviewDataSetRequest {
 
     displayKey ?:string;
 
+    addPreviewItemToPath:boolean;
+
     constructor(){
         this.pageSpec = new PageSpec();
         this.pageSpec.firstRow =0;
@@ -42,6 +44,24 @@ export class PreviewDataSetRequest {
 
     hasPreviewPath(){
         return this.previewPath != undefined;
+    }
+
+    getSchemaParserSparkOptions(){
+        let sparkOptions : { [key: string]: string } = {};
+        if(this.schemaParser){
+            if(this.schemaParser.properties){
+                this.schemaParser.properties.forEach(policy => {
+                    let value = policy.value;
+                    if(policy.additionalProperties) {
+                        let options = policy.additionalProperties.filter(p => "spark.option" == p.label).forEach(lv => {
+                            sparkOptions[lv.value] = value
+                        });
+                    }
+                })
+            }
+            sparkOptions["format"] = this.schemaParser.sparkFormat;
+        }
+        return sparkOptions;
     }
 
 }

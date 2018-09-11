@@ -23,10 +23,12 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
@@ -89,12 +91,13 @@ public class DataSourceController extends AbstractCatalogController {
 
     public static final String BASE = "/v1/catalog/datasource";
 
-    public enum CredentialMode {NONE, EMBED, ATTACH}
-
-    ;
+    public enum CredentialMode {NONE, EMBED, ATTACH};
 
     @Inject
     private DataSourceProvider dataSourceProvider;
+
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     @Inject
     private CatalogFileManager fileManager;
@@ -195,7 +198,7 @@ public class DataSourceController extends AbstractCatalogController {
         }
 
         final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
-        DataSource dataSource = findDataSource(dataSourceId);
+        DataSource dataSource = findDataSource(dataSourceId,false);
 
         switch (mode) {
             case NONE:
@@ -275,7 +278,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId, path);
 
         // List files at path
-        final DataSource dataSource = findDataSource(dataSourceId);
+        final DataSource dataSource = findDataSource(dataSourceId,false);
         return Response.ok(log.exit(doListFiles(path, dataSource))).build();
     }
 
@@ -320,7 +323,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId, catalogName, schemaName);
 
         // List tables
-        final DataSource dataSource = findDataSource(dataSourceId);
+        final DataSource dataSource = findDataSource(dataSourceId,true);
         final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
         return Response.ok(log.exit(tables)).build();
@@ -360,7 +363,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
 
         try {
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId,false);
             final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
             final Map<String, String> credProps = this.credentialManager.getCredentials(dataSource, encrypted, principals);
             DataSourceCredentials credentials = new DataSourceCredentials(credProps, encrypted);
@@ -389,9 +392,24 @@ public class DataSourceController extends AbstractCatalogController {
     public Response getConnectorPlugin(@PathParam("id") final String dataSourceId) {
         log.entry(dataSourceId);
 
-        final DataSource dataSource = findDataSource(dataSourceId);
+        final DataSource dataSource = findDataSource(dataSourceId,false);
 
         return log.exit(this.pluginController.getPlugin(dataSource.getConnector().getPluginId()));
+    }
+
+
+
+    @POST
+    @Path("{id}/dataset")
+    @ApiOperation("creates a new dataset for a datasource")
+    public Response createDataSet(@PathParam("id") final String datasourceId) {
+        log.entry(datasourceId);
+        final DataSource dataSource = findDataSource(datasourceId,false);
+        final DataSet dataSet = new DataSet();
+        dataSet.setDataSource(dataSource);
+        //validate
+        DataSet validDataSet= dataSetProvider.createDataSet(dataSet);
+        return log.exit(Response.ok(validDataSet).build());
     }
 
     /**
@@ -400,8 +418,8 @@ public class DataSourceController extends AbstractCatalogController {
      * @throws NotFoundException if the data source does not exist
      */
     @Nonnull
-    private DataSource findDataSource(@Nonnull final String id) {
-        return metadataService.read(() -> dataSourceProvider.findDataSource(id))
+    private DataSource findDataSource(@Nonnull final String id, boolean includeCredentials) {
+        return metadataService.read(() -> dataSourceProvider.findDataSource(id, includeCredentials))
             .orElseThrow(() -> {
                 log.debug("Data source not found: {}", id);
                 return new NotFoundException(getMessage("catalog.datasource.notFound"));

@@ -2,9 +2,13 @@ import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../../api/models/browser-object';
 import {Node} from '../../api/models/node';
-import {Input} from "@angular/core";
+import {Component, Input} from "@angular/core";
 
-
+@Component({
+    selector: "catalog-file-browser",
+    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
+})
 export class RemoteFilesComponent extends BrowserComponent {
 
 

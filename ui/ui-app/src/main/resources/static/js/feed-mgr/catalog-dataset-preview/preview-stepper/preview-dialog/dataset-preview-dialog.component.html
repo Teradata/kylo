@@ -1,0 +1,31 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Datasets</span>
+  <span fxFlex></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<mat-dialog-content>
+  <div *tdLoading="'DatasetPreviewDialogComponent.LOADING'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" style="min-height: 200px;">
+  <div fxLayout="column" fxFlex *ngIf="dataset != null ">
+    <h3 class="mat-subheading-2">{{dataset.key}}</h3>
+    <div style="overflow:scroll; height:450px;">
+      <dataset-simple-table  [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" *ngIf="dataset.hasPreview()"></dataset-simple-table>
+    </div>
+  </div>
+
+
+        <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg" *ngIf="error">
+          <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+          <h2>{{errorTitle}}</h2>
+          <h3>{{errorMessage}}t</h3>
+        </div>
+
+
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="mat-dialog-actions">
+  <span fxFlex></span>
+  <button mat-button (click)="cancel()">Close</button>
+</mat-dialog-actions>

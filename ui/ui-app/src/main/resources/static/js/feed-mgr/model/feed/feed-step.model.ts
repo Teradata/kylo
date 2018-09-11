@@ -70,7 +70,7 @@ export class Step {
     findFirstIncompleteDependentStep(){
         let dependentSteps = this.findDependsUponSteps();
         if (dependentSteps) {
-         let step = dependentSteps.sort((x:Step,y:Step) =>  x.number > y.number ? 1 : 0).find(step => step.complete == false);
+         let step = dependentSteps.sort((x:Step,y:Step) =>  x.number > y.number ? 1 : 0).find(step => step != undefined &&  step.complete == false);
          return step != undefined ? step : null
         }
         return null;

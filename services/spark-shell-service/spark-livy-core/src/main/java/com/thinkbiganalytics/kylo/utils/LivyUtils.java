@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.utils;
 
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
@@ -36,7 +37,7 @@ public class LivyUtils {
     private LivyUtils() {} // private constructor
 
     // TODO: is there a better way to wait for a response than synchronous?  UI could poll?
-    public static Statement getStatement(LivyClient livyClient, JerseyRestClient jerseyClient, SparkShellProcess sparkProcess, Integer stmtId) {
+    public static Statement getStatement(LivyClient livyClient, JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId) {
         Statement statement = null;
         do {
             try {
@@ -45,7 +46,7 @@ public class LivyUtils {
                 e.printStackTrace();
             }
 
-            statement = livyClient.getStatement( jerseyClient, sparkProcess, stmtId );
+            statement = livyClient.getStatement( jerseyClient, sparkLivyProcess, stmtId );
 
             if( statement.getState().equals(StatementState.error)) {
                 // TODO: what about cancelled? or cancelling?

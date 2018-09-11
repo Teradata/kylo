@@ -1,25 +1,16 @@
 <ng-container *tdLoading="'DataSourcesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
   <ng-container *ngIf="datasources && datasources.length > 0">
-    <mat-card>
-      <td-search-box placeholder="Search data sources" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
-      <mat-divider></mat-divider>
-      <mat-nav-list>
-        <ng-template let-datasource let-last="last" ngFor [ngForOf]="filteredDatasources">
-          <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">
-            <ng-md-icon mat-list-icon
-                        [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'"
-                        [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'datasource-icon'"></ng-md-icon>
-            <h4 matLine>{{datasource.title}}</h4>
-            <span></span>
-            <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
-              <mat-icon (click)="editDatasource($event, datasource)" title="Edit">mode_edit</mat-icon>
-              <mat-icon (click)="deleteDatasource($event, datasource)" title="Delete">delete</mat-icon>
-            </div>
-          </mat-list-item>
-          <mat-divider *ngIf="!last"></mat-divider>
-        </ng-template>
-      </mat-nav-list>
+    <mat-card *ngIf="displayInCard">
+      <ng-container
+          [ngTemplateOutlet]="datasourcesTemplate"
+          [ngTemplateOutletContext]="{$implict:datasources}">
+      </ng-container>
     </mat-card>
+
+    <ng-container *ngIf="!displayInCard"
+        [ngTemplateOutlet]="datasourcesTemplate"
+        [ngTemplateOutletContext]="{$implict:datasources}">
+    </ng-container>
   </ng-container>
 
 
@@ -30,3 +21,24 @@
   </div>
 
 </ng-container>
+
+<ng-template #datasourcesTemplate let-datasources>
+  <td-search-box placeholder="Search data sources" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
+  <mat-divider></mat-divider>
+  <mat-nav-list>
+    <ng-template let-datasource let-last="last" ngFor [ngForOf]="filteredDatasources">
+      <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">
+        <ng-md-icon mat-list-icon
+                    [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'"
+                    [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'datasource-icon'"></ng-md-icon>
+        <h4 matLine>{{datasource.title}}</h4>
+        <span></span>
+        <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
+          <mat-icon (click)="editDatasource($event, datasource)" title="Edit">mode_edit</mat-icon>
+          <mat-icon (click)="deleteDatasource($event, datasource)" title="Delete">delete</mat-icon>
+        </div>
+      </mat-list-item>
+      <mat-divider *ngIf="!last"></mat-divider>
+    </ng-template>
+  </mat-nav-list>
+</ng-template>

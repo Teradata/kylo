@@ -6,7 +6,9 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {Component} from "@angular/core";
+import {Component, Inject} from "@angular/core";
+import {Observable} from "rxjs/Observable";
+import {EntityAccessControlService} from "../../../../shared/entity-access-control/EntityAccessControlService";
 
 @Component({
     selector: "define-feed-permissions",
@@ -24,7 +26,8 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
                 stateService: StateService,
                 feedLoadingService:FeedLoadingService,
                 dialogService: TdDialogService,
-                feedSideNavService:FeedSideNavService){
+                feedSideNavService:FeedSideNavService,
+                @Inject("EntityAccessControlService") private entitAccessControlService:EntityAccessControlService){
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.formGroup = new FormGroup({})
     }
@@ -53,10 +56,11 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
     /**
      * Update the feed model with the form values
      */
-    protected  applyUpdatesToFeed() {
+    protected  applyUpdatesToFeed() :(Observable<any>| null){
         //update the model
         let formModel = this.formGroup.value;
         //this.feed. .... = formModel. ...
+        return null;
     }
 
 

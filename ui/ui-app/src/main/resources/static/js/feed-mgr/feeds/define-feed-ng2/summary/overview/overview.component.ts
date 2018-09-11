@@ -10,7 +10,7 @@ import {SaveFeedResponse} from "../../model/save-feed-response.model";
 
 @Component({
     selector: "define-feed-overview",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.html"
 })
 export class OverviewComponent extends AbstractLoadFeedComponent implements OnInit {

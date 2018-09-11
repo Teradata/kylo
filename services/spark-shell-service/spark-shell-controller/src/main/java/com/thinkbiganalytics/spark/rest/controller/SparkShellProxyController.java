@@ -23,8 +23,11 @@ package com.thinkbiganalytics.spark.rest.controller;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.kylo.reactive.AsyncResponseSubscriber;
 import com.thinkbiganalytics.kylo.reactive.SubscriberFactory;
 import com.thinkbiganalytics.kylo.spark.SparkException;
@@ -432,6 +435,9 @@ public class SparkShellProxyController {
         // Add data source details
         addDatasourceDetails(request);
 
+        //Add Catalog details
+      //  addCatalogDataSets(request);
+
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
         return getSaveResponse(() -> Optional.of(restClient.saveQuery(process, queryId, request)));
@@ -563,6 +569,9 @@ public class SparkShellProxyController {
         // Add data source details
         addDatasourceDetails(request);
 
+        //Add Catalog details
+        addCatalogDataSets(request);
+
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
         return getTransformResponse(() -> restClient.transform(process, request));
@@ -649,11 +658,11 @@ public class SparkShellProxyController {
         //todo pull from request
         int previewLimit = 20;
 
+        DataSource catalogDataSource = fetchCatalogDataSource(previewRequest.getDataSource().getId());
+        previewRequest.setDataSource(catalogDataSource);
+
         KyloCatalogReadRequest request = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
 
-        //String script = KyloCatalogScalaScriptUtil.asScalaScript(request)
-        //final SparkShellProcess process = getSparkShellProcess();
-        // return getTransformResponse(() -> restClient.transform(process,r));
 
         final SparkShellProcess process = getSparkShellProcess();
         return getTransformResponse(() -> restClient.kyloCatalogTransform(process, request));
@@ -708,25 +717,33 @@ public class SparkShellProxyController {
     }
 
     private void addCatalogDataSets(@Nonnull final TransformRequest request) {
-        if (request.getCatalogDatasets() != null || request.getCatalogDatasets().isEmpty()) {
+        if (request.getCatalogDatasets() == null || request.getCatalogDatasets().isEmpty()) {
             return;
         }
-
-        request.getCatalogDatasets().forEach((dataSet) -> {
-            DataSource catalogDataSource = metadata.read(() -> {
-                Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(dataSet.getDataSource().getId());
-                if (optionalDataSource.isPresent()) {
-                    return optionalDataSource.get();
-                } else {
-                    throw new BadRequestException("No Catalog datasource exists with the given ID: " + dataSet.getId());
-                }
+            request.getCatalogDatasets().forEach((dataSet) -> {
+                addDataSourceInformation(dataSet);
             });
-            dataSet.setDataSource(catalogDataSource);
-            DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
-            dataSet.getDataSource().setTemplate(template);
-        });
+    }
 
-        //pass on the updated DataSet with the dataSource.template populated to the request
+    private void addDataSourceInformation(@Nonnull DataSet dataSet){
+
+        DataSource catalogDataSource = fetchCatalogDataSource(dataSet.getDataSource().getId());
+
+        dataSet.setDataSource(catalogDataSource);
+        DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
+        log.info("added datasource {} with template of {} to dataset {}",catalogDataSource,template,dataSet);
+        dataSet.getDataSource().setTemplate(template);
+    }
+
+    private DataSource fetchCatalogDataSource(@Nonnull String datasourceId){
+        return metadata.read(() -> {
+            Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(datasourceId,true);
+            if (optionalDataSource.isPresent()) {
+                return optionalDataSource.get();
+            } else {
+                throw new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId);
+            }
+        });
 
     }
 

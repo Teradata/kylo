@@ -11,6 +11,7 @@ import {DynamicFormService} from "../../../js/feed-mgr/shared/dynamic-form/servi
 import {ConfigurationFieldBuilder} from "../../../js/feed-mgr/shared/dynamic-form/services/field-config-builder";
 import {Property} from "../model/property";
 import {ProcessorRef} from "./processor-ref";
+import * as _ from "underscore"
 
 export class FieldConfigurationState {
 
@@ -166,6 +167,9 @@ export class FieldConfigurationBuilder {
 
         properties.filter((property: Templates.Property) => property.userEditable).map((property: Templates.Property) => {
 
+            if(!property.uniqueId){
+                property.uniqueId =_.uniqueId("property-");
+            }
             let fieldConfig: FieldConfig<any> = this.buildField(property);
 
             if (property.inputProperty) {
@@ -233,8 +237,13 @@ export class ProcessorFormComponent implements OnChanges {
 
                 //populate the form with the correct input processors
                 let inputProcessorFields = this.fieldConfigurationState.getFieldsForInput(this.processor.id);
+                if(inputProcessorFields.length == 0){
+                    inputProcessorFields = this.fieldConfigurationState.getFieldsForNonInput(this.processor.id);
+                }
                 this.fieldGroups[0].fields = inputProcessorFields;
-                this.dynamicFormService.addToFormGroup(inputProcessorFields, this.form);
+
+               let controls =  this.dynamicFormService.addToFormGroup(inputProcessorFields, this.form);
+
             } else {
                 this.fieldGroups = [new FieldGroup()];
             }

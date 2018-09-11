@@ -5,5 +5,6 @@
 # One could use this for UI development without installing npm globally, e.g. to start development server run from current directory:
 # ./npm start
 
-PATH="$PWD/node/":$PATH
-node "node/node_modules/npm/bin/npm-cli.js" "$@"
+DIR=$(dirname "$0")
+export PATH="${DIR}/node/":$PATH
+node "${DIR}/node/node_modules/npm/bin/npm-cli.js" "$@"

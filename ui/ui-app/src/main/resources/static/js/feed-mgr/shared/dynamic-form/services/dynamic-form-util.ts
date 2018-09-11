@@ -55,6 +55,7 @@ export class DynamicFormUtil {
                             field.onModelChange(value, formGroup, field.model);
                         }
                     }
+                    field.value = value;
                 })
         });
 

@@ -12,6 +12,8 @@
       <div fxLayout="column" class="mat-padding">
 
         <div fxLayout="row" fxLayoutAlign="start start" class="mat-padding">
+
+          <button mat-raised-button color="accent" (click)="openCatalogBrowser()">Catalog</button>
           <!-- Datasource dropdown -->
 
           <mat-form-field *ngIf="showDatasources">

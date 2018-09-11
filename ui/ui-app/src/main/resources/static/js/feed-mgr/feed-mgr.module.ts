@@ -27,6 +27,7 @@ import {DomainTypeConflictDialogComponent} from "./shared/domain-type/domain-typ
 import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
+import {CatalogDatasetPreviewModule} from "./catalog-dataset-preview/catalog-dataset-preview.module";
 
 
 @NgModule({

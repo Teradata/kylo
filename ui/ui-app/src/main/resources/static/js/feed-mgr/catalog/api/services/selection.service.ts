@@ -162,7 +162,7 @@ export class DefaultSelectionStrategy implements SelectionStrategy {
 @Injectable()
 export class SelectionService {
 
-
+    private singleSelection:boolean;
     private selections: Map<string, any> = new Map<string, any>();
     private lastPath: Map<string, any> = new Map<string, any>();
     private selectionStrategy: SelectionStrategy = new DefaultSelectionStrategy()
@@ -170,17 +170,23 @@ export class SelectionService {
         .withPolicy(new SingleSelectionPolicy())
         .withPolicy(new BlockParentObjectSelectionPolicy());
 
+    constructor(){
+        this.singleSelection = this.hasPolicy(SingleSelectionPolicy);
+    }
+
     singleSelectionStrategy(){
         this.selectionStrategy = new DefaultSelectionStrategy()
             .withPolicy(new DefaultSelectionPolicy())
             .withPolicy(new SingleSelectionPolicy())
             .withPolicy(new BlockParentObjectSelectionPolicy());
+        this.singleSelection = true;
     }
 
     multiSelectionStrategy(){
         this.selectionStrategy = new DefaultSelectionStrategy()
             .withPolicy(new DefaultSelectionPolicy())
             .withPolicy(new BlockParentObjectSelectionPolicy());
+        this.singleSelection = false;
     }
 
     /**
@@ -257,6 +263,7 @@ export class SelectionService {
 
     setSelectionStrategy(strategy: SelectionStrategy) {
         this.selectionStrategy = strategy;
+        this.singleSelection = this.hasPolicy(SingleSelectionPolicy);
     }
 
     /**
@@ -272,7 +279,7 @@ export class SelectionService {
     }
 
     isSingleSelection(){
-        return this.hasPolicy(SingleSelectionPolicy);
+        return this.singleSelection;
     }
 
     isMultiSelection(){

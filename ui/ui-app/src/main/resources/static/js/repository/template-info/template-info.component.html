@@ -45,7 +45,7 @@
             <div class="hint">Feeds</div>
             <div>{{template.feedsCount}}</div>
           </div>
-          <div layout="column" class="layout-padding-top-bottom" *ngIf="template.changeComments.length > 0">
+          <div layout="column" class="layout-padding-top-bottom" *ngIf="template.changeComments && template.changeComments.length > 0">
             <div class="hint">Change History</div>
             <div>
               <template-change-comments [updates]="template.changeComments"></template-change-comments>

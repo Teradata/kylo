@@ -17,12 +17,12 @@
   limitations under the License.
   #L%
   -->
-<div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
-<div fxLayoutAlign="center center" fxLayout="row">
-  <div fxFlex="110px" *ngIf="allowImport"></div>
-  <div class="mat-padding import-feed-text" fxLayout="row" fxFlex fxLayoutAlign="center center">
-    <span translate>views.define-feed.Sat</span>
+<td-layout-nav color="none">
+<div td-toolbar-content fxLayout="row" fxLayoutAlign="start end" fxFlex="">
+  <div fxLayout="row" fxLayoutAlign="start center" flex>
+    <span [translate] fxFlex="" class="text-truncate" >views.define-feed.Sat</span>
   </div>
+  <span fxFlex></span>
   <div class="import-button pad-right-md" *ngIf="allowImport">
     <button mat-button (click)="gotoImportFeed()">
       <mat-icon color="primary">add_circle_outline</mat-icon>
@@ -30,9 +30,10 @@
     </button>
   </div>
 </div>
-
+<div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 <div  fxLayout="column" class="mat-padding" *ngIf="recentTemplates.length >0">
   <h3 mat-subheader>Recent</h3>
+  <!--
   <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
     <mat-grid-tile *ngFor="let template of recentTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)">
       <mat-icon class=" icon-component tc-white">{{template.icon}}</mat-icon>
@@ -42,12 +43,19 @@
       </mat-grid-tile-footer>
     </mat-grid-tile>
   </mat-grid-list>
+  -->
+  <ng-container [ngTemplateOutlet]="templateCards"
+                [ngTemplateOutletContext]="{$implicit:recentTemplates}">
+  </ng-container>
 </div>
 
 
 <div  fxLayout="column"  class="mat-padding">
   <h3 mat-subheader>All Templates</h3>
-  <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
+  <ng-container [ngTemplateOutlet]="templateCards"
+                [ngTemplateOutletContext]="{$implicit:allTemplates}">
+  </ng-container>
+ <!-- <mat-grid-list cols="4" rowHeight="150px" gutterSize="10px" >
     <mat-grid-tile *ngFor="let template of allTemplates"   [style.background]="template.iconColor" (click)="selectTemplate(template)">
       <mat-icon class="icon-component tc-white">{{template.icon}}</mat-icon>
       <mat-grid-tile-footer>
@@ -56,5 +64,32 @@
       </mat-grid-tile-footer>
     </mat-grid-tile>
   </mat-grid-list>
+  -->
 </div>
+
+
+
+
+
+
 </div>
+</td-layout-nav>
+<ng-template #templateCards  let-templates>
+  <div fxLayout="row wrap" tdMediaToggle="gt-xs" [mediaClasses]="['push']">
+  <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
+    <div [id]="template.templateName" fxFlex fxFlex.gt-lg="25%" fxFlex.gt-md="33%" fxFlex.md="33%" fxFlex.sm="50%" fxFlex.xs="50%">
+      <mat-card (click)="selectTemplate(template)" class="mat-card-colored template-card">
+        <mat-toolbar [style.background]="template.iconColor" fxLayout="column" fxLayoutAlign="center center" layout-padding>
+          <mat-icon>{{template.icon}}</mat-icon>
+        </mat-toolbar>
+        <div class="card-content">
+          <div fxLayout="column" fxLayoutAlign="start start" layout-padding class="pad-left pad-right">
+            <div class="mat-subheading-2 text-truncate push-none" [matTooltip]="template.templateName" matTooltipShowDelay="1000">{{template?.templateName}}</div>
+            <div class="mat-caption tc-grey-600 text-truncate" [matTooltip]="template.description" matTooltipShowDelay="1000"> {{template.description}} </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </ng-template>
+  </div>
+</ng-template>
