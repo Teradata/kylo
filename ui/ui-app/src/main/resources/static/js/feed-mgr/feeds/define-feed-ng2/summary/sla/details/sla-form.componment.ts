@@ -67,6 +67,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
     slaDescription = new FormControl({});
 
     private slaService: any;
+    private stateService: any;
     options: any;
     private allowCreate = true;
     allowEdit = true;
@@ -74,10 +75,12 @@ export class SlaFormComponent implements OnInit, OnChanges {
     private slaActionOptions: any;
     private showActionOptions: boolean;
     isDebug = false;
+    mode: string;
 
 
     constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService) {
         this.slaService = $$angularInjector.get("SlaService");
+        this.stateService = $$angularInjector.get("StateService");
     }
 
     ngOnInit(): void {
@@ -131,6 +134,9 @@ export class SlaFormComponent implements OnInit, OnChanges {
             this.slaDescription = new FormControl(this.editSla.description, Validators.required);
             this.slaForm.addControl('slaName', this.slaName);
             this.slaForm.addControl('slaDescription', this.slaDescription);
+            this.mode = 'EDIT';
+        } else {
+            this.mode = 'NEW';
         }
     }
 
@@ -254,5 +260,10 @@ export class SlaFormComponent implements OnInit, OnChanges {
     }
 
 
+    viewSlaAssessments() {
+        if (this.editSla) {
+            this.stateService.OpsManager().Sla().navigateToServiceLevelAssessments('slaId==' + this.editSla.id);
+        }
+    }
 }
 

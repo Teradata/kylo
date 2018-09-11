@@ -1,7 +1,8 @@
 <div *ngIf="editSla != null" [formGroup]="slaForm">
-  <div fxLayout="row" fxLayoutAlign="start start">
+
+  <div fxLayout="row" fxLayoutAlign="start start" [style.margin-top.px]="-50">
     <div fxFlex></div>
-    <button mat-button (click)="viewSlaAssessments($event)" color="primary" *ngIf="feed && mode != 'NEW'" translate>views.service-level-agreement-form.SlaAssessments</button>
+    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != 'NEW'">{{'views.service-level-agreement-form.SlaAssessments' | translate}}</button>
   </div>
 
   <div class="section">
@@ -23,7 +24,7 @@
           </div>
         </div>
       </div>
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel"
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [mode]="mode" [index]="idx" [feed]="feedModel"
                          (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
