@@ -29,7 +29,7 @@
       <div  fxFlex fxLayout="column" fxLayoutAlign="start start">
         <div fxLayout="column"  *ngIf="selectedDataSet">
 
-          <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.loading"></mat-progress-bar>
+          <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.isLoading()"></mat-progress-bar>
           <mat-tab-group dynamicHeight>
             <mat-tab label="Data">
 

@@ -30,7 +30,7 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
 
     preview(previewDataSet: PreviewFileDataSet) :Observable<PreviewDataSet>{
         if(previewDataSet.raw == undefined && previewDataSet.allowsRawView) {
-            previewDataSet.loading=true;
+            previewDataSet.rawLoading = true;
 
             let firstFile = previewDataSet.files[0].filePath;
 
@@ -45,10 +45,10 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
                 let preview = this.transformResponeTableBuilder.buildTable(data);
                 previewDataSet.raw = preview;
                 previewDataSet.clearRawError();
-                previewDataSet.finishedLoading()
+                previewDataSet.rawLoading = false;
                 previewDataSetSource.next(previewDataSet)
             }, error1 => {
-                previewDataSet.finishedLoading()
+                previewDataSet.rawLoading = false;
                 previewDataSet.rawError("Error previewing the raw data " + error1)
                 previewDataSetSource.error(previewDataSet)
             });

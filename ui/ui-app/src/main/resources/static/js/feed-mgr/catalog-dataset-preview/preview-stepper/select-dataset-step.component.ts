@@ -175,7 +175,7 @@ onBrowserComponentFiltered(files:BrowserObject[]){
         let node:Node = <Node> this.selectionService.get(this.datasource.id);
         if(node){
            let selectionCount = node.countSelectedDescendants()
-           valid = this.singleSelection ? selectionCount == 1 : selectionCount > 0;
+           valid = this.selectionService.isSingleSelection() ? selectionCount == 1 : selectionCount > 0;
         }
         if(valid) {
             this.formGroup.get("hiddenValidFormCheck").setValue("valid");

@@ -68,7 +68,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 if (!previewDataSet.hasPreview()) {
 
             //Show Progress Bar
-            previewDataSet.loading = true;
+            previewDataSet.previewLoading = true;
             //set the spark options
             if(!previewDataSet.hasSparkOptions() && previewRequest.schemaParser)
             {
@@ -88,7 +88,7 @@ if (!previewDataSet.hasPreview()) {
 
             this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: TransformResponse) => {
                 let preview = this.transformResponeTableBuilder.buildTable(data);
-                previewDataSet.finishedLoading()
+                previewDataSet.previewLoading = false;
                 previewDataSet.clearPreviewError()
                 previewDataSet.schema = preview.columns;
                 previewDataSet.preview =preview;
@@ -111,17 +111,17 @@ if (!previewDataSet.hasPreview()) {
                     //attempt to get RAW data
 
                     this.previewRawService.preview(<PreviewFileDataSet>previewDataSet).subscribe((res: PreviewDataSet) => {
-                        previewDataSet.finishedLoading()
+                        previewDataSet.previewLoading = false;
                         previewDataSetSource.error(previewDataSet)
                         previewDataSetSource.complete();
                     }, (error2: any) => {
-                        previewDataSet.finishedLoading()
+                        previewDataSet.previewLoading = false;
                         previewDataSetSource.error(previewDataSet)
                         previewDataSetSource.complete();
                     });
                 }
                 else {
-                    previewDataSet.finishedLoading()
+                    previewDataSet.previewLoading = false;
                     previewDataSetSource.error(previewDataSet)
                     previewDataSetSource.complete();
                 }

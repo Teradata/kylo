@@ -1,4 +1,4 @@
-<div *tdLoading="'PreviewDataSetStepComponent.LOADING'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" style="min-height: 200px;">
+<div *tdLoading="'PreviewDataSetStepComponent.LOADING'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" class="datasets-preview-container-wrapper pad">
      <datasets-preview-container [previews]="previews" *ngIf="previewsReady"></datasets-preview-container>
       <form [formGroup]="formGroup" >
         <input type="hidden" formControlName="hiddenValidFormCheck" required >

@@ -57,10 +57,17 @@ export class PreviewDataSet {
      * internal key representing this set
      */
     public key:string;
+
     /**
-     * is the data loading
+     * loading the preview
      */
-    public loading:boolean;
+    public previewLoading:boolean;
+
+    /**
+     * loading the raw
+     */
+    public rawLoading:boolean;
+
     /**
      * The schema
      */
@@ -167,9 +174,11 @@ export class PreviewDataSet {
             this.raw.clearError();
         }
     }
-    public finishedLoading(){
-        this.loading = false;
+
+    public isLoading(){
+        return this.previewLoading || this.rawLoading;
     }
+
 
     public clearPreviewError(){
         if(this.preview){

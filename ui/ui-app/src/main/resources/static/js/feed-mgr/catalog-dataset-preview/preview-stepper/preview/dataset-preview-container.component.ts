@@ -11,6 +11,12 @@ export class DatasetPreviewContainerComponent implements OnInit{
     @Input()
     previews:PreviewDataSet[] = [];
 
+    @Input()
+    expandToFirst?:boolean = false;
+
+    @Input()
+    accordionShowFullScreen?:boolean = false;
+
     step = 0;
 
     firstDataSet:PreviewDataSet;
@@ -32,6 +38,12 @@ export class DatasetPreviewContainerComponent implements OnInit{
         }
 
         if(this.previews != undefined && this.previews.length > 0) {
+            if(this.expandToFirst){
+                this.step = 0;
+            }
+            else {
+                this.step = -1;
+            }
             this.singleDataSet = this.previews.length == 1 ? true : false;
             this.firstDataSet = this.previews[0];
             this.hasPreviews = true;

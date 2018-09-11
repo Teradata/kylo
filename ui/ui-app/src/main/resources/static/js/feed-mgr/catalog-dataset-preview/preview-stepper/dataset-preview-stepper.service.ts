@@ -65,6 +65,8 @@ export class DatasetPreviewStepperService {
 
     public stepChanged$ = new Subject<number>();
 
+    public updateViewEvent$ = new Subject<any>();
+
 
     constructor(private _dialogService:TdDialogService,
                   private _fileMetadataTransformService: FileMetadataTransformService,
@@ -87,6 +89,10 @@ export class DatasetPreviewStepperService {
         return this.stepChanged$.subscribe(o);
     }
 
+    public subscribeToUpdateView(o:PartialObserver<any>){
+        return this.updateViewEvent$.subscribe(o);
+    }
+
     public setStepIndex(index: number) {
         if (this.stepIndex == undefined || this.stepIndex != index) {
             this.stepIndex = index;
@@ -94,6 +100,9 @@ export class DatasetPreviewStepperService {
         }
     }
 
+    public notifyToUpdateView(){
+        this.updateViewEvent$.next();
+    }
 
 
 
