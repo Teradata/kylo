@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {Injector, NgModule} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatListModule} from "@angular/material/list";
@@ -22,6 +22,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {LocalStorageService} from "./local-storage/local-storage.service";
+import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.component";
 
 @NgModule({
     declarations: [
@@ -29,7 +30,8 @@ import {LocalStorageService} from "./local-storage/local-storage.service";
         BrowserHeight,
         KyloIconComponent,
         NotificationMenuComponent,
-        FileUploadComponent
+        FileUploadComponent,
+        KyloVisNetworkComponent
     ],
     entryComponents: [
         AddButtonComponent,
@@ -58,8 +60,12 @@ import {LocalStorageService} from "./local-storage/local-storage.service";
     exports: [
         BrowserHeight,
         KyloIconComponent,
-        FileUploadComponent
+        FileUploadComponent,
+        KyloVisNetworkComponent
     ]
 })
 export class KyloCommonModule {
+    // constructor(injector: Injector){
+    //     let vis = require('vis');
+    // }
 }

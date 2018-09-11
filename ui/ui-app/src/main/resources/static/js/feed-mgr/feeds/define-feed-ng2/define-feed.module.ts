@@ -93,6 +93,7 @@ import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info
 import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
+import {MatButtonToggleModule} from "@angular/material/button-toggle";
 
 @NgModule({
     declarations: [
@@ -192,6 +193,7 @@ import {KyloFeedModule} from "../../../../lib/feed/feed.module";
         MatDialogModule,
         MatGridListModule,
         MatTooltipModule,
+        MatButtonToggleModule,
         PropertyListModule,
         TranslateModule,
         VisualQueryModule,
