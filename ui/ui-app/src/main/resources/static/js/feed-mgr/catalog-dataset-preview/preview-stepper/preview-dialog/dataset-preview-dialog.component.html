@@ -6,7 +6,7 @@
   </button>
 </mat-toolbar>
 <mat-dialog-content>
-
+  <div *tdLoading="'DatasetPreviewDialogComponent.LOADING'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" style="min-height: 200px;">
   <div fxLayout="column" fxFlex *ngIf="dataset != null ">
     <h3 class="mat-subheading-2">{{dataset.key}}</h3>
     <div style="overflow:scroll; height:450px;">
@@ -14,6 +14,15 @@
     </div>
   </div>
 
+
+        <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg" *ngIf="error">
+          <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+          <h2>{{errorTitle}}</h2>
+          <h3>{{errorMessage}}t</h3>
+        </div>
+
+
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions class="mat-dialog-actions">

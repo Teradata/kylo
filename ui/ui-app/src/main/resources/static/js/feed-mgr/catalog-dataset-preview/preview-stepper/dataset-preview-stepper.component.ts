@@ -35,6 +35,9 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     @Input()
     displayTopActionButtons:boolean;
 
+    @Input()
+    allowMultiSelection:boolean;
+
     /***
      * the datasources to choose
      */
@@ -63,6 +66,8 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
 
 
 
+
+
     @ViewChild("stepper")
     stepper: MatStepper;
 
@@ -81,6 +86,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef) {
+
 
         this.singleSelection = this.selectionService.isSingleSelection();
         this.chooseDataSourceForm = new FormGroup({});
@@ -191,6 +197,12 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     ngOnInit(){
        //clear any previous selections
        this.selectionService.reset();
+       if(this.allowMultiSelection){
+           this.selectionService.multiSelectionStrategy();
+       }
+       else {
+           this.selectionService.singleSelectionStrategy();
+       }
        //get the datasources
        this.catalogService.getDataSources().subscribe(datasources =>  {
            datasources.forEach(ds => {

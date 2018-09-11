@@ -30,4 +30,8 @@ export class FileManagerService {
         const url = `/proxy/v1/catalog/dataset/${encodeURIComponent(id)}/uploads`;
         return fileName ? `${url}/${encodeURIComponent(fileName)}` : url;
     }
+
+    createDataSet(dataSourceId:string):Observable<any> {
+        return this.http.post(`/proxy/v1/catalog/datasource/${encodeURIComponent(dataSourceId)}/dataset`,null)
+    }
 }

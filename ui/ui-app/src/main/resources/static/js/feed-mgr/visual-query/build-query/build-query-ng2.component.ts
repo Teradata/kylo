@@ -975,7 +975,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     openCatalogBrowser(){
-        let data = new DatasetPreviewStepperDialogData("Add");
+        let data = new DatasetPreviewStepperDialogData(true,"Add");
         let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
         dialogConfig.data = data;
         this._dialogService.open(DatasetPreviewStepperDialogComponent,dialogConfig)

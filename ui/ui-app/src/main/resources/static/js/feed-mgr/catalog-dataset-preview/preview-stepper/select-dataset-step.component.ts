@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {MatCheckboxChange} from "@angular/material/checkbox";
@@ -20,6 +20,9 @@ import {Observable} from "rxjs/Observable";
 import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
 import {BrowserService} from "../../catalog/datasource/api/browser.service";
+import {UploadComponent, UploadFilesChangeEvent} from "../../catalog/datasource/upload/upload.component";
+import {FileUpload} from "../../catalog/datasource/upload/models/file-upload";
+import {RemoteFile} from "../../catalog/datasource/files/remote-file";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -39,6 +42,8 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     @Input()
     public params:any = {};
 
+    @ViewChild("fileUpload")
+    private fileUpload:UploadComponent
     /**
      * flag to indicate only single selection is supported
      */
@@ -83,6 +88,31 @@ onBrowserComponentFiltered(files:BrowserObject[]){
         this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
         }
 
+    }
+
+    /**
+     * Called when the upload is ready
+     * @param {UploadFilesChangeEvent} $event
+     */
+    public onUploadFilesChange($event:UploadFilesChangeEvent){
+        if($event.isReady){
+            //add the files to the selectionService
+            let parent:Node = new Node("upload");
+             $event.files.forEach((file:FileUpload) => {
+                let node = new Node(file.name)
+                let remoteFile = new RemoteFile(file.name,file.path,false,file.size,new Date())
+                node.setBrowserObject(remoteFile);
+                node.setSelected(true);
+                parent.addChild(node);
+            });
+            this.selectionService.reset(this.datasource.id)
+            this.selectionService.set(this.datasource.id,parent);
+            this.formGroup.get("hiddenValidFormCheck").setValue("valid");
+        }
+        else {
+            this.formGroup.get("hiddenValidFormCheck").setValue("");
+        }
+        this.cd.markForCheck();
     }
 
     /**
@@ -156,9 +186,24 @@ onBrowserComponentFiltered(files:BrowserObject[]){
     }
 
     public _previewDataSet(file: BrowserObject) {
-        this.dataSourceService.showPreviewDialog(file,this.datasource);
+        this.showPreviewDialog(file,this.datasource);
+
 
     }
+
+
+    private showPreviewDialog(file: BrowserObject,datasource:DataSource) {
+        let dialogConfig: MatDialogConfig = DatasetPreviewDialogComponent.DIALOG_CONFIG()
+        let dialogData: DatasetPreviewDialogData = new DatasetPreviewDialogData()
+        dialogData.datasource = datasource;
+        dialogData.file = file;
+        dialogConfig.data = dialogData;
+
+        this._dialogService.open(DatasetPreviewDialogComponent, dialogConfig);
+
+    }
+
+
 
 }
 

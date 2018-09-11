@@ -17,6 +17,7 @@ import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/
 import {DatabaseObject, DatabaseObjectType} from "../../catalog/datasource/tables/database-object";
 import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
+import {TdLoadingService} from "@covalent/core/loading";
 
 
 
@@ -26,6 +27,8 @@ import {ISubscription} from "rxjs/Subscription";
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
+
+    static LOADER = "PreviewDataSetStepComponent.LOADING";
 
 
     @Input()
@@ -57,6 +60,7 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
     constructor(private selectionService: SelectionService,
                 private _dialogService: TdDialogService,
                 private dataSourceService:DatasetPreviewStepperService,
+                private _tdLoadingService:TdLoadingService,
                 private cd:ChangeDetectorRef
     ) {
         this.singleSelection = this.selectionService.isSingleSelection();
@@ -88,11 +92,13 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
 
     private  startLoading(){
         this.loading = true;
+        this._tdLoadingService.register(PreviewDatasetStepComponent.LOADER);
         this.cd.markForCheck();
     }
 
     private   finishedLoading(){
         this.loading = false;
+        this._tdLoadingService.resolve(PreviewDatasetStepComponent.LOADER);
         this.cd.markForCheck();
     }
 
@@ -111,6 +117,7 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
 
     private _previewSelection() {
         if (this.datasource) {
+
             this.previews = [];
             this.previewsReady = false;
             this.formGroup.get("hiddenValidFormCheck").setValue("")

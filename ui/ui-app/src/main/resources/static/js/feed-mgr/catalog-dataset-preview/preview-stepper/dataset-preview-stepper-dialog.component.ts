@@ -4,7 +4,7 @@ import {DatasetPreviewStepperComponent, DatasetPreviewStepperSavedEvent} from ".
 
 export class DatasetPreviewStepperDialogData {
 
-constructor(public saveLabel:string = "Save",public title:string="Browse for data")  {  }
+constructor(public allowMultiSelection:boolean=false,public saveLabel:string = "Save",public title:string="Browse for data")  {  }
 
 
 }

@@ -1,11 +1,21 @@
 import {HttpErrorResponse, HttpEvent, HttpEventType} from "@angular/common/http";
-import {Component, Input, OnInit, ViewChild} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 
 import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
 import {UploadDataSource} from "./models/upload-dataset";
 import {DataSetFile} from '../../api/models/dataset-file';
+import {Observable} from "rxjs/Observable";
+import {map} from "rxjs/operators";
+
+
+export class UploadFilesChangeEvent {
+
+    constructor(public isReady: boolean, public files: FileUpload[]) {
+    }
+}
+
 
 /**
  * Provides a form for uploading files and managing uploaded files for a data set.
@@ -30,6 +40,22 @@ export class UploadComponent implements OnInit {
     fileInput: HTMLInputElement;
 
     /**
+     * Only allow 1 file to be uploaded at a time
+     */
+    @Input()
+    singleFile:boolean;
+
+    @Input()
+    renderContinueButton:boolean;
+
+    /**
+     * Called when there is at least 1 valid uploaded file
+     * @type {EventEmitter<FileUpload[]>}
+     */
+    @Output()
+    onUploadFilesChange:EventEmitter<UploadFilesChangeEvent> = new EventEmitter<UploadFilesChangeEvent>();
+
+    /**
      * Uploads pending, in-progress, failed, and successful
      */
     files: FileUpload[] = [];
@@ -39,7 +65,12 @@ export class UploadComponent implements OnInit {
      */
     isReady = false;
 
-    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService) {
+    /**
+     * The dataset to be used for this upload set
+     */
+    uploadDataSetId:string;
+
+    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService ) {
     }
 
     public ngOnInit(): void {
@@ -51,13 +82,14 @@ export class UploadComponent implements OnInit {
 
             // Parse uploads from dataset paths and server
             if (this.datasource.template && this.datasource.template.paths) {
-                this.files = this.datasource.template.paths.map(path => {
+               /** this.files = this.datasource.template.paths.map(path => {
                     const name = path.substr(path.lastIndexOf("/") + 1);
                     const file = new FileUpload(name);
                     file.path = path;
                     file.status = FileUploadStatus.SUCCESS;
                     return file;
                 });
+                **/
                 this.fileManager.listFiles(this.datasource.id)
                     .subscribe(files => this.setFiles(files));
             }
@@ -85,14 +117,30 @@ export class UploadComponent implements OnInit {
     }
 
     /**
+     * Create a temp dataset id for this upload routine
+     * @return {Observable<string>}
+     */
+    private ensureUploadDataSet():Observable<string>{
+        if(this.uploadDataSetId){
+            return Observable.of(this.uploadDataSetId);
+        }
+        else {
+            return this.fileManager.createDataSet(this.datasource.id).pipe(map((ds:any)=> <string>ds.id));
+        }
+    }
+
+    /**
      * Uploads a file or list of files
      */
     upload(event: FileList | File) {
         if (event instanceof FileList) {
             // Upload files individually
-            for (let i = 0; i < event.length; ++i) {
-                this.upload(event.item(i));
-            }
+            this.ensureUploadDataSet().subscribe((datasetId:string) => {
+                for (let i = 0; i < event.length; ++i) {
+                    this.upload(event.item(i));
+                }
+            });
+
         } else if (this.files.find(file => file.name === event.name)) {
             this.dialogs.openAlert({
                 message: "File already exists."
@@ -100,9 +148,13 @@ export class UploadComponent implements OnInit {
         } else {
             // Upload single file
             const file = new FileUpload(event.name);
-            file.upload = this.fileManager.uploadFile(this.datasource.id, event)
-                .subscribe(event => this.setStatus(file, event), error => this.setError(file, error));
-            this.files.push(file);
+            this.ensureUploadDataSet().subscribe((datasetId:string) => {
+                file.upload = this.fileManager.uploadFile(datasetId, event)
+                    .subscribe(event => this.setStatus(file, event), error => this.setError(file, error));
+                this.files.push(file);
+
+            });
+
         }
     }
 
@@ -111,7 +163,7 @@ export class UploadComponent implements OnInit {
      */
     private deleteFile(file: FileUpload): void {
         const isFailed = (file.status === FileUploadStatus.FAILED);
-        this.fileManager.deleteFile(this.datasource.id, file.name)
+        this.fileManager.deleteFile(this.uploadDataSetId, file.name)
             .subscribe(null,
                 error => {
                     if (isFailed) {
@@ -184,5 +236,7 @@ export class UploadComponent implements OnInit {
             .map(file => file.path)
             .filter(path => path != null);
         this.isReady = (this.datasource.template.paths.length > 0);
+        this.onUploadFilesChange.emit(new UploadFilesChangeEvent(this.isReady,this.files));
+
     }
 }
