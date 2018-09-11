@@ -1,4 +1,4 @@
-<div *ngIf="editSla != null" [formGroup]="slaForm" >
+<div *ngIf="editSla != null" [formGroup]="slaForm">
   <div fxLayout="row" fxLayoutAlign="start start">
     <div fxFlex></div>
     <button mat-button (click)="viewSlaAssessments($event)" color="primary" *ngIf="feed && mode != 'NEW'" translate>views.service-level-agreement-form.SlaAssessments</button>
@@ -23,7 +23,8 @@
           </div>
         </div>
       </div>
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel" (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
 
@@ -46,8 +47,6 @@
       </button>
     </div>
   </div>
-
-
 
 
   <div class="section">
@@ -89,7 +88,8 @@
         </div>
       </div>
 
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel" (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
 
@@ -107,11 +107,12 @@
     </div>
 
     <div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">
-      <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0 || slaForm.invalid">{{"views.service-level-agreement-form.AddAction" | translate}}</button>
+      <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0 || slaForm.invalid">
+        {{"views.service-level-agreement-form.AddAction" | translate}}
+      </button>
       <span fxFlex></span>
     </div>
   </div>
-
 
 
   <div class="section">
@@ -130,25 +131,15 @@
     </div>
 
   </div>
-    <!--<div class="layout-padding-top-bottom" fxFlex fxLayout="row">-->
-        <!--<button mat-button (click)="onDeleteSla($event)" *ngIf="editSla != null && editSlaIndex != null && allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</button>-->
-        <!--<span fxFlex></span>-->
-        <!--<button mat-button  (click)="cancelEditSla()" *ngIf="editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</button>-->
-        <!--<button mat-button class="md-primary md-raised" (click)="saveSla()" *ngIf="editSla != null && allowEdit" ng-disabled="editSla.rules.length ==0 || slaForm.$invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</button>-->
-      <!--</div>-->
 
-     <!--</div>-->
-
-
-    <div *ngIf="isDebug" class="layout-padding-top-20 hint">
-      <div>
-        Form Value: {{ slaForm.value | json }}
-      </div>
-      <div>
-        Form Status: {{ slaForm.status }}
-      </div>
+  <div *ngIf="isDebug" class="layout-padding-top-20 hint">
+    <div>
+      Form Value: {{ slaForm.value | json }}
     </div>
-
+    <div>
+      Form Status: {{ slaForm.status }}
+    </div>
+  </div>
 
 
 </div>
