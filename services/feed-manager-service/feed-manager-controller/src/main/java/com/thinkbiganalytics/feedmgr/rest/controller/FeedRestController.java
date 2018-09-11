@@ -572,8 +572,8 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFeedVersions(@PathParam("feedId") String feedId,
-                                    @QueryParam("content") @DefaultValue("false") boolean includeContent) {
-        FeedVersions feed = getMetadataService().getFeedVersions(feedId, includeContent);
+                                    @QueryParam("entity") @DefaultValue("false") boolean includeEntity) {
+        FeedVersions feed = getMetadataService().getFeedVersions(feedId, includeEntity);
 
         return Response.ok(feed).build();
     }
@@ -588,9 +588,9 @@ public class FeedRestController {
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getLatestFeedVersion(@PathParam("feedId") String feedId,
-                                         @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                         @QueryParam("entity") @DefaultValue("true") boolean includeEntity) {
         try {
-            return getMetadataService().getLatestFeedVersion(feedId, includeContent)
+            return getMetadataService().getLatestFeedVersion(feedId, includeEntity)
                             .map(version -> Response.ok(version).build())
                             .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (VersionNotFoundException e) {
@@ -611,9 +611,9 @@ public class FeedRestController {
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getDeployedFeedVersion(@PathParam("feedId") String feedId,
-                                           @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                           @QueryParam("entity") @DefaultValue("true") boolean includeEntity) {
         try {
-            return getMetadataService().getDeployedFeedVersion(feedId, includeContent)
+            return getMetadataService().getDeployedFeedVersion(feedId, includeEntity)
                             .map(version -> Response.ok(version).build())
                             .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (VersionNotFoundException e) {
@@ -634,9 +634,9 @@ public class FeedRestController {
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getDraftFeedVersion(@PathParam("feedId") String feedId,
-                                        @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                        @QueryParam("entity") @DefaultValue("true") boolean includeEntity) {
         try {
-            return getMetadataService().getDraftFeedVersion(feedId, includeContent)
+            return getMetadataService().getDraftFeedVersion(feedId, includeEntity)
                             .map(version -> Response.ok(version).build())
                             .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (VersionNotFoundException e) {
@@ -650,7 +650,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/versions/draft/entity")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the metadata content of the draft version of a feed's metadata (if any.)")
+    @ApiOperation("Gets the metadata entity of the draft version of a feed's metadata (if any.)")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
         @ApiResponse(code = 400, message = "The feed draft version does not exist.", response = RestResponseStatus.class),
@@ -817,9 +817,9 @@ public class FeedRestController {
                   })
     public Response getFeedVersion(@PathParam("feedId") String feedId,
                                    @PathParam("versionId") String versionId,
-                                   @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                   @QueryParam("entity") @DefaultValue("true") boolean includeEntity) {
         try {
-            return getMetadataService().getFeedVersion(feedId, versionId, includeContent)
+            return getMetadataService().getFeedVersion(feedId, versionId, includeEntity)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (VersionNotFoundException e) {
