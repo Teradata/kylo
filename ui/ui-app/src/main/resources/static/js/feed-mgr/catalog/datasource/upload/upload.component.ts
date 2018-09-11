@@ -90,8 +90,10 @@ export class UploadComponent implements OnInit {
                     return file;
                 });
                 **/
-                this.fileManager.listFiles(this.datasource.id)
-                    .subscribe(files => this.setFiles(files));
+               if(this.uploadDataSetId) {
+                   this.fileManager.listFiles(this.uploadDataSetId)
+                       .subscribe(files => this.setFiles(files));
+               }
             }
         }
     }
