@@ -59,12 +59,6 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
 
     formGroup: FormGroup;
 
-    /**
-     * Feed name
-     */
-    @Input()
-    feed?: string;
-
     @Output()
     onPropertyChange: EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
 
