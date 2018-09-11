@@ -12,9 +12,10 @@
     </form>
   </mat-card-content>
 
-  <mat-card-actions>
-    <button mat-button mat-raised-button color="primary" (click)="onSaveSla()" [disabled]="slaForm.invalid">{{"Sla.Details.Save" | translate}}</button>
+  <mat-card-actions *ngIf="!loadingFeed && !loadingSla && allowEdit">
+    <button mat-button mat-raised-button color="primary" (click)="onSaveSla()" [disabled]="slaForm.invalid || savingSla">{{"Sla.Details.Save" | translate}}</button>
     <button mat-button mat-raised-button (click)="onCancelSaveSla()">{{"Sla.Details.Cancel" | translate}}</button>
+    <button mat-button mat-raised-button (click)="onDeleteSla()" [disabled]="deletingSla">{{"Sla.Details.Delete" | translate}}</button>
   </mat-card-actions>
 
 </mat-card>

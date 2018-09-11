@@ -938,7 +938,8 @@
             "EditSla": "Edit SLA",
             "CreateNewSla": "Create New SLA",
             "Save": "Save",
-            "Cancel": "Cancel"
+            "Cancel": "Cancel",
+            "Delete": "Delete"
         }
     }
 

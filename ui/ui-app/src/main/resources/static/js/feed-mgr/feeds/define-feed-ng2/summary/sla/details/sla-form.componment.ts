@@ -19,6 +19,7 @@ export class RuleType {
 
 @Component({
     selector: "sla-form",
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.html"
 })
 export class SlaFormComponent implements OnInit, OnChanges {

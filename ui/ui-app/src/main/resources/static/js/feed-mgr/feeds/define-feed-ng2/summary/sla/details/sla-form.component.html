@@ -4,6 +4,8 @@
     <button mat-button (click)="viewSlaAssessments($event)" color="primary" *ngIf="feed && mode != 'NEW'" translate>views.service-level-agreement-form.SlaAssessments</button>
   </div>
 
+  <div class="section">
+
     <span class="md-subhead" translate>views.service-level-agreement-form.Condition</span>
 
     <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
@@ -43,10 +45,12 @@
         <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
       </button>
     </div>
+  </div>
 
 
 
 
+  <div class="section">
 
     <span class="md-subhead" translate>views.service-level-agreement-form.SlaActions</span>
 
@@ -106,10 +110,11 @@
       <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0 || slaForm.invalid">{{"views.service-level-agreement-form.AddAction" | translate}}</button>
       <span fxFlex></span>
     </div>
+  </div>
 
 
 
-
+  <div class="section">
 
     <div fxLayout="column" class="layout-padding-top">
       <span class="md-subhead">Description</span>
@@ -124,6 +129,7 @@
       </mat-form-field>
     </div>
 
+  </div>
     <!--<div class="layout-padding-top-bottom" fxFlex fxLayout="row">-->
         <!--<button mat-button (click)="onDeleteSla($event)" *ngIf="editSla != null && editSlaIndex != null && allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</button>-->
         <!--<span fxFlex></span>-->
