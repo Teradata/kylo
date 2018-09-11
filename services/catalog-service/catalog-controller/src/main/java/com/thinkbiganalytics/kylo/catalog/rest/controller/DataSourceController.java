@@ -23,10 +23,12 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
@@ -89,12 +91,13 @@ public class DataSourceController extends AbstractCatalogController {
 
     public static final String BASE = "/v1/catalog/datasource";
 
-    public enum CredentialMode {NONE, EMBED, ATTACH}
-
-    ;
+    public enum CredentialMode {NONE, EMBED, ATTACH};
 
     @Inject
     private DataSourceProvider dataSourceProvider;
+
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     @Inject
     private CatalogFileManager fileManager;
@@ -392,6 +395,21 @@ public class DataSourceController extends AbstractCatalogController {
         final DataSource dataSource = findDataSource(dataSourceId,false);
 
         return log.exit(this.pluginController.getPlugin(dataSource.getConnector().getPluginId()));
+    }
+
+
+
+    @POST
+    @Path("{id}/dataset")
+    @ApiOperation("creates a new dataset for a datasource")
+    public Response createDataSet(@PathParam("id") final String datasourceId) {
+        log.entry(datasourceId);
+        final DataSource dataSource = findDataSource(datasourceId,false);
+        final DataSet dataSet = new DataSet();
+        dataSet.setDataSource(dataSource);
+        //validate
+        DataSet validDataSet= dataSetProvider.createDataSet(dataSet);
+        return log.exit(Response.ok(validDataSet).build());
     }
 
     /**

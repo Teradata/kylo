@@ -39,6 +39,8 @@ import {TablesModule} from "../catalog/datasource/tables/tables.module";
 import {UploadModule} from "../catalog/datasource/upload/upload.module";
 import {DatasetPreviewStepperService} from "./preview-stepper/dataset-preview-stepper.service";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
+import {CovalentLoadingModule} from "@covalent/core/loading";
+
 
 @NgModule({
     declarations: [
@@ -68,6 +70,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
         CovalentDataTableModule,
         CovalentNotificationsModule,
         CovalentDialogsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         FormsModule,
         KyloCommonModule,

@@ -158,7 +158,7 @@ export class PreviewSchemaComponent implements OnInit {
 
     public showAddToCollectionButton(dataSet:PreviewDataSet){
         let collectedSize = this.previewDatasetCollectionService.datasetCount();
-        return this.editable && !dataSet.isCollected() && dataSet.loading == false;
+        return this.editable && !dataSet.isCollected() && !dataSet.isLoading();
     }
 
     public showRemoveFromCollectionButton(dataSet:PreviewDataSet){
@@ -545,7 +545,7 @@ export class SimpleTableComponent {
 @Component({
     selector:'dataset-schema-definition',
     template:`
-        <dataset-simple-table [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
+        <dataset-simple-table [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
     `
 
 })
@@ -553,6 +553,9 @@ export class SchemaDefinitionComponent  implements OnInit {
 
     @Input()
     columns:TableColumn[]
+
+    @Input()
+        smallView:boolean = true;
 
     schemaColumns:TableColumn[]
 

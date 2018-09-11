@@ -15,8 +15,8 @@ import {PreviewSchemaService} from "../../catalog/datasource/preview-schema/serv
 import {Injectable} from "@angular/core";
 import {FileMetadataTransformService} from "../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "./preview-dialog/dataset-preview-dialog.component";
 import {MatDialogConfig} from "@angular/material/dialog";
+import {ReplaySubject} from "rxjs/ReplaySubject";
 
 
 export enum DataSetType {
@@ -65,6 +65,8 @@ export class DatasetPreviewStepperService {
 
     public stepChanged$ = new Subject<number>();
 
+    public updateViewEvent$ = new Subject<any>();
+
 
     constructor(private _dialogService:TdDialogService,
                   private _fileMetadataTransformService: FileMetadataTransformService,
@@ -87,6 +89,10 @@ export class DatasetPreviewStepperService {
         return this.stepChanged$.subscribe(o);
     }
 
+    public subscribeToUpdateView(o:PartialObserver<any>){
+        return this.updateViewEvent$.subscribe(o);
+    }
+
     public setStepIndex(index: number) {
         if (this.stepIndex == undefined || this.stepIndex != index) {
             this.stepIndex = index;
@@ -94,11 +100,14 @@ export class DatasetPreviewStepperService {
         }
     }
 
+    public notifyToUpdateView(){
+        this.updateViewEvent$.next();
+    }
 
 
 
    private preparePreviewFiles(node: Node, datasource:DataSource): Observable<PreviewDataSet[]> {
-        let subject = new Subject<PreviewDataSet[]>();
+        let subject = new ReplaySubject<PreviewDataSet[]>(1);
         this._fileMetadataTransformService.detectFormatForNode(node, datasource).subscribe((response: FileMetadataTransformResponse) => {
             let dataSetMap = response.results.datasets;
             let previews: PreviewDataSet[] = [];
@@ -122,7 +131,7 @@ export class DatasetPreviewStepperService {
             });
 
         });
-        return subject.asObservable();
+        return subject;
     }
 
     private preparePreviewTables(node: Node, type: DataSetType): Observable<PreviewDataSet[]> {
@@ -179,7 +188,7 @@ export class DatasetPreviewStepperService {
             return Observable.of(dataSet);
         }
         else if (obj instanceof RemoteFile) {
-            let subject = new Subject<PreviewDataSet>();
+            let subject = new ReplaySubject<PreviewDataSet>(1);
             let o = subject.asObservable();
             this._fileMetadataTransformService.detectFormatForPaths([obj.getPath()], datasource).subscribe((response: FileMetadataTransformResponse) => {
                 let obj = response.results.datasets;
@@ -196,7 +205,7 @@ export class DatasetPreviewStepperService {
 
 
     private getDataSetType(datasource:DataSource): DataSetType {
-        if (!datasource.connector.template.format) {
+        if (!datasource.connector.template || !datasource.connector.template.format) {
             return DataSetType.FILE;
         }
         else if (datasource.connector.template.format == "jdbc") {
@@ -228,7 +237,7 @@ export class DatasetPreviewStepperService {
     }
 
     private _populatePreview(dataSets: PreviewDataSet[],datasource:DataSource) :Observable<PreviewDataSetResultEvent> {
-        let previewReady$ = new Subject<PreviewDataSetResultEvent>();
+        let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let observable = previewReady$.asObservable();
         let previews: Observable<PreviewDataSet>[] = [];
         if (dataSets) {
@@ -256,7 +265,7 @@ export class DatasetPreviewStepperService {
 
 
     public prepareAndPopulatePreview(node:Node, datasource:DataSource) :Observable<PreviewDataSetResultEvent> {
-        let previewReady$ = new Subject<PreviewDataSetResultEvent>();
+        let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let o = previewReady$.asObservable();
             if (node.countSelectedDescendants() > 0) {
                 /// preview and save to feed
@@ -275,7 +284,7 @@ export class DatasetPreviewStepperService {
 
 
     public prepareAndPopulatePreviewDataSet(file: BrowserObject, datasource:DataSource)  :Observable<PreviewDataSetResultEvent> {
-        let previewReady$ = new Subject<PreviewDataSetResultEvent>();
+        let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let o = previewReady$.asObservable();
         this.prepareBrowserObjectForPreview(file,datasource).subscribe((dataSet:PreviewDataSet) => {
             this._populatePreview([dataSet],datasource).subscribe((ev: PreviewDataSetResultEvent) => {
@@ -283,27 +292,6 @@ export class DatasetPreviewStepperService {
             });
         })
         return o;
-    }
-
-
-    public showPreviewDialog(file: BrowserObject,datasource:DataSource) {
-        let dialogConfig: MatDialogConfig = DatasetPreviewDialogComponent.DIALOG_CONFIG()
-        this.prepareAndPopulatePreviewDataSet(file,datasource).subscribe( (ev:PreviewDataSetResultEvent) => {
-            if(!ev.isEmpty()) {
-                let dialogData: DatasetPreviewDialogData = new DatasetPreviewDialogData(ev.dataSets[0])
-                dialogConfig.data = dialogData;
-                this._dialogService.open(DatasetPreviewDialogComponent, dialogConfig);
-            }
-            else {
-                //ERROR
-                this._dialogService.openAlert({
-                    message: 'No data available to preview',
-                    disableClose: true,
-                    title: 'Unable to preview'
-                });
-            }
-        });
-
     }
 
 

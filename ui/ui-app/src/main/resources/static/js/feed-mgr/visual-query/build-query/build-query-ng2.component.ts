@@ -31,6 +31,7 @@ import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} f
 import {MatDialogConfig} from "@angular/material/dialog";
 import {DatasetPreviewDialogComponent} from "../../catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component";
 import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {Subject} from "rxjs/Subject";
 
 /**
  * Code for the delete key.
@@ -303,7 +304,9 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Initialize state from services.
      */
-    private init() {
+    private init() :Observable<UserDatasource[]> {
+        let datasources$ = new Subject<UserDatasource[]>();
+
         // Get the list of data sources
         Promise.all([this.engine.getNativeDataSources(), this.datasourcesService.findAll()])
             .then(resultList => {
@@ -327,19 +330,23 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             })
             .then((datasources: UserDatasource[]) => {
                 this.updateAvailableDatasources(datasources);
+                this.allDatasources = datasources;
 
                 if (this.model.$selectedDatasourceId == null) {
                     this.model.$selectedDatasourceId = datasources[0].id;
                     this.form.get("datasource").setValue(this.model.$selectedDatasourceId);
                 }
                 this.validate();
+                datasources$.next(datasources);
             })
             .catch((err: string) => {
                 this.error = err;
+                datasources$.error(err);
             })
             .then(() => {
                 this.loadingPage = false;
             });
+        return datasources$.asObservable();
     }
 
     private updateAvailableDatasources(datasources?:UserDatasource[]){
@@ -403,6 +410,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         if (this.model.datasets && this.model.datasets.length > 0) {
             this.addSparkDataSets(this.model.datasets)
         }
+    }
+    isDataSetUserDataSource(dataSet:SparkDataSet){
+        if(dataSet == undefined){
+            return false;
+        }
+        return this.allDatasources.find(ds => ds.id == dataSet.dataSource.id) != undefined;
     }
 
     addSparkDataSets(datasets:SparkDataSet[]) {
@@ -701,6 +714,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         // Template for a new node.
         //
 
+
         const coord = this.getNewXYCoord();
 
         _.each(tableSchema.fields, (field: SchemaField) => {
@@ -714,6 +728,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             id: this.nextNodeID++,
             datasourceId: datasourceId,
             dataset: dataset,
+            datasetMatchesUserDataSource: dataset == undefined || this.isDataSetUserDataSource(dataset),
             x: coord.x,
             y: coord.y,
             nodeAttributes: {
@@ -909,15 +924,17 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         // Wait for query engine to load
         const onLoad = () => {
             // Initialize state
-            this.init();
+            this.init().subscribe( (datasources:UserDatasource[]) => {
+                // Setup the flowchart Model
+                this.setupFlowChartModel();
 
-            // Setup the flowchart Model
-            this.setupFlowChartModel();
+                this.addPreviewDataSets();
 
-            this.addPreviewDataSets();
+                // Validate when the page loads
+                this.validate();
+            });
 
-            // Validate when the page loads
-            this.validate();
+
         };
 
         if (this.engine instanceof Promise) {
@@ -958,7 +975,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     openCatalogBrowser(){
-        let data = new DatasetPreviewStepperDialogData("Add");
+        let data = new DatasetPreviewStepperDialogData(true,"Add");
         let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
         dialogConfig.data = data;
         this._dialogService.open(DatasetPreviewStepperDialogComponent,dialogConfig)

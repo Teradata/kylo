@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {MatCheckboxChange} from "@angular/material/checkbox";
@@ -19,6 +19,10 @@ import {DataSource} from "../../catalog/api/models/datasource";
 import {Observable} from "rxjs/Observable";
 import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
+import {BrowserService} from "../../catalog/datasource/api/browser.service";
+import {UploadComponent, UploadFilesChangeEvent} from "../../catalog/datasource/upload/upload.component";
+import {FileUpload} from "../../catalog/datasource/upload/models/file-upload";
+import {RemoteFile} from "../../catalog/datasource/files/remote-file";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -38,6 +42,8 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     @Input()
     public params:any = {};
 
+    @ViewChild("fileUpload")
+    private fileUpload:UploadComponent
     /**
      * flag to indicate only single selection is supported
      */
@@ -50,16 +56,24 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
 
     dataSourceChangedSubscription:ISubscription;
 
+    browserComponentUpdatedSubscription:ISubscription;
+
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,previewDatasetCollectionService: PreviewDatasetCollectionService,
         private _dialogService: TdDialogService,
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
+                private browserService:BrowserService,
                 private cd:ChangeDetectorRef
                 ) {
        super(state,stateRegistry,selectionService,previewDatasetCollectionService);
       this.singleSelection = this.selectionService.isSingleSelection();
+     this.browserComponentUpdatedSubscription = this.browserService.subscribeToDataFiltered(this.onBrowserComponentFiltered.bind(this))
      }
 
+onBrowserComponentFiltered(files:BrowserObject[]){
+        console.log('FINISHED UPDATING COMPONENT ',files)
+    this.cd.markForCheck();
+}
 
     ngOnInit(){
         if(this.formGroup == undefined){
@@ -74,6 +88,31 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
         }
 
+    }
+
+    /**
+     * Called when the upload is ready
+     * @param {UploadFilesChangeEvent} $event
+     */
+    public onUploadFilesChange($event:UploadFilesChangeEvent){
+        if($event.isReady){
+            //add the files to the selectionService
+            let parent:Node = new Node("upload");
+             $event.files.forEach((file:FileUpload) => {
+                let node = new Node(file.name)
+                let remoteFile = new RemoteFile(file.name,file.path,false,file.size,new Date())
+                node.setBrowserObject(remoteFile);
+                node.setSelected(true);
+                parent.addChild(node);
+            });
+            this.selectionService.reset(this.datasource.id)
+            this.selectionService.set(this.datasource.id,parent);
+            this.formGroup.get("hiddenValidFormCheck").setValue("valid");
+        }
+        else {
+            this.formGroup.get("hiddenValidFormCheck").setValue("");
+        }
+        this.cd.markForCheck();
     }
 
     /**
@@ -94,6 +133,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
      * When complete notify the view changed
      */
     private initDataSource(){
+        this.datasourceSref = '';
         this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
             //???
             this.plugin = plugin;
@@ -116,6 +156,9 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         if(this.dataSourceChangedSubscription){
             this.dataSourceChangedSubscription.unsubscribe();
         }
+        if(this.browserComponentUpdatedSubscription){
+            this.browserComponentUpdatedSubscription.unsubscribe();
+        }
     }
 
     /**
@@ -132,7 +175,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
         let node:Node = <Node> this.selectionService.get(this.datasource.id);
         if(node){
            let selectionCount = node.countSelectedDescendants()
-           valid = this.singleSelection ? selectionCount == 1 : selectionCount > 0;
+           valid = this.selectionService.isSingleSelection() ? selectionCount == 1 : selectionCount > 0;
         }
         if(valid) {
             this.formGroup.get("hiddenValidFormCheck").setValue("valid");
@@ -143,9 +186,24 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     }
 
     public _previewDataSet(file: BrowserObject) {
-        this.dataSourceService.showPreviewDialog(file,this.datasource);
+        this.showPreviewDialog(file,this.datasource);
+
 
     }
+
+
+    private showPreviewDialog(file: BrowserObject,datasource:DataSource) {
+        let dialogConfig: MatDialogConfig = DatasetPreviewDialogComponent.DIALOG_CONFIG()
+        let dialogData: DatasetPreviewDialogData = new DatasetPreviewDialogData()
+        dialogData.datasource = datasource;
+        dialogData.file = file;
+        dialogConfig.data = dialogData;
+
+        this._dialogService.open(DatasetPreviewDialogComponent, dialogConfig);
+
+    }
+
+
 
 }
 

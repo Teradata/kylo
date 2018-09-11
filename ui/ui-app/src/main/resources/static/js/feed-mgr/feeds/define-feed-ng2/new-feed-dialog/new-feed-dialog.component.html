@@ -1,22 +1,18 @@
-
-
-
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
-  <span>New Feed</span>
-  <span fxFlex=""></span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
-  </button>
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']" >
+  <div fxFlex fxLayout="row">
+    <span class="text-truncate">New {{template.templateName}} Feed</span>
+    <span fxFlex></span>
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon arial-label="Close dialog">close</mat-icon>
+    </button>
+  </div>
 </mat-toolbar>
 <div mat-dialog-content class="mat-dialog-content">
-  <div fxLayout="column">
-  <div class="mat-subheader">Create a new {{template.templateName}} feed</div>
   <form [formGroup]="formGroup">
     <system-feed-name [formGroup]="formGroup"></system-feed-name>
     <category-autocomplete [formGroup]="formGroup" >
     </category-autocomplete>
   </form>
-  </div>
 </div>
 <div mat-dialog-actions class="mat-dialog-actions">
   <button mat-button (click)="cancel()">Cancel</button>

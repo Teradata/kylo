@@ -8,7 +8,7 @@
         <catalog-table-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="datasourceSref=='.connection'">
         </catalog-table-browser>
 
-        <local-files [datasource]="datasource" *ngIf="datasourceSref=='.upload'"></local-files>
+        <local-files #fileUpload [datasource]="datasource" *ngIf="datasourceSref=='.upload'" (onUploadFilesChange)="onUploadFilesChange($event)"></local-files>
 
         <input type="hidden" formControlName="hiddenValidFormCheck" required >
       </form>
@@ -18,7 +18,7 @@
 
         <td td-data-table-cell>
           <mat-checkbox [checked]="parent.isChildSelected(file.name)"
-                        [disabled]="parent.isSelectChildDisabled(file.name)"
+                        [hidden]="parent.isSelectChildDisabled(file.name)"
                         (change)="onToggleChange($event,file,parent)"></mat-checkbox>
 
           <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"

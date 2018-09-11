@@ -17,15 +17,19 @@ import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/
 import {DatabaseObject, DatabaseObjectType} from "../../catalog/datasource/tables/database-object";
 import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
+import {TdLoadingService} from "@covalent/core/loading";
 
 
 
 @Component({
     selector: "preview-dataset-step",
     templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dataset-step.component.html",
+    styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dataset-step.component.scss"],
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
+
+    static LOADER = "PreviewDataSetStepComponent.LOADING";
 
 
     @Input()
@@ -53,13 +57,20 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
 
     dataSourceChangedSubscription:ISubscription;
     stepChangedSubscription:ISubscription;
+    updateViewSubscription:ISubscription;
 
     constructor(private selectionService: SelectionService,
                 private _dialogService: TdDialogService,
-                private dataSourceService:DatasetPreviewStepperService,
+                private datasetPreviewStepperService:DatasetPreviewStepperService,
+                private _tdLoadingService:TdLoadingService,
                 private cd:ChangeDetectorRef
     ) {
         this.singleSelection = this.selectionService.isSingleSelection();
+        this.updateViewSubscription = this.datasetPreviewStepperService.subscribeToUpdateView(this.onUpdateView.bind(this))
+    }
+    
+    onUpdateView(){
+        this.cd.markForCheck();
     }
 
 
@@ -69,9 +80,9 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
         }
         this.formGroup.addControl("hiddenValidFormCheck",new FormControl())
 
-        this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
+        this.dataSourceChangedSubscription =  this.datasetPreviewStepperService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
 
-        this.stepChangedSubscription = this.dataSourceService.subscribeToStepChanges(this.onStepChanged.bind(this))
+        this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
 
         //preview
         this._previewSelection();
@@ -84,15 +95,20 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
         if(this.stepChangedSubscription){
             this.stepChangedSubscription.unsubscribe();
         }
+        if(this.updateViewSubscription) {
+            this.updateViewSubscription.unsubscribe();
+        }
     }
 
     private  startLoading(){
         this.loading = true;
+        this._tdLoadingService.register(PreviewDatasetStepComponent.LOADER);
         this.cd.markForCheck();
     }
 
     private   finishedLoading(){
         this.loading = false;
+        this._tdLoadingService.resolve(PreviewDatasetStepComponent.LOADER);
         this.cd.markForCheck();
     }
 
@@ -111,12 +127,13 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
 
     private _previewSelection() {
         if (this.datasource) {
+
             this.previews = [];
             this.previewsReady = false;
             this.formGroup.get("hiddenValidFormCheck").setValue("")
             this.startLoading();
             let node: Node = this.selectionService.get(this.datasource.id);
-            this.dataSourceService.prepareAndPopulatePreview(node, this.datasource).subscribe((ev:PreviewDataSetResultEvent) => {
+            this.datasetPreviewStepperService.prepareAndPopulatePreview(node, this.datasource).subscribe((ev:PreviewDataSetResultEvent) => {
 
                 if(ev.isEmpty()){
                     //Show "Selection is needed" card
