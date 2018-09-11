@@ -218,8 +218,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             .map(ev -> ev.getVersion())
             .orElseThrow(() -> new VersionNotFoundException(versionId));
         
-        Node draft = createDraftEntity(entityId);
         JcrVersionUtil.restore(version);
+        Node draft = createDraftEntity(entityId);
         return draft;
     }
 

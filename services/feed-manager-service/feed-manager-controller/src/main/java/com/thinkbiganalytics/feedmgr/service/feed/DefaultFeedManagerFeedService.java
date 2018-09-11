@@ -401,12 +401,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     @Override
-    public EntityVersion versionDraftFeed(String feedId, boolean includeContent) {
+    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
         Optional<Feed.ID> idOption = checkAccessVersions(feedId);
 
         return idOption
             .map(domainFeedId -> {
-                return metadataAccess.read(() -> {
+                return metadataAccess.commit(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, false);
                     return this.feedModelTransform.domainToFeedVersion(newVer);
                 }, MetadataAccess.SERVICE);
@@ -415,11 +415,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public EntityVersion createDraftFromFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
-        Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
-        com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
-        
-        return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(feedId, versionId, includeContent));
+    public EntityVersion createDraftFromFeedVersion(String feedId, String versionIdStr, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+
+        return idOption
+            .map(domainFeedId -> {
+                return metadataAccess.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
+                  
+                    return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(domainFeedId, versionId, includeContent));
+                }, MetadataAccess.SERVICE);
+            })
+            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
     }
 
     @Override

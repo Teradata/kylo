@@ -143,7 +143,7 @@ public interface FeedManagerFeedService {
      * @param feedId
      * @return
      */
-    EntityVersion versionDraftFeed(String feedId, boolean includeContent);
+    EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent);
 
     /**
      * @param feedIdStr

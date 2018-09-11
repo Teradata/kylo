@@ -344,7 +344,7 @@ public interface MetadataService {
      * @param includeContent indicates whether the feed content should be included in the version
      * @return the current state of feed versions (no feed content)
      */
-    EntityVersion versionDraftFeed(String feedId, boolean includeContent);
+    EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent);
 
     /**
      * Creates a new draft feed from a specific feed version.

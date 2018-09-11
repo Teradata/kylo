@@ -411,7 +411,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
      * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#versionDraftFeed(java.lang.String, boolean)
      */
     @Override
-    public EntityVersion versionDraftFeed(String feedId, boolean includeContent) {
+    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }

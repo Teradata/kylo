@@ -713,7 +713,8 @@ public class FeedRestController {
     
     @POST
     @Path("/{feedId}/versions/draft")
-    @Produces(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Performs one or more actions on a feed draft version.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Feed draft version was successfully processed", response = FeedMetadata.class),
@@ -729,20 +730,20 @@ public class FeedRestController {
             
             for (VersionAction action : actions) {
                 switch (action) {
+                    case VERSION:
+                        version = getMetadataService().createVersionFromDraftFeed(feedId, true);
+                        break;
                     case DEPLOY:
-                        if (version == null) {
-                            // DEPLOY action can only be invoked if accompanied by a VERSION action.
-                            return Response.status(Status.CONFLICT).entity("Cannot process a deploy action unless accompanied by a version action").build();
-                        } else {
-                            version = getMetadataService().deployFeedVersion(feedId, version.getId(), true);
-                            break;
+                        // Version the draft feed before deployment if not told to do so explicitly
+                        if (! actions.contains(VersionAction.VERSION)) {
+                            version = getMetadataService().createVersionFromDraftFeed(feedId, true);
                         }
+                        
+                        version = getMetadataService().deployFeedVersion(feedId, version.getId(), true);
+                        break;
                     case REMOVE:
 //                        versions = getMetadataService().removeFeedDraftVersion(feedId, true);
 //                        break;
-                    case VERSION:
-                        version = getMetadataService().versionDraftFeed(feedId, true);
-                        break;
                     default:
                         return Response.status(Status.BAD_REQUEST).entity("Unsupported action for feed version: " + actionStr).build();
                 }
@@ -785,7 +786,8 @@ public class FeedRestController {
     
     @POST
     @Path("/{feedId}/versions/{versionId}")
-    @Produces(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Performs one or more actions on a feed version.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Feed version was successfully processed", response = FeedMetadata.class),
@@ -803,15 +805,16 @@ public class FeedRestController {
                 switch (action) {
                     case DRAFT:
                         version = getMetadataService().createDraftFromFeedVersion(feedId, versionId, true);
-//                        break;
-                        return getMetadataService().getFeedVersion(feedId, versionId, true)
-                                        .map(ver -> Response.ok(ver).build())
-                                        .orElse(Response.status(Status.NOT_FOUND).build());
+                        break;
                     case DEPLOY:
-                        version = getMetadataService().deployFeedVersion(feedId, versionId, true);
+                        if (actions.contains(VersionAction.DRAFT)) {
+                            version = getMetadataService().createVersionFromDraftFeed(feedId, false);
+                        }
+                        
+                        version = getMetadataService().deployFeedVersion(feedId, version != null ? version.getId() : versionId, true);
                         break;
                     case REMOVE:
-//                        versions = getMetadataService().removeFeedVersion(feedId, versionId, true);
+//                        version = getMetadataService().removeFeedVersion(feedId, version != null ? version.getId() : versionId, true);
 //                        break;
                         return Response.status(Status.BAD_REQUEST).entity("Feed version removal currently not supported: " + actionStr).build();
                     default:
