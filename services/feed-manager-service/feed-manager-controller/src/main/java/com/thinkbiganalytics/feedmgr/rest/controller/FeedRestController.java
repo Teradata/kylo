@@ -668,6 +668,50 @@ public class FeedRestController {
             throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
         }
     }
+    
+    @POST
+    @Path("/draft/entity")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates a new feed as draft version.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed metadata.", response = NifiFeed.class),
+        @ApiResponse(code = 500, message = "An internal error occurred.", response = RestResponseStatus.class)
+    })
+    @Nonnull
+    public Response createDraftFeed(@Nonnull final FeedMetadata feedMetadata) {
+        try {
+            FeedMetadata update = getMetadataService().saveDraftFeed(feedMetadata);
+            NifiFeed feed = new NifiFeed(update, null);
+            feed.setSuccess(true);
+            return Response.ok(feed).build();
+        } catch (DuplicateFeedNameException e) {
+            log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
+            
+            // Create an error message
+            String msg = "A feed already exists in the category \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
+            
+            // Add error message to feed
+            NifiFeed feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(msg);
+            feed.setSuccess(false);
+            return Response.status(Status.CONFLICT).entity(feed).build();
+        } catch (Exception e) {
+            log.error("Failed to create a new feed.", e);
+            
+            // Create an error message
+            String msg = (e.getMessage() != null) ? "Error saving Feed " + e.getMessage() : "An unknown error occurred while saving the feed.";
+            if (e.getCause() instanceof JDBCException) {
+                msg += ". " + ((JDBCException) e).getSQLException();
+            }
+            
+            // Add error message to feed
+            NifiFeed feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(msg);
+            feed.setSuccess(false);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(feed).build();
+        }
+    }
 
     @POST
     @Path("/{feedId}/versions/draft/entity")
@@ -681,7 +725,9 @@ public class FeedRestController {
     @Nonnull
     public Response saveDraftFeed(@Nonnull final FeedMetadata feedMetadata) {
         try {
-            FeedMetadata feed = getMetadataService().saveDraftFeed(feedMetadata);
+            FeedMetadata update = getMetadataService().saveDraftFeed(feedMetadata);
+            NifiFeed feed = new NifiFeed(update, null);
+            feed.setSuccess(true);
             return Response.ok(feed).build();
         } catch (DuplicateFeedNameException e) {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
