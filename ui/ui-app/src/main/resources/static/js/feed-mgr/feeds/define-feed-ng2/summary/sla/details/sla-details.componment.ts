@@ -10,6 +10,21 @@ import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
 
+export enum FormMode {
+    ModeEdit = "EDIT",
+    ModeNew = "NEW",
+}
+
+export class RuleType {
+    name: string;
+    mode: FormMode;
+
+    constructor() {
+        this.name = '';
+        this.mode = FormMode.ModeNew;
+    }
+}
+
 @Component({
     selector: "sla-details",
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-details.component.css"],
@@ -26,8 +41,6 @@ export class SlaDetailsComponent implements OnInit {
 
     private slaId: string;
     private slaService: any;
-    private isEditing: boolean;
-    private isCreating: boolean;
     private accessControlService: any;
     private policyInputFormService: any;
     allowEdit: boolean;
@@ -39,6 +52,9 @@ export class SlaDetailsComponent implements OnInit {
     private loadingFeed = false;
     private loadingSla = false;
     private deletingSla = false;
+    private mode: FormMode;
+    editMode = FormMode.ModeEdit;
+    newMode = FormMode.ModeNew;
 
     constructor(private $$angularInjector: Injector, private state: StateService, private feedLoadingService: FeedLoadingService,
                 private loadingService: TdLoadingService, private snackBar: MatSnackBar, private dialogService: TdDialogService,
@@ -64,12 +80,12 @@ export class SlaDetailsComponent implements OnInit {
     ngOnInit() {
         this.slaId = this.stateParams ? this.stateParams.slaId : undefined;
         if (this.slaId) {
-            this.isEditing = true;
-            this.isCreating = false;
             this.loadSla(this.slaId);
+            this.mode = FormMode.ModeEdit;
         } else {
-            this.isEditing = false;
-            this.isCreating = true;
+            this.mode = FormMode.ModeNew;
+            this.sla = new Sla();
+            this.applyEditPermissionsToSLA(this.sla);
         }
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.loadFeed(this.feedId);
@@ -100,14 +116,14 @@ export class SlaDetailsComponent implements OnInit {
             this.applyEditPermissionsToSLA(this.sla);
             _.each(this.sla.rules, (rule: any) => {
                 rule.editable = this.sla.canEdit;
-                rule.mode = 'EDIT';
+                rule.mode = FormMode.ModeEdit;
                 rule.groups = this.policyInputFormService.groupProperties(rule);
                 this.policyInputFormService.updatePropertyIndex(rule);
             });
 
             _.each(this.sla.actionConfigurations, (rule: any) => {
                 rule.editable = this.sla.canEdit;
-                rule.mode = 'EDIT';
+                rule.mode = FormMode.ModeEdit;
                 rule.groups = this.policyInputFormService.groupProperties(rule);
                 this.policyInputFormService.updatePropertyIndex(rule);
                 //validate the rules
@@ -127,7 +143,7 @@ export class SlaDetailsComponent implements OnInit {
 
     }
 
-    private applyEditPermissionsToSLA(sla: any) {
+    private applyEditPermissionsToSLA(sla: Sla) {
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         this.accessControlService.getUserAllowedActions().then((response: any) => {
             if (entityAccessControlled) {
@@ -150,12 +166,12 @@ export class SlaDetailsComponent implements OnInit {
         this.slaService.saveFeedSla(this.feedId, this.sla).then((response: any) => {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
-            this.snackBar.open('Saved SLA', 'OK', { duration: 5000 });
+            this.snackBar.open('Saved SLA', 'OK', { duration: 3000 });
             this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
         }, function () {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
-            this.snackBar.open('Failed to save SLA', 'OK', { duration: 5000 });
+            this.snackBar.open('Failed to save SLA', 'OK', { duration: 3000 });
         });
     }
 
@@ -171,7 +187,7 @@ export class SlaDetailsComponent implements OnInit {
             title: 'Confirm',
             cancelButton: 'Cancel',
             acceptButton: 'Delete',
-            width: '500px',
+            width: '300px',
         }).afterClosed().subscribe((accept: boolean) => {
             if (accept) {
                 this.doDeleteSla();

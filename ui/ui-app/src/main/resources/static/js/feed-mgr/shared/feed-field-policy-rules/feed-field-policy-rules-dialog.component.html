@@ -69,7 +69,7 @@
                 <mat-hint *ngIf="selectedRuleTypeName">{{editRule.description}}</mat-hint>
             </mat-form-field>
 
-             <policy-input-form #policyInputForm [parentFormGroup]="policyForm" [(rule)]="editRule" [mode]="editMode" [feed]="data.feed" (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
+             <policy-input-form #policyInputForm [parentFormGroup]="policyForm" [(rule)]="editRule" [feed]="data.feed" (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
 
             <div fxLayoutAlign="start stretch" fxFlex >
                 <button mat-raised-button  (click)="cancelEdit()">{{viewText.cancelText}}</button>

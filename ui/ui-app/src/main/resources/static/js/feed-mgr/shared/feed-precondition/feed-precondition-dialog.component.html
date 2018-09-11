@@ -12,7 +12,7 @@
   </div>
 
   <policy-input-form *ngIf="editPrecondition !== null" [parentFormGroup]="preconditionForm"
-                     [(rule)]="editPrecondition" [mode]="editMode" [feed]="feed"
+                     [(rule)]="editPrecondition" [feed]="feed"
                      (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
 </mat-dialog-content>
 <mat-dialog-actions>

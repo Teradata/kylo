@@ -10,10 +10,11 @@ export class Sla {
     name: string;
     description: string;
     feedNames: string;
-    rules: Array<any>;
-    canEdit: boolean;
-    actionConfigurations: Array<any>;
-    actionErrors: Array<any>;
+    rules: Array<any> = [];
+    canEdit: boolean = false;
+    actionConfigurations: Array<any> = [];
+    actionErrors: Array<any> = [];
+    editable: boolean = false;
 }
 
 

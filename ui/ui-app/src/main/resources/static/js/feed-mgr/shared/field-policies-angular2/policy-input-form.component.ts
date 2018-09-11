@@ -65,9 +65,6 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
     @Input()
     feed?: string;
 
-    @Input()
-    mode: 'NEW' | 'EDIT';
-
     @Output()
     onPropertyChange: EventEmitter<FieldPolicyProperty> = new EventEmitter<FieldPolicyProperty>();
 

@@ -5,16 +5,7 @@ import {Feed} from '../../../../../model/feed/feed.model';
 import * as _ from 'underscore';
 import {PolicyInputFormService} from '../../../../../shared/field-policies-angular2/policy-input-form.service';
 import * as angular from 'angular';
-
-
-export class RuleType {
-    name: string;
-    mode: 'NEW';
-
-    constructor() {
-        this.name = '';
-    }
-}
+import {FormMode, RuleType} from './sla-details.componment';
 
 
 @Component({
@@ -27,6 +18,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
     @Input('formGroup') slaForm: FormGroup;
     @Input('sla') editSla: Sla;
     @Input('feed') feedModel: Feed;
+    @Input('mode') mode: FormMode;
 
     /**
      * The Default Condition to be applied to the new Rule
@@ -63,8 +55,8 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * The Form for validation
      * @type {{}}
      */
-    slaName = new FormControl({});
-    slaDescription = new FormControl({});
+    slaName: FormControl;
+    slaDescription: FormControl;
 
     private slaService: any;
     private stateService: any;
@@ -75,15 +67,28 @@ export class SlaFormComponent implements OnInit, OnChanges {
     private slaActionOptions: any;
     private showActionOptions: boolean;
     isDebug = false;
-    mode: string;
+    newMode = FormMode.ModeNew;
 
 
     constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService) {
         this.slaService = $$angularInjector.get("SlaService");
         this.stateService = $$angularInjector.get("StateService");
+        this.slaName = new FormControl('', Validators.required);
+        this.slaName.valueChanges.subscribe(value => {
+            this.editSla.name = value;
+            this.userSuppliedName = true;
+        });
+        this.slaDescription = new FormControl('', Validators.required);
+        this.slaDescription.valueChanges.subscribe(value => {
+            this.editSla.description = value;
+            this.userSuppliedDescription = true;
+        });
     }
 
     ngOnInit(): void {
+        this.slaForm.addControl('name', this.slaName);
+        this.slaForm.addControl('description', this.slaDescription);
+
         /**
          * Load up the Metric Options for defining SLAs
          */
@@ -130,13 +135,8 @@ export class SlaFormComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (this.editSla) {
-            this.slaName = new FormControl(this.editSla.name, Validators.required);
-            this.slaDescription = new FormControl(this.editSla.description, Validators.required);
-            this.slaForm.addControl('slaName', this.slaName);
-            this.slaForm.addControl('slaDescription', this.slaDescription);
-            this.mode = 'EDIT';
-        } else {
-            this.mode = 'NEW';
+            this.slaName.setValue(this.editSla.name);
+            this.slaDescription.setValue(this.editSla.description);
         }
     }
 
@@ -146,11 +146,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
 
     addNewCondition() {
         this.ruleType = new FormControl(this.EMPTY_RULE_TYPE);
-        //if editing one already validate, complete it and then add the new one
-        if (!this.slaForm.invalid) {
-            //this will display the drop down to select the correct new rule/metric to assign to this SLA
-            this.addingSlaCondition = true;
-        }
+        this.addingSlaCondition = true;
     }
 
     private validateForm2() {
@@ -172,7 +168,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
         if (this.slaAction.value != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             const newRule = angular.copy(this.slaAction.value);
-            newRule.mode = 'NEW';
+            newRule.mode = FormMode.ModeNew;
             //update property index
             this.policyInputFormService.updatePropertyIndex(newRule);
 
@@ -187,7 +183,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
         if (this.ruleType.value != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             const newRule = angular.copy(this.ruleType.value);
-            newRule.mode = 'NEW';
+            newRule.mode = FormMode.ModeNew;
             //update property index
             this.policyInputFormService.updatePropertyIndex(newRule);
 
@@ -197,11 +193,11 @@ export class SlaFormComponent implements OnInit, OnChanges {
             this.addingSlaCondition = false;
             this.ruleType.setValue(this.EMPTY_RULE_TYPE);
 
-            if ((this.userSuppliedName == false || (this.editSla.name == '' || this.editSla.name == null))) {
-                this.editSla.name = this.deriveSlaName();
+            if ((this.userSuppliedName == false || (this.slaName.value == '' || this.slaName.value == null))) {
+                this.slaName.setValue(this.deriveSlaName());
             }
-            if ((this.editSla.description == '' || this.editSla.description == null)) {
-                this.editSla.description = this.deriveDescription();
+            if ((this.userSuppliedDescription == false || (this.slaDescription.value == '' || this.slaDescription.value == null))) {
+                this.slaDescription.setValue(this.deriveDescription());
             }
         }
     }
@@ -233,14 +229,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
             desc += " for " + feedNamesString;
         }
         return desc;
-    }
-
-    onNameChange(): void {
-        this.userSuppliedName = true;
-    }
-
-    onDescriptionChange(): void {
-        this.userSuppliedDescription = true;
     }
 
     onDeleteSlaMetric(index: number) {

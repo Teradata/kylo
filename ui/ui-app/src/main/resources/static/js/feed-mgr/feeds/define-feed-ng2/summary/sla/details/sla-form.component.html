@@ -1,8 +1,8 @@
 <div *ngIf="editSla != null" [formGroup]="slaForm">
 
-  <div fxLayout="row" fxLayoutAlign="start start" [style.margin-top.px]="-50">
+  <div fxLayout="row" fxLayoutAlign="start start">
     <div fxFlex></div>
-    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != 'NEW'">{{'views.service-level-agreement-form.SlaAssessments' | translate}}</button>
+    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != newMode" [style.margin-top.px]="-50">{{'views.service-level-agreement-form.SlaAssessments' | translate}}</button>
   </div>
 
   <div class="section">
@@ -24,13 +24,13 @@
           </div>
         </div>
       </div>
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [mode]="mode" [index]="idx" [feed]="feedModel"
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [index]="idx" [feed]="feedModel"
                          (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
 
     <div *ngIf="addingSlaCondition == false" fxLayout="row" class="layout-margin-top-7 layout-padding-top-20 layout-padding-bottom-15">
-      <button mat-button mat-raised-button [disabled]="slaForm.invalid" (click)="addNewCondition()">Add Condition</button>
+      <button mat-button mat-raised-button (click)="addNewCondition()">Add Condition</button>
       <span fxFlex></span>
     </div>
 
@@ -89,7 +89,7 @@
         </div>
       </div>
 
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [mode]="'EDIT'" [index]="idx" [feed]="feedModel"
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [index]="idx" [feed]="feedModel"
                          (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
@@ -108,7 +108,7 @@
     </div>
 
     <div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">
-      <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0 || slaForm.invalid">
+      <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0">
         {{"views.service-level-agreement-form.AddAction" | translate}}
       </button>
       <span fxFlex></span>
@@ -121,12 +121,12 @@
     <div fxLayout="column" class="layout-padding-top">
       <span class="md-subhead">Description</span>
       <mat-form-field>
-        <input matInput name="slaName" type="text" formControlName="slaName" placeholder="SLA name" (change)="onNameChange()"/>
+        <input matInput name="slaName" type="text" formControlName="name" placeholder="SLA name"/>
         <mat-error *ngIf="slaName.invalid && slaName.errors.required">Required</mat-error>
       </mat-form-field>
 
       <mat-form-field>
-        <input matInput name="slaDescription" type="text" formControlName="slaDescription" placeholder="SLA Description" (change)="onDescriptionChange()"/>
+        <input matInput name="slaDescription" type="text" formControlName="description" placeholder="SLA Description"/>
         <mat-error *ngIf="slaDescription.invalid && slaDescription.errors.required">Required</mat-error>
       </mat-form-field>
     </div>
@@ -135,10 +135,13 @@
 
   <div *ngIf="isDebug" class="layout-padding-top-20 hint">
     <div>
-      Form Value: {{ slaForm.value | json }}
+      Form Status: {{ slaForm.status }}
     </div>
     <div>
-      Form Status: {{ slaForm.status }}
+      <pre>Form Value: {{ slaForm.value | json }}</pre>
+    </div>
+    <div>
+      <pre>SLA: {{ editSla | json }}</pre>
     </div>
   </div>
 
