@@ -6,6 +6,7 @@ import {SectionHeader} from "./model/SectionHeader";
 import {FormControlValidation} from "../../../common/utils/form-control-validation";
 import {StaticText} from "./model/StaticText";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
+import {Icon} from './model/Icon';
 
 @Component({
     selector: 'dynamic-form-field',
@@ -22,8 +23,8 @@ export class DynamicFormFieldComponent {
     }
 
     get isValid() {
-        if(this.field.controlType == SectionHeader.CONTROL_TYPE || this.field.controlType == StaticText.CONTROL_TYPE) {
-        return true;
+        if(this.field.controlType == SectionHeader.CONTROL_TYPE || this.field.controlType == StaticText.CONTROL_TYPE || this.field.controlType == Icon.CONTROL_TYPE) {
+            return true;
         }
         else {
             return this.form && this.form.controls && this.form.controls[this.field.key] && this.form.controls[this.field.key].valid;

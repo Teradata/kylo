@@ -389,7 +389,7 @@
     "views.feed-service-level-agreements.ASLA": "Add SLA",
 
     "views.service-level-agreement-form.BtL": "Back to List",
-    "views.service-level-agreement-form.SA": "Sla Assessments",
+    "views.service-level-agreement-form.SlaAssessments": "SLA Assessments",
     "views.service-level-agreement-form.Name": "Name",
     "views.service-level-agreement-form.Req": "This field is required.",
     "views.service-level-agreement-form.Description": "Description",
@@ -398,15 +398,15 @@
     "views.service-level-agreement-form.OR": "OR",
     "views.service-level-agreement-form.AC": "Add Condition",
     "views.service-level-agreement-form.Condition": "Condition",
-    "views.service-level-agreement-form.SNC": "Select New Condition",
-    "views.service-level-agreement-form.SLAA": "Actions",
-    "views.service-level-agreement-form.ASLAvwgaA": "All SLA violations will generate an Alert.",
+    "views.service-level-agreement-form.SelectNewCondition": "Select New Condition",
+    "views.service-level-agreement-form.SlaActions": "Actions",
+    "views.service-level-agreement-form.WillGenerateAlert": "All SLA violations will generate an Alert.",
     "views.service-level-agreement-form.AddAction": "Click the 'Add Action' button to add additional actions when an SLA is violated",
     "views.service-level-agreement-form.Errors-found": "Errors found. Saving this SLA will result in loss of configuration data.",
     "views.service-level-agreement-form.Warning": "Warning",
     "views.service-level-agreement-form.Warning2": "Configuration Error!  You can still assign this action, but it may not fire due to configuration issues.",
-    "views.service-level-agreement-form.SNA": "Select New Action",
-    "views.service-level-agreement-form.AA": "Add Action",
+    "views.service-level-agreement-form.SelectNewAction": "Select New Action",
+    "views.service-level-agreement-form.AddAction": "Add Action",
     "views.service-level-agreement-form.Delete": "Delete",
     "views.service-level-agreement-form.Cancel": "Cancel",
     "views.service-level-agreement-form.SSLA": "Save SLA",
@@ -923,6 +923,23 @@
             "Valid": "Valid",
             "Invalid": "Invalid",
             "Missing": "Missing"
+        }
+    },
+
+
+    "Sla": {
+        "ServiceLevelAgreements": "Service Level Agreements",
+        "RelatedFeeds": "Related Feeds",
+        "AddSla": "Add SLA",
+        "NoData": "No Service Level Agreements",
+        "Loading": "Loading...",
+
+        "Details": {
+            "EditSla": "Edit SLA",
+            "CreateNewSla": "Create New SLA",
+            "Save": "Save",
+            "Cancel": "Cancel",
+            "Delete": "Delete"
         }
     }
 

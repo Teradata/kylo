@@ -1,0 +1,149 @@
+<div *ngIf="editSla != null" [formGroup]="slaForm">
+
+  <div fxLayout="row" fxLayoutAlign="start start">
+    <div fxFlex></div>
+    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != newMode" [style.margin-top.px]="-50">{{'views.service-level-agreement-form.SlaAssessments' | translate}}</button>
+  </div>
+
+  <div class="section">
+
+    <span class="md-subhead" translate>views.service-level-agreement-form.Condition</span>
+
+    <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
+      <div fxLayout="row">
+        <div class="layout-padding-right md-body-2">{{(idx+1)}}.</div>
+        <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
+          <span>{{rule.name}}</span>
+          <span class="hint">{{rule.description}}</span>
+        </div>
+        <div>
+          <div>
+            <button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaMetric(idx)" *ngIf="rule.editable">
+              <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [index]="idx"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
+      <mat-divider *ngIf="!isLast"></mat-divider>
+    </div>
+
+    <div *ngIf="addingSlaCondition == false" fxLayout="row" class="layout-margin-top-7 layout-padding-top-20 layout-padding-bottom-15">
+      <button mat-button mat-raised-button (click)="addNewCondition()">Add Condition</button>
+      <span fxFlex></span>
+    </div>
+
+    <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="layout-padding-top-20 layout-padding-bottom-15 layout-padding-left-right">
+      <mat-form-field>
+        <mat-select placeholder="{{'views.service-level-agreement-form.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
+          <mat-option *ngFor="let opt of options;" [value]="opt">
+            {{opt.name}}
+          </mat-option>
+        </mat-select>
+        <span fxFlex></span>
+      </mat-form-field>
+      <button mat-button (click)="addingSlaCondition = false" *ngIf="editSla != null && editSla.rules.length >0">
+        <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="section">
+
+    <span class="md-subhead" translate>views.service-level-agreement-form.SlaActions</span>
+
+    <div *ngIf="editSla.actionConfigurations.length == 0" fxLayout="column" class="layout-padding">
+      <span translate>views.service-level-agreement-form.WillGenerateAlert</span>
+    </div>
+
+    <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column" class="layout-padding-left-right">
+      <div class="error md-title bold layout-padding-left" fxLayout="row">
+        <div class="layout-padding-left">
+          <mat-icon [style.font-size.px]="20" class="error">warning</mat-icon>
+        </div>
+        <span translate>views.service-level-agreement-form.Errors-found</span>
+      </div>
+
+      <div *ngFor="let error of editSla.actionErrors" fxLayout="column" class="layout-padding-left">
+        <span class="error">{{error}}</span>
+      </div>
+    </div>
+
+    <div *ngFor="let rule of editSla.actionConfigurations; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
+      <div fxLayout="row" class="">
+        <div class="layout-padding-right md-body-2">{{(idx+1)}}.</div>
+
+        <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
+          <span>{{rule.name}}</span>
+          <span class="hint">{{rule.description}}</span>
+          <span *ngIf="rule.validConfiguration == false" class="error"><strong translate>views.service-level-agreement-form.Warning</strong>  {{"views.service-level-agreement-form.Warning2" | translate}} {{rule.validationMessage}}</span>
+        </div>
+        <div>
+          <div>
+            <button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaAction(idx)" *ngIf="rule.editable">
+              <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [index]="idx"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
+      <mat-divider *ngIf="!isLast"></mat-divider>
+    </div>
+
+    <div *ngIf="addingSlaAction" class="layout-padding-left-right" fxLayout="row">
+      <mat-form-field class="md-block layout-padding-top-bottom condensed">
+        <mat-select placeholder="{{'views.service-level-agreement-form.SelectNewAction' | translate}}" [formControl]="slaAction" (change)="onAddSlaActionChange()">
+          <mat-option *ngFor="let opt of slaActionOptions;" [value]="opt">
+            {{opt.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-button class="icon-btn md-icon-button auto-height" (click)="addingSlaAction = false">
+        <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">
+      <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0">
+        {{"views.service-level-agreement-form.AddAction" | translate}}
+      </button>
+      <span fxFlex></span>
+    </div>
+  </div>
+
+
+  <div class="section">
+
+    <div fxLayout="column" class="layout-padding-top">
+      <span class="md-subhead">Description</span>
+      <mat-form-field>
+        <input matInput name="slaName" type="text" formControlName="name" placeholder="SLA name"/>
+        <mat-error *ngIf="slaName.invalid && slaName.errors.required">Required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <input matInput name="slaDescription" type="text" formControlName="description" placeholder="SLA Description"/>
+        <mat-error *ngIf="slaDescription.invalid && slaDescription.errors.required">Required</mat-error>
+      </mat-form-field>
+    </div>
+
+  </div>
+
+  <div *ngIf="isDebug" class="layout-padding-top-20 hint">
+    <div>
+      Form Status: {{ slaForm.status }}
+    </div>
+    <div>
+      <pre>Form Value: {{ slaForm.value | json }}</pre>
+    </div>
+    <div>
+      <pre>SLA: {{ editSla | json }}</pre>
+    </div>
+  </div>
+
+
+</div>

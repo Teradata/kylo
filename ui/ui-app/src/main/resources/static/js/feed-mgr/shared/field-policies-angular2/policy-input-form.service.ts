@@ -164,7 +164,7 @@ export class PolicyInputFormService {
             return !valid;
         });
 
-        validForm = !validForm && theForm.$valid;
+        validForm = !validForm && !theForm.invalid;
 
         if (!validForm && showErrorDialog) {
             this._dialogService.openAlert({

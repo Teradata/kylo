@@ -1,7 +1,7 @@
 import {FormFieldBuilder} from "./form-field-builder";
 import {
     CheckboxFieldBuilder, ChipsFieldBuilder,
-    FieldConfigBuilder,
+    FieldConfigBuilder, IconFieldBuilder,
     InputTextFieldBuilder,
     RadioButtonFieldBuilder,
     SectionHeaderBuilder,
@@ -18,10 +18,16 @@ export class DynamicFormFieldGroupBuilder {
     formFieldBuilder:FormFieldBuilder;
 
     layout:Layout;
+    layoutAlign:string;
 
     constructor(public dynamicFormBuilder:DynamicFormBuilder,layout:Layout = Layout.COLUMN){
         this.formFieldBuilder = new FormFieldBuilder();
         this.layout = layout;
+    }
+
+    setLayoutAlign(layoutAlign: string): DynamicFormFieldGroupBuilder {
+        this.layoutAlign = layoutAlign;
+        return this;
     }
 
     field(fieldBuilder:FieldConfigBuilder<any>){
@@ -73,8 +79,15 @@ export class DynamicFormFieldGroupBuilder {
         return builder;
     }
 
+    icon(){
+        let builder = new IconFieldBuilder(this);
+        this.formFieldBuilder.field(builder);
+        return builder;
+    }
+
     build():FieldGroup{
-        let group = new FieldGroup(this.layout)
+        let group = new FieldGroup(this.layout);
+        group.setLayoutAlign(this.layoutAlign);
         group.fields = this.formFieldBuilder.build();
         return group;
     }
