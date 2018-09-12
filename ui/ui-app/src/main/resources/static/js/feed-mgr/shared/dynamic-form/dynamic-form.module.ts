@@ -27,6 +27,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
 import {ExampleFormsComponent} from "./example/example-forms.component";
 import {SimpleDynamicFormComponent} from "./simple-dynamic-form/simple-dynamic-form.component";
 import {SimpleDynamicFormDialogComponent} from "./simple-dynamic-form/simple-dynamic-form-dialog.component";
+import {CronExpressionPreviewModule} from '../cron-expression-preview/cron-expression-preview2.module';
 
 @NgModule({
     declarations: [
@@ -74,7 +75,8 @@ import {SimpleDynamicFormDialogComponent} from "./simple-dynamic-form/simple-dyn
         CovalentChipsModule,
         ReactiveFormsModule,
         TranslateModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        CronExpressionPreviewModule,
     ],
     providers: [
         DynamicFormService

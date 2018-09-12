@@ -46,7 +46,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * @type {null}
      */
     ruleType: FormControl;
-    slaConditions: FormGroup = new FormGroup([], nonEmptyValidator());
+    slaConditions: FormGroup = new FormGroup({}, nonEmptyValidator());
     slaAction: FormControl = new FormControl(this.EMPTY_RULE_TYPE);
 
     /**

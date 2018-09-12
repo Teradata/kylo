@@ -209,6 +209,9 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
             else if (type == "regex") {
                 type = "text";
             }
+            else if (type == "cron") {
+                type = "cron";
+            }
             else if (type == "emails") {
                 type = "email";
                 builder.addValidator(MultipleEmail)

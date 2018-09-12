@@ -99,6 +99,7 @@ import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-s
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
+import {CronExpressionPreviewModule} from '../../shared/cron-expression-preview/cron-expression-preview2.module';
 import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
 import {EntityAccessControlComponent} from "../../shared/entity-access-control/entity-access-control.component";
@@ -178,6 +179,7 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         CovalentNotificationsModule,
         CovalentVirtualScrollModule,
         CovalentDynamicFormsModule,
+        CronExpressionPreviewModule,
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
