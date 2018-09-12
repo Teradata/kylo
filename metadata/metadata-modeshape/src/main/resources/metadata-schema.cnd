@@ -285,6 +285,7 @@
 
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
+    - tba:deployedVersion (WEAKREFERENCE)
     + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
     + tba:data (tba:feedData) = tba:feedData autocreated mandatory
 

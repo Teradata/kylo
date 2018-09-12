@@ -26,40 +26,19 @@ package com.thinkbiganalytics.metadata.api.versioning;
 import java.io.Serializable;
 import java.util.Optional;
 
-import org.joda.time.DateTime;
-
 /**
- * Generic definition of info about an entity version.
+ * Interface to be extended by providers that provide versionable entities, and whose
+ * entities can transition into a "draft" version and later versioned again.
  */
-public interface EntityVersion<I, E> {
-    
-    /**
-     * @return the ID of this version
-     */
-    ID getId();
+public interface EntityDraftVersionProvider<T, PK extends Serializable> extends EntityVersionProvider<T, PK> {
 
-    /**
-     * @return the name of this version
-     */
-    String getName();
+    boolean hasDraftVersion(PK entityId);
     
-    /**
-     * @return the date the version was created
-     */
-    DateTime getCreatedDate();
+    Optional<EntityVersion<PK, T>> findDraftVersion(PK entityId, boolean includeContent);
     
-    /**
-     * @return the ID of the entity
-     */
-    I getEntityId();
+    EntityVersion<PK, T> createDraftVersion(PK entityId, boolean includeContent);
     
-    /**
-     * @return the optional state of the entity for this version
-     */
-    Optional<E> getEntity();
+    EntityVersion<PK, T> createDraftVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
-
-    interface ID extends Serializable {
-
-    }
+    EntityVersion<PK, T> createVersion(PK entityId, boolean includeContent);
 }

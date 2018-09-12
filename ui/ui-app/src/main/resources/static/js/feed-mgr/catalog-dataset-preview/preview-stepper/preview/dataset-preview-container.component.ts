@@ -11,17 +11,8 @@ export class DatasetPreviewContainerComponent implements OnInit{
     @Input()
     previews:PreviewDataSet[] = [];
 
-    @Input()
-    expandToFirst?:boolean = false;
+    selectedDataSet:PreviewDataSet;
 
-    @Input()
-    accordionShowFullScreen?:boolean = false;
-
-    step = 0;
-
-    firstDataSet:PreviewDataSet;
-
-    singleDataSet:boolean;
 
     hasPreviews:boolean;
 
@@ -38,14 +29,6 @@ export class DatasetPreviewContainerComponent implements OnInit{
         }
 
         if(this.previews != undefined && this.previews.length > 0) {
-            if(this.expandToFirst){
-                this.step = 0;
-            }
-            else {
-                this.step = -1;
-            }
-            this.singleDataSet = this.previews.length == 1 ? true : false;
-            this.firstDataSet = this.previews[0];
             this.hasPreviews = true;
         }
         else {
@@ -54,31 +37,6 @@ export class DatasetPreviewContainerComponent implements OnInit{
 
     }
 
-
-
-
-
-    /**
-     * set the current cart item
-     * @param {number} index
-     */
-    setStep(index: number) {
-        this.step = index;
-    }
-
-    /**
-     * navigate to the next cart item
-     */
-    nextStep() {
-        this.step++;
-    }
-
-    /**
-     * navigate to the prev cart item
-     */
-    prevStep() {
-        this.step--;
-    }
 
 
     /**

@@ -194,7 +194,11 @@ public class FeedManagerMetadataService implements MetadataService {
         return feed;
 
     }
-
+    
+    @Override
+    public FeedMetadata saveDraftFeed(FeedMetadata feedMetadata) {
+        return feedProvider.saveDraftFeed(feedMetadata);
+    }
 
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
@@ -538,6 +542,36 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
+    }
+
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getLatestFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getDraftFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getDeployedFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return feedProvider.deployFeedVersion(feedId, versionId, includeContent);
+    }
+
+    @Override
+    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
+        return feedProvider.createVersionFromDraftFeed(feedId, includeContent);
+    }
+
+    @Override
+    public EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return feedProvider.createDraftFromFeedVersion(feedId, versionId, includeContent);
     }
 
     @Nonnull

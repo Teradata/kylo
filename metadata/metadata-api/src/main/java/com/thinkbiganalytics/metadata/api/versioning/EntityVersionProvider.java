@@ -28,15 +28,31 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
+ * Interface to be extended by providers that provide versionable entities.
  */
 public interface EntityVersionProvider<T, PK extends Serializable> {
     
     EntityVersion.ID resolveVersion(Serializable ser);
 
-    Optional<List<EntityVersion<T>>> findVersions(PK id, boolean includedContent);
+    /**
+     * @param id
+     * @param includedContent
+     * @return
+     */
+    Optional<List<EntityVersion<PK, T>>> findVersions(PK id, boolean includeContent);
     
-    Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includedContent);
+    /**
+     * @param entityId
+     * @param versionId
+     * @param includedContent
+     * @return
+     */
+    Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
-    Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includedContent);
+    /**
+     * @param entityId
+     * @param includedContent
+     * @return
+     */
+    Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent);
 }

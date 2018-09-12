@@ -16,6 +16,10 @@ export namespace DatabaseObjectType {
     export function isTableType(type:DatabaseObjectType){
         return type == DatabaseObjectType.Table || type == DatabaseObjectType.ManagedTable || type == DatabaseObjectType.ExternalTable || type == DatabaseObjectType.View
     }
+
+    export function isSchema(type:DatabaseObjectType){
+        return type == DatabaseObjectType.Schema || type == DatabaseObjectType.Catalog;
+    }
     export function parse(type: string): DatabaseObjectType {
         return DatabaseObjectType[type];
     }
@@ -32,6 +36,7 @@ export class DatabaseObject extends BrowserObject {
         this.type = type;
         this.catalog = catalog;
         this.schema = schema;
+
     }
 
     canBeParent(): boolean {
@@ -49,12 +54,34 @@ export class DatabaseObject extends BrowserObject {
         path.push("name=" + this.name);
         return path.join("&");
     }
+
+
+    getIcon(column: BrowserColumn): string {
+        if(column.icon && column.name ==DatabaseObjectDescriptor.TYPE_COLUMN ) {
+            if(DatabaseObjectType.isTableType(this.type)){
+                return "table_grid";
+            }
+            else if(DatabaseObjectType.isSchema(this.type)){
+               return "fa-database"
+            }
+            else {
+                return "fa-columns"
+            }
+
+        }
+        else {
+            return super.getIcon(column)
+        }
+    }
 }
 
 export class DatabaseObjectDescriptor {
 
+    static NAME_COLUMN ="name";
+    static TYPE_COLUMN ="type";
+
     static COLUMNS: BrowserColumn[] = [
-        {name: "type", label: "Type", sortable: false, filter: false, width: 100},
-        {name: "name", label: "Name", sortable: true, filter: true},
+        {name: DatabaseObjectDescriptor.TYPE_COLUMN, label: "Type", sortable: false, filter: false, width: 100, icon:true,tooltip:"true"},
+        {name: DatabaseObjectDescriptor.NAME_COLUMN, label: "Name", sortable: true, filter: true},
     ];
 }

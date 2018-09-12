@@ -64,7 +64,7 @@ public class InitialFeedVersionUpgradeAction implements UpgradeState {
 
         feedProvider.getFeeds().forEach(feed -> {
             JcrFeed jcrFeed = (JcrFeed) feed;
-            Optional<List<EntityVersion<Feed>>> versions = feedProvider.findVersions(jcrFeed.getId(), false);
+            Optional<List<EntityVersion<Feed.ID, Feed>>> versions = feedProvider.findVersions(jcrFeed.getId(), false);
             
             versions.ifPresent(list -> {
                 if (list.size() <= 1) {

@@ -56,9 +56,9 @@ public class JcrVersionUtil {
     
     private static final Logger log = LoggerFactory.getLogger(JcrVersionUtil.class);
     
-    public static Node createAutoCheckoutProxy(Node node) {
+    public static Node createAutoCheckoutProxy(Node node, boolean autoCheckin) {
         Class<?>[] types = new Class<?>[] { Node.class };
-        InvocationHandler handler = new VersionableNodeInvocationHandler(node, types);
+        InvocationHandler handler = new VersionableNodeInvocationHandler(node, types, autoCheckin);
         return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), types, handler);
     }
 
@@ -84,13 +84,43 @@ public class JcrVersionUtil {
         return versionMgr;
     }
     
+    public static boolean isCheckedOut(Node node) {
+        try {
+            return node.isCheckedOut();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check if the node is checked out", e);
+        }
+    }
+    
     /**
-     * Ensures that the given node, or a versionable ancestor, is checked out.
+     * Ensures that the given node, or a versionable ancestor, is checked out with auto-checkin set.
      * Passing a node that is not in a versionable hierarch has no effect.
      * @param n the node to whose hierarchy is to be checked out
      */
     public static void ensureCheckoutNode(Node node) {
-        getVersionableAncestor(node).ifPresent(a -> JcrMetadataAccess.ensureCheckoutNode(a));
+        ensureCheckoutNode(node, true);
+    }
+    
+    /**
+     * Ensures that the given node, or a versionable ancestor, is checked out, and
+     * specify whether the node should be auto-checked in on commit.
+     * Passing a node that is not in a versionable hierarch has no effect.
+     * @param n the node to whose hierarchy is to be checked out
+     */
+    public static void ensureCheckoutNode(Node node, boolean autoCheckin) {
+        getVersionableAncestor(node).ifPresent(a -> JcrMetadataAccess.ensureCheckoutNode(a, autoCheckin));
+    }
+    
+    /**
+     * Ensures that the given node, or a versionable ancestor, is set to automatically
+     * be checked in on commit.  If the node's hierarchy is is not versionable or has not
+     * been checked then no action is taken.
+     * @param node the node to whose hierarchy was checked out
+     */
+    public static void ensureAutoCheckin(Node node) {
+        getVersionableAncestor(node)
+            .filter(versionable -> ! JcrMetadataAccess.hasCheckedOutNode(versionable))
+            .ifPresent(versionable -> JcrMetadataAccess.ensureCheckoutNode(versionable, true));
     }
     
     /**
@@ -147,8 +177,12 @@ public class JcrVersionUtil {
      *
      * @param node node to check-out
      */
-    public static void checkout(Node node) throws RepositoryException {
-        getVersionManager(node.getSession()).checkout(node.getPath());
+    public static void checkout(Node node) {
+        try {
+            getVersionManager(node.getSession()).checkout(node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
+        }
     }
 
 
@@ -158,7 +192,7 @@ public class JcrVersionUtil {
      * @param node node to checkin
      * @return the created version
      */
-    public static Version checkin(Node node) throws RepositoryException {
+    public static Version checkin(Node node) {
         try {
             // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
             // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
@@ -172,6 +206,8 @@ public class JcrVersionUtil {
         } catch (ItemNotFoundException e) {
             // Ignore if the node being checked in represents a deleted node.
             return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
         }
     }
 
@@ -204,6 +240,14 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Could not perform check-out", e);
         }
     }
+    
+    public static void restore(Version version) {
+        try {
+            getVersionManager(version.getSession()).restore(version, true);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to restore version: " + version, e);
+        }
+    }
 
 
     public static Version getBaseVersion(Node node) {
@@ -230,7 +274,6 @@ public class JcrVersionUtil {
             List<Version> versions = new ArrayList<>();
             VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
             VersionIterator itr = history.getAllVersions();
-            String id = history.getVersionableIdentifier();
 
             while (itr.hasNext()) {
                 Version version = itr.nextVersion();
@@ -241,6 +284,22 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Unable to find Version History for " + nodeName, e);
         }
 
+    }
+    
+    public static Version getLatestVersion(Node node) {
+        String nodeName = null;
+        if (! isVersionable(node)) {
+            return null;
+        }
+        try {
+            nodeName = node.getName();
+            VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
+            
+            return history.getRootVersion();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to find Version History for " + nodeName, e);
+        }
+        
     }
 
     public static <T extends JcrObject> T getVersionedNode(Version version, Class<T> type, Object[] constructorArgs) {

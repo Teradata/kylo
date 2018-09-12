@@ -1,5 +1,4 @@
 <ng-container *ngIf="datasource">
-<h4 >{{datasource.title}}</h4>
     <div fxLayout="column" >
       <form [formGroup]="formGroup" fxFlex="1 1 auto" fxLayout="column">
         <catalog-file-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" *ngIf="datasourceSref=='.browse'">
@@ -29,12 +28,14 @@
             [numeric]="column.numeric" [width]="column.width" (click)="parent.rowClick(file)">
 
                 <div class="cell-content">
-                        <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
+                        <span class="cell-icon" *ngIf="column.icon" [matTooltip]="column.tooltip ? file[column.name] : ''" ><ng-md-icon color="accent" [icon]="file.getIcon(column)"></ng-md-icon></span>
                         <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
                 </div>
         </td>
+  <!--
   <td td-data-table-cell>
     <button mat-icon-button  color="accent" *ngIf="!parent.isSelectChildDisabled(file.name)" (click)="preview(file)"><mat-icon>find_in_page</mat-icon> </button>
   </td>
+  -->
 </ng-template>
 

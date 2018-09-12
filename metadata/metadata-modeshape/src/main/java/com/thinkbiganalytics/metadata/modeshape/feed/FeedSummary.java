@@ -43,7 +43,7 @@ public class FeedSummary extends JcrObject implements SystemEntityMixin, Auditab
     private JcrFeed feed;
 
     public FeedSummary(Node node, JcrFeed feed) {
-        super(JcrVersionUtil.createAutoCheckoutProxy(node));
+        super(JcrVersionUtil.createAutoCheckoutProxy(node, false));
         this.feed = feed;
     }
 

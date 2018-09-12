@@ -47,8 +47,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -62,6 +65,7 @@ import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
+import javax.jcr.version.Version;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
@@ -96,9 +100,9 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     };
 
-    private static final ThreadLocal<Set<Node>> checkedOutNodes = new ThreadLocal<Set<Node>>() {
-        protected java.util.Set<Node> initialValue() {
-            return new HashSet<>();
+    private static final ThreadLocal<Map<Node, Boolean>> checkedOutNodes = new ThreadLocal<Map<Node, Boolean>>() {
+        protected Map<Node, Boolean> initialValue() {
+            return new HashMap<>();
         }
     };
 
@@ -138,30 +142,52 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     }
 
-
+    public static boolean hasCheckedOutNode(Node node) {
+        return checkedOutNodes.get().containsKey(node);
+    }
+    
     /**
-     * Return all nodes that have been checked out
+     * Return all nodes that have been checked out and should be automatically checked-in.
      */
-    public static Set<Node> getCheckedoutNodes() {
-        return checkedOutNodes.get();
+    public static Set<Node> getAutoCheckinNodes() {
+        return checkedOutNodes.get().entrySet().stream()
+                .filter(Entry::getValue)
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
 
     /**
      * Check out the node and add it to the Set of checked out nodes
+     * @return true if the node had not previously been checked out.
      */
-    public static void ensureCheckoutNode(Node n) {
+    public static boolean ensureCheckoutNode(Node n, boolean autoCheckin) {
         try {
-            if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
+            if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().containsKey(n))) {
                 log.debug("***** checking out node: {}", n);
             }
             
             // Checking out an already checked-out node is a no-op.
             JcrVersionUtil.checkout(n);
-            checkedOutNodes.get().add(n);
+            return checkedOutNodes.get().put(n, autoCheckin) == null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to checkout node: " + n, e);
         }
+    }
+
+    /**
+     * Forces creation of a new version of the node and removing if from the set of checked
+     * out nodes.  Node that this does not prevent the node from being checked out again
+     * within this session if it is subsequently modified and is setup for auto-checkout.
+     * @param node the node to version
+     * @return the new version
+     */
+    public static Version versionNode(Node node) {
+        // Ensure it is checked out first.
+        ensureCheckoutNode(node, true);
+        Version version = JcrVersionUtil.checkin(node);
+        checkedOutNodes.get().remove(node);
+        return version;
     }
 
     /**
@@ -170,7 +196,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      * @see com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil#setProperty(Node, String, Object) which checks out the node before applying the update
      */
     public static void checkinNodes() throws RepositoryException {
-        Set<Node> checkedOutNodes = getCheckedoutNodes();
+        Set<Node> checkedOutNodes = getAutoCheckinNodes();
         for (Iterator<Node> itr = checkedOutNodes.iterator(); itr.hasNext(); ) {
             Node element = itr.next();
             JcrVersionUtil.checkin(element);
@@ -480,5 +506,6 @@ public class JcrMetadataAccess implements MetadataAccess {
             this.retriesRemaining--;
         }
     }
+
 
 }

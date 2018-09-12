@@ -200,8 +200,6 @@ public class FeedModelTransform {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             domain.setState(state);
 
-            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode());
-            domain.setMode(mode);
             //reassign the domain data back to the ui model....
             feedMetadata.setFeedId(domainId.toString());
             feedMetadata.setState(state.name());
@@ -226,10 +224,6 @@ public class FeedModelTransform {
             domain.setState(state);
         }
 
-        if (StringUtils.isNotBlank(feedMetadata.getMode())) {
-            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode().toUpperCase());
-            domain.setMode(mode);
-        }
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
@@ -309,18 +303,20 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed>> versions, @Nonnull final Feed.ID feedId) {
-        FeedVersions feedVersions = new FeedVersions(feedId.toString());
+    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId) {
+        String deployed = deployedId != null ? deployedId.toString() : null;
+        FeedVersions feedVersions = new FeedVersions(feedId.toString(), deployed);
         versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer)));
         return feedVersions;
     }
     
     @Nonnull
-    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed> domainVer) {
+    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed.ID, Feed> domainVer) {
         com.thinkbiganalytics.feedmgr.rest.model.EntityVersion version
             = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(), 
                                                                          domainVer.getName(), 
-                                                                         domainVer.getCreatedDate().toDate());
+                                                                         domainVer.getCreatedDate().toDate(),
+                                                                         domainVer.getEntityId().toString());
         domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed)));
         return version;
     }
@@ -411,8 +407,6 @@ public class FeedModelTransform {
             feed.setCategory(categoryModelTransform.domainToFeedCategorySimple(category));
         }
         feed.setState(domain.getState() != null ? domain.getState().name() : null);
-        feed.setMode(domain.getMode() != null ? domain.getMode().name() : null);
-        feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
 
         // Set user-defined properties
         final Set<UserFieldDescriptor> userFields;
@@ -559,7 +553,7 @@ public class FeedModelTransform {
             // This is because we will be providing the "to" entity content so the patch should show the original "from" values.
             JsonNode diff = JsonDiff.asJson(toNode, fromNode);
             com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
-                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate());
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate(), fromVer.getEntityId());
             
             return new EntityVersionDifference(fromNoContent, toVer, diff);
         } catch (IOException e) {
