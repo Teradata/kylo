@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
@@ -21,6 +21,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     restUrlService: any;
     utils: any;
+    StateService: any;
 
     @Input() stateParams: any;
 
@@ -58,6 +59,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
         this.utils = $$angularInjector.get("Utils");
         this.restUrlService = $$angularInjector.get("RestUrlService");
+        this.StateService = $$angularInjector.get("StateService");
 
         this.options = {
             height: '100%',
@@ -110,11 +112,18 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         return FeedLineageComponment.LINK_NAME;
     }
 
+    navigateToFeed() {
+        if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
+            this.StateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
+        }
+    }
+
     /**
      * Called when a Node is selected
      * @param item
      */
     changed = false;
+    panelOpenState = false;
 
     onSelect(item: any) {
         if (item && item.nodes && item.nodes[0]) {
@@ -137,7 +146,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         else {
             this.selectedNode = this.SELECT_A_NODE;
         }
-    };
+    }
 
     stabilizationIterationsDone() {
         // this.options.physics.enabled = false;
@@ -169,6 +178,10 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
             this.redraw();
             this.loading = false;
         });
+    }
+
+    onDrop(data: any) {
+        console.log('dropped', data);
     }
 
     networkView(value: string) {

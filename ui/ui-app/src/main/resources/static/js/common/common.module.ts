@@ -23,6 +23,8 @@ import {FormsModule} from "@angular/forms";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {LocalStorageService} from "./local-storage/local-storage.service";
 import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.component";
+import {BaseDraggableDirective} from "./draggable-ng2/base-draggable.directive";
+import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
 
 @NgModule({
     declarations: [
@@ -31,7 +33,9 @@ import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.compo
         KyloIconComponent,
         NotificationMenuComponent,
         FileUploadComponent,
-        KyloVisNetworkComponent
+        KyloVisNetworkComponent,
+        BaseDraggableDirective,
+        KyloDraggableDirective
     ],
     entryComponents: [
         AddButtonComponent,
@@ -61,11 +65,10 @@ import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.compo
         BrowserHeight,
         KyloIconComponent,
         FileUploadComponent,
-        KyloVisNetworkComponent
+        KyloVisNetworkComponent,
+        BaseDraggableDirective,
+        KyloDraggableDirective
     ]
 })
 export class KyloCommonModule {
-    // constructor(injector: Injector){
-    //     let vis = require('vis');
-    // }
 }

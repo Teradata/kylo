@@ -40,7 +40,6 @@ import {NvD3Module} from 'ng2-nvd3';
 
 import {KyloCommonModule} from "../../../common/common.module";
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
-import {PreviewSchemaModule} from "../../catalog/datasource/preview-schema/preview-schema.module";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
 import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
@@ -100,6 +99,7 @@ import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-s
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
+import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
 @NgModule({
     declarations: [
@@ -143,10 +143,11 @@ import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog
         SlaRowComponent,
         SlaDetailsComponent,
         SlaFormComponent,
+        SelectNetworkNodeComponent,
         FeedInfoTagsComponent,
         FeedNifiPropertiesComponent,
         FeedInfoTagsComponent,
-        FeedDetailsProcessorFieldComponent
+        FeedDetailsProcessorFieldComponent,
     ],
     entryComponents:[
         NewFeedDialogComponent

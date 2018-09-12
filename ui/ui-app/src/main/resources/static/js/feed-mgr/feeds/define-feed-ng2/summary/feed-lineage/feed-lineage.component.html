@@ -1,27 +1,23 @@
 <mat-card class="feed-card">
-  <mat-card-header>
-    <mat-card-title>Feed Lineage view</mat-card-title>
-    <mat-card-subtitle>lineage desc</mat-card-subtitle>
-    <span fxFlex></span>
-  </mat-card-header>
   <mat-card-content>
     <div fxLayout="row" fxLayoutAlign="end center" class="layout-padding-top layout-padding-left">
-        <mat-button-toggle-group aria-label="Graph mode"
-                                 #group="matButtonToggleGroup"
-                                  (change)="networkView(group.value)"
-                                  [value]="graphMode">
-          <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
-          <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
-        </mat-button-toggle-group>
+      <mat-button-toggle-group aria-label="Graph mode"
+                               #group="matButtonToggleGroup"
+                               (change)="networkView(group.value)"
+                               [value]="graphMode">
+        <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
+        <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
     <div>
+      <select-network-node [selectedNode]="selectedNode"></select-network-node>
       <kylo-vis-network *ngIf="!loading"
                         [data]="data"
                         [options]="options"
                         (onLoad)="onLoad($event)"
                         (onSelect)="onSelect($event)"
                         (stabilized)="stabilized($event)"
-                        [heightPx]="600"></kylo-vis-network>
+                        [heightPx]="550"></kylo-vis-network>
     </div>
   </mat-card-content>
 </mat-card>
