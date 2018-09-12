@@ -57,11 +57,6 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
-    /**
-     * COMPLETE or DRAFT
-     */
-    private String DEFAULT_MODE = "COMPLETE";
-
     boolean isNew = false;
     private String id;
 
@@ -121,17 +116,12 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     private String state;
 
-    private String mode;
-
     private String nifiProcessGroupId;
 
     //indicates this feed has inputPorts and is a "reusable template" for other feeds
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
     private FeedProcessingOptions options;
-    //deprecated
-    private Long version;
-    private String versionName;
     private RegisteredTemplate registeredTemplate;
 
     // private NifiProcessGroup nifiProcessGroup;
@@ -343,31 +333,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.active = active;
     }
 
-    public Long getVersion() {
-        if (StringUtils.isNotBlank(versionName)) {
-            try {
-                return new Long(versionName);
-            } catch (NumberFormatException e) {
-                return 0L;
-            }
-        } else {
-            return version;
-        }
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
-        setVersionName(version + "");
-    }
-
-    public String getVersionName() {
-        return this.versionName;
-    }
-
-    public void setVersionName(String versionName) {
-        this.versionName = versionName;
-    }
-
     @JsonIgnore
     public String getProfileTableName() {
         return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_profile" : null;
@@ -468,17 +433,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.state = state;
     }
 
-    public String getMode() {
-        if(mode == null){
-            mode = DEFAULT_MODE;
-        }
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
     /**
      * Gets the user-defined business metadata for this feed.
      *
@@ -533,10 +487,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public boolean isNew() {
         return isNew;
-    }
-
-    public boolean isDraft() {
-        return this.mode != null && MODE.DRAFT.name().equalsIgnoreCase(this.mode);
     }
 
     public void setIsNew(boolean isNew) {
@@ -649,8 +599,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             usedByFeeds,
             userDatasources,
             userProperties,
-            version,
-            versionName,
             allowIndexing,
             historyReindexingStatus,
             uiState
@@ -703,8 +651,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             Objects.equals(usedByFeeds, other.usedByFeeds) &&
             Objects.equals(userDatasources, other.userDatasources) &&
             Objects.equals(userProperties, other.userProperties) &&
-            Objects.equals(version, other.version) &&
-            Objects.equals(versionName, other.versionName) &&
             Objects.equals(allowIndexing, other.allowIndexing) &&
             Objects.equals(historyReindexingStatus, other.historyReindexingStatus) &&
             Objects.equals(uiState,other.uiState);

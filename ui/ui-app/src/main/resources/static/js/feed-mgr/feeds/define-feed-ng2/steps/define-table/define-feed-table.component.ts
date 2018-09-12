@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, ViewChild, ViewContainerRef} from '@angular/core';
+import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../../common/CommonTypes";
@@ -63,6 +63,8 @@ class TablePermissions {
 })
 export class DefineFeedTableComponent extends AbstractFeedStepComponent implements OnInit,OnDestroy{
 
+    @ViewChild("toolbarActionTemplate")
+    private toolbarActionTemplate:TemplateRef<any>;
     /**
      * flag to check if the form is valid or not
      */
@@ -149,7 +151,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
-
+    getToolbarTemplateRef(): TemplateRef<any> {
+        return this.toolbarActionTemplate;
+    }
 
     constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
                 dialogService: TdDialogService,

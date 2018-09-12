@@ -354,3 +354,11 @@
 
 </feed-step-custom-content>
 </define-feed-step-card>
+
+
+<ng-template #toolbarActionTemplate>
+  <div *ngIf="!feed.readonly">
+    <button mat-button (click)="onCancelEdit()">Cancel</button>
+    <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+  </div>
+</ng-template>

@@ -319,8 +319,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         return idOption.map(domainFeedId -> {
             return metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID deployedId = feedProvider.findDeployedVersion(domainFeedId, false)
+                                .map(ver -> ver.getId())
+                                .orElse(null);
+                
                 return feedProvider.findVersions(domainFeedId, includeContent)
-                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId))
+                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId, deployedId))
                     .orElse((FeedVersions) null);
             }, MetadataAccess.SERVICE);
         }).orElse((FeedVersions) null);
@@ -338,6 +342,94 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .map(version -> feedModelTransform.domainToFeedVersion(version));
             }, MetadataAccess.SERVICE);
         });
+    }
+    
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+
+        return idOption.flatMap(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                return feedProvider.findLatestVersion(domainFeedId, includeContent)
+                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+            }, MetadataAccess.SERVICE);
+        });
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+
+        return idOption.flatMap(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                return feedProvider.findDraftVersion(domainFeedId, includeContent)
+                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+            }, MetadataAccess.SERVICE);
+        });
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.flatMap(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                return feedProvider.findDeployedVersion(domainFeedId, includeContent)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+            }, MetadataAccess.SERVICE);
+        });
+    }
+
+    @Override
+    public EntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkChangeVersions(feedIdStr);
+
+        return idOption
+            .map(domainFeedId -> {
+                return metadataAccess.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
+                    
+                    return this.feedProvider.findVersion(domainFeedId, versionId, true)
+                        .map(ver -> {
+                            Feed feed = ver.getEntity().get();
+                            FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
+                            
+                            deployFeed(feedMetadata, ver);
+                            return feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
+                        })
+                        .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+                }, MetadataAccess.SERVICE);
+            })
+            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
+    }
+
+    @Override
+    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
+
+        return idOption
+            .map(domainFeedId -> {
+                return metadataAccess.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, false);
+                    return this.feedModelTransform.domainToFeedVersion(newVer);
+                }, MetadataAccess.SERVICE);
+            })
+            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
+    }
+    
+    @Override
+    public EntityVersion createDraftFromFeedVersion(String feedId, String versionIdStr, boolean includeContent) {
+        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
+
+        return idOption
+            .map(domainFeedId -> {
+                return metadataAccess.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
+                  
+                    return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(domainFeedId, versionId, includeContent));
+                }, MetadataAccess.SERVICE);
+            })
+            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
     }
 
     @Override
@@ -373,6 +465,24 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             if (feed != null) {
                 if (accessController.isEntityAccessControlled()) {
                     feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
+                }
+                return Optional.of(domainFeedId);
+            } else {
+                return Optional.empty();
+            }
+        });
+    }
+    
+    private Optional<Feed.ID> checkChangeVersions(String feedId) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+            
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            Feed feed = feedProvider.getFeed(domainFeedId);
+            
+            if (feed != null) {
+                if (accessController.isEntityAccessControlled()) {
+                    feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
                 }
                 return Optional.of(domainFeedId);
             } else {
@@ -480,7 +590,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      *
      * @param feedMetadata the feed metadata
      * @return an object indicating if the feed creation was successful or not
+     * @deprecated being replaced with saveDraftFeed() and deployFeedVersion() as separate actions.
      */
+    @Deprecated
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
 
         //functional access to be able to create a feed
@@ -490,7 +602,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
 
         if (feedMetadata.getState() == null ) {
-            if (feedMetadata.isActive() && !feedMetadata.isDraft()) {
+            if (feedMetadata.isActive()) {
                 feedMetadata.setState(Feed.State.ENABLED.name());
             } else {
                 feedMetadata.setState(Feed.State.DISABLED.name());
@@ -513,7 +625,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         NifiFeed feed = createAndSaveFeed(feedMetadata);
         //register the audit for the update event
-        if (feed.isSuccess() && !feedMetadata.isNew() && !feedMetadata.isDraft()) {
+        if (feed.isSuccess() && !feedMetadata.isNew()) {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             Feed.ID id = feedProvider.resolveId(feedMetadata.getId());
             notifyFeedStateChange(feedMetadata, id, state, MetadataChange.ChangeType.UPDATE);
@@ -527,6 +639,126 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#saveDraftFeed(com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata)
+     */
+    @Override
+    public FeedMetadata saveDraftFeed(FeedMetadata feedMetadata) {
+        if (StringUtils.isBlank(feedMetadata.getId())) {
+            feedMetadata.setIsNew(true);
+        }
+
+        return metadataAccess.commit(() -> {
+            // Check services access to be able to create a feed
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+            
+            //Read all the feeds as System Service account to ensure the feed name is unique
+            if (feedMetadata.isNew()) {
+                Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+                if (existing != null) {
+                    throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
+                }
+                
+                // Ensure the template exists
+                FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
+                if (domainTemplate == null) {
+                    throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
+                }
+                
+                // Ensure the category exists
+                Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
+                if (domainCategory == null) {
+                    //throw exception
+                    throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
+                }
+                
+                if (accessController.isEntityAccessControlled()) {
+                    //ensure the user has rights to create feeds under the category
+                    domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+                }
+            } else if (accessController.isEntityAccessControlled()) {
+                //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
+                Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());
+                Feed domainFeed = feedProvider.findById(domainId);
+                
+                if (domainFeed != null) {
+                    domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+                } else {
+                    throw new NotFoundException("Feed not found for id " + feedMetadata.getId());
+                }
+            }
+            
+            //replace expressions with values
+            if (feedMetadata.getTable() != null) {
+                feedMetadata.getTable().updateMetadataFieldValues();
+            }
+    
+            // Draft feeds are always disabled
+            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+            
+            // Encrypt the metadata properties
+            feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
+            
+            // Store ref to the originalFeedProperties before resolving and merging with the template
+            List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
+        
+            // Get all the properties for the metadata
+            RegisteredTemplate registeredTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder()
+                                                                                                         .templateId(feedMetadata.getTemplateId())
+                                                                                                         .templateName(feedMetadata.getTemplateName())
+                                                                                                         .isFeedEdit(true)
+                                                                                                         .includeSensitiveProperties(true)
+                                                                                                         .build());
+        
+            // Copy the registered template properties it a new list so it doest get updated
+            List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
+
+            // Update the template properties with the feedMetadata properties
+            NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties, 
+                                                                feedMetadata.getProperties(), 
+                                                                NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
+
+            registeredTemplate.setProperties(templateProperties);
+            feedMetadata.setProperties(registeredTemplate.getProperties());
+            feedMetadata.setRegisteredTemplate(registeredTemplate);
+        
+            // Skip any properties that the user supplied which are not ${ values
+            List<NifiProperty> propertiesToSkip = originalFeedProperties.stream()
+                    .filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
+                    .collect(Collectors.toList());
+            List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream()
+                    .filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
+                    .collect(Collectors.toList());
+            
+            if (templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()) {
+                propertiesToSkip.addAll(templatePropertiesToSkip);
+            }
+
+            // Resolve any ${metadata.} properties
+            propertyExpressionResolver.resolvePropertyExpressions(feedMetadata, propertiesToSkip);
+            
+            // Set the original feedProperties back to the feed
+            feedMetadata.setProperties(originalFeedProperties);
+
+            // Save to the metadata store.
+            saveFeedMetadata(feedMetadata);
+            
+            // Register the audit for the update event
+            if (! feedMetadata.isNew()) {
+                Feed.State state = Feed.State.valueOf(feedMetadata.getState());
+                Feed.ID id = feedProvider.resolveId(feedMetadata.getId());
+                notifyFeedStateChange(feedMetadata, id, state, MetadataChange.ChangeType.UPDATE);
+            } else if (feedMetadata.isNew()) {
+                //update the access control
+                feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feedMetadata.getId(), roleMembershipChange));
+            }
+    
+            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
+            return feedMetadata;
+        });
+//    }, MetadataAccess.SERVICE);
+// TODO Are the serviced credentials required here?
+    }
 
     /**
      * Create/Update a Feed in NiFi. Save the metadata to Kylo meta store.
@@ -539,7 +771,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
-
+    
             //If the feed is New we need to ensure the user has CREATE_FEED entity permission
             if (accessController.isEntityAccessControlled()) {
                 metadataAccess.read(() -> {
@@ -550,7 +782,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                         throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
                     }
                     domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
-
+    
                     //ensure the user has rights to create feeds using the template
                     FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
                     if (domainTemplate == null) {
@@ -559,7 +791,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
-
+    
         } else if (accessController.isEntityAccessControlled()) {
             metadataAccess.read(() -> {
                 //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
@@ -572,52 +804,47 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 }
             });
         }
-
+    
         //replace expressions with values
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
         }
-
+    
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
-
+    
         FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
         try {
             state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
         } catch (Exception e) {
             //if the string isnt valid, disregard as it will end up disabling the feed.
         }
-
-
+    
+    
         boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
-
-        boolean isDraft = feedMetadata.isDraft();
-
-
-        if (!isDraft) {
-
+    
         //store ref to the originalFeedProperties before resolving and merging with the template
         List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
-
+    
         //get all the properties for the metadata
         RegisteredTemplate
             registeredTemplate =
             registeredTemplateService.findRegisteredTemplate(
                 new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
                     .build());
-
+    
         //copy the registered template properties it a new list so it doest get updated
         List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
                 .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
-
+    
         registeredTemplate.setProperties(templateProperties);
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
-
+    
         //skip any properties that the user supplied which are not ${ values
         List<NifiProperty>
             propertiesToSkip =
@@ -631,13 +858,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata, propertiesToSkip);
-
+    
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
-
-
-
-
+    
+    
+    
+    
         // flag to indicate to enable the feed later
         //if this is the first time for this feed and it is set to be enabled, mark it to be enabled after we commit to the JCR store
         boolean enableLater = false;
@@ -646,102 +873,123 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             enabled = false;
             feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
         }
-
+    
+        CreateFeedBuilder
+            feedBuilder =
             CreateFeedBuilder
-                feedBuilder =
-                CreateFeedBuilder
-                    .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
-                             templateConnectionUtil)
-                    .enabled(enabled)
-                    .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
-                    .autoAlign(nifiAutoFeedsAlignAfterSave)
-                    .withNiFiTemplateCache(niFiTemplateCache);
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
+                         templateConnectionUtil)
+                .enabled(enabled)
+                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
+                .autoAlign(nifiAutoFeedsAlignAfterSave)
+                .withNiFiTemplateCache(niFiTemplateCache);
 
-            if (registeredTemplate.isReusableTemplate()) {
-                feedBuilder.setReusableTemplate(true);
-                feedMetadata.setIsReusableFeed(true);
-            } else {
-                feedBuilder.inputProcessorType(feedMetadata.getInputProcessorType())
-                    .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
-                if (registeredTemplate.usesReusableTemplate()) {
-                    for (ReusableTemplateConnectionInfo connection : registeredTemplate.getReusableTemplateConnections()) {
-                        feedBuilder.addInputOutputPort(new InputOutputPort(connection.getReusableTemplateInputPortName(), connection.getFeedOutputPortName()));
-                    }
-                }
-            }
-            stopwatch.stop();
-            log.debug("Time to prepare data for saving feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
-            stopwatch.start();
-            NifiProcessGroup
-                entity = feedBuilder.build();
-
-            stopwatch.stop();
-            log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
-            feed = new NifiFeed(feedMetadata, entity);
-            //set the original feedProperties back to the feed
-            feedMetadata.setProperties(originalFeedProperties);
-            //encrypt the metadata properties
-            feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
-
-            if (entity.isSuccess()) {
-                feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
-
-                try {
-                    stopwatch.start();
-                    saveFeed(feedMetadata);
-                    //tell NiFi if this is a streaming feed or not
-                    if (feedMetadata.getRegisteredTemplate().isStream()) {
-                        streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
-                    }
-                    feed.setEnableAfterSave(enableLater);
-                    feed.setSuccess(true);
-                    stopwatch.stop();
-                    log.debug("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-                    stopwatch.start();
-                    feedBuilder.checkAndRemoveVersionedProcessGroup();
-
-                } catch (Exception e) {
-                    feed.setSuccess(false);
-                    feed.addErrorMessage(e);
-                }
-
-            } else {
-                feed.setSuccess(false);
-            }
-            if (!feed.isSuccess()) {
-                if (!entity.isRolledBack()) {
-                    try {
-                        feedBuilder.rollback();
-                    } catch (FeedRollbackException rollbackException) {
-                        log.error("Error rolling back feed {}. {} ", feedMetadata.getCategoryAndFeedName(), rollbackException.getMessage());
-                        feed.addErrorMessage("Error occurred in rolling back the Feed.");
-                    }
-                    entity.setRolledBack(true);
-                }
-            }
+        if (registeredTemplate.isReusableTemplate()) {
+            feedBuilder.setReusableTemplate(true);
+            feedMetadata.setIsReusableFeed(true);
         } else {
-
-            //encrypt the metadata properties
-            feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
-            //if Draft its always disabled
-            saveFeed(feedMetadata);
-
-            feed = new NifiFeed(feedMetadata, null);
-            feed.setSuccess(true);
-            feed.setEnableAfterSave(false);
-            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
-
+            feedBuilder.inputProcessorType(feedMetadata.getInputProcessorType())
+                .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
+            if (registeredTemplate.usesReusableTemplate()) {
+                for (ReusableTemplateConnectionInfo connection : registeredTemplate.getReusableTemplateConnections()) {
+                    feedBuilder.addInputOutputPort(new InputOutputPort(connection.getReusableTemplateInputPortName(), connection.getFeedOutputPortName()));
+                }
+            }
         }
+        stopwatch.stop();
+        log.debug("Time to prepare data for saving feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        stopwatch.start();
+        NifiProcessGroup
+            entity = feedBuilder.build();
 
+        stopwatch.stop();
+        log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        feed = new NifiFeed(feedMetadata, entity);
+        //set the original feedProperties back to the feed
+        feedMetadata.setProperties(originalFeedProperties);
+        //encrypt the metadata properties
+        feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
+
+        if (entity.isSuccess()) {
+            feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
+
+            try {
+                stopwatch.start();
+                saveFeed(feedMetadata);
+                //tell NiFi if this is a streaming feed or not
+                if (feedMetadata.getRegisteredTemplate().isStream()) {
+                    streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
+                }
+                feed.setEnableAfterSave(enableLater);
+                feed.setSuccess(true);
+                stopwatch.stop();
+                log.debug("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
+                stopwatch.start();
+                feedBuilder.checkAndRemoveVersionedProcessGroup();
+
+            } catch (Exception e) {
+                feed.setSuccess(false);
+                feed.addErrorMessage(e);
+            }
+
+        } else {
+            feed.setSuccess(false);
+        }
+        if (!feed.isSuccess()) {
+            if (!entity.isRolledBack()) {
+                try {
+                    feedBuilder.rollback();
+                } catch (FeedRollbackException rollbackException) {
+                    log.error("Error rolling back feed {}. {} ", feedMetadata.getCategoryAndFeedName(), rollbackException.getMessage());
+                    feed.addErrorMessage("Error occurred in rolling back the Feed.");
+                }
+                entity.setRolledBack(true);
+            }
+        }
+    
         return feed;
     }
 
+    
+    private void saveFeedMetadata(final FeedMetadata feed) {
+        
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        
+        //if this is the first time saving this feed create a new one
+        Feed domainFeed = feedModelTransform.feedToDomain(feed);
+        
+        stopwatch.stop();
+        log.debug("Time to transform the feed to a domain object for saving: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        
+        // Build preconditions
+        stopwatch.start();
+        assignFeedDependencies(feed, domainFeed);
+        stopwatch.stop();
+        log.debug("Time to assignFeedDependencies: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        
+        //Assign the datasources
+        stopwatch.start();
+        assignFeedDatasources(feed, domainFeed);
+        stopwatch.stop();
+        log.debug("Time to assignFeedDatasources: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        
+        // Update Kylo metastore
+        stopwatch.start();
+        domainFeed = feedProvider.update(domainFeed);
+        
+        stopwatch.stop();
+        log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+    }
 
     private void saveFeed(final FeedMetadata feed) {
-
+    
         metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
@@ -751,17 +999,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
             }
-
+    
             //if this is the first time saving this feed create a new one
             Feed domainFeed = feedModelTransform.feedToDomain(feed);
-
+            Feed.ID domainId = domainFeed.getId();
+    
             if (domainFeed.getState() == null) {
                 domainFeed.setState(Feed.State.ENABLED);
             }
             stopwatch.stop();
             log.debug("Time to transform the feed to a domain object for saving: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
-
+    
             //initially save the feed
             if (feed.isNew()) {
                 stopwatch.start();
@@ -770,86 +1019,274 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 log.debug("Time to save the New feed: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 stopwatch.reset();
             }
-
-            final String domainId = domainFeed.getId().toString();
+    
             final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getSystemName(), domainFeed.getName());
-
+    
             // Build preconditions
             stopwatch.start();
             assignFeedDependencies(feed, domainFeed);
             stopwatch.stop();
             log.debug("Time to assignFeedDependencies: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
-
+    
             //Assign the datasources
             stopwatch.start();
             assignFeedDatasources(feed, domainFeed);
             stopwatch.stop();
             log.debug("Time to assignFeedDatasources: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
+    
+            stopwatch.start();
+            boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
+            Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
 
-            //if not draft make updates to external systems
-            if(!feed.isDraft()) {
+                //sync the feed information to ops manager
+                metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId.toString()), feedName, isStream, timeBetweenBatchJobs));
+
+            stopwatch.stop();
+            log.debug("Time to sync feed data with Operations Manager: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.reset();
+
+            // Update hadoop security group polices if the groups changed
+            if (!feed.isNew()  && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
                 stopwatch.start();
-                boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
-                Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
-
-                    //sync the feed information to ops manager
-                    metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName, isStream, timeBetweenBatchJobs));
-
+                List<? extends HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
+                List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
+                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
                 stopwatch.stop();
-                log.debug("Time to sync feed data with Operations Manager: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                log.debug("Time to update hadoop security groups: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 stopwatch.reset();
-
-                // Update hadoop security group polices if the groups changed
-                if (!feed.isNew()  && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
-                    stopwatch.start();
-                    List<? extends HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
-                    List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
-                    hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
-                    stopwatch.stop();
-                    log.debug("Time to update hadoop security groups: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-                }
-
-                // Update Hive metastore
-                if (hiveTargetSyncColumnDescriptions) {
-                    stopwatch.start();
-                    final boolean hasHiveDestination = domainFeed.getDestinations().stream()
-                        .map(FeedDestination::getDatasource)
-                        .filter(DerivedDatasource.class::isInstance)
-                        .map(DerivedDatasource.class::cast)
-                        .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
-                    if (hasHiveDestination) {
-                        try {
-                            feedHiveTableService.updateColumnDescriptions(feed);
-                        } catch (final DataAccessException e) {
-                            log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
-                        }
-                    }
-                    stopwatch.stop();
-                    log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-                }
             }
 
-
+            // Update Hive metastore
+            if (hiveTargetSyncColumnDescriptions) {
+                stopwatch.start();
+                final boolean hasHiveDestination = domainFeed.getDestinations().stream()
+                    .map(FeedDestination::getDatasource)
+                    .filter(DerivedDatasource.class::isInstance)
+                    .map(DerivedDatasource.class::cast)
+                    .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
+                if (hasHiveDestination) {
+                    try {
+                        feedHiveTableService.updateColumnDescriptions(feed);
+                    } catch (final DataAccessException e) {
+                        log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+                    }
+                }
+                stopwatch.stop();
+                log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
+            }
+    
+    
             // Update Kylo metastore
             stopwatch.start();
             domainFeed = feedProvider.update(domainFeed);
+            
+            // TODO TEMPORARY
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version = feedProvider.createVersion(domainId, false);
+            feedProvider.setDeployed(domainId, version.getId());
+            // TODO TEMPORARY
+            
             stopwatch.stop();
             log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
         }, (e) -> {
-            if (feed.isNew() && !feed.isDraft() && StringUtils.isNotBlank(feed.getId())) {
+            if (feed.isNew() && StringUtils.isNotBlank(feed.getId())) {
                 //Rollback ops Manager insert if it is newly created
                 metadataAccess.commit(() -> {
                     opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feed.getId()));
                 });
             }
         });
+    
+    
+    }
+    
+    private NifiFeed deployFeed(final FeedMetadata feedMetadata, com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        boolean enabled = false;
+        
+        if (feedMetadata.getState() == null) {
+            if (feedMetadata.isActive()) {
+                feedMetadata.setState(Feed.State.ENABLED.name());
+                enabled = true;
+            } else {
+                feedMetadata.setState(Feed.State.DISABLED.name());
+            }
+        }
+
+        //decrypt the metadata
+        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
+        
+        // Store ref to the originalFeedProperties before resolving and merging with the template
+        List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
+
+        // Get all the properties for the metadata
+        RegisteredTemplate registeredTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder()
+                                                                                                     .templateId(feedMetadata.getTemplateId())
+                                                                                                     .templateName(feedMetadata.getTemplateName())
+                                                                                                     .isFeedEdit(true)
+                                                                                                     .includeSensitiveProperties(true)
+                                                                                                     .build());
+
+        CreateFeedBuilder feedBuilder = CreateFeedBuilder
+                .newFeed(nifiRestClient, 
+                         nifiFlowCache, 
+                         feedMetadata, 
+                         registeredTemplate.getNifiTemplateId(), 
+                         propertyExpressionResolver, 
+                         propertyDescriptorTransform, 
+                         niFiObjectCache,
+                         templateConnectionUtil)
+                .enabled(enabled)
+                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
+                .autoAlign(nifiAutoFeedsAlignAfterSave)
+                .withNiFiTemplateCache(niFiTemplateCache);
+
+        if (registeredTemplate.isReusableTemplate()) {
+            feedBuilder.setReusableTemplate(true);
+            feedMetadata.setIsReusableFeed(true);
+        } else {
+            feedBuilder
+                .inputProcessorType(feedMetadata.getInputProcessorType())
+                .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
+            if (registeredTemplate.usesReusableTemplate()) {
+                for (ReusableTemplateConnectionInfo connection : registeredTemplate.getReusableTemplateConnections()) {
+                    feedBuilder.addInputOutputPort(new InputOutputPort(connection.getReusableTemplateInputPortName(), connection.getFeedOutputPortName()));
+                }
+            }
+        }
+        
+        stopwatch.stop();
+        log.debug("Time to prepare data for saving feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        stopwatch.start();
+        NifiProcessGroup entity = feedBuilder.build();
+
+        stopwatch.stop();
+        log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        NifiFeed feed = new NifiFeed(feedMetadata, entity);
+        
+        // Set the original feedProperties back to the feed
+        feedMetadata.setProperties(originalFeedProperties);
+        
+        // Encrypt the metadata properties
+        feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
+        
+        if (entity.isSuccess()) {
+            feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
+
+            try {
+                stopwatch.start();
+                saveDeployedFeed(feedMetadata, version);
+                //tell NiFi if this is a streaming feed or not
+                if (feedMetadata.getRegisteredTemplate().isStream()) {
+                    streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
+                }
+                feed.setSuccess(true);
+                stopwatch.stop();
+                log.debug("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
+                stopwatch.start();
+                feedBuilder.checkAndRemoveVersionedProcessGroup();
+
+            } catch (Exception e) {
+                feed.setSuccess(false);
+                feed.addErrorMessage(e);
+            }
+
+        } else {
+            feed.setSuccess(false);
+        }
+        if (!feed.isSuccess()) {
+            if (!entity.isRolledBack()) {
+                try {
+                    feedBuilder.rollback();
+                } catch (FeedRollbackException rollbackException) {
+                    log.error("Error rolling back feed {}. {} ", feedMetadata.getCategoryAndFeedName(), rollbackException.getMessage());
+                    feed.addErrorMessage("Error occurred in rolling back the Feed.");
+                }
+                entity.setRolledBack(true);
+            }
+        }
+    
+        return feed;
+    }
+    
+    private void saveDeployedFeed(final FeedMetadata feed, com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
+        
+        // Store the old security groups before saving because we need to compare afterward
+        Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
+        Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
+        previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+
+        //if this is the first time saving this feed create a new one
+        Feed domainFeed = version.getEntity().get();
+        Feed.ID domainId = domainFeed.getId();
+
+        if (domainFeed.getState() == null) {
+            domainFeed.setState(Feed.State.ENABLED);
+        }
+        stopwatch.stop();
+        log.debug("Time to transform the feed to a domain object for saving: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+
+        final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getSystemName(), domainFeed.getName());
+        
+        stopwatch.start();
+        boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
+        Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
+
+            //sync the feed information to ops manager
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId.toString()), feedName, isStream, timeBetweenBatchJobs));
+
+        stopwatch.stop();
+        log.debug("Time to sync feed data with Operations Manager: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+
+        // Update hadoop security group polices if the groups changed
+        if (! ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
+            stopwatch.start();
+            List<? extends HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
+            List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
+            hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
+            stopwatch.stop();
+            log.debug("Time to update hadoop security groups: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.reset();
+        }
+
+        // Update Hive metastore
+        if (hiveTargetSyncColumnDescriptions) {
+            stopwatch.start();
+            final boolean hasHiveDestination = domainFeed.getDestinations().stream()
+                .map(FeedDestination::getDatasource)
+                .filter(DerivedDatasource.class::isInstance)
+                .map(DerivedDatasource.class::cast)
+                .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
+            if (hasHiveDestination) {
+                try {
+                    feedHiveTableService.updateColumnDescriptions(feed);
+                } catch (final DataAccessException e) {
+                    log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+                }
+            }
+            stopwatch.stop();
+            log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.reset();
+        }
 
 
+        // Update Kylo metastore
+        stopwatch.start();
+        feedProvider.setDeployed(domainId, version.getId());
+        
+        stopwatch.stop();
+        log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
     }
 
     /**

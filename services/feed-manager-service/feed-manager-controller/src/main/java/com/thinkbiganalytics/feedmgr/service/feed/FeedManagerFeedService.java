@@ -113,6 +113,48 @@ public interface FeedManagerFeedService {
 
     /**
      * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param versionId
+     * @return
+     */
+    EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @return
+     */
+    EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent);
+
+    /**
+     * @param feedIdStr
+     * @param versionIdStr TODO
+     * @param includeContent
+     * @return
+     */
+    EntityVersion createDraftFromFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent);
+
+    /**
+     * @param feedId
      * @param versionId1
      * @param versionId2
      * @return
@@ -183,6 +225,12 @@ public interface FeedManagerFeedService {
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
+
+    /**
+     * @param feedMetadata
+     * @return
+     */
+    FeedMetadata saveDraftFeed(FeedMetadata feedMetadata);
 
     /**
      * Deletes the specified feed.

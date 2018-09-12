@@ -132,7 +132,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @SuppressWarnings("deprecation")
 class CustomApacheConnector implements Connector {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LivyRestClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomApacheConnector.class);
 
     private static final VersionInfo vi;
     private static final String release;

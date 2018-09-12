@@ -7,7 +7,7 @@ package com.thinkbiganalytics.metadata.api.versioning;
  * #%L
  * kylo-metadata-api
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,43 +23,19 @@ package com.thinkbiganalytics.metadata.api.versioning;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.Optional;
-
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.metadata.api.MetadataException;
 
 /**
- * Generic definition of info about an entity version.
+ *
  */
-public interface EntityVersion<I, E> {
-    
-    /**
-     * @return the ID of this version
-     */
-    ID getId();
+public class VersionAlreadyExistsException extends MetadataException {
+
+    private static final long serialVersionUID = 1L;
 
     /**
-     * @return the name of this version
+     * @param message
      */
-    String getName();
-    
-    /**
-     * @return the date the version was created
-     */
-    DateTime getCreatedDate();
-    
-    /**
-     * @return the ID of the entity
-     */
-    I getEntityId();
-    
-    /**
-     * @return the optional state of the entity for this version
-     */
-    Optional<E> getEntity();
-    
-
-    interface ID extends Serializable {
-
+    public VersionAlreadyExistsException(String message) {
+        super(message);
     }
 }

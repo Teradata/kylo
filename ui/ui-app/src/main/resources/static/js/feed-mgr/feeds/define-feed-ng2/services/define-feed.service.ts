@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Injectable, Injector} from "@angular/core";
-import {Feed, FeedTemplateType} from "../../../model/feed/feed.model";
+import {Feed, FeedMode, FeedTemplateType} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -8,7 +8,7 @@ import {Observable} from "rxjs/Observable";
 import {StateRegistry, StateService, Transition} from "@uirouter/angular";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
@@ -39,6 +39,7 @@ import {FeedStepBuilderUtil} from "./feed-step-builder-util";
 import {CloneUtil} from "../../../../common/utils/clone-util";
 import {timeout} from 'rxjs/operators/timeout';
 import {TimeoutError} from "rxjs/Rx";
+import {EntityVersion} from "../../../model/entity-version.model";
 
 
 export enum TableSchemaUpdateMode {
@@ -117,6 +118,8 @@ export class DefineFeedService {
 
     }
 
+
+
     /**
      * Load a feed based upon its UUID and return a copy to the subscribers
      *
@@ -130,8 +133,14 @@ export class DefineFeedService {
             let loadFeedSubject = new Subject<Feed>();
             let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
 
-            let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
-            observable.subscribe((feed) => {
+            //let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
+
+            let observable  = <Observable<EntityVersion>> this.http.get("proxy/v1/feedmgr/feeds/"+id+"/versions/latest");
+            observable.subscribe((entityVersion:EntityVersion) => {
+                console.log('LOADED FEED Version ',entityVersion)
+                let feed:Feed = <Feed>entityVersion.entity;
+                feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.COMPLETE;
+                feed.versionId = entityVersion.id;
 
                 this.selectionService.reset()
                 //convert it to our needed class
@@ -194,22 +203,23 @@ export class DefineFeedService {
     saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
 
         let valid = feed.validate(false);
-        if(feed.isDraft() || (!feed.isDraft() && valid)) {
-            return this._saveFeed(feed);
-        }
-        else {
+        //TODO handle validation prevent saving??
+        return this._saveFeed(feed);
+
+       // if(feed.isDraft() || (!feed.isDraft() && valid)) {
+        //    return this._saveFeed(feed);
+       // }
+      /**  else {
             //errors exist before we try to save
             //notify watchers that this step was saved
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            /**
-             * Allow other components to listen for changes to the currentStep
-             *
-             */
+            // Allow other components to listen for changes to the currentStep
             let  savedFeedSubject: Subject<SaveFeedResponse> = new Subject<SaveFeedResponse>();
             let  savedFeed$: Observable<SaveFeedResponse> = savedFeedSubject.asObservable();
             savedFeedSubject.next(response);
             return savedFeed$;
         }
+       */
     }
 
     deleteFeed():Observable<any> {
@@ -365,14 +375,23 @@ export class DefineFeedService {
         body.uiState[Feed.UI_STATE_STEPS_KEY] = JSON.stringify(steps);
         delete body.steps;
 
+        let url = "/proxy/v1/feedmgr/feeds/draft/entity";
 
-        let observable : Observable<Feed> = <Observable<Feed>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
+        if(!feed.isNew()){
+            url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft/entity";
+        }
+
+        let observable : Observable<Feed> = <Observable<Feed>> this.http.post(url,body,{ headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
 
         observable.subscribe((response: any)=> {
 
-            let updatedFeed = response.feedMetadata;
+            let updatedFeed = response;
+            //when a feed is initially created it will have the data in the "feedMetadata" property
+            if(response.feedMetadata){
+                updatedFeed = response.feedMetadata
+            }
             //turn the response back into our Feed object
             let savedFeed = new Feed(updatedFeed);
             savedFeed.steps = feed.steps;
@@ -413,6 +432,22 @@ export class DefineFeedService {
             this.savedFeedSubject.error(response);
         });
         return savedFeedObservable$
+    }
+
+    deployFeed(feed:Feed) {
+        feed.validate(false)
+        if(feed.isDraft() && feed.isValid && feed.isComplete()){
+            let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+            let params :HttpParams = new HttpParams();
+            params.set("action","VERSION,DEPLOY")
+
+             this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
+                this.openSnackBar("DEPLOYED VERSION "+version.id,5000)
+            });
+
+
+
+        }
     }
 
 

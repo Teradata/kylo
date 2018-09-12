@@ -264,15 +264,20 @@ public class DebugController {
                     if (item instanceof Property) {
                         Property property = (Property) item;
                         
-                        // No-op if value not supplied
-                        if (value != null) {
-                            property.setValue(value);
+                        if (value != null && "null".equals(value)) {
+                            property.setValue((Value) null); 
+                            pw.println(" - " + property.getName() + " deleted");
+                        } else {
+                            // No-op if value not supplied
+                            if (value != null) {
+                                property.setValue(value);
+                            }
+                            
+                            printItem(item, pw);
                         }
                     } else {
                         pw.println("Item at path is not a property: " + path.toString());
                     }
-                    
-                    printItem(item, pw);
                 } catch (PathNotFoundException e) {
                     try {
                         Item item = getItem(path.getParent().toString(), session);
