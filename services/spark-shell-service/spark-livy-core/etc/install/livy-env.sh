@@ -31,4 +31,6 @@
 # - LIVY_MAX_LOG_FILES Max number of log file to keep in the log directory. (Default: 5.)
 # - LIVY_NICENESS   Niceness of the Livy server process when running in the background. (Default: 0.)
 
+export SPARK_MAJOR_VERSION=1
 export SPARK_HOME=/usr/hdp/current/spark-client
+export SPARK_CONF_DIR=/etc/spark/conf

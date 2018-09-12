@@ -74,7 +74,7 @@ public class ProcessRunner {
 
         if (resultHandler.hasResult()) {
             if (resultHandler.getExitValue() == 0) {
-                logger.info("Script '{}' has returned successfully.", script);
+                logger.debug("Script '{}' has returned successfully.", script);
             } else {
                 logger.error("Script has returned with a non-zero exit value.", resultHandler.getException());
             } // end if
@@ -84,7 +84,7 @@ public class ProcessRunner {
             String out = outputStream.toString();
             outputFromLastCommand.set(out);
             if(StringUtils.isNotEmpty(out) ) {
-                logger.info("Script '{}' produced the following output stream:\n{}", script, out);
+                logger.debug("Script '{}' produced the following output stream:\n{}", script, out);
             }
 
             // log std err

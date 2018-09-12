@@ -238,7 +238,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
         Map<String, String> sparkProps = livyProperties.getSparkProperties();
         SessionsPost.Builder builder = new SessionsPost.Builder()
-            .kind(livyProperties.getLivySessionKind().toString())
+            .kind(livyProperties.getLivySessionKind().toString()) // "shared" most likely
             //.jars(Lists.newArrayList(""))
             .conf(
                 // "spark.driver.extraJavaOptions", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8990"
