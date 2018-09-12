@@ -936,10 +936,19 @@
 
         "Details": {
             "EditSla": "Edit SLA",
-            "CreateNewSla": "Create New SLA",
+            "CreateNewSla": "New SLA",
             "Save": "Save",
             "Cancel": "Cancel",
-            "Delete": "Delete"
+            "Delete": "Delete",
+            "ErrorLoadingSla": "Error loading the SLA",
+            "AccessDenied": "Access denied to edit the SLA",
+            "Ok": "OK",
+            "SavedSla": "Saved SLA",
+            "FailedToSaveSla": "Failed to save SLA",
+            "DeleteSla": "Delete this SLA?",
+            "Confirm": "Confirm",
+            "DeletedSla": "SLA deleted",
+            "ErrorDeletingSla": "Error deleting SLA"
         }
     }
 

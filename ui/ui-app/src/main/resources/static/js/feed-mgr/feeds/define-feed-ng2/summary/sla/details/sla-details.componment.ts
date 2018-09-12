@@ -9,6 +9,7 @@ import {FormGroup} from '@angular/forms';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
+import {TranslateService} from '@ngx-translate/core';
 
 export enum FormMode {
     ModeEdit = "EDIT",
@@ -55,10 +56,21 @@ export class SlaDetailsComponent implements OnInit {
     private mode: FormMode;
     editMode = FormMode.ModeEdit;
     newMode = FormMode.ModeNew;
+    private labelErrorLoadingSla: string;
+    private labelAccessDenied: string;
+    private labelOk: string;
+    private labelSavedSla: string;
+    private labelFailedToSaveSla: string;
+    private labelDeleteSla: string;
+    private labelConfirm: string;
+    private labelCancel: string;
+    private labelDelete: string;
+    private labelDeleted: string;
+    private labelErrorDeletingSla: string;
 
     constructor(private $$angularInjector: Injector, private state: StateService, private feedLoadingService: FeedLoadingService,
                 private loadingService: TdLoadingService, private snackBar: MatSnackBar, private dialogService: TdDialogService,
-                private viewContainerRef: ViewContainerRef) {
+                private viewContainerRef: ViewContainerRef, private translateService: TranslateService) {
         this.slaService = $$angularInjector.get("SlaService");
         this.accessControlService = $$angularInjector.get("AccessControlService");
         this.policyInputFormService = $$angularInjector.get("PolicyInputFormService");
@@ -66,6 +78,19 @@ export class SlaDetailsComponent implements OnInit {
         this.createLoader(SlaDetailsComponent.slaLoader);
         this.createLoader(SlaDetailsComponent.saveLoader);
         this.createLoader(SlaDetailsComponent.deleteLoader);
+
+        this.labelErrorLoadingSla = this.translateService.instant("Sla.Details.ErrorLoadingSla");
+        this.labelAccessDenied = this.translateService.instant("Sla.Details.AccessDenied");
+        this.labelOk = this.translateService.instant("Sla.Details.Ok");
+        this.labelSavedSla = this.translateService.instant("Sla.Details.SavedSla");
+        this.labelFailedToSaveSla = this.translateService.instant("Sla.Details.FailedToSaveSla");
+        this.labelDeleteSla = this.translateService.instant("Sla.Details.DeleteSla");
+        this.labelConfirm = this.translateService.instant("Sla.Details.Confirm");
+        this.labelCancel = this.translateService.instant("Sla.Details.Cancel");
+        this.labelDelete = this.translateService.instant("Sla.Details.Delete");
+        this.labelDeleted = this.translateService.instant("Sla.Details.DeletedSla");
+        this.labelErrorDeletingSla = this.translateService.instant("Sla.Details.ErrorDeletingSla");
+
     }
 
     private createLoader(name: string) {
@@ -135,10 +160,10 @@ export class SlaDetailsComponent implements OnInit {
 
         }, (err: any) => {
             this.loadingService.resolve(SlaDetailsComponent.slaLoader);
-            const msg = err.data.message || 'Error loading the SLA';
+            const msg = err.data.message || this.labelErrorLoadingSla;
             this.loadingSla = false;
             console.error(msg);
-            this.snackBar.open('Access denied to edit the SLA', 'OK', { duration: 5000 });
+            this.snackBar.open(this.labelAccessDenied, this.labelOk, { duration: 5000 });
         });
 
     }
@@ -166,12 +191,12 @@ export class SlaDetailsComponent implements OnInit {
         this.slaService.saveFeedSla(this.feedId, this.sla).then((response: any) => {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
-            this.snackBar.open('Saved SLA', 'OK', { duration: 3000 });
+            this.snackBar.open(this.labelSavedSla, this.labelOk, { duration: 3000 });
             this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
         }, function () {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
-            this.snackBar.open('Failed to save SLA', 'OK', { duration: 3000 });
+            this.snackBar.open(this.labelFailedToSaveSla, this.labelOk, { duration: 3000 });
         });
     }
 
@@ -181,12 +206,12 @@ export class SlaDetailsComponent implements OnInit {
 
     onDeleteSla(): void {
         this.dialogService.openConfirm({
-            message: 'Delete this SLA?',
+            message: this.labelDeleteSla,
             disableClose: true,
             viewContainerRef: this.viewContainerRef,
-            title: 'Confirm',
-            cancelButton: 'Cancel',
-            acceptButton: 'Delete',
+            title: this.labelConfirm,
+            cancelButton: this.labelCancel,
+            acceptButton: this.labelDelete,
             width: '300px',
         }).afterClosed().subscribe((accept: boolean) => {
             if (accept) {
@@ -201,13 +226,13 @@ export class SlaDetailsComponent implements OnInit {
 
         this.slaService.deleteSla(this.sla.id).then(() => {
             this.loadingService.resolve(SlaDetailsComponent.deleteLoader);
-            this.snackBar.open('SLA deleted', 'OK', { duration: 3000 });
+            this.snackBar.open(this.labelDeleted, this.labelOk, { duration: 3000 });
             this.deletingSla = false;
             this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
         }, () => {
             this.loadingService.resolve(SlaDetailsComponent.deleteLoader);
             this.deletingSla = false;
-            this.snackBar.open('Error deleting SLA', 'OK', { duration: 3000 });
+            this.snackBar.open(this.labelErrorDeletingSla, this.labelOk, { duration: 3000 });
         });
     }
 }
