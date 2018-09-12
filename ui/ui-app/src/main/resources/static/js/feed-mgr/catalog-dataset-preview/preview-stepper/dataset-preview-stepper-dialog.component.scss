@@ -1,10 +1,11 @@
 
 ::ng-deep .mat-dialog-content .mat-horizontal-content-container {
-  max-height: 55vh;
   min-height: 55vh;
-  overflow:auto !important;
+  overflow: auto !important;
+  height: 55vh;
 }
 
-::ng-deep .mat-dialog-content {
+
+:host ::ng-deep .mat-dialog-content {
   overflow: hidden !important;
 }

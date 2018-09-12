@@ -294,6 +294,12 @@ export class Feed  implements KyloObject{
      */
     uiState:{[key:string]: any;}
 
+    /**
+     * The versionId for the feed
+     */
+    versionId:string;
+
+
 
     public constructor(init?: Partial<Feed>) {
         this.initialize();
