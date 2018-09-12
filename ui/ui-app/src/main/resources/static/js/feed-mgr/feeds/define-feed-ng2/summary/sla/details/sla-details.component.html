@@ -3,7 +3,7 @@
   <mat-card-header>
     <mat-card-title *ngIf="mode === editMode" translate>Sla.Details.EditSla</mat-card-title>
     <mat-card-title *ngIf="mode === newMode" translate>Sla.Details.CreateNewSla</mat-card-title>
-    <span fxFlex></span>
+    <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>

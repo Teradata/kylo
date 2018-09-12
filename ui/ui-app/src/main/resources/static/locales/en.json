@@ -933,6 +933,7 @@
         "AddSla": "Add SLA",
         "NoData": "No Service Level Agreements",
         "Loading": "Loading...",
+        "DisabledFeedWarning": "Warning. This feed is disabled. Service Level Agreements can be modified, but they will not run until this feed is enabled.",
 
         "Details": {
             "EditSla": "Edit SLA",

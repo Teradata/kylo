@@ -36,6 +36,7 @@ export abstract class AbstractLoadFeedComponent  {
       observable.subscribe((feedModel:Feed) => {
             this.feed = feedModel;
             this._setFeedState();
+            this.onFeedLoaded(this.feed);
             this.loadingFeed = false;
             this.resolveLoading();
         },(error:any) =>{
@@ -83,5 +84,13 @@ export abstract class AbstractLoadFeedComponent  {
         else {
             this._setFeedState();
         }
+    }
+
+    /**
+     * Called once feed is loaded
+     * @param {Feed} feed
+     */
+    onFeedLoaded(feed: Feed) {
+
     }
 }

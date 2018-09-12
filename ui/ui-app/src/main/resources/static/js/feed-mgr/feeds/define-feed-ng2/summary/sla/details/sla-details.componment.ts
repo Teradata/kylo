@@ -3,7 +3,7 @@ import {StateService} from "@uirouter/angular";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import * as _ from 'underscore';
 import {Sla} from '../sla.componment';
-import {Feed} from '../../../../../model/feed/feed.model';
+import {Feed, FeedState} from '../../../../../model/feed/feed.model';
 import {FeedLoadingService} from '../../../services/feed-loading-service';
 import {FormGroup} from '@angular/forms';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
@@ -56,6 +56,7 @@ export class SlaDetailsComponent implements OnInit {
     private mode: FormMode;
     editMode = FormMode.ModeEdit;
     newMode = FormMode.ModeNew;
+    stateDisabled = FeedState.DISABLED;
     private labelErrorLoadingSla: string;
     private labelAccessDenied: string;
     private labelOk: string;

@@ -2,7 +2,7 @@
 
   <mat-card-header>
     <mat-card-title translate>Sla.ServiceLevelAgreements</mat-card-title>
-    <span fxFlex></span>
+    <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>
