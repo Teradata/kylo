@@ -22,7 +22,7 @@ export class SlaListComponent implements OnInit {
     private slaService: any;
     private accessControlService: any;
     private loading = false;
-    private serviceLevelAgreements: Sla[];
+    serviceLevelAgreements: Sla[] = [];
     private allowCreate: boolean;
     stateDisabled = FeedState.DISABLED;
     private feedModel: Feed;
