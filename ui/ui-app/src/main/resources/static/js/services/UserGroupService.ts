@@ -33,7 +33,7 @@ constructor (private $http: any,
             private $q: any,
             private CommonRestUrlService: any) {
 }
-           getCurrentUser(){
+           getCurrentUser(): Promise<any>{
                 var deferred: any = this.$q.defer();
                 var user : any= {
                     "displayName": null,

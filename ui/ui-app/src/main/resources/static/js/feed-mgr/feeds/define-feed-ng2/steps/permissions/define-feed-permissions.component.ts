@@ -6,9 +6,8 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {Component, Inject} from "@angular/core";
-import {Observable} from "rxjs/Observable";
-import {EntityAccessControlService} from "../../../../shared/entity-access-control/EntityAccessControlService";
+import {Component, ViewChild} from "@angular/core";
+import {EntityAccessControlComponent} from "../../../../shared/entity-access-control/entity-access-control.component";
 
 @Component({
     selector: "define-feed-permissions",
@@ -22,14 +21,17 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
      */
     formGroup:FormGroup;
 
+    @ViewChild("entityAccessControl")
+    private entityAccessControl: EntityAccessControlComponent;
+
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 feedLoadingService:FeedLoadingService,
                 dialogService: TdDialogService,
-                feedSideNavService:FeedSideNavService,
-                @Inject("EntityAccessControlService") private entitAccessControlService:EntityAccessControlService){
+                feedSideNavService:FeedSideNavService){
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.formGroup = new FormGroup({})
+        this.subscribeToFormChanges(this.formGroup);
     }
 
     init() {
@@ -53,17 +55,16 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
         //this.formGroup.registerControl("description", new FormControl(this.feed.description));
     }
 
-    /**
-     * Update the feed model with the form values
-     */
-    protected  applyUpdatesToFeed() :(Observable<any>| null){
-        //update the model
-        let formModel = this.formGroup.value;
-        //this.feed. .... = formModel. ...
-        return null;
+    onSave() {
+        this.feedLoadingService.registerLoading();
+
+        //overriding
+        this.entityAccessControl.onSave()
+            .subscribe((updatedRoleMemberships) => {
+                this.defineFeedService.updateFeedRoleMemberships(updatedRoleMemberships);
+                this.feedLoadingService.resolveLoading();
+            }, error1 => {
+            this.feedLoadingService.resolveLoading();
+        });
     }
-
-
-
-
 }

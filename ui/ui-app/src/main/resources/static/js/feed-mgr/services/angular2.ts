@@ -15,6 +15,9 @@ import {AngularServiceUpgrader} from "../../kylo-utils/angular-service-upgrader"
 import {HiveService} from "./HiveService";
 import {VisualQueryService} from "./VisualQueryService";
 import {DatasourcesService} from "./DatasourcesService";
+import UserGroupService from "../../services/UserGroupService";
+import AccessControlService from "../../services/AccessControlService";
+
 export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
 
 export const datasourcesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DatasourcesService);
@@ -39,4 +42,6 @@ export const feedInputProcessorPropertiesTemplateServiceProvider: FactoryProvide
 
 export const feedDetailsProcessorRenderingHelperProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedDetailsProcessorRenderingHelper);
 
+export const userGroupServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(UserGroupService);
 
+export const accessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AccessControlService);

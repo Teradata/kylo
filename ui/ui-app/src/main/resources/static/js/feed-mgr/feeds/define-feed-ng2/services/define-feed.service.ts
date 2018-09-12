@@ -120,6 +120,15 @@ export class DefineFeedService {
 
 
 
+    updateFeedRoleMemberships(roleMemberships: any) {
+        this.feed.roleMemberships = roleMemberships;
+        this.feed.roleMembershipsUpdated = true;
+
+        //notify subscribers of updated feed role memberships
+        let savedFeed = new SaveFeedResponse(this.feed, true, "Updated role memberships");
+        this.savedFeedSubject.next(savedFeed);
+    }
+
     /**
      * Load a feed based upon its UUID and return a copy to the subscribers
      *

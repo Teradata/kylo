@@ -12,6 +12,8 @@ import {
     datasourcesServiceProvider,
     domainTypesServiceProvider,
     entityAccessControlServiceProvider,
+    userGroupServiceProvider,
+    accessControlServiceProvider,
     feedDetailsProcessorRenderingHelperProvider,
     feedInputProcessorPropertiesTemplateServiceProvider,
     feedPropertyServiceProvider,
@@ -55,6 +57,8 @@ import {CatalogDatasetPreviewModule} from "./catalog-dataset-preview/catalog-dat
     providers: [
         categoriesServiceProvider,
         entityAccessControlServiceProvider,
+        userGroupServiceProvider,
+        accessControlServiceProvider,
         feedServiceProvider,
         domainTypesServiceProvider,
         feedPropertyServiceProvider,

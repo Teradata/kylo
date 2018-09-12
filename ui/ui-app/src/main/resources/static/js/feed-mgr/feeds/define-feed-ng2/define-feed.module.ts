@@ -101,6 +101,8 @@ import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
 import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
+import {EntityAccessControlComponent} from "../../shared/entity-access-control/entity-access-control.component";
+
 @NgModule({
     declarations: [
         DefineFeedComponent,
@@ -148,6 +150,8 @@ import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-
         FeedNifiPropertiesComponent,
         FeedInfoTagsComponent,
         FeedDetailsProcessorFieldComponent,
+        FeedInfoTagsComponent,
+        EntityAccessControlComponent
     ],
     entryComponents:[
         NewFeedDialogComponent
