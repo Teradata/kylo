@@ -401,7 +401,7 @@
     "views.service-level-agreement-form.SelectNewCondition": "Select New Condition",
     "views.service-level-agreement-form.SlaActions": "Actions",
     "views.service-level-agreement-form.WillGenerateAlert": "All SLA violations will generate an Alert.",
-    "views.service-level-agreement-form.AddAction": "Click the 'Add Action' button to add additional actions when an SLA is violated",
+    "views.service-level-agreement-form.ClickAddAction": "Click the 'Add Action' button to add additional actions when an SLA is violated",
     "views.service-level-agreement-form.Errors-found": "Errors found. Saving this SLA will result in loss of configuration data.",
     "views.service-level-agreement-form.Warning": "Warning",
     "views.service-level-agreement-form.Warning2": "Configuration Error!  You can still assign this action, but it may not fire due to configuration issues.",
@@ -948,7 +948,25 @@
             "DeleteSla": "Delete this SLA?",
             "Confirm": "Confirm",
             "DeletedSla": "SLA deleted",
-            "ErrorDeletingSla": "Error deleting SLA"
+            "ErrorDeletingSla": "Error deleting SLA",
+            "SlaAssessments": "SLA Assessments",
+            "SlaName": "SLA Name",
+            "Required": "This field is required.",
+            "SlaDescription": "SLA Description",
+            "SlaConditions": "Conditions",
+            "AND": "AND",
+            "OR": "OR",
+            "AddCondition": "Add Condition",
+            "Condition": "Condition",
+            "SelectNewCondition": "Select New Condition",
+            "Actions": "Actions",
+            "WillGenerateAlert": "All SLA violations will generate an Alert.",
+            "ClickAddAction": "Click the 'Add Action' button to add additional actions when an SLA is violated",
+            "ErrorsFound": "Errors found. Saving this SLA will result in loss of configuration data.",
+            "Warning": "Warning",
+            "Warning2": "Configuration Error!  You can still assign this action, but it may not fire due to configuration issues.",
+            "SelectNewAction": "Select New Action",
+            "AddAction": "Add Action"
         }
     }
 

@@ -2,12 +2,12 @@
 
   <div fxLayout="row" fxLayoutAlign="start start">
     <div fxFlex></div>
-    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != newMode" [style.margin-top.px]="-50">{{'views.service-level-agreement-form.SlaAssessments' | translate}}</button>
+    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != newMode" [style.margin-top.px]="-50">{{'Sla.Details.SlaAssessments' | translate}}</button>
   </div>
 
   <div class="section">
 
-    <span class="md-subhead" translate>views.service-level-agreement-form.Condition</span>
+    <span class="md-subhead" translate>Sla.Details.Conditions</span>
 
     <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
       <div fxLayout="row">
@@ -30,13 +30,13 @@
     </div>
 
     <div *ngIf="addingSlaCondition == false" fxLayout="row" class="layout-margin-top-7 layout-padding-top-20 layout-padding-bottom-15">
-      <button mat-button mat-raised-button (click)="addNewCondition()">Add Condition</button>
+      <button mat-button mat-raised-button (click)="addNewCondition()">{{'Sla.Details.AddCondition' | translate}}</button>
       <span fxFlex></span>
     </div>
 
     <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="layout-padding-top-20 layout-padding-bottom-15 layout-padding-left-right">
       <mat-form-field>
-        <mat-select placeholder="{{'views.service-level-agreement-form.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
+        <mat-select placeholder="{{'Sla.Details.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
           <mat-option *ngFor="let opt of options;" [value]="opt">
             {{opt.name}}
           </mat-option>
@@ -52,10 +52,11 @@
 
   <div class="section">
 
-    <span class="md-subhead" translate>views.service-level-agreement-form.SlaActions</span>
+    <span class="md-subhead" translate>Sla.Details.Actions</span>
 
     <div *ngIf="editSla.actionConfigurations.length == 0" fxLayout="column" class="layout-padding">
-      <span translate>views.service-level-agreement-form.WillGenerateAlert</span>
+      <span translate>Sla.Details.WillGenerateAlert</span>
+      <span *ngIf="showActionOptions">{{"Sla.Details.ClickAddAction" | translate}}</span>
     </div>
 
     <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column" class="layout-padding-left-right">
@@ -63,7 +64,7 @@
         <div class="layout-padding-left">
           <mat-icon [style.font-size.px]="20" class="error">warning</mat-icon>
         </div>
-        <span translate>views.service-level-agreement-form.Errors-found</span>
+        <span translate>Sla.Details.ErrorsFound</span>
       </div>
 
       <div *ngFor="let error of editSla.actionErrors" fxLayout="column" class="layout-padding-left">
@@ -78,7 +79,7 @@
         <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
           <span>{{rule.name}}</span>
           <span class="hint">{{rule.description}}</span>
-          <span *ngIf="rule.validConfiguration == false" class="error"><strong translate>views.service-level-agreement-form.Warning</strong>  {{"views.service-level-agreement-form.Warning2" | translate}} {{rule.validationMessage}}</span>
+          <span *ngIf="rule.validConfiguration == false" class="error"><strong translate>Sla.Details.Warning</strong>  {{"Sla.Details.Warning2" | translate}} {{rule.validationMessage}}</span>
         </div>
         <div>
           <div>
@@ -96,7 +97,7 @@
 
     <div *ngIf="addingSlaAction" class="layout-padding-left-right" fxLayout="row">
       <mat-form-field class="md-block layout-padding-top-bottom condensed">
-        <mat-select placeholder="{{'views.service-level-agreement-form.SelectNewAction' | translate}}" [formControl]="slaAction" (change)="onAddSlaActionChange()">
+        <mat-select placeholder="{{'Sla.Details.SelectNewAction' | translate}}" [formControl]="slaAction" (change)="onAddSlaActionChange()">
           <mat-option *ngFor="let opt of slaActionOptions;" [value]="opt">
             {{opt.name}}
           </mat-option>
@@ -109,7 +110,7 @@
 
     <div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">
       <button mat-button mat-raised-button (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0">
-        {{"views.service-level-agreement-form.AddAction" | translate}}
+        {{"Sla.Details.AddAction" | translate}}
       </button>
       <span fxFlex></span>
     </div>
@@ -121,13 +122,13 @@
     <div fxLayout="column" class="layout-padding-top">
       <span class="md-subhead">Description</span>
       <mat-form-field>
-        <input matInput name="slaName" type="text" formControlName="name" placeholder="SLA name"/>
-        <mat-error *ngIf="slaName.invalid && slaName.errors.required">Required</mat-error>
+        <input matInput name="slaName" type="text" formControlName="name" placeholder="{{'Sla.Details.SlaName' | translate}}"/>
+        <mat-error *ngIf="slaName.invalid && slaName.errors.required">{{'Sla.Details.Required' | translate}}</mat-error>
       </mat-form-field>
 
       <mat-form-field>
-        <input matInput name="slaDescription" type="text" formControlName="description" placeholder="SLA Description"/>
-        <mat-error *ngIf="slaDescription.invalid && slaDescription.errors.required">Required</mat-error>
+        <input matInput name="slaDescription" type="text" formControlName="description" placeholder="{{'Sla.Details.SlaDescription' | translate}}"/>
+        <mat-error *ngIf="slaDescription.invalid && slaDescription.errors.required">{{'Sla.Details.Required' | translate}}</mat-error>
       </mat-form-field>
     </div>
 

@@ -65,7 +65,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
     allowEdit = true;
     private addingSlaAction = false;
     private slaActionOptions: any;
-    private showActionOptions: boolean;
+    private showActionOptions = false;
     isDebug = false;
     newMode = FormMode.ModeNew;
 
