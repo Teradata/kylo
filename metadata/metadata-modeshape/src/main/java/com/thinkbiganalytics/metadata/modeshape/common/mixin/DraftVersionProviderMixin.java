@@ -111,10 +111,11 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     }
 
     @Override
-    default EntityVersion<PK, T> createVersion(PK entityId, boolean includeContent) {
-        Version version = createVersionedEntity(entityId);
-        T entity = includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(version)) : null;
-        return new JcrEntityVersion<>(version, entityId, entity);
+    default EntityVersion<PK, T> createVersion(PK entityId, String comment, boolean includeContent) {
+        Version version = createVersionedEntity(entityId, comment);
+        Node versionable = JcrVersionUtil.getFrozenNode(version);
+        T entity = includeContent ? asEntity(entityId, versionable) : null;
+        return new JcrEntityVersion<>(version, getChangeComment(entityId, versionable), entityId, entity);
     }
     
     /**
@@ -138,10 +139,12 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     Node createDraftEntity(PK entityId, ID versionId);
     
     /**
-     * Implementors should create a new version of the entity based on its draft state.
+     * Implementors should create a new version of the entity based on its draft state, an optionally associate a comment
+     * with the version.
      * @param entityId the entity ID
+     * @param comment a comment message that an implementation may use choose to use to attach to the version
      * @return the new version node
      * @throws NoDraftVersionException thrown if the no draft version of the entity exists
      */
-    Version createVersionedEntity(PK entityId);
+    Version createVersionedEntity(PK entityId, String comment);
 }

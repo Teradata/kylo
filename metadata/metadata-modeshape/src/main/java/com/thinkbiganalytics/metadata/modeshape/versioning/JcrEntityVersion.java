@@ -33,6 +33,7 @@ import javax.jcr.version.Version;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -45,18 +46,20 @@ public class JcrEntityVersion<I, E> implements EntityVersion<I, E> {
 
     private Version version;
     private VersionId id;
+    private ChangeComment changeComment;
     private I entityId;
     private E entity;
     
-    public JcrEntityVersion(Version version, I entId) {
-        this(version, entId, null);
+    public JcrEntityVersion(Version version, Optional<ChangeComment> comment, I entId) {
+        this(version, comment, entId, null);
     }
     
-    public JcrEntityVersion(Version version, I entId, E entity) {
+    public JcrEntityVersion(Version version, Optional<ChangeComment> comment, I entId, E entity) {
         if (version != null) {
             this.version = version;
             this.id = new VersionId(JcrPropertyUtil.getIdentifier(JcrUtil.getNode(version, "jcr:frozenNode")));
         }
+        this.changeComment = comment.orElse(null);
         this.entityId = entId;
         this.entity = entity;
     }
@@ -83,6 +86,13 @@ public class JcrEntityVersion<I, E> implements EntityVersion<I, E> {
     @Override
     public DateTime getCreatedDate() {
         return JcrPropertyUtil.getProperty(this.version, "jcr:created");
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getChangeComment()
+     */
+    public Optional<ChangeComment> getChangeComment() {
+        return Optional.ofNullable(changeComment);
     }
     
     /* (non-Javadoc)

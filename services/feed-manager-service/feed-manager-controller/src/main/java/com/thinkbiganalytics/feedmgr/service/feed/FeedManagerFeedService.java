@@ -141,17 +141,18 @@ public interface FeedManagerFeedService {
 
     /**
      * @param feedId
+     * @param comment option comment to attach to the new version
      * @return
      */
-    EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent);
+    EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent);
 
     /**
-     * @param feedIdStr
-     * @param versionIdStr TODO
+     * @param feedId
+     * @param versionId TODO
      * @param includeContent
      * @return
      */
-    EntityVersion createDraftFromFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent);
+    EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent);
 
     /**
      * @param feedId

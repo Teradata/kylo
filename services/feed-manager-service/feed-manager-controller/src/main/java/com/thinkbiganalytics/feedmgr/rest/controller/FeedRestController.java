@@ -768,7 +768,8 @@ public class FeedRestController {
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response feedDraftAction(@PathParam("feedId") String feedId,
-                                    @FormParam("action") String actionStr) {
+                                    @FormParam("action") String actionStr,
+                                    @FormParam("comment") @DefaultValue("") String comment) {
         EntityVersion version = null;  // Produced by a version action
         
         try {
@@ -777,12 +778,12 @@ public class FeedRestController {
             for (VersionAction action : actions) {
                 switch (action) {
                     case VERSION:
-                        version = getMetadataService().createVersionFromDraftFeed(feedId, true);
+                        version = getMetadataService().createVersionFromDraftFeed(feedId, comment, true);
                         break;
                     case DEPLOY:
                         // Version the draft feed before deployment if not told to do so explicitly
                         if (! actions.contains(VersionAction.VERSION)) {
-                            version = getMetadataService().createVersionFromDraftFeed(feedId, true);
+                            version = getMetadataService().createVersionFromDraftFeed(feedId, comment, true);
                         }
                         
                         version = getMetadataService().deployFeedVersion(feedId, version.getId(), true);
@@ -854,7 +855,7 @@ public class FeedRestController {
                         break;
                     case DEPLOY:
                         if (actions.contains(VersionAction.DRAFT)) {
-                            version = getMetadataService().createVersionFromDraftFeed(feedId, false);
+                            version = getMetadataService().createVersionFromDraftFeed(feedId, null, false);
                         }
                         
                         version = getMetadataService().deployFeedVersion(feedId, version != null ? version.getId() : versionId, true);

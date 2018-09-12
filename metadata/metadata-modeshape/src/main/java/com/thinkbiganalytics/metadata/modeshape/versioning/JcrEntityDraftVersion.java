@@ -27,6 +27,8 @@ import javax.jcr.Node;
 
 import org.joda.time.DateTime;
 
+import java.util.Optional;
+
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 /**
@@ -37,7 +39,7 @@ public class JcrEntityDraftVersion<I, E> extends JcrEntityVersion<I, E> {
     private DateTime created;
     
     public JcrEntityDraftVersion(Node versionable, I entityId, E entity) {
-        super(null, entityId, entity);
+        super(null, Optional.empty(), entityId, entity);
         setId(new VersionId(JcrPropertyUtil.getIdentifier(versionable)));
         this.created = JcrPropertyUtil.getProperty(versionable, "jcr:lastModified");
     }

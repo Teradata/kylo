@@ -26,6 +26,8 @@ package com.thinkbiganalytics.metadata.api.versioning;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
+
 import org.joda.time.DateTime;
 
 /**
@@ -47,6 +49,11 @@ public interface EntityVersion<I, E> {
      * @return the date the version was created
      */
     DateTime getCreatedDate();
+    
+    /**
+     * @return an optional comment associated with the version
+     */
+    Optional<ChangeComment> getChangeComment();
     
     /**
      * @return the ID of the entity

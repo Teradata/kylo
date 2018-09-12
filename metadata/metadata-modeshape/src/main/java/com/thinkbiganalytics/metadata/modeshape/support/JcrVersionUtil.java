@@ -187,40 +187,31 @@ public class JcrVersionUtil {
 
 
     /**
-     * Creates for the given node a new version and returns that version. Put the node into the checked-in state.
+     * Saves the current session an then creates and returns a new vesion of the node.
      *
      * @param node node to checkin
      * @return the created version
      */
     public static Version checkin(Node node) {
         try {
-            // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
-            // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
-            // when the node being checked-in has not been saved after being just made versionable; which 
-            // can occur during upgrade to 0.8.4.
-            if (node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
-                return getVersionManager(node.getSession()).checkin(node.getPath());
-            } else {
-                return null;
-            }
-        } catch (ItemNotFoundException e) {
-            // Ignore if the node being checked in represents a deleted node.
-            return null;
+            node.getSession().save();
+            return doCheckin(node);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
         }
     }
-
+    
     public static void checkinRecursively(Node node) {
         try {
+            node.getSession().save();
+
             NodeIterator it = node.getNodes();
             while (it.hasNext()) {
                 checkinRecursively(it.nextNode());
             }
             if (node.isCheckedOut() && node.isNodeType(NodeType.MIX_VERSIONABLE)) {
-                checkin(node);
+                doCheckin(node);
             }
-
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Could not perform check-in", e);
         }
@@ -358,6 +349,28 @@ public class JcrVersionUtil {
             return version.getFrozenNode();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get frozen node of Version: " + version, e);
+        }
+    }
+
+    /**
+     * Performs a checkin on the node.
+     */
+    private static Version doCheckin(Node node) {
+        try {
+            // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
+            // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
+            // when the node being checked-in has not been saved after being just made versionable; which 
+            // can occur during upgrade to 0.8.4.
+            if (node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
+                return getVersionManager(node.getSession()).checkin(node.getPath());
+            } else {
+                return null;
+            }
+        } catch (ItemNotFoundException e) {
+            // Ignore if the node being checked in represents a deleted node.
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
         }
     }
 

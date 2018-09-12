@@ -246,7 +246,7 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
-[tba:ChangeComment] > nt:hierarchyNode, mix:created
+[tba:ChangeComment] > nt:hierarchyNode, mix:created, mix:lastModified
     - tba:comment
 
 [tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconable, mix:referenceable, tba:accessControlled, mix:lockable
@@ -292,6 +292,7 @@
 [tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable, tba:indexControlled
     - tba:systemName (STRING) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
+    + tba:versionComment (tba:ChangeComment)
 
 [tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
     - tba:feedTemplate (WEAKREFERENCE)

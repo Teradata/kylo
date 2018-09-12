@@ -565,8 +565,8 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
-        return feedProvider.createVersionFromDraftFeed(feedId, includeContent);
+    public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
+        return feedProvider.createVersionFromDraftFeed(feedId, comment, includeContent);
     }
 
     @Override

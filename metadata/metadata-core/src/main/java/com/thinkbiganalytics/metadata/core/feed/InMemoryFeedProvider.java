@@ -702,7 +702,7 @@ public class InMemoryFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createVersion(java.io.Serializable, boolean)
      */
     @Override
-    public EntityVersion<Feed.ID, Feed> createVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+    public EntityVersion<Feed.ID, Feed> createVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, String comment, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }

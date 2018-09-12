@@ -73,14 +73,14 @@ public class FeedVersions {
         this.versions = versions;
     }
 
-    public EntityVersion addNewVersion(String id, String name, Date createdDate, String entityId) {
-        EntityVersion version = new EntityVersion(id, name, createdDate, entityId);
+    public EntityVersion addNewVersion(String id, String name, Date createdDate, String createdBy, String comment, String entityId) {
+        EntityVersion version = new EntityVersion(id, name, createdDate, createdBy, comment, entityId);
         this.versions.add(version);
         return version;
     }
     
-    public EntityVersion addNewVersion(String id, String name, Date createdDate, FeedMetadata entity) {
-        EntityVersion version = new EntityVersion(id, name, createdDate, entity.getId(), entity);
+    public EntityVersion addNewVersion(String id, String name, Date createdDate, String createdBy, String comment, FeedMetadata entity) {
+        EntityVersion version = new EntityVersion(id, name, createdDate, createdBy, comment, entity.getId(), entity);
         this.versions.add(version);
         return version;
     }

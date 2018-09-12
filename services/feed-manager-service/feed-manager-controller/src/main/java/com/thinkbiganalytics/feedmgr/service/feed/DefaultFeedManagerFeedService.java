@@ -404,13 +404,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     @Override
-    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
+    public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
         Optional<Feed.ID> idOption = checkChangeVersions(feedId);
 
         return idOption
             .map(domainFeedId -> {
                 return metadataAccess.commit(() -> {
-                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, false);
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, comment, false);
                     return this.feedModelTransform.domainToFeedVersion(newVer);
                 }, MetadataAccess.SERVICE);
             })
@@ -1084,7 +1084,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             domainFeed = feedProvider.update(domainFeed);
             
             // TODO TEMPORARY
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version = feedProvider.createVersion(domainId, false);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version = feedProvider.createVersion(domainId, null, false);
             feedProvider.setDeployed(domainId, version.getId());
             // TODO TEMPORARY
             

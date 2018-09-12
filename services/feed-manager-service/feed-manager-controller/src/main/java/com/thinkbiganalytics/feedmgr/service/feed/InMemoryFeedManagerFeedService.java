@@ -205,7 +205,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         FeedMetadata feed = getFeedById(feedId);
         
         if (feed != null) {
-            EntityVersion version = versions.addNewVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), feedId);
+            EntityVersion version = versions.addNewVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), "", "", feedId);
             if (includeContent) {
                 version.setEntity(feed);
             }
@@ -219,7 +219,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         EntityVersion version = null;
         
         if (feed != null) {
-            version = new EntityVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), feedId);
+            version = new EntityVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate(), "", "", feedId);
             if (includeContent) {
                 version.setEntity(feed);
             }
@@ -411,7 +411,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
      * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#versionDraftFeed(java.lang.String, boolean)
      */
     @Override
-    public EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent) {
+    public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }

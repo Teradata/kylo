@@ -341,10 +341,11 @@ public interface MetadataService {
      * Creates a new version from the current draft version of a feed.  If the feed does not
      * have a draft version then this method has no effect.
      * @param feedId the feed ID
+     * @param comment TODO
      * @param includeContent indicates whether the feed content should be included in the version
      * @return the current state of feed versions (no feed content)
      */
-    EntityVersion createVersionFromDraftFeed(String feedId, boolean includeContent);
+    EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent);
 
     /**
      * Creates a new draft feed from a specific feed version.

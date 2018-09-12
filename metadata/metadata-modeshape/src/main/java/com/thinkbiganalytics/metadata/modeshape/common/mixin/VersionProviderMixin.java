@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -54,7 +55,10 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
         return findVersionableNode(entityId)
                 .map(node -> JcrVersionUtil.getVersions(node).stream()
                     .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                    .map(ver -> new JcrEntityVersion<>(ver, entityId, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                    .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
+                                                                              getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
+                                                                              entityId, 
+                                                                              includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
                     .sorted(desc::apply)
                     .collect(Collectors.toList()));
     }
@@ -74,11 +78,23 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
         return findVersionableNode(entityId)
                 .flatMap(node -> JcrVersionUtil.getVersions(node).stream()
                     .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                    .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, entityId, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                    .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
+                                                                              getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
+                                                                              entityId, 
+                                                                              includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
                     .sorted(desc::apply)
                     .findFirst());
     }
     
+    /**
+     * Retrieve an optional change comment associates with the entity ID and versionable node.
+     * @param id the entity ID
+     * @param versionable the versionable node
+     * @return the optional change comment if one exists
+     */
+    default Optional<ChangeComment> getChangeComment(PK id, Node versionable) {
+        return Optional.empty();
+    }
 
     /**
      * Implementers should return an optional containing the node considered to be the one

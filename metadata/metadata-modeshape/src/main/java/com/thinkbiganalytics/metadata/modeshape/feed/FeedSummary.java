@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -28,6 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.TaggableMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrChangeComment;
 
 import java.util.Optional;
 
@@ -37,6 +40,7 @@ public class FeedSummary extends JcrObject implements SystemEntityMixin, Auditab
 
     public static final String NODE_TYPE = "tba:feedSummary";
 
+    public static final String VERSION_COMMENT = "tba:versionComment";
     public static final String DETAILS = "tba:details";
 
     private FeedDetails details;
@@ -62,6 +66,17 @@ public class FeedSummary extends JcrObject implements SystemEntityMixin, Auditab
         } else {
             return Optional.of(this.details);
         }
+    }
+    
+    public Optional<ChangeComment> getVersionComment() {
+        return Optional.ofNullable(JcrUtil.getJcrObject(getNode(), VERSION_COMMENT, JcrChangeComment.class));
+    }
+    
+    public void setVersionComment(String comment) {
+        // First remove any existing comment so the timestamp and user gets correctly set.
+        JcrUtil.removeNode(getNode(), VERSION_COMMENT);
+        Node chgNode = JcrUtil.getOrCreateNode(getNode(), VERSION_COMMENT, JcrChangeComment.NODE_TYPE);
+        new JcrChangeComment(chgNode, comment != null ? comment : "");
     }
 
     protected JcrFeed getParentFeed() {

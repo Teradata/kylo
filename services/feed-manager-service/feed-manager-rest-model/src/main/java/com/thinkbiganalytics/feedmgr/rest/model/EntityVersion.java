@@ -39,6 +39,8 @@ public class EntityVersion {
     private String id;
     private String name;
     private Date createdDate;
+    private String createdBy;
+    private String comment;
     private String entityId;
     private Object entity;
     
@@ -46,15 +48,17 @@ public class EntityVersion {
         super();
     }
     
-    public EntityVersion(String id, String name, Date createdDate, String entityId) {
-        this(id, name, createdDate, entityId, null);
+    public EntityVersion(String id, String name, Date createdDate, String createdBy, String comment, String entityId) {
+        this(id, name, createdDate, createdBy, comment, entityId, null);
     }
     
-    public EntityVersion(String id, String name, Date createdDate, String entityId, Object entity) {
+    public EntityVersion(String id, String name, Date createdDate, String createdBy, String comment, String entityId, Object entity) {
         super();
         this.id = id;
         this.name = name;
         this.createdDate = createdDate;
+        this.createdBy = createdBy;
+        this.comment = comment;
         this.entity = entity;
     }
 
@@ -82,6 +86,22 @@ public class EntityVersion {
         this.createdDate = createdDate;
     }
     
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public String getEntityId() {
         return entityId;
     }

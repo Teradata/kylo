@@ -1,12 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.flipkart.zjsonpatch.JsonDiff;
-import com.flipkart.zjsonpatch.JsonPatch;
-
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -27,6 +20,11 @@ import com.flipkart.zjsonpatch.JsonPatch;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
@@ -316,6 +314,8 @@ public class FeedModelTransform {
             = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(), 
                                                                          domainVer.getName(), 
                                                                          domainVer.getCreatedDate().toDate(),
+                                                                         domainVer.getChangeComment().map(chg -> chg.getUser().getName()).orElse(""),
+                                                                         domainVer.getChangeComment().map(chg -> chg.getComment()).orElse(""),
                                                                          domainVer.getEntityId().toString());
         domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed)));
         return version;
@@ -553,7 +553,12 @@ public class FeedModelTransform {
             // This is because we will be providing the "to" entity content so the patch should show the original "from" values.
             JsonNode diff = JsonDiff.asJson(toNode, fromNode);
             com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
-                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate(), fromVer.getEntityId());
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), 
+                                                                             fromVer.getName(), 
+                                                                             fromVer.getCreatedDate(), 
+                                                                             fromVer.getCreatedBy(), 
+                                                                             fromVer.getComment(), 
+                                                                             fromVer.getEntityId());
             
             return new EntityVersionDifference(fromNoContent, toVer, diff);
         } catch (IOException e) {

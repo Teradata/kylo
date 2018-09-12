@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.VersionAlreadyExistsException;
@@ -70,6 +71,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProv
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrChangeComment;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -224,11 +226,44 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Version createVersionedEntity(ID entityId) {
+    public Version createVersionedEntity(ID entityId, String comment) {
         Node versionable = findVersionableNode(entityId)
                         .orElseThrow(() -> new AccessControlException("You do not have the rights to create a draft version of this feed: " + entityId));
-                
+        
+        FeedSummary summary = new FeedSummary(versionable, null);
+        summary.setVersionComment(comment != null ? comment : "");
+        
         return JcrMetadataAccess.versionNode(versionable);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(ID feedId, boolean includeContent) {
+        final JcrFeed feed = (JcrFeed) super.findById(feedId);
+        
+        if (feed != null) {
+            return feed.getDeployedVersion()
+                    .map(version -> {
+                            Node versionable = JcrVersionUtil.getFrozenNode(version);
+                            Feed versionedFeed = includeContent ? asEntity(feedId, versionable) : null;
+                            
+                            return new JcrEntityVersion<>(version, getChangeComment(feedId, versionable), feedId, versionedFeed);
+                        });
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin#getChangeComment(java.io.Serializable, javax.jcr.Node)
+     */
+    @Override
+    public Optional<ChangeComment> getChangeComment(ID id, Node versionable) {
+        FeedSummary summary = new FeedSummary(versionable, null);
+        
+        return summary.getVersionComment();
     }
 
     /* (non-Javadoc)
@@ -627,26 +662,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID, boolean)
-     */
-    @Override
-    public Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(ID feedId, boolean includeContent) {
-        final JcrFeed feed = (JcrFeed) super.findById(feedId);
-        
-        if (feed != null) {
-            return feed.getDeployedVersion()
-                    .map(version -> {
-                            return findVersionableNode(feedId)
-                                .filter(node -> includeContent)
-                                .map(node -> new JcrEntityVersion<>(version, feedId, asEntity(feedId, node)))
-                                .orElse(new JcrEntityVersion<>(version, feedId));
-                        });
-        } else {
-            throw new FeedNotFoundException(feedId);
         }
     }
 
