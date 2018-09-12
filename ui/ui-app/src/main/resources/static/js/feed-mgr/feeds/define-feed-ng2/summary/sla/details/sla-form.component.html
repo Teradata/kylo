@@ -24,7 +24,7 @@
           </div>
         </div>
       </div>
-      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'rules'" [rule]="rule" [index]="idx"
+      <policy-input-form [parentFormGroup]="slaConditions" [groupId]="'rules'" [rule]="rule" [index]="idx"
                          (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>

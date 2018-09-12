@@ -1,12 +1,21 @@
 import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import {Sla} from '../sla.componment';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Feed} from '../../../../../model/feed/feed.model';
 import * as _ from 'underscore';
 import {PolicyInputFormService} from '../../../../../shared/field-policies-angular2/policy-input-form.service';
 import * as angular from 'angular';
 import {FormMode, RuleType} from './sla-details.componment';
 
+
+export function nonEmptyValidator(): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} | null => {
+        const controls = (<FormGroup>control).controls;
+        const isUndefined = controls === undefined;
+        const isEmpty = _.keys(controls).length == 0;
+        return isUndefined || isEmpty ? {'empty': {}} : null;
+    };
+}
 
 @Component({
     selector: "sla-form",
@@ -37,6 +46,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
      * @type {null}
      */
     ruleType: FormControl;
+    slaConditions: FormGroup = new FormGroup([], nonEmptyValidator());
     slaAction: FormControl = new FormControl(this.EMPTY_RULE_TYPE);
 
     /**
@@ -86,6 +96,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.slaForm.addControl('conditions', this.slaConditions);
         this.slaForm.addControl('name', this.slaName);
         this.slaForm.addControl('description', this.slaDescription);
 
