@@ -17,32 +17,33 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Services Details" ng-cloak>
-  <md-toolbar>
-    <div class="md-toolbar-tools">
+<div mat-dialog aria-label="Services Details">
+  <mat-toolbar style="color: rgb(255,255,255);">
+    <div class="md-toolbar-tools" style="background-color: rgb(52,131,186);">
       <h4>
         <ng-md-icon size="24" md-icon icon="vector_triangle" aria-label="Services Details" ></ng-md-icon>
-        <span>Service Status {{services.length}} {{status | titleCase}} </span>
+        <!-- titleCase pipe on status -->
+        <span>Service Status {{services.length}} {{status}} </span>
       </h4>
       <span flex></span>
     </div>
-  </md-toolbar>
-  <md-dialog-content layout="column" style="min-width:400px;" layout-padding>
-    <md-list class="md-dense" flex>
-      <md-list-item class="md-3-line" ng-repeat="item in services">
-        <div class="md-list-item-text" layout="column">
-          <a href ng-click="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span ng-if="item.componentName">, {{item.componentName}}</span> <span ng-if="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} Alerts</span></a>
-          <h3 ng-if="item.componentMessage != null">{{item.componentMessage}}</h3>
-          <h4>Last checked: {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</h4>
+  </mat-toolbar>
+  <mat-dialog-content layout="column" style="min-width:400px;" layout-padding>
+    <mat-list class="md-dense" flex>
+      <mat-list-item style="height: auto; margin: 16px -16px;" class="md-3-line" *ngFor="let item of services">
+        <div style="margin-bottom: 16px;" class="md-list-item-text" layout="column">
+          <a href (click)="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span *ngIf="item.componentName">, {{item.componentName}}</span> <span *ngIf="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} Alerts</span></a>
+          <div style="line-height: 1.05; font-size: 13px;" *ngIf="item.componentMessage != null">{{item.componentMessage}}</div>
+          <div style="line-height: 1.05; font-size: 12px;">Last checked: {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</div>
         </div>
-        <md-divider ></md-divider>
-      </md-list-item>
-      <md-list-item class="md-3-line" ng-if="services.length == 0">
+        <mat-divider ></mat-divider>
+      </mat-list-item>
+      <mat-list-item style="height: auto;" class="md-3-line" *ngIf="services.length == 0">
         <div class="md-list-item-text" layout="column">
           No services found matching your criteria
         </div>
-      </md-list-item>
-    </md-list>
+      </mat-list-item>
+    </mat-list>
 
-  </md-dialog-content>
-</md-dialog>
+  </mat-dialog-content>
+</div>

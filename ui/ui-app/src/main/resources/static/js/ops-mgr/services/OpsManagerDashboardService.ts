@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
 import * as moment from "moment";
 import { ObjectUtils } from '../../common/utils/object-utils';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import IconService from './IconStatusService';
 import 'rxjs/add/operator/timeout';
 import OpsManagerRestUrlService from './OpsManagerRestUrlService';
@@ -9,6 +9,7 @@ import BroadcastService from '../../services/broadcast-service';
 import { Observable, Subscription } from 'rxjs';
 import 'rxjs/add/observable/of';
 import { Injectable } from '@angular/core';
+import { OpsManagerFeedService } from './OpsManagerFeedService';
 
 @Injectable()
 export default class OpsManagerDashboardService {
@@ -31,8 +32,7 @@ export default class OpsManagerDashboardService {
     constructor(private http: HttpClient,
         private opsManagerRestUrlService: OpsManagerRestUrlService,
         private broadcastService: BroadcastService,
-        private OpsManagerFeedService: any
-    ) { }
+        private OpsManagerFeedService: OpsManagerFeedService) {}
 
     selectFeedHealthTab(tab: any) {
         this.broadcastService.notify(this.TAB_SELECTED, tab);
@@ -57,21 +57,19 @@ export default class OpsManagerDashboardService {
         if (this.activeDashboardRequest != null && ObjectUtils.isDefined(this.activeDashboardRequest)) {
             this.skipDashboardFeedHealth = true;
         }
-
+        var initDashboard = (responseData: any) => {
+            this.feedsSearchResult = responseData;
+            if (responseData) {
+                this.setupFeedHealth(responseData);
+                //reset this.dashboard.feeds.data ?
+                this.totalFeeds = responseData.recordsFiltered;
+            }
+            this.activeFeedRequest = null;
+            this.skipDashboardFeedHealth = false;
+            this.broadcastService.notify(this.DASHBOARD_UPDATED, this.dashboard);
+        }
         return new Promise((resolve: any, reject: any) => {
             var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
-
-            var initDashboard = (responseData: any) => {
-                this.feedsSearchResult = responseData;
-                if (responseData) {
-                    this.setupFeedHealth(responseData);
-                    //reset this.dashboard.feeds.data ?
-                    this.totalFeeds = responseData.recordsFiltered;
-                }
-                this.activeFeedRequest = null;
-                this.skipDashboardFeedHealth = false;
-                this.broadcastService.notify(this.DASHBOARD_UPDATED, this.dashboard);
-            }
             var observable = this.http.get(this.opsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { params: params })/*.timeout(this.activeFeedRequest)*/;
             this.activeFeedRequest = observable.subscribe((response: any) => {
                 resolve(response);
@@ -82,7 +80,7 @@ export default class OpsManagerDashboardService {
             });
         })
             .then((response: any) => { this.fetchPageableFeedNames(response) })
-            .then((response: any) => this.initDashboard(response));
+            .then((response: any) => { initDashboard(response) });
     }
     updateFeedHealthQueryParams(tab: any, filter: any, start: any, limit: any, sort: any) {
         var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
@@ -97,7 +95,7 @@ export default class OpsManagerDashboardService {
             var params = this.feedHealthQueryParams;
             this.activeDashboardRequest = this.http.get(this.opsManagerRestUrlService.DASHBOARD_URL, { params: params })
                 /*.timeout(this.activeDashboardRequest)*/.subscribe((response: any) => {
-                    this.fetchFeedNames(response, response.this.feeds.data)
+                    this.fetchFeedNames(response, response.feeds.data)
                         .then((dashboard: any) => {
                             this.initDashboard(dashboard);
                             resolve(response);
@@ -197,7 +195,8 @@ export default class OpsManagerDashboardService {
                 var feedNames = _.map(feeds, (feed: any) => {
                     return feed.feed;
                 });
-                this.http.post(this.opsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames)
+                var headers = new HttpHeaders({'Content-Type':'application/json; charset=utf-8'});
+                this.http.post(this.opsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames, {headers : headers})
                     .toPromise().then((result: any) => {
                         _.each(feeds, (feed: any) => {
                             feed.displayName = _.find(result, (systemNameToDisplayName: any) => {

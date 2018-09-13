@@ -49,8 +49,6 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
     tabs: any;
     tabMetadata: any;
     sortOptions: any;
-    additionalMenuOptions: any;
-    selectedAdditionalMenuOptionVar: any;
     filterAlertType: any;
     alertTypes: any;
     filterAlertState: any;
@@ -63,7 +61,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
      * The filter supplied in the page
      * @type {string}
      */
-    filterTable: any =  ObjectUtils.isDefined(this.query) ? this.query : '';
+    filterTable: any =  '';
     /**
      * Array holding onto the active alert promises
      * @type {Array}
@@ -97,6 +95,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
       ];
 
     ngOnInit(){
+        this.filterTable =  ObjectUtils.isDefined(this.query) ? this.query : '';
         this.pageName = ObjectUtils.isDefined(this.pageName) ? this.pageName : 'alerts';
         //Page State
         this.loading = true;

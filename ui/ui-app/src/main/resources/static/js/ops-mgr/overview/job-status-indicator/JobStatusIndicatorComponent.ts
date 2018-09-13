@@ -1,100 +1,100 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import ChartJobStatusService from "../../services/ChartJobStatusService";
 import HttpService from "../../../services/HttpService";
+import { HttpClient } from "@angular/common/http";
+import BroadcastService from "../../../services/broadcast-service";
+import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
+import OpsManagerJobService from "../../services/OpsManagerJobService";
+import StateService from "../../../services/StateService";
+import { Component } from "@angular/core";
+import { ObjectUtils } from "../../../common/utils/object-utils";
 declare const d3: any;
 
-export default class controller implements ng.IComponentController{
-refreshInterval: any = null;
-dataLoaded: boolean = false;
-chartApi: any ={};
-chartConfig: any = {};
-running: number = 0;
-failed: number = 0;
-chartData: any[] = [];
-runningCounts: any[] = [];
-maxDatapoints: number = 20;
-chartOptions: any;
-refreshIntervalTime: any;
+@Component({
+    selector: 'tba-job-status-indicator',
+    templateUrl: 'js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html'
+})
+export default class JobStatusIndicatorComponent {
 
-static readonly $inject = ["$scope","$element","$http","$q","$interval","StateService",
-                            "OpsManagerJobService","OpsManagerDashboardService",
-                            "HttpService","ChartJobStatusService","BroadcastService"];
-$onInit() {
-    this.ngOnInit();
-}
+    refreshInterval: any = null;
+    dataLoaded: boolean = false;
+    chartApi: any ={};
+    chartConfig: any = {};
+    running: number = 0;
+    failed: number = 0;
+    chartData: any[] = [];
+    runningCounts: any[] = [];
+    maxDatapoints: number = 20;
+    chartOptions: any;
+    refreshIntervalTime: any;
 
-ngOnInit() {
+    ngOnInit() {
 
-    this.chartOptions =  {
-        chart: {
-            type: 'lineChart',
-            margin : {
-                top: 5,
-                right: 5,
-                bottom:10,
-                left: 20
-            },
-            x: (d: any)=>{return d[0];},
-            y: (d: any)=>{return d[1];},
-            useVoronoi: false,
-            clipEdge: false,
-            duration: 0,
-            height:136,
-            useInteractiveGuideline: true,
-            xAxis: {
-                axisLabel: 'Time',
-                showMaxMin: false,
-                tickFormat: (d: any)=> {
-                    return d3.time.format('%X')(new Date(d))
-                }
-            },
-            yAxis: {
-                axisLabel:'',
-                "axisLabelDistance": -10,
-                showMaxMin:false,
-                tickSubdivide:0,
-                ticks:1
-            },
-            yDomain:[0,1],
-            showLegend:false,
-            showXAxis:false,
-            showYAxis:true,
-            lines: {
-                dispatch: {
-                    'elementClick':(e: any)=>{
-                        this.chartClick();
+        this.chartOptions =  {
+            chart: {
+                type: 'lineChart',
+                margin : {
+                    top: 5,
+                    right: 5,
+                    bottom:10,
+                    left: 20
+                },
+                x: (d: any)=>{return d[0];},
+                y: (d: any)=>{return d[1];},
+                useVoronoi: false,
+                clipEdge: false,
+                duration: 0,
+                height:136,
+                useInteractiveGuideline: true,
+                xAxis: {
+                    axisLabel: 'Time',
+                    showMaxMin: false,
+                    tickFormat: (d: any)=> {
+                        return d3.time.format('%X')(new Date(d))
                     }
+                },
+                yAxis: {
+                    axisLabel:'',
+                    "axisLabelDistance": -10,
+                    showMaxMin:false,
+                    tickSubdivide:0,
+                    ticks:1
+                },
+                yDomain:[0,1],
+                showLegend:false,
+                showXAxis:false,
+                showYAxis:true,
+                lines: {
+                    dispatch: {
+                        'elementClick':(e: any)=>{
+                            this.chartClick();
+                        }
+                    }
+                },
+                dispatch: {
+
                 }
-            },
-            dispatch: {
-
             }
-        }
-    };
+        };
 
-    this.refresh();
-    this.setRefreshInterval();
+        this.refresh();
+        this.setRefreshInterval();
 
-}
+    }
 
-constructor(private $scope: IScope,
-        private $element: JQuery,
-        private $http: any,
-        private $q: angular.IQService,
-        private $interval: angular.IIntervalService,
-        private StateService: any,
-        private OpsManagerJobService: any,
-        private OpsManagerDashboardService: any,
+    ngOnDestroy() {
+        this.clearRefreshInterval();
+    }
+
+    constructor(
+        private http: HttpClient,
+        private StateService: StateService,
+        private OpsManagerJobService: OpsManagerJobService,
+        private OpsManagerDashboardService: OpsManagerDashboardService,
         private httpService: HttpService,
         private chartJobStatusService: ChartJobStatusService,
-        private BroadcastService: any){
-        
-        $scope.$on('$destroy', ()=>{
-            this.clearRefreshInterval();
-        });
-        }// end of constructor
+        private BroadcastService: BroadcastService) {}// end of constructor
      
         updateChart = ()=>{
             if(this.chartApi.update) {
@@ -120,10 +120,13 @@ constructor(private $scope: IScope,
                     }
                 }
 
-                var errorFn =  (data: any, status: any, headers: any, config: any) =>{
+                var errorFn =  (data: any, status: any) =>{
                     console.log("Error getting count by status: ", data, status);
                 }
-                this.$http.get(this.OpsManagerJobService.RUNNING_JOB_COUNTS_URL).then(successFn, errorFn);
+                this.http.get(this.OpsManagerJobService.RUNNING_JOB_COUNTS_URL).toPromise().then(
+                    (response : any) => {successFn(response)},
+                    (error: any)=>{ errorFn(error, status)
+                });
 
         };
 
@@ -136,7 +139,7 @@ constructor(private $scope: IScope,
             this.running =0;
             this.failed = 0;
             if(responseData){
-                angular.forEach(responseData,(statusCount: any,i: any)=>{
+                responseData.forEach((statusCount: any,i: any)=>{
                     if(statusCount.status == 'RUNNING'){
                         this.running += statusCount.count;
                     }
@@ -161,7 +164,7 @@ constructor(private $scope: IScope,
             var notify = false;
             _.each(jobStatus,  (feedJobStatusCounts: any)=> {
                 var feedSummary = summaryData[feedJobStatusCounts.feedName];
-                if (angular.isDefined(feedSummary)) {
+                if (ObjectUtils.isDefined(feedSummary)) {
                     var summaryState = feedSummary.state;
                     if (feedJobStatusCounts.status == "RUNNING") {
                         runningFeedNames.push(feedJobStatusCounts.feedName);
@@ -239,7 +242,7 @@ constructor(private $scope: IScope,
 
         clearRefreshInterval= ()=>{
             if(this.refreshInterval != null){
-                this.$interval.cancel(this.refreshInterval);
+                clearInterval(this.refreshInterval);
                 this.refreshInterval = null;
             }
         }
@@ -247,18 +250,8 @@ constructor(private $scope: IScope,
         setRefreshInterval=()=>{
             this.clearRefreshInterval();
             if(this.refreshIntervalTime) {
-                this.refreshInterval = this.$interval(this.refresh,this.refreshIntervalTime);
+                this.refreshInterval = setInterval(this.refresh,this.refreshIntervalTime);
             }
         }
 
 }
-
- angular.module(moduleName).component('tbaJobStatusIndicator', {
-    controller: controller,
-    bindings: {
-        panelTitle: "@",
-        refreshIntervalTime:"=?"
-    },
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html"
-});

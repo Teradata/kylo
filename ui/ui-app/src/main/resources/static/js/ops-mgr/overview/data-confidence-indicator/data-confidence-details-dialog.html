@@ -17,32 +17,32 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Services Details" ng-cloak>
-  <md-toolbar>
-    <div class="md-toolbar-tools">
+<div mat-dialog aria-label="Services Details">
+  <mat-toolbar style="color: rgb(255,255,255);">
+    <div class="md-toolbar-tools" style="background-color: rgb(52,131,186);">
       <h4>
         <ng-md-icon size="24" md-icon icon="settings" aria-label="Data Confidence Details" ></ng-md-icon>
-        <span>Data Confidence - {{jobs.length}} {{status | titleCase}} </span>
+        <!-- apply pipe titleCase on status -->
+        <span>Data Confidence - {{jobs.length}} {{status}} </span>
       </h4>
       <span flex></span>
     </div>
-  </md-toolbar>
-  <md-dialog-content layout="column" style="min-width:400px;" layout-padding>
-    <md-list class="md-dense" flex>
-      <md-list-item class="md-3-line" ng-repeat="job in jobs">
-        <div class="md-list-item-text" layout="column">
-          <a href ng-click="gotoJobDetails(job.executionId)">{{ job.jobName }}</a>
-          <h3 style="white-space: pre-line">{{job.validationMessage}}</h3>
-          <h4>End Time: {{ job.endTime | date:'MM/dd/yyyy HH:mm:ss a' }}</h4>
+  </mat-toolbar>
+  <mat-dialog-content layout="column" style="min-width:400px;" layout-padding>
+    <mat-list class="md-dense" flex>
+      <mat-list-item style="height: auto; margin: 16px -16px;" class="md-3-line" *ngFor="let job of jobs">
+        <div style="margin-bottom: 16px;" class="md-list-item-text" layout="column">
+          <a href (click)="gotoJobDetails(job.executionId)">{{ job.jobName }}</a>
+          <div style="line-height: 1.05; font-size: 13px;" style="white-space: pre-line">{{job.validationMessage}}</div>
+          <div style="line-height: 1.05; font-size: 12px;">End Time: {{ job.endTime | date:'MM/dd/yyyy HH:mm:ss a' }}</div>
         </div>
-        <md-divider ></md-divider>
-      </md-list-item>
-      <md-list-item class="md-3-line" ng-if="jobs.length == 0">
+        <mat-divider ></mat-divider>
+      </mat-list-item>
+      <mat-list-item style="height: auto;" class="md-3-line" *ngIf="jobs.length == 0">
         <div class="md-list-item-text" layout="column">
           No jobs found matching your criteria
         </div>
-      </md-list-item>
-    </md-list>
-
-  </md-dialog-content>
-</md-dialog>
+      </mat-list-item>
+    </mat-list>
+  </mat-dialog-content>
+</div>

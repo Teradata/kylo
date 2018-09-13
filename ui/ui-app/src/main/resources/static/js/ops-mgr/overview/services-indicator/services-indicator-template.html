@@ -17,27 +17,28 @@
   limitations under the License.
   #L%
   -->
-<md-card layout-align="center center">
-    <span class="card-title kpi-header">{{"Services Health" | translate}}</span>
-    <span class="md-caption kpi-subtitle ">{{"Monitors All Service Health" | translate}}</span>
-    <md-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%;">
-        <div ng-if="vm.dataLoaded">
-            <nvd3 options="vm.chartOptions" data="vm.indicator.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
-            <div layout="row" layout-align="space-between end" class="kpi-health-count-container" >
-            <span layout="column" ng-click="vm.openDetailsDialog('HEALTHY')" style="cursor: pointer;">
-                <span class="kpi-health-count" ng-class="{'healthy':vm.indicator.counts.upCount >0}">{{vm.indicator.counts.upCount}}</span>
+<mat-card layout-align="center center" style="padding: 8px;">
+    <mat-card-title style="margin-bottom: 0; text-align: center; padding: 0; font-size: 14px;">
+        <span class="card-title kpi-header">{{"Services Health" | translate}}</span>
+        <span class="md-caption kpi-subtitle ">{{"Monitors All Service Health" | translate}}</span>
+    </mat-card-title>
+    <mat-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%; padding:0;">
+        <div *ngIf="dataLoaded">
+            <nvd3 [options]="chartOptions" [data]="indicator.chartData" api="chartApi" config="chartConfig"></nvd3>
+            <div layout="row" style="justify-content:space-between" class="kpi-health-count-container" >
+            <span layout="column" (click)="openDetailsDialog('HEALTHY')" style="cursor: pointer;">
+                <span class="kpi-health-count" [ngClass]="{'healthy':indicator.counts.upCount >0}">{{indicator.counts.upCount}}</span>
                 <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
-            <span layout="column" ng-click="vm.openDetailsDialog('UNHEALTHY')" style="cursor: pointer;">
-                <span class="kpi-health-count" ng-class="{'unhealthy':vm.indicator.counts.errorCount >0}">{{vm.indicator.counts.errorCount}}</span>
+            <span layout="column" (click)="openDetailsDialog('UNHEALTHY')" style="cursor: pointer;">
+                <span class="kpi-health-count" [ngClass]="{'unhealthy':indicator.counts.errorCount >0}">{{indicator.counts.errorCount}}</span>
                 <span class="md-caption kpi-health-label">{{"Unhealthy" | translate}}</span>
             </span>
             </div>
         </div>
-        <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div  *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  
+            <mat-spinner mode="indeterminate" [diameter]="60"></mat-spinner>
         </div>
 
-    </md-card-content>
-
-
-</md-card>
+    </mat-card-content>
+</mat-card>

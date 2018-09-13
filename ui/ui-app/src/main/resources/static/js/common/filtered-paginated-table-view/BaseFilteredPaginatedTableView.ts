@@ -33,6 +33,10 @@ export class BaseFilteredPaginatedTableView {
         this.sortBy = sortBy;
     }
 
+    setSortOrder (sortOrder: TdDataTableSortingOrder) : void {
+        this.sortOrder = sortOrder;
+    }
+
     onPageSizeChange (pagingEvent: IPageChangeEvent) {
         this.fromRow = pagingEvent.fromRow;
         this.currentPage = pagingEvent.page;

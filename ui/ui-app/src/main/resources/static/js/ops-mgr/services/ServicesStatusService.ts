@@ -1,4 +1,5 @@
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import * as _ from 'underscore';
 import IconService from "./IconStatusService";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
@@ -47,6 +48,9 @@ export default class ServicesStatusData {
     transformServicesResponse(services: any) {
         var data = services;
         this.fetchServiceStatusErrorCount = 0;
+        if (!data) {
+            return;
+        }
         Object.keys(data).forEach((dataKey: any) => {
             var service = data[dataKey];
             service.componentsCount = service.components.length;
@@ -90,7 +94,7 @@ export default class ServicesStatusData {
             }
 
             if (this.services[service.serviceName]) {
-                this.services[service.serviceName] = [...this.services[service.serviceName], ...service];
+                this.services[service.serviceName] = _.extend(this.services[service.serviceName],service);
             }
             else {
                 this.services[service.serviceName] = service;

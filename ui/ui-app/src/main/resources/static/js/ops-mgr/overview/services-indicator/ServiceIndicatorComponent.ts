@@ -1,27 +1,25 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
 import "pascalprecht.translate";
 import * as _ from 'underscore';
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import ServicesStatusData from "../../services/ServicesStatusService";
 import * as moment from "moment";
-
+import { Component, Inject, ElementRef } from "@angular/core";
+import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import StateService from "../../../services/StateService";
+import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
+import BroadcastService from "../../../services/broadcast-service";
+import ServicesStatusData from "../../services/ServicesStatusService";
+import HttpService from "../../../services/HttpService";
+import { TranslateService } from "@ngx-translate/core";
 
 class Indicator {
 
     chartData: any[] = []
-
     openAlerts: any[] = [];
-
     allServices: any[] = [];
-
     counts: any = {errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0}
-
     percent: number = 0;
     dateTime: any = null;
-
     healthClass:string;
-
 
     grouped: any = {
         "HEALTHY": {label: "Healthy", styleClass: "status-healthy", count: 0, data: []},
@@ -29,7 +27,7 @@ class Indicator {
         "UNHEALTHY": {label: "UNHEALTHY", styleClass: "status-errors", count: 0, data: []}
     }
 
-    constructor(private chartOptions: any, private $filter: angular.IFilterService) {
+    constructor(private chartOptions: any, private translate: TranslateService) {
 
         this.chartData.push({key: "HEALTHY", value: 0});
         this.chartData.push({key: "UNHEALTHY", value: 0});
@@ -121,7 +119,7 @@ class Indicator {
         angular.forEach(this.chartData, (item, i) => {
             item.value = this.grouped[item.key].count;
         })
-        this.chartOptions.chart.title = this.counts.allCount + " " + this.$filter('translate')('Total');
+        this.chartOptions.chart.title = this.counts.allCount + " " + this.translate.instant('Total');
     }
 
     updatePercent() {
@@ -141,7 +139,11 @@ class Indicator {
     }
 }
 
-export default class controller implements ng.IComponentController {
+@Component({
+    selector: 'tba-services-indicator',
+    templateUrl: 'js/ops-mgr/overview/services-indicator/services-indicator-template.html'
+})
+export class ServiceIndicatorComponent {
     /**
      * flag to indicate the data is loaded
      */
@@ -164,27 +166,17 @@ export default class controller implements ng.IComponentController {
      */
     validateTitleTimeout: any;
 
-    static $inject = ["$scope", "$element", "$http",
-                        "$mdDialog", "$mdPanel", "$interval", "$timeout",
-                        "ServicesStatusData", "OpsManagerDashboardService",
-                        "BroadcastService", '$filter'];
-
-    constructor(private $scope: IScope,
-                private $element: JQuery,
-                private $http: angular.IHttpService,
-                private $mdDialog: angular.material.IDialogService,
-                private $mdPanel: angular.material.IPanelService,
-                private $interval: angular.IIntervalService,
-                private $timeout: angular.ITimeoutService,
-                private ServicesStatusData: any,
-                private OpsManagerDashboardService: any,
-                private BroadcastService: any,
-                private $filter: angular.IFilterService) {
+    constructor(private dialog: MatDialog,
+                private element: ElementRef,
+                private ServicesStatusData: ServicesStatusData,
+                private OpsManagerDashboardService: OpsManagerDashboardService,
+                private BroadcastService: BroadcastService,
+                private translate: TranslateService) {
 
     }// end of constructor
 
     private watchDashboard() {
-        this.BroadcastService.subscribe(this.$scope,
+        this.BroadcastService.subscribe(null,
             this.OpsManagerDashboardService.DASHBOARD_UPDATED,
             (dashboard: any) => {
 
@@ -201,49 +193,16 @@ export default class controller implements ng.IComponentController {
 
 
     openDetailsDialog(key: any) {
-        this.$mdDialog.show({
-            controller: ["$scope", "$mdDialog", "$interval", "StateService", "status",
-            "selectedStatusData", ($scope: any,$mdDialog: any,$interval: any,StateService: any,status: any,selectedStatusData: any) => {
-                $scope.css = status == "UNHEALTHY" ? "md-warn" : "";
-                $scope.status = status
-                $scope.services = selectedStatusData.data;
-
-                _.each($scope.services, (service: any) => {
-                    service.componentMessage = null;
-                    if (service.components.length == 1) {
-                        service.componentName = service.components[0].name;
-                        service.componentMessage = service.components[0].message;
-                    }
-                });
-
-                $scope.hide = () => {
-                    $mdDialog.hide();
-
-                };
-
-                $scope.gotoServiceDetails = (serviceName: any) => {
-                    $mdDialog.hide();
-                    StateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
-                }
-
-                $scope.cancel = () => {
-                    $mdDialog.cancel();
-                };
-            }],
-            templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: true,
-            fullscreen: true,
-            locals: {
-                status: key,
-                selectedStatusData: this.indicator.grouped[key]
-            }
+        let dialogRef = this.dialog.open(ServiceDetailsDialogComponent, {
+            data: { status: key,
+                    selectedStatusData: this.indicator.grouped[key] },
+            panelClass: "full-screen-dialog"
         });
+
     }
 
-
     updateChart() {
-        var title = (this.indicator.counts.allCount) + " " + this.$filter('translate')('Total');
+        var title = (this.indicator.counts.allCount) + " " + this.translate.instant('Total');
         this.chartOptions.chart.title = title
         if (this.chartApi.update) {
             this.chartApi.update();
@@ -252,20 +211,16 @@ export default class controller implements ng.IComponentController {
 
     private validateTitle() {
         if (this.validateTitleTimeout != null) {
-            this.$timeout.cancel(this.validateTitleTimeout);
+            clearTimeout(this.validateTitleTimeout);
         }
-        var txt = this.$element.find('.nv-pie-title').text();
+        var txt = $(this.element.nativeElement).find('.nv-pie-title').text();
         if ($.trim(txt) == "0 Total" && this.indicator.counts.allCount > 0) {
             this.updateChart();
         }
-        this.validateTitleTimeout = this.$timeout(() => {
+        this.validateTitleTimeout = setTimeout(() => {
             this.validateTitle()
         }, 1000);
 
-    }
-
-    $onInit() {
-        this.ngOnInit();
     }
 
     ngOnInit() {
@@ -321,15 +276,51 @@ export default class controller implements ng.IComponentController {
 
         this.validateTitle();
 
-        this.indicator = new Indicator(this.chartOptions, this.$filter);
+        this.indicator = new Indicator(this.chartOptions, this.translate);
     }
 }
 
-angular.module(moduleName).component('tbaServicesIndicator', {
-    controller: controller,
-    bindings: {
-        panelTitle: "@"
-    },
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/services-indicator/services-indicator-template.html"
-});
+@Component({
+    templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html'
+})
+export class ServiceDetailsDialogComponent {
+
+    services:any[];
+    css: string;
+    status: string;
+    allChartData: any;
+           
+    constructor (private dialogRef: MatDialogRef<ServiceDetailsDialogComponent>,
+                 @Inject(MAT_DIALOG_DATA) private data: any,
+                 private stateService: StateService) {}
+
+    ngOnInit() {
+
+        this.css = status == "UNHEALTHY" ? "md-warn" : "";
+        this.status = this.data.status;
+        this.services = this.data.selectedStatusData.data;
+
+        this.services.forEach((service: any) => {
+            service.componentMessage = null;
+            if (service.components.length == 1) {
+                service.componentName = service.components[0].name;
+                service.componentMessage = service.components[0].message;
+            }
+        });
+
+    }
+
+    hide() {
+        this.dialogRef.close();
+    }
+
+    cancel() {
+        this.dialogRef.close();
+    }
+
+    gotoServiceDetails(serviceName: any) {
+        this.dialogRef.close();
+        this.stateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
+    }
+            
+}

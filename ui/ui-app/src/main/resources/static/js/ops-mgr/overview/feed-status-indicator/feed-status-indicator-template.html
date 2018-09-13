@@ -17,27 +17,29 @@
   limitations under the License.
   #L%
   -->
-<md-card layout-align="center center" >
-    <span class="card-title kpi-header">{{"Feed Health" | translate}}</span>
-    <span class="md-caption kpi-subtitle ">{{"Monitors All Feed Health" | translate}}</span>
-    <md-card-content  layout="column"  layout-align="center center" class="kpi-content" style="width:100%;">
-        <div ng-if="vm.dataLoaded">
-            <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
+<mat-card layout-align="center center" style="padding: 8px;">
+    <mat-card-title style="margin-bottom: 0; text-align: center; padding: 0; font-size: 14px;">
+        <span class="card-title kpi-header">{{"Feed Health" | translate}}</span>
+        <span class="md-caption kpi-subtitle ">{{"Monitors All Feed Health" | translate}}</span>
+    </mat-card-title>
+    <mat-card-content  layout="column"  layout-align="center center" class="kpi-content" style="width:100%; padding:0;">
+        <div *ngIf="dataLoaded">
+            <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" config="chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
-            <span layout="column" ng-click="vm.onHealthyClick()" style="cursor: pointer;">
-                <span class="kpi-health-count" ng-class="{'healthy':vm.dataMap.Healthy.count >0}">{{vm.dataMap.Healthy.count}}</span>
+            <span layout="column" (click)="onHealthyClick()" style="cursor: pointer;">
+                <span class="kpi-health-count" [ngClass]="{'healthy':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>
                 <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
-            <span layout="column" ng-click="vm.onUnhealthyClick()" style="cursor: pointer;">
-                <span class="kpi-health-count" ng-class="{'unhealthy':vm.dataMap.Unhealthy.count >0}">{{vm.dataMap.Unhealthy.count}}</span>
+            <span layout="column" (click)="onUnhealthyClick()" style="cursor: pointer;">
+                <span class="kpi-health-count" [ngClass]="{'unhealthy':dataMap.Unhealthy.count >0}">{{dataMap.Unhealthy.count}}</span>
                 <span class="md-caption kpi-health-label">{{"Unhealthy" | translate}}</span>
             </span>
             </div>
         </div>
-        <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div  *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
         </div>
 
-    </md-card-content>
+    </mat-card-content>
 
 
-</md-card>
+</mat-card>

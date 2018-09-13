@@ -17,36 +17,37 @@
   limitations under the License.
   #L%
   -->
-<card-layout class="right-card">
-    <header-section layout="row" >
+<mat-card class="right-card">
+    <mat-card-title layout="row" >
         <ng-md-icon icon="error_outline" size="20"
                    class="error right-card-title-text">
-        </ng-md-icon><div class="card-title right-card-title-text" style="padding-left:5px;">{{"views.alerts-template.Alerts" | translate}}</div>
+        </ng-md-icon>
+        <div class="card-title right-card-title-text" style="display:inline-block;padding-left:5px;">{{"views.alerts-template.Alerts" | translate}}</div>
         <span flex></span>
-    </header-section>
-    <body-section>
-        <md-divider></md-divider>
-        <md-list  layout-fill layout="column" class="list-item-table">
-            <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)" ng-init="vDN = 'views.alerts-template.' + alert.typeDisplayName">
+    </mat-card-title>
+    <mat-card-content>
+        <mat-divider></mat-divider>
+        <mat-list  layout-fill layout="column" class="list-item-table">
+            <mat-list-item *ngFor="let alert of alerts" (click)="navigateToAlerts(alert)" style="height: auto;">
                 <div style="width:100%" class="item-column" >
-                    <div layout="row" layout-align="space-between-stretch" flex layout-fill>
+                    <div layout="row" style="justify-content: space-between;" flex layout-fill>
                         <span class="item-title" >{{alert.groupDisplayName}}</span>
                         <span class="item-title" style="float:right;">{{vDN | translate}}</span>
                     </div>
-                    <div layout="row" layout-align="space-between-stretch" flex layout-fill>
-                        <span class="error column-title-bottom" ng-if="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
-                        <span class="error column-title-bottom" ng-if="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
-                        <span class="error column-title-bottom" ng-if="alert.count > 4">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
+                    <div layout="row" style="justify-content: space-between;" flex layout-fill>
+                        <span class="error column-title-bottom" *ngIf="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
+                        <span class="error column-title-bottom" *ngIf="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
+                        <span class="error column-title-bottom" *ngIf="alert.count > 4">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
                         <span class="md-caption column-title-bottom" style="float:right;">{{alert.since}}</span>
                     </div>
                 </div>
-                <md-divider ng-if="!$last"></md-divider>
-            </md-list-item>
-            <md-list-item ng-if="vm.alerts.length == 0">
+                <mat-divider *ngIf="!$last"></mat-divider>
+            </mat-list-item>
+            <mat-list-item *ngIf="alerts && alerts.length == 0">
                 <div style="width:100%" class="item-column" >
                     <span class="item-title" >{{"views.alerts-template.Na" | translate}}</span>
                     </div>
-            </md-list-item>
-        </md-list>
-    </body-section>
-</card-layout>
+            </mat-list-item>
+        </mat-list>
+    </mat-card-content>
+</mat-card>

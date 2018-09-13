@@ -17,6 +17,7 @@ import AngularModuleExtensionService from "./AngularModuleExtensionService";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 import {TemplateService} from "../repository/services/template.service";
 import Utils from "./Utils";
+import HttpService from "./HttpService";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -108,6 +109,12 @@ export const angularModuleExtensionServiceProvider : FactoryProvider = {
 export const utilsServiceProvider : FactoryProvider = {
     provide : Utils,
     useFactory : (i: angular.auto.IInjectorService) => i.get("Utils"),
+    deps : ["$injector"]
+};
+
+export const httpServiceProvider : FactoryProvider = {
+    provide : HttpService,
+    useFactory : (i: angular.auto.IInjectorService) => i.get("HttpService"),
     deps : ["$injector"]
 };
 

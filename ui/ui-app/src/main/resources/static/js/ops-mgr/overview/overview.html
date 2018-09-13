@@ -18,8 +18,8 @@
   #L%
   -->
 <div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <div layout="row" layout-sm="column" layout-xs="column" ng-if="vm.allowed">
+    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <div layout="row" layout-sm="column" layout-xs="column" *ngIf="allowed">
         <div layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs= "2" flex-order-sm="2">
             <!-- THE KPIs -->
             <div layout="row" layout-xs="column" layout-wrap layout-align="space-between center" class="kpi-row">
@@ -38,7 +38,7 @@
             </div>
             <!-- END KPIs -->
             <!-- the Feeds Table-->
-            <tba-feed-health-table-card card-title="Feed Health"></tba-feed-health-table-card>
+            <tba-feed-health-table-card cardTitle="Feed Health"></tba-feed-health-table-card>
             <!-- end feeds table-->
         </div>
         <!-- the ALERTS -->

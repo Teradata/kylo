@@ -17,20 +17,23 @@
   limitations under the License.
   #L%
   -->
-<md-card layout-align="center center" >
-    <span class="card-title kip-header">{{"Job Activity" | translate}}</span>
-    <span class="md-caption kpi-subtitle "style="padding-bottom:10px">{{"Currently Running Jobs" | translate}}</span>
-    <md-card-content layout="column" layout-align="center center" class="kpi-content">
-        <div ng-if="vm.dataLoaded">
-            <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" ></nvd3>
+<mat-card layout-align="center center" style="padding: 8px;">
+    <mat-card-title style="margin-bottom: 0; text-align: center; padding: 0; font-size: 14px;">
+        <span class="card-title kip-header">{{"Job Activity" | translate}}</span>
+        <span class="md-caption kpi-subtitle "style="padding-bottom:10px">{{"Currently Running Jobs" | translate}}</span>
+    </mat-card-title>
+    <mat-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%; padding:0;">
+        <div *ngIf="dataLoaded">
+            <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" ></nvd3>
             <div layout="row" layout-align="center center" flex  style="width:100%" >
-               <span layout="column" ng-click="vm.chartClick()" style="cursor: pointer;">
-                <span class="md-title" ng-class="{'healthy':vm.running >0}">{{vm.running}}</span>
+               <span layout="column" (click)="chartClick()" style="cursor: pointer;">
+                <span class="md-title" [ngClass]="{'healthy':running >0}">{{running}}</span>
                 <span class="md-caption kpi-health-label">{{"Running" | translate}}</span>
             </span>
             </div>
         </div>
-      <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  
+            <mat-spinner mode="indeterminate" [diameter]="60"></mat-spinner>
         </div>
-    </md-card-content>
-</md-card>
+    </mat-card-content>
+</mat-card>

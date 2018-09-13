@@ -9,14 +9,12 @@ import { TranslateService } from "@ngx-translate/core";
 export class KyloTimerDirective {
 
       @Input() startTime: any;
+      @Input() truncatedFormat: any;
+      @Input() addAgoSuffix: any;
 
       refreshTime: any;
-      truncatedFormat: any;
-      addAgoSuffix: any;
-
       time: any;
       previousDisplayStr: any;
-
       interval: any;
 
       clearInterval(): void {

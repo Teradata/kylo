@@ -25,11 +25,11 @@ import { Subscription } from "rxjs";
     selector: 'tba-jobs',
     templateUrl: 'js/ops-mgr/jobs/jobs-template.html'
 })
-export class JobsCardComponent extends BaseFilteredPaginatedTableView implements OnChanges {
+export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
-    allowAdmin: boolean;
-    loading: boolean;
-    showProgress: boolean;
+    allowAdmin: boolean = false;
+    loading: boolean = true;
+    showProgress: boolean = true;
     jobIdMap: any;
     timeoutMap: any;
     paginationData: any;
@@ -39,7 +39,7 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
     abandonAllMenuOption: any;
     additionalMenuOptions: any;
     selectedAdditionalMenuOptionVar: any;
-    loaded: boolean;
+    loaded: boolean =false;
     total: number = 0;
     page: number = 1;
     refreshing: boolean;
@@ -51,7 +51,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
     filterHelpExamples: any[];
 
     @Input() filterJob: any;
-    filterJobObserver = new Subject();
 
     @Input() tab: any;
     @Input() cardTitle: any;
@@ -76,45 +75,30 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
         private BroadcastService: BroadcastService,
         private OpsManagerRestUrlService: OpsManagerRestUrlService,
         public _dataTableService: TdDataTableService) {
-        super(_dataTableService);
+            super(_dataTableService);
     }
 
     ngOnInit() {
-        /**
-         * Indicates that admin operations are allowed.
-         * @type {boolean}
-         */
-        this.allowAdmin = false;
 
         this.pageName = ObjectUtils.isDefined(this.pageName) ? this.pageName : 'jobs';
-        //Page State
-        this.loading = true;
-        this.showProgress = true;
-
         //map of jobInstanceId to the Job
         this.jobIdMap = {};
-
-
         //Track those Jobs who are refreshing because they are running
         this.timeoutMap = {};
-
         //Pagination and view Type (list or table)
         this.paginationData = this.PaginationDataService.paginationData(this.pageName);
-
         //Setup the Tabs
         var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned'] //, 'Stopped'];
         this.tabs = this.TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
 
         this.tabMetadata = this.TabService.metadata(this.pageName);
-
-
+        
         this.abandonAllMenuOption = {};
 
         this.additionalMenuOptions = this.loadAdditionalMenuOptions();
 
         this.selectedAdditionalMenuOptionVar = this.selectedAdditionalMenuOption;
 
-        var loaded = false;
         /**
          * The filter supplied in the page
          * @type {string}
@@ -123,15 +107,11 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
 
         this.tab = ObjectUtils.isUndefined(this.tab) ? '' : this.tab;
 
-
         this.BroadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.updateJobs);
         if (this.hideFeedColumn) {
             this.columns.splice(2, 1);
         }
         this.loadJobs(true);
-        this.filterJobObserver.subscribe(() => {
-            return this.loadJobs(true);
-        });
 
         this.filterHelpOperators = [];
         this.filterHelpFields = []
@@ -168,17 +148,15 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
             if (index >= 0) {
                 this.tabMetadata.selectedIndex = index;
             }
+            let tabIndex = tabNames.indexOf(this.tab);
+            if (tabIndex > -1) {
+                this.onTabSelected(tabIndex);
+            }
         }
     }
 
     ngOnDestroy(): void {
         this.clearAllTimeouts();
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes && changes.filterJob && changes.filterJob.currentValue && changes.filterJob.currentValue !== changes.filterJob.previousValue) {
-            this.filterJobObserver.next();
-        }
     }
 
     columns: ITdDataTableColumn[] = [
@@ -196,7 +174,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView implements
     }
 
     //Tab Functions
-
     onTabSelected(tab: any) {
         this.TabService.selectedTab(this.pageName, this.tabs[tab]);
         return this.loadJobs(true);

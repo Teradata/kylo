@@ -237,19 +237,10 @@ class Route {
 
         //Ops Manager
 
-        $stateProvider.state({
+        $stateProvider.state({ 
             name: 'dashboard.**',
             url: '/dashboard',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/overview/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('dashboard')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading ops manager dashboard ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/overview/overview.module#OverviewModule' 
         });
 
         $stateProvider.state({

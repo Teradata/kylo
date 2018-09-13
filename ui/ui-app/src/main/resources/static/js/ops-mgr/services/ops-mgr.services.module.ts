@@ -14,6 +14,7 @@ import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 import ProvenanceEventStatsService from "./ProvenanceEventStatsService";
 import ServicesStatusData from "./ServicesStatusService";
 import TabService from "./TabService";
+import OpsManagerDashboardService from "./OpsManagerDashboardService";
 
 @NgModule({
     imports: [
@@ -33,6 +34,7 @@ import TabService from "./TabService";
         OpsManagerRestUrlService,
         ProvenanceEventStatsService,
         ServicesStatusData,
+        OpsManagerDashboardService,
         TabService
     ]
 })

@@ -10,9 +10,9 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         userGroupServiceProvider,
         angularModuleExtensionServiceProvider,
         fileUploadServiceProvider,
-        utilsServiceProvider} from "./angular2";
+        utilsServiceProvider,
+        httpServiceProvider} from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
-//import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
     imports: [
         CommonModule,
@@ -33,7 +33,8 @@ import {TemplateService} from "../repository/services/template.service";
         fileUploadServiceProvider,
         utilsServiceProvider,
         angularModuleExtensionServiceProvider,
-        TemplateService
+        TemplateService,
+        httpServiceProvider
     ]
 })
 export class KyloServicesModule {

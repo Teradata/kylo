@@ -44,7 +44,7 @@
                 </div>
             </div>
 
-            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" [(ngModel)]="filterTable" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
             </td-search-box>
 
             <button md-butto aria-label="Filter Help" class="md-icon-button md-button md-kylo-theme md-ink-ripple filter-help-button" [matMenuTriggerFor]="menu">
