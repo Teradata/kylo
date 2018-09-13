@@ -171,7 +171,6 @@ export class SlaDetailsComponent implements OnInit {
     }
 
     private applyEditPermissionsToSLA(sla: Sla) {
-        console.log('applyEditPermissionsToSLA');
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         this.accessControlService.getUserAllowedActions().then((response: any) => {
             if (entityAccessControlled) {
