@@ -17,7 +17,7 @@ export class CronExpressionPreviewComponent implements OnInit {
 
     @Input()
     private control: FormControl;
-    nextDates: any[];
+    nextDates: any;
     private restUrlService: any;
     private labelNotAvailable: string;
 
