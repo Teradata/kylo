@@ -6,6 +6,7 @@ import * as _ from 'underscore';
 import {PolicyInputFormService} from '../../../../../shared/field-policies-angular2/policy-input-form.service';
 import * as angular from 'angular';
 import {FormMode, RuleType} from './sla-details.componment';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 
 
 export function nonEmptyValidator(): ValidatorFn {
@@ -23,6 +24,8 @@ export function nonEmptyValidator(): ValidatorFn {
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.html"
 })
 export class SlaFormComponent implements OnInit, OnChanges {
+
+    private static conditionsLoader: string = "SlaFormComponent.conditionsLoader";
 
     @Input('formGroup') slaForm: FormGroup;
     @Input('sla') editSla: Sla;
@@ -78,11 +81,15 @@ export class SlaFormComponent implements OnInit, OnChanges {
     private showActionOptions = false;
     isDebug = false;
     newMode = FormMode.ModeNew;
+    private loadingConditions: boolean;
 
 
-    constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService) {
+    constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService, private loadingService: TdLoadingService) {
         this.slaService = $$angularInjector.get("SlaService");
         this.stateService = $$angularInjector.get("StateService");
+
+        this.createLoader(SlaFormComponent.conditionsLoader);
+
         this.slaName = new FormControl('', Validators.required);
         this.slaName.valueChanges.subscribe(value => {
             this.editSla.name = value;
@@ -103,6 +110,8 @@ export class SlaFormComponent implements OnInit, OnChanges {
         /**
          * Load up the Metric Options for defining SLAs
          */
+        this.loadingService.register(SlaFormComponent.conditionsLoader);
+        this.loadingConditions = true;
         this.slaService.getPossibleSlaMetricOptions().then((response: any) => {
             let currentFeedValue = null;
             if (this.feedModel != null) {
@@ -112,6 +121,11 @@ export class SlaFormComponent implements OnInit, OnChanges {
             if (this.allowCreate || this.allowEdit) {
                 this.policyInputFormService.stripNonEditableFeeds(this.options);
             }
+            this.loadingService.resolve(SlaFormComponent.conditionsLoader);
+            this.loadingConditions = false;
+        }, (err: any) => {
+            this.loadingService.resolve(SlaFormComponent.conditionsLoader);
+            this.loadingConditions = false;
         });
 
         /**
@@ -264,5 +278,16 @@ export class SlaFormComponent implements OnInit, OnChanges {
             this.stateService.OpsManager().Sla().navigateToServiceLevelAssessments('slaId==' + this.editSla.id);
         }
     }
+
+    private createLoader(name: string) {
+        this.loadingService.create({
+            name: name,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
+    }
+
+
 }
 

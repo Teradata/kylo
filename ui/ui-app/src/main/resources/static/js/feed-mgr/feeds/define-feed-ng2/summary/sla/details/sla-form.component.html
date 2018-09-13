@@ -30,7 +30,7 @@
     </div>
 
     <div *ngIf="addingSlaCondition == false" fxLayout="row" class="layout-margin-top-7 layout-padding-top-20 layout-padding-bottom-15">
-      <button mat-button mat-raised-button (click)="addNewCondition()">{{'Sla.Details.AddCondition' | translate}}</button>
+      <button mat-button mat-raised-button (click)="addNewCondition()" [disabled]="loadingConditions">{{'Sla.Details.AddCondition' | translate}}</button>
       <span fxFlex></span>
     </div>
 
