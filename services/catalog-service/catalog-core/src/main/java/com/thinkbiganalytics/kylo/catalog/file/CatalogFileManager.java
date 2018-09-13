@@ -320,7 +320,7 @@ public class CatalogFileManager {
                 file.setLength(status.getLen());
                 file.setModificationTime(status.getModificationTime());
                 file.setName(status.getPath().getName());
-                file.setPath(status.getPath().toString());
+                file.setPath(status.getPath().toUri().toString());
                 return file;
             })
             .collect(Collectors.toList());

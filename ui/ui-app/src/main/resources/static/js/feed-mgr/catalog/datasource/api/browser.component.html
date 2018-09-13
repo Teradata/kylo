@@ -8,7 +8,7 @@
               <ng-md-icon icon="home" style="vertical-align: sub;"></ng-md-icon> {{node.name || 'Home'}}
             </a>
             <a *ngIf="!isFirst" matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
-              {{node.name}}
+              {{node.displayName}}
             </a>
             <span *ngIf="!isLast"> / </span>
           </span>
