@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Compiler, Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, OnDestroy, SimpleChanges, Type} from "@angular/core";
+import {Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, OnDestroy, SimpleChanges, Type} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {Observable} from "rxjs/Observable";
 import {ArrayObservable} from "rxjs/observable/ArrayObservable";
@@ -46,7 +46,7 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
     state = State.LOADING;
     statusSubscription: Subscription;
 
-    constructor(private compiler: Compiler, private http: HttpClient, private injector: Injector, private moduleFactoryLoader: NgModuleFactoryLoader,
+    constructor(private http: HttpClient, private injector: Injector, private moduleFactoryLoader: NgModuleFactoryLoader,
                 @Inject("UiComponentsService") private uiComponentsService: UiComponentsService) {
     }
 
@@ -129,7 +129,7 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
                 }
 
                 // Load component and update state
-                this.childInjector = Injector.create([{provide: ProcessorRef, useValue: this.processor}], this.injector);
+                this.childInjector = Injector.create([{provide: ProcessorRef, useValue: this.processor}], module.injector);
                 this.childModule = moduleFactory;
                 this.childType = processorControl.component;
                 this.state = State.TEMPLATE;

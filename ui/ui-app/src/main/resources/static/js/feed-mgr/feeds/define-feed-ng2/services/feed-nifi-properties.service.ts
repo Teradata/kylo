@@ -85,14 +85,13 @@ export class FeedNifiPropertiesService {
             this.registerTemplatePropertyService.initializeProperties(template, "edit", []);
         }
 
+        //merge the non input processors
+        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+
         this.sortAndSetupFeedProperties(feed);
 
 
         // this.inputProcessors = template.inputProcessors;
         feed.allowPreconditions = template.allowPreconditions;
-
-        //merge the non input processors
-        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
-
     }
 }

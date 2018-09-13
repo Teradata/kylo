@@ -235,5 +235,14 @@ System.config({
         'vis':{exports:"vis"},
         'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app', format: "amd"},
         'routes':{deps:['app'], exports:'routes', format: "amd"}
+    },
+    packages: {
+        'plugin': {
+            meta: {
+                './*.js': {
+                    loader: "systemjs-angular-loader.js"
+                }
+            }
+        }
     }
 });

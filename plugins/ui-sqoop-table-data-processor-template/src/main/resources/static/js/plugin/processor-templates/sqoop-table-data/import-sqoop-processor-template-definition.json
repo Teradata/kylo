@@ -1,0 +1,4 @@
+{
+  "processorTypes": ["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+  "module": "plugin/processor-templates/sqoop-table-data/bundles/sqoop-table-data.umd.min#SqoopTableDataModule"
+}

@@ -1,0 +1,8 @@
+label {
+  color: rgba(0,0,0,0.54);
+  font-size: 75%;
+}
+.mat-radio-button .mat-hint {
+  display: block;
+  font-size: 75%;
+}

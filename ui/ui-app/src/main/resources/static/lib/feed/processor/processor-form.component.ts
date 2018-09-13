@@ -1,5 +1,6 @@
 import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {FormGroup} from "@angular/forms";
+import * as _ from "underscore"
 
 import {Templates} from "../../../js/feed-mgr/services/TemplateTypes";
 import {FieldConfig} from "../../../js/feed-mgr/shared/dynamic-form/model/FieldConfig";
@@ -11,7 +12,6 @@ import {DynamicFormService} from "../../../js/feed-mgr/shared/dynamic-form/servi
 import {ConfigurationFieldBuilder} from "../../../js/feed-mgr/shared/dynamic-form/services/field-config-builder";
 import {Property} from "../model/property";
 import {ProcessorRef} from "./processor-ref";
-import * as _ from "underscore"
 
 export class FieldConfigurationState {
 
@@ -91,7 +91,7 @@ export class FieldConfigurationBuilder {
 
     formGroupBuilder: DynamicFormFieldGroupBuilder;
 
-    constructor(private state: FieldConfigurationState) {
+    constructor(private state: FieldConfigurationState, private addSectionHeader: boolean) {
     }
 
     public createFormFields(processor: ProcessorRef, properties?: Property[]): FieldConfig<any>[] {
@@ -167,8 +167,8 @@ export class FieldConfigurationBuilder {
 
         properties.filter((property: Templates.Property) => property.userEditable).map((property: Templates.Property) => {
 
-            if(!property.uniqueId){
-                property.uniqueId =_.uniqueId("property-");
+            if (!property.uniqueId) {
+                property.uniqueId = _.uniqueId("property-");
             }
             let fieldConfig: FieldConfig<any> = this.buildField(property);
 
@@ -181,10 +181,12 @@ export class FieldConfigurationBuilder {
             else {
                 if (this.state.processorFieldMap[processor.id] == undefined) {
                     this.state.processorFieldMap[processor.id] = [];
-                    //add a new SectionHeader
-                    let sectionHeader = this.formGroupBuilder.sectionHeader().setOrder(this.state.getAndIncrementFieldOrder()).setPlaceholder(processor.name).setShowDivider(true).build();
-                    elements.push(sectionHeader);
-                    this.state.processorFieldMap[processor.id].push(sectionHeader);
+                    if (this.addSectionHeader !== false) {
+                        //add a new SectionHeader
+                        let sectionHeader = this.formGroupBuilder.sectionHeader().setOrder(this.state.getAndIncrementFieldOrder()).setPlaceholder(processor.name).setShowDivider(true).build();
+                        elements.push(sectionHeader);
+                        this.state.processorFieldMap[processor.id].push(sectionHeader);
+                    }
                 }
                 this.state.processorFieldMap[processor.id].push(fieldConfig);
             }
@@ -208,13 +210,16 @@ export class FieldConfigurationBuilder {
 export class ProcessorFormComponent implements OnChanges {
 
     @Input()
+    addSectionHeader: boolean | string;
+
+    @Input()
     form: FormGroup;
 
     @Input()
     processor: ProcessorRef;
 
     @Input()
-    properties: Property[];
+    properties: Property | Property[];
 
     @Input()
     readonly: boolean;
@@ -231,19 +236,20 @@ export class ProcessorFormComponent implements OnChanges {
             if (this.processor != null) {
                 this.fieldConfigurationState.reset();
 
-                new FieldConfigurationBuilder(this.fieldConfigurationState).createFormFields(this.processor, this.properties).sort((n1, n2) => {
-                    return n1.order - n2.order;
-                });
+                new FieldConfigurationBuilder(this.fieldConfigurationState, (this.addSectionHeader !== "false" && this.addSectionHeader !== false))
+                    .createFormFields(this.processor, (typeof this.properties === "undefined" || Array.isArray(this.properties)) ? this.properties as any : [this.properties])
+                    .sort((n1, n2) => {
+                        return n1.order - n2.order;
+                    });
 
                 //populate the form with the correct input processors
                 let inputProcessorFields = this.fieldConfigurationState.getFieldsForInput(this.processor.id);
-                if(inputProcessorFields.length == 0){
+                if (inputProcessorFields.length == 0) {
                     inputProcessorFields = this.fieldConfigurationState.getFieldsForNonInput(this.processor.id);
                 }
                 this.fieldGroups[0].fields = inputProcessorFields;
 
-               let controls =  this.dynamicFormService.addToFormGroup(inputProcessorFields, this.form);
-
+                this.dynamicFormService.addToFormGroup(inputProcessorFields, this.form);
             } else {
                 this.fieldGroups = [new FieldGroup()];
             }
