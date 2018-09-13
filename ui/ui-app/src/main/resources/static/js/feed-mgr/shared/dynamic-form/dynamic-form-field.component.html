@@ -49,7 +49,7 @@
       </mat-error>
       <mat-hint>{{field.hint}}</mat-hint>
     </mat-form-field>
-    <cron-expression-preview2 *ngIf="field.type == 'cron'" [expression]="form.controls[field.key].value"></cron-expression-preview2>
+    <cron-expression-preview2 *ngIf="field.type == 'cron'" [control]="form.controls[field.key]"></cron-expression-preview2>
 
 
     <mat-form-field *ngSwitchCase="'select'" class="pad-top-sm">

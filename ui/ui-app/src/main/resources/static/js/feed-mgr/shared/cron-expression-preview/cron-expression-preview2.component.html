@@ -18,9 +18,8 @@
   #L%
   -->
 <span *ngIf="nextDates && nextDates.length > 0" class="hint" translate>views.cron-expression-preview.CronPreview</span>
-<div *ngIf="!invalid" class="cron-expression-preview-container">
+<div class="cron-expression-preview-container">
   <div *ngFor="let nextDate of nextDates" class="cron-expression-preview-item">
     {{nextDate}}
   </div>
 </div>
-<div *ngIf="invalid" class="cron-expression-error" translate>views.cron-expression-preview.InvalidCronExpression</div>

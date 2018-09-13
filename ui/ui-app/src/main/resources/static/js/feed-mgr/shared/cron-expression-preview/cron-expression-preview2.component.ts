@@ -1,40 +1,47 @@
-import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
+import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from '@angular/common/http';
+import {AbstractControl, AsyncValidatorFn, FormControl, ValidationErrors} from '@angular/forms';
+import {Observable} from 'rxjs/Observable';
+import {catchError, map} from 'rxjs/operators';
+import {TranslateService} from '@ngx-translate/core';
 
 declare const CodeMirror: any;
 
 @Component({
     selector: "cron-expression-preview2",
-    styleUrls:  ["js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.css"],
+    styleUrls: ["js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.css"],
     templateUrl: "js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.html"
 })
-export class CronExpressionPreviewComponent implements OnInit, OnChanges {
+export class CronExpressionPreviewComponent implements OnInit {
 
     @Input()
-    private expression: string;
+    private control: FormControl;
     nextDates: any[];
     private restUrlService: any;
-    private invalid = false;
+    private labelNotAvailable: string;
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient) {
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private translateService: TranslateService) {
         this.restUrlService = $$angularInjector.get("RestUrlService");
+        this.labelNotAvailable = this.translateService.instant('views.cron-expression-preview.PreviewNotAvailable');
     }
 
     ngOnInit() {
-        this.getNextDates();
+        this.control.setAsyncValidators(this.cronExpressionValidator());
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        this.getNextDates();
-    }
+    cronExpressionValidator(): AsyncValidatorFn {
 
-    getNextDates() {
-        this.invalid = false;
-        this.http.get(this.restUrlService.PREVIEW_CRON_EXPRESSION_URL, {params: {cronExpression: this.expression}}).toPromise()
-            .then((response: any) => {
-                this.nextDates = response;
-            }, (error: any) => {
-                this.invalid = true;
-            });
+        return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
+            return this.http.get(this.restUrlService.PREVIEW_CRON_EXPRESSION_URL, {params: {cronExpression: control.value}}).pipe(
+                map(response => {
+                    this.nextDates = response;
+                    return null;
+                }),
+                catchError(() => {
+                    this.nextDates = [this.labelNotAvailable];
+                    return Observable.of(true);
+                })
+            );
+        };
     }
 }
