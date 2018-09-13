@@ -62,6 +62,11 @@ export interface FieldPolicy {
     sequence: number;
 }
 
+export enum SchemaParserType {
+    CSV="CSV",JSON="JSON",TEXT_BINARY="TEXT_BINARY"
+}
+
+
 export interface SchemaParser extends FieldPolicy{
 
     supportsBinary:boolean;

@@ -17,6 +17,12 @@ import {FileMetadataTransformService} from "../../catalog/datasource/preview-sch
 import {TdDialogService} from "@covalent/core/dialogs";
 import {MatDialogConfig} from "@angular/material/dialog";
 import {ReplaySubject} from "rxjs/ReplaySubject";
+import {SchemaParser} from "../../model/field-policy";
+import {SchemaParseSettingsDialog} from "../../catalog/datasource/preview-schema/schema-parse-settings-dialog.component";
+import {PreviewFileDataSet} from "../../catalog/datasource/preview-schema/model/preview-file-data-set";
+import {TdLoadingService} from "@covalent/core/loading";
+
+
 
 
 export enum DataSetType {
@@ -57,6 +63,9 @@ export class PreviewDataSetResultEvent {
 @Injectable()
 export class DatasetPreviewStepperService {
 
+    static PREVIEW_LOADING = "DatasetPreviewComponent.previewLoading"
+
+    static RAW_LOADING = "DatasetPreviewComponent.rawLoading"
 
     public dataSource$ = new Subject<DataSourceChangedEvent>();
     public dataSource: DataSource;
@@ -67,8 +76,14 @@ export class DatasetPreviewStepperService {
 
     public updateViewEvent$ = new Subject<any>();
 
+    /**
+     * the datasets to preview
+     */
+    public datasets:PreviewDataSet[];
+
 
     constructor(private _dialogService:TdDialogService,
+                  private _loadingService:TdLoadingService,
                   private _fileMetadataTransformService: FileMetadataTransformService,
                   private previewSchemaService: PreviewSchemaService) {
 
@@ -101,8 +116,11 @@ export class DatasetPreviewStepperService {
     }
 
     public notifyToUpdateView(){
+        console.log("NOTIFY OF UPDATE!!!!")
         this.updateViewEvent$.next();
     }
+
+
 
 
 
@@ -295,6 +313,36 @@ export class DatasetPreviewStepperService {
     }
 
 
+
+
+    openSchemaParseSettingsDialog(dataset:PreviewFileDataSet): void {
+        let dialogRef = this._dialogService.open(SchemaParseSettingsDialog, {
+            width: '500px',
+            data: { schemaParser: dataset.schemaParser,
+                sparkScript: dataset.sparkScript
+            }
+        });
+
+        dialogRef.afterClosed().filter(result => result != undefined).subscribe((result:SchemaParser) => {
+            dataset.schemaParser = result
+
+            let previewRequest = new PreviewDataSetRequest();
+            previewRequest.dataSource = dataset.dataSource;
+            //reset the preview
+            dataset.preview = undefined;
+            this._loadingService.register(DatasetPreviewStepperService.PREVIEW_LOADING)
+            this.notifyToUpdateView();
+            this.previewSchemaService.preview(dataset,previewRequest).subscribe((result:PreviewDataSet) => {
+                console.log('FINISHED PREVIEW!!!',result)
+                this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
+                this.notifyToUpdateView();
+            },error1 => {
+                this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
+                this.notifyToUpdateView();
+            })
+            ///update it
+        });
+    }
 
 
 

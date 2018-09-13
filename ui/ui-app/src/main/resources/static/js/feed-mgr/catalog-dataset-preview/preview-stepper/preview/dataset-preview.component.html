@@ -6,9 +6,6 @@
 <mat-tab-group (selectedTabChange)="onTabChange($event)">
   <mat-tab label="Preview" >
     <div fxLayout="column">
-      <div style="max-width:100px">
-        <button mat-raised-button (click)="openSchemaParseSettingsDialog()" *ngIf="dataset.schemaParser">Settings</button>
-      </div>
         <ng-template tdLoading [tdLoadingUntil]="!dataset.previewLoading" tdLoadingStrategy="overlay" tdLoadingType="linear">
       <ng-container *ngIf="dataset.preview && dataset.preview.error == false">
         <dataset-simple-table  [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" ></dataset-simple-table>

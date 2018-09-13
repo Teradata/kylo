@@ -70,6 +70,7 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
     }
     
     onUpdateView(){
+        console.log("UPDATE VIEW!!")
         this.cd.markForCheck();
     }
 

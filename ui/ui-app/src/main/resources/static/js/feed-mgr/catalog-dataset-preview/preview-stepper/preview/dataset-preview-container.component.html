@@ -14,14 +14,31 @@
 
   </ng-container>
 </mat-nav-list>
+
+  <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg" *ngIf="!hasPreviews && !selectedDataSet" >
+    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+    <h2>No datasets available to preview</h2>
+    <h3>Please go back and select data on the previous step</h3>
+  </div>
+
+
 </div>
 
 <ng-container *ngIf="selectedDataSet">
   <div fxLayout="column" fxFlex="none">
-   <div >
-     <button mat-button (click)="selectedDataSet = undefined" matTooltip="Back to dataset list">
+   <div  fxLayout="row" fxLayoutAlign="start end">
+     <button class="icon-button"  mat-button (click)="selectedDataSet = undefined" matTooltip="Back to dataset list">
        <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
        {{selectedDataSet.displayKey}}
+     </button>
+     <span fxFlex></span>
+
+     <button class="icon-button" mat-icon-button (click)="openSchemaParseSettingsDialog(selectedDataSet)" *ngIf="selectedDataSet.schemaParser"  matTooltip="Update dataset preview settings ">
+       <mat-icon>settings</mat-icon>
+     </button>
+
+     <button class="icon-button"  mat-icon-button (click)="removeDataSet(selectedDataSet)" matTooltip="Remove dataset ">
+       <mat-icon class="pad-right">delete</mat-icon>
      </button>
    </div>
     <dataset-preview #preview [displayTitle]="false" [dataset]="selectedDataSet"></dataset-preview>

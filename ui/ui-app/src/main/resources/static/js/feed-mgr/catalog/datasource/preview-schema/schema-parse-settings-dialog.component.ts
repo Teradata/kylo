@@ -15,8 +15,12 @@ export class SchemaParseSettingsDialog {
     this.sparkScript = data.sparkScript;
     }
 
+    apply(){
+        console.log("APPLY ",this.selectedParser)
+            this.dialogRef.close(this.selectedParser)
+    }
 
-     onNoClick(): void {
+     cancel(): void {
             this.dialogRef.close();
     }
 

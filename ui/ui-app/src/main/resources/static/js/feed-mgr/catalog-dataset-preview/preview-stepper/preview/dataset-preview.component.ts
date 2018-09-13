@@ -27,9 +27,7 @@ export class DatasetPreviewComponent implements OnInit{
     @Input()
     dataset:PreviewDataSet
 
-    static PREVIEW_LOADING = "DatasetPreviewComponent.previewLoading"
 
-    static RAW_LOADING = "DatasetPreviewComponent.rawLoading"
 
     rawReady:boolean;
 
@@ -56,14 +54,16 @@ export class DatasetPreviewComponent implements OnInit{
 
                 if (!this.dataset.hasRaw() && !this.dataset.hasRawError()) {
                     this.datasetPreviewStepperService.notifyToUpdateView();
-                    this._loadingService.register(DatasetPreviewComponent.RAW_LOADING)
-                    this.previewRawService.preview(<PreviewFileDataSet>this.dataset).subscribe((ds: PreviewDataSet) => {
-                        this._loadingService.resolve(DatasetPreviewComponent.RAW_LOADING)
+                    this._loadingService.register(DatasetPreviewStepperService.RAW_LOADING)
+                    this.previewSchemaService.previewAsTextOrBinary(<PreviewFileDataSet>this.dataset,false,true).subscribe((ds: PreviewDataSet) => {
+                        this._loadingService.resolve(DatasetPreviewStepperService.RAW_LOADING)
                         this.rawReady = true;
+                        this.dataset.rawLoading = false;
                         this.datasetPreviewStepperService.notifyToUpdateView();
                     }, (error1: any) => {
                         this.rawReady = true;
-                        this._loadingService.resolve(DatasetPreviewComponent.RAW_LOADING)
+                        this.dataset.rawLoading = false;
+                        this._loadingService.resolve(DatasetPreviewStepperService.RAW_LOADING)
                         this.datasetPreviewStepperService.notifyToUpdateView();
                     });
                 }
@@ -74,32 +74,7 @@ export class DatasetPreviewComponent implements OnInit{
 
 
     openSchemaParseSettingsDialog(): void {
-        let dialogRef = this._dialogService.open(SchemaParseSettingsDialog, {
-            width: '500px',
-            data: { schemaParser: (<PreviewFileDataSet>this.dataset).schemaParser,
-                sparkScript: (<PreviewFileDataSet>this.dataset).sparkScript
-            }
-        });
-
-        dialogRef.afterClosed().filter(result => result != undefined).subscribe((result:SchemaParser) => {
-            (<PreviewFileDataSet>this.dataset).schemaParser = result
-
-            let previewRequest = new PreviewDataSetRequest();
-            previewRequest.dataSource = this.dataset.dataSource;
-            //reset the preview
-            this.dataset.preview = undefined;
-            this._loadingService.register(DatasetPreviewComponent.PREVIEW_LOADING)
-            this.datasetPreviewStepperService.notifyToUpdateView();
-            this.previewSchemaService.preview(this.dataset,previewRequest).subscribe((result:PreviewDataSet) => {
-                console.log('FINISHED PREVIEW!!!',result)
-                this._loadingService.resolve(DatasetPreviewComponent.PREVIEW_LOADING)
-                this.datasetPreviewStepperService.notifyToUpdateView();
-            },error1 => {
-                this._loadingService.resolve(DatasetPreviewComponent.PREVIEW_LOADING)
-                this.datasetPreviewStepperService.notifyToUpdateView();
-            })
-            ///update it
-        });
+        this.datasetPreviewStepperService.openSchemaParseSettingsDialog(<PreviewFileDataSet>this.dataset)
     }
 
 

@@ -216,6 +216,38 @@ export class PreviewDataSet {
         return this.sparkOptions != undefined && !_.isEmpty(this.sparkOptions)
     }
 
+    public start(rawData:boolean) {
+        if (rawData) {
+            this.rawLoading = true;
+        }
+        else {
+            this.previewLoading = true;
+        }
+    }
+
+    public error(rawData:boolean, message:string) {
+        if (rawData) {
+            this.rawLoading = false;
+        }
+        else {
+            this.previewLoading = false;
+        }
+    }
+
+    public success(preview:TableViewModel, rawData:boolean){
+        if (rawData) {
+            this.raw = preview;
+            this.clearRawError();
+            this.rawLoading = false;
+        }
+        else {
+            this.previewLoading = false;
+            this.clearPreviewError()
+            this.schema = preview.columns;
+            this.preview = preview;
+        }
+    }
+
 }
 
 

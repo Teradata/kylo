@@ -20,6 +20,6 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  */
 
 public enum SparkFileType {
-    PARQUET, AVRO, JSON, ORC, XML, CSV
+    PARQUET, AVRO, JSON, ORC, XML, CSV,TEXT_BINARY
 
 }

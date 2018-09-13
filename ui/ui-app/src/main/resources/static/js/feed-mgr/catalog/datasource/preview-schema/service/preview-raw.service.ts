@@ -27,27 +27,38 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
         super(http,transformResponeTableBuilder)
     }
 
+    /**
+     * Transform the first file in the dataset
+     * @param {PreviewFileDataSet} previewDataSet
+     * @return {Observable<TransformResponse>}
+     */
+    transformRaw(previewDataSet: PreviewFileDataSet):Observable<TransformResponse> {
+        let firstFile = previewDataSet.files[0].filePath;
+        let sparkScript = "var df = sqlContext.read.format(\"text\").load(\""+firstFile+"\")";
+        let sparkScriptWithLimit = this.limitSparkScript(sparkScript);
+        return  this.transform(sparkScriptWithLimit);
+    }
 
+    /**
+     * Preview the data with inline RAW script
+     * NOTE its preferred to use the previewAsTextOrBinary method in the preview-schema.service.ts
+     * @param {PreviewFileDataSet} previewDataSet
+     * @return {Observable<PreviewDataSet>}
+     */
     preview(previewDataSet: PreviewFileDataSet) :Observable<PreviewDataSet>{
+
         if(previewDataSet.raw == undefined && previewDataSet.allowsRawView) {
-            previewDataSet.rawLoading = true;
-
-            let firstFile = previewDataSet.files[0].filePath;
-
-            let sparkScript = "var df = sqlContext.read.format(\"text\").load(\""+firstFile+"\")";
-
             let previewDataSetSource = new Subject<PreviewDataSet>()
             let previewedDataSet$ = previewDataSetSource.asObservable();
 
+            previewDataSet.start(true)
 
-            let sparkScriptWithLimit = this.limitSparkScript(sparkScript);
-            this.transform(sparkScriptWithLimit).subscribe((data: TransformResponse) => {
+           this.transformRaw(previewDataSet).subscribe((data: TransformResponse) => {
                 let preview = this.transformResponeTableBuilder.buildTable(data);
-                previewDataSet.raw = preview;
-                previewDataSet.clearRawError();
-                previewDataSet.rawLoading = false;
+                previewDataSet.success(preview,true)
                 previewDataSetSource.next(previewDataSet)
             }, error1 => {
+               previewDataSet.error(true,"Error previewing data "+error1)
                 previewDataSet.rawLoading = false;
                 previewDataSet.rawError("Error previewing the raw data " + error1)
                 previewDataSetSource.error(previewDataSet)

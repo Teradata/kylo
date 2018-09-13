@@ -66,12 +66,19 @@ export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{
     }
 
     showSave(){
-        return this.datasetStepper.showSave();
+        return this.datasetStepper.showSave() && this.getDataSetsLength() >0;
     }
     saveDisabled(){
         return this.datasetStepper.saveDisabled();
     }
     onSave(){
         this.datasetStepper.onSave();
+    }
+
+    getDatasets(){
+        return this.datasetStepper.getDataSets();
+    }
+    getDataSetsLength(){
+        return this.datasetStepper.getDataSetsLength();
     }
 }

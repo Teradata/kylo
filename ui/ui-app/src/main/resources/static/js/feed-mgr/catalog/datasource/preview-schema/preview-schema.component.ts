@@ -264,7 +264,7 @@ export class PreviewSchemaComponent implements OnInit {
             let isNew = !this.selectedDataSet.hasPreview();
             this.selectedDataSet.dataSource = this.datasource;
             //add in other properties
-            this.previewSchemaService.preview(this.selectedDataSet, previewRequest).subscribe((data: PreviewDataSet) => {
+            this.previewSchemaService.preview(this.selectedDataSet, previewRequest,false).subscribe((data: PreviewDataSet) => {
                 this.selectedDataSetViewRaw = false;
                 //auto collect the first one if there is only 1 dataset and its editable
                 if(this.autoCollect && this.editable){  //this.datasetKeys.length == 1 &&

@@ -221,6 +221,14 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
 
     }
 
+    getDataSets() {
+        return this.preview.previews || [];
+    }
+
+    getDataSetsLength(){
+        return this.getDataSets().length
+    }
+
     /**
      * Callback when the user clicks the "Save/Add" button from the last step to do something with one or more datasets with previews
      */
