@@ -76,7 +76,7 @@ public class CatalogFileManagerTest {
         Assert.assertFalse("Expected uploaded file to not be a directory", upload.isDirectory());
         Assert.assertEquals(src.length(), upload.getLength().longValue());
         Assert.assertEquals("file-upload.txt", upload.getName());
-        Assert.assertEquals(file.toURI().toURL().toString(), upload.getPath());
+        Assert.assertEquals(file.toURI(), URI.create(upload.getPath()));
         Assert.assertEquals(src, Files.toString(file, StandardCharsets.UTF_8));
     }
 
@@ -115,9 +115,9 @@ public class CatalogFileManagerTest {
         // Test listing files
         final CatalogFileManager fileManager = new MockCatalogFileManager();
         final List<DataSetFile> files = fileManager.listUploads(dataSet);
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", dataSetFolder.toPath().resolve("file1.txt").toUri().toURL().toString(), false, 5, "data1")));
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", dataSetFolder.toPath().resolve("file2.txt").toUri().toURL().toString(), false, 5, "data2")));
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", dataSetFolder.toPath().resolve("file3.txt").toUri().toURL().toString(), false, 5, "data3")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", dataSetFolder.toPath().resolve("file1.txt").toUri().toString(), false, 5, "data1")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", dataSetFolder.toPath().resolve("file2.txt").toUri().toString(), false, 5, "data2")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", dataSetFolder.toPath().resolve("file3.txt").toUri().toString(), false, 5, "data3")));
         Assert.assertEquals(3, files.size());
     }
 
