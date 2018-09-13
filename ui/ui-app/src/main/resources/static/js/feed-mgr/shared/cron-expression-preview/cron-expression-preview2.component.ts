@@ -1,9 +1,10 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from '@angular/common/http';
 import {AbstractControl, AsyncValidatorFn, FormControl, ValidationErrors} from '@angular/forms';
-import {Observable} from 'rxjs/Observable';
 import {catchError, map} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
+import {Observable} from 'rxjs/Observable';
+import {of} from 'rxjs/observable/of';
 
 declare const CodeMirror: any;
 
@@ -39,7 +40,7 @@ export class CronExpressionPreviewComponent implements OnInit {
                 }),
                 catchError(() => {
                     this.nextDates = [this.labelNotAvailable];
-                    return Observable.of(true);
+                    return of(true);
                 })
             );
         };
