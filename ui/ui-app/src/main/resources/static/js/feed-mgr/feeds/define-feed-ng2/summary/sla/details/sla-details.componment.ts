@@ -10,6 +10,7 @@ import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
 import {TranslateService} from '@ngx-translate/core';
+import AccessConstants from '../../../../../../constants/AccessConstants';
 
 export enum FormMode {
     ModeEdit = "EDIT",
@@ -44,7 +45,7 @@ export class SlaDetailsComponent implements OnInit {
     private slaService: any;
     private accessControlService: any;
     private policyInputFormService: any;
-    allowEdit: boolean;
+    allowEdit = false;
     private sla: Sla;
     private feedModel: Feed;
     slaForm: FormGroup = new FormGroup({});
@@ -170,6 +171,7 @@ export class SlaDetailsComponent implements OnInit {
     }
 
     private applyEditPermissionsToSLA(sla: Sla) {
+        console.log('applyEditPermissionsToSLA');
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         this.accessControlService.getUserAllowedActions().then((response: any) => {
             if (entityAccessControlled) {
@@ -177,8 +179,8 @@ export class SlaDetailsComponent implements OnInit {
                 this.allowEdit = sla.canEdit;
             }
             else {
-                const allowFeedEdit = this.accessControlService.hasAction(this.accessControlService.FEEDS_EDIT, response.actions);
-                const allowSlaEdit = this.accessControlService.hasAction(this.accessControlService.SLA_EDIT, response.actions);
+                const allowFeedEdit = this.accessControlService.hasAction(AccessConstants.FEEDS_EDIT, response.actions);
+                const allowSlaEdit = this.accessControlService.hasAction(AccessConstants.SLA_EDIT, response.actions);
                 this.allowEdit = allowFeedEdit && allowSlaEdit;
                 sla.editable = this.allowEdit;
             }

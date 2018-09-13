@@ -6,6 +6,7 @@ import {Feed, FeedState} from '../../../../../model/feed/feed.model';
 import {SlaDetailsComponent} from '../details/sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {FeedLoadingService} from '../../../services/feed-loading-service';
+import AccessConstants from '../../../../../../constants/AccessConstants';
 
 @Component({
     selector: "sla-list",
@@ -23,7 +24,7 @@ export class SlaListComponent implements OnInit {
     private accessControlService: any;
     private loading = false;
     serviceLevelAgreements: Sla[] = [];
-    private allowCreate: boolean;
+    private allowCreate = false;
     stateDisabled = FeedState.DISABLED;
     private feedModel: Feed;
 
@@ -34,7 +35,7 @@ export class SlaListComponent implements OnInit {
 
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                if (this.accessControlService.hasAction(this.accessControlService.SLA_EDIT, actionSet.actions)) {
+                if (this.accessControlService.hasAction(AccessConstants.SLA_EDIT, actionSet.actions)) {
                     this.allowCreate = true;
                 }
             });
