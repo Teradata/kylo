@@ -5,9 +5,14 @@
       <mat-toolbar >
         <div>Feed {{feed.feedName}}</div>
         <span fxFlex="100"></span>
-        <ng-container
+        <div>
+          <ng-container
             [ngTemplateOutlet]="toolbarActionLinks ? toolbarActionLinks: defaultToolbarActionLinks">
         </ng-container>
+        </div>
+        <button mat-icon-button color="accent" (click)="onDelete()" *ngIf="!feed.readonly"><mat-icon>delete</mat-icon></button>
+        <button mat-icon-button color="accent" (click)="onCancelEdit()" *ngIf="!feed.readonly"><mat-icon>cancel</mat-icon></button>
+        <button mat-icon-button color="accent" (click)="onEdit()" *ngIf="feed.readonly"><mat-icon>edit</mat-icon></button>
       </mat-toolbar>
       <ui-view></ui-view>
     </td-layout-manage-list>

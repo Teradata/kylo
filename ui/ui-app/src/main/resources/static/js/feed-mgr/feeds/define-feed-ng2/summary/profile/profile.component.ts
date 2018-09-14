@@ -16,8 +16,6 @@ export class ProfileComponent extends AbstractLoadFeedComponent implements OnIni
 
     static LINK_NAME = "Profile"
 
-    @Input() stateParams: any;
-
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
     }
@@ -26,9 +24,8 @@ export class ProfileComponent extends AbstractLoadFeedComponent implements OnIni
         return ProfileComponent.LINK_NAME;
     }
 
-    ngOnInit() {
-        let feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.initializeFeed(feedId);
+    init() {
+
     }
 }
 

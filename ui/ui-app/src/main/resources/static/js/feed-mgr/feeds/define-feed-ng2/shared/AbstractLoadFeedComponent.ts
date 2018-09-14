@@ -1,22 +1,48 @@
-import {OnInit, Input} from "@angular/core";
+import {OnInit, Input, OnDestroy} from "@angular/core";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {Observable} from "rxjs/Observable";
 import {Feed} from "../../../model/feed/feed.model";
 import {StateService} from "@uirouter/angular";
-import {DefineFeedService} from "../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedSideNavService} from "./feed-side-nav.service";
+import {ISubscription} from "rxjs/Subscription";
 
 
-export abstract class AbstractLoadFeedComponent  {
+export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
+
+    @Input() stateParams: any;
 
     public loadingFeed:boolean;
 
     public feed: Feed;
 
-    protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
+    public feedId: string;
 
+    private feedEditStateChangeEvent:ISubscription;
+
+    protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
+        this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
+    }
+
+    public init(){
+
+    }
+    public destroy(){
+
+    }
+    ngOnInit(){
+        this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
+        this.initializeFeed(this.feedId);
+        this.init();
+    }
+
+    ngOnDestroy(){
+        if(this.feedEditStateChangeEvent){
+            this.feedEditStateChangeEvent.unsubscribe();
+        }
+        this.destroy();
     }
 
     /**
@@ -27,6 +53,16 @@ export abstract class AbstractLoadFeedComponent  {
         return "";
     }
 
+
+    onFeedEditStateChange(event:FeedEditStateChangeEvent){
+        console.log("FEED STATE CHANGED!!!!",event)
+        if(event.readonly){
+            this.feed.readonly = true;
+        }
+        else {
+            this.feed.readonly = false;
+        }
+    }
 
 
 

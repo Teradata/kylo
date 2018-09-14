@@ -1,5 +1,5 @@
 import {Feed} from "../../../model/feed/feed.model";
-import {DefineFeedService} from "../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {StateService, Transition} from "@uirouter/angular";
 import {OnDestroy, OnInit, TemplateRef} from "@angular/core";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
@@ -10,6 +10,7 @@ import {FeedLoadingService} from "../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../shared/feed-side-nav.service";
 import {Observable} from "rxjs/Observable";
+import {ISubscription} from "rxjs/Subscription";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -40,10 +41,12 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      */
     private subscribingToFormChanges:boolean;
 
+    private feedEditStateChangeEvent:ISubscription;
+
     protected constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
                           protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService,
                           protected feedSideNavService:FeedSideNavService) {
-
+        this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
     }
 
     /**
@@ -61,9 +64,22 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      */
     ngOnDestroy(){
         try {
+            if(this.feedEditStateChangeEvent){
+                this.feedEditStateChangeEvent.unsubscribe();
+            }
             this.destroy();
         }catch(err){
             console.error("error in destroy",err);
+        }
+    }
+
+    onFeedEditStateChange(event:FeedEditStateChangeEvent){
+        console.log("FEED STATE CHANGED!!!!",event)
+        if(event.readonly){
+            this.feed.readonly = true;
+        }
+        else {
+            this.feed.readonly = false;
         }
     }
 

@@ -19,4 +19,8 @@ export class SourceTableSchema extends DefaultTableSchema implements KyloObject{
 
     }
 
+    isDefined() {
+        return this.fields && this.fields.length >0;
+    }
+
 }

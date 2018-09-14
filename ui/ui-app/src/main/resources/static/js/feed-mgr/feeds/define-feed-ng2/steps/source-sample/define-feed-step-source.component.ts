@@ -70,8 +70,11 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
 
         let paths = this.feed.getSourcePaths();
+        //if this was a feed prior to 0.9.2 it will not have any source paths defined.
+        //check the sourceTableSchema and see if that exists
+        let sourceSchemaDefined = this.feed.table.sourceTableSchema && this.feed.table.sourceTableSchema.isDefined();
         //always show the catalog if no paths are available to preview
-        if(paths == undefined || paths.length ==0) {
+        if(!sourceSchemaDefined && (paths == undefined || paths.length ==0)) {
             this.showCatalog = true;
         }
 

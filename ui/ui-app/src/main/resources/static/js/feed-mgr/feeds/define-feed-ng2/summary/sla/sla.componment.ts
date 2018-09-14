@@ -27,8 +27,6 @@ export class SlaComponent extends AbstractLoadFeedComponent implements OnInit {
 
     static LINK_NAME = "SLA";
 
-    @Input() stateParams: any;
-
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService: FeedSideNavService) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
     }
@@ -37,9 +35,8 @@ export class SlaComponent extends AbstractLoadFeedComponent implements OnInit {
         return SlaComponent.LINK_NAME;
     }
 
-    ngOnInit() {
-        let feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.initializeFeed(feedId);
+    init() {
+
     }
 }
 

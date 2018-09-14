@@ -42,6 +42,15 @@ import {TimeoutError} from "rxjs/Rx";
 import {EntityVersion} from "../../../model/entity-version.model";
 
 
+export class FeedEditStateChangeEvent{
+
+    public     readonly: boolean;
+constructor(readonly:boolean){
+    this.readonly = readonly;
+}
+
+}
+
 export enum TableSchemaUpdateMode {
     UPDATE_SOURCE=1, UPDATE_TARGET=2, UPDATE_SOURCE_AND_TARGET=3
 }
@@ -78,11 +87,15 @@ export class DefineFeedService {
      */
     private savedFeedSubject: Subject<SaveFeedResponse>;
 
+    private feedEditStateChangeSubject: Subject<FeedEditStateChangeEvent>;
+
 
     private uiComponentsService :UiComponentsService;
 
 
     private feedService :FeedService;
+
+
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
@@ -100,8 +113,10 @@ export class DefineFeedService {
 
         this.feedService = $$angularInjector.get("FeedService");
 
+        this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
 
     }
+
 
     toPreviewDataSet(dataset:SparkDataSet):PreviewDataSet{
         let existingPreview = dataset.preview || {}
@@ -150,6 +165,7 @@ export class DefineFeedService {
                 let feed:Feed = <Feed>entityVersion.entity;
                 feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.COMPLETE;
                 feed.versionId = entityVersion.id;
+                feed.versionName = entityVersion.name;
 
                 this.selectionService.reset()
                 //convert it to our needed class
@@ -264,16 +280,23 @@ export class DefineFeedService {
         return  this.savedFeedSubject.subscribe(observer);
     }
 
+    subscribeToFeedEditStateChangeEvent(observer:PartialObserver<FeedEditStateChangeEvent>){
+        return this.feedEditStateChangeSubject.subscribe(observer);
+    }
+
 
     markFeedAsEditable(){
+
         if(this.feed){
             this.feed.readonly = false;
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly))
         }
     }
 
     markFeedAsReadonly(){
         if(this.feed){
             this.feed.readonly = true;
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly))
         }
     }
 

@@ -23,9 +23,9 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     utils: any;
     StateService: any;
 
-    @Input() stateParams: any;
 
-    feedId: string;
+
+
 
     feedLineage: any = null;
     nodes: any[];
@@ -166,9 +166,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         this.stabilizationIterationsDone();
     }
 
-    ngOnInit() {
-        this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.initializeFeed(this.feedId);
+    init() {
         this.getFeedLineage();
     }
 

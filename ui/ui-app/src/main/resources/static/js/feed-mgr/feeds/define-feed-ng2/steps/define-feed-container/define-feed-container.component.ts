@@ -86,6 +86,17 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         this.toolbarActionLinks = templateRef;
     }
 
+    onEdit(){
+        this.feed.readonly = false;
+        this.defineFeedService.markFeedAsEditable();
+
+    }
+
+    onCancelEdit(){
+        this.feed.readonly = true;
+        this.defineFeedService.markFeedAsReadonly();
+
+    }
 
     onDelete(){
       //confirm then delete

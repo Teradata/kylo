@@ -9,7 +9,7 @@ export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
     }
 
     public validate(feed:Feed) : boolean {
-        if(feed.sourceDataSets && feed.sourceDataSets.length>0){
+        if((feed.sourceDataSets && feed.sourceDataSets.length>0) || (feed.table.sourceTableSchema && feed.table.sourceTableSchema.isDefined() )){
             this.step.valid = true;
             this.step.setComplete(true)
         }

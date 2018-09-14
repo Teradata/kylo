@@ -14,7 +14,7 @@ import {ISubscription} from "rxjs/Subscription";
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.html"
 })
-export class OverviewComponent extends AbstractLoadFeedComponent implements OnInit, OnDestroy {
+export class OverviewComponent extends AbstractLoadFeedComponent  {
 
     static LOADER = "OverviewComponent.LOADER";
 
@@ -38,9 +38,7 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
        this.feedSavedSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
      }
 
-    ngOnInit() {
-        let feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.initializeFeed(feedId);
+    init() {
         this.feed.steps.forEach(step => {
             if(step.required){
                 this.requiredSteps.push(step);
@@ -51,7 +49,7 @@ export class OverviewComponent extends AbstractLoadFeedComponent implements OnIn
         })
     }
 
-    ngOnDestroy(){
+    destroy(){
         this.feedSavedSubscription.unsubscribe();
     }
 
