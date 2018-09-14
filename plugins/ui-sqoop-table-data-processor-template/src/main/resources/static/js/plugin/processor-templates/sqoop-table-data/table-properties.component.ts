@@ -233,11 +233,9 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 //if we are cloning and creating a new feed setup the autocomplete
                 this.setupClonedFeedTableFields();
             } else {
-                this.isIncrementalLoadStrategy()
+                this.editIncrementalLoadDescribeTable()
             }
         }
-
-        this.onLoadStrategyChange();
 
         this.initializing = false;
     }
