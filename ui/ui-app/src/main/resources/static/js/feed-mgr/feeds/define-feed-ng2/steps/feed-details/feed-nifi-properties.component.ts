@@ -109,6 +109,12 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
 
     }
 
+    hasProcessor(downstreamProcessors:any[], processorId:string, processorName:string) :boolean {
+        if(downstreamProcessors){
+           return  downstreamProcessors.find(p => p.name == processorName) != undefined;
+        }
+        return false;
+    }
 
     applyUpdatesToFeed(): void {
 
@@ -141,15 +147,15 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
 
         this.feed.properties = <Templates.Property[]>inputProperties.concat(otherProperties)
 
-/**
-        this.feed.properties = _.chain([this.inputProcessor, ...this.nonInputProcessors])
-            .map(ref => ref.processor.properties as any[])
-            .flatten(true)
-            .value();
-
- **/
 
 
+    }
+
+    private buildInputProcessorRelationships(registeredTemplate:any){
+        console.log("check for input graph with ",registeredTemplate)
+        if(registeredTemplate.inputProcessorRelationships){
+            console.log("YES!!! ",registeredTemplate.inputProcessorRelationships)
+        }
     }
 
     private initializeTemplateProperties() {
@@ -162,15 +168,18 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
                         this.feedNifiPropertiesService.sortAndSetupFeedProperties(this.feed);
                     } else {
                         this.feedNifiPropertiesService.setupFeedProperties(this.feed, template, 'create');
+                        this.buildInputProcessorRelationships(template);
                         this.setProcessors(this.feed.inputProcessors, this.feed.nonInputProcessors, this.feed.inputProcessor, this.feed);
                         this.feed.propertiesInitialized = true;
-
                     }
+
 
                 }, () => {
                 });
         } else if (this.feed.propertiesInitialized) {
+            this.buildInputProcessorRelationships(this.feed.registeredTemplate)
             this.setProcessors(this.feed.inputProcessors, this.feed.nonInputProcessors, this.feed.inputProcessor, this.feed);
+
         }
     }
 
@@ -192,7 +201,9 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
                         feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
                         this.feedNifiPropertiesService.setupFeedProperties(feed, feed.registeredTemplate, 'edit');
                         feed.propertiesInitialized = true;
+                        this.buildInputProcessorRelationships(this.feed.registeredTemplate)
                         this.setProcessors(feed.inputProcessors, feed.nonInputProcessors, feed.inputProcessor, feed);
+
 
                         //@TODO add in  access control
 
@@ -228,7 +239,9 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
                 })
         } else {
             //  this.defineFeedService.setupFeedProperties(this.feed,this.feed.registeredTemplate, 'edit')
+            this.buildInputProcessorRelationships(this.feed.registeredTemplate)
             this.setProcessors(feed.inputProcessors, feed.nonInputProcessors, feed.inputProcessor, feed);
+
         }
     }
 
@@ -244,7 +257,14 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
             });
         }
         if(this.isShowAdditionalProperties()) {
-            this.nonInputProcessors = nonInputProcessors.map(processor => {
+            //limit the downstream additional processors to only those that are available in the flow coming from the input processor
+            let inputName = this.feed.inputProcessor.name;
+            let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
+            let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
+
+            this.nonInputProcessors = nonInputProcessors
+                .filter(processor => downstreamProcessors != undefined ? this.hasProcessor(downstreamProcessors,processor.id,processor.name)   : true)
+                .map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
                 this.form.push(ref.form);
                 return ref;

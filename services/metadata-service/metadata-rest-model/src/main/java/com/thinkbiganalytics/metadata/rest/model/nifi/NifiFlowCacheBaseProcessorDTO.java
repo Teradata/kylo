@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.nifi.cache;
+package com.thinkbiganalytics.metadata.rest.model.nifi;
 
 /*-
  * #%L
@@ -23,21 +23,18 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
 /**
  * A simplified version of the ProcessorDTO with limited attributes for serialization
  */
-public class NifiFlowCacheSimpleProcessorDTO {
+public class NifiFlowCacheBaseProcessorDTO {
 
     private String id;
     private String name;
-    private String type;
-    private String parentGroupId;
 
-    public NifiFlowCacheSimpleProcessorDTO(){
+    public NifiFlowCacheBaseProcessorDTO(){
 
     }
-    public NifiFlowCacheSimpleProcessorDTO(String id, String name, String type, String parentGroupId) {
+
+    public NifiFlowCacheBaseProcessorDTO(String id, String name) {
         this.id = id;
         this.name = name;
-        this.type = type;
-        this.parentGroupId = parentGroupId;
     }
 
     public String getId() {
@@ -54,21 +51,5 @@ public class NifiFlowCacheSimpleProcessorDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getParentGroupId() {
-        return parentGroupId;
-    }
-
-    public void setParentGroupId(String parentGroupId) {
-        this.parentGroupId = parentGroupId;
     }
 }

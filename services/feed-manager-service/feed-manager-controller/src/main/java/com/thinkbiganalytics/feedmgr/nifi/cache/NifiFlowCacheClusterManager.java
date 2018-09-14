@@ -30,6 +30,7 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.cluster.NiFiFlowCacheClusterUpdateItem;
 import com.thinkbiganalytics.metadata.jpa.cluster.NiFiFlowCacheClusterUpdateProvider;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSimpleProcessorDTO;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;

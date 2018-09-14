@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheBaseProcessorDTO;
 import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
@@ -41,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -87,6 +89,11 @@ public final class RegisteredTemplate extends EntityAccessControl {
     private String changeComment;
 
     private List<TemplateChangeComment> changeComments = new LinkedList<>();
+
+    /**
+     * Relationship between input processor id and its connected processors
+     */
+    Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships = new ConcurrentHashMap<>();
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -157,6 +164,7 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
         this.setTimeBetweenStartingBatchJobs(registeredTemplate.getTimeBetweenStartingBatchJobs());
+        this.inputProcessorRelationships = registeredTemplate.getInputProcessorRelationships();
         this.initializeProcessors();
         this.changeComments.addAll(registeredTemplate.getChangeComments());
     }
@@ -472,6 +480,14 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     public void setRemoteProcessGroups(List<NiFiRemoteProcessGroup> remoteProcessGroups) {
         this.remoteProcessGroups = remoteProcessGroups;
+    }
+
+    public Map<String, List<NifiFlowCacheBaseProcessorDTO>> getInputProcessorRelationships() {
+        return inputProcessorRelationships;
+    }
+
+    public void setInputProcessorRelationships(Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships) {
+        this.inputProcessorRelationships = inputProcessorRelationships;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

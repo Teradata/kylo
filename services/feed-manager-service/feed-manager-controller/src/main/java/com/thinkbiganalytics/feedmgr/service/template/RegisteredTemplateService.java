@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheBaseProcessorDTO;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
@@ -434,10 +435,12 @@ public class RegisteredTemplateService {
             properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true, null);
 
             List<NiFiRemoteProcessGroup> remoteProcessGroups = niFiTemplateCache.getRemoteProcessGroups(nifiTemplate);
+            Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships  = niFiTemplateCache.getInputProcessorRelationships(nifiTemplate);
             registeredTemplate.setRemoteProcessGroups(remoteProcessGroups);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
             registeredTemplate.setProperties(properties);
+            registeredTemplate.setInputProcessorRelationships(inputProcessorRelationships);
         }
 
         return registeredTemplate;
@@ -455,6 +458,7 @@ public class RegisteredTemplateService {
         if (registeredTemplate != null) {
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
+            Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships = null;
             int matchCount = 0;
 
             //get the nifi template associated with this one that is registered
@@ -466,21 +470,24 @@ public class RegisteredTemplateService {
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
                 properties = niFiTemplateCache.getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors(), registeredTemplate);
+                inputProcessorRelationships = niFiTemplateCache.getInputProcessorRelationships(templateDTO);
             }
 
             if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncNiFiTemplateId(registeredTemplate);
-
             }
             if (properties == null) {
                 properties = new ArrayList<>();
+            }
+            if(inputProcessorRelationships == null){
+                inputProcessorRelationships = new HashMap<>();
             }
             //merge with the registered properties
 
             RegisteredTemplate copy = new RegisteredTemplate(registeredTemplate);
             copy.setProperties(properties);
+            copy.setInputProcessorRelationships(inputProcessorRelationships);
             copy.setNifiTemplate(registeredTemplate.getNifiTemplate());
-
             return copy;
 
         } else {
