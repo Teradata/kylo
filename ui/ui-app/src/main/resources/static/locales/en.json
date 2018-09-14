@@ -859,16 +859,17 @@
 
     "FeedDefinition":{
         "Steps":{
-            "Sample":{
-               "Name":"Sample",
+            "Source":{
+               "Name":"Source",
                 "SourceDetails":"Source Details",
                 "SourceDetailsDescription":"Assign the true source of the data"
             },
             "Target":{
              "Name":"Target"
             },
-            "AdditionalDetails":{
-             "Name":"AdditionalDetails"
+            "AdditionalOptions":{
+             "Name":"Additional Options",
+             "Description":"Update NiFi processor settings"
             },
             "Properties": {
                 "Name":"Properties"

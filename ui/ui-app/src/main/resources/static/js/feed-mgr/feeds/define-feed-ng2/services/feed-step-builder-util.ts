@@ -27,32 +27,33 @@ export class FeedStepBuilderUtil {
     }
 
     feedDetailsStep():StepBuilder {
-        let name = this._translateService.instant("views.define-feed-stepper.FeedDetails")
-        return new StepBuilder().setName(name).setIcon("speaker_notes").setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").setSref("feed-details").setRequired(true);
+        let name = this._translateService.instant("FeedDefinition.Steps.AdditionalOptions.Name")
+        let desc = this._translateService.instant("FeedDefinition.Steps.AdditionalOptions.Description")
+        return new StepBuilder().setName(name).setIcon("speaker_notes").setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription(desc).setSref("feed-details").setRequired(true);
     }
 
     permissionStep():StepBuilder {
-        let name = FeedStepConstants.STEP_PERMISSIONS;//this._translateService.instant("views.define-feed-stepper.FeedDetails")
+        let name =  this._translateService.instant("FeedDefinition.Steps.Permissions.Name")
         return  new StepBuilder().setName(name).setIcon("person").setSystemName(FeedStepConstants.STEP_PERMISSIONS).setDescription("Assign who can read and edit this feed").setSref("feed-permissions");
     }
 
     propertiesStep():StepBuilder {
-        let name = FeedStepConstants.STEP_PROPERTIES;//this._translateService.instant("views.define-feed-stepper.FeedDetails")
+        let name =  this._translateService.instant("FeedDefinition.Steps.Properties.Name")
         return  new StepBuilder().setName(name).setIcon("assignment").setSystemName(FeedStepConstants.STEP_PROPERTIES).setDescription("Define and set extra properties for this feed").setSref("feed-properties").setValidator(new DefineFeedPropertiesValidator());
     }
 
     targetStep():StepBuilder {
-        let name = FeedStepConstants.STEP_FEED_TARGET;
+        let name =  this._translateService.instant("FeedDefinition.Steps.Target.Name")
         return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
     }
 
     sourceStep():StepBuilder {
-        let name = FeedStepConstants.STEP_FEED_SOURCE;
+        let name =  this._translateService.instant("FeedDefinition.Steps.Source.Name")
         return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Browse catalog for a sample and define the source location").setSref("datasources").setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator());
     }
 
     wranglerStep():StepBuilder {
-        let name = FeedStepConstants.STEP_WRANGLER;
+        let name =  this._translateService.instant("FeedDefinition.Steps.Wrangler.Name")
         return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).setSref("wrangler").setRequired(true);
     }
 
