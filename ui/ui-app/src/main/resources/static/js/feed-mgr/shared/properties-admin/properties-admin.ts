@@ -169,9 +169,6 @@ class PropertiesAdminController {
 angular.module(moduleName).component("thinkbigPropertiesAdmin", {
     controller: PropertiesAdminController,
     controllerAs: "vm",
-    require: {
-        ngModel: "ngModel"
-    },
     bindings: {
         model: "=fields",
         isValid: "=?"
@@ -182,9 +179,6 @@ angular.module(moduleName).component("thinkbigPropertiesAdmin", {
 angular.module(moduleName).component("thinkbigPropertiesAdminEditor", {
     controller: PropertiesAdminController,
     controllerAs: "vm",
-    require: {
-        ngModel: "ngModel"
-    },
     bindings: {
         model: "=fields",
         isValid: "=?"

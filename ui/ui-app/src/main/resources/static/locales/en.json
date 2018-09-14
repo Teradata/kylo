@@ -449,7 +449,7 @@
     "views.properties-admin-editor.AP": "Add Property",
 
     "views.properties-admin.Name": "Name",
-    "views.properties-admin.SN": "System Name",
+    "views.properties-admin.SystemName": "System Name",
     "views.properties-admin.Required": "Required",
 
     "views.category-access-control.AC": "Access Control",
