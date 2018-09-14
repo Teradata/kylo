@@ -251,6 +251,12 @@ export class Feed  implements KyloObject{
     readonly: boolean;
 
     /**
+     * Is editing the feed allowed? (determined by entity-access control permissions)
+     * Set to false by default
+     */
+    allowEdit: boolean;
+
+    /**
      * The name of the sample file used to parse for table schema
      * Optional
      */
@@ -351,6 +357,7 @@ export class Feed  implements KyloObject{
 
     initialize() {
         this.readonly = true;
+        this.allowEdit = false;
         this.systemFeedName = '';
         this.feedName = '';
         this.mode = FeedMode.DRAFT;

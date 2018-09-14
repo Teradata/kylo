@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import {Injectable, Injector} from "@angular/core";
+import {Inject, Injectable, Injector} from "@angular/core";
 import {Feed, FeedMode, FeedTemplateType} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
@@ -40,6 +40,7 @@ import {CloneUtil} from "../../../../common/utils/clone-util";
 import {timeout} from 'rxjs/operators/timeout';
 import {TimeoutError} from "rxjs/Rx";
 import {EntityVersion} from "../../../model/entity-version.model";
+import {fromPromise} from "rxjs/observable/fromPromise";
 
 
 export class FeedEditStateChangeEvent{
@@ -95,12 +96,15 @@ export class DefineFeedService {
 
     private feedService :FeedService;
 
+    private accessControlService: AccessControlService;
+
 
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
                 private selectionService: SelectionService,
-                private snackBar: MatSnackBar){
+                private snackBar: MatSnackBar,
+                @Inject("AccessControlService") accessControlService: AccessControlService){
 
 
         this.currentStepSubject = new Subject<Step>();
@@ -114,6 +118,8 @@ export class DefineFeedService {
         this.feedService = $$angularInjector.get("FeedService");
 
         this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
+        this.accessControlService = accessControlService;
+
 
     }
 
@@ -193,6 +199,14 @@ export class DefineFeedService {
 
                 feedModel.validate(true);
                 this.feed = feedModel;
+
+                //Check if user has entity access permissions for editing feed
+                fromPromise(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, feedModel, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
+                    .subscribe((access: boolean) => {
+                        //console.log("[debug] Does user have entity access permission to edit feed? " + access);
+                        this.feed.allowEdit =  access;
+                    });
+
                 //notify subscribers of a copy
                 loadFeedSubject.next(feedModel.copy());
 
