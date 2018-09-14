@@ -154,6 +154,10 @@ export default class FeedsTableController implements ng.IComponentController {
         }
     }
 
+    feedDefinition($event:any,feed:any) {
+        this.StateService.FeedManager().Feed().navigateToFeedDefinition(feed.id)
+    }
+
     getFeeds() {
         this.loading = true;
 

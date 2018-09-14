@@ -72,6 +72,9 @@
                                    </span>
                 <span class="column-title column-title-bottom">{{"feeds.feed-table.type" | translate}}</span>
               </div>
+              <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="feed.mode != 'DRAFT'" ng-click="vm.feedDefinition($event,feed)">
+                New Stepper
+              </div>
               <!--
               <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
                 <md-button href="{{feed.exportUrl}}" layout-align="center" ng-disabled="!feed.allowExport">
