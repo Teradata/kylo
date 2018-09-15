@@ -24,7 +24,16 @@
 
   <ng-container *ngIf="mode=='ADDITIONAL' || mode == 'ALL'">
   <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly" ></feed-details-processor-field>
+
+
+
   </ng-container>
 </form>
+
+  <div *ngIf="noPropertiesExist"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+    <h2>No properties exist</h2>
+    <h3>There are no properties to set</h3>
+  </div>
 
 </ng-template>

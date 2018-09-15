@@ -22,6 +22,8 @@ import {ProcessorRef} from "../../../../../../lib/feed/processor/processor-ref";
 import {FeedNifiPropertiesService} from "../../services/feed-nifi-properties.service";
 
 
+
+
 export enum FeedDetailsMode{
     INPUT="INPUT", ADDITIONAL="ADDITIONAL", ALL="ALL"
 }
@@ -48,6 +50,8 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
 
     @Input()
     formGroup:FormGroup;
+
+    public noPropertiesExist:boolean = false;
 
 
     form = new FormArray([]);
@@ -246,6 +250,7 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
     }
 
     private setProcessors(inputProcessors: Templates.Processor[], nonInputProcessors: Templates.Processor[], selected?: Templates.Processor, feed?: Feed) {
+        let hasVisibleProcessors = false;
         if(this.isShowInputProperties()) {
             this.inputProcessors = inputProcessors.map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
@@ -255,6 +260,10 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
                 }
                 return ref;
             });
+
+            hasVisibleProcessors = this.inputProcessors
+                .find((ref:ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property:Templates.Property) => property.userEditable) != undefined) != undefined;
+
         }
         if(this.isShowAdditionalProperties()) {
             //limit the downstream additional processors to only those that are available in the flow coming from the input processor
@@ -269,6 +278,12 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
                 this.form.push(ref.form);
                 return ref;
             });
+            if(!hasVisibleProcessors){
+                hasVisibleProcessors = this.nonInputProcessors.find((ref:ProcessorRef)  => ref.processor.properties && ref.processor.properties.find((property:Templates.Property) => property.userEditable) != undefined) != undefined;
+            }
+        }
+        if(!hasVisibleProcessors){
+            this.noPropertiesExist = true;
         }
         this.updatedFormControls.emit();
     }
