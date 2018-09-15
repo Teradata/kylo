@@ -54,7 +54,6 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -78,7 +77,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
@@ -149,17 +147,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Inject
     private FeedManagerTemplateService templateRestProvider;
     @Inject
-    private FeedManagerPreconditionService feedPreconditionModelTransform;
-    @Inject
     private FeedModelTransform feedModelTransform;
-    @Inject
-    private ServiceLevelAgreementProvider slaProvider;
     @Inject
     private ServiceLevelAgreementService serviceLevelAgreementService;
     @Inject
     private OpsManagerFeedProvider opsManagerFeedProvider;
-    @Inject
-    private DatasourceProvider datasourceProvider;
     /**
      * Metadata event service
      */
@@ -187,9 +179,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     protected MetadataAccess metadataAccess;
-
-    @Inject
-    private FeedManagerTemplateService feedManagerTemplateService;
 
     @Inject
     private RegisteredTemplateService registeredTemplateService;
@@ -350,8 +339,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         return idOption.flatMap(domainFeedId -> {
             return metadataAccess.read(() -> {
-                return feedProvider.findLatestVersion(domainFeedId, includeContent)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    return feedProvider.findLatestVersion(domainFeedId, includeContent)
+                        .map(version -> feedModelTransform.domainToFeedVersion(version));
             }, MetadataAccess.SERVICE);
         });
     }
@@ -362,8 +351,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         return idOption.flatMap(domainFeedId -> {
             return metadataAccess.read(() -> {
-                return feedProvider.findDraftVersion(domainFeedId, includeContent)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    return feedProvider.findDraftVersion(domainFeedId, includeContent)
+                        .map(version -> feedModelTransform.domainToFeedVersion(version));
             }, MetadataAccess.SERVICE);
         });
     }
@@ -374,8 +363,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         
         return idOption.flatMap(domainFeedId -> {
             return metadataAccess.read(() -> {
-                return feedProvider.findDeployedVersion(domainFeedId, includeContent)
-                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    return feedProvider.findDeployedVersion(domainFeedId, includeContent)
+                                    .map(version -> feedModelTransform.domainToFeedVersion(version));
             }, MetadataAccess.SERVICE);
         });
     }
@@ -384,9 +373,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public EntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
         Optional<Feed.ID> idOption = checkChangeVersions(feedIdStr);
 
-        return idOption
-            .map(domainFeedId -> {
-                return metadataAccess.commit(() -> {
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.commit(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
                     
                     return this.feedProvider.findVersion(domainFeedId, versionId, true)
@@ -398,38 +386,37 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                             return feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
                         })
                         .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-                }, MetadataAccess.SERVICE);
-            })
-            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
+            }, MetadataAccess.SERVICE);
+        })
+        .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
     }
 
     @Override
     public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
-
-        return idOption
-            .map(domainFeedId -> {
-                return metadataAccess.commit(() -> {
-                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, comment, false);
-                    return this.feedModelTransform.domainToFeedVersion(newVer);
-                }, MetadataAccess.SERVICE);
-            })
-            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
+        return metadataAccess.commit(() -> {
+            Optional<Feed.ID> idOption = checkChangeVersions(feedId);
+    
+            return idOption
+                .map(domainFeedId -> {
+                        com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, comment, false);
+                        return this.feedModelTransform.domainToFeedVersion(newVer);
+                })
+                .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
+        });
     }
     
     @Override
     public EntityVersion createDraftFromFeedVersion(String feedId, String versionIdStr, boolean includeContent) {
         Optional<Feed.ID> idOption = checkChangeVersions(feedId);
 
-        return idOption
-            .map(domainFeedId -> {
-                return metadataAccess.commit(() -> {
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.commit(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
                   
                     return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(domainFeedId, versionId, includeContent));
-                }, MetadataAccess.SERVICE);
-            })
-            .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
+            }, MetadataAccess.SERVICE);
+        })
+        .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedId)));
     }
 
     @Override
@@ -438,19 +425,19 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         return idOption.map(domainFeedId -> {
             return metadataAccess.read(() -> {
-                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
-                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
-
-                Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
-                Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
-
-                return fromVer.map(from -> {
-                    return toVer.map(to -> {
-                        return feedModelTransform.generateDifference(from, to);
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+                    com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+    
+                    Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                        .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                        .map(version -> feedModelTransform.domainToFeedVersion(version));
+    
+                    return fromVer.map(from -> {
+                        return toVer.map(to -> {
+                            return feedModelTransform.generateDifference(from, to);
+                        }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
                     }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
             }, MetadataAccess.SERVICE);
         }).orElseThrow(() -> new FeedNotFoundException(feedProvider.resolveId(feedId)));
     }
@@ -547,10 +534,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return metadataAccess.read(() -> {
             List<FeedSummary> summaryList = new ArrayList<>();
             boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            
             if (hasPermission) {
-
                 Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
                 List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
+                
                 if (domainFeeds != null && !domainFeeds.isEmpty()) {
                     List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
                     for (FeedMetadata feed : feeds) {
@@ -594,7 +582,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      */
     @Deprecated
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
-
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
@@ -647,11 +634,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
         }
-
-        return metadataAccess.commit(() -> {
-            // Check services access to be able to create a feed
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-            
+        
+        // Check existence of required category and template entities with service privileges.
+        metadataAccess.read(() -> {
             //Read all the feeds as System Service account to ensure the feed name is unique
             if (feedMetadata.isNew()) {
                 Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
@@ -671,13 +656,23 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     //throw exception
                     throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
                 }
+            }
+        }, MetadataAccess.SERVICE);
+
+        return metadataAccess.commit(() -> {
+            // Check services access to be able to create a feed
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+            
+            // Read all the feeds as System Service account to ensure the feed name is unique
+            if (feedMetadata.isNew()) {
+                Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
                 
                 if (accessController.isEntityAccessControlled()) {
                     //ensure the user has rights to create feeds under the category
                     domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
                 }
             } else if (accessController.isEntityAccessControlled()) {
-                //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
+                // Check user has access to edit the feed
                 Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());
                 Feed domainFeed = feedProvider.findById(domainId);
                 
@@ -756,8 +751,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
             return feedMetadata;
         });
-//    }, MetadataAccess.SERVICE);
-// TODO Are the serviced credentials required here?
     }
 
     /**
@@ -837,9 +830,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //copy the registered template properties it a new list so it doest get updated
         List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
-        List<NifiProperty> matchedProperties =
-            NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
+        NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
     
         registeredTemplate.setProperties(templateProperties);
         feedMetadata.setProperties(registeredTemplate.getProperties());
