@@ -45,9 +45,11 @@ import {fromPromise} from "rxjs/observable/fromPromise";
 
 export class FeedEditStateChangeEvent{
 
-    public     readonly: boolean;
-constructor(readonly:boolean){
+    public readonly: boolean;
+    public allowEdit:boolean;
+constructor(readonly:boolean, allowEdit:boolean){
     this.readonly = readonly;
+    this.allowEdit = allowEdit;
 }
 
 }
@@ -205,6 +207,7 @@ export class DefineFeedService {
                     .subscribe((access: boolean) => {
                         //console.log("[debug] Does user have entity access permission to edit feed? " + access);
                         this.feed.allowEdit =  access;
+                        this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
                     });
 
                 //notify subscribers of a copy
@@ -303,14 +306,14 @@ export class DefineFeedService {
 
         if(this.feed){
             this.feed.readonly = false;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
         }
     }
 
     markFeedAsReadonly(){
         if(this.feed){
             this.feed.readonly = true;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
         }
     }
 

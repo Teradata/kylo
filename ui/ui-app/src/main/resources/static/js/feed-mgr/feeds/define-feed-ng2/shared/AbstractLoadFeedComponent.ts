@@ -56,12 +56,8 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
     onFeedEditStateChange(event:FeedEditStateChangeEvent){
         console.log("FEED STATE CHANGED!!!!",event)
-        if(event.readonly){
-            this.feed.readonly = true;
-        }
-        else {
-            this.feed.readonly = false;
-        }
+        this.feed.readonly = event.readonly;
+        this.feed.allowEdit = event.allowEdit;
     }
 
 
