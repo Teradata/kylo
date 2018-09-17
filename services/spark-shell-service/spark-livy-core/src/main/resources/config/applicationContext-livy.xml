@@ -46,7 +46,7 @@ ctx.getBean(classOf[com.thinkbiganalytics.spark.service.SparkUtilityService])
 val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
-import org.apache.log4j.{Level, Logger}
+import import org.slf4j.LoggerFactory
 import com.thinkbiganalytics.spark.logger.LivyLogger
 val logger = Logger.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
                         ]]>
@@ -151,7 +151,7 @@ val transformAsStr = mapper.writeValueAsString(response)
         <entry key="readTable">
           <value> <!-- first parameter takes a JSON string escaped for scala, second parameter is valid scala -->
             <![CDATA[
-var tbl = null;
+var tbl :String = null;
 var parent = try {
   tbl = %s;
   sqlContext.read.table(tbl)
