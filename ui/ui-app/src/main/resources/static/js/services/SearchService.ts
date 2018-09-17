@@ -20,13 +20,13 @@
 import CommonRestUrlService from "./CommonRestUrlService";
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Injectable()
 export default class SearchService {
 
     private searchQuery: string = "";
-    searchQuerySubject = new Subject<string>();
+    searchQuerySubject = new BehaviorSubject<string>("");
 
     constructor(private http: HttpClient,
                 private CommonRestUrlService: CommonRestUrlService) {}
