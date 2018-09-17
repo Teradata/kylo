@@ -154,8 +154,9 @@ val transformAsStr = mapper.writeValueAsString(response)
 var tbl :String = null;
 var parent = try {
   tbl = %s;
-  sqlContext.read.table(tbl)
+  var df = sqlContext.read.table(tbl)
   logger.info("Parent dataframe set to table '{}'", tbl);
+  df
 } catch { case _ : Exception =>  {
   logger.info("Unable to load data from parent table '{}'.  Rebuild from transformation history.", tbl);
 %s
