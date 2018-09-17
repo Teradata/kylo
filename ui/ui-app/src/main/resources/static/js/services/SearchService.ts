@@ -17,31 +17,37 @@
  * limitations under the License.
  * #L%
  */
-import * as angular from 'angular';
-import {moduleName} from './module-name';
 import CommonRestUrlService from "./CommonRestUrlService";
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs/Subject';
 
-export default class SearchService{
-searchQuery: string="";
-search= function (query: any, rows: any, start: any) {
-    return this.performSearch(query, rows, start);
+@Injectable()
+export default class SearchService {
+
+    private searchQuery: string = "";
+    searchQuerySubject = new Subject<string>();
+
+    constructor(private http: HttpClient,
+                private CommonRestUrlService: CommonRestUrlService) {}
+
+    setSearchQuery(searchQuery: string) {
+        this.searchQuery = searchQuery;
+        this.searchQuerySubject.next(searchQuery);
     }
 
-constructor (private $q: any,
-            private $http: any,
-            private CommonRestUrlService: any) {
-          
-      // return this.data;
+    getSearchQuery() {
+        return this.searchQuery;
+    }
 
-}
- performSearch=function(query: any, rowsPerPage: any, start: any){
-            return this.$http.get(this.CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}}).then(function (response: any) {
-                return response.data;
+    search(query: any, rows: any, start: any) {
+        return this.performSearch(query, rows, start);
+    }
 
+    performSearch(query: any, rowsPerPage: any, start: any){
+        return this.http.get(this.CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}})
+            .toPromise().then(function (response: any) {
+                return response;
             });
-        }
+    }
 }
- angular.module(moduleName)
-// .service('CommonRestUrlService',CommonRestUrlService)
- .service('SearchService',["$q", "$http", "CommonRestUrlService",SearchService]);
-  

@@ -186,7 +186,7 @@ export class IndexController implements angular.IComponentController {
          */
         search = () =>{
             if (this.searchQuery != null && this.searchQuery.length > 0) {
-                this.SearchService.searchQuery = this.searchQuery;
+                this.SearchService.setSearchQuery(this.searchQuery);
                 if (this.currentState.name != 'search') {
                     this.StateService.Search().navigateToSearch(true);
                 }
@@ -250,7 +250,7 @@ export class IndexController implements angular.IComponentController {
             this.searchQuery = null;
         }
         else {
-            this.searchQuery = this.SearchService.searchQuery;
+            this.searchQuery = this.SearchService.getSearchQuery();
         }
         this.$rootScope.previousState = transition.from().name;
         this.$rootScope.currentState = transition.to().name;

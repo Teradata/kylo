@@ -48,16 +48,6 @@ export const previewDatasetCollectionServiceProvider: FactoryProvider = {
     deps: ["$injector"]
 }
 
-export function templateServiceFactory(i: any) {
-    return i.get("templateService");
-}
-
-export const templateServiceProvider: FactoryProvider = {
-    provide: TemplateService,
-    useFactory: templateServiceFactory,
-    deps: ["$injector"]
-}
-
 export const paginationServiceProvider: FactoryProvider = {
     provide: DefaultPaginationDataService,
     useFactory: (i: angular.auto.IInjectorService) => i.get("DefaultPaginationDataService"),
@@ -80,12 +70,6 @@ export const stateServiceProvider: FactoryProvider = {
     provide: StateService,
     useFactory: (i: angular.auto.IInjectorService) => i.get("StateService"),
     deps: ["$injector"]
-};
-
-export const commonRestURLServiceProvider : FactoryProvider = {
-    provide : CommonRestUrlService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("CommonRestUrlService"),
-    deps : ["$injector"]
 };
 
 export const userGroupServiceProvider : FactoryProvider = {

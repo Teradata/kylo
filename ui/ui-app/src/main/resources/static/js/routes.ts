@@ -194,21 +194,10 @@ class Route {
             loadChildren: 'feed-mgr/datasources/datasources.module#DataSourcesModule'
         });
 
-        $stateProvider.state('search.**', {
+        $stateProvider.state({
+            name: 'search.**',
             url: '/search',
-            params: {
-                bcExclude_globalSearchResetPaging: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('search/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('search', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading search ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'search/search.module#SearchModule'
         });
 
         $stateProvider.state({

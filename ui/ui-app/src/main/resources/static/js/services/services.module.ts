@@ -6,13 +6,14 @@ import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/
 import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider,
         paginationServiceProvider, tableOptionsServiceProvider, accessControlServiceProvider,
         stateServiceProvider,
-        commonRestURLServiceProvider,
         userGroupServiceProvider,
         angularModuleExtensionServiceProvider,
         fileUploadServiceProvider,
         utilsServiceProvider,
         httpServiceProvider} from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
+import CommonRestUrlService from "./CommonRestUrlService";
+import SearchService from "./SearchService";
 @NgModule({
     imports: [
         CommonModule,
@@ -28,13 +29,14 @@ import {TemplateService} from "../repository/services/template.service";
         tableOptionsServiceProvider,
         accessControlServiceProvider,
         stateServiceProvider,
-        commonRestURLServiceProvider,
         userGroupServiceProvider,
         fileUploadServiceProvider,
         utilsServiceProvider,
         angularModuleExtensionServiceProvider,
         TemplateService,
-        httpServiceProvider
+        CommonRestUrlService,
+        httpServiceProvider,
+        SearchService
     ]
 })
 export class KyloServicesModule {

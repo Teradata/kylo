@@ -1,33 +1,34 @@
  <div layout="row" layout-align="center start">
     <div layout="column" flex >
 
-      <card-layout class="centered" body-css="md-padding">
-        <header-section layout="row" layout-align="space-between-center" flex>
-          <span class="md-subhead">{{"view.search.Srf" | translate}} {{vm.searchResult.from}} {{"view.search.to" | translate}} {{vm.searchResult.to}} {{"view.search.of" | translate}} {{vm.searchResult.totalHits}}  <span
-              class="hint">({{(vm.searchResult.tookInMillis/1000).toFixed(3)}} {{"view.search.seconds" | translate}})</span></span>
-        </header-section>
+      <mat-card class="centered" body-css="md-padding">
+        <mat-card-title layout="row" layout-align="space-between-center" flex>
+          <span *ngIf="searchResult != null" class="md-subhead">
+            {{"view.search.Srf" | translate}} {{searchResult.from}} {{"view.search.to" | translate}} {{searchResult.to}} {{"view.search.of" | translate}} {{searchResult.totalHits}}  
+            <span class="hint">({{(searchResult.tookInMillis/1000).toFixed(3)}} {{"view.search.seconds" | translate}})</span>
+          </span>
+        </mat-card-title>
 
-        <body-section>
-          <div ng-if="vm.searchResult != null">
-            <div ng-if="vm.searchResult.searchResults.length >0 ">
-              <md-list flex layout-fill>
-                <md-list-item class="md-3-line" dir-paginate="searchHit in vm.searchResult.searchResults|itemsPerPage:vm.paginationData.rowsPerPage"
-                              pagination-id="search" total-items="vm.searchResult.totalHits" current-page="vm.currentPage" ng-click="vm.onSearchResultItemClick($event,searchHit)">
+        <mat-card-content>
+          <div *ngIf="searchResult != null">
+            <div *ngIf="searchResult.searchResults.length >0 ">
+              <mat-list flex layout-fill>
+                <mat-list-item class="md-3-line" (click)="onSearchResultItemClick($event,searchHit)">
                   <div flex="10" style="z-index: 1" layout="column" layout-xs="row">
                   <span style="z-index: 1">
                     <md-tooltip md-direction="left">
-                      <span ng-if="searchHit.type == 'KYLO_DATA'">{{"view.search.Dft" | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_SCHEMA'">{{"view.search.Sft" | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_FEEDS'">{{"view.search.Fmf" | translate}} {{searchHit.feedTitle}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_CATEGORIES'">{{"view.search.Cmf" | translate}} {{searchHit.categoryTitle}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_UNKNOWN'">{{"view.search.Urt" | translate}}</span>
+                      <span *ngIf="searchHit.type == 'KYLO_DATA'">{{"view.search.Dft" | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}}</span>
+                      <span *ngIf="searchHit.type == 'KYLO_SCHEMA'">{{"view.search.Sft" | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}</span>
+                      <span *ngIf="searchHit.type == 'KYLO_FEEDS'">{{"view.search.Fmf" | translate}} {{searchHit.feedTitle}}</span>
+                      <span *ngIf="searchHit.type == 'KYLO_CATEGORIES'">{{"view.search.Cmf" | translate}} {{searchHit.categoryTitle}}</span>
+                      <span *ngIf="searchHit.type == 'KYLO_UNKNOWN'">{{"view.search.Urt" | translate}}</span>
                     </md-tooltip>
                     <ng-md-icon icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" size="48"></ng-md-icon>
                   </span>
                   </div>
                   <div flex="90" layout="column" layout-xs="row" layout-fill>
 
-                    <div ng-if="searchHit.type == 'KYLO_DATA'" layout="row" layout-xs="column" layout-wrap="true">
+                    <div *ngIf="searchHit.type == 'KYLO_DATA'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
                         <div layout="row" layout-xs="column" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;" class="item-title">
                           {{searchHit.schemaName}}.{{searchHit.tableName}}
@@ -36,7 +37,7 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
                                 <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
                                 <td style="text-align:left; padding-left: 50px;" ng-bind-html="highlight.value"></td>
                               </tr>
@@ -45,7 +46,7 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="field in searchHit.columnNamesAndValues | limitTo:3">
+                              <tr *ngFor="let field of searchHit.columnNamesAndValues | truncate:3">
                                 <td style="text-align:left; padding-left: 3px;">{{field.key}}</td>
                                 <td style="text-align:left; padding-left: 50px;">{{field.value}}</td>
                               </tr>
@@ -56,7 +57,7 @@
                       </div>
                     </div>
 
-                    <div ng-if="searchHit.type == 'KYLO_SCHEMA'" layout="row" layout-xs="column" layout-wrap="true">
+                    <div *ngIf="searchHit.type == 'KYLO_SCHEMA'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
                         <div layout="row" layout-xs="column" style="font-weight: bold;padding-bottom: 10px; padding-top: 5px;" class="item-title">
                           {{searchHit.databaseName}}.{{searchHit.tableName}}
@@ -65,9 +66,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
                                 <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
+                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -76,10 +77,10 @@
                             <ul style="list-style-type: none; margin:0; padding:0">
                               <div style="overflow-x:auto; padding-bottom: 10px;">
                                 <table style="border-collapse:collapse; border-spacing:0;">
-                                  <tr ng-repeat="hiveColumn in searchHit.hiveColumns | limitTo:3">
+                                  <tr *ngFor="let hiveColumn of searchHit.hiveColumns | truncate:3">
                                     <td style="text-align:left; padding-left: 3px;">{{hiveColumn.columnName}}</td>
                                     <td style="text-align:left; padding-left: 50px;">{{hiveColumn.columnType}}</td>
-                                    <td style="text-align:left; padding-left: 50px;" ng-if="hiveColumn.columnComment != ''">{{hiveColumn.columnComment}}</td>
+                                    <td style="text-align:left; padding-left: 50px;" *ngIf="hiveColumn.columnComment != ''">{{hiveColumn.columnComment}}</td>
                                   </tr>
                                 </table>
                               </div>
@@ -90,7 +91,7 @@
                       </div>
                     </div>
 
-                    <div ng-if="searchHit.type == 'KYLO_FEEDS'" layout="row" layout-xs="column" layout-wrap="true">
+                    <div *ngIf="searchHit.type == 'KYLO_FEEDS'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
                         <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;">
                           <div layout-align="start center">
@@ -101,9 +102,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
                                 <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
+                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -111,7 +112,7 @@
                           <div layout-align="start center" style="padding-bottom: 10px;">
                             <ul style="list-style-type: none; margin:0; padding:0">
                               <li>{{searchHit.feedDescription}}</li>
-                              <li ng-repeat="feedTag in searchHit.feedTags | limitTo:3">
+                              <li *ngFor="let feedTag of searchHit.feedTags | truncate:3">
                                 {{feedTag}}
                               </li>
                             </ul>
@@ -121,7 +122,7 @@
                       </div>
                     </div>
 
-                    <div ng-if="searchHit.type == 'KYLO_CATEGORIES'" layout="row" layout-xs="column" layout-wrap="true">
+                    <div *ngIf="searchHit.type == 'KYLO_CATEGORIES'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
                         <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;">
                           <div layout-align="start center">
@@ -132,9 +133,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
                                 <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
+                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -149,7 +150,7 @@
                       </div>
                     </div>
 
-                    <div ng-if="searchHit.type == 'KYLO_UNKNOWN'" layout="row" layout-xs="column" layout-wrap="true">
+                    <div *ngIf="searchHit.type == 'KYLO_UNKNOWN'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
                         <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold;">
                           <div layout-align="start center">
@@ -167,34 +168,57 @@
                     </div>
 
                   </div>
-                  <md-divider ng-if="!$last"></md-divider>
-                </md-list-item>
-                <md-divider></md-divider>
-                <md-list-item layout-align="end center" layout-row class="pagination-list-item">
-                  <dir-pagination-controls pagination-id="search"
+                  <mat-divider *ngIf="!last"></mat-divider>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item layout-align="end center" layout-row class="pagination-list-item">
+                  
+                  <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="searchResult.totalHits" [total]="searchResult" (change)="onPaginationChange($event)">
+                      <span hide-xs>Rows per page:</span>
+                      <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+                          <mat-option *ngFor="let size of [5, 10, 20, 50, 100]" [value]="size">
+                              {{size}}
+                          </mat-option>
+                      </mat-select>
+                      {{pagingBar.range}}
+                      <span hide-xs>of {{pagingBar.total}}</span>
+                </td-paging-bar>
+
+                <!-- <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="filteredTotal" (change)="onPaginationChange($event)">
+                    <span hide-xs>Rows per page:</span>
+                    <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+                      <mat-option *ngFor="let size of ['5', '10', '20', '50']" [value]="size">
+                        {{size}}
+                      </mat-option>
+                    </mat-select>
+                    {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+                </td-paging-bar> -->
+
+
+                  <!-- <dir-pagination-controls pagination-id="search"
                                            auto-hide="false"
                                            max-size="5"
                                            direction-links="true"
                                            boundary-links="false"
                                            template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                           on-page-change="vm.onPaginationChange(newPageNumber)"
+                                           on-page-change="onPaginationChange(newPageNumber)"
                                            label='{{"views.all-page.Rows_per_page" | translate}}'
-                                           rows-per-page="vm.paginationData.rowsPerPage"
-                                           rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                           rows-per-page="paginationData.rowsPerPage"
+                                           rows-per-page-options="paginationData.rowsPerPageOptions"
                                            class="pagination-row">
-                  </dir-pagination-controls>
-                </md-list-item>
-              </md-list>
+                  </dir-pagination-controls> -->
+                </mat-list-item>
+              </mat-list>
             </div>
           </div>
-          <div ng-if="vm.searchResult == null && !vm.searching">
+          <div *ngIf="searchResult == null && !searching">
             {{"view.search.Nrf" | translate}}
           </div>
-          <div ng-if="vm.searching">
-            <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+          <div *ngIf="searching">
+            <mat-spinner mode="indeterminate"></mat-spinner>
           </div>
-        </body-section>
-      </card-layout>
+        </mat-card-content>
+      </mat-card>
 
 
     </div>
