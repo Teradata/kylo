@@ -46,7 +46,7 @@ ctx.getBean(classOf[com.thinkbiganalytics.spark.service.SparkUtilityService])
 val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
-import import org.slf4j.LoggerFactory
+import org.slf4j.LoggerFactory
 import com.thinkbiganalytics.spark.logger.LivyLogger
 val logger = Logger.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
                         ]]>
