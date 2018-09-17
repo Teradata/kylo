@@ -26,16 +26,13 @@ package com.thinkbiganalytics.metadata.modeshape.versioning;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.jcr.version.Version;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
-import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 

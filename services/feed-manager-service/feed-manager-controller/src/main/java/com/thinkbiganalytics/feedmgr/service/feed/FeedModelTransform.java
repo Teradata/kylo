@@ -480,7 +480,6 @@ public class FeedModelTransform {
         feedSummary.setActive(feedManagerFeed.getState() != null && feedManagerFeed.getState().equals(Feed.State.ENABLED));
 
         feedSummary.setState(feedManagerFeed.getState() != null ? feedManagerFeed.getState().name() : null);
-        feedSummary.setMode(feedManagerFeed.getMode() != null ? feedManagerFeed.getMode().name() : null);
 
         if (feedManagerFeed instanceof Feed) {
 

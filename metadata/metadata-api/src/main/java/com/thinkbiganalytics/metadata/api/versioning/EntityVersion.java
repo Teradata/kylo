@@ -35,6 +35,9 @@ import org.joda.time.DateTime;
  */
 public interface EntityVersion<I, E> {
     
+    /** The version name of a draft version */
+    String DRAFT_NAME = "draft";
+    
     /**
      * @return the ID of this version
      */

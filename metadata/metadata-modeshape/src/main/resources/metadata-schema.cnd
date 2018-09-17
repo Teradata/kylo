@@ -306,7 +306,6 @@
 
 [tba:feedData] > nt:hierarchyNode, tba:propertied
     - tba:state (STRING) = 'ENABLED'
-    - tba:mode (STRING) = 'COMPLETE'
     - tba:schedulingPeriod (STRING)
     - tba:schedulingStrategy (STRING)
     - tba:securityGroups (WEAKREFERENCE) multiple

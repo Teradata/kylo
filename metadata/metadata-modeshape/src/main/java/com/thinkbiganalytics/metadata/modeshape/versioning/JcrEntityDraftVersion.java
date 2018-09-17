@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 
 import java.util.Optional;
 
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 /**
@@ -46,7 +47,7 @@ public class JcrEntityDraftVersion<I, E> extends JcrEntityVersion<I, E> {
 
     @Override
     public String getName() {
-        return "draft";
+        return EntityVersion.DRAFT_NAME;
     }
 
     @Override

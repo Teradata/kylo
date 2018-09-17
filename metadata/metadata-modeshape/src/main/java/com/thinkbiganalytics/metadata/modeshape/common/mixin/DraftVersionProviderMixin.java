@@ -93,7 +93,7 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
 
     @Override
     default boolean hasDraftVersion(PK entityId) {
-        return findLatestVersion(entityId, false).map(ver -> ver.getName().equals("draft")).orElse(false);
+        return findLatestVersion(entityId, false).map(ver -> ver.getName().equals(EntityVersion.DRAFT_NAME)).orElse(false);
     }
 
     @Override

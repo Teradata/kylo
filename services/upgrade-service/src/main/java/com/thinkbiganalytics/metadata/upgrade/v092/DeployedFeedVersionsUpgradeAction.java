@@ -21,10 +21,10 @@ package com.thinkbiganalytics.metadata.upgrade.v092;
  */
 
 import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
@@ -34,22 +34,23 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.jcr.Node;
 
 
 /**
- * in 0.9.2 the concept of a Feed Mode is introduced to track DRAFT feeds vs COMPLETE feeds.
- * All feeds prior to 0.9.2 dont have the 'mode' property and thus should be treated as 'COMPLETE'
- * Sets the JCRFeed.feedDetails.mode = 'COMPLETE' for all feeds
+ * In 0.9.2 the concept of a deployed Feed version is introduced to track which version of a 
+ * particular feed is the one that is deployed; i.e. which version state was used to update NiFi.
+ * <p>
+ * With all feeds prior to 0.9.2, the latest feed version the one that is deployed, and this action
+ * initialized the reference to the latest version as the deployed one.
  */
-@Component("initializeFeedModePropertyUpgradeAction091")
+@Component("deployedFeedVersionsUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class InitializeFeedModePropertyUpgradeAction implements UpgradeState {
+public class DeployedFeedVersionsUpgradeAction implements UpgradeState {
 
-    private static final Logger log = LoggerFactory.getLogger(InitializeFeedModePropertyUpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(DeployedFeedVersionsUpgradeAction.class);
     
     @Inject
-    private FeedProvider feedProvider;
+    private JcrFeedProvider feedProvider;
     
     @Override
     public boolean isTargetVersion(KyloVersion version) {
@@ -60,12 +61,19 @@ public class InitializeFeedModePropertyUpgradeAction implements UpgradeState {
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Set the initialize JcrFeed.mode value to 'COMPLETE' for all existing feeds: {}", targetVersion);
         
+//        JcrFeedProvider jcrProvider = (JcrFeedProvider) this.feedProvider;
+        
         this.feedProvider.getFeeds().stream()
             .map(JcrFeed.class::cast)
             .forEach(feed -> {
-                feed.getFeedData().ifPresent(data -> {
-                    data.setMode(Feed.Mode.COMPLETE);
-                });
+                feedProvider.findVersions(feed.getId(), false)
+                    .ifPresent(list -> {
+                        list.stream()
+                            .filter(ver -> ! ver.getName().equals(EntityVersion.DRAFT_NAME))
+                            .findFirst()
+                            .map(JcrEntityVersion.class::cast)
+                            .ifPresent(ver -> feed.setDeployedVersion(ver.getVersion()));
+                    });
             });
     }
 }

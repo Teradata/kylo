@@ -96,15 +96,6 @@ public class FeedData extends JcrObject implements PropertiedMixin {
         setProperty(STATE, state);
     }
 
-
-    public Feed.Mode getMode() {
-        return getProperty(MODE, Feed.Mode.DRAFT);
-    }
-
-    public void setMode(Feed.Mode mode) {
-        setProperty(MODE, mode);
-    }
-
     public boolean isInitialized() {
         return getCurrentInitStatus().getState() == InitializationStatus.State.SUCCESS;
     }

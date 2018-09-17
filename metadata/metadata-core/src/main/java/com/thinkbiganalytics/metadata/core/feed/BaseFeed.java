@@ -66,7 +66,6 @@ public class BaseFeed implements Feed {
     private String displayName;
     private String description;
     private State state;
-    private Mode mode;
     private boolean initialized;
     private DateTime createdTime;
     private Set<Feed> dependentFeeds = new HashSet<>();
@@ -216,16 +215,6 @@ public class BaseFeed implements Feed {
 
     public void setState(State state) {
         this.state = state;
-    }
-
-
-    @Override
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
     }
 
     @Override
