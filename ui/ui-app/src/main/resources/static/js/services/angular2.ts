@@ -12,6 +12,7 @@ import {AngularServiceUpgrader} from "../kylo-utils/angular-service-upgrader"
 import StateService from "./StateService";
 import SideNavService from "./SideNavService";
 import FileUpload from "./FileUploadService";
+import AccessControlService from "./AccessControlService";
 
 export const addButtonServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AddButtonService);
 
@@ -28,3 +29,5 @@ export const sideNavServiceProvider: FactoryProvider = AngularServiceUpgrader.up
 
 
 export const fileUploadServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FileUpload);
+
+export const accessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AccessControlService);

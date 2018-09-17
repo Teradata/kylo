@@ -4,6 +4,8 @@ import * as $ from "jquery";
 
 import AddButtonService from "../../services/AddButtonService";
 import BroadcastService from "../../services/broadcast-service";
+import AccessControlService from "../../services/AccessControlService";
+import StateService from "../../services/StateService";
 
 @Component({
     selector: "add-button",
@@ -21,10 +23,34 @@ export class AddButtonComponent {
     constructor(private elRef: ElementRef,
                 private $transitions: TransitionService,
                 private addButtonService: AddButtonService,
-                private broadcastService: BroadcastService) {}
+                private broadcastService: BroadcastService,
+                private accessControlService: AccessControlService,
+                private stateService: StateService) {}
 
     ngOnInit() {
 
+        // Register Add button (categories, feeds) on initial application load
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                if (this.accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
+                    this.addButtonService.registerAddButton('categories', () => {
+                        this.stateService.FeedManager().Category().navigateToCategoryDetails(null);
+                    });
+                }
+
+                if (this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                    this.addButtonService.registerAddButton("feeds", () => {
+                        this.stateService.FeedManager().Feed().navigateToDefineFeed();
+                    });
+                }
+                this.subscribeAndUpdateShowState();
+            }, (error: any) => {
+            this.subscribeAndUpdateShowState();
+        });
+
+    }
+
+    subscribeAndUpdateShowState() {
         this.broadcastService.subscribe(null, this.addButtonService.NEW_ADD_BUTTON_EVENT, () => this.updateShowState());
         this.broadcastService.subscribe(null, this.addButtonService.HIDE_ADD_BUTTON_EVENT, () => this.hideButton());
         this.broadcastService.subscribe(null, this.addButtonService.SHOW_ADD_BUTTON_EVENT, () => this.showButton());
@@ -40,7 +66,6 @@ export class AddButtonComponent {
                 this.updateShowState();
             }
         });
-        
     }
 
     onClickAddButton(event: any) {
