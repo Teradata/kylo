@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
@@ -94,6 +95,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -591,6 +593,59 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return criteriaImpl.select(getSession(), JcrFeed.NODE_TYPE, Feed.class, JcrFeed.class);
         }
         return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.category.Category.ID, com.thinkbiganalytics.metadata.api.feed.Feed)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category.ID toCatId) {
+        Category cat = this.categoryProvider.findById(toCatId);
+        
+        if (cat != null) {
+            return moveFeed(feed, cat);
+        } else {
+            throw new CategoryNotFoundException(toCatId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category toCat) {
+        // Only allow a move if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its category - current category is: " + toCat.getDisplayName());
+        } else {
+            Set<RoleMembership> prevCatMemberships = feed.getCategory().getFeedRoleMemberships();
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(toCat.getSystemName(), feed.getSystemName()));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            JcrFeed moved = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            moved.updateAllRoleMembershipPermissions(prevCatMemberships.stream());
+            return moved;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // Only allow a system name change if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its system name");
+        } else {
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(feed.getCategory().getSystemName(), newName));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            JcrFeed renamed = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            renamed.setSystemName(newName);
+            return renamed;
+        }
     }
 
     @Override

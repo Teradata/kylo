@@ -203,7 +203,10 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrCategoryAllowedActions.class;
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.category.Category#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed)
+     */
     public String getFeedParentPath() {
         return JcrUtil.path(getNode(), DETAILS).toString();
     }

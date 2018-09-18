@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -181,11 +182,7 @@ public class FeedModelTransform {
         Feed domain = domainId != null ? feedProvider.findById(domainId) : null;
 
         FeedCategory restCategoryModel = feedMetadata.getCategory();
-        Category category = null;
-
-        if (restCategoryModel != null && (domain == null || domain.getCategory() == null)) {
-            category = categoryProvider.findById(categoryProvider.resolveId(restCategoryModel.getId()));
-        }
+        Category category = restCategoryModel != null ? categoryProvider.findById(categoryProvider.resolveId(restCategoryModel.getId())) : null;
 
         if (domain == null) {
             //ensure the Category exists
@@ -203,6 +200,21 @@ public class FeedModelTransform {
             feedMetadata.setState(state.name());
 
         }
+        
+        // Check if the category is changing
+        if (category != null && ! category.getId().equals(domain.getCategory().getId())) {
+            domain = feedProvider.moveFeed(domain, category);
+        }
+        
+        // Check if the feed system name is changing
+        if (! domain.getSystemName().equals(feedMetadata.getSystemFeedName())) {
+            domain = feedProvider.changeSystemName(domain, feedMetadata.getSystemFeedName());
+            // Make sure the table schema name matches the system name.
+            if (feedMetadata.getTable() != null && feedMetadata.getTable().getTableSchema() != null) {
+                feedMetadata.getTable().getTableSchema().setName(feedMetadata.getSystemFeedName());
+            }
+        }
+        
         domain.setDisplayName(feedMetadata.getFeedName());
         if(feedMetadata.getDescription() == null){
             feedMetadata.setDescription("");

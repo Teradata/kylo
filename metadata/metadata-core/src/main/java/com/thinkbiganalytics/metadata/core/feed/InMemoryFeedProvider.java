@@ -733,4 +733,31 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category.ID)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, com.thinkbiganalytics.metadata.api.category.Category.ID toCatId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category toCat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

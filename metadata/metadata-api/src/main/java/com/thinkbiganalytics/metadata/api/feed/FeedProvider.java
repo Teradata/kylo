@@ -76,6 +76,21 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVe
 
     List<Feed> getFeeds(FeedCriteria criteria);
 
+    /**
+     * Moves the specified feed from its current category to a new category.
+     */
+    Feed moveFeed(Feed feed, Category.ID toCatId);
+    
+    /**
+     * Moves the specified feed from its current category to a new category.
+     */
+    Feed moveFeed(Feed feed, Category toCat);
+
+    /**
+     * Changes the system name of a feed
+     */
+    Feed changeSystemName(Feed feed, String newName);
+
     Feed addDependent(Feed.ID targetId, Feed.ID dependentId);
 
     Feed removeDependent(Feed.ID feedId, Feed.ID depId);
