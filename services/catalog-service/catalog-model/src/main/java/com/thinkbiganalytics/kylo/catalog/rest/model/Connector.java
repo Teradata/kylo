@@ -38,7 +38,7 @@ public class Connector {
      * Unique identifier
      */
     private String id;
-    
+
     /**
      * Connector plugin ID (connector type)
      */
@@ -111,11 +111,11 @@ public class Connector {
     public String getPluginId() {
         return pluginId;
     }
-    
+
     public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
-    
+
     public DataSetTemplate getTemplate() {
         return template;
     }
@@ -131,7 +131,7 @@ public class Connector {
     public void setTitle(String title) {
         this.title = title;
     }
-    
+
     public String getDescription() {
         return description;
     }

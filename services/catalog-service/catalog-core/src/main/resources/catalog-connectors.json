@@ -1,7 +1,7 @@
 [
   {
     "title": "SQL Source",
-    "pluginId": "mysql",
+    "pluginId": "jdbc",
     "template": {
       "format": "jdbc"
     }
@@ -74,7 +74,7 @@
   },
   {
     "title": "Mysql",
-    "pluginId": "mysql",
+    "pluginId": "jdbc",
     "color": "orange-700",
     "template": {
       "format": "jdbc",

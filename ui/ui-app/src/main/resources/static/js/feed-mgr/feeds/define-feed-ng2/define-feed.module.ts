@@ -39,6 +39,7 @@ import {UIRouterModule} from "@uirouter/angular";
 import {NvD3Module} from 'ng2-nvd3';
 
 import {KyloCommonModule} from "../../../common/common.module";
+import {CatalogApiModule} from "../../catalog/api/catalog-api.module";
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
 import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
@@ -222,6 +223,7 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         MatProgressSpinnerModule,
         CatalogDatasetPreviewModule,
         KyloFeedModule,
+        CatalogApiModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })
