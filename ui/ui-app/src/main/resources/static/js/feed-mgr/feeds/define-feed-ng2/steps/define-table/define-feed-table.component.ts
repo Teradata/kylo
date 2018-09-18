@@ -42,6 +42,7 @@ import {
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedServiceTypes} from "../../../../services/FeedServiceTypes";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -113,6 +114,11 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     defineTableForm : FormGroup;
 
     /**
+     * The possible Merge Strategies
+     */
+    mergeStrategies: FeedServiceTypes.MergeStrategy[];
+
+    /**
      * The partition form
      */
     definePartitionForm : FormGroup;
@@ -163,6 +169,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
+        this.mergeStrategies = angular.copy(this.feedService.mergeStrategies);
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
