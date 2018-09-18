@@ -751,4 +751,13 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

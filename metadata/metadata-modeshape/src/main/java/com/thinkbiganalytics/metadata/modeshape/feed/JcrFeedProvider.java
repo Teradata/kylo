@@ -623,6 +623,25 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // Only allow a system name change if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its system name");
+        } else {
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(feed.getCategory().getSystemName(), newName));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            JcrFeed moved = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            moved.setSystemName(newName);
+            return moved;
+        }
+    }
 
     @Override
     public Feed findBySystemName(String systemName) {

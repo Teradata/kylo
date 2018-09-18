@@ -206,6 +206,10 @@ public class FeedModelTransform {
             domain = feedProvider.moveFeed(domain, category);
         }
         
+        // Check if the feed system name is changing
+        if (! domain.getSystemName().equals(feedMetadata.getSystemFeedName())) {
+            domain = feedProvider.changeSystemName(domain, feedMetadata.getSystemFeedName());
+        }
         
         domain.setDisplayName(feedMetadata.getFeedName());
         if(feedMetadata.getDescription() == null){
