@@ -209,6 +209,10 @@ public class FeedModelTransform {
         // Check if the feed system name is changing
         if (! domain.getSystemName().equals(feedMetadata.getSystemFeedName())) {
             domain = feedProvider.changeSystemName(domain, feedMetadata.getSystemFeedName());
+            // Make sure the table schema name matches the system name.
+            if (feedMetadata.getTable() != null && feedMetadata.getTable().getTableSchema() != null) {
+                feedMetadata.getTable().getTableSchema().setName(feedMetadata.getSystemFeedName());
+            }
         }
         
         domain.setDisplayName(feedMetadata.getFeedName());
