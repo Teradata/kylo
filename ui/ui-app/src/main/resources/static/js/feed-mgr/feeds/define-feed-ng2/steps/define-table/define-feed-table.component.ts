@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
+import {Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../../common/CommonTypes";
@@ -158,7 +158,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
                 dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
-                private cdr: ChangeDetectorRef,
                 public dialog:MatDialog,
                 private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService, feedSideNavService:FeedSideNavService) {
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
@@ -250,12 +249,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * @param columnDef
      */
     addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) {
-
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
+        this.virtualScroll.refresh();
         if(this.virtualScroll){
-            this.virtualScroll.scrollToEnd();
+            setTimeout(()=>{this.virtualScroll.scrollToEnd()}, 50);
         }
     }
 
