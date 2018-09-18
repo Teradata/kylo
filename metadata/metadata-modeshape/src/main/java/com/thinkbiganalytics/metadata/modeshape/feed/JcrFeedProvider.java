@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
@@ -617,10 +618,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         if (findDeployedVersion(feed.getId(), false).isPresent()) {
             throw new MetadataRepositoryException("Only a draft feed with no versions may change its category - current category is: " + toCat.getDisplayName());
         } else {
+            Set<RoleMembership> prevCatMemberships = feed.getCategory().getFeedRoleMemberships();
             Node feedNode = ((JcrFeed) feed).getNode();
             Path newPath = JcrUtil.path(EntityUtil.pathForFeed(toCat.getSystemName(), feed.getSystemName()));
             feedNode = JcrUtil.moveNode(feedNode, newPath);
-            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            JcrFeed moved = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            moved.updateAllRoleMembershipPermissions(prevCatMemberships.stream());
+            return moved;
         }
     }
     
@@ -636,10 +641,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             Node feedNode = ((JcrFeed) feed).getNode();
             Path newPath = JcrUtil.path(EntityUtil.pathForFeed(feed.getCategory().getSystemName(), newName));
             feedNode = JcrUtil.moveNode(feedNode, newPath);
-            JcrFeed moved = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            JcrFeed renamed = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
             
-            moved.setSystemName(newName);
-            return moved;
+            renamed.setSystemName(newName);
+            return renamed;
         }
     }
 

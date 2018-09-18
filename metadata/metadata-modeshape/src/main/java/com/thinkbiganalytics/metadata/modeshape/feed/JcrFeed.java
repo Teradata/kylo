@@ -58,10 +58,13 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -141,7 +144,21 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
         AccessControlledMixin.super.enableAccessControl(prototype, owner, roles);
         
-        JcrAbstractRoleMembership.enableOnlyForAll(getCategory().getFeedRoleMemberships().stream(), this.getAllowedActions());
+        updateAllRoleMembershipPermissions(Stream.empty());
+    }
+    
+    /**
+     * Update this feed's permissions to enable only the ones allowed by all role memberships both
+     * at the feed-level and the category-level.
+     */
+    public void updateAllRoleMembershipPermissions(Stream<RoleMembership> previousMemberships) {
+        // Disable permissions from the previous memberships excluding the feed owner.
+        JcrAbstractRoleMembership.disableForAll(previousMemberships, Collections.singleton(getOwner()), this.getAllowedActions());
+        
+        // Enable only the permissions allowed by the category and feed role memberships.
+        Stream<RoleMembership> memberships = Stream.concat(getRoleMemberships().stream(), 
+                                                           getCategory().getFeedRoleMemberships().stream());
+        JcrAbstractRoleMembership.enableOnlyForAll(memberships, this.getAllowedActions());
     }
 
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-

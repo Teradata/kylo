@@ -117,6 +117,12 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
         allowed.enableOnly(principal, actions);
     }
 
+    /**
+     * A convenience method to update the supplied AllowedActions to enable only the permissions currently allowed to all principals
+     * in the given role memberships.
+     * @param allMemberships the role memberships
+     * @param allowed the actions to update
+     */
     public static void enableOnlyForAll(Stream<RoleMembership> allMemberships, AllowedActions allowed) {
         // Make a snapshot of memberships to re-stream.
         List<RoleMembership> memberships = allMemberships.collect(Collectors.toList());
@@ -124,7 +130,27 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
                         .flatMap(membership -> membership.getMembers().stream())
                         .collect(Collectors.toSet());
         
+        // For each principal, enable the only the permissions allowed by the union of those allowed by its
+        // membership among the supplied roles.
         principals.forEach(principal -> enableOnly(principal, memberships.stream(), allowed));
+    }
+    
+    /**
+     * A convenience method to update the supplied AllowedActions to disable all the permissions currently allowed to all principals
+     * in the given role memberships, excluding the principals in the supplied exclusion set.
+     * @param allMemberships the role memberships
+     * @param exclusionSet a set of principals to exclude from having their permissions disabled
+     * @param allowed the actions to update
+     */
+    public static void disableForAll(Stream<RoleMembership> allMemberships, Set<Principal> exclusionSet, AllowedActions allowed) {
+        // Collect all principals of all memberships.
+        Set<Principal> principals = allMemberships
+                        .flatMap(membership -> membership.getMembers().stream())
+                        .filter(princ -> ! exclusionSet.contains(princ))
+                        .collect(Collectors.toSet());
+        
+        // For each principal, disable all of its permissions. 
+        principals.forEach(principal -> allowed.disableAll(principal));
     }
     
     public JcrAbstractRoleMembership(Node node) {
