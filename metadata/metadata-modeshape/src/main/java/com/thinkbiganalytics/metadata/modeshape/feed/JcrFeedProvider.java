@@ -94,6 +94,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -591,6 +592,36 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return criteriaImpl.select(getSession(), JcrFeed.NODE_TYPE, Feed.class, JcrFeed.class);
         }
         return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.category.Category.ID, com.thinkbiganalytics.metadata.api.feed.Feed)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category.ID toCatId) {
+        Category cat = this.categoryProvider.findById(toCatId);
+        
+        if (cat != null) {
+            return moveFeed(feed, cat);
+        } else {
+            throw new CategoryNotFoundException(toCatId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category toCat) {
+        // Only allow a move if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its category - current category is: " + toCat.getDisplayName());
+        } else {
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(toCat.getSystemName(), feed.getSystemName()));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+        }
     }
 
     @Override

@@ -153,6 +153,7 @@ public class JcrUtil {
             Session session = node.getSession();
             String path = newPath.toAbsolutePath().toString();
             session.move(node.getPath(), path);
+            session.save(); // save required for the move to take effect.
             return session.getNode(path);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
