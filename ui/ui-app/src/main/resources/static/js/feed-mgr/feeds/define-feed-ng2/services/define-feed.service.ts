@@ -41,6 +41,10 @@ import {TimeoutError} from "rxjs/Rx";
 import {EntityVersion} from "../../../model/entity-version.model";
 import {fromPromise} from "rxjs/observable/fromPromise";
 import {ReplaySubject} from "rxjs/ReplaySubject";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {TdLoadingService} from "@covalent/core/loading";
+import {Category} from "../../../model/category/category.model";
 
 
 export class FeedEditStateChangeEvent{
@@ -112,8 +116,10 @@ export class DefineFeedService {
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
+                private _loadingService:TdLoadingService,
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
+                private stateService:StateService,
                 @Inject("AccessControlService") accessControlService: AccessControlService){
 
 
@@ -160,6 +166,46 @@ export class DefineFeedService {
         //notify subscribers of updated feed role memberships
         let savedFeed = new SaveFeedResponse(this.feed, true, "Updated role memberships");
         this.savedFeedSubject.next(savedFeed);
+    }
+
+    cloneFeed(feed?:Feed){
+        let feedToClone = feed != undefined ? this.getFeed() : feed;
+
+            let template = feedToClone.registeredTemplate;
+            let config:NewFeedDialogData = new NewFeedDialogData(template," Clone "+feedToClone.getFullName());
+            this._dialogService.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",width:'800px'})
+                .afterClosed()
+                .filter(value => typeof value !== "undefined").subscribe((newFeedData:NewFeedDialogResponse) => {
+                    this._loadingService.register("processingFeed")
+                let template = newFeedData.template;
+                let feedName = newFeedData.feedName;
+                let systemFeedName = newFeedData.systemFeedName;
+                let category:Category = newFeedData.category;
+                let copy = this.feed.copyModelForSave();
+                copy.id = undefined;
+                copy.deployedVersion = undefined;
+                copy.feedName = feedName;
+                copy.systemFeedName = systemFeedName
+                copy.category = newFeedData.category;
+                this.saveFeed(copy).subscribe((response:SaveFeedResponse) => {
+                    if(response.success){
+                        let feed = response.feed;
+                        this.openSnackBar("Successfully cloned the feed ",5000)
+                        this._loadingService.resolve("processingFeed")
+                        this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:feed.id},{"location":"replace"})
+                    }
+                    else {
+                        //ERROR
+                        this._loadingService.resolve("processingFeed")
+                        this.openSnackBar("Error cloning feed ",5000)
+                    }
+                }, error1 => {
+                    //ERROR!!!!!
+                    this._loadingService.resolve("processingFeed")
+                    this.openSnackBar("Error cloning feed ",5000)
+                })
+            });
+
     }
 
 

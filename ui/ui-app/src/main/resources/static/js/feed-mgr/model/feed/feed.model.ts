@@ -637,13 +637,18 @@ export class Feed  implements KyloObject{
             if (copy.table.sourceTableSchema == undefined) {
                 copy.table.sourceTableSchema = new SourceTableSchema();
             }
-            //only set the sourceFields if its the first time creating this feed
-            if (copy.id == null) {
-                copy.table.sourceTableSchema.fields = sourceFields;
-                copy.table.feedTableSchema.fields = feedFields;
-            }
+
             if (copy.table.feedTableSchema == undefined) {
                 copy.table.feedTableSchema = new FeedTableSchema();
+            }
+
+            //ensure the source and feed tables match those defined by this feed
+            if (copy.table.sourceTableSchema.fields.length ==0 && sourceFields.length != 0 ) {
+                copy.table.sourceTableSchema.fields = sourceFields;
+            }
+
+            if (copy.table.feedTableSchema.fields.length ==0 && feedFields.length != 0 ) {
+                copy.table.feedTableSchema.fields = feedFields;
             }
 
             if (copy.registeredTemplate) {

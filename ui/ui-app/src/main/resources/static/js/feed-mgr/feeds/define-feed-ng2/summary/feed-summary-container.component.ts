@@ -22,7 +22,7 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
 
     static LOADER = "FeedSummaryContainerComponent.LOADER";
 
-    setupGuideLink = FeedLink.newStaticLink(SetupGuideSummaryComponent.LINK_NAME, "setup-guide", "playlist_add_check");
+    setupGuideLink:FeedLink;
 
     feedActivityLink = FeedLink.newStaticLink(FeedActivitySummaryComponent.LINK_NAME, "feed-activity","pages");
 
@@ -33,7 +33,7 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
     /**
      * should we show the profile, lineage, sla, etc links
      */
-    showAdditionalLinks:boolean;
+    additionalLinksDisabled:boolean;
 
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService, @Inject("SideNavService") private sideNavService: SideNavService) {
@@ -55,11 +55,11 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
         //otherwise direct them to the feed-definition/section page with just the setup guide
 
         if(this.feed.hasBeenDeployed()) {
-            redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide";
+            redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity";
         }
         else {
-            redirectState = FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide";
-        }
+            redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide";
+       }
         this.stateService.go(redirectState,{feedId:this.feed.id}, {location:'replace'})
 
 
@@ -68,11 +68,18 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
     private initializeLinks(){
         if(this.feed) {
             if(!this.feed.hasBeenDeployed()){
+                if(this.feed.isDraft()) {
+                    this.setupGuideLink = this.feedSideNavService.deployedSetupGuideLink;
+                }
+                else {
+                    this.setupGuideLink = this.feedSideNavService.latestSetupGuideLink;
+                }
                 this.summaryLinks.push(this.setupGuideLink)
-                this.showAdditionalLinks = false;
+                this.additionalLinksDisabled = true;
             }
             else {
-                this.showAdditionalLinks = true;
+                this.setupGuideLink = this.feedSideNavService.latestSetupGuideLink;
+                this.additionalLinksDisabled = false;
                 this.summaryLinks.push(this.feedActivityLink);
                 this.summaryLinks.push(this.setupGuideLink)
 
@@ -97,8 +104,10 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
 
 
     onLinkSelected(link:FeedLink){
-        this.feedSideNavService.setSelected(link);
-        this.stateService.go(link.sref,{"feedId":this.feed.id}, {location:'replace'});
+        if(!this.additionalLinksDisabled) {
+            this.feedSideNavService.setSelected(link);
+            this.stateService.go(link.sref, {"feedId": this.feed.id}, {location: 'replace'});
+        }
     }
 
 }

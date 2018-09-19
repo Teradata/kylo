@@ -52,8 +52,8 @@
                 <mat-icon>more_vert</mat-icon>
               </button>
               <mat-menu #menu="matMenu">
-                <button mat-menu-item>
-                  <mat-icon>dialpad</mat-icon>
+                <button mat-menu-item (click)="cloneFeed()">
+                  <mat-icon>file_copy</mat-icon>
                   <span>Clone</span>
                 </button>
               </mat-menu>

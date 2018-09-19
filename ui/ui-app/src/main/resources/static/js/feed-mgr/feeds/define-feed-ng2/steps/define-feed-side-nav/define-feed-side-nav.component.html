@@ -1,11 +1,8 @@
 <mat-toolbar td-sidenav-content style="cursor:pointer">
-  <div (click)="gotoFeedSummary()" *ngIf="feed.hasBeenDeployed()"> <!-- if this feed has deployed versions -->
+  <div (click)="gotoFeedSummary()">
     <mat-icon>arrow_back</mat-icon>
    Feed Summary</div>
-  <div (click)="gotoFeeds()" *ngIf="!feed.hasBeenDeployed()" > <!-- if this feed has deployed versions -->
-    <mat-icon>arrow_back</mat-icon>
-    Feeds</div>
-</mat-toolbar>
+ </mat-toolbar>
 <div td-sidenav-content>
   <mat-nav-list>
 

@@ -16,7 +16,7 @@ import {ISubscription} from "rxjs/Subscription";
 import {StateObject} from "@uirouter/core";
 import * as _ from "underscore"
 import {SetupGuideSummaryComponent} from "../../summary/setup-guide-summary/setup-guide-summary.component";
-import {SETUP_REVIEW_LINK} from "../../shared/feed-link-constants";
+import {SETUP_GUIDE_LINK, SETUP_REVIEW_LINK} from "../../shared/feed-link-constants";
 
 @Component({
     selector: "feed-definition-side-nav",
@@ -37,9 +37,9 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
 
     feedLoadedSubscription:ISubscription;
 
-    latestSetupGuideLink = FeedLink.newSectionLink(SetupGuideSummaryComponent.LINK_NAME, "setup-guide","playlist_add_check",{"loadMode":LoadMode.LATEST});
+    latestSetupGuideLink:FeedLink;
 
-    deployedSetupGuideLink = FeedLink.newSectionLink(SETUP_REVIEW_LINK, "deployed-setup-guide","playlist_add_check", {"loadMode":LoadMode.DEPLOYED});
+    deployedSetupGuideLink:FeedLink;
 
     setupGuideLink:FeedLink;
 
@@ -48,6 +48,8 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
     constructor(private  stateService:StateService, private defineFeedService:DefineFeedService, private feedSideNavService:FeedSideNavService) {
         this.summarySelected = true;
         this.defineFeedService.subscribeToStepChanges(this.onStepChanged.bind(this))
+        this.latestSetupGuideLink = this.feedSideNavService.latestSetupGuideLink;
+        this.deployedSetupGuideLink = this.feedSideNavService.deployedSetupGuideLink;
         this.feedLinkSelectionChangeSubscription =  this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
         this.feedLoadedSubscription = this.defineFeedService.subscribeToFeedLoadedEvent(this.onFeedLoaded.bind(this))
     }

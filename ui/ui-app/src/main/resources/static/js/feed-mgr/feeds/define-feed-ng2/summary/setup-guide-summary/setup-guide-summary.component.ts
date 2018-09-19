@@ -11,6 +11,8 @@ import {ISubscription} from "rxjs/Subscription";
 import {SETUP_GUIDE_LINK} from "../../shared/feed-link-constants";
 import {Feed, LoadMode} from "../../../../model/feed/feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../../new-feed-dialog/new-feed-dialog.component";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 
 @Component({
@@ -39,7 +41,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         return SetupGuideSummaryComponent.LINK_NAME;
     }
 
-    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService) {
+    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService, private _dialogService:TdDialogService) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
        this.feedSavedSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
      }
@@ -84,6 +86,10 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.defineFeedService.markFeedAsEditable();
         //redirect to setup guide
         this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id})
+    }
+
+    cloneFeed(){
+        this.defineFeedService.cloneFeed(this.feed);
     }
 
 
