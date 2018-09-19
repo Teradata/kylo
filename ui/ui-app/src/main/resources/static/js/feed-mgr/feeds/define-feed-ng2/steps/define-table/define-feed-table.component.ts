@@ -119,6 +119,16 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     mergeStrategies: FeedServiceTypes.MergeStrategy[];
 
     /**
+     * The possible target options
+     */
+    targetFormatOptions: Common.LabelValue[];
+
+    /**
+     * The comporession Options
+     */
+    compressionOptions: any[];
+
+    /**
      * The partition form
      */
     definePartitionForm : FormGroup;
@@ -170,6 +180,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
         this.mergeStrategies = angular.copy(this.feedService.mergeStrategies);
+        this.targetFormatOptions = angular.copy(this.feedService.targetFormatOptions);
+        this.compressionOptions = this.feedService.allCompressionOptions();
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
