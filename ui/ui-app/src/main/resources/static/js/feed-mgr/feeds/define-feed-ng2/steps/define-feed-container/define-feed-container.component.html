@@ -1,21 +1,21 @@
 
 <td-layout *ngIf="feed != undefined">
-    <td-layout-manage-list opened="true" mode="side">
-      <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
-      <mat-toolbar >
-        <div>Feed {{feed.feedName}}</div>
-        <span fxFlex="100"></span>
-        <div>
-          <ng-container
+  <td-layout-manage-list opened="true" mode="side">
+    <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
+    <mat-toolbar >
+      <div>{{feed.getFeedNameAndVersion()}} </div> <!-- {{currentLink.label | translate}} -->
+      <span fxFlex="100"></span>
+      <div>
+        <ng-container
             [ngTemplateOutlet]="toolbarActionLinks ? toolbarActionLinks: defaultToolbarActionLinks">
         </ng-container>
-        </div>
-        <button mat-icon-button color="accent" (click)="onDelete()" *ngIf="feed.allowEdit && !feed.readonly"><mat-icon>delete</mat-icon></button>
-        <button mat-icon-button color="accent" (click)="onCancelEdit()" *ngIf="feed.allowEdit &&  !feed.readonly"><mat-icon>cancel</mat-icon></button>
-        <button mat-icon-button color="accent" (click)="onEdit()" *ngIf="feed.allowEdit && feed.readonly"><mat-icon>edit</mat-icon></button>
-      </mat-toolbar>
-      <ui-view></ui-view>
-    </td-layout-manage-list>
+      </div>
+      <button mat-icon-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><mat-icon>delete</mat-icon></button>
+      <button mat-icon-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly"><mat-icon>cancel</mat-icon></button>
+      <button mat-icon-button color="accent" (click)="onEdit()" *ngIf="feed.canEdit() && feed.readonly"><mat-icon>edit</mat-icon></button>
+    </mat-toolbar>
+    <ui-view></ui-view>
+  </td-layout-manage-list>
 
 
 </td-layout>

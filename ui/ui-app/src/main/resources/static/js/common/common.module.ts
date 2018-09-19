@@ -25,6 +25,8 @@ import {LocalStorageService} from "./local-storage/local-storage.service";
 import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.component";
 import {BaseDraggableDirective} from "./draggable-ng2/base-draggable.directive";
 import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
+import {KyloTimerDirective} from "./timer/kylo-timer.component";
+import {DateTimeService} from "./utils/date-time.service";
 
 @NgModule({
     declarations: [
@@ -35,14 +37,16 @@ import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
         FileUploadComponent,
         KyloVisNetworkComponent,
         BaseDraggableDirective,
-        KyloDraggableDirective
+        KyloDraggableDirective,
+        KyloTimerDirective
     ],
     entryComponents: [
         AddButtonComponent,
         NotificationMenuComponent
     ],
     providers:[
-        LocalStorageService
+        LocalStorageService,
+        DateTimeService
     ],
     imports: [
         CommonModule,
@@ -59,7 +63,8 @@ import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
         MatListModule,
         MatMenuModule,
         MatProgressSpinnerModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        TranslateModule
     ],
     exports: [
         BrowserHeight,
@@ -67,7 +72,8 @@ import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
         FileUploadComponent,
         KyloVisNetworkComponent,
         BaseDraggableDirective,
-        KyloDraggableDirective
+        KyloDraggableDirective,
+        KyloTimerDirective
     ]
 })
 export class KyloCommonModule {

@@ -1,0 +1,38 @@
+<td-layout>
+
+<td-layout-manage-list opened="true" mode="side">
+    <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">Feeds</mat-toolbar>
+    <div td-sidenav-content>
+      <mat-nav-list>
+
+        <ng-template let-link let-last="last" ngFor [ngForOf]="summaryLinks" >
+          <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
+            <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
+            <div mat-line >{{link.label | translate}}</div>
+            <span></span>
+          </a>
+        </ng-template>
+
+
+        <ng-container  *ngIf="showAdditionalLinks">
+          <mat-divider></mat-divider>
+          <h3 mat-subheader>Links</h3>
+          <ng-template let-link let-last="last" ngFor [ngForOf]="feedLinks">
+            <a mat-list-item (click)="onLinkSelected(link)" class="pad-left-sm" [ngClass]="{'selected-step': link.selected}">
+              <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
+              <div mat-line >{{link.label | translate}}</div>
+              <span></span>
+            </a>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </ng-template>
+        </ng-container>
+
+      </mat-nav-list>
+
+    </div>
+          <ui-view></ui-view>
+  </td-layout-manage-list>
+</td-layout>
+
+<ng-template #defaultToolbarActionLinks>
+</ng-template>

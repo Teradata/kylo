@@ -117,5 +117,9 @@ public class EntityVersion {
     public void setEntity(Object entity) {
         this.entity = entity;
     }
+
+    public boolean isDraft(){
+        return this.name.equalsIgnoreCase("draft");
+    }
     
 }

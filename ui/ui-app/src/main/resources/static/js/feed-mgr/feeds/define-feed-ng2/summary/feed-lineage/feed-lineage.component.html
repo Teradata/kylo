@@ -1,24 +1,29 @@
-<mat-card class="feed-card">
-  <mat-card-content>
-    <div fxLayout="row" fxLayoutAlign="end center" class="layout-padding-top layout-padding-left">
-      <mat-button-toggle-group aria-label="Graph mode"
-                               #group="matButtonToggleGroup"
-                               (change)="networkView(group.value)"
-                               [value]="graphMode">
-        <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
-        <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
-    <div>
-      <select-network-node [selectedNode]="selectedNode"></select-network-node>
-      <kylo-vis-network *ngIf="!loading"
-                        [data]="data"
-                        [options]="options"
-                        (onLoad)="onLoad($event)"
-                        (onSelect)="onSelect($event)"
-                        (stabilized)="stabilized($event)"
-                        [heightPx]="550"></kylo-vis-network>
-    </div>
-  </mat-card-content>
-</mat-card>
-
+<td-layout-nav color="none">
+  <div td-toolbar-content>
+    <div *ngIf="feed != undefined">Feed Lineage - {{feed.feedName}} </div>
+    <span fxFlex="100"></span>
+  </div>
+      <mat-card class="feed-card">
+      <mat-card-content>
+        <div fxLayout="row" fxLayoutAlign="end center" class="layout-padding-top layout-padding-left">
+          <mat-button-toggle-group aria-label="Graph mode"
+                                   #group="matButtonToggleGroup"
+                                   (change)="networkView(group.value)"
+                                   [value]="graphMode">
+            <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
+            <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+        <div>
+          <select-network-node [selectedNode]="selectedNode"></select-network-node>
+          <kylo-vis-network *ngIf="!loading"
+                            [data]="data"
+                            [options]="options"
+                            (onLoad)="onLoad($event)"
+                            (onSelect)="onSelect($event)"
+                            (stabilized)="stabilized($event)"
+                            [heightPx]="550"></kylo-vis-network>
+        </div>
+      </mat-card-content>
+    </mat-card>
+</td-layout-nav>

@@ -1,5 +1,5 @@
 import {Step} from "../../../model/feed/feed-step.model";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../model/feed/feed-constants";
 
 export enum FeedLinkType {
     STEP=1, SUMMARY=2, LINK=3
@@ -9,6 +9,7 @@ export class FeedLink{
     sref:string;
     icon?:string;
     selected:boolean;
+    srefParams?:any;
     type:FeedLinkType = FeedLinkType.LINK;
 
     constructor(public label:string) {
@@ -19,13 +20,26 @@ export class FeedLink{
         return new FeedLink("");
     }
 
-    static newStaticLink(label:string,shortSRef:string, icon?:string):FeedLink{
+
+    static newStaticLink(label:string,sref:string, icon?:string, params?:any):FeedLink{
         let link = new FeedLink(label);
-        link.setSRef(shortSRef,true)
+        link.setSRef(FEED_DEFINITION_SUMMARY_STATE_NAME+"."+sref,false)
         link.setIcon(icon);
         link.type = FeedLinkType.LINK
+        link.srefParams = params;
         return link;
     }
+
+    static newSectionLink(label:string,sref:string, icon?:string,params?:any):FeedLink{
+        let link = new FeedLink(label);
+        link.setSRef(FEED_DEFINITION_SECTION_STATE_NAME+"."+sref,false)
+        link.setIcon(icon);
+        link.type = FeedLinkType.LINK
+        link.srefParams = params;
+        return link;
+    }
+
+
 
     static newStepLink(step:Step):FeedLink{
         let link = new FeedLink(step.name);

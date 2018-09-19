@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import "../module";
+import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
 
 export default class OpsManagerRestUrlService{
     constructor(){}
@@ -8,8 +9,8 @@ export default class OpsManagerRestUrlService{
     FEED_MGR_BASE = "/proxy/v1/feedmgr";
     FEED_MGR_FEED_BASE_URL = this.FEED_MGR_BASE + "/feeds";
     SLA_BASE_URL = this.FEED_MGR_BASE + "/sla";
-    FEEDS_BASE = "/proxy/v1/feeds";
-    JOBS_BASE = "/proxy/v1/jobs";
+    FEEDS_BASE = OperationsRestUrlConstants.FEEDS_BASE
+    JOBS_BASE = OperationsRestUrlConstants.JOBS_BASE
     SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
     DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
     DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
@@ -24,23 +25,18 @@ export default class OpsManagerRestUrlService{
     }
     */
 
-    SPECIFIC_FEED_HEALTH_URL =  (feedName: any)=>{
-        return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
-    }
-    FEED_DAILY_STATUS_COUNT_URL =  (feedName: any)=> {
-        return this.FEEDS_BASE + "/" + feedName + "/daily-status-count";
-    }
+    SPECIFIC_FEED_HEALTH_URL = OperationsRestUrlConstants.SPECIFIC_FEED_HEALTH_URL;
 
-    FEED_NAME_FOR_ID = (feedId: any)=>{
-            return this.FEEDS_BASE +"/query/"+feedId
-        }
+    FEED_DAILY_STATUS_COUNT_URL = OperationsRestUrlConstants.FEED_DAILY_STATUS_COUNT_URL;
+
+    FEED_NAME_FOR_ID = OperationsRestUrlConstants.FEED_NAME_FOR_ID;
     //JOB urls
 
     JOBS_QUERY_URL = this.JOBS_BASE;
     JOBS_CHARTS_QUERY_URL = this.JOBS_BASE + '/list';
     JOB_NAMES_URL = this.JOBS_BASE + '/names';
 
-    DAILY_STATUS_COUNT_URL = this.JOBS_BASE + "/daily-status-count/";
+    DAILY_STATUS_COUNT_URL = OperationsRestUrlConstants.DAILY_STATUS_COUNT_URL;
 
         //this.RUNNING_OR_FAILED_COUNTS_URL = this.JOBS_BASE + '/running-failed-counts';
 

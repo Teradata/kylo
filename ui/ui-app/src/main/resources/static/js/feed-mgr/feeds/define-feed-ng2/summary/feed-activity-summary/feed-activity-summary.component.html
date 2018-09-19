@@ -1,0 +1,21 @@
+<td-layout-nav color="none">
+  <div td-toolbar-content >
+    <div *ngIf="feed != undefined">Feed Activity - {{feed.feedName}} </div>
+    <span fxFlex="100"></span>
+  </div>
+    <div fxLayout="row">
+      <div fxFlex="60%">
+        <feed-job-activity [feed]="feed"></feed-job-activity>
+      </div>
+
+
+      <div fxLayout="column" fxFlex="40%">
+
+        <feed-operations-health-info [feed]="feed" *ngIf="feed != undefined"></feed-operations-health-info>
+
+
+      </div>
+
+
+    </div>
+</td-layout-nav>

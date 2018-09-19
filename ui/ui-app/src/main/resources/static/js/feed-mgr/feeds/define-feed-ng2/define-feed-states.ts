@@ -2,7 +2,6 @@ import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {catchError} from "rxjs/operators/catchError";
 import {finalize} from "rxjs/operators/finalize";
 
-import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedComponent} from "./define-feed.component";
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
@@ -12,7 +11,7 @@ import {DefineFeedService} from "./services/define-feed.service";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {DefineFeedTableComponent} from "./steps/define-table/define-feed-table.component";
-import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../../model/feed/feed-constants";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {ProfileComponent} from './summary/profile/profile.component';
 import {OverviewComponent} from './summary/overview/overview.component';
@@ -25,6 +24,14 @@ import {SlaComponent} from './summary/sla/sla.componment';
 import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
 import {SlaListComponent} from './summary/sla/list/sla-list.componment';
 import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
+import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
+import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
+import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.component";
+import {Transition} from "@uirouter/core";
+import {Subject} from "rxjs/Subject";
+import {ReplaySubject} from "rxjs/ReplaySubject";
+import {Feed, LoadMode} from "../../model/feed/feed.model";
+import {error} from "ng-packagr/lib/util/log";
 
 
 const resolveFeed :any =
@@ -55,6 +62,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             displayName: "Define Feed"
         }
     },
+
     {
         name: FEED_DEFINITION_STATE_NAME+".select-template",
         url: "/select-template",
@@ -63,7 +71,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME,
         url: "/section",
-        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".overview",
+        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",
         component: DefineFeedContainerComponent,
         resolve: [
             {
@@ -74,9 +82,11 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".overview",
-        url: "/:feedId/overview",
-        component: OverviewComponent,
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",
+        url: "/:feedId/setup-guide",
+        component: SetupGuideSummaryComponent,
+        params:{feedId:{type:"string"},
+            loadMode:LoadMode.LATEST, squash: true},
         resolve: [
             {
                 token: 'stateParams',
@@ -84,14 +94,26 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 resolveFn: (state: StateService) => state.transition.params()
             }
         ]
-    },   
-    {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".general-info",
-        url: "/:feedId/general-info",
-        component: DefineFeedStepGeneralInfoComponent,
-
-
     },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".deployed-setup-guide",
+        url: "/:feedId/deployed-setup-guide",
+        component: SetupGuideSummaryComponent,
+        params:{feedId:{type:"string"},
+            loadMode:LoadMode.DEPLOYED, squash: true},
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
+            {
+                token: 'loadMode',
+                resolveFn: () => LoadMode.DEPLOYED
+            }
+        ]
+    },
+
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-permissions",
         url: "/:feedId/feed-permissions",
@@ -122,6 +144,79 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         url: "/:feedId/source-sample",
         component: DefineFeedStepSourceComponent,
     },
+
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME,
+        url: "/:feedId/summary",
+        component: FeedSummaryContainerComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+
+            ]
+    },
+    /*
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME,
+        url: "/:feedId/summary",
+        redirectTo: (trans:Transition) => {
+           // const uiInjector = trans.injector();
+           // const $injector = uiInjector.get('$injector'); // native injector
+            return trans.injector().getAsync('redirectState');
+        },
+
+        component: FeedSummaryContainerComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
+            {
+                token: "redirectState",
+                deps: [DefineFeedService, StateService],
+                resolveFn: (defineFeedService:DefineFeedService, state:StateService) => {
+                    let feedId = state.transition.params().feedId;
+
+                   return defineFeedService.loadFeed(feedId).toPromise().then((feed:Feed) => {
+                       console.log("Loaded it ... lets go ",feed)
+                       if(true) {//(feed.hasBeenDeployed()){
+                           return FEED_OVERVIEW_STATE_NAME;
+                       }
+                       else {
+                           return FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide";
+                       }
+                    });
+                }
+            }
+        ]
+    },
+    */
+    {
+        name: FEED_OVERVIEW_STATE_NAME,
+        url: "/:feedId/overview",
+        component: OverviewComponent
+    },
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide",
+        url: "/:feedId/summary-setup-guide",
+        component: SetupGuideSummaryComponent,
+        resolve: [
+            {
+                token: 'showHeader',
+                resolveFn: () => true
+            }
+            ]
+    },
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity",
+        url: "/:feedId/feed-activity",
+        component: FeedActivitySummaryComponent
+    },
+
     /**
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".datasources",
@@ -207,9 +302,9 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },*/
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".profile",
         url: "/:feedId/profile",
-        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".profile.history",
+        redirectTo: FEED_DEFINITION_SUMMARY_STATE_NAME+".profile.history",
         component: ProfileComponent,
         resolve: [
             {
@@ -220,7 +315,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile.history",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".profile.history",
         url: "/history",
         component: ProfileHistoryComponent,
         resolve: [
@@ -232,7 +327,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".profile.results",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".profile.results",
         url: "/:processingdttm?t=:type",
         component: ProfileContainerComponent,
         resolve: [
@@ -244,7 +339,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-lineage",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-lineage",
         url: "/:feedId/feed-lineage",
         component: FeedLineageComponment,
         resolve: [
@@ -256,9 +351,9 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla",
         url: "/:feedId/sla",
-        redirectTo: FEED_DEFINITION_SECTION_STATE_NAME+".sla.list",
+        redirectTo: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.list",
         component: SlaComponent,
         resolve: [
             {
@@ -269,7 +364,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.list",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.list",
         url: "/list",
         component: SlaListComponent,
         resolve: [
@@ -281,7 +376,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.new",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.new",
         url: "/new",
         component: SlaDetailsComponent,
         resolve: [
@@ -293,7 +388,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: FEED_DEFINITION_SECTION_STATE_NAME+".sla.edit",
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.edit",
         url: "/:slaId",
         component: SlaDetailsComponent,
         resolve: [

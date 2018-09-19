@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-import ChartJobStatusService from "../../services/ChartJobStatusService";
+import {ChartJobService} from "../../../services/chart-job.service";
 import HttpService from "../../../services/HttpService";
 declare const d3: any;
 
@@ -88,7 +88,7 @@ constructor(private $scope: IScope,
         private OpsManagerJobService: any,
         private OpsManagerDashboardService: any,
         private httpService: HttpService,
-        private chartJobStatusService: ChartJobStatusService,
+        private chartJobStatusService: ChartJobService,
         private BroadcastService: any){
         
         $scope.$on('$destroy', ()=>{

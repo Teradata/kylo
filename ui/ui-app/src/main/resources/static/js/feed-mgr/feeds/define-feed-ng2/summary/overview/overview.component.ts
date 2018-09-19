@@ -8,6 +8,8 @@ import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
+import {SUMMARY_LINK} from "../../shared/feed-link-constants";
+import {FeedLink} from "../../shared/feed-link.model";
 
 @Component({
     selector: "define-feed-overview",
@@ -18,16 +20,11 @@ export class OverviewComponent extends AbstractLoadFeedComponent  {
 
     static LOADER = "OverviewComponent.LOADER";
 
-    static LINK_NAME = "Summary"
+    static LINK_NAME = SUMMARY_LINK;
 
     @Input() stateParams: any;
 
-    requiredSteps:Step[] = [];
-
-    optionalSteps:Step[] = [];
-
     feedSavedSubscription:ISubscription;
-
 
     getLinkName(){
         return OverviewComponent.LINK_NAME;
@@ -38,27 +35,12 @@ export class OverviewComponent extends AbstractLoadFeedComponent  {
        this.feedSavedSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
      }
 
-    init() {
-        this.feed.steps.forEach(step => {
-            if(step.required){
-                this.requiredSteps.push(step);
-            }
-            else {
-                this.optionalSteps.push(step);
-            }
-        })
-    }
+
 
     destroy(){
         this.feedSavedSubscription.unsubscribe();
     }
 
-    onStepSelected(step: Step) {
-      //  if (!step.isDisabled()) {
-            let params = {"feedId": this.feed.id};
-            this.stateService.go(step.sref, params, {location: "replace"})
-        //}
-    }
 
     onFeedSaved(response:SaveFeedResponse){
         if(response.success){

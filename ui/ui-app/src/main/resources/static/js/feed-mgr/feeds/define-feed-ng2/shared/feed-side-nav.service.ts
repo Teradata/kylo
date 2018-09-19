@@ -7,6 +7,8 @@ import {Subject} from "rxjs/Subject";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {StateRegistry, StateService} from "@uirouter/angular";
+import {TranslateService} from "@ngx-translate/core";
+import {LINEAGE_LINK, PROFILE_LINK, SLA_LINK, VERSIONS_LINK} from "./feed-link-constants";
 
 
 export class FeedLinkSelectionChangedEvent{
@@ -16,6 +18,7 @@ export class FeedLinkSelectionChangedEvent{
 export class ToolbarActionTemplateChangedEvent{
     constructor(public link:FeedLink,public templateRef:TemplateRef<any>){}
 }
+
 @Injectable()
 export class FeedSideNavService {
 
@@ -33,18 +36,30 @@ export class FeedSideNavService {
 
     private toolbarActionTemplateChangedSubject: Subject<ToolbarActionTemplateChangedEvent>;
 
-    constructor(private stateService:StateService){
+    /**
+     * Static links
+     * @type {FeedLink[]}
+     */
+    public staticFeedLinks:FeedLink[] =[];
+
+
+    constructor(private stateService:StateService, private _translateService: TranslateService){
         this.sideNavSelectionChangedSubject = new Subject<FeedLinkSelectionChangedEvent>();
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
 
         this.toolbarActionTemplateChangedSubject = new Subject<ToolbarActionTemplateChangedEvent>();
+        this.staticFeedLinks = [FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',"graphic_eq"),
+            FeedLink.newStaticLink(PROFILE_LINK,"profile","track_changes"),
+            FeedLink.newStaticLink(SLA_LINK,"sla","beenhere"),
+            FeedLink.newStaticLink(VERSIONS_LINK,"version-history","history")];
     }
 
-    feedLinks:FeedLink[];
+    feedLinks:FeedLink[] = [];
 
     selectedLink:FeedLink = null;
 
     toolbarActionTemplateRefMap:{ [key: string]: TemplateRef<any> } = {}
+
 
     subscribeToToolbarActionTemplateChanges(o:PartialObserver<ToolbarActionTemplateChangedEvent>){
         return this.toolbarActionTemplateChangedSubject.subscribe(o);

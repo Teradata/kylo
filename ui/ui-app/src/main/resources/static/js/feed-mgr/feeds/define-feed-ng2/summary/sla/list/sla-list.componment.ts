@@ -1,6 +1,6 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import {Sla} from '../sla.componment';
 import {Feed, FeedState} from '../../../../../model/feed/feed.model';
 import {SlaDetailsComponent} from '../details/sla-details.componment';
@@ -78,11 +78,11 @@ export class SlaListComponent implements OnInit {
     }
 
     editExistingSla(sla: Sla): void {
-        this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla.edit", {slaId: sla.id});
+        this.state.go(FEED_DEFINITION_STATE_NAME+".sla.edit", {slaId: sla.id});
     }
 
     createNewSla(): void {
-        this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla.new");
+        this.state.go(FEED_DEFINITION_STATE_NAME+".sla.new");
     }
 }
 

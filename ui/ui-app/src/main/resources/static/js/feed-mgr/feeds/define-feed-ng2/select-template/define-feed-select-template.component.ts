@@ -6,7 +6,7 @@ import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../../../model/feed/feed-constants";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {DateFormatDialog} from "../../../visual-query/wrangler/core/columns/date-format.component";
 import {DateFormatConfig, DateFormatResponse} from "../../../visual-query/wrangler/api/services/dialog.service";
@@ -221,7 +221,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             this.model.category = newFeedData.category;
             this.defineFeedService.saveFeed(this.model).subscribe((response :SaveFeedResponse)=> {
                 this.feedLoadingService.resolveLoading()
-                this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".overview", {"feedId": response.feed.id})
+                this.stateService.go(FEED_DEFINITION_SUMMARY_STATE_NAME, {"feedId": response.feed.id})
             }, error1 => {
                 this.feedLoadingService.resolveLoading()
                 //TODO ERROR unable to create feed!!!

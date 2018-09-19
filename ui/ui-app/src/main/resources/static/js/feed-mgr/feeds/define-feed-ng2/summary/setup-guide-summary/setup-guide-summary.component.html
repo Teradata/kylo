@@ -1,0 +1,89 @@
+
+<td-layout-nav color="none" *ngIf="showHeader">
+  <div td-toolbar-content  fxLayout="row" fxFlex >
+    <div>{{feed.getFeedNameAndVersion()}}</div>
+    <span fxFlex="100"></span>
+    <div>
+      <button mat-icon-button color="accent" (click)="onEdit()" *ngIf="showEditLink"><mat-icon>edit</mat-icon></button>
+    </div>
+  </div>
+  <ng-container [ngTemplateOutlet]="summaryTemplate"
+                [ngTemplateOutletContext]="{$implicit:feed}">
+  </ng-container>
+
+
+</td-layout-nav>
+
+<ng-container [ngTemplateOutlet]="summaryTemplate" *ngIf="!showHeader"
+              [ngTemplateOutletContext]="{$implicit:feed}">
+</ng-container>
+
+
+<ng-template #summaryTemplate >
+  <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+    <div fxLayout="row" *ngIf="feed != undefined">
+
+      <div fxFlex="60%">
+        <feed-setup-guide [(feed)]="feed" ></feed-setup-guide>
+      </div>
+
+      <div fxLayout="column"  fxFlex="40%">
+
+        <mat-card *ngIf="feed.isDraft()" >
+          <mat-card-content>
+            <div fxFlex="100" fxLayout="row">
+              <mat-icon>playlist_play</mat-icon>
+              <span fxFlex="100"> Not ready for deployment</span>
+              <button mat-raised-button color="primary" [disabled]="true">Deploy</button>
+            </div>
+            <div *ngIf="feed.hasBeenDeployed()">
+              Deployed version: <a href="#" (click)="loadDeployedVersion($event)" > {{feed.deployedVersion.name}}</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="feed-info-card feed-card" >
+          <mat-card-header>
+            <mat-card-title>Feed Info</mat-card-title>
+            <mat-card-subtitle>Additional details</mat-card-subtitle>
+            <span fxFlex></span>
+            <div>
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item>
+                  <mat-icon>dialpad</mat-icon>
+                  <span>Clone</span>
+                </button>
+              </mat-menu>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <div fxLayout="column" class="feed-info-list">
+              <feed-info-name [feed]="feed"></feed-info-name>
+              <mat-divider></mat-divider>
+
+              <feed-info-description [feed]="feed"  ></feed-info-description>
+              <mat-divider></mat-divider>
+
+              <feed-info-tags [feed]="feed"></feed-info-tags>
+              <mat-divider></mat-divider>
+
+              <feed-info-item [feed]="feed" name="{{feed.isDraft() ? 'DRAFT' : feed.state}}" description="Status" icon="stars"  [editable]="false" >
+              </feed-info-item>
+              <mat-divider></mat-divider>
+
+              <feed-info-category [feed]="feed"  ></feed-info-category>
+              <mat-divider></mat-divider>
+
+              <feed-info-schedule [feed]="feed"  ></feed-info-schedule>
+
+
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</ng-template>

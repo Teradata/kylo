@@ -4,6 +4,7 @@ export interface EntityVersion {
     name:string;
     createdDate:number;
     entityId:string;
-    entity:any;
+    entity?:any;
+    deployedVersion?:EntityVersion
 
 }

@@ -4,6 +4,7 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {SLA_LINK} from "../../shared/feed-link-constants";
 
 export class Sla {
     id: string;
@@ -25,7 +26,7 @@ export class Sla {
 })
 export class SlaComponent extends AbstractLoadFeedComponent implements OnInit {
 
-    static LINK_NAME = "SLA";
+    static LINK_NAME = SLA_LINK;
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService: FeedSideNavService) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
