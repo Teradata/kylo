@@ -61,7 +61,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -243,6 +242,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
         .expressionLanguageSupported(true);
     public static final PropertyDescriptor SPARK_HOME = (SPARK_HOME_DEFAULT != null) ? SPARK_HOME_BUILDER.defaultValue(SPARK_HOME_DEFAULT).build() : SPARK_HOME_BUILDER.build();
+
     /**
      * Matches a comma-separated list of UUIDs
      */
@@ -255,11 +255,19 @@ public class ExecuteSparkJob extends BaseProcessor {
         .addValidator(createUuidListValidator())
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor DATASETS = new PropertyDescriptor.Builder()
+        .name("Data Sets")
+        .description("A comma-separated list of data set ids to include in the environment for Spark.")
+        .required(false)
+        .addValidator(createUuidListValidator())
+        .expressionLanguageSupported(true)
+        .build();
 
     /**
      * Kerberos service keytab
      */
     private PropertyDescriptor kerberosKeyTab;
+
     /**
      * Kerberos service principal
      */
@@ -329,7 +337,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         // Call the superclass init(), which builds the property list.
         super.init(context);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addProperties(java.util.List)
      */
@@ -357,19 +365,28 @@ public class ExecuteSparkJob extends BaseProcessor {
         list.add(YARN_QUEUE);
         list.add(SPARK_CONFS);
         list.add(EXTRA_SPARK_FILES);
-        list.add(DATASOURCES);
+        list.add(DATASETS);
         list.add(METADATA_SERVICE);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addRelationships(java.util.Set)
      */
     @Override
     protected void addRelationships(Set<Relationship> set) {
         super.addRelationships(set);
-        
+
         set.add(REL_SUCCESS);
         set.add(REL_FAILURE);
+    }
+
+    @Override
+    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(@Nonnull final String propertyDescriptorName) {
+        if (DATASOURCES.getName().equals(propertyDescriptorName)) {
+            return DATASOURCES;
+        } else {
+            return super.getSupportedDynamicPropertyDescriptor(propertyDescriptorName);
+        }
     }
 
     @Override
@@ -408,6 +425,7 @@ public class ExecuteSparkJob extends BaseProcessor {
             String extraFiles = context.getProperty(EXTRA_SPARK_FILES).evaluateAttributeExpressions(flowFile).getValue();
             Integer sparkProcessTimeout = context.getProperty(PROCESS_TIMEOUT).evaluateAttributeExpressions(flowFile).asTimePeriod(TimeUnit.SECONDS).intValue();
             String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
+            String dataSetIds = context.getProperty(DATASETS).evaluateAttributeExpressions(flowFile).getValue();
             MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
             final List<String> extraJarPaths = getExtraJarPaths(extraJars);
@@ -449,7 +467,7 @@ public class ExecuteSparkJob extends BaseProcessor {
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
             // Build environment
-            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, metadataService, extraJarPaths);
+            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, dataSetIds, metadataService, extraJarPaths);
             if (env == null) {
                 return;
             }
@@ -542,8 +560,8 @@ public class ExecuteSparkJob extends BaseProcessor {
         return prop.isSet() && StringUtils.isNoneBlank(prop.getValue()) ? prop.evaluateAttributeExpressions(flowFile).getValue() : "";
     }
 
-    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService,
-                                               List<String> extraJarPaths) throws JsonProcessingException {
+    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, String dataSetIds,
+                                               MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
         final Map<String, String> env = new HashMap<>();
 
         if (StringUtils.isNotBlank(datasourceIds)) {
@@ -573,6 +591,43 @@ public class ExecuteSparkJob extends BaseProcessor {
             datasources.append(']');
             env.put("DATASOURCES", datasources.toString());
         }
+
+        if (StringUtils.isNotEmpty(dataSetIds)) {
+            final StringBuilder dataSets = new StringBuilder(10240);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final MetadataProvider provider = metadataService.getProvider();
+
+            for (final String id : dataSetIds.split(",")) {
+                dataSets.append((dataSets.length() == 0) ? '[' : ',');
+
+                final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet = provider.getDataSet(id);
+                if (dataSet.isPresent()) {
+                    if (dataSet.get().getJars() != null) {
+                        extraJarPaths.addAll(dataSet.get().getJars());
+                    }
+                    if (dataSet.get().getDataSource() != null) {
+                        final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = dataSet.get().getDataSource();
+                        if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                            extraJarPaths.addAll(dataSource.getTemplate().getJars());
+                        }
+                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                            extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
+                        }
+                    }
+                    dataSets.append(objectMapper.writeValueAsString(dataSet.get()));
+
+                } else {
+                    getLog().error("Required data set {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                    flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data set: " + id);
+                    session.transfer(flowFile, REL_FAILURE);
+                    return null;
+                }
+            }
+
+            dataSets.append(']');
+            env.put("DATASETS", dataSets.toString());
+        }
+
         return env;
     }
 
