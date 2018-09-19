@@ -7,7 +7,7 @@
   <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" (onCategorySelected)="categorySelected($event)" >
     <mat-option *ngFor="let category of filteredCategories | async" [value]="category" class="autocomplete-option">
                   <span [class.disabled]="!category.createFeed">
-                       <ng-md-icon [icon]="category.icon" [ngStyle]="{'fill':category.iconColor}" *ngIf="category.createFeed"></ng-md-icon>
+                       <ng-md-icon [icon]="category.icon" [ngStyle]="{'fill':category.iconColor}" *ngIf="category.createFeed && category.icon"></ng-md-icon>
                     <ng-md-icon icon="block" class="disabled" *ngIf="!category.createFeed"></ng-md-icon>
                     <span class="title"> {{category.name}}</span>
                     <br/>
