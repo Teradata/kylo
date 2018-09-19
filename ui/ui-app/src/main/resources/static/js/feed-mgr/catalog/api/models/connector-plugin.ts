@@ -1,3 +1,4 @@
+import {ConnectorPluginNifiProperties} from "./connector-plugin-nifi-properties";
 import {ConnectorTab} from "./connector-tab";
 import {UiOption} from './ui-option';
 
@@ -14,6 +15,11 @@ export interface ConnectorPlugin {
     options?: UiOption[];
 
     optionsMapperId?: string;
+
+    /**
+     * List of NiFi properties that can be overridden by a data set
+     */
+    nifiProperties?: ConnectorPluginNifiProperties[];
 
 //    dataSourcePlugin?: UiPlugin;
 }

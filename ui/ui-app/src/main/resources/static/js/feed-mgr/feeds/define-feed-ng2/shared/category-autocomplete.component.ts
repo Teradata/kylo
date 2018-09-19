@@ -4,6 +4,9 @@ import {Observable} from "rxjs/Observable";
 import {Category} from "../../../model/category/category.model";
 import {MatAutocompleteSelectedEvent} from "@angular/material";
 import CategoriesService from "../../../services/CategoriesService";
+import {flatMap, startWith} from "rxjs/operators";
+import {fromPromise} from "rxjs/observable/fromPromise";
+import {CategoryAutocompleteValidators} from "./category-autocomplete.validators";
 
 @Component({
     selector:"category-autocomplete",
@@ -40,11 +43,14 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
         if(this.category) {
             value = this.category
         }
-        let categoryCtrl = new FormControl(value,[Validators.required])
+        let categoryCtrl = new FormControl(value,[Validators.required, CategoryAutocompleteValidators.validateFeedCreatePermissionForCategory]);
         this.formGroup.registerControl("category",categoryCtrl);
-        this.filteredCategories = categoryCtrl.valueChanges.flatMap(text => {
-            return <Observable<Category[]>> Observable.fromPromise(this.categoriesService.querySearch(text));
-        });
+        this.filteredCategories = categoryCtrl.valueChanges.pipe(
+            startWith(''),
+            flatMap(text => {
+                return fromPromise(this.categoriesService.querySearch(text));
+            })
+        );
     }
 
 
@@ -60,6 +66,26 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
     onCategorySelected(event:MatAutocompleteSelectedEvent){
         let category = <Category> event.option.value;
         this.categorySelected.emit(category);
+    }
+
+    /**
+     * Check that category is provided. It is required field.
+     * @param {FormGroup} formGroup
+     * @param {string} controlName
+     * @returns {boolean}
+     */
+    checkRequired(formGroup: FormGroup, controlName: string) {
+        return formGroup.get(controlName).hasError('required')
+    }
+
+    /**
+     * Check that entity access permissions allow feed creation for this category
+     * @param {FormGroup} formGroup
+     * @param {string} controlName
+     * @returns {boolean}
+     */
+    checkFeedCreateAccess(formGroup: FormGroup, controlName: string) {
+        return formGroup.get(controlName).hasError('noFeedCreatePermissionForCategory');
     }
 
     ngOnDestroy() {

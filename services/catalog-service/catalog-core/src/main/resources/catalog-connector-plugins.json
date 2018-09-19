@@ -134,6 +134,21 @@
         "label": "Files",
         "sref": ".upload"
       }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "[^\\.].*"
+        }
+      }
     ]
   },
   {
@@ -197,7 +212,7 @@
     ]
   },
   {
-    "pluginId": "mysql",
+    "pluginId": "jdbc",
     "tabs": [
       {
         "label": "Connection",
@@ -229,6 +244,14 @@
         "key": "password",
         "type": "password",
         "label": "Password"
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData", "com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "properties": {
+          "Source Table": "{{ options.dbname }}"
+        }
       }
     ]
   },
@@ -281,6 +304,21 @@
             }
           }
         ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "{{ paths[0].substring(paths[0].lastIndexOf('/') + 1) }}"
+        }
       }
     ]
   }

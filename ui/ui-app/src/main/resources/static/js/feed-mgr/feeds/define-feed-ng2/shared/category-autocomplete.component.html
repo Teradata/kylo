@@ -1,6 +1,9 @@
 <div [formGroup]="formGroup" fxFlex="50">
 <mat-form-field >
-  <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto">
+  <input matInput placeholder="Category" aria-label="Category" formControlName="category" [matAutocomplete]="auto" required>
+  <mat-error *ngIf="checkRequired(formGroup, 'category')"> {{"views.define-feed-general-info.Req" | translate}} </mat-error>
+  <mat-error *ngIf="checkFeedCreateAccess(formGroup, 'category')"> {{"views.define-feed-general-info.YouAreNot" | translate}} </mat-error>
+
   <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" (onCategorySelected)="categorySelected($event)" >
     <mat-option *ngFor="let category of filteredCategories | async" [value]="category" class="autocomplete-option">
                   <span [class.disabled]="!category.createFeed">

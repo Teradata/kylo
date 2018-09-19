@@ -1,24 +1,25 @@
-import {SparkDataSet} from "../spark-data-set.model"
-import {TableSchema} from "../table-schema";
-import {SchemaParser} from "../field-policy";
-import {TableFieldPolicy} from "../TableFieldPolicy";
-import {TableFieldPartition} from "../TableFieldPartition";
-import {DefaultFeedDataTransformation, FeedDataTransformation} from "../feed-data-transformation";
-import {FeedStepValidator} from "./feed-step-validator";
-import {TableColumnDefinition} from "../TableColumnDefinition";
-import {Templates} from "../../services/TemplateTypes";
-import {CloneUtil} from "../../../common/utils/clone-util";
-import {FeedTableDefinition} from "./feed-table-definition.model";
-import {ObjectUtils} from "../../../common/utils/object-utils";
-import {Category} from "../category/category.model";
-import {FeedTableSchema} from "./feed-table-schema.model";
-import {Step} from "./feed-step.model";
-import {KyloObject} from "../../../common/common.model";
-import {SourceTableSchema} from "./feed-source-table-schema.model";
-import {UserProperty, UserPropertyUtil} from "../user-property.model";
 import * as _ from "underscore";
+
+import {KyloObject} from "../../../common/common.model";
+import {CloneUtil} from "../../../common/utils/clone-util";
+import {ObjectUtils} from "../../../common/utils/object-utils";
+import {ConnectorPlugin} from "../../catalog/api/models/connector-plugin";
+import {ConnectorPluginNifiProperties} from "../../catalog/api/models/connector-plugin-nifi-properties";
 import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
 import {TableSchemaUpdateMode} from "../../feeds/define-feed-ng2/services/define-feed.service";
+import {FeedDetailsProcessorRenderingHelper} from "../../services/FeedDetailsProcessorRenderingHelper";
+import {Templates} from "../../services/TemplateTypes";
+import {Category} from "../category/category.model";
+import {DefaultFeedDataTransformation, FeedDataTransformation} from "../feed-data-transformation";
+import {SchemaParser} from "../field-policy";
+import {SparkDataSet} from "../spark-data-set.model"
+import {TableColumnDefinition} from "../TableColumnDefinition";
+import {TableFieldPolicy} from "../TableFieldPolicy";
+import {UserProperty, UserPropertyUtil} from "../user-property.model";
+import {SourceTableSchema} from "./feed-source-table-schema.model";
+import {Step} from "./feed-step.model";
+import {FeedTableDefinition} from "./feed-table-definition.model";
+import {FeedTableSchema} from "./feed-table-schema.model";
 
 
 export interface TableOptions {
@@ -30,7 +31,6 @@ export interface TableOptions {
 }
 
 
-
 export interface FeedSchedule {
     schedulingPeriod: string;
     schedulingStrategy: string;
@@ -38,31 +38,31 @@ export interface FeedSchedule {
 }
 
 export enum FeedMode {
-    DRAFT="DRAFT", COMPLETE="COMPLETE"
+    DRAFT = "DRAFT", COMPLETE = "COMPLETE"
 }
 
 export enum FeedState {
-    NEW="NEW", ENABLED="ENABLED", DISABLED="DISABLED"
+    NEW = "NEW", ENABLED = "ENABLED", DISABLED = "DISABLED"
 }
 
 
 export enum FeedTemplateType {
-    DEFINE_TABLE="DEFINE_TABLE", DATA_TRANSFORMATION="DATA_TRANSFORMATION",SIMPLE_FEED="SIMPLE_FEED"
+    DEFINE_TABLE = "DEFINE_TABLE", DATA_TRANSFORMATION = "DATA_TRANSFORMATION", SIMPLE_FEED = "SIMPLE_FEED"
 }
 
-export class Feed  implements KyloObject{
+export class Feed implements KyloObject {
 
 
-    public static OBJECT_TYPE:string = 'Feed'
+    public static OBJECT_TYPE: string = 'Feed'
 
-    public objectType:string = Feed.OBJECT_TYPE;
+    public objectType: string = Feed.OBJECT_TYPE;
 
     static UI_STATE_STEPS_KEY = "STEPS";
 
     /**
      * internal id to track feed instances
      */
-    userInterfaceId:string;
+    userInterfaceId: string;
 
     /**
      * What options does the template provide for the feed
@@ -103,7 +103,7 @@ export class Feed  implements KyloObject{
     /**
      * The feed version name (1.1, 1.2..)
      */
-    versionName: string =null;
+    versionName: string = null;
     /**
      * The Feed RegisteredTemplateId
      */
@@ -293,18 +293,17 @@ export class Feed  implements KyloObject{
      */
     propertiesInitialized?: boolean;
 
-    isValid:boolean;
+    isValid: boolean;
 
     /**
      * map of userinterface state objects persisted to the feed
      */
-    uiState:{[key:string]: any;}
+    uiState: { [key: string]: any; }
 
     /**
      * The versionId for the feed
      */
-    versionId:string;
-
+    versionId: string;
 
 
     public constructor(init?: Partial<Feed>) {
@@ -312,22 +311,22 @@ export class Feed  implements KyloObject{
         Object.assign(this, init);
         if (this.sourceDataSets) {
             //ensure they are of the right class objects
-            if(this.sourceDataSets) {
+            if (this.sourceDataSets) {
                 this.sourceDataSets = this.sourceDataSets.map(ds => new SparkDataSet(ds));
             }
         }
-        if(this.uiState == undefined){
+        if (this.uiState == undefined) {
             this.uiState = {}
         }
 
 
         //ensure the tableDef model
-        this.table = ObjectUtils.getAs(this.table,FeedTableDefinition, FeedTableDefinition.OBJECT_TYPE);
+        this.table = ObjectUtils.getAs(this.table, FeedTableDefinition, FeedTableDefinition.OBJECT_TYPE);
         this.table.ensureObjectTypes();
 
-        if(this.isDataTransformation()){
+        if (this.isDataTransformation()) {
             //ensure types
-            this.dataTransformation = ObjectUtils.getAs(this.dataTransformation,DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
+            this.dataTransformation = ObjectUtils.getAs(this.dataTransformation, DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
         }
         this.userInterfaceId = _.uniqueId("feed-");
     }
@@ -349,10 +348,9 @@ export class Feed  implements KyloObject{
         let oldPartitions = this.table.partitions;
         let oldUserProperties = this.userProperties;
         this.updateNonNullFields(model);
-        this.table.update(oldFields,oldPartitions);
-        UserPropertyUtil.updatePropertyIds(oldUserProperties,this.userProperties);
+        this.table.update(oldFields, oldPartitions);
+        UserPropertyUtil.updatePropertyIds(oldUserProperties, this.userProperties);
     }
-
 
 
     initialize() {
@@ -383,7 +381,7 @@ export class Feed  implements KyloObject{
                 executionNode: {disabled: false},
                 preconditions: {disabled: false}
             },
-            uiState :{}
+            uiState: {}
         };
     }
 
@@ -391,39 +389,39 @@ export class Feed  implements KyloObject{
         return this.id == undefined;
     }
 
-    isDraft(){
+    isDraft() {
         return this.mode == "DRAFT"
     }
 
-    getStepBySystemName(stepName:string){
-        return  this.steps.find(step => step.systemName == stepName);
+    getStepBySystemName(stepName: string) {
+        return this.steps.find(step => step.systemName == stepName);
     }
 
     validate(updateStepState?: boolean): boolean {
         let valid = true;
         let model = this;
-        let disabledSteps :Step[] = [];
+        let disabledSteps: Step[] = [];
         this.steps.forEach((step: Step) => {
             valid = valid && step.validate(<Feed>this);
             if (updateStepState) {
                 step.updateStepState().forEach(step => disabledSteps.push(step));
             }
         });
-        let  enabledSteps = this.steps.filter(step => disabledSteps.indexOf(step) == -1);
+        let enabledSteps = this.steps.filter(step => disabledSteps.indexOf(step) == -1);
         enabledSteps.forEach(step => step.disabled = false);
         this.isValid = valid;
         return valid;
     }
 
-    getTemplateType():string {
-       return this.templateTableOption ? this.templateTableOption : (this.registeredTemplate? this.registeredTemplate.templateTableOption : '')
+    getTemplateType(): string {
+        return this.templateTableOption ? this.templateTableOption : (this.registeredTemplate ? this.registeredTemplate.templateTableOption : '')
     }
 
     /**
      * is this a feed to define a target table
      * @return {boolean}
      */
-    isDefineTable(){
+    isDefineTable() {
         return FeedTemplateType.DEFINE_TABLE == this.getTemplateType();
     }
 
@@ -431,7 +429,7 @@ export class Feed  implements KyloObject{
      * Is this a data transformation feed
      * @return {boolean}
      */
-    isDataTransformation(){
+    isDataTransformation() {
         return FeedTemplateType.DATA_TRANSFORMATION == this.getTemplateType();
     }
 
@@ -439,8 +437,8 @@ export class Feed  implements KyloObject{
      * Does this feed have any data transformation sets defined
      * @return {boolean}
      */
-    hasDataTransformationDataSets(){
-        return this.isDataTransformation() && this.dataTransformation && this.dataTransformation.datasets && this.dataTransformation.datasets.length >0;
+    hasDataTransformationDataSets() {
+        return this.isDataTransformation() && this.dataTransformation && this.dataTransformation.datasets && this.dataTransformation.datasets.length > 0;
     }
 
     /**
@@ -458,15 +456,15 @@ export class Feed  implements KyloObject{
      * will return an empty array of no paths are used
      * @return {string[]}
      */
-    getSourcePaths():string[]{
-        let paths :string[] = [];
-        if(this.sourceDataSets && this.sourceDataSets.length >0){
+    getSourcePaths(): string[] {
+        let paths: string[] = [];
+        if (this.sourceDataSets && this.sourceDataSets.length > 0) {
             //get the array of paths to use
-            paths = this.sourceDataSets.map((dataset:SparkDataSet) => {
+            paths = this.sourceDataSets.map((dataset: SparkDataSet) => {
                 return dataset.resolvePaths();
-            }).reduce( (a:string[],b:string[]) =>{
+            }).reduce((a: string[], b: string[]) => {
                 return a.concat(b);
-            },[]);
+            }, []);
         }
         return paths;
     }
@@ -476,18 +474,19 @@ export class Feed  implements KyloObject{
      * Deep copy of this object
      * @return {Feed}
      */
-    copy(keepCircularReference:boolean = true): Feed {
+    copy(keepCircularReference: boolean = true): Feed {
         //steps have self references back to themselves.
         let allSteps: Step[] = [];
-        this.steps.forEach(step => {let copy = step.shallowCopy();
-        allSteps.push(copy);
-        copy.allSteps = allSteps;
+        this.steps.forEach(step => {
+            let copy = step.shallowCopy();
+            allSteps.push(copy);
+            copy.allSteps = allSteps;
         });
-        let newFeed :Feed =  new Feed(this)
-      //  Object.assign(newFeed,this)
+        let newFeed: Feed = new Feed(this)
+        //  Object.assign(newFeed,this)
         newFeed.steps = null;
-        let copy :Feed;
-        if(keepCircularReference) {
+        let copy: Feed;
+        if (keepCircularReference) {
             copy = CloneUtil.deepCopy(newFeed);
         }
         else {
@@ -502,16 +501,16 @@ export class Feed  implements KyloObject{
      * @param {Feed} copy
      * @return {Feed}
      */
-     copyModelForSave() :Feed{
-         //create a deep copy
+    copyModelForSave(): Feed {
+        //create a deep copy
         let copy = this.copy();
 
         if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
             // Set feed
 
             //if the sourceSchema is not defined then set it to match the target
-            let addSourceSchemaFields:boolean = copy.table.sourceTableSchema.fields.length == 0;
-            let addFeedSchemaFields = copy.isNew() && copy.table.feedTableSchema.fields.length ==0;
+            let addSourceSchemaFields: boolean = copy.table.sourceTableSchema.fields.length == 0;
+            let addFeedSchemaFields = copy.isNew() && copy.table.feedTableSchema.fields.length == 0;
 
 
             /**
@@ -537,8 +536,8 @@ export class Feed  implements KyloObject{
 
             copy.table.tableSchema.fields.forEach((columnDef: TableColumnDefinition, idx: number) => {
 
-                if(addSourceSchemaFields) {
-                    let sourceField :TableColumnDefinition = columnDef.copy();
+                if (addSourceSchemaFields) {
+                    let sourceField: TableColumnDefinition = columnDef.copy();
                     //set the original names as the source field names
                     sourceField.name = columnDef.origName;
                     sourceField.derivedDataType = columnDef.origDataType;
@@ -547,8 +546,8 @@ export class Feed  implements KyloObject{
                     sourceFields.push(sourceField);
                 }
 
-                if(addFeedSchemaFields) {
-                    let feedField :TableColumnDefinition= columnDef.copy();
+                if (addFeedSchemaFields) {
+                    let feedField: TableColumnDefinition = columnDef.copy();
                     feedField.prepareForSave();
                     feedFields.push(feedField);
                     //TODO
@@ -571,15 +570,15 @@ export class Feed  implements KyloObject{
                     }
                 }
 
-               /*
-                    // For files the feed table must contain all the columns from the source even if unused in the target
-                    if (copy.table.method == 'SAMPLE_FILE') {
-                        feedFields.push(feedField);
-                    } else if (copy.table.method == 'EXISTING_TABLE' && copy.table.sourceTableIncrementalDateField == sourceField.name) {
-                        feedFields.push(feedField);
-                        sourceFields.push(sourceField);
-                    }
-                    */
+                /*
+                     // For files the feed table must contain all the columns from the source even if unused in the target
+                     if (copy.table.method == 'SAMPLE_FILE') {
+                         feedFields.push(feedField);
+                     } else if (copy.table.method == 'EXISTING_TABLE' && copy.table.sourceTableIncrementalDateField == sourceField.name) {
+                         feedFields.push(feedField);
+                         sourceFields.push(sourceField);
+                     }
+                     */
             });
 
             //update the table schema and policies
@@ -608,11 +607,10 @@ export class Feed  implements KyloObject{
 
     /**
      * updates the target and or source with the schem provided in the sourceDataSet
-     * @param {TableSchemaUpdateMode} mode
      */
-    setSourceDataSetAndUpdateTarget(sourceDataSet:SparkDataSet,mode:TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET  ){
+    setSourceDataSetAndUpdateTarget(sourceDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
 
-        if(sourceDataSet && sourceDataSet != null){
+        if (sourceDataSet && sourceDataSet != null) {
             this.sourceDataSets = [sourceDataSet];
             let dataSet = sourceDataSet
             let sourceColumns: TableColumnDefinition[] = [];
@@ -620,7 +618,7 @@ export class Feed  implements KyloObject{
             let feedColumns: TableColumnDefinition[] = [];
 
             let columns: TableColumn[] = dataSet.schema
-            if(columns) {
+            if (columns) {
                 columns.forEach(col => {
                     let def = _.extend({}, col);
                     def.derivedDataType = def.dataType;
@@ -636,12 +634,12 @@ export class Feed  implements KyloObject{
             }
             else {
                 //WARN Columns are empty.
-                console.log("EMPTY columns for ",dataSet);
+                console.log("EMPTY columns for ", dataSet);
             }
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+            if (TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.sourceTableSchema.fields = sourceColumns;
             }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+            if (TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.feedTableSchema.fields = feedColumns;
                 this.table.tableSchema.fields = targetColumns;
                 this.table.fieldPolicies = targetColumns.map(field => {
@@ -654,23 +652,58 @@ export class Feed  implements KyloObject{
                 this.table.schemaChanged = true;
             }
 
+            // Update NiFi properties based on Spark data set
+            if (connectorPlugin != null && connectorPlugin.nifiProperties != null) {
+                const renderingHelper = new FeedDetailsProcessorRenderingHelper();
 
+                // Find matching NiFi input processor
+                let connectorProperties: ConnectorPluginNifiProperties = null;
+                let inputProcessor = this.inputProcessors.find(processor => {
+                    connectorProperties = connectorPlugin.nifiProperties.find(properties =>
+                        properties.processorTypes.indexOf(processor.type) > -1
+                        || (
+                            renderingHelper.isWatermarkProcessor(processor)
+                            && (
+                                properties.processorTypes.indexOf(renderingHelper.GET_TABLE_DATA_PROCESSOR_TYPE) > -1
+                                || properties.processorTypes.indexOf(renderingHelper.GET_TABLE_DATA_PROCESSOR_TYPE2) > -1
+                                || properties.processorTypes.indexOf(renderingHelper.SQOOP_PROCESSOR) > -1
+                            )
+                        )
+                    );
+                    return typeof connectorProperties !== "undefined";
+                });
+
+                // Update feed properties
+                if (typeof inputProcessor !== "undefined") {
+                    this.inputProcessor = inputProcessor;
+
+                    let propertiesProcessor = inputProcessor;
+                    if (renderingHelper.isWatermarkProcessor(inputProcessor)) {
+                        propertiesProcessor = this.nonInputProcessors.find(processor => renderingHelper.isGetTableDataProcessor(processor) || renderingHelper.isSqoopProcessor(processor));
+                    }
+
+                    if (typeof propertiesProcessor !== "undefined") {
+                        const context = {...sourceDataSet.mergeTemplates(), dataSource: sourceDataSet.dataSource};
+                        propertiesProcessor.properties.filter(property => property.userEditable).forEach(inputProperty => {
+                            if (typeof connectorProperties.properties[inputProperty.key] !== "undefined") {
+                                const valueFn = _.template(connectorProperties.properties[inputProperty.key], {escape: null, interpolate: /\{\{(.+?)\}\}/g, evaluate: null});
+                                inputProperty.value = valueFn(context);
+                            }
+                        });
+                    }
+                }
+            }
         }
         else {
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
+            if (TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.sourceDataSets = [];
                 this.table.sourceTableSchema.fields = [];
             }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
+            if (TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.feedTableSchema.fields = [];
                 this.table.tableSchema.fields = [];
                 this.table.fieldPolicies = [];
             }
         }
-
-
     }
-
-
-
 }
