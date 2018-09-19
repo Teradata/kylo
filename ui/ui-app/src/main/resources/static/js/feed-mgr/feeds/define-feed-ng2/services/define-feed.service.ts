@@ -187,6 +187,8 @@ export class DefineFeedService {
                 copy.feedName = feedName;
                 copy.systemFeedName = systemFeedName
                 copy.category = newFeedData.category;
+                copy.versionId = undefined;
+                copy.versionName = undefined;
                 this.saveFeed(copy).subscribe((response:SaveFeedResponse) => {
                     if(response.success){
                         let feed = response.feed;

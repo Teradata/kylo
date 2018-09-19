@@ -115,7 +115,7 @@
             <tbody md-body>
             <tr md-row
                 ng-repeat="feed in vm.feedData"
-                ng-click="vm.feedDetails($event,feed)">
+                ng-click="vm.feedDefinition($event,feed)">
               <td md-cell>{{feed.feedName}}</td>
               <td md-cell>
                 <span ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
