@@ -54,8 +54,18 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
-        UIRouterModule.forChild({states: remoteFileStates})
+        UIRouterModule
+
     ]
 })
 export class RemoteFilesModule {
+}
+
+@NgModule({
+    imports: [
+        RemoteFilesModule,
+        UIRouterModule.forChild({states: remoteFileStates})
+    ]
+})
+export class RemoteFilesRouterModule {
 }

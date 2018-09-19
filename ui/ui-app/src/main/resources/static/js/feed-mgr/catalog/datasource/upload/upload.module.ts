@@ -21,7 +21,7 @@ import {uploadStates} from "./upload.states";
     entryComponents: [
         UploadComponent
     ],
-    exports:[
+    exports: [
         UploadComponent
     ],
     imports: [
@@ -34,9 +34,18 @@ import {uploadStates} from "./upload.states";
         MatCardModule,
         MatDividerModule,
         MatListModule,
-        MatProgressBarModule,
-        UIRouterModule.forChild({states: uploadStates})
+        MatProgressBarModule
+
     ]
 })
 export class UploadModule {
+}
+
+@NgModule({
+    imports: [
+        UploadModule,
+        UIRouterModule.forChild({states: uploadStates})
+    ]
+})
+export class UploadRouterModule {
 }

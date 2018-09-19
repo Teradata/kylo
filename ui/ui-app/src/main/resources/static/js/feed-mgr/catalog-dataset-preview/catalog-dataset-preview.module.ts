@@ -2,7 +2,6 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {RemoteFilesModule} from "../catalog/datasource/files/remote-files.module";
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {UIRouterModule} from "@uirouter/angular";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatTabsModule} from '@angular/material/tabs';
@@ -29,7 +28,6 @@ import {DatasetPreviewDialogComponent} from "./preview-stepper/preview-dialog/da
 import {DatasetPreviewContainerComponent} from "./preview-stepper/preview/dataset-preview-container.component";
 import {DatasetPreviewComponent} from "./preview-stepper/preview/dataset-preview.component";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {CatalogModule} from "../catalog/catalog.module";
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 import {PreviewSchemaModule} from "../catalog/datasource/preview-schema/preview-schema.module";
@@ -41,6 +39,8 @@ import {DatasetPreviewStepperService} from "./preview-stepper/dataset-preview-st
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {CatalogModule} from "../catalog/catalog.module";
+import {UIRouterModule} from "@uirouter/angular";
 
 
 @NgModule({
@@ -100,7 +100,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
         PreviewSchemaModule,
         TablesModule,
         UploadModule,
-        KyloServicesModule
+        KyloServicesModule,
+        UIRouterModule
     ],
     providers:[
         DatasetPreviewStepperService

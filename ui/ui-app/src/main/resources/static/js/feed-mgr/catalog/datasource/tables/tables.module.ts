@@ -52,9 +52,17 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatProgressBarModule,
         MatSelectModule,
         MatCheckboxModule,
-        MatDialogModule,
-        UIRouterModule.forChild({states: tablesStates})
+        MatDialogModule
+
     ]
 })
 export class TablesModule {
+}
+@NgModule({
+    imports: [
+        TablesModule,
+        UIRouterModule.forChild({states: tablesStates})
+    ]
+})
+export class TablesRouterModule {
 }
