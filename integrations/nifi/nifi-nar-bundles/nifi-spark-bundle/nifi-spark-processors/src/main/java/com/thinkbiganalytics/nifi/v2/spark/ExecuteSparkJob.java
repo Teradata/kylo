@@ -317,7 +317,7 @@ public class ExecuteSparkJob extends BaseProcessor {
     @Nonnull
     private static Validator createUuidListValidator() {
         return (subject, input, context) -> {
-            final String value = context.getProperty(DATASOURCES).evaluateAttributeExpressions().getValue();
+            final String value = context.newPropertyValue(input).evaluateAttributeExpressions().getValue();
             if (value == null || value.isEmpty() || UUID_REGEX.matcher(value).matches()) {
                 return new ValidationResult.Builder().subject(subject).input(input).valid(true).explanation("List of UUIDs").build();
             } else {
