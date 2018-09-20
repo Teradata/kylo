@@ -43,8 +43,12 @@ public class DataSet implements DataSetTemplate {
     private String id;
     private Map<String, String> options;
     private List<String> paths;
-
+    
     public DataSet() {
+    }
+
+    public DataSet(DataSource ds, String title) {
+        this.dataSource = ds;
     }
 
     public DataSet(@Nonnull final DataSet other) {

@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
-import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
-
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 /*-
  * #%L
  * kylo-catalog-controller
@@ -21,9 +21,11 @@ import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
  * limitations under the License.
  * #L%
  */
-
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
+import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.slf4j.ext.XLogger;
@@ -31,6 +33,7 @@ import org.slf4j.ext.XLoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -58,12 +61,15 @@ public class ConnectorController extends AbstractCatalogController {
     
     @Inject
     ConnectorProvider connectorProvider;
+    
+    @Inject
+    ConnectorPluginManager pluginManager;
+    
+    @Inject
+    private CatalogModelTransform modelTransform;
 
     @Inject
     MetadataAccess metadataService;
-    
-    @Inject
-    private ConnectorPluginController pluginController;
 
     @GET
     @ApiOperation("Gets the specified connector")
@@ -75,12 +81,18 @@ public class ConnectorController extends AbstractCatalogController {
     @Path("{id}")
     public Response getConnector(@PathParam("id") final String connectorId) {
         log.entry(connectorId);
-        final Connector connector = metadataService.read(() -> connectorProvider.findConnector(connectorId))
-            .orElseThrow(() -> {
-                log.debug("Connector not found: {}", connectorId);
-                return new NotFoundException(getMessage("catalog.controller.notFound"));
-            });
-        return Response.ok(log.exit(connector)).build();
+        
+        return metadataService.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.Connector.ID connId = connectorProvider.resolveId(connectorId);
+            
+            return connectorProvider.find(connId)
+                .map(modelTransform.connectorToRestModel())
+                .map(conn -> Response.ok(log.exit(conn)).build())
+                .orElseThrow(() -> {
+                    log.debug("Connector not found: {}", connectorId);
+                    return new NotFoundException(getMessage("catalog.connector.notFound.id", connectorId));
+                });
+        });
     }
 
     @GET
@@ -91,24 +103,41 @@ public class ConnectorController extends AbstractCatalogController {
                   })
     public Response listConnectors() {
         log.entry();
-        final List<Connector> connectors = metadataService.read(() -> connectorProvider.findAllConnectors());
-        return Response.ok(log.exit(connectors)).build();
+        return metadataService.read(() -> {
+            List<Connector> connectors = connectorProvider.findAll().stream()
+                .map(modelTransform.connectorToRestModel())
+                .collect(Collectors.toList());
+            return Response.ok(log.exit(connectors)).build();
+        });
     }
 
     @GET
-    @ApiOperation("Gets the specified connector")
+    @ApiOperation("Gets the specified connector plugin")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the connector", response = Connector.class),
-                      @ApiResponse(code = 404, message = "Connector was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 200, message = "Returns the connector plugin", response = ConnectorPluginDescriptor.class),
+                      @ApiResponse(code = 404, message = "Connector or plugin was not found", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("{id}/plugin")
     public Response getConnectorPlugin(@PathParam("id") final String connectorId) {
         log.entry(connectorId);
-        final Connector connector = metadataService.read(() -> connectorProvider.findConnector(connectorId))
+        
+        String pluginId = metadataService.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.Connector.ID connId = connectorProvider.resolveId(connectorId);
+            
+            return connectorProvider.find(connId)
+                .map(conn -> conn.getPluginId())
+                .orElseThrow(() -> {
+                    log.debug("Connector not found: {}", connectorId);
+                    return new NotFoundException(getMessage("catalog.connector.notFound.id", connectorId));
+                });
+        });
+        
+        return pluginManager.getPlugin(pluginId)
+            .map(plugin -> plugin.getDescriptor())
+            .map(descr -> Response.ok(log.exit(descr)).build())
             .orElseThrow(() -> {
-                log.debug("Connector not found: {}", connectorId);
-                return new NotFoundException(getMessage("catalog.controller.notFound"));
+                log.debug("Connector plugin not found: {}", connectorId);
+                return new NotFoundException(getMessage("catalog.connector.notFound.id", connectorId));
             });
-        return log.exit(this.pluginController.getPlugin(connector.getPluginId()));
     }}

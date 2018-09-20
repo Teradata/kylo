@@ -23,10 +23,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
-import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
@@ -36,6 +35,10 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSourceCredentials;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.Connector;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
@@ -92,12 +95,18 @@ public class DataSourceController extends AbstractCatalogController {
     public static final String BASE = "/v1/catalog/datasource";
 
     public enum CredentialMode {NONE, EMBED, ATTACH};
+    
+    @Inject
+    private ConnectorProvider connectorProvider;
 
     @Inject
     private DataSourceProvider dataSourceProvider;
 
     @Inject
     private DataSetProvider dataSetProvider;
+    
+    @Inject
+    private CatalogModelTransform modelTransform;
 
     @Inject
     private CatalogFileManager fileManager;
@@ -116,6 +125,9 @@ public class DataSourceController extends AbstractCatalogController {
 
     @Inject
     private ConnectorPluginManager pluginManager;
+    
+    @Inject
+    private DataSetController dataSetController;
 
 
     @POST
@@ -128,18 +140,19 @@ public class DataSourceController extends AbstractCatalogController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createDataSource(@Nonnull final DataSource source) {
         log.entry(source);
-
-        final DataSource dataSource;
-        try {
-            dataSource = metadataService.commit(() -> dataSourceProvider.createOrUpdateDataSource(source));
-        } catch (final CatalogException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot create data source from request: " + source, e);
-            }
-            throw new BadRequestException(getMessage(e));
-        }
-
-        return Response.ok(log.exit(dataSource)).build();
+        
+        return metadataService.commit(() -> {
+            Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
+            
+            return connectorProvider.find(connId)
+                .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
+                .map(modelTransform.dataSourceToRestModel())
+                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
+                .orElseThrow(() -> {
+                    log.debug("Connector not found with ID: {}", connId);
+                    return new BadRequestException(getMessage("catalog.connector.notFound"));
+                });
+        });
     }
 
     @POST
@@ -194,11 +207,11 @@ public class DataSourceController extends AbstractCatalogController {
         try {
             mode = CredentialMode.valueOf(credentialMode.toUpperCase());
         } catch (IllegalArgumentException e) {
-            return Response.status(log.exit(Status.BAD_REQUEST)).entity("Invalid value for the \"credential\" parameter: " + credentialMode).build();
+            return Response.status(log.exit(Status.BAD_REQUEST)).entity(getMessage("catalog.datasource.credential.arg.invalid", credentialMode)).build();
         }
 
         final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
-        DataSource dataSource = findDataSource(dataSourceId,false);
+        DataSource dataSource = findDataSource(dataSourceId);
 
         switch (mode) {
             case NONE:
@@ -228,7 +241,10 @@ public class DataSourceController extends AbstractCatalogController {
     public Response deleteDataSource(@PathParam("id") final String dataSourceId) {
         log.entry(dataSourceId);
 
-        metadataService.commit(() -> dataSourceProvider.delete(dataSourceId));
+        metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID domainId = dataSourceProvider.resolveId(dataSourceId);
+            dataSourceProvider.deleteById(domainId);
+        });
 
         log.exit();
         return Response.noContent().build();
@@ -255,7 +271,10 @@ public class DataSourceController extends AbstractCatalogController {
 
         // Fetch page
         final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
-        final Page<DataSource> page = metadataService.read(() -> dataSourceProvider.findAllDataSources(pageRequest, filter));
+        final Page<DataSource> page = metadataService.read(() -> { 
+            Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
+            return domainPage.map(modelTransform.convertDataSourceToRestModel());
+        });
 
         // Return results
         final SearchResult<DataSource> searchResult = new SearchResultImpl<>();
@@ -278,7 +297,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId, path);
 
         // List files at path
-        final DataSource dataSource = findDataSource(dataSourceId,false);
+        final DataSource dataSource = findDataSource(dataSourceId);
         return Response.ok(log.exit(doListFiles(path, dataSource))).build();
     }
 
@@ -323,7 +342,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId, catalogName, schemaName);
 
         // List tables
-        final DataSource dataSource = findDataSource(dataSourceId,true);
+        final DataSource dataSource = findDataSource(dataSourceId);
         final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
         return Response.ok(log.exit(tables)).build();
@@ -363,7 +382,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
 
         try {
-            final DataSource dataSource = findDataSource(dataSourceId,false);
+            final DataSource dataSource = findDataSource(dataSourceId);
             final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
             final Map<String, String> credProps = this.credentialManager.getCredentials(dataSource, encrypted, principals);
             DataSourceCredentials credentials = new DataSourceCredentials(credProps, encrypted);
@@ -392,7 +411,7 @@ public class DataSourceController extends AbstractCatalogController {
     public Response getConnectorPlugin(@PathParam("id") final String dataSourceId) {
         log.entry(dataSourceId);
 
-        final DataSource dataSource = findDataSource(dataSourceId,false);
+        final DataSource dataSource = findDataSource(dataSourceId);
 
         return log.exit(this.pluginController.getPlugin(dataSource.getConnector().getPluginId()));
     }
@@ -404,12 +423,11 @@ public class DataSourceController extends AbstractCatalogController {
     @ApiOperation("creates a new dataset for a datasource")
     public Response createDataSet(@PathParam("id") final String datasourceId) {
         log.entry(datasourceId);
-        final DataSource dataSource = findDataSource(datasourceId,false);
+        final DataSource dataSource = findDataSource(datasourceId);
         final DataSet dataSet = new DataSet();
         dataSet.setDataSource(dataSource);
-        //validate
-        DataSet validDataSet= dataSetProvider.createDataSet(dataSet);
-        return log.exit(Response.ok(validDataSet).build());
+        
+        return dataSetController.createDataSet(dataSet);
     }
 
     /**
@@ -418,11 +436,15 @@ public class DataSourceController extends AbstractCatalogController {
      * @throws NotFoundException if the data source does not exist
      */
     @Nonnull
-    private DataSource findDataSource(@Nonnull final String id, boolean includeCredentials) {
-        return metadataService.read(() -> dataSourceProvider.findDataSource(id, includeCredentials))
-            .orElseThrow(() -> {
-                log.debug("Data source not found: {}", id);
-                return new NotFoundException(getMessage("catalog.datasource.notFound"));
+    private DataSource findDataSource(@Nonnull final String id) {
+        return metadataService.read(() -> {
+                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
+                return dataSourceProvider.find(dsId)
+                    .map(modelTransform.dataSourceToRestModel())
+                    .orElseThrow(() -> {
+                        log.debug("Data source not found: {}", id);
+                        return new NotFoundException(getMessage("catalog.datasource.notFound.id", id));
+                    });
             });
     }
 }

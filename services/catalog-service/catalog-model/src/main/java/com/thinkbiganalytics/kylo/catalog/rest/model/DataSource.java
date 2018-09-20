@@ -67,6 +67,11 @@ public class DataSource {
 
     public DataSource() {
     }
+    
+    public DataSource(Connector conn, String title) {
+        this.connector = conn;
+        this.title = title;
+    }
 
     public DataSource(@Nonnull final DataSource other) {
         connector = (other.connector != null) ? new Connector(other.connector) : null;

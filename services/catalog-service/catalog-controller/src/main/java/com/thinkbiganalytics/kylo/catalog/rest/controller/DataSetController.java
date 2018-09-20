@@ -21,11 +21,14 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
@@ -72,6 +75,12 @@ public class DataSetController extends AbstractCatalogController {
 
     @Inject
     DataSetProvider dataSetProvider;
+    
+    @Inject
+    DataSourceProvider dataSourceProvider;
+    
+    @Inject
+    private CatalogModelTransform modelTransform;
 
     @Inject
     CatalogFileManager fileManager;
@@ -87,18 +96,23 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createDataSet(@Nonnull final DataSet source) {
-        log.entry(source);
-
-        final DataSet dataSet;
+    public Response createDataSet(@Nonnull final DataSet dataSet) {
+        log.entry(dataSet);
+        
         try {
-            dataSet = metadataService.commit(() -> dataSetProvider.createDataSet(source));
-        } catch (final CatalogException e) {
-            log.debug("Cannot create data set from request: {}", source, e);
-            throw new BadRequestException(getMessage(e));
+            return metadataService.commit(() -> {
+                // TODO We need a title on the data set model that a user can edit.
+                String systemName = modelTransform.generateSystemName(dataSet);
+                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dSrcId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                com.thinkbiganalytics.metadata.api.catalog.DataSet domain = dataSetProvider.create(dSrcId, systemName);
+                
+                modelTransform.updateDataSet(dataSet, domain);
+                return Response.ok(log.exit(modelTransform.dataSetToRestModel().apply(domain))).build();
+            });
+        } catch (DataSourceNotFoundException e) {
+            log.debug("Data set not created", e);
+            throw new BadRequestException(getMessage("catalog.dataset.notfound.id", e.getId()));
         }
-
-        return Response.ok(log.exit(dataSet)).build();
     }
 
     @GET
@@ -111,7 +125,8 @@ public class DataSetController extends AbstractCatalogController {
                   })
     public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
-        final DataSet dataSet = findDataSet(dataSetId);
+        
+        DataSet dataSet = findDataSet(dataSetId);
         return Response.ok(log.exit(dataSet)).build();
     }
 
@@ -126,7 +141,7 @@ public class DataSetController extends AbstractCatalogController {
                   })
     public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
-
+        
         final DataSet dataSet = findDataSet(dataSetId);
         final List<DataSetFile> files;
         try {
@@ -209,16 +224,21 @@ public class DataSetController extends AbstractCatalogController {
     }
 
     /**
-     * Gets the dataset with the specified id.
+     * Gets the data set with the specified id.
      *
-     * @throws NotFoundException if the dataset does not exist
+     * @throws NotFoundException if the data set does not exist
      */
     @Nonnull
     private DataSet findDataSet(@Nonnull final String id) {
-        return metadataService.read(() -> dataSetProvider.findDataSet(id))
-            .orElseThrow(() -> {
-                log.debug("Data set not found: {}", id);
-                return new NotFoundException(getMessage("catalog.dataset.notFound"));
-            });
+        return  metadataService.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID domainId = dataSetProvider.resolveId(id);
+            
+            return dataSetProvider.find(domainId)
+                .map(modelTransform.dataSetToRestModel())
+                .orElseThrow(() -> {
+                    log.debug("No data set found with ID: ", id);
+                    return new NotFoundException(getMessage("catalog.dataset.notfound"));
+                });
+        });
     }
 }

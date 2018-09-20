@@ -41,6 +41,8 @@ public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Aud
     
     boolean isActive();
     
+    void setActive(boolean flag);
+    
     String getPluginId();
     
     String getIcon();
