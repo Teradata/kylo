@@ -46,6 +46,10 @@ export class DatasetPreviewDialogComponent  implements OnInit, OnDestroy{
 
     }
 
+    getDataset() : PreviewDataSet {
+        return dataset;
+    }
+
     /**
      * when initialized set the dataset vars
      */

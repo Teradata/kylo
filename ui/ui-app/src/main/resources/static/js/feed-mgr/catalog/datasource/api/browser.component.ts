@@ -38,6 +38,9 @@ export class BrowserComponent implements OnInit {
     @ContentChild(TemplateRef)
     defaultFileRowTemplate:TemplateRef<any>;
 
+    @Output()
+    onCheckboxChange=new EventEmitter<any>()
+
     /**
      * Use ui-router state to track navigation between paths and folders
      * @type {boolean} default true
@@ -247,6 +250,13 @@ export class BrowserComponent implements OnInit {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
 
+    rowSelected(event: any) : void {
+        let row = event.row;
+        if (row.canBeParent()) {
+            this.browse(this.createChildBrowserObjectParams(row));
+        }
+    }
+
     rowClick(obj: BrowserObject): void {
         if (obj.canBeParent()) {
             this.browse(this.createChildBrowserObjectParams(obj));
@@ -307,6 +317,7 @@ export class BrowserComponent implements OnInit {
     onToggleChild(event: any, file: BrowserObject): void {
         this.selectionStrategy.toggleChild(this.node, file.name, event.checked);
         this.initSelection();
+        this.onCheckboxChange.emit();
     }
 
     numberOfSelectedDescendants(fileName: string): number {

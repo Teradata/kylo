@@ -12,14 +12,14 @@
 <mat-dialog-actions class="pad">
   <!-- Action buttons -->
   <mat-divider></mat-divider>
-  <div fxLayout="row" fxFlex>
+  <div fxLayout="row" fxFlex style="margin-top:35px">
     <button mat-button (click)="cancel()">Cancel</button>
     <span fxFlex></span>
     <button mat-button (click)="onBack()" *ngIf="showBack()">Back</button>
     <div fxLayout="column" *ngIf="showNext()">
-      <button mat-raised-button (click)="onNext()" *ngIf="showNext()" [disabled]="nextDisabled()">Next</button>
+      <button mat-raised-button (click)="onNext()" color="primary" *ngIf="showNext()" [disabled]="nextDisabled()">Next</button>
       <button mat-raised-button (click)="onSave()" [hidden]="!showSave()" [disabled]="saveDisabled()">{{saveLabel}}</button>
-       <span [hidden]="!nextDisabled()" class="warn">A selection is required</span>
+       <!-- <span [hidden]="!nextDisabled()" class="warn">A selection is required</span> -->
     </div>
     <div [hidden]="!showSave()">
       <td-notification-count [notifications]="getDataSetsLength()">

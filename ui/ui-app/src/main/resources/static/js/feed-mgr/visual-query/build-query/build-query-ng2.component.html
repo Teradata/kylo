@@ -8,34 +8,36 @@
   </div>
 
   <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
-    <form [formGroup]="form" >
-      <div fxLayout="column" class="mat-padding">
+    <form [formGroup]="form">
 
-        <div fxLayout="row" fxLayoutAlign="start start" class="mat-padding">
+      <div fxLayout="column">
 
-          <button mat-raised-button color="accent" (click)="openCatalogBrowser()">Catalog</button>
-          <!-- Datasource dropdown -->
+        <mat-toolbar fxFlex="0 0 auto" class="md-kylo-theme">
 
-          <mat-form-field *ngIf="showDatasources">
+          <span fxFlex="1 1 auto"></span>
+
+          <div fxFlex *ngIf="advancedMode"></div>
+
+          <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
             <mat-select formControlName="datasource" placeholder="Data Source">
               <mat-option *ngFor="let datasource of availableDatasources" [value]="datasource.id">{{datasource.name}}</mat-option>
             </mat-select>
           </mat-form-field>
 
-        <div fxLayout="row" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
+          <div fxLayout="row" fxFlex="1 1 40%" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
 
-          <!-- datasource autocomplete -->
-          <div *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="70">
-            <mat-form-field style="width:100%">
-              <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
-              <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                <mat-option *ngFor="let table of filteredTables | async" [value]="table" class="autocomplete-option">
+            <!-- datasource autocomplete -->
+            <div style="font-size:14px;padding-top:16px" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
+              <mat-form-field style="width:100%">
+                <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto">
+                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
+                  <mat-option *ngFor="let table of filteredTables | async" [value]="table" class="autocomplete-option">
                   <span class="title">
                     <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
                   </span>
-                  <br/>
-                  <span>
+                    <br/>
+                    <span>
                     <span>
                       <span class="sub-title hint">Schema:</span>
                       <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
@@ -45,43 +47,48 @@
                       <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
                     </span>
                   </span>
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-            <mat-error *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-error>
-          </div>
-          <button *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" mat-raised-button color="primary"
-                  (click)="onAddTable()"
-                  class="pad-left text-upper" style="margin-right:10px">Add
-            Table</button>
-
-          <button mat-raised-button (click)="toggleAdvancedMode()" [disabled]="error != null" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources" class="text-upper">Edit SQL</button>
-
-          <div *ngIf="model.$selectedDatasourceId == 'FILE' " fxLayout="row" class="pad-left pad-right" fxFlex="70">
-            <upload-sample-file [model]="model" [engine]="engine" [isValid]="isValid" (onFileUploaded)="onFileUploaded()"></upload-sample-file>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-error *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-error>
+            </div>
           </div>
 
-        </div>
+          <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="!selectedTable()"
+                  *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources">
+            <ng-md-icon icon="add"></ng-md-icon>
+          </button>
 
-          <div fxFlex *ngIf="advancedMode" ></div>
+          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button [color]="'accent'" class="md-kylo-theme" aria-label="Browse catalog" (click)="openCatalogBrowser()"
+                  *ngIf="!advancedMode">
+            <ng-md-icon icon="playlist_add"></ng-md-icon>
+          </button>
 
-          <div fxLayout="row">
-            <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" class="text-upper">Cancel</button>
-            <button mat-button [color]="form.valid ? 'primary' : ''" (click)="next.emit()" type="button" [disabled]="!form.valid" class="text-upper">Next</button>
-          </div>
-        </div>
+          <span fxFlex="auto"></span>
 
+          <button matTooltip="Edit SQL" mat-raised-button mat-icon-button aria-label="Edit SQL" (click)="toggleAdvancedMode()" [disabled]="error != null">
+            <ng-md-icon icon="code" class="function-icon" style="color:#666"></ng-md-icon>
+          </button>
+
+          <div fxFlex="20px"></div>
+
+          <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" style="padding-top:3px" class="text-upper">Cancel</button>
+          <button mat-button [color]="form.valid ? 'primary' : ''" (click)="next.emit()" style="padding-top:3px" type="button" [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (sql == '' || sql == null))"
+                  class="text-upper">Next
+          </button>
+
+        </mat-toolbar>
         <!-- Canvas -->
 
-        <div class="visual-query-canvas" style="margin-top:8px;" mouse-capture [fxHide]="chartViewModel.data.nodes.length == 0 || advancedMode == true">
+        <div class="visual-query-canvas" style="margin-top:8px" mouse-capture [fxHide]="advancedMode == true">
           <mat-divider></mat-divider>
-          <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" [browser-height-offset]="getBrowserHeightOffset(161)">
+          <div class="svg-container" browser-height browser-height-scroll-y="auto" browser-height-scroll-x="auto" [browser-height-offset]="getBrowserHeightOffset(161)">
             <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
           </div>
         </div>
 
         <!-- SQL Editor -->
-        <sql-editor [sql]="this.model.sql"  [datasourceId]="model.$selectedDatasourceId"  [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+        <sql-editor [sql]="this.model.sql" [datasourceId]="model.$selectedDatasourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
                     [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true"></sql-editor>
 
         <!-- nothing set and user cant change datasources mesage-->
@@ -90,7 +97,6 @@
         </ng-template>
 
       </div>
-
 
     </form>
   </ng-template>

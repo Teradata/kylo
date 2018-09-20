@@ -289,12 +289,16 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         return parseInt(this.heightOffset) + elementOffset;
     }
 
+    selectedTable() : string {
+        return this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
+    }
+
     /**
      * Adds the table to the FlowChart.
      */
     onAddTable() {
         this.sideNavService.hideSideNav();
-        let table = this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
+        let table = this.selectedTable();
         if (table) {
             this.onTableClick(table);
             this.form.get('tableAutocomplete').reset('');

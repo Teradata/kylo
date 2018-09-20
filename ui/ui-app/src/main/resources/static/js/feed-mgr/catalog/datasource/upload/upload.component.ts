@@ -70,6 +70,11 @@ export class UploadComponent implements OnInit {
      */
     uploadDataSetId:string;
 
+    /**
+     * Loading flag for server operation to create datasetId
+     */
+    loading: boolean = false;
+
     constructor(private dialogs: TdDialogService, private fileManager: FileManagerService ) {
     }
 
@@ -103,7 +108,7 @@ export class UploadComponent implements OnInit {
      */
     cancelFile(file: FileUpload): void {
         // Cancel upload
-        if (file.upload) {
+        if (file.upload && !file.upload.closed) {
             file.upload.unsubscribe();
         }
 
@@ -127,7 +132,8 @@ export class UploadComponent implements OnInit {
             return Observable.of(this.uploadDataSetId);
         }
         else {
-            return this.fileManager.createDataSet(this.datasource.id).pipe(map((ds:any)=> <string>ds.id));
+            this.loading = true;
+            return this.fileManager.createDataSet(this.datasource.id).pipe(map((ds:any)=> { this.uploadDataSetId = ds.id; this.loading=false;return <string>ds.id }));
         }
     }
 
@@ -150,11 +156,10 @@ export class UploadComponent implements OnInit {
         } else {
             // Upload single file
             const file = new FileUpload(event.name);
+            this.files.push(file);
             this.ensureUploadDataSet().subscribe((datasetId:string) => {
                 file.upload = this.fileManager.uploadFile(datasetId, event)
                     .subscribe(event => this.setStatus(file, event), error => this.setError(file, error));
-                this.files.push(file);
-
             });
 
         }

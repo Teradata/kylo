@@ -26,76 +26,46 @@
 
 <div *tdLoading="'BrowserComponent.tableLoader'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 
-  <table td-data-table
-         #dataTable>
-  <thead>
-  <tr td-data-table-column-row>
-    <th td-data-table-column
-        [name]=""
-        [sortable]="false"
-        [numeric]="false"
-        [width]="50"
-        [active]="false">
-      <mat-checkbox [(ngModel)]="selectAll"
-                    [disabled]="isSelectAllDisabled()" (change)="onToggleAll()"></mat-checkbox>
-    </th>
-    <th td-data-table-column *ngFor="let column of columns"
-        [name]="column.name"
-        [sortable]="column.sortable"
-        [sortOrder]="sortOrder"
-        [numeric]="column.numeric"
-        (sortChange)="sort($event)"
-        [width]="column.width"
-        [active]="sortBy === column.name">
-      {{column.label}}
-    </th>
-  </tr>
-  </thead>
-  <tbody>
+  <td-data-table
+      #dataTable
+      [data]="filteredFiles"
+      [columns]="columns"
+      [selectable]="false"
+      [clickable]="true"
+      [multiple]="multiple"
+      [sortable]="true"
+      [sortBy]="sortBy"
+      [(ngModel)]="selected"
+      [sortOrder]="sortOrder"
+      (rowClick)="rowSelected($event)"
+      (sortChange)="sort($event)"
+      style="height:44vh;overflow-x:hidden">
 
-  <tr td-data-table-row *ngFor="let file of filteredFiles;" [ngClass]="file.canBeParent() ? 'cursor-pointer' : ''">
+    <ng-template tdDataTableTemplate="selection" let-value="value" let-column="column" let-row="row">
+      <span>
+        <mat-checkbox [checked]="isChildSelected(row.name)"
+                      [disabled]="isSelectChildDisabled(row.name)"
+                      (change)="onToggleChild($event, row)" *ngIf="!isSelectChildDisabled(row.name)"></mat-checkbox>
+        <td-notification-count *ngIf="numberOfSelectedDescendants(row.name) > 0" color="accent" [notifications]="numberOfSelectedDescendants(row.name)"
+                               [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
+       </span>
+    </ng-template>
 
-    <ng-container
-        [ngTemplateOutlet]="fileRowTemplate ? fileRowTemplate: defaultFileRowTemplate"
-        [ngTemplateOutletContext]="{file:file,columns:columns, parent:parent}">
-    </ng-container>
-  </tr>
-  </tbody>
-  </table>
+    <ng-template tdDataTableTemplate="type" let-value="value" let-column="column" let-row="row">
+      <span class="cell-icon"><ng-md-icon [icon]="row.getIcon()"></ng-md-icon></span>
+    </ng-template>
 
-  <div class="md-padding" *ngIf="filteredFiles.length === 0" layout="row" layout-align="center center">
+  </td-data-table>
+
+  <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
     <h3>No results to display.</h3>
-    <span *ngIf="errorMsg !== undefined" class="md-warn-text">An error occurred: {{errorMsg}}</span>
   </div>
-
-</div>
-
-<td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
-  <span hide-xs>Rows per page:</span>
-  <mat-select [style.width.px]="50" [(value)]="pageSize">
-    <mat-option *ngFor="let size of [50, 100, 200, 500]" [value]="size">
-      {{size}}
-    </mat-option>
-  </mat-select>
-  {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
-</td-paging-bar>
-
-
-<ng-template #defaultFileRowTemplate let-file="file" let-columns="columns" let-selectedDescendantCounts="selectedDescendantCounts">
-
-  <td td-data-table-cell>
-  <mat-checkbox [checked]="isChildSelected(file.name)"
-                [disabled]="isSelectChildDisabled(file.name)"
-                (change)="onToggleChild($event, file)"></mat-checkbox>
-  <td-notification-count *ngIf="numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="numberOfSelectedDescendants(file.name)"
-                         [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
-  </td>
-  <td td-data-table-cell *ngFor="let column of columns" (click)="rowClick(file)"
-      [numeric]="column.numeric" [width]="column.width">
-
-    <div class="cell-content">
-      <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
-      <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
-    </div>
-  </td>
-</ng-template>
+  <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+    <span hide-xs>Rows per page:</span>
+    <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+      <mat-option *ngFor="let size of [50,100,200,500]" [value]="size">
+        {{size}}
+      </mat-option>
+    </mat-select>
+    {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+  </td-paging-bar>
