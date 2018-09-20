@@ -49,13 +49,12 @@ import {PropertyListModule} from "../../shared/property-list/property-list.modul
 import {VisualQueryModule} from "../../visual-query/visual-query.module";
 import {defineFeedStates} from "./define-feed-states";
 import {DefineFeedComponent} from "./define-feed.component";
-import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
+import {FeedScheduleComponent} from "./summary/setup-guide-summary/feed-schedule/feed-schedule.component";
 import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.component";
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
 import {DefineFeedService} from "./services/define-feed.service";
 import {FeedLoadingService} from "./services/feed-loading-service";
 import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.component";
-import {FeedSideNavComponent} from "./shared/feed-side-nav.component";
 import {SystemFeedNameComponent} from "./shared/system-feed-name.component";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepCardComponent} from "./steps/define-feed-step-card/define-feed-step-card.component";
@@ -63,8 +62,7 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
-import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
-import {DefineFeedStepGeneralInfoComponent} from "./steps/general-info/define-feed-step-general-info.component";
+import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";;
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
@@ -80,13 +78,13 @@ import {ProfileValidComponent} from './summary/profile/container/valid/profile-v
 import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
-import {FeedInfoItemComponent} from "./summary/overview/feed-info-item.component";
-import {FeedInfoScheduleComponent} from "./summary/overview/feed-info-schedule/feed-info-schedule.component";
-import {FeedInfoDescriptionComponent} from "./summary/overview/feed-info-description/feed-info-description.component";
-import {FeedInfoCategoryComponent} from "./summary/overview/feed-info-category/feed-info-category.component";
-import {FeedInfoNameComponent} from "./summary/overview/feed-info-name/feed-info-name.component";
-import {FeedItemInfoService} from "./summary/overview/feed-item-info.service";
-import {FeedInfoTagsComponent} from "./summary/overview/feed-info-tags/feed-info-tags.component";
+import {FeedInfoItemComponent} from "./summary/setup-guide-summary/feed-info/feed-info-item.component";
+import {FeedInfoScheduleComponent} from "./summary/setup-guide-summary/feed-info/feed-info-schedule/feed-info-schedule.component";
+import {FeedInfoDescriptionComponent} from "./summary/setup-guide-summary/feed-info/feed-info-description/feed-info-description.component";
+import {FeedInfoCategoryComponent} from "./summary/setup-guide-summary/feed-info/feed-info-category/feed-info-category.component";
+import {FeedInfoNameComponent} from "./summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component";
+import {FeedItemInfoService} from "./summary/setup-guide-summary/feed-info/feed-item-info.service";
+import {FeedInfoTagsComponent} from "./summary/setup-guide-summary/feed-info/feed-info-tags/feed-info-tags.component";
 import {SlaComponent} from './summary/sla/sla.componment';
 import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
 import {SlaFormComponent} from './summary/sla/details/sla-form.componment';
@@ -104,6 +102,13 @@ import {CronExpressionPreviewModule} from '../../shared/cron-expression-preview/
 import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
 import {EntityAccessControlComponent} from "../../shared/entity-access-control/entity-access-control.component";
+import {FeedSetupGuideComponent} from "./summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component";
+import {SharedComponentsModule} from "../../../shared-components/shared-components.module";
+import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
+import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
+import {DefineFeedSideNavComponent} from "./steps/define-feed-side-nav/define-feed-side-nav.component";
+import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.component";
+import {MatMenuModule} from "@angular/material/menu";
 
 @NgModule({
     declarations: [
@@ -111,7 +116,6 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         DefineFeedSelectTemplateComponent,
         DefineFeedContainerComponent,
         DefineFeedStepCardComponent,
-        DefineFeedStepGeneralInfoComponent,
         DefineFeedStepSourceComponent,
         DefineFeedStepSourceSampleComponent,
         DefineFeedStepFeedDetailsComponent,
@@ -132,7 +136,6 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         CategoryAutocompleteComponent,
         SystemFeedNameComponent,
         NewFeedDialogComponent,
-        FeedSideNavComponent,
         DefineFeedStepCustomContentComponent,
         DefineFeedPermissionsComponent,
         DefineFeedPropertiesComponent,
@@ -153,7 +156,12 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         FeedInfoTagsComponent,
         FeedDetailsProcessorFieldComponent,
         FeedInfoTagsComponent,
-        EntityAccessControlComponent
+        EntityAccessControlComponent,
+        FeedSetupGuideComponent,
+        SetupGuideSummaryComponent,
+        FeedActivitySummaryComponent,
+        DefineFeedSideNavComponent,
+        FeedSummaryContainerComponent
     ],
     entryComponents:[
         NewFeedDialogComponent
@@ -224,6 +232,8 @@ import {EntityAccessControlComponent} from "../../shared/entity-access-control/e
         CatalogDatasetPreviewModule,
         KyloFeedModule,
         CatalogApiModule,
+        SharedComponentsModule,
+        MatMenuModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

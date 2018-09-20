@@ -60,12 +60,9 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         this.toolbarActionTemplateChangeSubscription =this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
     }
 
-    ngOnInit() {
-        let feedId = this.stateParams? this.stateParams.feedId : undefined;
-        this.initializeFeed(feedId);
-    }
 
-    ngOnDestroy() {
+
+    destroy() {
         this.feedLinkSelectionChangeSubscription.unsubscribe();
         this.onFeedSaveSubscription.unsubscribe();
         this.toolbarActionTemplateChangeSubscription.unsubscribe();

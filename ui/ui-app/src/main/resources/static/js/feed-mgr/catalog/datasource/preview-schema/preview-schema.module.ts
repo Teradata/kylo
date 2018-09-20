@@ -2,8 +2,7 @@ import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {UIRouterModule} from "@uirouter/angular";
 
-import {PreviewSchemaComponent, SchemaDefinitionComponent} from "./preview-schema.component";
-import {SimpleTableComponent} from "./preview-schema.component";
+import {PreviewSchemaComponent, SchemaDefinitionComponent, SimpleTableComponent} from "./preview-schema.component";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatTabsModule} from '@angular/material/tabs';
@@ -14,11 +13,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
-import {PolicyInputFormComponent} from "../../../shared/field-policies-angular2/policy-input-form.component";
-import {InlinePolicyInputFormComponent} from "../../../shared/field-policies-angular2/inline-field-policy-form.component";
 import {FlexLayoutModule} from "@angular/flex-layout";
-import {FieldPolicyOptionsService} from "../../../shared/field-policies-angular2/field-policy-options.service";
-import {PolicyInputFormService} from "../../../shared/field-policies-angular2/policy-input-form.service";
 import {MatDialogModule} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
 import {CovalentChipsModule} from "@covalent/core/chips";
@@ -35,13 +30,9 @@ import {PreviewSchemaService} from "./service/preview-schema.service";
 import {PreviewRawService} from "./service/preview-raw.service";
 import {TransformResponseTableBuilder} from "./service/transform-response-table-builder";
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
-import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
 import {KyloServicesModule} from "../../../../services/services.module";
-import {UpgradeModule} from "@angular/upgrade/static";
 import {MatStepperModule} from "@angular/material/stepper";
-import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {RemoteFilesModule} from "../files/remote-files.module";
 
 @NgModule({
     declarations: [
@@ -89,15 +80,7 @@ import {RemoteFilesModule} from "../files/remote-files.module";
         KyloServicesModule,
         //VisualQuery2Module,
        // WranglerModule,
-        UIRouterModule.forChild({
-            states: [
-                {
-                    name: "catalog.datasource.preview",
-                    url: "/preview",
-                    component: PreviewSchemaComponent
-                }
-            ]
-        })
+
     ],
     providers:[
         FileMetadataTransformService,
@@ -108,4 +91,21 @@ import {RemoteFilesModule} from "../files/remote-files.module";
 
 })
 export class PreviewSchemaModule {
+}
+
+@NgModule({
+    imports: [
+        PreviewSchemaModule,
+        UIRouterModule.forChild({
+            states: [
+                {
+                    name: "catalog.datasource.preview",
+                    url: "/preview",
+                    component: PreviewSchemaComponent
+                }
+            ]
+        })
+    ]
+})
+export class PreviewSchemaRouterModule {
 }

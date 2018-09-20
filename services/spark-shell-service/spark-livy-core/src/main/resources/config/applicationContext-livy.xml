@@ -25,13 +25,12 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
-
-    <bean id="scriptRegistry" class="java.util.HashMap">
-        <constructor-arg>
-            <map key-type="java.lang.String" value-type="java.lang.String">
-                <entry key="initSession">
-                    <value>
-                        <![CDATA[
+  <bean id="scriptRegistry" class="java.util.HashMap">
+    <constructor-arg>
+      <map key-type="java.lang.String" value-type="java.lang.String">
+        <entry key="initSession">
+          <value>
+            <![CDATA[
 val sqlContext = org.apache.spark.sql.SQLContext.getOrCreate(sc)
 val ctx = com.thinkbiganalytics.spark.LivyWrangler.createSpringContext(sc, sqlContext)
 val profiler = ctx.getBean(classOf[com.thinkbiganalytics.spark.dataprofiler.Profiler])
@@ -47,49 +46,50 @@ ctx.getBean(classOf[com.thinkbiganalytics.spark.service.SparkUtilityService])
 val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
-import org.apache.log4j.{Level, Logger}
+import org.slf4j.LoggerFactory
 import com.thinkbiganalytics.spark.logger.LivyLogger
-val logger = Logger.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
-                        ]]>
-                    </value>
-                </entry>
-                <entry key="submitSaveJob">
-                    <value>
-                        <![CDATA[
+import org.apache.spark.sql._
+val logger = LoggerFactory.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
+             ]]>
+          </value>
+        </entry>
+        <entry key="submitSaveJob">
+          <value>
+            <![CDATA[
 val saveRequest: com.thinkbiganalytics.spark.rest.model.SaveRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.SaveRequest]);
 val dataSet = sparkContextService.toDataSet(sqlContext.sql("select * from %s"))
 val saveResponse = transformService.submitSaveJob(transformService.createSaveTask(saveRequest,
     new com.thinkbiganalytics.spark.metadata.ShellTransformStage(dataSet, converterService)))
 val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
 %%json saveResponseAsStr
-                        ]]>
-                    </value>
-                </entry>
-                <entry key="getSave">
-                    <value>
-                        <![CDATA[
+             ]]>
+          </value>
+        </entry>
+        <entry key="getSave">
+          <value>
+            <![CDATA[
 val response = sparkShellTransformController.getSave("%s")
 val saveResponse =
 response.getEntity().asInstanceOf[com.thinkbiganalytics.spark.rest.model.SaveResponse]
 val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
 %%json saveResponseAsStr
-                        ]]>
-                    </value>
-                </entry>
-                <entry key="profileDataFrame">
-                    <value>
-                        <![CDATA[
+             ]]>
+          </value>
+        </entry>
+        <entry key="profileDataFrame">
+          <value>
+            <![CDATA[
 val dfProf =
 com.thinkbiganalytics.spark.dataprofiler.core.Profiler.profileDataFrame(sparkContextService,profiler,df)
 %%json dfProf
-                        ]]>
-                    </value>
-                </entry>
+            ]]>
+          </value>
+        </entry>
 
 
-                <entry key="pagedDataFrame">
-                    <value>
-                        <![CDATA[
+        <entry key="pagedDataFrame">
+          <value>
+            <![CDATA[
 var dfRows : List[Object] = List()
 LivyLogger.time {
   val (startCol, stopCol) = (%s, %s);
@@ -107,62 +107,65 @@ LivyLogger.time {
   val pagedRows = dl.slice( dfStartRow, dfStopRow ).map( _.toSeq )
   dfRows = List( df.schema.json, pagedRows )
 }
-                        ]]>
-                    </value>
-                </entry>
+             ]]>
+          </value>
+        </entry>
 
-                <entry key="getDataSources">
-                    <value>
-                        <![CDATA[
+        <entry key="getDataSources">
+          <value>
+            <![CDATA[
 val dataSources = sparkUtilityService.getDataSources()
 
 val dataSourcesAsStr = mapper.writeValueAsString(dataSources)
 %%json dataSourcesAsStr
-                        ]]>
-                    </value>
-                </entry>
-                <entry key="getSaveResult">
-                    <value>
-                        <![CDATA[
+             ]]>
+          </value>
+        </entry>
+        <entry key="getSaveResult">
+          <value>
+            <![CDATA[
 val saveResult = sparkShellTransformController.getSaveResult(%s)
 val saveResultAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
 %%json saveResultAsStr
-                        ]]>
-                    </value>
-                </entry>
-                <entry key="kyloCatalogTransform">
-                    <value> <!-- takes a JSON string escaped for scala -->
-                        <![CDATA[
+             ]]>
+          </value>
+        </entry>
+        <entry key="kyloCatalogTransform">
+          <value> <!-- takes a JSON string escaped for scala -->
+            <![CDATA[
 val kyloCatalogReadRequest: com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest]);
 val kyloReadResponse = transformService.kyloReaderResponse(kyloCatalogReadRequest);
 val transformAsStr = mapper.writeValueAsString(kyloReadResponse)
 %%json transformAsStr
 ]]>
-                    </value>
-                </entry>
-                <entry key="getTransform">
-                    <value> <!-- takes a JSON string escaped for scala -->
-                        <![CDATA[
+          </value>
+        </entry>
+        <entry key="getTransform">
+          <value> <!-- takes a JSON string escaped for scala -->
+            <![CDATA[
 val response = sparkShellTransformController.getTableTransformResponse(%s)
 val transformAsStr = mapper.writeValueAsString(response)
 %%json transformAsStr
-]]>
-                    </value>
-                </entry>
-                <entry key="readTable">
-                    <value> <!-- first parameter takes a JSON string escaped for scala, second parameter is valid scala -->
-                        <![CDATA[
+             ]]>
+          </value>
+        </entry>
+        <entry key="readTable">
+          <value> <!-- first parameter takes a JSON string escaped for scala, second parameter is valid scala -->
+            <![CDATA[
+var tbl :String = null;
 var parent = try {
-sqlContext.read.table(%s)
+  tbl = %s;
+  var df = sqlContext.read.table(tbl)
+  logger.info("Parent dataframe set to table '{}'", tbl);
+  df
 } catch { case _ : Exception =>  {
+  logger.info("Unable to load data from parent table '{}'.  Rebuild from transformation history.", tbl);
 %s
 }}
-]]>
-                    </value>
-                </entry>
-            </map>
-        </constructor-arg>
-    </bean>
-
-
+             ]]>
+          </value>
+        </entry>
+      </map>
+    </constructor-arg>
+  </bean>
 </beans>

@@ -1,0 +1,82 @@
+<mat-card class="feed-info-card feed-card">
+  <mat-card-header>
+    <mat-card-title>Feed Info</mat-card-title>
+    <mat-card-subtitle>Additional details</mat-card-subtitle>
+    <span fxFlex></span>
+    <div>
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'">
+          <mat-icon>pause_circle_outline</mat-icon>
+          <span >Disable</span>
+        </button>
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'">
+          <mat-icon>play_arrow</mat-icon>
+          <span >Enable</span>
+        </button>
+        <button mat-menu-item disabled>
+          <mat-icon>cloud_upload</mat-icon>
+          <span>UploadFile</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-card-header>
+  <mat-card-content>
+
+    <mat-list role="list" dense >
+
+      <mat-list-item *ngIf="!feedHealthAvailable">
+        <h4 mat-line>Unavailable</h4>
+        <p mat-line >Feed Health</p>
+      </mat-list-item>
+
+      <mat-list-item *ngIf="feedHealthAvailable">
+        <mat-icon mat-list-icon *ngIf="feedHealth.icon">{{feedHealth.icon}}</mat-icon>
+
+      <h4 mat-line>{{feedHealth.healthText}}</h4>
+      <p mat-line >Feed Health</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item *ngIf="feedHealthAvailable" >
+        <mat-icon mat-list-icon color="accent" >timer</mat-icon>
+        <h4 mat-line>  <span kylo-timer [startTime]="feedHealth.timeSinceEndTime"></span></h4>
+        <p mat-line > <span translate>views.feeds.feed-details.Since</span></p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item *ngIf="feedHealthAvailable" >
+        <mat-icon mat-list-icon color="accent" >alarm</mat-icon>
+        <h4 mat-line>    {{feedHealth.runTimeString}}</h4>
+        <p mat-line > <span translate>views.feeds.feed-details.LRT</span></p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item *ngIf="feed.description">
+        <mat-icon mat-list-icon color="accent">stars</mat-icon>
+        <h4 mat-line> {{feed.state}}</h4>
+        <p mat-line >Status</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item >
+        <mat-icon mat-list-icon color="accent">folder</mat-icon>
+        <h4 mat-line> {{feed.category.name}}</h4>
+        <p mat-line >Category</p>
+      </mat-list-item>
+
+      <mat-divider></mat-divider>
+
+      <mat-list-item *ngIf="feed.description">
+        <mat-icon mat-list-icon color="accent">subject</mat-icon>
+        <h4 mat-line> {{feed.description}}</h4>
+        <p mat-line >Description</p>
+      </mat-list-item>
+
+
+    </mat-list>
+
+  </mat-card-content>
+</mat-card>

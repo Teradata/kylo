@@ -1,6 +1,5 @@
 import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
 import {Step} from "../../../model/feed/feed-step.model";
-import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
 import {FeedStepBuilder, StepBuilder} from "../../../model/feed/feed-step-builder";

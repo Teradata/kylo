@@ -9,7 +9,8 @@ import {Observable} from "rxjs/Observable";
 import {Category} from "../../../model/category/category.model";
 
 export class NewFeedDialogData {
-    constructor(public template:Template){}
+
+    constructor(public template:Template, public title?:string){}
 }
 
 
@@ -32,11 +33,18 @@ export class NewFeedDialogComponent implements OnInit, OnDestroy{
      */
     formGroup:FormGroup;
 
+    title:string;
 
 
     constructor(private dialog: MatDialogRef<NewFeedDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: NewFeedDialogData) {
         this.template = data.template;
         this.formGroup = new FormGroup({});
+        if(data.title){
+            this.title = data.title;
+        }
+        else {
+            this.title = "New "+this.template.templateName+" Feed";
+        }
     }
 
     ngOnInit() {

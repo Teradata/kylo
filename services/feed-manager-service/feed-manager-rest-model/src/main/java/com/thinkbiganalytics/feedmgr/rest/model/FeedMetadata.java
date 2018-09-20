@@ -513,10 +513,6 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         NEW, ENABLED, DISABLED
     }
 
-    public static enum MODE {
-        DRAFT, COMPLETE
-    }
-
     @JsonIgnore
     public List<NifiProperty> getConfigurationProperties() {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());

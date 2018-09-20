@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Inject, Injectable, Injector} from "@angular/core";
-import {Feed, FeedMode, FeedTemplateType} from "../../../model/feed/feed.model";
+import {Feed, FeedMode, FeedTemplateType, LoadMode} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -10,15 +10,14 @@ import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
-import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
-import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
 import 'rxjs/add/observable/forkJoin'
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
 import {DatasetChangeEvent, PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
-import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
 import {EntityAccessControlService} from "../../../shared/entity-access-control/EntityAccessControlService";
 import AccessControlService from "../../../../services/AccessControlService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
@@ -41,6 +40,11 @@ import {timeout} from 'rxjs/operators/timeout';
 import {TimeoutError} from "rxjs/Rx";
 import {EntityVersion} from "../../../model/entity-version.model";
 import {fromPromise} from "rxjs/observable/fromPromise";
+import {ReplaySubject} from "rxjs/ReplaySubject";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {TdLoadingService} from "@covalent/core/loading";
+import {Category} from "../../../model/category/category.model";
 
 
 export class FeedEditStateChangeEvent{
@@ -69,6 +73,11 @@ export class DefineFeedService {
      */
     feed:Feed;
 
+    /**
+     * the load mode used for this feed
+     */
+    feedLoadMode:LoadMode;
+
 
     stepSrefMap:Common.Map<Step> = {}
 
@@ -93,6 +102,9 @@ export class DefineFeedService {
     private feedEditStateChangeSubject: Subject<FeedEditStateChangeEvent>;
 
 
+    private feedLoadedSubject: Subject<Feed>;
+
+
     private uiComponentsService :UiComponentsService;
 
 
@@ -104,8 +116,10 @@ export class DefineFeedService {
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
+                private _loadingService:TdLoadingService,
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
+                private stateService:StateService,
                 @Inject("AccessControlService") accessControlService: AccessControlService){
 
 
@@ -113,6 +127,8 @@ export class DefineFeedService {
         this.currentStep$ = this.currentStepSubject.asObservable();
 
         this.savedFeedSubject = new Subject<SaveFeedResponse>();
+
+        this.feedLoadedSubject = new Subject<Feed>();
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
@@ -152,69 +168,69 @@ export class DefineFeedService {
         this.savedFeedSubject.next(savedFeed);
     }
 
+    cloneFeed(feed?:Feed){
+        let feedToClone = feed != undefined ? this.getFeed() : feed;
+
+            let template = feedToClone.registeredTemplate;
+            let config:NewFeedDialogData = new NewFeedDialogData(template," Clone "+feedToClone.getFullName());
+            this._dialogService.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",width:'800px'})
+                .afterClosed()
+                .filter(value => typeof value !== "undefined").subscribe((newFeedData:NewFeedDialogResponse) => {
+                    this._loadingService.register("processingFeed")
+                let template = newFeedData.template;
+                let feedName = newFeedData.feedName;
+                let systemFeedName = newFeedData.systemFeedName;
+                let category:Category = newFeedData.category;
+                let copy = this.feed.copyModelForSave();
+                copy.id = undefined;
+                copy.deployedVersion = undefined;
+                copy.feedName = feedName;
+                copy.systemFeedName = systemFeedName
+                copy.category = newFeedData.category;
+                copy.versionId = undefined;
+                copy.versionName = undefined;
+                this.saveFeed(copy).subscribe((response:SaveFeedResponse) => {
+                    if(response.success){
+                        let feed = response.feed;
+                        this.openSnackBar("Successfully cloned the feed ",5000)
+                        this._loadingService.resolve("processingFeed")
+                        this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:feed.id},{"location":"replace"})
+                    }
+                    else {
+                        //ERROR
+                        this._loadingService.resolve("processingFeed")
+                        this.openSnackBar("Error cloning feed ",5000)
+                    }
+                }, error1 => {
+                    //ERROR!!!!!
+                    this._loadingService.resolve("processingFeed")
+                    this.openSnackBar("Error cloning feed ",5000)
+                })
+            });
+
+    }
+
+
+
     /**
      * Load a feed based upon its UUID and return a copy to the subscribers
      *
      * @param {string} id
      * @return {Observable<Feed>}
      */
-    loadFeed(id:string, force?:boolean) :Observable<Feed> {
+    loadFeed(id:string, loadMode:LoadMode = LoadMode.LATEST, force?:boolean) :Observable<Feed> {
 
         let feed = this.getFeed();
-        if((feed && feed.id != id) || (feed == undefined && id != undefined) || force == true) {
-            let loadFeedSubject = new Subject<Feed>();
-            let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
-
-            //let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
-
-            let observable  = <Observable<EntityVersion>> this.http.get("proxy/v1/feedmgr/feeds/"+id+"/versions/latest");
-            observable.subscribe((entityVersion:EntityVersion) => {
-                console.log('LOADED FEED Version ',entityVersion)
-                let feed:Feed = <Feed>entityVersion.entity;
-                feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.COMPLETE;
-                feed.versionId = entityVersion.id;
-                feed.versionName = entityVersion.name;
-
-                this.selectionService.reset()
-                //convert it to our needed class
-                let uiState = feed.uiState;
-
-                let feedModel = new Feed(feed)
-                //reset the propertiesInitalized flag
-                feedModel.propertiesInitialized = false;
-
-
-                //get the steps back from the model
-                let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
-                //merge in the saved steps
-                let savedStepJSON = feedModel.uiState[Feed.UI_STATE_STEPS_KEY] || "[]";
-                let steps :Step[] = JSON.parse(savedStepJSON);
-                //group by stepName
-                let savedStepMap = _.indexBy(steps,'systemName')
-                let mergedSteps:Step[] = defaultSteps.map(step => {
-                    if(savedStepMap[step.systemName]){
-                       step.update(savedStepMap[step.systemName]);
-                    }
-                    return step;
-                });
-                feedModel.steps = mergedSteps;
-
-                feedModel.validate(true);
-                this.feed = feedModel;
-
-                //Check if user has entity access permissions for editing feed
-                fromPromise(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, feedModel, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
-                    .subscribe((access: boolean) => {
-                        //console.log("[debug] Does user have entity access permission to edit feed? " + access);
-                        this.feed.allowEdit =  access;
-                        this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
-                    });
-
-                //notify subscribers of a copy
-                loadFeedSubject.next(feedModel.copy());
-
-            });
-            return loadFeedObservable$;
+        if((feed && (feed.id != id || this.feedLoadMode != loadMode)) || (feed == undefined && id != undefined) || force == true) {
+            if(LoadMode.LATEST == loadMode) {
+                return this.loadLatestFeed(id);
+            }
+            else if(LoadMode.DEPLOYED == loadMode){
+                return this.loadDeployedFeed(id)
+            }
+            else if(LoadMode.DRAFT == loadMode){
+                return this.loadDraftFeed(id)
+            }
         }
         else if(feed){
             return Observable.of(this.feed.copy())
@@ -231,8 +247,25 @@ export class DefineFeedService {
         }));
     }
 
+    loadLatestFeed(feedId:string):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
+        return this._loadFeedVersion(url, LoadMode.LATEST,true)
+    }
 
+    loadDeployedFeed(feedId:string):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed";
+        return this._loadFeedVersion(url, LoadMode.DEPLOYED,true)
+    }
 
+    loadDraftFeed(feedId:string):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        return this._loadFeedVersion(url,LoadMode.DRAFT,true)
+    }
+
+    getDraftFeed(feedId:string):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        return this._loadFeedVersion(url, LoadMode.DRAFT,false)
+    }
 
 
 
@@ -301,12 +334,19 @@ export class DefineFeedService {
         return this.feedEditStateChangeSubject.subscribe(observer);
     }
 
+    subscribeToFeedLoadedEvent(observer:PartialObserver<Feed>){
+        return this.feedLoadedSubject.subscribe(observer);
+    }
+
 
     markFeedAsEditable(){
 
-        if(this.feed){
+        if(this.feed && this.feed.loadMode != LoadMode.DEPLOYED){
             this.feed.readonly = false;
             this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
+        }
+        else if(this.feed && this.feed.loadMode == LoadMode.DEPLOYED){
+            console.log("Unable to Edit a deployed feed ",this.feed)
         }
     }
 
@@ -434,6 +474,9 @@ export class DefineFeedService {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
 
+        let checkForDraft = !feed.isDraft() ;
+
+
         observable.subscribe((response: any)=> {
 
             let updatedFeed = response;
@@ -455,6 +498,7 @@ export class DefineFeedService {
 
             //reset it to be editable
             savedFeed.readonly = false;
+            savedFeed.allowEdit =true;
 
             savedFeed.updateDate = new Date(updatedFeed.updateDate);
             let valid = savedFeed.validate(true);
@@ -464,9 +508,16 @@ export class DefineFeedService {
             if(!valid){
                 message = "Saved the feed, but you have validation errors.  Please review."
             }
+            if(checkForDraft){
+                //fill in this feeds deployedVersion
+                savedFeed.deployedVersion = {id:feed.versionId,name:feed.versionName,createdDate:(feed.createdDate ? feed.createdDate.getDate() : undefined),entityId:feed.id}
+            }else if(feed.deployedVersion){
+                savedFeed.deployedVersion = feed.deployedVersion;
+            }
             this.feed = savedFeed;
             let saveFeedResponse = new SaveFeedResponse(savedFeed,true,message);
             saveFeedResponse.newFeed = newFeed;
+
             //notify any subscribers to this single function
             subject.next(saveFeedResponse)
             //notify any global subscribers
@@ -501,6 +552,7 @@ export class DefineFeedService {
 
 
 
+
     public openSnackBar(message:string, duration?:number){
         if(duration == undefined){
             duration = 3000;
@@ -508,6 +560,77 @@ export class DefineFeedService {
         this.snackBar.open(message, null, {
             duration: duration,
         });
+    }
+
+
+    private _loadFeedVersion(url:string, loadMode:LoadMode,load:boolean = true ){
+        let loadFeedSubject = new ReplaySubject<Feed>(1);
+        let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
+
+
+        //let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
+
+        let observable  = <Observable<EntityVersion>> this.http.get(url);
+        observable.subscribe((entityVersion:EntityVersion) => {
+            let feed:Feed = <Feed>entityVersion.entity;
+            feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.DEPLOYED;
+            feed.versionId = entityVersion.id;
+            feed.versionName = entityVersion.name;
+            feed.deployedVersion = entityVersion.deployedVersion;
+            feed.createdDate = entityVersion.createdDate != null ? new Date(entityVersion.createdDate) : undefined;
+
+            this.selectionService.reset()
+            //convert it to our needed class
+            let uiState = feed.uiState;
+
+            let feedModel = new Feed(feed)
+            //reset the propertiesInitalized flag
+            feedModel.propertiesInitialized = false;
+
+
+            //get the steps back from the model
+            let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
+            //merge in the saved steps
+            let savedStepJSON = feedModel.uiState[Feed.UI_STATE_STEPS_KEY] || "[]";
+            let steps :Step[] = JSON.parse(savedStepJSON);
+            //group by stepName
+            let savedStepMap = _.indexBy(steps,'systemName')
+            let mergedSteps:Step[] = defaultSteps.map(step => {
+                if(savedStepMap[step.systemName]){
+                    step.update(savedStepMap[step.systemName]);
+                }
+                return step;
+            });
+            feedModel.steps = mergedSteps;
+
+            feedModel.validate(true);
+            feedModel.loadMode = loadMode;
+            if(load) {
+                console.log('LOADED FEED Version ',entityVersion)
+                this.feed = feedModel;
+                this.feedLoadMode = loadMode;
+            }
+
+            //Check if user has entity access permissions for editing feed
+            fromPromise(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, feedModel, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
+                .subscribe((access: boolean) => {
+                    //console.log("[debug] Does user have entity access permission to edit feed? " + access);
+                    feedModel.allowEdit =  access;
+                    if(load) {
+                        this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.allowEdit))
+                    }
+                });
+
+            if(load) {
+                //notify subscribers of a copy
+                this.feedLoadedSubject.next(feedModel.copy());
+            }
+            loadFeedSubject.next(feedModel.copy());
+        }, error1 => {
+            loadFeedSubject.error(error1)
+        })
+        return loadFeedObservable$;
+
     }
 
 

@@ -37,6 +37,8 @@ import javax.annotation.Resource;
 public class ScalaScriptService {
 
     private static Pattern dfPattern = Pattern.compile("^\\s*df\\s*$", Pattern.MULTILINE);
+    private static Pattern removeImportsPattern = Pattern.compile("^\\s*import \\S+\\s*$", Pattern.MULTILINE);
+
 
     @Resource
     private ScriptGenerator scriptGenerator;
@@ -71,10 +73,8 @@ public class ScalaScriptService {
     }
 
     /**
-     * Modifies the script in request (assumed that it contains a dataframe named df), and creates a
-     * List(schema,dataRows) object.  schema is a scala string of json representing the schema.  dataRows
-     * is a List of Lists of the row data.  The columns and rows are paged according to the data provided
-     * in request.pageSpec.
+     * Modifies the script in request (assumed that it contains a dataframe named df), and creates a List(schema,dataRows) object.  schema is a scala string of json representing the schema.  dataRows
+     * is a List of Lists of the row data.  The columns and rows are paged according to the data provided in request.pageSpec.
      */
     public String wrapScriptForLivy(TransformRequest request, String transformId) {
 
@@ -96,11 +96,8 @@ public class ScalaScriptService {
             sb.append(setParentVar(request));
         } // end if
 
-        // String transformId = ScalaScriptService.newTableName();
-        // transformCache.put(request, transformId);
-
-        script = dfPattern.matcher(script).replaceAll(/*"var df" + counter + " = df.cache(); "df" + counter*/
-            "df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
+        script = dfPattern.matcher(script).replaceAll("df.registerTempTable( \"" + transformId + "\" )\n");
+        script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
 
         sb.append(wrapScriptWithPaging(script, request.getPageSpec()));
 
@@ -110,11 +107,9 @@ public class ScalaScriptService {
         return sb.toString();
     }
 
-
     /**
-     * Modifies the script passed in (assumed it contains a dataframe named df), and creates a List(schema,dataRows)
-     * object.  schema is a scala string of json representing the schema.  dataRows is a List of Lists of the row data.
-     * The columns and rows are paged according to the data provided in request.pageSpec
+     * Modifies the script passed in (assumed it contains a dataframe named df), and creates a List(schema,dataRows) object.  schema is a scala string of json representing the schema.  dataRows is a
+     * List of Lists of the row data. The columns and rows are paged according to the data provided in request.pageSpec
      */
     private String wrapScriptWithPaging(String script, PageSpec pageSpec) {
         if (pageSpec != null) {
@@ -150,16 +145,10 @@ public class ScalaScriptService {
 
 
     private String setParentVar(TransformRequest request) {
-        return scriptGenerator.wrappedScript("readTable", "", "\n",
-                                             ScalaScriptUtils.scalaStr(request.getParent().getTable()), request.getParent().getScript());
+        String script = request.getParent().getScript();
+        script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
 
-/*
-        String table = request.getParent().getTable();
-        if (StringUtils.isEmpty(table)) {
-            return request.getParent().getScript();
-        } else {
-            return String.format("var parent = sqlContext.sql(\"SELECT * FROM %s\")\n", request.getParent().getTable());
-        }
-        */
+        return scriptGenerator.wrappedScript("readTable", "", "\n",
+                                             ScalaScriptUtils.scalaStr(request.getParent().getTable()), script);
     }
 }

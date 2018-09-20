@@ -1,0 +1,34 @@
+
+
+<mat-card class="steps feed-card" >
+  <mat-card-header >
+    <mat-card-title>
+      <mat-icon>pages</mat-icon>
+      <span>Feed Activity</span>
+    </mat-card-title>
+    <mat-card-subtitle>Feed operations activity</mat-card-subtitle>
+    <span fxFlex></span>
+  </mat-card-header>
+  <mat-card-content>
+    <div fxLayout="row" fxLayoutAlign="end start">
+    <mat-button-toggle-group #dateSelection="matButtonToggleGroup" value="1-M"  (change)="onDateSelectionChange($event)">
+      <mat-button-toggle value="3-D">
+        <span translate>views.feed-activity-template.3D</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="1-M">
+        <span translate>views.feed-activity-template.1M</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="3-M">
+        <span translate>views.feed-activity-template.3M</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="1-Y">
+        <span translate>views.feed-activity-template.1Y</span>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+    </div>
+
+    <nvd3 [options]="chartOptions" [data]="chartData" ></nvd3>
+
+  </mat-card-content>
+</mat-card>
+

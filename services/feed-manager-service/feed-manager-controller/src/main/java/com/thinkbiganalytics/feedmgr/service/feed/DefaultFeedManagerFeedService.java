@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.rest.model.DraftEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -340,7 +341,23 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return idOption.flatMap(domainFeedId -> {
             return metadataAccess.read(() -> {
                     return feedProvider.findLatestVersion(domainFeedId, includeContent)
-                        .map(version -> feedModelTransform.domainToFeedVersion(version));
+                        .map(version -> {
+                          EntityVersion feedVersion =  feedModelTransform.domainToFeedVersion(version);
+                            EntityVersion deployedVersion = null;
+                            if(feedVersion.isDraft()){
+                                //find the latest deployed version id for this feed
+                                Optional<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> optionalDeployedVersion = feedProvider.findDeployedVersion(domainFeedId, false);
+
+                                if(optionalDeployedVersion.isPresent()) {
+                                    deployedVersion = feedModelTransform.domainToFeedVersion(optionalDeployedVersion.get());
+                                }
+                                DraftEntityVersion draftEntityVersion = new DraftEntityVersion(feedVersion, deployedVersion);
+                                return draftEntityVersion;
+                            }
+                            else {
+                                return feedVersion;
+                            }
+                        });
             }, MetadataAccess.SERVICE);
         });
     }

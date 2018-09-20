@@ -12,9 +12,9 @@ package com.thinkbiganalytics.metadata.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -50,21 +51,15 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.auth.BasicSchemeFactory;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
@@ -181,7 +176,7 @@ public class MetadataClient {
     public MetadataClient(URI base, CredentialsProvider credsProvider, SSLContext sslContext) {
         super();
         this.base = base;
-        this.proxyBase = URI.create(this.base.getScheme()+"://"+this.base.getHost()+"/proxy");
+        this.proxyBase = URI.create(this.base.getScheme() + "://" + this.base.getHost() + "/proxy");
         if (credsProvider != null) {
             HttpClient httpClient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider)
@@ -419,8 +414,8 @@ public class MetadataClient {
      * @param category the name of the category
      * @param feed     the name of the feed
      */
-    public Feed getFeed(String category,String feed) {
-        return get(path("feeds","name",category+"."+feed), Feed.class);
+    public Feed getFeed(String category, String feed) {
+        return get(path("feeds", "name", category + "." + feed), Feed.class);
     }
 
 
@@ -662,7 +657,7 @@ public class MetadataClient {
      */
     public Long findNiFiMaxEventId(String clusterNodeId) {
         log.info("findNifiMaxEventId ", clusterNodeId);
-        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId) ? "NODE" : clusterNodeId;
         return get(path("nifi-provenance", "max-event-id"), new MaxNifiEventParameters(clusterNodeId), Long.class);
     }
 
@@ -674,8 +669,8 @@ public class MetadataClient {
      */
     public Long resetNiFiMaxEventId(String clusterNodeId) {
         log.info("resetMaxEventId ", clusterNodeId);
-        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
-        return post(path("nifi-provenance", "reset-max-event-id",clusterNodeId), null, Long.class);
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId) ? "NODE" : clusterNodeId;
+        return post(path("nifi-provenance", "reset-max-event-id", clusterNodeId), null, Long.class);
     }
 
     /**
@@ -699,6 +694,25 @@ public class MetadataClient {
             return Optional.of(get(path("datasource", id),
                                    uri -> (uri != null) ? uri.queryParam("sensitive", true) : null,
                                    Datasource.class));
+        } catch (final HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Gets the data set with the specified id.
+     *
+     * @param id data set id
+     * @return the data set, if found
+     * @throws RestClientException if the data set is unavailable
+     */
+    public Optional<DataSet> getDataSet(@Nonnull final String id) {
+        try {
+            return Optional.of(get(path("catalog", "dataset", id), DataSet.class));
         } catch (final HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return Optional.empty();

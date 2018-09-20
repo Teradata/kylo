@@ -880,6 +880,15 @@
             "Wrangler":{
                 "Name":"Wrangler"
             }
+        },
+        "Links":{"Summary":{"Name":"Summary"},
+                 "FeedActivity":{"Name":"Feed Activity"},
+                 "SetupGuide":{"Name":"Setup Guide"},
+                 "SetupReview":{"Name":"Setup Review"},
+                 "Profile":{"Name":"Profile"},
+                 "SLA":{"Name":"SLA"},
+                 "Lineage":{"Name":"Lineage"},
+                 "Versions":{"Name":"Versions"}
         }
     },
 

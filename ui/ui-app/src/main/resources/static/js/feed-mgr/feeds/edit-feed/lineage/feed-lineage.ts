@@ -245,6 +245,11 @@ export class FeedLineageController implements ng.IComponentController {
 
             if (processedDatasource == undefined) {
                 var ds = this.feedLineage.datasourceMap[dsId];
+                //skip JdbcDatasource entries
+                if(ds['@type'] && ds['@type'] == 'JdbcDatasource'){
+                    return;
+                }
+
                 this.assignDatasourceProperties(ds);
                 //console.log('building datasource',ds.name)
                 if (this.isDetailedGraph()) {
@@ -396,6 +401,12 @@ export class FeedLineageController implements ng.IComponentController {
                 var label = "";
                 if (angular.isString(ds.datasourceType)) {
                     label = this.Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource") ? ds.datasourceType.substring(0, ds.datasourceType.toLowerCase().lastIndexOf("datasource")) : ds.datasourceType;
+                    if(label && label.toLowerCase() == 'database'){
+                        //attempt to find the name of the database in the properties
+                        if(ds.properties && ds.properties['Database Connection']){
+                            label = ds.properties['Database Connection'];
+                        }
+                    }
                 } else if (angular.isString(ds.type)) {
                     label = ds.type;
                 } else {

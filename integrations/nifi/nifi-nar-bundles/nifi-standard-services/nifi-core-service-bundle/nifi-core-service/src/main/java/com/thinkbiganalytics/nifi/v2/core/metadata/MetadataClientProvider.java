@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.core.metadata;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ package com.thinkbiganalytics.nifi.v2.core.metadata;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -66,7 +66,7 @@ import javax.annotation.Nonnull;
 public class MetadataClientProvider implements MetadataProvider {
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientProvider.class);
-    
+
     /**
      * The max number of feed ID entries to cache;
      */
@@ -98,14 +98,14 @@ public class MetadataClientProvider implements MetadataProvider {
     /**
      * Constructor creates a MetaDataClientProvider with the URI provided.
      *
-     * @param baseUri the REST endpoint of the Metadata store
+     * @param baseUri  the REST endpoint of the Metadata store
      * @param username the username to access the endpoint
      * @param password the password to access the endpoint
      */
     public MetadataClientProvider(URI baseUri, String username, String password) {
         this(new MetadataClient(baseUri, username, password));
     }
-    
+
     /**
      * Constructor creates a MetadataClientProvider with the required {@link MetadataClient}
      *
@@ -114,13 +114,13 @@ public class MetadataClientProvider implements MetadataProvider {
     public MetadataClientProvider(MetadataClient client) {
         this(client, DEFAULT_FEED_ID_CACHE_DURATION_SEC, TimeUnit.SECONDS, DEFAULT_FEED_ID_CACHE_SIZE);
     }
-    
+
     /**
      * Constructor creates a MetadataClientProvider with the required {@link MetadataClient}
      *
-     * @param client the MetadataClient will be used to connect with the Metadata store
+     * @param client              the MetadataClient will be used to connect with the Metadata store
      * @param feedIdCacheDuration the expiration of cached feed IDs since they were last accessed
-     * @param unit the time units of the feed ID cache duration
+     * @param unit                the time units of the feed ID cache duration
      */
     public MetadataClientProvider(MetadataClient client, long feedIdCacheDuration, TimeUnit unit) {
         this(client, feedIdCacheDuration, unit, DEFAULT_FEED_ID_CACHE_SIZE);
@@ -129,24 +129,24 @@ public class MetadataClientProvider implements MetadataProvider {
     /**
      * Constructor creates a MetadataClientProvider with the required {@link MetadataClient}
      *
-     * @param client the MetadataClient will be used to connect with the Metadata store
+     * @param client              the MetadataClient will be used to connect with the Metadata store
      * @param feedIdCacheDuration the expiration of cached feed IDs since they were last accessed
-     * @param unit the time units of the feed ID cache duration
-     * @param feedIdCacheSize the max size of the feed ID cache.
+     * @param unit                the time units of the feed ID cache duration
+     * @param feedIdCacheSize     the max size of the feed ID cache.
      */
     public MetadataClientProvider(MetadataClient client, long feedIdCacheDuration, TimeUnit unit, int feedIdCacheSize) {
         super();
         this.client = client;
         this.feedIdCache = CacheBuilder.newBuilder()
-                .maximumSize(feedIdCacheSize)
-                .expireAfterAccess(feedIdCacheDuration, unit)
-                .build();
+            .maximumSize(feedIdCacheSize)
+            .expireAfterAccess(feedIdCacheDuration, unit)
+            .build();
     }
 
     @Override
     public String getFeedId(String category, String feedName) {
         final String feedKey = generateFeedKey(category, feedName);
-        
+
         try {
             log.debug("Resolving ID for feed {}/{} from cache", category, feedName);
             return this.feedIdCache.get(feedKey, feedIdSupplier(category, feedName));
@@ -157,7 +157,7 @@ public class MetadataClientProvider implements MetadataProvider {
             log.error("Failed to retrieve ID for feed {}/{}", category, feedName, e.getCause());
             throw new ProcessException("Failed to retrieve feed ID", e);
         }
-   }
+    }
 
     @Override
     public Feed getFeed(@Nonnull String category, @Nonnull String feedName) {
@@ -320,18 +320,23 @@ public class MetadataClientProvider implements MetadataProvider {
     public FeedsForDataHistoryReindex getFeedsForHistoryReindexing() {
         return client.getFeedsForHistoryReindexing();
     }
-    
+
+    @Override
+    public Optional<DataSet> getDataSet(@Nonnull final String id) {
+        return client.getDataSet(id);
+    }
+
     protected void feedRemoved(String feedId, String category, String feedName) {
         final String feedKey = generateFeedKey(category, feedName);
-        
+
         this.feedIdCache.invalidate(feedKey);
     }
-    
+
     private Callable<String> feedIdSupplier(String category, String feedName) {
         return () -> {
             log.debug("Resolving ID for feed {}/{} from metadata server", category, feedName);
             final Feed feed = getFeed(category, feedName);
-            
+
             if (feed != null) {
                 log.debug("Resolving id {} for feed {}/{}", feedName, category, feedName);
                 return feed.getId();

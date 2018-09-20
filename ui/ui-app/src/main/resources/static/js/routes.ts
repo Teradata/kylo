@@ -11,6 +11,7 @@ import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
+import {CatalogRouterModule} from "./feed-mgr/catalog/catalog.module";
 
 'use strict';
 
@@ -712,7 +713,7 @@ class Route {
         $stateProvider.state({
             name: 'catalog.**',
             url: '/catalog',
-            loadChildren: 'feed-mgr/catalog/catalog.module#CatalogModule'
+            loadChildren: 'feed-mgr/catalog/catalog.module#CatalogRouterModule'
         });
 
         $stateProvider.state({

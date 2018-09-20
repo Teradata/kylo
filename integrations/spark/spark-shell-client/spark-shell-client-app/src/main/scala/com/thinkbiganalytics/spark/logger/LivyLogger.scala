@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.spark.logger
 
-import org.apache.log4j.Logger
 import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.Duration
+import org.slf4j.LoggerFactory
 
 
 object LivyLogger {
-  val logger = Logger.getLogger(LivyLogger.getClass)
+  val logger = LoggerFactory.getLogger(LivyLogger.getClass)
 
   final val NUM_NANOS_IN_MILLIS = 1000 * 1000;
 

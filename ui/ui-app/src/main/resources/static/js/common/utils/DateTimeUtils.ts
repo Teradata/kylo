@@ -99,7 +99,7 @@ var DateTimeUtils: any = function ($translate: any): any{
      * @param truncate true to truncate, false to not
      * @return {*}
      */
-    (DateTimeUtils as any).formatMillisAsText = (ms: any,truncate?: any, showMillis?: any)=>{
+    (DateTimeUtils as any).formatMillisAsText = (ms: number,truncate?: boolean, showMillis?: boolean)=>{
         let format = formatMillis(ms);
         if(truncate){
             return showMillis ? format.truncatedMillisStr : format.truncatedStr;
@@ -115,7 +115,7 @@ var DateTimeUtils: any = function ($translate: any): any{
      * @param truncate true to truncate, false to not
      * @return {*} str is time  DD:HH:MM:SS  or truncated to the nearest value
      */
-    (DateTimeUtils as any).formatMillisAsTime =(ms: any,truncate: any, showMillis: any)=>{
+    (DateTimeUtils as any).formatMillisAsTime =(ms: number,truncate: boolean, showMillis: boolean)=>{
         var format = formatMillis(ms);
         if(truncate){
             return showMillis && format.millisOnly ? format.millisStr : format.truncatedTimeFormat;

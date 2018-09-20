@@ -1,12 +1,14 @@
 import {Step} from "../../../model/feed/feed-step.model";
 import {Injectable, TemplateRef} from "@angular/core";
 import {FeedLink} from "./feed-link.model";
-import {Feed} from "../../../model/feed/feed.model";
+import {Feed, LoadMode} from "../../../model/feed/feed.model";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {StateRegistry, StateService} from "@uirouter/angular";
+import {TranslateService} from "@ngx-translate/core";
+import {LINEAGE_LINK, PROFILE_LINK, SETUP_GUIDE_LINK, SETUP_REVIEW_LINK, SLA_LINK, VERSIONS_LINK} from "./feed-link-constants";
 
 
 export class FeedLinkSelectionChangedEvent{
@@ -16,6 +18,7 @@ export class FeedLinkSelectionChangedEvent{
 export class ToolbarActionTemplateChangedEvent{
     constructor(public link:FeedLink,public templateRef:TemplateRef<any>){}
 }
+
 @Injectable()
 export class FeedSideNavService {
 
@@ -33,18 +36,35 @@ export class FeedSideNavService {
 
     private toolbarActionTemplateChangedSubject: Subject<ToolbarActionTemplateChangedEvent>;
 
-    constructor(private stateService:StateService){
+    /**
+     * Static links
+     * @type {FeedLink[]}
+     */
+    public staticFeedLinks:FeedLink[] =[];
+
+    latestSetupGuideLink = FeedLink.newSectionLink(SETUP_GUIDE_LINK, "setup-guide","playlist_add_check",{"loadMode":LoadMode.LATEST});
+
+    deployedSetupGuideLink = FeedLink.newSectionLink(SETUP_REVIEW_LINK, "deployed-setup-guide","playlist_add_check", {"loadMode":LoadMode.DEPLOYED});
+
+
+
+    constructor(private stateService:StateService, private _translateService: TranslateService){
         this.sideNavSelectionChangedSubject = new Subject<FeedLinkSelectionChangedEvent>();
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
 
         this.toolbarActionTemplateChangedSubject = new Subject<ToolbarActionTemplateChangedEvent>();
+        this.staticFeedLinks = [FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',"graphic_eq"),
+            FeedLink.newStaticLink(PROFILE_LINK,"profile","track_changes"),
+            FeedLink.newStaticLink(SLA_LINK,"sla","beenhere"),
+            FeedLink.newStaticLink(VERSIONS_LINK,"version-history","history")];
     }
 
-    feedLinks:FeedLink[];
+    feedLinks:FeedLink[] = [];
 
     selectedLink:FeedLink = null;
 
     toolbarActionTemplateRefMap:{ [key: string]: TemplateRef<any> } = {}
+
 
     subscribeToToolbarActionTemplateChanges(o:PartialObserver<ToolbarActionTemplateChangedEvent>){
         return this.toolbarActionTemplateChangedSubject.subscribe(o);

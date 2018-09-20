@@ -20,6 +20,7 @@ import {SourceTableSchema} from "./feed-source-table-schema.model";
 import {Step} from "./feed-step.model";
 import {FeedTableDefinition} from "./feed-table-definition.model";
 import {FeedTableSchema} from "./feed-table-schema.model";
+import {EntityVersion} from "../entity-version.model";
 
 
 export interface TableOptions {
@@ -38,7 +39,7 @@ export interface FeedSchedule {
 }
 
 export enum FeedMode {
-    DRAFT = "DRAFT", COMPLETE = "COMPLETE"
+    DRAFT="DRAFT", DEPLOYED="DEPLOYED"
 }
 
 export enum FeedState {
@@ -50,7 +51,12 @@ export enum FeedTemplateType {
     DEFINE_TABLE = "DEFINE_TABLE", DATA_TRANSFORMATION = "DATA_TRANSFORMATION", SIMPLE_FEED = "SIMPLE_FEED"
 }
 
-export class Feed implements KyloObject {
+export enum LoadMode {
+    LATEST="LATEST",DEPLOYED="DEPLOYED",DRAFT="DRAFT"
+}
+
+
+export class Feed  implements KyloObject{
 
 
     public static OBJECT_TYPE: string = 'Feed'
@@ -93,9 +99,11 @@ export class Feed implements KyloObject {
     template: any = null;
 
     state: FeedState; //NEW, ENABLED, DISABLED
-    mode: FeedMode; //DRAFT or COMPLETE
+    mode: FeedMode; //DRAFT or DEPLOYED
 
     updateDate: Date;
+
+    createdDate:Date;
     /**
      * The Feed ID
      */
@@ -305,6 +313,16 @@ export class Feed implements KyloObject {
      */
     versionId: string;
 
+    /**
+     * The version that is deployed for this feed
+     * This will be null if this.mode != DRAFT
+     */
+    deployedVersion:EntityVersion
+
+    /**
+     * if we are viewing a deployed versoin and it has a draft
+     */
+    loadMode:LoadMode;
 
     public constructor(init?: Partial<Feed>) {
         this.initialize();
@@ -331,6 +349,18 @@ export class Feed implements KyloObject {
         this.userInterfaceId = _.uniqueId("feed-");
     }
 
+    getFullName(){
+        return this.category.systemName+"."+this.systemFeedName;
+    }
+
+    getFeedNameAndVersion(){
+        if(this.isDraft()){
+            return this.feedName+" - DRAFT";
+        }
+        else {
+            return this.feedName + "- v"+this.versionName;
+        }
+    }
     updateNonNullFields(model: any) {
         let keys = Object.keys(model);
         let obj = {}
@@ -383,13 +413,23 @@ export class Feed implements KyloObject {
             },
             uiState: {}
         };
+        this.loadMode = LoadMode.LATEST;
     }
 
     isNew() {
         return this.id == undefined;
     }
 
-    isDraft() {
+
+    /**
+     * Does this draft feed have a deployed version
+     * @return {boolean}
+     */
+    hasBeenDeployed(){
+        return !this.isDraft() || (this.isDraft() && this.deployedVersion != undefined);
+    }
+
+    isDraft(){
         return this.mode == "DRAFT"
     }
 
@@ -449,6 +489,15 @@ export class Feed implements KyloObject {
         let complete = true;
         this.steps.forEach(step => complete = complete && step.complete);
         return complete;
+    }
+
+    /**
+     * Is the feed editable
+     * Does the user have access to edit and make sure its not a 'deployed' feed
+     * @return {boolean}
+     */
+    canEdit(){
+        return this.allowEdit && this.loadMode != LoadMode.DEPLOYED;
     }
 
     /**
@@ -588,13 +637,18 @@ export class Feed implements KyloObject {
             if (copy.table.sourceTableSchema == undefined) {
                 copy.table.sourceTableSchema = new SourceTableSchema();
             }
-            //only set the sourceFields if its the first time creating this feed
-            if (copy.id == null) {
-                copy.table.sourceTableSchema.fields = sourceFields;
-                copy.table.feedTableSchema.fields = feedFields;
-            }
+
             if (copy.table.feedTableSchema == undefined) {
                 copy.table.feedTableSchema = new FeedTableSchema();
+            }
+
+            //ensure the source and feed tables match those defined by this feed
+            if (copy.table.sourceTableSchema.fields.length ==0 && sourceFields.length != 0 ) {
+                copy.table.sourceTableSchema.fields = sourceFields;
+            }
+
+            if (copy.table.feedTableSchema.fields.length ==0 && feedFields.length != 0 ) {
+                copy.table.feedTableSchema.fields = feedFields;
             }
 
             if (copy.registeredTemplate) {

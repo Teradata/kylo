@@ -2,3 +2,8 @@ export const FEED_DEFINITION_STATE_NAME :string = "feed-definition";
 
 export const FEED_DEFINITION_SECTION_STATE_NAME :string = FEED_DEFINITION_STATE_NAME+".section"
 
+export const FEED_DEFINITION_SUMMARY_STATE_NAME :string = FEED_DEFINITION_STATE_NAME+".summary"
+
+export const FEED_OVERVIEW_STATE_NAME :string = FEED_DEFINITION_SUMMARY_STATE_NAME+".overview"
+export const FEED_SETUP_GUIDE_STATE_NAME :string = FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide"
+

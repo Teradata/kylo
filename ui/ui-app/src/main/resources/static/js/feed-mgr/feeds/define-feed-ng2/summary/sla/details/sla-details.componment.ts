@@ -1,6 +1,6 @@
 import {Component, Injector, Input, OnInit, ViewContainerRef} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import * as _ from 'underscore';
 import {Sla} from '../sla.componment';
 import {Feed, FeedState} from '../../../../../model/feed/feed.model';
@@ -194,7 +194,7 @@ export class SlaDetailsComponent implements OnInit {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
             this.snackBar.open(this.labelSavedSla, this.labelOk, { duration: 3000 });
-            this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
+            this.state.go(FEED_DEFINITION_STATE_NAME+".sla");
         }, function () {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
@@ -203,7 +203,7 @@ export class SlaDetailsComponent implements OnInit {
     }
 
     onCancelSaveSla(): void {
-        this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
+        this.state.go(FEED_DEFINITION_STATE_NAME+".sla");
     }
 
     onDeleteSla(): void {

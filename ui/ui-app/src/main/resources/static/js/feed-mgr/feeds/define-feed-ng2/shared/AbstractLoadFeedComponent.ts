@@ -1,13 +1,14 @@
-import {OnInit, Input, OnDestroy} from "@angular/core";
+import {OnInit, Input, OnDestroy, Output, EventEmitter} from "@angular/core";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {Observable} from "rxjs/Observable";
-import {Feed} from "../../../model/feed/feed.model";
+import {Feed, LoadMode} from "../../../model/feed/feed.model";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedSideNavService} from "./feed-side-nav.service";
 import {ISubscription} from "rxjs/Subscription";
+import "rxjs/add/observable/of";
 
 
 export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
@@ -16,7 +17,17 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
     public loadingFeed:boolean;
 
-    public feed: Feed;
+    @Input()
+    public feed?:Feed;
+
+    /**
+     * Should we load the
+     */
+    @Input()
+    loadMode?:LoadMode;
+
+    @Output()
+    public feedChange = new EventEmitter<Feed>()
 
     public feedId: string;
 
@@ -34,8 +45,11 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     }
     ngOnInit(){
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.initializeFeed(this.feedId);
-        this.init();
+        this.loadMode = this.stateParams ? this.stateParams.loadMode : LoadMode.LATEST;
+        this.initializeFeed(this.feedId).subscribe((feed:any) => {
+            this.init();
+        });
+
     }
 
     ngOnDestroy(){
@@ -56,21 +70,25 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
     onFeedEditStateChange(event:FeedEditStateChangeEvent){
         console.log("FEED STATE CHANGED!!!!",event)
-        this.feed.readonly = event.readonly;
-        this.feed.allowEdit = event.allowEdit;
+        if(this.feed) {
+            this.feed.readonly = event.readonly;
+            this.feed.allowEdit = event.allowEdit;
+            this.feedChange.emit(this.feed)
+        }
     }
 
 
 
     private loadFeed(feedId:string) :Observable<Feed>{
         this.registerLoading();
-      let observable = this.feedLoadingService.loadFeed(feedId);
+      let observable = this.feedLoadingService.loadFeed(feedId, this.loadMode,false);
       observable.subscribe((feedModel:Feed) => {
             this.feed = feedModel;
             this._setFeedState();
             this.onFeedLoaded(this.feed);
             this.loadingFeed = false;
             this.resolveLoading();
+            this.feedChange.emit(this.feed)
         },(error:any) =>{
           this.resolveLoading();
       });
@@ -89,11 +107,11 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     private _setFeedState(){
          if(this.feed.isNew()){
             //make editable if this is a new feed
-            this.feed.readonly = false;
+            this.defineFeedService.markFeedAsEditable();
         }
     }
 
-    initializeFeed(feedId:string){
+    initializeFeed(feedId:string):Observable<any>{
 
         let linkName =this.getLinkName();
         if(linkName && linkName != ''){
@@ -102,19 +120,23 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         }
         if(this.feed == undefined) {
             let feed = this.defineFeedService.getFeed();
-            if ((feed && feedId && feed.id != feedId) || (feed == undefined && feedId != undefined)) {
-                this.loadFeed(feedId);
+
+            if((feed && feedId && (feed.id != feedId || feed.loadMode !=this.loadMode))|| (feed == undefined && feedId != undefined)) {
+               return this.loadFeed(feedId);
             }
             else if( feed != undefined){
                 this.feed = feed;
                 this._setFeedState();
+                return Observable.of(this.feed)
             }
             else {
                 this.stateService.go(FEED_DEFINITION_STATE_NAME+ ".select-template")
+                return Observable.of({})
             }
         }
         else {
             this._setFeedState();
+            return Observable.of(this.feed)
         }
     }
 

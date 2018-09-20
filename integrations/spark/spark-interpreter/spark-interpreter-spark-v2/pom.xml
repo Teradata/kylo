@@ -24,6 +24,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-spark-v2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-scala-${scala.binary.version}</artifactId>
       <version>${project.version}</version>

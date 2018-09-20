@@ -7,6 +7,7 @@ import {FeedSideNavService} from "../../shared/feed-side-nav.service";
 import * as _ from "underscore";
 import * as angular from 'angular';
 import {HttpClient} from "@angular/common/http";
+import {LINEAGE_LINK} from "../../shared/feed-link-constants";
 
 @Component({
     selector: "feed-lineage",
@@ -17,7 +18,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     static LOADER = "FeedLineage.LOADER";
 
-    static LINK_NAME = "Lineage"
+    static LINK_NAME = LINEAGE_LINK;
 
     restUrlService: any;
     utils: any;
@@ -328,6 +329,12 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         var label = "";
         if (angular.isString(ds.datasourceType)) {
             label = this.utils.endsWith(ds.datasourceType.toLowerCase(), "datasource") ? ds.datasourceType.substring(0, ds.datasourceType.toLowerCase().lastIndexOf("datasource")) : ds.datasourceType;
+            if(label && label.toLowerCase() == 'database'){
+                //attempt to find the name of the database in the properties
+                if(ds.properties && ds.properties['Database Connection']){
+                    label = ds.properties['Database Connection'];
+                }
+            }
         } else if (angular.isString(ds.type)) {
             label = ds.type;
         } else {
@@ -344,6 +351,10 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
             if (processedDatasource == undefined) {
                 var ds = this.feedLineage.datasourceMap[dsId];
+                //skip JdbcDatasource entries
+                if(ds['@type'] && ds['@type'] == 'JdbcDatasource'){
+                    return;
+                }
                 this.assignDatasourceProperties(ds);
                 //console.log('building datasource',ds.name)
                 if (this.isDetailedGraph()) {

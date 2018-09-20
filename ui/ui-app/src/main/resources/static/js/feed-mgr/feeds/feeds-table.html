@@ -39,22 +39,16 @@
                         pagination-id="feeds"
                         current-page="vm.currentPage">
             <div layout="row" layout-fill>
-              <div flex="30" layout="column" class="item-column md-list-item-text pointer" ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
+              <div flex="30" layout="column" class="item-column md-list-item-text pointer" ng-click="vm.feedDefinition($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
                                      <span class="item-title" title="{{feed.feedName}} - {{feed.state}}" ng-class="{'disabled':feed.state == 'DISABLED'}">
                                       {{feed.feedName}}
                                    </span>
                                    <span class="column-title column-title-bottom" ng-class="{'disabled':feed.state == 'DISABLED'}">
-                                     <span ng-if="feed.state == 'DISABLED' && feed.mode != 'DRAFT'">
+                                     <span ng-if="feed.state == 'DISABLED'">
                                           <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs>
                                           </ng-md-icon>
                                      </span>
-
-                                     <span ng-if="feed.state == 'DISABLED' && feed.mode == 'DRAFT'">
-                                          <ng-md-icon icon="{{feed.draftIcon}}" size="20" hide-xs>
-                                          </ng-md-icon>
-                                       </span>
-
-                                     {{"feeds.feed-table.feed-name" | translate}}<span ng-if=" feed.mode == 'DRAFT'"> {{"views.feed-details.draft" | translate}}</span>
+                                     {{"feeds.feed-table.feed-name" | translate}}
                                    </span>
 
               </div>
@@ -72,8 +66,8 @@
                                    </span>
                 <span class="column-title column-title-bottom">{{"feeds.feed-table.type" | translate}}</span>
               </div>
-              <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="feed.mode != 'DRAFT'" ng-click="vm.feedDefinition($event,feed)">
-                New Stepper
+              <div flex="15" layout="column" class="item-column md-list-item-text"  ng-click="vm.feedDetails($event,feed)" >
+                Old Stepper
               </div>
               <!--
               <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
@@ -113,7 +107,6 @@
             <tr md-row>
               <th md-column name="Feed" md-order-by="feedName">{{"feeds.feed-table.feed-name" | translate}}</th>
               <th md-column name="State" md-order-by="state">{{"feeds.feed-table.state" | translate}}</th>
-              <th md-column name="Mode" md-order-by="mode">{{"feeds.feed-table.mode" | translate}}</th>
               <th md-column name="Category" md-order-by="category.name">{{"feeds.feed-table.category" | translate}}</th>
               <th md-column name="Type">{{"feeds.feed-table.type" | translate}}</th>
               <th md-column name="Last Updated" md-order-by="updateDate">{{"feeds.feed-table.last-updated" | translate}}</th>
@@ -122,7 +115,7 @@
             <tbody md-body>
             <tr md-row
                 ng-repeat="feed in vm.feedData"
-                ng-click="vm.feedDetails($event,feed)">
+                ng-click="vm.feedDefinition($event,feed)">
               <td md-cell>{{feed.feedName}}</td>
               <td md-cell>
                 <span ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
@@ -130,15 +123,6 @@
                    </ng-md-icon>
                    <span>{{feed.state}}</span>
                 </span>
-              </td>
-              <td md-cell>
-                <div>
-                  <span ng-if="feed.mode == 'DRAFT'">
-                   <ng-md-icon icon="{{feed.draftIcon}}" size="20">
-                   </ng-md-icon>
-                  </span>
-                   <span>{{feed.mode}}</span></span>
-                </div>
               </td>
               <td md-cell>
                 <ng-md-icon icon="{{feed.category.icon}}" size="20" ng-style="{'fill':feed.category.iconColor}">

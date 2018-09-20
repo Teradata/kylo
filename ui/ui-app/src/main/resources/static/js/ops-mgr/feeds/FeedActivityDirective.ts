@@ -163,7 +163,7 @@ export class controller implements ng.IComponentController{
             var finallyFn = ()=> {
             }
 
-            this.$http.get(this.OpsManagerFeedService.DAILY_STATUS_COUNT_URL(this.feedName),{params:{"period":this.interval+this.datePart}}).then( successFn, errorFn);
+            this.$http.get(this.OpsManagerFeedService.FEED_DAILY_STATUS_COUNT_URL(this.feedName),{params:{"period":this.interval+this.datePart}}).then( successFn, errorFn);
         }
 }
 
