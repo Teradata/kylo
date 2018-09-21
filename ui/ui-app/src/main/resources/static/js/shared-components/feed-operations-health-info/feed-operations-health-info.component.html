@@ -34,10 +34,10 @@
         <h4 mat-line>Unavailable</h4>
         <p mat-line >Feed Health</p>
       </mat-list-item>
+      <mat-divider></mat-divider>
 
-      <mat-list-item *ngIf="feedHealthAvailable">
+      <mat-list-item *ngIf="feedHealthAvailable && feedHealth && feedHealth.healthText">
         <mat-icon mat-list-icon *ngIf="feedHealth.icon">{{feedHealth.icon}}</mat-icon>
-
       <h4 mat-line>{{feedHealth.healthText}}</h4>
       <p mat-line >Feed Health</p>
       </mat-list-item>

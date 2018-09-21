@@ -1,10 +1,10 @@
 import {HttpClient} from "@angular/common/http";
-import {OperationsRestUrlConstants} from "./operations-rest-url-constants";
+import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
 import {Injectable} from "@angular/core";
 import * as _ from "underscore"
 
 @Injectable()
-export  default class OpsManagerJobService{
+export  class OpsManagerJobService {
     constructor(private http:HttpClient){ }
         //ALL_JOBS_URL = OperationsRestUrlConstants.ALL_JOBS_URL;
         JOBS_QUERY_URL = OperationsRestUrlConstants.JOBS_QUERY_URL;

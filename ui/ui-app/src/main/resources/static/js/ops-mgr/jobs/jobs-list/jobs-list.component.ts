@@ -1,13 +1,12 @@
 import * as _ from 'underscore';
-import OpsManagerJobService from "../../../services/ops-manager-jobs.service";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import TabService from "../../../services/tab.service";
 //import AccessControlService from "../../../services/AccessControlService";
 import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import BroadcastService from "../../../services/broadcast-service";
-import StateService from "../../../services/StateService";
+//import StateService from "../../../services/StateService";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
-import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
 import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from "@covalent/core/data-table";
 import { IPageChangeEvent } from "@covalent/core/paging";
 import { Subject } from "rxjs/Subject";
@@ -21,6 +20,11 @@ import {OperationsRestUrlConstants} from "../../../services/operations-rest-url-
 import IconUtil from "../../../services/icon-util";
 import {DateTimeService} from "../../../common/utils/date-time.service";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
+import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
+import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
+import {TdDialogService} from "@covalent/core/dialogs";
+import {AbandonAllJobsDialogComponent} from "./abandon-all-jobs-dialog.component";
+import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialog.component";
 
 
 
@@ -40,9 +44,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     tabs: any;
     tabMetadata: any;
     sortOptions: any;
-    abandonAllMenuOption: any;
-    additionalMenuOptions: any;
-    selectedAdditionalMenuOptionVar: any;
     loaded: boolean =false;
     total: number = 0;
     page: number = 1;
@@ -50,9 +51,9 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     activeJobRequests: Subscription[] = [];
 
-    filterHelpOperators: any[];
-    filterHelpFields: any[];
-    filterHelpExamples: any[];
+
+    abandonAllDisabled:boolean = false;
+
 
 
     @Input() filterJob: any;
@@ -60,7 +61,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     @Input() tab: any;
     @Input() cardTitle: any;
     @Input() refreshIntervalTime: any;
-    @Input() feed: any;
+    @Input() feed: FeedSummary;
     @Input() feedFilter: string;
     @Input() hideFeedColumn: any = false;
     @Input() pageName: any;
@@ -80,10 +81,10 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     ];
 
     constructor(private http: HttpClient,
-                private dialog: MatDialog,
+                private _dialogService: TdDialogService,
                 private snackBar: MatSnackBar,
                 private opsManagerJobService: OpsManagerJobService,
-               private tableOptionsService: DefaultTableOptionsService,
+               private opsManagerFeedService:OpsManagerFeedService,
                 private paginationDataService: DefaultPaginationDataService,
                private _dateTimeService:DateTimeService,
                // private StateService: StateService,
@@ -95,6 +96,17 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         super(_dataTableService);
     }
 
+    fetchFeedHealth(){
+        if(this.feedFilter) {
+            this.opsManagerFeedService.getFeedHealth(this.feedFilter).subscribe((response: FeedSummary) => {
+                if (response) {
+                    this.feed = response;
+                    this.abandonAllDisabled = this.feed.healthText != "UNHEALTHY"
+                }
+            });
+        }
+    }
+
     ngOnInit() {
 
         if(this.feedFilter){
@@ -103,6 +115,9 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
             if(feedName){
                 feedName.hidden = true;
             }
+        }
+        if(this.feedFilter && !this.feed) {
+           this.fetchFeedHealth();
         }
 
 
@@ -119,11 +134,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
         this.tabMetadata = this.tabService.metadata(this.pageName);
 
-        this.abandonAllMenuOption = {};
-
-        this.additionalMenuOptions = this.loadAdditionalMenuOptions();
-
-        this.selectedAdditionalMenuOptionVar = this.selectedAdditionalMenuOption;
 
         /**
          * The filter supplied in the page
@@ -139,28 +149,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         }
         this.loadJobs(true);
 
-        this.filterHelpOperators = [];
-        this.filterHelpFields = []
-        this.filterHelpExamples = [];
-        this.filterHelpOperators.push(this.newHelpItem("Equals", "=="));
-        this.filterHelpOperators.push(this.newHelpItem("Like condition", "=~"));
-        this.filterHelpOperators.push(this.newHelpItem("In Clause", "Comma separated surrounded with quote    ==\"value1,value2\"   "));
-        this.filterHelpOperators.push(this.newHelpItem("Greater than, less than", ">,>=,<,<="));
-        this.filterHelpOperators.push(this.newHelpItem("Multiple Filters", "Filers separated by a comma    field1==value,field2==value  "));
 
-        this.filterHelpFields.push(this.newHelpItem("Filter on a feed name", "feed"));
-        this.filterHelpFields.push(this.newHelpItem("Filter on a job name", "job"));
-        this.filterHelpFields.push(this.newHelpItem("Filter on a job start time", "jobStartTime"));
-        this.filterHelpFields.push(this.newHelpItem("Filter on a job end time", "jobEndTime"));
-        this.filterHelpFields.push(this.newHelpItem("Filter on a job id", "executionId"));
-        this.filterHelpFields.push(this.newHelpItem("Start time date part filters", "startYear,startMonth,startDay"));
-        this.filterHelpFields.push(this.newHelpItem("End time date part filters", "endYear,endMonth,endDay"));
-
-        this.filterHelpExamples.push(this.newHelpItem("Find job names that equal 'my.job1' ", "job==my.job1"));
-        this.filterHelpExamples.push(this.newHelpItem("Find job names starting with 'my' ", "job=~my"));
-        this.filterHelpExamples.push(this.newHelpItem("Find jobs for 'my.job1' or 'my.job2' ", "job==\"my.job1,my.job2\""));
-        this.filterHelpExamples.push(this.newHelpItem("Find 'my.job1' starting in 2017 ", "job==my.job1,startYear==2017"));
-        this.filterHelpExamples.push(this.newHelpItem("Find jobs that started on February 1st 2017", "startTime>=2017-02-01,startTime<2017-02-02"));
 
 /*
         // Fetch allowed permissions
@@ -198,71 +187,28 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         return this.loadJobs(true);
     };
 
-    /**
-     * Loads the additional menu options that appear in the more_vert options
-     * @returns {Array}
-     */
-    loadAdditionalMenuOptions() {
-        var options = [];
-        if (this.feed) {
-            //only show the abandon all on the feeds page that are unhealthy
-            options.push(this.tableOptionsService.newOption("Actions", 'actions_header', true, false))
-            options.push(this.tableOptionsService.newOption("Abandon All", 'abandon_all', false, false));
-        }
-        return options;
-    }
 
 
-    selectedAdditionalMenuOption(item: any) {
-        if (item.type == 'abandon_all') {
+    abandonAllJobs() {
 
-            // this.$injector.get("$mdMenu").hide();
-
-            let dialogRef = this.dialog.open(abandonAllDialogController, {
+          let dialog =  this._dialogService.open(AbandonAllJobsDialogComponent, {
                 data: { feedName: this.feedFilter },
                 panelClass: "full-screen-dialog"
             });
-
-            this.opsManagerJobService.abandonAllJobs(this.feedFilter, () => {
-                this.dialog.closeAll();
-                this.broadcastService.notify('ABANDONED_ALL_JOBS', { feed: this.feedFilter });
-                this.snackBar.open("Abandoned all failed jobs for the feed", "OK", {
-                    duration: 3000
-                });
-            }, (err: any) => {
-                this.dialog.closeAll();
-                this.snackBar.open("Unable to abandonal all jobs for the feed.  A unexpected error occurred.", "OK", {
-                    duration: 3000
-                });
-            })
-        }
-    }
-
-    /**
-     *
-     * @param options
-     */
-    onOptionsMenuOpen(options: any) {
-        if (this.feed) {
-            var abandonOption = _.find(options.additionalOptions, (option: any) => {
-                return option.type == 'abandon_all';
+        this.opsManagerJobService.abandonAllJobs(this.feedFilter, () => {
+            dialog.close();
+            this.broadcastService.notify('ABANDONED_ALL_JOBS', { feed: this.feedFilter });
+            this.snackBar.open("Abandoned all failed jobs for the feed", "OK", {
+                duration: 3000
             });
-            if (abandonOption != null && abandonOption != undefined) {
-                abandonOption.disabled = this.feed.healthText != 'UNHEALTHY';
-            }
-        }
-    }
+            this.fetchFeedHealth();
+        }, (err: any) => {
+            dialog.close();
+            this.snackBar.open("Unable to abandonal all jobs for the feed.  A unexpected error occurred.", "OK", {
+                duration: 3000
+            });
+        })
 
-    /**
-     * Called when a user Clicks on a table Option
-     * @param option
-     */
-   selectedTableOption(option: any) {
-        var sortString = this.tableOptionsService.toSortString(option);
-        this.paginationDataService.sort(this.pageName, sortString);
-        var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
-        this.tableOptionsService.setSortOption(this.pageName, sortString);
-        this.loadJobs(true);
 
     }
 
@@ -597,19 +543,15 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         })
     };
 
-    newHelpItem(label: any, description: any) {
-        return { displayName: label, description: description };
-    }
+
 
     showFilterHelpPanel(ev: any) {
 
         var position = $(".filter-help-button").position();
 
-        let dialogRef = this.dialog.open(JobFilterHelpPanelMenuCtrl, {
+        let dialogRef = this._dialogService.open(JobsFilterHelpPanelDialogComponent, {
             data: {
-                filterHelpExamples: this.filterHelpExamples,
-                filterHelpOperators: this.filterHelpOperators,
-                filterHelpFields: this.filterHelpFields
+
             },
             panelClass: "filter-help",
             position: {
@@ -624,85 +566,3 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     };
 }
 
-@Component({
-    selector: 'job-filter-help-panel-menu-ctrl',
-    templateUrl: 'js/ops-mgr/jobs/jobs-filter-help-template.html',
-    styles: [`
-        .filter-help-backdrop {
-            background: transparent;
-        }
-    `]
-})
-export class JobFilterHelpPanelMenuCtrl implements ng.IComponentController {
-
-    filterHelpExamples: any[];
-    filterHelpOperators: any[];
-    filterHelpFields: any[];
-
-    ngOnInit() {
-        this.filterHelpExamples = this.data.filterHelpExamples,
-            this.filterHelpOperators = this.data.filterHelpOperators,
-            this.filterHelpFields = this.data.filterHelpFields
-    }
-    constructor(private dialogRef: MatDialogRef<abandonAllDialogController>,
-                @Inject(MAT_DIALOG_DATA) private data: any) { }
-}
-/**
- * The Controller used for the abandon all
- */
-@Component({
-    templateUrl: 'js/ops-mgr/jobs/jobs-list/abandon-all-jobs-dialog.component.html'
-})
-export class abandonAllDialogController implements ng.IComponentController {
-    counter: number;
-    index: number;
-    messages: string[];
-    messageInterval: number;
-
-    feedName: string;
-    message: string;
-
-    ngOnInit() {
-        this.feedName = this.data.feedName;
-        this.message = "Abandoning the failed jobs for " + this.feedName;
-        this.counter = 0;
-        this.index = 0;
-        this.messages = [];
-        this.messages.push("Still working. Abandoning the failed jobs for " + this.feedName);
-        this.messages.push("Hang tight. Still working.");
-        this.messages.push("Just a little while longer.");
-        this.messages.push("Should be done soon.");
-        this.messages.push("Still working.  Almost done.");
-        this.messages.push("It's taking longer than expected.  Should be done soon.");
-        this.messages.push("It's taking longer than expected.  Still working...");
-        this.messageInterval = setTimeout(() => { this.updateMessage(); }, 5000);
-    }
-
-    constructor(private dialogRef: MatDialogRef<abandonAllDialogController>,
-                @Inject(MAT_DIALOG_DATA) private data: any) { }
-
-    hide() {
-        this.cancelMessageInterval();
-        this.dialogRef.close();
-    };
-
-    cancel() {
-        this.cancelMessageInterval();
-        this.dialogRef.close();
-    };
-
-    updateMessage() {
-        this.counter++;
-        var len = this.messages.length;
-        if (this.counter % 2 == 0 && this.counter > 2) {
-            this.index = this.index < (len - 1) ? this.index + 1 : this.index;
-        }
-        this.message = this.messages[this.index];
-    }
-
-    cancelMessageInterval() {
-        if (this.messageInterval != null) {
-            clearInterval(this.messageInterval);
-        }
-    }
-}

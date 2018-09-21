@@ -4,14 +4,12 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
-import {Sort} from "@angular/material/sort";
 import {moduleName} from './module-name';
-import {Injectable} from "@angular/core";
 import {DefaultPaginationDataService} from "./PaginationDataService";
 
-@Injectable()
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
     sortOptions:Common.Map<SortOption[]> = {};
+    static $inject = ["PaginationDataService"]
     constructor(private paginationDataService:DefaultPaginationDataService) {}
    
     newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string):SortOption[]{
@@ -161,3 +159,4 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         return returnedSortOption;
     }
 }
+angular.module(moduleName).service('TableOptionsService', DefaultTableOptionsService);

@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import {OperationsRestUrlConstants} from "../../../services/operations-rest-url-constants";
 
 @Injectable()
-export  class ProvenanceEventStatsService{
+export  class ProvenanceEventStatsServiceNg2{
     loading : boolean = false;
     constructor(
         private http : HttpClient

@@ -2,7 +2,7 @@ import {FactoryProvider} from "@angular/core";
 import * as angular from "angular";
 
 import "./module"; // ensure module is loaded
-import "./module-require";
+//import "./module-require";
 import AddButtonService from "./AddButtonService";
 import BroadcastService from "./broadcast-service";
 import {NotificationService} from "./notification.service";

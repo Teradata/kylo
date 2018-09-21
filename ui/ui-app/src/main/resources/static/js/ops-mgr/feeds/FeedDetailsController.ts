@@ -1,8 +1,8 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import * as _ from "underscore";
-import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
-import OpsManagerJobService from "../services/OpsManagerJobService";
+import {OpsManagerFeedService} from "../services/ops-manager-feed.service";
+import {OpsManagerJobService} from "../services/ops-manager-jobs.service";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 
 export class controller implements ng.IComponentController{

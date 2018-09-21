@@ -1,0 +1,84 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<div mat-dialog class="filter-help"
+     aria-label="Filter help"
+     role="listbox" layout-fill>
+  <mat-dialog-content style="max-height:400px;overflow-y:auto;overflow-x:hidden;padding:0;margin:0;" layout="column">
+    <mat-list>
+      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
+        <span class="card-sub-header">Filter Help</span>
+      </mat-list-item>
+
+      <mat-divider></mat-divider>
+      <div class="layout-padding-left-right  with-padding">
+        <span class="card-sub-header">Filter Syntax</span>
+      </div>
+
+      <div class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
+        <span>{{ '{'+'field'+'}' + '{'+'operator'+'}' + '{'+'value'+'}' }}</span>
+
+        <span style="padding:5px;"></span>
+        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
+        <span style="padding:5px;"></span>
+        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
+      </div>
+
+
+      <mat-divider></mat-divider>
+      <div class="layout-padding-left-right  with-padding">
+        <span class="card-sub-header">Filter Fields</span>
+      </div>
+      <div class="filter-help-item layout-padding-left-right with-padding"
+           tabindex="-1"
+           role="option"
+           *ngFor="let item of filterHelpFields" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
+        <span>{{ item.description}}</span>
+      </div>
+      <mat-divider></mat-divider>
+
+      <div class="layout-padding-left-right with-padding">
+        <span class="card-sub-header">Filter Operators</span>
+      </div>
+      <div class="filter-help-item layout-padding-left-right  with-padding"
+           tabindex="-1"
+           role="option"
+           *ngFor="let item of filterHelpOperators" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
+        <span>{{ item.description}}</span>
+      </div>
+      <mat-divider></mat-divider>
+
+      <div class="layout-padding-left-right  with-padding">
+        <span class="card-sub-header">Filter Examples</span>
+      </div>
+      <div class="filter-help-item layout-padding-left-right  with-padding"
+           tabindex="-1"
+           role="option"
+           *ngFor="let item of filterHelpExamples" layout="column" layout-align="start start">
+        <mat-hint>{{item.displayName}}</mat-hint>
+        <span>{{ item.description}}</span>
+      </div>
+
+    </mat-list>
+
+  </mat-dialog-content>
+</div>

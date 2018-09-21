@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import "pascalprecht.translate";
+import {OpsManagerChartJobService} from "../services/ops-manager-chart-job.service";
 declare const d3: any;
 
 export class controller implements ng.IComponentController{
@@ -26,7 +27,7 @@ export class controller implements ng.IComponentController{
                 private TableOptionsService: any,
                 private PaginationDataService: any,
                 private StateService: any,
-                private ChartJobStatusService: any,
+                private OpsManagerChartJobService: any,
                 private BroadcastService: any, 
                 private $filter: any){
 
@@ -129,7 +130,7 @@ export class controller implements ng.IComponentController{
         
 
         createChartData=(responseData: any)=>{
-                this.chartData = this.ChartJobStatusService.toChartData(responseData);
+                this.chartData = this.OpsManagerChartJobService.toChartData(responseData);
 
         }
 
@@ -170,7 +171,7 @@ export class controller implements ng.IComponentController{
   angular.module(moduleName)
   .controller('FeedActivityController', ["$scope","$http","$interval","$timeout","$q","Utils",
   "OpsManagerFeedService","TableOptionsService","PaginationDataService","StateService",
-  "ChartJobStatusService","BroadcastService","$filter",controller]);
+  "OpsManagerChartJobService","BroadcastService","$filter",controller]);
 
     angular.module(moduleName)
         .directive('tbaFeedActivity', [ (Utils: any)=> {

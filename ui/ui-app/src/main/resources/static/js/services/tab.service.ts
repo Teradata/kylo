@@ -1,13 +1,13 @@
 import * as _ from 'underscore';
 import { DefaultPaginationDataService } from "./PaginationDataService";
-import { Injectable } from "@angular/core";
 import { ObjectUtils } from '../common/utils/object-utils';
+import {Injectable} from "@angular/core";
 
 @Injectable()
 export default class TabService {
     tabs: any = {};
     tabMetadata: any = {};
-
+    static $inject = ["PaginationDataService"]
     constructor(private paginationDataService: DefaultPaginationDataService) {
 
     }
@@ -152,3 +152,4 @@ export default class TabService {
         tab.currentPage = currentPage;
     }
 }
+

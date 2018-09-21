@@ -7,7 +7,7 @@ import { HttpClient } from "@angular/common/http";
 import 'd3';
 import 'nvd3';
 import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
-import {ChartJobService} from "../../services/chart-job.service";
+import {OpsManagerChartJobService} from "../../ops-mgr/services/ops-manager-chart-job.service";
 import {Feed} from "../../feed-mgr/model/feed/feed.model";
 import {MatButtonToggleChange} from "@angular/material";
 import {KyloIcons} from "../../kylo-utils/kylo-icons";
@@ -84,7 +84,7 @@ export class FeedJobActivityComponent implements OnInit {
     }
 
     constructor(
-        private chartJobStatusService: ChartJobService,
+        private opsManagerChartJobService: OpsManagerChartJobService,
         private broadcastService: BroadcastService,
         private translate: TranslateService,
         private http: HttpClient) {
@@ -135,7 +135,7 @@ export class FeedJobActivityComponent implements OnInit {
         }
     };
     createChartData(responseData: any) {
-        this.chartData = this.chartJobStatusService.toChartData(responseData);
+        this.chartData = this.opsManagerChartJobService.toChartData(responseData);
 
     };
     query() {

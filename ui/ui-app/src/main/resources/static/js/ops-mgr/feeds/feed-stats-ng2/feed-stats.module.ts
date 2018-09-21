@@ -12,11 +12,11 @@ import {KyloServicesModule} from "../../../services/services.module";
 import {KyloCommonModule} from "../../../common/common.module";
 
 import { NvD3Module } from 'ng2-nvd3';
-import { FeedStatsService } from "./feed-stats.service";
+import {FeedStatsServiceNg2} from "./feed-stats.service";
 import { feedStatsStates } from "./feed-stats.states";
 
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import { FeedStasChartsComponent } from "./feed-stats-charts.component";
+import {FeedStatsChartsComponent} from "./feed-stats-charts.component";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
@@ -29,7 +29,7 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSelectModule} from '@angular/material/select';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatListModule} from '@angular/material/list';
-import {ProvenanceEventStatsService} from "./provenance-event-stats.service";
+import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
 import {FeedStatsComponent} from "./feed-stats.component";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {MatMenuModule} from "@angular/material/menu";
@@ -37,10 +37,10 @@ import {MatMenuModule} from "@angular/material/menu";
 
 @NgModule({
     declarations: [
-        FeedStasChartsComponent,
+        FeedStatsChartsComponent
     ],
     entryComponents: [
-        FeedStasChartsComponent
+       // FeedStasChartsComponent
     ],
     imports: [
         CommonModule,
@@ -67,12 +67,13 @@ import {MatMenuModule} from "@angular/material/menu";
         CovalentDataTableModule
     ],
     exports:[
-        FeedStasChartsComponent
+        FeedStatsChartsComponent
     ],
     //schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers : [{provide: "$injector", useFactory: () => angular.element(document.body).injector()},
-        FeedStatsService,
-        ProvenanceEventStatsService]
+    //{provide: "$injector", useFactory: () => angular.element(document.body).injector()},
+    providers : [
+        FeedStatsServiceNg2,
+        ProvenanceEventStatsServiceNg2]
 })
 export class FeedStatsModule {
     constructor() {

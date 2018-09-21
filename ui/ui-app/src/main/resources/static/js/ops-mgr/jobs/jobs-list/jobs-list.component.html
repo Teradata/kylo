@@ -33,6 +33,17 @@
       <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Filter" (searchDebounce)="search($event)"
                      [showUnderline]="true" fxFlex>
       </td-search-box>
+      <div class="pad-right" *ngIf="feedFilter">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item [disabled]="abandonAllDisabled"  (click)="abandonAllJobs()">
+            <mat-icon>pause_circle_outline</mat-icon>
+            <span >Abandon All</span>
+          </button>
+        </mat-menu>
+      </div>
     </div>
 
 

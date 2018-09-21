@@ -2,11 +2,11 @@
 import * as _ from "underscore";
 import { CloneUtil } from "../../../common/utils/clone-util";
 import {  Injectable } from "@angular/core";
-import {ProvenanceEventStatsService} from "./provenance-event-stats.service";
+import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
 const d3 = require('d3');
 
 @Injectable()
-export class FeedStatsService {
+export class FeedStatsServiceNg2 {
 
     DEFAULT_CHART_FUNCTION: string = 'Average Duration';
     processorStatsFunctionMap: any;
@@ -23,7 +23,7 @@ export class FeedStatsService {
     lastSummaryStats: any[] = [];
     keepLastSummary: number = 20;
 
-    constructor(private provenanceEventStatsService: ProvenanceEventStatsService) {
+    constructor(private provenanceEventStatsService: ProvenanceEventStatsServiceNg2) {
         this.init();
     }
 

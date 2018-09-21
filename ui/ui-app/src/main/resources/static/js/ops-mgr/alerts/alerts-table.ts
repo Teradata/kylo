@@ -5,7 +5,7 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import {DefaultTableOptionsService}  from "../../services/TableOptionsService";
 import StateService from "../../services/StateService";
-import TabService from "../services/TabService";
+import TabService from "../../services/tab.service";
 import {Transition} from "@uirouter/core";
 
 export class AlertsTableController implements ng.IComponentController{

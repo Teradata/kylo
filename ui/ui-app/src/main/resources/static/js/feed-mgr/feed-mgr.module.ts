@@ -68,7 +68,7 @@ import {CatalogDatasetPreviewModule} from "./catalog-dataset-preview/catalog-dat
         hiveServiceProvider,
         visualQueryServiceProvider,
         datasourcesServiceProvider,
-        NiFiService,
+        NiFiService
 
     ]
 })

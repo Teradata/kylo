@@ -1,6 +1,3 @@
-import * as angular from "angular";
-import { Injectable } from "@angular/core";
-
 export default class IconUtil {
 
     constructor() { }

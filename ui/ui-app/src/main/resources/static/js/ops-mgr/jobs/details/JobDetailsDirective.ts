@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "./module-name";
 import 'pascalprecht.translate';
 import * as _ from 'underscore';
-import OpsManagerJobService from "../../services/OpsManagerJobService";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
 
@@ -307,7 +307,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         event.preventDefault();
         var executionId = this.jobData.executionId;
         this.OpsManagerJobService.abandonJob(this.jobData.executionId, {includeSteps: true}, (response: any) => {
-            this.updateJob(executionId, response.data)
+            this.updateJob(executionId, response)
         })
     }
 
@@ -318,7 +318,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
 
         let _fail = ()=>{
             this.OpsManagerJobService.failJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
-                this.updateJob(executionId, response.data);
+                this.updateJob(executionId, response);
             })
         }
 
@@ -335,7 +335,7 @@ export class JobDetailsDirectiveController implements ng.IComponentController {
         event.preventDefault();
         var executionId = this.jobData.executionId;
         this.OpsManagerJobService.restartJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
-                this.updateJob(executionId, response.data);
+                this.updateJob(executionId, response);
             }, (errMsg:any) => {
                 this.addJobErrorMessage(errMsg);
             }

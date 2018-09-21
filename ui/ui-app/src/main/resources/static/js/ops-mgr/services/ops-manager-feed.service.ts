@@ -2,14 +2,13 @@ import * as moment from "moment";
 import * as _ from "underscore";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import {OperationsRestUrlConstants} from "./operations-rest-url-constants";
-import {OperationsFeedUtil} from "./operations-feed-util";
+import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
+import {OpsManagerFeedUtil} from "./ops-manager-feed-util";
 import {ReplaySubject} from "rxjs/ReplaySubject";
-import {TdDialogService} from "@covalent/core/dialogs";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {FeedSummary} from "../feed-mgr/model/feed/feed-summary.model";
+import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {Observable} from "rxjs/Observable";
-import {RestUrlConstants} from "../feed-mgr/services/RestUrlConstants";
+import {RestUrlConstants} from "../../feed-mgr/services/RestUrlConstants";
 
 @Injectable()
 export class OpsManagerFeedService {
@@ -48,7 +47,7 @@ export class OpsManagerFeedService {
     feedHealthyCount: number = 0;
 
     constructor(
-        private http : HttpClient, private _dialogService:TdDialogService, private snackBar: MatSnackBar){
+        private http : HttpClient,private snackBar: MatSnackBar){
 
     }
     emptyFeed () {
@@ -176,18 +175,16 @@ export class OpsManagerFeedService {
         }
     }
 
-    getFeedHealth(feedName:string){
-        let subject = new ReplaySubject(1);
+    getFeedHealth(feedName:string) :Observable<FeedSummary>{
+        let subject = new ReplaySubject<FeedSummary>(1);
 
         var successFn = (response: any)=> {
-            let feedHealth = {};
+            let feedHealth = new FeedSummary({});
             if (response) {
                 //transform the data for UI
-                //this.feedData = response;
-
                 if (response.feedSummary && response.feedSummary.length && response.feedSummary.length >0) {
                      feedHealth = response.feedSummary[0];
-                    OperationsFeedUtil.decorateFeedSummary(feedHealth);
+                    OpsManagerFeedUtil.decorateFeedSummary(feedHealth);
                     feedHealth = feedHealth
                 }
             }
@@ -216,10 +213,7 @@ export class OpsManagerFeedService {
             //no op
 
         },error1 => {
-            this._dialogService.openAlert({
-                title:"Error enabling the feed",
-                message:"The feed could not be enabled."
-            });
+
         });
     return observable;
     }
@@ -230,10 +224,7 @@ export class OpsManagerFeedService {
             //no op
 
         },error1 => {
-            this._dialogService.openAlert({
-                title:"Error disabling the feed",
-                message:"The feed could not be disabled."
-            });
+
         });
         return observable;
     }

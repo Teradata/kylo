@@ -20,6 +20,8 @@ export class FeedSummary {
     updateDate:Date;
     templateName:string;
     templateId:string;
+    healthText?:string;
+
 
     public constructor(init?: Partial<FeedSummary>) {
         this.initialize();

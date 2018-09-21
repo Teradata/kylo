@@ -1,11 +1,11 @@
 import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
 import {Feed} from "../../feed-mgr/model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
-import {OperationsFeedUtil} from "../../services/operations-feed-util";
 import {Input, Output, EventEmitter, Component, OnInit, OnDestroy} from "@angular/core";
-import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
+import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.service";
 import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../kylo-utils/kylo-icons";
+import BroadcastService from "../../services/broadcast-service";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -17,14 +17,17 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
     feed:Feed;
 
     @Output()
-        feedChange = new EventEmitter<Feed>()
+    feedChange = new EventEmitter<Feed>()
+
+    @Output()
+    feedHealthRefreshed = new EventEmitter<FeedSummary>();
 
     feedData:any;
 
     /**
      * final feed health object
      */
-    feedHealth:any = {};
+    feedHealth:FeedSummary = new FeedSummary({});
 
     feedHealthAvailable:boolean;
 
@@ -32,7 +35,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     refreshTime:number = 5000;
 
-    constructor(private opsManagerFeedService:OpsManagerFeedService){}
+    constructor(private opsManagerFeedService:OpsManagerFeedService,   private broadcastService: BroadcastService){
+
+        this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
+    }
 
     feedStateChanging:boolean;
 
@@ -40,9 +46,11 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     getFeedHealth(){
 
-        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response:any) => {
+        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response:FeedSummary) => {
             if(response){
+                this.feedHealth = response;
                 this.feedHealthAvailable = true;
+                this.feedHealthRefreshed.emit(response)
             }
         })
     }

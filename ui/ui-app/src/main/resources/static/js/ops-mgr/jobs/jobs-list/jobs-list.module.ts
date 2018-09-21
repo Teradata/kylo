@@ -38,20 +38,21 @@ import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import { JobsListComponent, abandonAllDialogController, JobFilterHelpPanelMenuCtrl } from "./jobs-list.component";
+import { JobsListComponent } from "./jobs-list.component";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {AbandonAllJobsDialogComponent} from "./abandon-all-jobs-dialog.component";
+import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialog.component";
+import {OpsManagerServicesModule} from "../../services/ops-manager-services.module";
 @NgModule({
     declarations: [
         JobsListComponent,
-        abandonAllDialogController
-       // JobFilterHelpPanelMenuCtrl
+        AbandonAllJobsDialogComponent,
+        JobsFilterHelpPanelDialogComponent
     ],
     entryComponents: [
-        abandonAllDialogController
-    //    JobsPageComponent,
-    //    JobsCardComponent,
-    //    JobFilterHelpPanelMenuCtrl
+        AbandonAllJobsDialogComponent,
+        JobsFilterHelpPanelDialogComponent
     ],
     imports: [
         CovalentCommonModule,
@@ -86,10 +87,13 @@ import {FlexLayoutModule} from "@angular/flex-layout";
         CovalentDialogsModule,
         MatTabsModule,
         MatToolbarModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        OpsManagerServicesModule
     ],
     exports:[
-        JobsListComponent
+        JobsListComponent,
+        JobsFilterHelpPanelDialogComponent,
+        AbandonAllJobsDialogComponent
     ],
     providers: [ // {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]

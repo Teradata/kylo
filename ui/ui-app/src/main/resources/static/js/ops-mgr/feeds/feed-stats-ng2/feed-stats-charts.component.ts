@@ -6,17 +6,17 @@ import * as moment from "moment";
 import { ObjectUtils } from "../../../common/utils/object-utils";
 import {Component, Input, OnInit, OnDestroy, Output, EventEmitter} from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import {ProvenanceEventStatsService} from "./provenance-event-stats.service";
-import {Nvd3ChartService} from "../../../services/nvd3-chart.service";
-import StateService from "../../../services/StateService";
+import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
+import {Nvd3ChartService} from "../../../services/chart-services/nvd3-chart.service";
+//import StateService from "../../../services/StateService";
 import { TranslateService } from "@ngx-translate/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {DateTimeService} from "../../../common/utils/date-time.service";
-import {FeedStatsService} from "./feed-stats.service";
+import {FeedStatsServiceNg2} from "./feed-stats.service";
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import { IPageChangeEvent } from '@covalent/core/paging';
 import {Feed} from "../../../feed-mgr/model/feed/feed.model";
-import {OpsManagerFeedService} from "../../../services/ops-manager-feed.service";
+import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
 
@@ -108,7 +108,7 @@ export class FeedProcessorErrorTable {
     styleUrls : ['js/ops-mgr/feeds/feed-stats-ng2/feed-stats-charts.component.scss']
 
 })
-export class FeedStasChartsComponent implements OnInit, OnDestroy {
+export class FeedStatsChartsComponent implements OnInit, OnDestroy {
 
 
 
@@ -379,10 +379,10 @@ export class FeedStasChartsComponent implements OnInit, OnDestroy {
     constructor(
         private http: HttpClient,
         private snackBar: MatSnackBar,
-        private provenanceEventStatsService: ProvenanceEventStatsService,
-        private feedStatsService: FeedStatsService,
+        private provenanceEventStatsService: ProvenanceEventStatsServiceNg2,
+        private feedStatsService: FeedStatsServiceNg2,
         private nvd3ChartService: Nvd3ChartService,
-        private stateService: StateService,
+       // private stateService: StateService,
         private _dateTimeService:DateTimeService,
         private translate: TranslateService,
         private _dataTableService: TdDataTableService,
@@ -409,7 +409,7 @@ export class FeedStasChartsComponent implements OnInit, OnDestroy {
      * @param ev
      */
     gotoFeedDetails(ev: any) {
-            this.stateService.FeedManager().Feed().navigateToFeedDefinition(this.feed.id);
+      //      this.stateService.FeedManager().Feed().navigateToFeedDefinition(this.feed.id);
 
     };
 
