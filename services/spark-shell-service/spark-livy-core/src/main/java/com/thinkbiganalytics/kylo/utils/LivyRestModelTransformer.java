@@ -37,6 +37,7 @@ import com.thinkbiganalytics.kylo.spark.client.model.enums.LivySessionStatus;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyDeserializationException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivySaveException;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementOutputResponse;
@@ -57,6 +58,8 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -70,8 +73,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 public class LivyRestModelTransformer {
-
-    private static final Logger logger = LoggerFactory.getLogger(LivyRestModelTransformer.class);
+    private static final XLogger logger = XLoggerFactory.getXLogger(LivyRestModelTransformer.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -141,6 +143,7 @@ public class LivyRestModelTransformer {
 
 
     private static TransformQueryResult toTransformQueryResultWithSchema(StatementOutputResponse sor) {
+        logger.entry(sor);
         checkCodeWasWellFormed(sor);
 
         TransformQueryResult tqr = new TransformQueryResult();
@@ -155,7 +158,7 @@ public class LivyRestModelTransformer {
             try {
                 json = (ArrayNode) mapper.readTree(payload);
             } catch (IOException e) {
-                throw new LivyDeserializationException("Unable to read dataFrame returned from Livy");
+                throw logger.throwing(new LivyDeserializationException("Unable to read dataFrame returned from Livy"));
             } // end try/catch
 
             int numRows = 0;
@@ -171,7 +174,7 @@ public class LivyRestModelTransformer {
                     try {
                         schemaObj = (ObjectNode) mapper.readTree(schemaPayload);
                     } catch (IOException e) {
-                        throw new LivyDeserializationException("Unable to read deserialize dataFrame schema returned from Livy");
+                        throw logger.throwing( new LivyDeserializationException("Unable to read deserialize dataFrame schema returned from Livy"));
                     } // end try/catch
 
                     //  build column metadata
@@ -259,7 +262,7 @@ public class LivyRestModelTransformer {
             tqr.setRows(rowData);
             //tqr.setValidationResults(null);
         } // end if data!=null
-        return tqr;
+        return logger.exit(tqr);
     }
 
     private static String convertDataFrameDataType(JsonNode dataType) {
