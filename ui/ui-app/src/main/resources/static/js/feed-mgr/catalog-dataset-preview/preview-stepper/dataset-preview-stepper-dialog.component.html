@@ -9,10 +9,10 @@
 <mat-dialog-content fxFlex="100%">
 <dataset-preview-stepper #datasetStepper (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [allowMultiSelection]="data.allowMultiSelection" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
 </mat-dialog-content>
-<mat-dialog-actions class="pad">
+<mat-dialog-actions>
   <!-- Action buttons -->
   <mat-divider></mat-divider>
-  <div fxLayout="row" fxFlex style="margin-top:35px">
+  <div fxLayout="row" fxFlex>
     <button mat-button (click)="cancel()">Cancel</button>
     <span fxFlex></span>
     <button mat-button (click)="onBack()" *ngIf="showBack()">Back</button>

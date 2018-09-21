@@ -1341,10 +1341,10 @@ md-input-container.global-search .md-input {
 
 
 .full-screen-dialog-max-width .mat-dialog-container {
-  max-width: none;
-  width: 80vw;
-  height: 80vh;
-  padding: 0;
+  /*max-width: none; */
+  width: 65vw;
+  /*height: 80vh;*/
+  /*padding: 0;*/
   overflow: hidden;
 }
 
