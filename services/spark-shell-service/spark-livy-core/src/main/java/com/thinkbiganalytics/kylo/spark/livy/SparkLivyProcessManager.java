@@ -310,8 +310,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
         Statement statement = livyClient.postStatement(jerseyClient, sparkLivyProcess, sp);
 
-        // TODO: why getStatement now?  so initSession blocks on result.
-        LivyUtils.getStatement(livyClient, jerseyClient, sparkLivyProcess, statement.getId());
+        // NOTE:  why pollStatement now?  so we block on result.
+        livyClient.pollStatement(jerseyClient, sparkLivyProcess, statement.getId());
     }
 
 
@@ -322,7 +322,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         Optional<Session> optSession;
         do {
             try {
-                Thread.sleep(250);
+                Thread.sleep(livyProperties.getPollingInterval());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -22,12 +22,15 @@ package com.thinkbiganalytics.kylo.spark.client;
 
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
+import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 
@@ -51,8 +54,11 @@ public class DefaultLivyClient implements LivyClient {
 
     private LivyServer livyServer;
 
-    public DefaultLivyClient(LivyServer livyServer) {
+    private LivyProperties livyProperties;
+
+    public DefaultLivyClient(LivyServer livyServer, LivyProperties livyProperties) {
         this.livyServer = livyServer;
+        this.livyProperties = livyProperties;
     }
 
     @Override
@@ -139,6 +145,27 @@ public class DefaultLivyClient implements LivyClient {
             logger.error("Unexpected exception occurred:", e);
             throw e;
         }
+    }
+
+    @Override
+    public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId) {
+        Statement statement = null;
+        do {
+            try {
+                Thread.sleep(livyProperties.getPollingInterval());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            statement = getStatement( jerseyClient, sparkLivyProcess, stmtId );
+
+            if( statement.getState().equals(StatementState.error)) {
+                // TODO: what about cancelled? or cancelling?
+                throw new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'");
+            }
+        } while (statement == null || !statement.getState().equals(StatementState.available));
+
+        return statement;
     }
 
     private final static String SESSIONS_URL = "/sessions";

@@ -46,7 +46,6 @@ import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
-import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
@@ -203,7 +202,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         if (statement.getState() == StatementState.running
             || statement.getState() == StatementState.waiting) {
-            statement = getStatement(client, process, statement.getId());
+            statement = pollStatement(client, process, statement.getId());
         } else {
             throw logger.throwing(new LivyException("Unexpected error"));
         }
@@ -243,7 +242,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         if (statement.getState() == StatementState.running
             || statement.getState() == StatementState.waiting) {
-            statement = getStatement(client, process, statement.getId());
+            statement = pollStatement(client, process, statement.getId());
         } else {
             throw new LivyException("Unexpected error");
         }
@@ -329,7 +328,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         String script = scriptGenerator.wrappedScript("submitSaveJob", "", "\n", ScalaScriptUtils.toJsonInScalaString(request), transformId);
 
         Statement statement = submitCode(client, script, process);
-        statement = getStatement(client,process,statement.getId());
+        statement = pollStatement(client, process, statement.getId());
         SaveResponse saveResponse = LivyRestModelTransformer.toSaveResponse(statement);
 
         transformIdsToLivyId.put(transformId, statement.getId());
@@ -386,7 +385,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         if (statement.getState() == StatementState.running
             || statement.getState() == StatementState.waiting) {
-            statement = getStatement(client, process, statement.getId());
+            statement = pollStatement(client, process, statement.getId());
         } else {
             throw logger.throwing(new LivyException("Unexpected error"));
         }
@@ -408,13 +407,13 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         }
     }
 
-    // TODO: is there a better way to wait for a response than synchronous?  UI could poll?
+
     @VisibleForTesting
-    Statement getStatement(JerseyRestClient jerseyClient, SparkShellProcess sparkShellProcess, Integer stmtId) {
-        Validate.isInstanceOf(SparkLivyProcess.class,sparkShellProcess, "SparkLivyRestClient.getStatement called on non Livy Process");
+    Statement pollStatement(JerseyRestClient jerseyClient, SparkShellProcess sparkShellProcess, Integer stmtId) {
+        Validate.isInstanceOf(SparkLivyProcess.class, sparkShellProcess, "SparkLivyRestClient.pollStatement called on non Livy Process");
         SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)sparkShellProcess;
 
-        return LivyUtils.getStatement(livyClient, jerseyClient, sparkLivyProcess, stmtId);
+        return livyClient.pollStatement(jerseyClient, sparkLivyProcess, stmtId);
     }
 
 

@@ -93,7 +93,7 @@ public class TestSparkLivyRestClient {
         sparkLivyProcessManager.start("kylo");
 
         Integer stmtId = 0;
-        Statement statement = livyRestProvider.getStatement(client, sparkProcess, stmtId);
+        Statement statement = livyRestProvider.pollStatement(client, sparkProcess, stmtId);
         logger.debug("statement={}", statement);
 
         assertThat(statement.getState()).isEqualTo(StatementState.available);

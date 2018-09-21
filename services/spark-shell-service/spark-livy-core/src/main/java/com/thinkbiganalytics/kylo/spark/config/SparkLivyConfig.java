@@ -97,7 +97,8 @@ public class SparkLivyConfig {
 
     @Bean
     public DefaultLivyClient defaultLivyClient() {
-        return new DefaultLivyClient(livyServer(livyProperties()));
+        LivyProperties livyProperties = livyProperties();
+        return new DefaultLivyClient(livyServer(livyProperties), livyProperties);
     }
 
     @Bean

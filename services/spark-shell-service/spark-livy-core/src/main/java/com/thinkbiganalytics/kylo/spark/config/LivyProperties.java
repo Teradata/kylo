@@ -115,6 +115,11 @@ public class LivyProperties {
     private Long waitForStart = 120000l;
 
     /**
+     * Time, in milliseconds, between polls of the Livy Server when polling for statement results
+     */
+    private Long pollingInterval = 250l;
+
+    /**
      * All properties found that start with "spark." but not "spark.shell" or "spark.livy" that can be passed to spark sessions
      */
     private Map<String, String> sparkProperties = new HashMap<>();
@@ -238,6 +243,14 @@ public class LivyProperties {
         this.waitForStart = waitForStart;
     }
 
+    public Long getPollingInterval() {
+        return pollingInterval;
+    }
+
+    public void setPollingInterval(Long pollingInterval) {
+        this.pollingInterval = pollingInterval;
+    }
+
     @PostConstruct
     private void postConstruct() {
         logger.debug("PostConstruct called for LivyProperties");
@@ -283,6 +296,7 @@ public class LivyProperties {
         sb.append(", livySessionKind=").append(livySessionKind);
         sb.append(", monitorLivy=").append(monitorLivy);
         sb.append(", heartbeatInterval=").append(heartbeatInterval);
+        sb.append(", pollingInterval=").append(pollingInterval);
         sb.append(", triesUntilNotFound=").append(triesUntilNotFound);
         sb.append(", delayCheckOnFail=").append(delayCheckOnFail);
         sb.append(", maxDelayCheckOnFail=").append(maxDelayCheckOnFail);
