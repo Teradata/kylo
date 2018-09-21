@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "../../module-name";
 import UserService from "../../services/UserService";
-import StateService from  "../../../services/StateService";
+import {StateService} from  "../../../services/StateService";
 import AccessControlService from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
 import "../../module";

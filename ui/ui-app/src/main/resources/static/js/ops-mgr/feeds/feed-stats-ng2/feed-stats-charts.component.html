@@ -232,7 +232,7 @@
               <mat-list dense>
 
                 <mat-list-item >
-                  <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.status}}</mat-icon>
+                  <mat-icon mat-list-icon color="accent">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
                   <h4 mat-line *ngIf="!feedStateChanging"> {{feed.state}}</h4>
                   <h4 mat-line *ngIf="feedStateChanging">
                     <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>

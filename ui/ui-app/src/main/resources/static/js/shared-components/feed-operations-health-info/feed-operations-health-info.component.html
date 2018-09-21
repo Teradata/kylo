@@ -58,8 +58,11 @@
       <mat-divider></mat-divider>
 
       <mat-list-item>
-        <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.status}}</mat-icon>
-        <h4 mat-line> {{feed.state}}</h4>
+        <mat-icon mat-list-icon color="accent">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
+        <h4 mat-line *ngIf="!feedStateChanging"> {{feed.state}}</h4>
+        <h4 mat-line *ngIf="feedStateChanging">
+          <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
+        </h4>
         <p mat-line >Status</p>
       </mat-list-item>
       <mat-divider></mat-divider>

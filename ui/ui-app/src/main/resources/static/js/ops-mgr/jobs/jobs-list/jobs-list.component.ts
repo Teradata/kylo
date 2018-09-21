@@ -1,11 +1,11 @@
 import * as _ from 'underscore';
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import TabService from "../../../services/tab.service";
-//import AccessControlService from "../../../services/AccessControlService";
+import AccessControlService from "../../../services/AccessControlService";
 import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import BroadcastService from "../../../services/broadcast-service";
-//import StateService from "../../../services/StateService";
+import {StateService as  KyoStateService} from "../../../services/StateService";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from "@covalent/core/data-table";
 import { IPageChangeEvent } from "@covalent/core/paging";
@@ -54,6 +54,8 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     abandonAllDisabled:boolean = false;
 
+    updateFeedHealth:any;
+
 
 
     @Input() filterJob: any;
@@ -63,7 +65,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     @Input() refreshIntervalTime: any;
     @Input() feed: FeedSummary;
     @Input() feedFilter: string;
-    @Input() hideFeedColumn: any = false;
     @Input() pageName: any;
 
     @Output() onJobAction: EventEmitter<any> = new EventEmitter<any>();
@@ -87,10 +88,10 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                private opsManagerFeedService:OpsManagerFeedService,
                 private paginationDataService: DefaultPaginationDataService,
                private _dateTimeService:DateTimeService,
-               // private StateService: StateService,
+                  @Inject("StateService") private kyloStateService: KyoStateService,
               //  private IconService: IconService,
                 private tabService: TabService,
-               // private accessControlService: AccessControlService,
+                @Inject("AccessControlService") private accessControlService: AccessControlService,
                 private broadcastService: BroadcastService,
                 public _dataTableService: TdDataTableService) {
         super(_dataTableService);
@@ -104,6 +105,10 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                     this.abandonAllDisabled = this.feed.healthText != "UNHEALTHY"
                 }
             });
+            if(this.updateFeedHealth){
+                clearTimeout(this.updateFeedHealth);
+                this.updateFeedHealth = undefined;
+            }
         }
     }
 
@@ -144,20 +149,18 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         this.tab = _.isUndefined(this.tab) ? '' : this.tab;
 
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.updateJobs);
-        if (this.hideFeedColumn) {
-            this.columns.splice(2, 1);
-        }
+
         this.loadJobs(true);
 
 
 
-/*
+
         // Fetch allowed permissions
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
                 this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
             });
-            */
+
 
         if (this.tab != '') {
             var index = _.indexOf(tabNames, this.tab);
@@ -202,6 +205,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                 duration: 3000
             });
             this.fetchFeedHealth();
+            this.loadJobs();
         }, (err: any) => {
             dialog.close();
             this.snackBar.open("Unable to abandonal all jobs for the feed.  A unexpected error occurred.", "OK", {
@@ -215,7 +219,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     //Load Jobs
 
-    loadJobs(force: any) {
+    loadJobs(force?: boolean) {
         if (force || !this.refreshing) {
             if (force) {
                 this.activeJobRequests.forEach((canceler: Subscription) => {
@@ -471,12 +475,12 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     jobDetails(event: any) {
         console.log("go to jobDetails ",event)
-   /**     if (event.row.stream) {
-            this.StateService.OpsManager().Feed().navigateToFeedStats(event.row.jobName);
+        if (event.row.stream) {
+            this.kyloStateService.OpsManager().Feed().navigateToFeedStats(event.row.jobName);
         } else {DateTimeService
-            this.StateService.OpsManager().Job().navigateToJobDetails(event.row.executionId);
+            this.kyloStateService.OpsManager().Job().navigateToJobDetails(event.row.executionId);
         }
-    **/
+
     }
 
     getRunningJobExecutionData(instanceId: any, executionId: any) {
@@ -490,6 +494,15 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     triggerJobActionListener(action: any, job: any) {
         this.onJobAction.emit({ action: action, job: job });
+
+        if(this.feedFilter) {
+            //queue up the refresh
+            if (this.updateFeedHealth) {
+                clearTimeout(this.updateFeedHealth)
+                this.updateFeedHealth = undefined;
+            }
+            setTimeout(this.fetchFeedHealth.bind(this), 3000)
+        }
     }
 
     restartJob(event: any, job: any) {
@@ -547,13 +560,14 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     showFilterHelpPanel(ev: any) {
 
-        var position = $(".filter-help-button").position();
+        var position = $("#jobs_more_vert").position();
 
         let dialogRef = this._dialogService.open(JobsFilterHelpPanelDialogComponent, {
             data: {
 
             },
             panelClass: "filter-help",
+            width:"600px",
             position: {
                 'top': (position.top + 120).toString() + 'px',
                 'left': (position.left - 80).toString() + 'px'

@@ -3,7 +3,7 @@ import { moduleName } from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
-import StateService from '../../../services/StateService';
+import {StateService} from '../../../services/StateService';
 import {Transition} from "@uirouter/core";
 
 export class SlaEmailTemplatesController implements ng.IComponentController {

@@ -17,6 +17,8 @@ import {FeedJobActivityComponent} from "./feed-job-activity/feed-job-activity.co
 import {FeedOperationsHealthInfoComponent} from "./feed-operations-health-info/feed-operations-health-info.component";
 
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
+import {CovalentDialogsModule} from "@covalent/core/dialogs";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 //import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
@@ -33,7 +35,9 @@ import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services
         MatListModule,
         TranslateModule,
         MatMenuModule,
-        KyloCommonModule
+        KyloCommonModule,
+        CovalentDialogsModule,
+        MatProgressSpinnerModule
 
     ],
     declarations: [

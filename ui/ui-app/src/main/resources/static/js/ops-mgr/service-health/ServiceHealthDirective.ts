@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "./module-name";
 import {DefaultTableOptionsService} from "../../services/TableOptionsService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 export class controller implements ng.IComponentController{
         pageName: string;
         //Page State

@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import StateService from  "../services/StateService";
+import {StateService} from  "../services/StateService";
 import AccessControlService from "../services/AccessControlService";
 import {Transition} from "@uirouter/core";
 

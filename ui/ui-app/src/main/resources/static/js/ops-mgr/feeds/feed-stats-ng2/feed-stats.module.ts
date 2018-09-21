@@ -33,6 +33,7 @@ import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
 import {FeedStatsComponent} from "./feed-stats.component";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {MatMenuModule} from "@angular/material/menu";
+import {CovalentDialogsModule} from "@covalent/core/dialogs";
 
 
 @NgModule({
@@ -64,7 +65,8 @@ import {MatMenuModule} from "@angular/material/menu";
         MatDividerModule,
         MatListModule,
         MatMenuModule,
-        CovalentDataTableModule
+        CovalentDataTableModule,
+        CovalentDialogsModule
     ],
     exports:[
         FeedStatsChartsComponent

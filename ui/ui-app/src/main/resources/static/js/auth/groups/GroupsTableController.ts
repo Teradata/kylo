@@ -4,7 +4,7 @@ import {moduleName} from "../module-name";
 import UserService from "../services/UserService";
 import AddButtonService from  "../../services/AddButtonService";
 import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
-import StateService from  "../../services/StateService";
+import {StateService} from  "../../services/StateService";
 import {DefaultTableOptionsService} from  "../../services/TableOptionsService";
 import "../module";
 import "../module-require";

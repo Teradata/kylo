@@ -4,7 +4,7 @@ import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import {DefaultTableOptionsService}  from "../../services/TableOptionsService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import TabService from "../../services/tab.service";
 import {Transition} from "@uirouter/core";
 

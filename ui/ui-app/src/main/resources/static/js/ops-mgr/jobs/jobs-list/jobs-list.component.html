@@ -17,10 +17,10 @@
   limitations under the License.
   #L%
   -->
-<mat-card class="feed-card">
+<mat-card class="feed-card jobs-card">
 
   <mat-card-content>
-    <div fxLayout="row" fxFlex="100" fxLayoutAlign="start center" class=" mat-card-header-text pad-left-sm pad-right-sm" >
+    <div fxLayout="row" fxFlex="100" fxLayoutAlign="start center"  >
       <div *ngIf="!searchBox.searchVisible" fxLayout="column">
         <mat-card-title fxLayout="row">
           <mat-icon >{{kyloIcons.Feed.jobsList}}</mat-icon>
@@ -33,14 +33,18 @@
       <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Filter" (searchDebounce)="search($event)"
                      [showUnderline]="true" fxFlex>
       </td-search-box>
-      <div class="pad-right" *ngIf="feedFilter">
-        <button mat-icon-button [matMenuTriggerFor]="menu">
+      <div class="pad-right" >
+        <button mat-icon-button [matMenuTriggerFor]="menu" id="jobs_more_vert">
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item [disabled]="abandonAllDisabled"  (click)="abandonAllJobs()">
-            <mat-icon>pause_circle_outline</mat-icon>
+          <button mat-menu-item [disabled]="abandonAllDisabled"  (click)="abandonAllJobs()" *ngIf="feedFilter">
+            <mat-icon>{{kyloIcons.Feed.Actions.abandon}}</mat-icon>
             <span >Abandon All</span>
+          </button>
+          <button mat-menu-item  (click)="showFilterHelpPanel()">
+            <mat-icon>{{kyloIcons.Feed.Actions.filterHelp}}</mat-icon>
+            <span >Filter Help</span>
           </button>
         </mat-menu>
       </div>
@@ -49,7 +53,7 @@
 
     <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
                    (selectedIndexChange)="onTabSelected($event)"
-                   layout-fill  dynamicHeight>
+                     dynamicHeight>
 
       <mat-tab *ngFor="let tab of tabs"
                [disabled]="tab.disabled" flex>
@@ -91,12 +95,12 @@
               <span>{{row.runTime}}</span>
             </ng-template>
 
-            <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
-              <button mat-button *ngIf="row.status !='COMPLETED' && row.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</button>
-              <button mat-button  *ngIf="row.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</button>
-              <span *ngIf="row.errorMessage != ''">
+            <ng-template tdDataTableTemplate="action" let-value="value" let-job="row" let-column="column">
+              <button mat-button *ngIf="job.status !='COMPLETED' && job.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</button>
+              <button mat-button  *ngIf="job.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</button>
+              <span *ngIf="job.errorMessage != ''">
                                         <br/>
-                                        <span class="md-warn md-caption">{{row.errorMessage}}</span>
+                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
                                     </span>
             </ng-template>
 

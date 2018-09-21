@@ -5,7 +5,7 @@ import * as $ from "jquery";
 import AddButtonService from "../../services/AddButtonService";
 import BroadcastService from "../../services/broadcast-service";
 import AccessControlService from "../../services/AccessControlService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 
 @Component({
     selector: "add-button",

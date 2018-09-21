@@ -208,25 +208,12 @@ export class OpsManagerFeedService {
 
 
     enableFeed(feedId:string) :Observable<FeedSummary>{
-    let observable:Observable<FeedSummary> =   <Observable<FeedSummary>>  this.http.post(RestUrlConstants.ENABLE_FEED_URL(feedId),null);
-    observable.subscribe((response:FeedSummary)=> {
-            //no op
+    return <Observable<FeedSummary>>  this.http.post(RestUrlConstants.ENABLE_FEED_URL(feedId),null);
 
-        },error1 => {
-
-        });
-    return observable;
     }
 
     disableFeed(feedId:string) :Observable<FeedSummary>{
-        let observable:Observable<FeedSummary> =  <Observable<FeedSummary>>   this.http.post(RestUrlConstants.DISABLE_FEED_URL(feedId),null);
-        observable.subscribe((response:FeedSummary)=> {
-            //no op
-
-        },error1 => {
-
-        });
-        return observable;
+       return <Observable<FeedSummary>>   this.http.post(RestUrlConstants.DISABLE_FEED_URL(feedId),null);
     }
 
     /**

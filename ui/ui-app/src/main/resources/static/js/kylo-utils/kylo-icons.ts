@@ -29,8 +29,24 @@ export class KyloIcons {
             clone:"content_copy",
             enable:"play_arrow",
             disable:"pause_outline",
+            abandon:"call_made",
+            filterHelp:"help"
         }
     };
+
+    static getFeedStateIcon(state:string){
+        if(!state) {
+            return KyloIcons.Feed.status;
+        }
+
+        if("DISABLED" == state.toUpperCase()){
+            return KyloIcons.Feed.Actions.disable
+        } else if("ENABLED" == state.toUpperCase()){
+            return KyloIcons.Feed.Actions.enable;
+        } else {
+            return KyloIcons.Feed.status;
+        }
+    }
 
 
 }

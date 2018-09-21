@@ -25,7 +25,7 @@ import * as angular from 'angular';
 import { moduleName } from './module-name';
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
-export default class StateService {
+export class StateService {
     Auth: any;
     FeedManager: any;
     OpsManager: any;

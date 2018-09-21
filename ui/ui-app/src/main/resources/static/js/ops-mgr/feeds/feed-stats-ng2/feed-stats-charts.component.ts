@@ -8,7 +8,7 @@ import {Component, Input, OnInit, OnDestroy, Output, EventEmitter} from "@angula
 import { HttpClient } from "@angular/common/http";
 import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
 import {Nvd3ChartService} from "../../../services/chart-services/nvd3-chart.service";
-//import StateService from "../../../services/StateService";
+//import {StateService} from "../../../services/StateService";
 import { TranslateService } from "@ngx-translate/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {DateTimeService} from "../../../common/utils/date-time.service";
@@ -19,6 +19,7 @@ import {Feed} from "../../../feed-mgr/model/feed/feed.model";
 import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 
 export class FeedProcessorErrorTable {
@@ -386,7 +387,8 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
         private _dateTimeService:DateTimeService,
         private translate: TranslateService,
         private _dataTableService: TdDataTableService,
-        private opsManagerFeedService:OpsManagerFeedService) {
+        private opsManagerFeedService:OpsManagerFeedService,
+        private _dialogService: TdDialogService) {
 
         this.showFeedTimeChartLoading = true;
         this.showProcessorChartLoading = true;
@@ -1106,6 +1108,12 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
             this.feed.state = feedSummary.state;
             this.feedStateChanging = false;
             this.feedChange.emit(this.feed)
+        }, error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error enabling the feed",
+                message:"There was an error enabling the feed"
+            })
         });
     }
     disableFeed(){
@@ -1114,6 +1122,12 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
             this.feed.state = feedSummary.state;
             this.feedStateChanging = false;
             this.feedChange.emit(this.feed)
+        },error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error disabling the feed",
+                message:"There was an error disabling the feed"
+            })
         });
     }
 }

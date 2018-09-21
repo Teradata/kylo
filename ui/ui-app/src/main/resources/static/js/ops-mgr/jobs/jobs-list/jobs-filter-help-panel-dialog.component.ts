@@ -42,7 +42,11 @@ export class JobsFilterHelpPanelDialogComponent {
     constructor(private dialogRef: MatDialogRef<JobsFilterHelpPanelDialogComponent>,
                 @Inject(MAT_DIALOG_DATA) private data: any) { }
 
-    newHelpItem(label: any, description: any) {
+    newHelpItem(description: string, label: string) {
         return { displayName: label, description: description };
+    }
+
+    cancel(){
+        this.dialogRef.close();
     }
 }

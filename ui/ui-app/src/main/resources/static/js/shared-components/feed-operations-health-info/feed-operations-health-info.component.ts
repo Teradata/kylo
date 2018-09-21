@@ -6,6 +6,7 @@ import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.ser
 import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../kylo-utils/kylo-icons";
 import BroadcastService from "../../services/broadcast-service";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -35,7 +36,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     refreshTime:number = 5000;
 
-    constructor(private opsManagerFeedService:OpsManagerFeedService,   private broadcastService: BroadcastService){
+    constructor(private opsManagerFeedService:OpsManagerFeedService,   private broadcastService: BroadcastService, private _dialogService:TdDialogService){
 
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
     }
@@ -72,6 +73,13 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
             this.feed.state = feedSummary.state;
             this.feedStateChanging = false;
             this.feedChange.emit(this.feed)
+            this.opsManagerFeedService.openSnackBar("Enabled the feed",5000)
+        }, error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error enabling the feed",
+                message:"There was an error enabling the feed"
+            })
         });
     }
     disableFeed(){
@@ -80,6 +88,13 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
             this.feed.state = feedSummary.state;
             this.feedStateChanging = false;
             this.feedChange.emit(this.feed)
+            this.opsManagerFeedService.openSnackBar("Disabled the feed",5000)
+        },error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error disabling the feed",
+                message:"There was an error disabling the feed"
+            })
         });
     }
 

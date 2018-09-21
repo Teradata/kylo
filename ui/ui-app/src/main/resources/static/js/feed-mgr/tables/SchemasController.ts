@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "./module-name";
 import { Transition } from '@uirouter/core';
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { FeedService } from '../services/FeedService';
 import AddButtonService from '../../services/AddButtonService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';

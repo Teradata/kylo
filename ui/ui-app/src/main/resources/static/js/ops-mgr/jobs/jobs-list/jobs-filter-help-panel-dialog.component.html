@@ -18,67 +18,64 @@
   #L%
   -->
 
-<div mat-dialog class="filter-help"
-     aria-label="Filter help"
-     role="listbox" layout-fill>
-  <mat-dialog-content style="max-height:400px;overflow-y:auto;overflow-x:hidden;padding:0;margin:0;" layout="column">
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Filter Help</span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+  <mat-dialog-content  layout="column" class="mat-typography">
     <mat-list>
-      <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
-        <span class="card-sub-header">Filter Help</span>
+
+      <mat-list-item >
+        <h1 mat-line class="mat-display-1">Filter Syntax</h1>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item >
+        <h4 mat-line>{{ '{'+'field'+'} ' + ' {'+'operator'+'} ' + ' {'+'value'+'}' }}</h4>
+        <p  mat-line>'%' is used for a wildcard when using the '=~', LIKE, operator</p>
+        <p  mat-line> If no field/operator is specified a LIKE filter on the job name will be performed</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item>
+        <h1 mat-line class="mat-display-1">Filter Fields</h1>
       </mat-list-item>
 
-      <mat-divider></mat-divider>
-      <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Syntax</span>
-      </div>
+      <ng-container *ngFor="let item of filterHelpFields">
+        <mat-list-item>
+        <h4 mat-line>{{item.displayName}}</h4>
+        <p mat-line>{{ item.description}}</p>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
 
-      <div class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
-        <span>{{ '{'+'field'+'}' + '{'+'operator'+'}' + '{'+'value'+'}' }}</span>
+      <mat-list-item>
+        <h1 mat-line class="mat-display-1">Filter Operators</h1>
+      </mat-list-item>
 
-        <span style="padding:5px;"></span>
-        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
-        <span style="padding:5px;"></span>
-        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
-      </div>
+      <ng-container *ngFor="let item of filterHelpOperators">
+        <mat-list-item>
+          <h4 mat-line>{{item.displayName}}</h4>
+          <p mat-line>{{ item.description}}</p>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
 
+      <mat-list-item>
+        <h1 mat-line class="mat-display-1">Filter Examples</h1>
+      </mat-list-item>
 
-      <mat-divider></mat-divider>
-      <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Fields</span>
-      </div>
-      <div class="filter-help-item layout-padding-left-right with-padding"
-           tabindex="-1"
-           role="option"
-           *ngFor="let item of filterHelpFields" layout="column" layout-align="start start">
-        <mat-hint>{{item.displayName}}</mat-hint>
-        <span>{{ item.description}}</span>
-      </div>
-      <mat-divider></mat-divider>
+      <ng-container  *ngFor="let item of filterHelpExamples">
+        <mat-list-item>
+          <h4 mat-line>{{item.displayName}}</h4>
+          <p mat-line>{{ item.description}}</p>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </ng-container>
 
-      <div class="layout-padding-left-right with-padding">
-        <span class="card-sub-header">Filter Operators</span>
-      </div>
-      <div class="filter-help-item layout-padding-left-right  with-padding"
-           tabindex="-1"
-           role="option"
-           *ngFor="let item of filterHelpOperators" layout="column" layout-align="start start">
-        <mat-hint>{{item.displayName}}</mat-hint>
-        <span>{{ item.description}}</span>
-      </div>
-      <mat-divider></mat-divider>
-
-      <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Examples</span>
-      </div>
-      <div class="filter-help-item layout-padding-left-right  with-padding"
-           tabindex="-1"
-           role="option"
-           *ngFor="let item of filterHelpExamples" layout="column" layout-align="start start">
-        <mat-hint>{{item.displayName}}</mat-hint>
-        <span>{{ item.description}}</span>
-      </div>
 
     </mat-list>
 
   </mat-dialog-content>
-</div>
