@@ -12,6 +12,9 @@ import {Component} from "@angular/core";
 })
 export class TablesComponent extends BrowserComponent {
 
+    hideInternalTables: boolean = true;
+    showHideInternalOption : boolean = true;
+
     init(): void {
         this.initData();
     }
@@ -37,7 +40,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     createRootNode(): Node {
-        let node:Node = undefined;
+        let node: Node = undefined;
         if (this.datasource.template && this.datasource.template.options && this.datasource.template.options.url) {
             node = new Node(this.datasource.template.options.url);
         } else if (this.datasource.connector && this.datasource.connector.template && this.datasource.connector.template.options && this.datasource.connector.template.options.url) {
@@ -45,7 +48,7 @@ export class TablesComponent extends BrowserComponent {
         } else {
             node = new Node("");
         }
-        if(node.name == "" && this.datasource && this.datasource.title) {
+        if (node.name == "" && this.datasource && this.datasource.title) {
             node.name = this.datasource.title;
         }
         return node;
@@ -53,8 +56,8 @@ export class TablesComponent extends BrowserComponent {
 
     createParentNodeParams(node: Node): any {
         let datasourceId = this.params && this.params.datasourceId ? this.params.datasourceId : undefined;
-        let params:any  = {}
-        if(datasourceId){
+        let params: any = {}
+        if (datasourceId) {
             params.datasourceId = datasourceId;
         }
         const dbObj: DatabaseObject = <DatabaseObject>node.getBrowserObject();
@@ -63,9 +66,9 @@ export class TablesComponent extends BrowserComponent {
             return params;
         }
         if (dbObj.type === DatabaseObjectType.Catalog) {
-             params.catalog = dbObj.name;
+            params.catalog = dbObj.name;
         } else if (dbObj.type === DatabaseObjectType.Schema) {
-             params.schema = dbObj.name;
+            params.schema = dbObj.name;
         }
 
         return params;
@@ -84,7 +87,8 @@ export class TablesComponent extends BrowserComponent {
         }
         return this.params;
     }
-    private isEmpty(item:string){
+
+    private isEmpty(item: string) {
         return item === undefined || item == "";
     }
 
@@ -111,6 +115,21 @@ export class TablesComponent extends BrowserComponent {
         }
 
         return undefined;
+    }
+
+    /**
+     * Filter internal tables
+     * @param {BrowserObject[]} data
+     * @returns {BrowserObject[]}
+     */
+    applyCustomFilter(data: BrowserObject[]): BrowserObject[] {
+
+        if (this.hideInternalTables) {
+            data = data.filter((item) => {
+                return (!(item.name.endsWith("_invalid") || item.name.endsWith("_profile") || item.name.endsWith("_valid") || item.name.endsWith("_feed")));
+            });
+        }
+        return data;
     }
 
     private createTempPlaceholder(name: string, type: DatabaseObjectType) {
