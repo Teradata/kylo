@@ -6,6 +6,7 @@ import {Observable} from "rxjs/Observable";
 import {Feed} from "./feed.model";
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {FormGroup} from "@angular/forms";
 
 
 export class FeedTableColumnDefinitionValidation {
@@ -16,7 +17,7 @@ export class FeedTableColumnDefinitionValidation {
 
 
 
-    constructor(private model: Feed) {
+    constructor(private definePartitionForm: FormGroup, private model: Feed) {
 
         if (_.isUndefined(this.invalidColumns)) {
             this.invalidColumns = [];
@@ -82,13 +83,13 @@ export class FeedTableColumnDefinitionValidation {
             if (group.length > 1) {
                 _.each(group, (partition) => {
                     //.invalid another partition matches the same name
-               //     this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': true});
                 });
             }
             else {
                 _.each(group, (partition) => {
                     //valid this is a unique partition name
-             //       this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', true);
+                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': false});
                 });
             }
         });
@@ -103,7 +104,7 @@ export class FeedTableColumnDefinitionValidation {
         //add the angular errors
         _.each(this.model.table.partitions, (partition: any) => {
             if (partition.formula != undefined && partition.formula != 'val' && _.indexOf(columnNames, partition.field) >= 0) {
-       //         this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+                this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': true});
             }
         });
 

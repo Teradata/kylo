@@ -198,7 +198,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.profileCheckAll.setup(this.feed.table);
         this.indexCheckAll.setup(this.feed.table);
 
-        this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.feed);
+        this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.definePartitionForm, this.feed);
 
         this.tableFormControls = new TableFormControls(this.defineTableForm,this.definePartitionForm, this.feedTableColumnDefinitionValidation,this.tablePermissions)
 
@@ -484,8 +484,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         }
         partition.updateFieldName();
 
-        this.feedTableColumnDefinitionValidation.partitionNamesUnique();
+        setTimeout(() => {this.feedTableColumnDefinitionValidation.partitionNamesUnique()}, 50);
 
+    }
+
+    filterFormula(partition: TableFieldPartition, feed: Feed){
+        return this.filterPartitionFormulaPipe.transform(this.partitionFormulas, partition,feed);
     }
 
     /**

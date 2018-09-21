@@ -310,37 +310,40 @@
         </div>
         <div *ngIf="!feed.readonly">
           <form [formGroup]="definePartitionForm">
-            <div fxFlex="column">
+            <div fxLayout="column">
               <ng-template let-partition let-last="last" let-index="index" ngFor [ngForOf]="feed.table.partitions">
-                <div fxFlex="row">
-                  <mat-form-field>
+                <div fxLayout="row" fxLayoutGap="10px">
+                  <mat-form-field fxFlex="20">
                     <mat-select required placeholder="Partition Column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
                                 (change)="onPartitionSourceFieldChange(partition, feed)">
                       <mat-option *ngFor="let field of feed.table.tableSchema.fields" [value]="field">
                         {{field.name}}
                       </mat-option>
                     </mat-select>
-                    <mat-error *ngIf="hasPartitionFormError('partition',partition,'required')">
+                    <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partition',partition,'required')">
                       Partition field is required
                     </mat-error>
                   </mat-form-field>
 
-                  <mat-form-field>
+                  <mat-form-field fxFlex="20">
                     <mat-select required placeholder="Partition Formula" [formControlName]="'partitionFormula_'+partition._id" [(ngModel)]="partition.formula"
                                 (change)="onPartitionFormulaChange(partition)">
-                      <mat-option *ngFor="let formula of partitionFormulas | filterPartitionFormula:partition:feed" [value]="formula">
+                      <mat-option *ngFor="let formula of filterFormula(partition, feed)" [value]="formula">
                         {{formula}}
                       </mat-option>
                     </mat-select>
-                    <mat-error *ngIf="hasPartitionFormError('partitionFormula',partition,'required')">
+                    <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionFormula',partition,'required')">
                       Partition formula is required
                     </mat-error>
                   </mat-form-field>
 
-                  <mat-form-field fxFlex="30">
+                  <mat-form-field fxFlex="20" class="layout-padding-bottom-15">
                     <input matInput [formControlName]="'partitionName_'+partition._id" placeholder="Name" required [(ngModel)]="partition.field" (change)="onPartitionNameChange(partition)">
-                    <mat-error *ngIf="hasPartitionFormError('partitionName',partition,'required')">
+                    <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionName',partition,'required')">
                       Partition name is required
+                    </mat-error>
+                    <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionName',partition,'notUnique')">
+                      Partition name must be unique and not match a field name unless using the val() formula
                     </mat-error>
                   </mat-form-field>
 
@@ -349,8 +352,8 @@
                   </button>
                 </div>
               </ng-template>
-              <button mat-button (click)="addPartitionField()">Add Partition</button>
             </div>
+            <button mat-button  (click)="addPartitionField()">Add Partition</button>
           </form>
         </div>
       </mat-card-content>

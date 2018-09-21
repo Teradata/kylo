@@ -15,3 +15,7 @@
 .mat-form-field-width {
   width:800px;
 }
+
+.mat-error-font-12 {
+  font-size: 12px;
+}
