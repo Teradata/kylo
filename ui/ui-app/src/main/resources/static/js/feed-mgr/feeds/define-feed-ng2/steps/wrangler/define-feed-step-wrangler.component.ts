@@ -31,9 +31,17 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
     init() {
         super.init();
+        this.feed.dataTransformation.datasets = this.feed.sourceDataSets;
     }
 
     getStepName() {
         return FeedStepConstants.STEP_WRANGLER;
+    }
+
+
+    protected applyUpdatesToFeed(): Observable<any> | null {
+        super.applyUpdatesToFeed();
+        this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
+        return null;
     }
 }
