@@ -26,6 +26,7 @@ import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
+import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
@@ -33,7 +34,6 @@ import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.kylo.utils.LivyRestModelTransformer;
-import com.thinkbiganalytics.kylo.utils.LivyUtils;
 import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
 import com.thinkbiganalytics.kylo.utils.ScalaScriptUtils;
 import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
@@ -86,6 +86,9 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Resource
     private LivyServer livyServer;
 
+    @Resource
+    private LivyProperties livyProperties;
+
     /**
      * Default file system
      */
@@ -96,7 +99,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
      * Cache of transformIds
      */
     @Nonnull
-    public final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
+    final static Cache<TransformRequest, String> transformCache = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build();
@@ -105,7 +108,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
      * Cache of transformId => saveid
      */
     @Nonnull
-    public final static Cache<String, Integer> transformIdsToLivyId = CacheBuilder.newBuilder()
+    final static Cache<String, Integer> transformIdsToLivyId = CacheBuilder.newBuilder()
         .expireAfterAccess(1, TimeUnit.HOURS)
         .maximumSize(100)
         .build();
@@ -146,8 +149,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @Override
     public Optional<SparkJobResponse> getJobResult(@Nonnull final SparkShellProcess process, @Nonnull final String id) {
         logger.entry(process, id);
-        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getJobResult called on non Livy Process");
-        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
+        Validate.isInstanceOf(SparkLivyProcess.class, process, "SparkLivyRestClient.getJobResult called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) process;
 
         // Request result from Livy
         final JerseyRestClient client = sparkLivyProcessManager.getClient(process);
@@ -211,13 +214,12 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         SaveResult result = new SaveResult(new Path(uri));
 
         // 2. Create a response with data from filesysem
-        if (result != null && result.getPath() != null) {
+        if (result.getPath() != null) {
             Optional<Response> response =
                 Optional.of(
                     Response.ok(new ZipStreamingOutput(result.getPath(), fileSystem))
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
-                        // TODO: could not get access to HttpHeaders constant in javax.ws.rs:javax.ws.rs-api:2.0.1 even after importing
-                        .header("Content-Disposition", "attachment; filename=\"" + saveId + ".zip\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + saveId + ".zip\"")
                         .build());
             return logger.exit(response);
         } else {
@@ -256,8 +258,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public Optional<TransformResponse> getTransformResult(@Nonnull SparkShellProcess process, @Nonnull String
         transformId) {
         logger.entry(process, transformId);
-        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getTransformResult called on non Livy Process");
-        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
+        Validate.isInstanceOf(SparkLivyProcess.class, process, "SparkLivyRestClient.getTransformResult called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) process;
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
@@ -288,15 +290,14 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public Optional<SaveResponse> getTransformSave(@Nonnull SparkShellProcess process, @Nonnull String
         transformId, @Nonnull String saveId) {
         logger.entry(process, transformId, saveId);
-        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.getTransformSave called on non Livy Process");
-        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
-
+        Validate.isInstanceOf(SparkLivyProcess.class, process, "SparkLivyRestClient.getTransformSave called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) process;
 
         JerseyRestClient client = sparkLivyProcessManager.getClient(process);
 
         SaveResponse response;
         Integer stmtId = transformIdsToLivyId.getIfPresent(transformId);
-        if (stmtId != null ) {
+        if (stmtId != null) {
             Statement statement = livyClient.getStatement(client, sparkLivyProcess, stmtId);
             response = LivyRestModelTransformer.toSaveResponse(statement);
             if (statement.getState() == StatementState.available) {
@@ -336,9 +337,9 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         return logger.exit(saveResponse);
     }
 
-    Statement submitCode(JerseyRestClient client, String script, SparkShellProcess process) {
-        Validate.isInstanceOf(SparkLivyProcess.class,process, "SparkLivyRestClient.submitCode called on non Livy Process");
-        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)process;
+    private Statement submitCode(JerseyRestClient client, String script, SparkShellProcess process) {
+        Validate.isInstanceOf(SparkLivyProcess.class, process, "SparkLivyRestClient.submitCode called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) process;
 
         StatementsPost sp = new StatementsPost.Builder().code(script).kind("spark").build();
 
@@ -361,14 +362,23 @@ public class SparkLivyRestClient implements SparkShellRestClient {
 
         Statement statement = submitCode(client, script, process);
 
+        // check the server for script result.  If polling limit reach just return to UI with PENDING status.
+        statement = pollStatement(client,process,statement.getId(), livyProperties.getPollingLimit());
+
         sparkLivyProcessManager.setStatementId(transformId, statement.getId());
+
+        return logger.exit(LivyRestModelTransformer.toTransformResponse(statement, transformId));
+
+        /*
+        sparkLivyProcessManager.setStatementId(transformId, statement.getId());
+
 
         TransformResponse response = new TransformResponse();
         response.setStatus(StatementStateTranslator.translate(statement.getState()));
         response.setProgress(statement.getProgress());
         response.setTable(transformId);
 
-        return logger.exit(response);
+        return logger.exit(response); */
     }
 
 
@@ -400,7 +410,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     public ServerStatusResponse serverStatus(SparkShellProcess sparkShellProcess) {
         logger.entry(sparkShellProcess);
 
-        if( sparkShellProcess instanceof SparkLivyProcess) {
+        if (sparkShellProcess instanceof SparkLivyProcess) {
             return logger.exit(LivyRestModelTransformer.toServerStatusResponse(livyServer, ((SparkLivyProcess) sparkShellProcess).getSessionId()));
         } else {
             throw logger.throwing(new IllegalStateException("SparkLivyRestClient.serverStatus called on non Livy Process"));
@@ -411,11 +421,18 @@ public class SparkLivyRestClient implements SparkShellRestClient {
     @VisibleForTesting
     Statement pollStatement(JerseyRestClient jerseyClient, SparkShellProcess sparkShellProcess, Integer stmtId) {
         Validate.isInstanceOf(SparkLivyProcess.class, sparkShellProcess, "SparkLivyRestClient.pollStatement called on non Livy Process");
-        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess)sparkShellProcess;
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) sparkShellProcess;
 
         return livyClient.pollStatement(jerseyClient, sparkLivyProcess, stmtId);
     }
 
+
+    private Statement pollStatement(JerseyRestClient jerseyClient, SparkShellProcess sparkShellProcess, Integer stmtId, Long wait) {
+        Validate.isInstanceOf(SparkLivyProcess.class, sparkShellProcess, "SparkLivyRestClient.pollStatement called on non Livy Process");
+        SparkLivyProcess sparkLivyProcess = (SparkLivyProcess) sparkShellProcess;
+
+        return livyClient.pollStatement(jerseyClient, sparkLivyProcess, stmtId, wait);
+    }
 
     /**
      * Creates a response for the specified message.

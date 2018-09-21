@@ -25,7 +25,6 @@ import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
@@ -48,8 +47,7 @@ public class ScalaScriptService {
         // Add parent reference
         final StringBuilder livyScript = new StringBuilder();
         if (request.getParent() != null && request.getParent().getId() != null) {
-            // TODO: utilize scalaStr
-            livyScript.append("var parent = sqlContext.read.table(\"").append(StringEscapeUtils.escapeJava(request.getParent().getId())).append("\")\n");
+            livyScript.append("var parent = sqlContext.read.table(").append(ScalaScriptUtils.scalaStr(request.getParent().getId())).append(")\n");
         }
 
         // Extract last line
@@ -96,7 +94,7 @@ public class ScalaScriptService {
             sb.append(setParentVar(request));
         } // end if
 
-        script = dfPattern.matcher(script).replaceAll("df.registerTempTable( \"" + transformId + "\" )\n");
+        script = dfPattern.matcher(script).replaceAll("df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
         script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
 
         sb.append(wrapScriptWithPaging(script, request.getPageSpec()));

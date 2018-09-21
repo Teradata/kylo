@@ -99,6 +99,11 @@ public class ReliableLivyClient implements LivyClient {
     }
 
     @Override
+    public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait) {
+        return livyClient.pollStatement(jerseyClient, sparkLivyProcess, stmtId, wait);
+    }
+
+    @Override
     public SessionsGetResponse getSessions(JerseyRestClient client) {
         return livyClient.getSessions(client);
     }

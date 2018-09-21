@@ -112,12 +112,17 @@ public class LivyProperties {
     /**
      * Time, in milliseconds, to wait for start of Livy session, if exceeded, blocked threads release and will produce an exception
      */
-    private Long waitForStart = 120000l;
+    private Long waitForStart = 120000L;
 
     /**
      * Time, in milliseconds, between polls of the Livy Server when polling for statement results
      */
-    private Long pollingInterval = 250l;
+    private Long pollingInterval = 250L;
+
+    /**
+     * Time, in milliseconds, that Kylo Services will poll Livy
+     */
+    private Long pollingLimit = 500L;
 
     /**
      * All properties found that start with "spark." but not "spark.shell" or "spark.livy" that can be passed to spark sessions
@@ -251,6 +256,14 @@ public class LivyProperties {
         this.pollingInterval = pollingInterval;
     }
 
+    public Long getPollingLimit() {
+        return pollingLimit;
+    }
+
+    public void setPollingLimit(Long pollingLimit) {
+        this.pollingLimit = pollingLimit;
+    }
+
     @PostConstruct
     private void postConstruct() {
         logger.debug("PostConstruct called for LivyProperties");
@@ -297,6 +310,7 @@ public class LivyProperties {
         sb.append(", monitorLivy=").append(monitorLivy);
         sb.append(", heartbeatInterval=").append(heartbeatInterval);
         sb.append(", pollingInterval=").append(pollingInterval);
+        sb.append(", pollingLimit=").append(pollingLimit);
         sb.append(", triesUntilNotFound=").append(triesUntilNotFound);
         sb.append(", delayCheckOnFail=").append(delayCheckOnFail);
         sb.append(", maxDelayCheckOnFail=").append(maxDelayCheckOnFail);

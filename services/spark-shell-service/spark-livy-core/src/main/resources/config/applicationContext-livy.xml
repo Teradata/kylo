@@ -48,6 +48,7 @@ mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
 import org.slf4j.LoggerFactory
 import com.thinkbiganalytics.spark.logger.LivyLogger
+import com.thinkbiganalytics.spark.utils.LivyPaginator
 import org.apache.spark.sql._
 val logger = LoggerFactory.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
              ]]>
@@ -90,23 +91,7 @@ com.thinkbiganalytics.spark.dataprofiler.core.Profiler.profileDataFrame(sparkCon
         <entry key="pagedDataFrame">
           <value>
             <![CDATA[
-var dfRows : List[Object] = List()
-LivyLogger.time {
-  val (startCol, stopCol) = (%s, %s);
-  val lastCol = df.columns.length - 1
-  val dfStartCol = if( lastCol >= startCol ) startCol else lastCol
-  val dfStopCol = if( lastCol >= stopCol) stopCol else lastCol
-  df = df.select( dfStartCol to dfStopCol map df.columns map col: _*)
-
-  val dl = df.collect
-  val ( firstRow, lastRow ) = ( 0, dl.size )
-  val ( pageStart, pageStop ) = ( %s, %s )
-  val dfStartRow = if( lastRow >= pageStart ) pageStart else lastRow
-  val dfStopRow = if( lastRow >= pageStop) pageStop else lastRow
-
-  val pagedRows = dl.slice( dfStartRow, dfStopRow ).map( _.toSeq )
-  dfRows = List( df.schema.json, pagedRows )
-}
+var dfRows =  LivyPaginator.page( df, %s, %s, %s, %s )
              ]]>
           </value>
         </entry>

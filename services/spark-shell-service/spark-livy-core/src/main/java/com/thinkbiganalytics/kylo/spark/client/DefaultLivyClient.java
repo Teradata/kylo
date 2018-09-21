@@ -147,24 +147,47 @@ public class DefaultLivyClient implements LivyClient {
         }
     }
 
+
     @Override
     public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId) {
-        Statement statement = null;
-        do {
-            try {
-                Thread.sleep(livyProperties.getPollingInterval());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        return pollStatement(jerseyClient,sparkLivyProcess,stmtId,null);
+    }
 
+
+    @Override
+    public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait) {
+        long stopPolling = Long.MAX_VALUE;
+        long startMillis = System.currentTimeMillis();
+        if( wait != null ) {
+            // Limit the amount of time we will poll for a statement to complete.
+            stopPolling = startMillis + livyProperties.getPollingLimit();
+        }
+
+        Statement statement;
+        int pollCount = 1;
+        do {
             statement = getStatement( jerseyClient, sparkLivyProcess, stmtId );
 
             if( statement.getState().equals(StatementState.error)) {
                 // TODO: what about cancelled? or cancelling?
                 throw new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'");
             }
-        } while (statement == null || !statement.getState().equals(StatementState.available));
 
+            if( System.currentTimeMillis() > stopPolling || statement.getState().equals(StatementState.available) ) {
+                break;
+            }
+
+            logger.info("Statement was not ready, polling now with attempt '{}'", pollCount++);
+            // statement not ready, wait for some time...
+            try {
+                Thread.sleep(livyProperties.getPollingInterval());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } while (true);
+
+        // TODO: replace with XLogger
+        logger.info("exit DefaultLivyClient poll statement in '{}' millis ", System.currentTimeMillis() - startMillis);
         return statement;
     }
 
