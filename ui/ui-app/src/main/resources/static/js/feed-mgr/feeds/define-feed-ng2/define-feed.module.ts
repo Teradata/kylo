@@ -109,6 +109,8 @@ import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed
 import {DefineFeedSideNavComponent} from "./steps/define-feed-side-nav/define-feed-side-nav.component";
 import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.component";
 import {MatMenuModule} from "@angular/material/menu";
+import {FeedStatsModule} from "../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module";
+import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 
 @NgModule({
     declarations: [
@@ -234,6 +236,8 @@ import {MatMenuModule} from "@angular/material/menu";
         CatalogApiModule,
         SharedComponentsModule,
         MatMenuModule,
+        FeedStatsModule,
+        JobsListModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

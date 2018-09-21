@@ -7,12 +7,13 @@ import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
 import {DefaultImportService} from "../feed-mgr/services/ImportService";
 import {moduleName} from './module-name';
+import {Injectable} from "@angular/core";
 
 export enum ViewType {
     TABLE,
     LIST
 }
-
+@Injectable()
 export class DefaultPaginationDataService implements PaginationDataService{
     data:Common.Map<PaginationData> = {};
     constructor() {
@@ -204,4 +205,3 @@ export class DefaultPaginationDataService implements PaginationDataService{
     }
 }
 
-angular.module(moduleName).service('PaginationDataService', DefaultPaginationDataService);

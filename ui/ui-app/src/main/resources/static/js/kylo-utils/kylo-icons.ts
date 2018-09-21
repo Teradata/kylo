@@ -1,0 +1,36 @@
+export class KyloIcons {
+
+    static Links ={
+        setupGuide:"playlist_play",
+        feedActivity:"pages",
+        profile:"track_changes",
+        lineage:"graphic_eq",
+        sla:"beenhere",
+        versions:"history"
+    }
+
+    static Feed = {
+        status:"star",
+        category:"folder",
+        schedule:"date",
+        description:"subject",
+        tags:"subject",
+        running:"directions_run",
+        stopped:"blocked",
+        flowRate:"tune",
+        dateRange:"date_range",
+        timeSince:"timer",
+        runTime:"alarm",
+        numberOfFlowsStarted:"star_border",
+        numberOfFlowsFinished:"star",
+        jobsList:"library_books",
+        info:"details",
+        Actions:{
+            clone:"content_copy",
+            enable:"play_arrow",
+            disable:"pause_outline",
+        }
+    };
+
+
+}

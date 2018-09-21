@@ -3,6 +3,13 @@ import * as _ from "underscore";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import {OperationsRestUrlConstants} from "./operations-rest-url-constants";
+import {OperationsFeedUtil} from "./operations-feed-util";
+import {ReplaySubject} from "rxjs/ReplaySubject";
+import {TdDialogService} from "@covalent/core/dialogs";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {FeedSummary} from "../feed-mgr/model/feed/feed-summary.model";
+import {Observable} from "rxjs/Observable";
+import {RestUrlConstants} from "../feed-mgr/services/RestUrlConstants";
 
 @Injectable()
 export class OpsManagerFeedService {
@@ -41,7 +48,7 @@ export class OpsManagerFeedService {
     feedHealthyCount: number = 0;
 
     constructor(
-        private http : HttpClient){
+        private http : HttpClient, private _dialogService:TdDialogService, private snackBar: MatSnackBar){
 
     }
     emptyFeed () {
@@ -168,4 +175,147 @@ export class OpsManagerFeedService {
             clearTimeout(this.fetchFeedHealthInterval);
         }
     }
+
+    getFeedHealth(feedName:string){
+        let subject = new ReplaySubject(1);
+
+        var successFn = (response: any)=> {
+            let feedHealth = {};
+            if (response) {
+                //transform the data for UI
+                //this.feedData = response;
+
+                if (response.feedSummary && response.feedSummary.length && response.feedSummary.length >0) {
+                     feedHealth = response.feedSummary[0];
+                    OperationsFeedUtil.decorateFeedSummary(feedHealth);
+                    feedHealth = feedHealth
+                }
+            }
+            subject.next(feedHealth)
+        }
+        var errorFn =  (err: any)=> {
+            subject.error(err)
+        }
+        this.http.get(OperationsRestUrlConstants.SPECIFIC_FEED_HEALTH_URL(feedName)).subscribe( successFn, errorFn);
+        return subject.asObservable();
+    }
+
+    public openSnackBar(message:string, duration?:number){
+        if(duration == undefined){
+            duration = 3000;
+        }
+        this.snackBar.open(message, null, {
+            duration: duration,
+        });
+    }
+
+
+    enableFeed(feedId:string) :Observable<FeedSummary>{
+    let observable:Observable<FeedSummary> =   <Observable<FeedSummary>>  this.http.post(RestUrlConstants.ENABLE_FEED_URL(feedId),null);
+    observable.subscribe((response:FeedSummary)=> {
+            //no op
+
+        },error1 => {
+            this._dialogService.openAlert({
+                title:"Error enabling the feed",
+                message:"The feed could not be enabled."
+            });
+        });
+    return observable;
+    }
+
+    disableFeed(feedId:string) :Observable<FeedSummary>{
+        let observable:Observable<FeedSummary> =  <Observable<FeedSummary>>   this.http.post(RestUrlConstants.DISABLE_FEED_URL(feedId),null);
+        observable.subscribe((response:FeedSummary)=> {
+            //no op
+
+        },error1 => {
+            this._dialogService.openAlert({
+                title:"Error disabling the feed",
+                message:"The feed could not be disabled."
+            });
+        });
+        return observable;
+    }
+
+    /**
+     *
+     this.enableFeed = function() {
+        if(!self.enabling && self.allowEdit) {
+            self.enabling = true;
+            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response:any) {
+                self.model.state = response.data.state;
+                FeedService.updateEditModelStateIcon();
+                self.enabling = false;
+            }, function () {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("NiFi Error")
+                        .textContent("The feed could not be enabled.")
+                        .ariaLabel("Cannot enable feed.")
+                        .ok("OK")
+                );
+                self.enabling = false;
+            });
+        }
+    };
+
+     this.disableFeed = function() {
+        if(!self.disabling && self.allowEdit) {
+            self.disabling = true;
+            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function (response:any) {
+                self.model.state = response.data.state;
+                FeedService.updateEditModelStateIcon();
+                self.disabling = false;
+            }, function () {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("NiFi Error")
+                        .textContent("The feed could not be disabled.")
+                        .ariaLabel("Cannot disable feed.")
+                        .ok("OK")
+                );
+                self.disabling = false;
+            });
+        }
+    };
+
+     this.startFeed = function() {
+        if (!self.startingFeed && self.allowStart) {
+            self.startingFeed = true;
+            $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response:any) {
+                let msg = "Feed started";
+                if(response && response.data && response.data.message) {
+                    msg = response.data.message;
+                }
+                $mdToast.show(
+                    $mdToast.simple()
+                        .textContent(msg)
+                        .hideDelay(3000)
+                );
+                self.startingFeed = false;
+            }, function (response : any) {
+                let msg = "The feed could not be started.";
+                if(response && response.data && response.data.message) {
+                    msg +="<br/><br/>"+response.data.message;
+                }
+                console.error("Unable to start the feed ",response);
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Error starting the feed")
+                        .htmlContent(msg)
+                        .ariaLabel("Cannot start feed.")
+                        .ok("OK")
+                );
+                self.startingFeed = false;
+            });
+        }
+    };
+
+
+
+     */
 }

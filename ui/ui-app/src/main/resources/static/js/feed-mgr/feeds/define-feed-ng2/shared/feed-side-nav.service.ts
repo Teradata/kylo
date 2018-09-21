@@ -9,6 +9,7 @@ import {ISubscription} from "rxjs/Subscription";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {TranslateService} from "@ngx-translate/core";
 import {LINEAGE_LINK, PROFILE_LINK, SETUP_GUIDE_LINK, SETUP_REVIEW_LINK, SLA_LINK, VERSIONS_LINK} from "./feed-link-constants";
+import {KyloIcons} from "../../../../kylo-utils/kylo-icons";
 
 
 export class FeedLinkSelectionChangedEvent{
@@ -42,9 +43,9 @@ export class FeedSideNavService {
      */
     public staticFeedLinks:FeedLink[] =[];
 
-    latestSetupGuideLink = FeedLink.newSectionLink(SETUP_GUIDE_LINK, "setup-guide","playlist_add_check",{"loadMode":LoadMode.LATEST});
+    latestSetupGuideLink = FeedLink.newStaticLink(SETUP_GUIDE_LINK, "setup-guide",KyloIcons.Links.setupGuide,{"loadMode":LoadMode.LATEST});
 
-    deployedSetupGuideLink = FeedLink.newSectionLink(SETUP_REVIEW_LINK, "deployed-setup-guide","playlist_add_check", {"loadMode":LoadMode.DEPLOYED});
+    deployedSetupGuideLink = FeedLink.newStaticLink(SETUP_REVIEW_LINK, "setup-guide",KyloIcons.Links.setupGuide, {"loadMode":LoadMode.DEPLOYED});
 
 
 
@@ -53,10 +54,10 @@ export class FeedSideNavService {
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
 
         this.toolbarActionTemplateChangedSubject = new Subject<ToolbarActionTemplateChangedEvent>();
-        this.staticFeedLinks = [FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',"graphic_eq"),
-            FeedLink.newStaticLink(PROFILE_LINK,"profile","track_changes"),
-            FeedLink.newStaticLink(SLA_LINK,"sla","beenhere"),
-            FeedLink.newStaticLink(VERSIONS_LINK,"version-history","history")];
+        this.staticFeedLinks = [FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',KyloIcons.Links.lineage),
+            FeedLink.newStaticLink(PROFILE_LINK,"profile",KyloIcons.Links.profile),
+            FeedLink.newStaticLink(SLA_LINK,"sla",KyloIcons.Links.sla),
+            FeedLink.newStaticLink(VERSIONS_LINK,"version-history",KyloIcons.Links.versions)];
     }
 
     feedLinks:FeedLink[] = [];

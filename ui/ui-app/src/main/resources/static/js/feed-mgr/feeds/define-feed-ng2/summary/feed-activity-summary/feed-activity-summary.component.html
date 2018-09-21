@@ -3,19 +3,17 @@
     <div *ngIf="feed != undefined">Feed Activity - {{feed.feedName}} </div>
     <span fxFlex="100"></span>
   </div>
-    <div fxLayout="row">
-      <div fxFlex="60%">
+    <div fxLayout="row" *ngIf="feed && !feed.isStream ">
+      <div fxFlex="60%" fxLayout="column">
         <feed-job-activity [feed]="feed"></feed-job-activity>
+
+        <!-- Job table -->
+        <jobs-list [feedFilter]="feed.getFullName()"></jobs-list>
       </div>
-
-
       <div fxLayout="column" fxFlex="40%">
-
-        <feed-operations-health-info [feed]="feed" *ngIf="feed != undefined"></feed-operations-health-info>
-
-
+        <feed-operations-health-info [(feed)]="feed" *ngIf="feed != undefined"></feed-operations-health-info>
+        <!-- Alerts -->
       </div>
-
-
     </div>
+  <feed-stats-charts *ngIf="feed && feed.isStream"  [(feed)]="feed" [refreshIntervalTime]="5000" style="width:100%"></feed-stats-charts>
 </td-layout-nav>

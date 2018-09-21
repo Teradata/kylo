@@ -1,0 +1,343 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="feed-stats">
+  <div fxLayout="column" *ngIf="dataLoaded">
+
+
+    <mat-card fxLayoutAlign="center center">
+      <mat-card-content fxLayout="column" style="width:100%;">
+        <div fxLayout="row" class="">
+          <div flex="100" fxLayout="column">
+            <div fxLayout="column">
+              <div fxLayout="row" fxLayoutAlign="space-between start" layout-fill>
+                <span class="card-title right-card-title-text">{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
+                <span style="margin-top: 5px;">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+              </div>
+            </div>
+            <div flex>
+              <div class="md-slider-container" >
+                <span class="hint">{{timeFrameOptions[0].label}}</span>
+                <mat-slider (change)="onTimeFrameChanged()" flex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
+              </div>
+            </div>
+            <label *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
+          </div>
+          <span flex style="padding-left: 40px"></span>
+          <div fxLayout="column">
+            <div fxLayout="row">
+              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()">
+                <button mat-button> Refresh</button>
+              </div>
+            </div>
+            <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
+              Auto Refresh
+            </mat-slide-toggle>
+          </div>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngIf="feedProcessorErrors.visibleData.length >0">
+        <mat-toolbar class="md-table-toolbar md-default" fxLayout="column">
+          <div >
+            <span> {{"views.feed-stats-charts.EM" | translate}} </span>
+            <span flex="5"></span>
+            <div flex style="margin-top:25px">
+              <mat-form-field>
+                <mat-input-container flex layout-fill>
+                  <label> {{"views.feed-stats-charts.Filter" | translate}} </label>
+                  <input [(ngModel)]="feedProcessorErrorsTable.filter" [ngModelOptions]="{debounce:1000}"/>
+                </mat-input-container>
+              </mat-form-field>
+            </div>
+            <span flex="5"></span>
+            <div fxLayout="column" fxLayoutAlign="end end">
+              <div fxLayout="row">
+                <mat-slide-toggle class="md-primary" md-no-ink [aria-label]="'Auto Refresh'" [(ngModel)]="feedProcessorErrors.autoRefresh"
+                                  (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
+                  Auto Refresh: {{feedProcessorErrors.autoRefreshMessage}}
+                </mat-slide-toggle>
+                <button mat-button class="md-icon-button" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
+                  <mat-icon>refresh</mat-icon>
+                </button>
+              </div>
+              <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
+            </div>
+          </div>
+        </mat-toolbar>
+
+        <td-data-table
+            #dataTable
+            [data]="feedProcessorErrorsTable.filteredData"
+            [columns]="feedProcessorErrorsTable.columns"
+            [sortable]="true"
+            [sortBy]="feedProcessorErrorsTable.sortOrder"
+            [style.height.px]="200">
+          <ng-template tdDataTableTemplate="errorMessageTimestamp" let-value="value" let-row="row" let-column="column">
+            <span>{{value | date: 'HH:mm:ss'}}</span>
+          </ng-template>
+        </td-data-table>
+
+      </mat-card>
+
+    <div fxLayout="row" >
+      <div fxLayout="column" fxFlex="60">
+        <!-- THE KPIs -->
+        <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutAlign="space-between center" class="kpi-row">
+
+          <div flex-gt-md="33" flex-gt-xs="50" class="service-wrapper kpi" >
+            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column" class="kpi">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{eventSuccessKpi.value}}% </span>
+                <div class="md-media-sm card-media">
+                  <mat-icon [ngStyle]="{'fill':eventSuccessKpi.color}" size="50">
+                    {{eventSuccessKpi.icon}}}
+                  </mat-icon>
+                </div>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <span class="mat-title"> {{"views.feed-stats-charts.SR" | translate}} </span>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <div flex-gt-md="33" flex-gt-xs="50" class="kpi" >
+            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</span>
+                <div class="md-media-sm card-media">
+                  <mat-icon [ngStyle]="{'fill':flowRateKpi.color}" size="50">{{flowRateKpi.icon}}</mat-icon>
+                </div>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayourAlign="center center">
+                <span class="mat-title">{{"views.feed-stats-charts.IFR" | translate}}</span>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <div flex-gt-md="33" flex-gt-xs="50" class="kpi" >
+            <mat-card fxLayoutAlign="center center" fxLayout="column">
+              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
+                <span class="md-display-1">{{avgDurationKpi.value}}</span>
+                <div class="md-media-sm card-media">
+                  <mat-icon [ngStyle]="{'fill':avgDurationKpi.color}" size="50">
+                    {{avgDurationKpi.icon}}
+                  </mat-icon>
+                </div>
+              </mat-card-title>
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <span class="mat-title">{{"views.feed-stats-charts.FD" | translate}}</span>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+        <!-- END KPIs -->
+
+        <div>
+          <mat-card fxLayoutAlign="start start" >
+            <mat-card-content flex="100" style="width: 100%; padding: 0">
+              <div flex fxLayout="row" fxLayoutAlign="start end">
+                <span flex *ngIf="feedTimeChartLoading">
+                  <mat-progress-bar [mode]="indeterminate"></mat-progress-bar>
+                </span>
+                <span flex *ngIf="!feedTimeChartLoading">
+                  <mat-progress-bar [mode]="indeterminate"></mat-progress-bar>
+                </span>
+              </div>
+              <div fxLayout="row" fxLayoutAlign="space-between center">
+                <div flex fxLayout="column">
+                  <span class="card-title kpi-header layout-padding-left">{{"views.feed-stats-charts.AFR" | translate}}</span>
+                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left" [hidden]="!zoomEnabled">Zoom in/out and pan left/right to see custom time frame</span>
+                </div>
+                <button mat-button (click)="onResetZoom()" [hidden]="!zoomEnabled">Reset Zoom</button>
+              </div>
+
+              <nvd3 [options]="feedChartOptions" [data]="feedChartData"></nvd3>
+
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+
+        <div>
+          <mat-card style="padding : 8px;"fxLayoutAlign="center center" style="margin-left: 0px;margin-right: 0px;">
+            <mat-card-content layout-fill>
+
+              <div fxLayout="column" fxLayoutAlign="start start">
+                <span class="card-title kpi-header">{{"views.feed-stats-charts.FPM" | translate}}</span>
+              </div>
+
+              <mat-input-container class="md-block layout-padding-top-bottom">
+                <label class="md-container-ignore label-small layout-padding-top">{{"views.feed-stats-charts.PM" | translate}}</label>
+                <mat-select [(ngModel)]="selectedProcessorStatisticFunction" (change)="onProcessorChartFunctionChanged()" aria-label="Rule Type">
+                  <mat-option [value]="opt" *ngFor="let opt of processorStatsFunctions">{{  'views.feed-stats-charts.' + opt | translate}}</mat-option>
+                </mat-select>
+              </mat-input-container>
+
+              <nvd3 flex [options]="processorChartOptions" [data]="processorChartData" config="{deepWatchOptions:true}"></nvd3>
+
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+
+      </div>
+
+      <div fxFlex="40" >
+        <mat-card  class="feed-info-card feed-card">
+          <mat-card-header>
+            <mat-card-title>Feed Info</mat-card-title>
+            <mat-card-subtitle>Additional details</mat-card-subtitle>
+            <span fxFlex></span>
+            <div class="pad-right">
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'" (click)="disableFeed()">
+                  <mat-icon>pause_circle_outline</mat-icon>
+                  <span >Disable</span>
+                </button>
+                <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'" (click)="enableFeed()">
+                  <mat-icon>play_arrow</mat-icon>
+                  <span >Enable</span>
+                </button>
+                <button mat-menu-item disabled>
+                  <mat-icon>cloud_upload</mat-icon>
+                  <span>UploadFile</span>
+                </button>
+              </mat-menu>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+              <mat-list dense>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.status}}</mat-icon>
+                  <h4 mat-line *ngIf="!feedStateChanging"> {{feed.state}}</h4>
+                  <h4 mat-line *ngIf="feedStateChanging">
+                    <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
+                  </h4>
+                  <p mat-line >Status</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.category}}</mat-icon>
+                  <h4 mat-line> {{feed.category.name}}</h4>
+                  <p mat-line >Category</p>
+                </mat-list-item>
+
+                <mat-divider></mat-divider>
+
+                <mat-list-item *ngIf="feed.description">
+                  <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.description}}</mat-icon>
+                  <h4 mat-line> {{feed.description}}</h4>
+                  <p mat-line >Description</p>
+                </mat-list-item>
+
+                <mat-divider></mat-divider>
+
+                <mat-list-item *ngIf="feedHealth">
+                  <mat-icon mat-list-icon *ngIf="feedHealth.icon">{{feedHealth.icon}}</mat-icon>
+                  <h4 mat-line>{{feedHealth.displayStatus}}</h4>
+                  <p mat-line >Feed Health</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item>
+                  <mat-icon mat-list-icon >date_range</mat-icon>
+                  <h4 mat-line> {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</h4>
+                  <p mat-line >Date Range</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon >{{kyloIcons.Feed.numberOfFlowsStarted}}</mat-icon>
+                  <h4 mat-line>{{summaryStatistics.flowsStarted | number}}</h4>
+                  <p mat-line translate>views.feed-stats-charts.FS</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon >{{kyloIcons.Feed.numberOfFlowsFinished}}</mat-icon>
+                  <h4 mat-line>{{summaryStatistics.flowsFinished | number}}</h4>
+                  <p mat-line translate>views.feed-stats-charts.FF</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon >{{kyloIcons.Feed.running}}</mat-icon>
+                  <h4 mat-line>{{summaryStatistics.flowsRunning | number}}</h4>
+                  <p mat-line translate>views.feed-stats-charts.FlowsR</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <mat-list-item >
+                  <mat-icon mat-list-icon >{{kyloIcons.Feed.flowRate}}</mat-icon>
+                  <h4 mat-line>{{summaryStatistics.flowsStartedPerSecond | number}} / {{"views.feed-stats-charts.sec" | translate}}</h4>
+                  <p mat-line translate>views.feed-stats-charts.FlowsRate</p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+
+                <!--
+
+
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{avgDurationKpi.value}}</span>
+                    <span class="column-title column-title-bottom">{{"views.feed-stats-charts.FD2" | translate}}</span>
+                  </div>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
+
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="item-column mat-list-item-text ">
+                    <span class="item-title">{{eventSuccessKpi.value }}%</span>
+                    <span class="column-title column-title-bottom">{{"views.feed-stats-charts.SE" | translate}}</span>
+                  </div>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
+
+                <mat-list-item style="padding: 16px;">
+                  <div fxLayout="column" class="layout-padding-top-bottom layout-padding-left-right" fxLayoutAlign="space-between start">
+                    <div class="md-subhead layout-padding-bottom">Links</div>
+                    <div class="layout-padding-left ">
+                      <button mat-button color="primary" (click)="gotoFeedDetails($event)">{{"views.feed-stats-charts.FeedD" | translate}}</button>
+                    </div>
+                  </div>
+                </mat-list-item>
+                -->
+
+              </mat-list>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+    </div>
+
+
+  </div>
+  <div *ngIf="!dataLoaded" class="kpi-loading" fxLayoutAlign="center center" fxLayout="column">
+    <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
+  </div>
+</div>

@@ -33,8 +33,11 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
     private feedEditStateChangeEvent:ISubscription;
 
+    private feedLoadedSubscription:ISubscription;
+
     protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
         this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
+        this.feedLoadedSubscription = this.defineFeedService.subscribeToFeedLoadedEvent(this.onFeedLoaded.bind(this))
     }
 
     public init(){
@@ -56,6 +59,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         if(this.feedEditStateChangeEvent){
             this.feedEditStateChangeEvent.unsubscribe();
         }
+        this.feedLoadedSubscription.unsubscribe();
         this.destroy();
     }
 
@@ -145,6 +149,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
      * @param {Feed} feed
      */
     onFeedLoaded(feed: Feed) {
-
+        this.feed = feed;
+            console.log('FEED LOADED ',feed.id, feed.versionName,this.constructor.name, feed.canEdit())
     }
 }

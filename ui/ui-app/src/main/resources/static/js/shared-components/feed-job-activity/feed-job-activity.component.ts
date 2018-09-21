@@ -10,6 +10,7 @@ import {OperationsRestUrlConstants} from "../../services/operations-rest-url-con
 import {ChartJobService} from "../../services/chart-job.service";
 import {Feed} from "../../feed-mgr/model/feed/feed.model";
 import {MatButtonToggleChange} from "@angular/material";
+import {KyloIcons} from "../../kylo-utils/kylo-icons";
 
 declare const d3: any;
 
@@ -19,7 +20,6 @@ declare const d3: any;
 })
 export class FeedJobActivityComponent implements OnInit {
 
-    pageName: any;
     dataLoaded: any;
     dateSelection: string = "1-M";
     chartData: any[];
@@ -34,6 +34,8 @@ export class FeedJobActivityComponent implements OnInit {
 
     @Input()
     feed:Feed;
+
+    kyloIcons = KyloIcons;
 
     ngOnInit() {
         if(!this.feedName) {

@@ -17,10 +17,19 @@ import {Nvd3ChartService} from "./nvd3-chart.service";
 import {ChartJobService} from "./chart-job.service";
 import {UpgradeModule} from "@angular/upgrade/static";
 import {OpsManagerFeedService} from "./ops-manager-feed.service";
+import {CovalentDialogsModule} from "@covalent/core/dialogs";
+import OpsManagerJobService from "./ops-manager-jobs.service";
+import {DefaultTableOptionsService} from "./TableOptionsService";
+import {DefaultPaginationDataService} from "./PaginationDataService";
+import TabService from "./tab.service";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
+
 //import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
     imports: [
-        CommonModule
+        CommonModule,
+        CovalentDialogsModule,
+        MatSnackBarModule
     ],
     providers: [
         notificationServiceProvider,
@@ -32,6 +41,10 @@ import {OpsManagerFeedService} from "./ops-manager-feed.service";
         fileUploadServiceProvider,
         accessControlServiceProvider,
         OpsManagerFeedService,
+        OpsManagerJobService,
+        DefaultTableOptionsService,
+        DefaultPaginationDataService,
+        TabService,
         TemplateService,
         Nvd3ChartService,
         ChartJobService

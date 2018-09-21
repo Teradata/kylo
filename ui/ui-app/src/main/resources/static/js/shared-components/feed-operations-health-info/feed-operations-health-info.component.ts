@@ -2,7 +2,10 @@ import {OperationsRestUrlConstants} from "../../services/operations-rest-url-con
 import {Feed} from "../../feed-mgr/model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
 import {OperationsFeedUtil} from "../../services/operations-feed-util";
-import {Input, Component, OnInit, OnDestroy} from "@angular/core";
+import {Input, Output, EventEmitter, Component, OnInit, OnDestroy} from "@angular/core";
+import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
+import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
+import {KyloIcons} from "../../kylo-utils/kylo-icons";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -12,6 +15,9 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     @Input()
     feed:Feed;
+
+    @Output()
+        feedChange = new EventEmitter<Feed>()
 
     feedData:any;
 
@@ -26,32 +32,19 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     refreshTime:number = 5000;
 
-    constructor(private http:HttpClient){}
+    constructor(private opsManagerFeedService:OpsManagerFeedService){}
 
+    feedStateChanging:boolean;
 
+    kyloIcons = KyloIcons;
 
     getFeedHealth(){
-        var successFn = (response: any)=> {
-            if (response) {
-                    //transform the data for UI
-                    this.feedData = response;
-                    if (this.feedData.feedSummary && this.feedData.feedSummary.length && this.feedData.feedSummary.length >0) {
-                        let feedHealth = this.feedData.feedSummary[0];
-                        OperationsFeedUtil.decorateFeedSummary(feedHealth);
-                        this.feedHealth = feedHealth
-                        this.feedHealthAvailable = true;
-                    }
+
+        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response:any) => {
+            if(response){
+                this.feedHealthAvailable = true;
             }
-        }
-        var errorFn =  (err: any)=> {
-        }
-        var finallyFn =  ()=> {
-
-        }
-        let  feedName = this.feed.getFullName()
-
-
-        this.http.get(OperationsRestUrlConstants.SPECIFIC_FEED_HEALTH_URL(feedName)).subscribe( successFn, errorFn);
+        })
     }
 
     ngOnInit(){
@@ -63,6 +56,23 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         if(this.refreshInterval){
             clearInterval(this.refreshInterval);
         }
+    }
+
+    enableFeed(){
+        this.feedStateChanging = true;
+        this.opsManagerFeedService.enableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
+            this.feed.state = feedSummary.state;
+            this.feedStateChanging = false;
+            this.feedChange.emit(this.feed)
+        });
+    }
+    disableFeed(){
+        this.feedStateChanging = true;
+        this.opsManagerFeedService.disableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
+            this.feed.state = feedSummary.state;
+            this.feedStateChanging = false;
+            this.feedChange.emit(this.feed)
+        });
     }
 
 }

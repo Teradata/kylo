@@ -1,0 +1,98 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<mat-card class="feed-card">
+
+  <mat-card-content>
+    <div fxLayout="row" fxFlex="100" fxLayoutAlign="start center" class=" mat-card-header-text pad-left-sm pad-right-sm" >
+      <div *ngIf="!searchBox.searchVisible" fxLayout="column">
+        <mat-card-title fxLayout="row">
+          <mat-icon >{{kyloIcons.Feed.jobsList}}</mat-icon>
+          <span  class="push-left-sm">
+               <span >Jobs</span>
+             </span>
+        </mat-card-title>
+        <mat-card-subtitle>Job executions for this feed</mat-card-subtitle>
+      </div>
+      <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Filter" (searchDebounce)="search($event)"
+                     [showUnderline]="true" fxFlex>
+      </td-search-box>
+    </div>
+
+
+    <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
+                   (selectedIndexChange)="onTabSelected($event)"
+                   layout-fill  dynamicHeight>
+
+      <mat-tab *ngFor="let tab of tabs"
+               [disabled]="tab.disabled" flex>
+        <ng-template mat-tab-label>{{tab.title}}</ng-template>
+        <div>
+          <mat-divider></mat-divider>
+
+          <filtered-paginated-table-view
+              [cardView]="false"
+              [showToolbar]="false"
+              [columns]="columns"
+              [sortable]="true"
+              [sortBy]="sortBy"
+              [sortOrder]="sortOrder"
+              [clickable]="true"
+              [filteredData]="filteredData"
+              [firstLast]="false"
+              [pageSize]="pageSize"
+              [filteredTotal]="total"
+              [allowedPageSize]="[5,10,20,50]"
+              (rowClicked)="jobDetails($event)"
+              (sortChanged)="sort($event)"
+              (pageSizeChanged)="onPaginationChange($event)"
+          >
+
+            <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
+                                    <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
+                                        <ng-md-icon icon="{{row.icon}}" size="20" >
+                                        </ng-md-icon>
+                                        <span hide show-gt-md>{{row.displayStatus}}</span>
+                                    </span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="startTime" let-value="value" let-row="row" let-column="column">
+              <span>{{row.startTime | date:'MMM d, yyyy HH:mm:ss'}}</span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="runTime" let-value="value" let-row="row" let-column="column">
+              <span>{{row.runTime}}</span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
+              <button mat-button *ngIf="row.status !='COMPLETED' && row.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</button>
+              <button mat-button  *ngIf="row.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</button>
+              <span *ngIf="row.errorMessage != ''">
+                                        <br/>
+                                        <span class="md-warn md-caption">{{row.errorMessage}}</span>
+                                    </span>
+            </ng-template>
+
+          </filtered-paginated-table-view>
+
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card-content>
+</mat-card>

@@ -6,11 +6,13 @@ import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
 import {Sort} from "@angular/material/sort";
 import {moduleName} from './module-name';
+import {Injectable} from "@angular/core";
+import {DefaultPaginationDataService} from "./PaginationDataService";
 
+@Injectable()
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
     sortOptions:Common.Map<SortOption[]> = {};
-    static $inject = ["PaginationDataService"]
-    constructor(private PaginationDataService:ListTableView.PaginationDataService) {}
+    constructor(private paginationDataService:DefaultPaginationDataService) {}
    
     newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string):SortOption[]{
         var sortOptions = Object.keys(labelValueMap).map((mapKey:string) => {
@@ -66,7 +68,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
      * @param key
      */
     initializeSortOption(key:string) {
-        var currentOption = this.PaginationDataService.sort(key);
+        var currentOption = this.paginationDataService.sort(key);
         if (currentOption) {
             this.setSortOption(key, currentOption)
         }
@@ -86,7 +88,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
             if (sortOption.reverse) {
                 val = '-' + val;
             }
-            this.PaginationDataService.sort(key, val);
+            this.paginationDataService.sort(key, val);
         }
     }
 
@@ -159,4 +161,3 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         return returnedSortOption;
     }
 }
-angular.module(moduleName).service('TableOptionsService', DefaultTableOptionsService);
