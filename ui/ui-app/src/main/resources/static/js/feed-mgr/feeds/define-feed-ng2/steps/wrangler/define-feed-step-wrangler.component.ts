@@ -2,6 +2,7 @@ import {Component, Injector, Input, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TranslateService} from '@ngx-translate/core';
 import {StateService} from "@uirouter/angular";
+import {Observable} from "rxjs/Observable";
 
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {VisualQueryStepperComponent} from "../../../../visual-query/visual-query-stepper.component";
@@ -31,9 +32,17 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
     init() {
         super.init();
+        this.feed.dataTransformation.datasets = this.feed.sourceDataSets;
     }
 
     getStepName() {
         return FeedStepConstants.STEP_WRANGLER;
+    }
+
+
+    protected applyUpdatesToFeed(): Observable<any> | null {
+        super.applyUpdatesToFeed();
+        this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
+        return null;
     }
 }

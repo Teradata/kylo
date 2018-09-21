@@ -13,14 +13,17 @@ import {
     accessControlServiceProvider
 } from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
-import {Nvd3ChartService} from "./nvd3-chart.service";
-import {ChartJobService} from "./chart-job.service";
 import {UpgradeModule} from "@angular/upgrade/static";
-import {OpsManagerFeedService} from "./ops-manager-feed.service";
-//import {previewDatasetCollectionServiceProvider} from "./angular2";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {DefaultPaginationDataService} from "./PaginationDataService";
+import TabService from "./tab.service";
+import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
+
 @NgModule({
     imports: [
-        CommonModule
+        CommonModule,
+        MatSnackBarModule,
+        OpsManagerServicesModule
     ],
     providers: [
         notificationServiceProvider,
@@ -31,11 +34,9 @@ import {OpsManagerFeedService} from "./ops-manager-feed.service";
         stateServiceProvider,
         fileUploadServiceProvider,
         accessControlServiceProvider,
-        OpsManagerFeedService,
-        TemplateService,
-        Nvd3ChartService,
-        ChartJobService
-    ]
+        DefaultPaginationDataService,
+        TabService,
+        TemplateService]
 })
 export class KyloServicesModule {
 

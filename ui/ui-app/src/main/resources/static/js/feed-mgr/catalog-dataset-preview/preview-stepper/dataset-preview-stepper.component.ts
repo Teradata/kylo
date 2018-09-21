@@ -39,9 +39,14 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     allowMultiSelection:boolean;
 
     /***
-     * the datasources to choose
+     * the data sources to choose
      */
     public datasources: DataSource[] = [];
+
+    /***
+     * Whether data sources have been loaded
+     */
+    public loading : boolean = true;
 
     @Output()
     previewSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
@@ -63,10 +68,6 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
      * Final step to view the preview
      */
     previewForm:FormGroup;
-
-
-
-
 
     @ViewChild("stepper")
     stepper: MatStepper;
@@ -212,6 +213,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
            //manually notify the view to check for changes
            this.catalogDatasources.search(" ")
            this.cd.markForCheck();
+           this.loading = false;
        })
 
 

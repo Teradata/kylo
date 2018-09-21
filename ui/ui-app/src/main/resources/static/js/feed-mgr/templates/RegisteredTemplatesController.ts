@@ -4,7 +4,7 @@ import { moduleName } from "./module-name";
 import { ListTableView } from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;
 import SortOption = ListTableView.SortOption;
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../services/RegisterTemplateServiceFactory';
 
 export class RegisteredTemplatesController {

@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import StateService from "../../../services/StateService";
+import {StateService} from "../../../services/StateService";
 import AlertsServiceV2 from "../../services/AlertsServiceV2";
 
 export default class controller implements ng.IComponentController{

@@ -1,12 +1,12 @@
 <div tdFileDrop (fileDrop)="upload($event)" multiple>
-  <div *ngIf="files.length == 0" class="drop-zone-empty" fxLayout="column">
+  <div class="drop-zone-empty" fxLayout="column">
     <ng-md-icon icon="fa-file" size="64" class="tc-accent"></ng-md-icon>
     <ng-md-icon icon="fa-folder" size="64" class="tc-primary"></ng-md-icon>
-    <p>Drag and drop here<br>OR</p>
+    <p>Drag and drop files <br>OR</p>
     <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">Add file</button>
   </div>
 
-  <div *ngIf="files.length > 0" class="drop-zone-list">
+  <div class="drop-zone-list">
     <mat-list>
       <ng-template ngFor let-item let-last="last" [ngForOf]="files">
         <mat-list-item>
@@ -25,12 +25,15 @@
   </div>
 </div>
 
+<div class="md-padding" *ngIf="loading" layout="row" layout-align="center center">
+  <h3>Processing...</h3>
+</div>
+
 <input #fileInput id="fileInput" tdFileSelect type="file" multiple style="display: none" (fileSelect)="upload($event)">
 
 <ng-container *ngIf="files.length > 0">
   <mat-divider></mat-divider>
   <mat-card-actions>
-    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()" *ngIf="!singleFile">Add more files</button>
     <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview" >Continue</button>
   </mat-card-actions>
 </ng-container>

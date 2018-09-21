@@ -3,6 +3,8 @@ import {moduleName} from "./module-name";
 import "kylo-common";
 import "kylo-services";
 import "jquery";
+import {downgradeInjectable} from "@angular/upgrade/static";
+import {OpsManagerChartJobService} from "./services/ops-manager-chart-job.service";
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -15,9 +17,8 @@ class ModuleFactory  {
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
     }
-} 
+}
 
 const module = new ModuleFactory();
 export default module;
-
 

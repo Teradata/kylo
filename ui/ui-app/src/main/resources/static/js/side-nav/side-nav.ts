@@ -8,7 +8,7 @@ import "pascalprecht.translate";
 import {TransitionService} from "@uirouter/core"; 
 import AccessControlService from "../services/AccessControlService";
 import SideNavService from  "../services/SideNavService";
-import StateService from "../services/StateService";
+import {StateService} from "../services/StateService";
 import AngularModuleExtensionService from "../services/AngularModuleExtensionService";
 import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuService";
 import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";

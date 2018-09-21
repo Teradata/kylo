@@ -55,24 +55,18 @@ export class DatabaseObject extends BrowserObject {
         return path.join("&");
     }
 
-
-    getIcon(column: BrowserColumn): string {
-        if(column.icon && column.name ==DatabaseObjectDescriptor.TYPE_COLUMN ) {
-            if(DatabaseObjectType.isTableType(this.type)){
-                return "table_grid";
-            }
-            else if(DatabaseObjectType.isSchema(this.type)){
-               return "fa-database"
-            }
-            else {
-                return "fa-columns"
-            }
-
+    getIcon() : string {
+        if(DatabaseObjectType.isTableType(this.type)){
+            return "table_grid";
+        }
+        else if(DatabaseObjectType.isSchema(this.type)){
+            return "fa-database"
         }
         else {
-            return super.getIcon(column)
+            return "fa-columns"
         }
     }
+
 }
 
 export class DatabaseObjectDescriptor {
@@ -81,6 +75,7 @@ export class DatabaseObjectDescriptor {
     static TYPE_COLUMN ="type";
 
     static COLUMNS: BrowserColumn[] = [
+        {name: "selection", label: " ", sortable: false, width: 40, filter: false, icon: false},
         {name: DatabaseObjectDescriptor.TYPE_COLUMN, label: "Type", sortable: false, filter: false, width: 100, icon:true,tooltip:"true"},
         {name: DatabaseObjectDescriptor.NAME_COLUMN, label: "Name", sortable: true, filter: true},
     ];

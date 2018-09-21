@@ -4,7 +4,7 @@ import {RejectType, Transition, TransitionService} from "@uirouter/core";
 import * as angular from 'angular';
 
 import "app";
-import StateService from  "../services/StateService";
+import {StateService} from  "../services/StateService";
 import AccessControlService from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 import SearchService from "../services/SearchService";

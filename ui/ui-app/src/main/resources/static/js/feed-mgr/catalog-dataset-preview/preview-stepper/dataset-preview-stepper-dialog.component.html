@@ -9,7 +9,7 @@
 <mat-dialog-content fxFlex="100%">
 <dataset-preview-stepper #datasetStepper (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [allowMultiSelection]="data.allowMultiSelection" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
 </mat-dialog-content>
-<mat-dialog-actions class="pad">
+<mat-dialog-actions>
   <!-- Action buttons -->
   <mat-divider></mat-divider>
   <div fxLayout="row" fxFlex>
@@ -17,9 +17,9 @@
     <span fxFlex></span>
     <button mat-button (click)="onBack()" *ngIf="showBack()">Back</button>
     <div fxLayout="column" *ngIf="showNext()">
-      <button mat-raised-button (click)="onNext()" *ngIf="showNext()" [disabled]="nextDisabled()">Next</button>
+      <button mat-raised-button (click)="onNext()" color="primary" *ngIf="showNext()" [disabled]="nextDisabled()">Next</button>
       <button mat-raised-button (click)="onSave()" [hidden]="!showSave()" [disabled]="saveDisabled()">{{saveLabel}}</button>
-       <span [hidden]="!nextDisabled()" class="warn">A selection is required</span>
+       <!-- <span [hidden]="!nextDisabled()" class="warn">A selection is required</span> -->
     </div>
     <div [hidden]="!showSave()">
       <td-notification-count [notifications]="getDataSetsLength()">

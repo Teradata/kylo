@@ -62,7 +62,7 @@ import {DefineFeedStepEditContentComponent} from "./steps/define-feed-step-card/
 import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-card/define-feed-step-readonly-content.component";
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
-import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";;
+import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
@@ -103,12 +103,17 @@ import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-
 
 import {EntityAccessControlComponent} from "../../shared/entity-access-control/entity-access-control.component";
 import {FeedSetupGuideComponent} from "./summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component";
-import {SharedComponentsModule} from "../../../shared-components/shared-components.module";
 import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
 import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
 import {DefineFeedSideNavComponent} from "./steps/define-feed-side-nav/define-feed-side-nav.component";
 import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.component";
 import {MatMenuModule} from "@angular/material/menu";
+
+
+import {FeedStatsModule} from "../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module";
+import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
+import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-manager-services.module";
+import {SharedComponentsModule} from "../../../shared-components/shared-components.module";
 
 @NgModule({
     declarations: [
@@ -234,6 +239,9 @@ import {MatMenuModule} from "@angular/material/menu";
         CatalogApiModule,
         SharedComponentsModule,
         MatMenuModule,
+        OpsManagerServicesModule,
+        FeedStatsModule,
+        JobsListModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

@@ -1,18 +1,21 @@
 <mat-card class="feed-info-card feed-card">
   <mat-card-header>
-    <mat-card-title>Feed Info</mat-card-title>
+    <mat-card-title>
+      <mat-icon>{{kyloIcons.Feed.info}}</mat-icon>
+      <span>Feed Info</span>
+    </mat-card-title>
     <mat-card-subtitle>Additional details</mat-card-subtitle>
     <span fxFlex></span>
-    <div>
+    <div class="pad-right">
       <button mat-icon-button [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'"  (click)="disableFeed()">
           <mat-icon>pause_circle_outline</mat-icon>
           <span >Disable</span>
         </button>
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'"  (click)="enableFeed()">
           <mat-icon>play_arrow</mat-icon>
           <span >Enable</span>
         </button>
@@ -31,38 +34,41 @@
         <h4 mat-line>Unavailable</h4>
         <p mat-line >Feed Health</p>
       </mat-list-item>
+      <mat-divider></mat-divider>
 
-      <mat-list-item *ngIf="feedHealthAvailable">
+      <mat-list-item *ngIf="feedHealthAvailable && feedHealth && feedHealth.healthText">
         <mat-icon mat-list-icon *ngIf="feedHealth.icon">{{feedHealth.icon}}</mat-icon>
-
       <h4 mat-line>{{feedHealth.healthText}}</h4>
       <p mat-line >Feed Health</p>
       </mat-list-item>
       <mat-divider></mat-divider>
 
       <mat-list-item *ngIf="feedHealthAvailable" >
-        <mat-icon mat-list-icon color="accent" >timer</mat-icon>
+        <mat-icon mat-list-icon color="accent" >{{kyloIcons.Feed.timeSince}}</mat-icon>
         <h4 mat-line>  <span kylo-timer [startTime]="feedHealth.timeSinceEndTime"></span></h4>
         <p mat-line > <span translate>views.feeds.feed-details.Since</span></p>
       </mat-list-item>
       <mat-divider></mat-divider>
 
       <mat-list-item *ngIf="feedHealthAvailable" >
-        <mat-icon mat-list-icon color="accent" >alarm</mat-icon>
+        <mat-icon mat-list-icon color="accent" >{{kyloIcons.Feed.runTime}}</mat-icon>
         <h4 mat-line>    {{feedHealth.runTimeString}}</h4>
         <p mat-line > <span translate>views.feeds.feed-details.LRT</span></p>
       </mat-list-item>
       <mat-divider></mat-divider>
 
-      <mat-list-item *ngIf="feed.description">
-        <mat-icon mat-list-icon color="accent">stars</mat-icon>
-        <h4 mat-line> {{feed.state}}</h4>
+      <mat-list-item>
+        <mat-icon mat-list-icon color="accent">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
+        <h4 mat-line *ngIf="!feedStateChanging"> {{feed.state}}</h4>
+        <h4 mat-line *ngIf="feedStateChanging">
+          <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
+        </h4>
         <p mat-line >Status</p>
       </mat-list-item>
       <mat-divider></mat-divider>
 
       <mat-list-item >
-        <mat-icon mat-list-icon color="accent">folder</mat-icon>
+        <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.category}}</mat-icon>
         <h4 mat-line> {{feed.category.name}}</h4>
         <p mat-line >Category</p>
       </mat-list-item>
@@ -70,7 +76,7 @@
       <mat-divider></mat-divider>
 
       <mat-list-item *ngIf="feed.description">
-        <mat-icon mat-list-icon color="accent">subject</mat-icon>
+        <mat-icon mat-list-icon color="accent">{{kyloIcons.Feed.description}}</mat-icon>
         <h4 mat-line> {{feed.description}}</h4>
         <p mat-line >Description</p>
       </mat-list-item>

@@ -1,8 +1,12 @@
 import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
 import {Feed} from "../../feed-mgr/model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
-import {OperationsFeedUtil} from "../../services/operations-feed-util";
-import {Input, Component, OnInit, OnDestroy} from "@angular/core";
+import {Input, Output, EventEmitter, Component, OnInit, OnDestroy} from "@angular/core";
+import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.service";
+import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
+import {KyloIcons} from "../../kylo-utils/kylo-icons";
+import BroadcastService from "../../services/broadcast-service";
+import {TdDialogService} from "@covalent/core/dialogs";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -13,12 +17,18 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
     @Input()
     feed:Feed;
 
+    @Output()
+    feedChange = new EventEmitter<Feed>()
+
+    @Output()
+    feedHealthRefreshed = new EventEmitter<FeedSummary>();
+
     feedData:any;
 
     /**
      * final feed health object
      */
-    feedHealth:any = {};
+    feedHealth:FeedSummary = new FeedSummary({});
 
     feedHealthAvailable:boolean;
 
@@ -26,32 +36,24 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     refreshTime:number = 5000;
 
-    constructor(private http:HttpClient){}
+    constructor(private opsManagerFeedService:OpsManagerFeedService,   private broadcastService: BroadcastService, private _dialogService:TdDialogService){
 
+        this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
+    }
 
+    feedStateChanging:boolean;
+
+    kyloIcons = KyloIcons;
 
     getFeedHealth(){
-        var successFn = (response: any)=> {
-            if (response) {
-                    //transform the data for UI
-                    this.feedData = response;
-                    if (this.feedData.feedSummary && this.feedData.feedSummary.length && this.feedData.feedSummary.length >0) {
-                        let feedHealth = this.feedData.feedSummary[0];
-                        OperationsFeedUtil.decorateFeedSummary(feedHealth);
-                        this.feedHealth = feedHealth
-                        this.feedHealthAvailable = true;
-                    }
+
+        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response:FeedSummary) => {
+            if(response){
+                this.feedHealth = response;
+                this.feedHealthAvailable = true;
+                this.feedHealthRefreshed.emit(response)
             }
-        }
-        var errorFn =  (err: any)=> {
-        }
-        var finallyFn =  ()=> {
-
-        }
-        let  feedName = this.feed.getFullName()
-
-
-        this.http.get(OperationsRestUrlConstants.SPECIFIC_FEED_HEALTH_URL(feedName)).subscribe( successFn, errorFn);
+        })
     }
 
     ngOnInit(){
@@ -63,6 +65,37 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         if(this.refreshInterval){
             clearInterval(this.refreshInterval);
         }
+    }
+
+    enableFeed(){
+        this.feedStateChanging = true;
+        this.opsManagerFeedService.enableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
+            this.feed.state = feedSummary.state;
+            this.feedStateChanging = false;
+            this.feedChange.emit(this.feed)
+            this.opsManagerFeedService.openSnackBar("Enabled the feed",5000)
+        }, error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error enabling the feed",
+                message:"There was an error enabling the feed"
+            })
+        });
+    }
+    disableFeed(){
+        this.feedStateChanging = true;
+        this.opsManagerFeedService.disableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
+            this.feed.state = feedSummary.state;
+            this.feedStateChanging = false;
+            this.feedChange.emit(this.feed)
+            this.opsManagerFeedService.openSnackBar("Disabled the feed",5000)
+        },error1 => {
+            this.feedStateChanging = false;
+            this._dialogService.openAlert({
+                title:"Error disabling the feed",
+                message:"There was an error disabling the feed"
+            })
+        });
     }
 
 }

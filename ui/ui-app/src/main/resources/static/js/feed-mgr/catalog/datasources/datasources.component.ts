@@ -34,6 +34,9 @@ export class DataSourcesComponent implements OnInit {
     @Input("datasources")
     public datasources: DataSource[];
 
+    @Input("loading")
+    public loading : boolean;
+
     /**
      * List of available data sources
      */

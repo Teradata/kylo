@@ -3,7 +3,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { Transition } from '@uirouter/core';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/datasources/module-name');

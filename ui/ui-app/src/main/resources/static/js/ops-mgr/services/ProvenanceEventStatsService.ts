@@ -45,7 +45,7 @@ export default class ProvenanceEventStatsService{
                     this.loading = false;
 
                 }
-                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, from, to),{params:{after:after}});
+                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, from, to,after));
                 promise.then(successFn, errorFn);
                 return promise;
             }

@@ -50,7 +50,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     toolbarActionTemplateChangeSubscription:ISubscription;
 
     constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
-                private viewContainerRef: ViewContainerRef,public snackBar: MatSnackBar,
+                private viewContainerRef: ViewContainerRef,
                 feedSideNavService:FeedSideNavService) {
         super(feedLoadingService, stateService,defineFeedService, feedSideNavService);
           let sideNavService = $$angularInjector.get("SideNavService");
@@ -97,42 +97,8 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
 
     onDelete(){
       //confirm then delete
-
-        this.dialogService.openConfirm({
-            message: 'Are you sure want to delete feed '+this.feed.feedName+'?',
-            disableClose: true,
-            viewContainerRef: this.viewContainerRef, //OPTIONAL
-            title: 'Confirm Delete', //OPTIONAL, hides if not provided
-            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
-            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
-            width: '500px', //OPTIONAL, defaults to 400px
-        }).afterClosed().subscribe((accept: boolean) => {
-            if (accept) {
-                this.registerLoading();
-                this.defineFeedService.deleteFeed().subscribe(() => {
-                    this.openSnackBar("Deleted the feed")
-                    this.resolveLoading();
-                    this.stateService.go('feeds')
-                },(error:any) => {
-                    this.openSnackBar("Error deleting the feed ")
-                    this.resolveLoading();
-                })
-            } else {
-                // DO SOMETHING ELSE
-            }
-        });
-
+        this.defineFeedService.deleteFeed(this.viewContainerRef);
     }
-    private openSnackBar(message:string, duration?:number){
-        if(duration == undefined){
-            duration = 3000;
-        }
-        this.snackBar.open(message, null, {
-            duration: duration,
-        });
-    }
-
-
 
     onFeedSaved(response:SaveFeedResponse){
         if(response.success){

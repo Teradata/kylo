@@ -289,12 +289,16 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         return parseInt(this.heightOffset) + elementOffset;
     }
 
+    selectedTable() : string {
+        return this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
+    }
+
     /**
      * Adds the table to the FlowChart.
      */
     onAddTable() {
         this.sideNavService.hideSideNav();
-        let table = this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
+        let table = this.selectedTable();
         if (table) {
             this.onTableClick(table);
             this.form.get('tableAutocomplete').reset('');
@@ -339,7 +343,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 this.validate();
                 datasources$.next(datasources);
             })
-            .catch((err: string) => {
+            .catch((err: any) => {
+                console.error(err);
                 this.error = err;
                 datasources$.error(err);
             })
@@ -420,7 +425,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     addSparkDataSets(datasets:SparkDataSet[]) {
         if(datasets && datasets.length >0) {
-            datasets.forEach((dataset: SparkDataSet) => {
+            datasets.filter(dataset => typeof dataset.preview !== "undefined").forEach((dataset: SparkDataSet) => {
                 let tableSchema: any = {};
 
                 tableSchema.schemaName = dataset.getSchemaName();
@@ -532,17 +537,17 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
             this.model.$selectedColumnsAndTables = null;
             this.model.chartViewModel = null;
-            this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
+            this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId.toUpperCase()) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
         } else if (this.model.$selectedDatasourceId == 'FILE') {
             this.isValid = this.model.sampleFile != undefined;
-        } else if (this.chartViewModel.nodes != null) {
-            this.isValid = (this.chartViewModel.nodes.length > 0);
+        } else if (this.chartViewModel.nodes != null && this.chartViewModel.nodes.length > 0) {
+            this.isValid = true;
 
             this.model.chartViewModel = this.chartViewModel.data;
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id) < 0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0);
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -755,7 +760,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         };
         //ensure the dataset is part of the model
         if(dataset){
-            if(_.isUndefined(this.model.datasets)){
+            if(_.isUndefined(this.model.datasets) || this.model.datasets === null){
                 this.model.datasets = [];
             }
             if(this.model.datasets.find(ds => ds.id == dataset.id) == undefined){

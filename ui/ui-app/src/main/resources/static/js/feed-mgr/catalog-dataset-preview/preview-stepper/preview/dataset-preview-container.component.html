@@ -25,9 +25,9 @@
 </div>
 
 <ng-container *ngIf="selectedDataSet">
-  <div fxLayout="column" fxFlex="none">
+  <div fxLayout="column" fxFlex="none" style="margin-top:-20px">
    <div  fxLayout="row" fxLayoutAlign="start end">
-     <button class="icon-button"  mat-button (click)="selectedDataSet = undefined" matTooltip="Back to dataset list">
+     <button class="icon-button"  mat-button (click)="selectedDataSet = undefined" matTooltip="Back to dataset list" style="margin-left:-27px">
        <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
        {{selectedDataSet.displayKey}}
      </button>

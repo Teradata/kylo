@@ -8,7 +8,7 @@ import {switchMap} from "rxjs/operators/switchMap";
 import {Subscription} from "rxjs/Subscription";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
-import StateService from "../../../services/StateService";
+import {StateService} from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {VisualQuerySaveService} from "../services/save.service";

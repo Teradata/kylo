@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import {Inject, Injectable, Injector} from "@angular/core";
+import {Inject, Injectable, Injector, ViewContainerRef} from "@angular/core";
 import {Feed, FeedMode, FeedTemplateType, LoadMode} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
@@ -297,7 +297,34 @@ export class DefineFeedService {
        */
     }
 
-    deleteFeed():Observable<any> {
+    public deleteFeed(viewContainerRef?:ViewContainerRef){
+        this._dialogService.openConfirm({
+            message: 'Are you sure want to delete feed '+this.feed.feedName+'?',
+            disableClose: true,
+            viewContainerRef: viewContainerRef, //OPTIONAL
+            title: 'Confirm Delete', //OPTIONAL, hides if not provided
+            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
+            width: '500px', //OPTIONAL, defaults to 400px
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+                this._loadingService.register("processingFeed");
+                this._deleteFeed().subscribe(() => {
+                    this.openSnackBar("Deleted the feed")
+                    this._loadingService.resolve("processingFeed");
+                    this.stateService.go('feeds')
+                },(error:any) => {
+                    this.openSnackBar("Error deleting the feed ")
+                    this._loadingService.resolve("processingFeed");
+                })
+            } else {
+                // DO SOMETHING ELSE
+            }
+        });
+    }
+
+
+    private _deleteFeed():Observable<any> {
         if(this.feed && this.feed.id) {
             return this.http.delete("/proxy/v1/feedmgr/feeds" + "/" + this.feed.id);
         }
@@ -544,12 +571,21 @@ export class DefineFeedService {
              this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
                 this.openSnackBar("DEPLOYED VERSION "+version.id,5000)
             });
-
-
-
         }
     }
 
+    revertDraft(feed:Feed) {
+        feed.validate(false)
+        if(feed.isDraft() && feed.isValid && feed.isComplete()){
+            let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+            let params :HttpParams = new HttpParams();
+            params.set("action","REMOVE")
+
+            this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
+                this.openSnackBar("Removed draft "+version.id,5000)
+            });
+        }
+    }
 
 
 
@@ -632,6 +668,8 @@ export class DefineFeedService {
         return loadFeedObservable$;
 
     }
+
+
 
 
 

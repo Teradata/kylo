@@ -170,6 +170,21 @@ onBrowserComponentFiltered(files:BrowserObject[]){
         this._previewDataSet(file);
     }
 
+    onCheckboxChange() {
+        let valid = false;
+        let node:Node = <Node> this.selectionService.get(this.datasource.id);
+        if(node){
+            let selectionCount = node.countSelectedDescendants()
+            valid = this.selectionService.isSingleSelection() ? selectionCount == 1 : selectionCount > 0;
+        }
+        if(valid) {
+            this.formGroup.get("hiddenValidFormCheck").setValue("valid");
+        }
+        else {
+            this.formGroup.get("hiddenValidFormCheck").setValue("");
+        }
+    }
+/*
     onToggleChange($event:MatCheckboxChange,file:BrowserObject,parent:BrowserComponent){
         parent.onToggleChild($event,file);
         let valid = false;
@@ -185,7 +200,7 @@ onBrowserComponentFiltered(files:BrowserObject[]){
             this.formGroup.get("hiddenValidFormCheck").setValue("");
         }
     }
-
+*/
     public _previewDataSet(file: BrowserObject) {
         this.showPreviewDialog(file,this.datasource);
 

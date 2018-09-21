@@ -1,6 +1,6 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {DefineFeedService} from "../../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
@@ -13,6 +13,7 @@ import {Feed, LoadMode} from "../../../../model/feed/feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../../new-feed-dialog/new-feed-dialog.component";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 
 
 @Component({
@@ -31,11 +32,11 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     @Input()
     showHeader:boolean
 
-
-
     feedSavedSubscription:ISubscription;
 
     showEditLink:boolean;
+
+    kyloIcons = KyloIcons;
 
     getLinkName(){
         return SetupGuideSummaryComponent.LINK_NAME;
@@ -88,10 +89,29 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id})
     }
 
+    onCancelEdit(){
+        this.feed.readonly = true;
+        this.defineFeedService.markFeedAsReadonly();
+
+    }
+
+    onDelete(){
+        //confirm then delete
+        this.defineFeedService.deleteFeed();
+    }
+
     cloneFeed(){
         this.defineFeedService.cloneFeed(this.feed);
     }
 
+    revertDraft(){
+        this.defineFeedService.revertDraft(this.feed);
+    }
+
+    onFeedEditStateChange(event:FeedEditStateChangeEvent){
+        super.onFeedEditStateChange(event);
+        this.init();
+    }
 
 
 

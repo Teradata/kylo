@@ -1,8 +1,8 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-import {ChartJobService} from "../../../services/chart-job.service";
 import HttpService from "../../../services/HttpService";
+import {OpsManagerChartJobService} from "../../services/ops-manager-chart-job.service";
 declare const d3: any;
 
 export default class controller implements ng.IComponentController{
@@ -20,7 +20,7 @@ refreshIntervalTime: any;
 
 static readonly $inject = ["$scope","$element","$http","$q","$interval","StateService",
                             "OpsManagerJobService","OpsManagerDashboardService",
-                            "HttpService","ChartJobStatusService","BroadcastService"];
+                            "HttpService","OpsManagerChartJobService","BroadcastService"];
 $onInit() {
     this.ngOnInit();
 }
@@ -88,7 +88,7 @@ constructor(private $scope: IScope,
         private OpsManagerJobService: any,
         private OpsManagerDashboardService: any,
         private httpService: HttpService,
-        private chartJobStatusService: ChartJobService,
+        private opsManagerChartJobService: OpsManagerChartJobService,
         private BroadcastService: any){
         
         $scope.$on('$destroy', ()=>{
@@ -200,7 +200,7 @@ constructor(private $scope: IScope,
                 this.chartData[0].values.push([data.date, data.count]);
             }
             else {
-               var initialChartData = this.chartJobStatusService.toChartData([data]);
+               var initialChartData = this.opsManagerChartJobService.toChartData([data]);
                 initialChartData[0].key = 'Running';
                 this.chartData = initialChartData;
             }
@@ -222,7 +222,7 @@ constructor(private $scope: IScope,
             }
         }
         createChartData=(responseData: any)=>{
-            this.chartData = this.chartJobStatusService.toChartData(responseData);
+            this.chartData = this.opsManagerChartJobService.toChartData(responseData);
             var max = d3.max(this.runningCounts, (d: any)=>{
                 return d.count; } );
             if(max == undefined || max ==0) {

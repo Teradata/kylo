@@ -1,6 +1,6 @@
-import IconUtil from "./icon-util";
+import IconUtil from "../../services/icon-util";
 
-export class OperationsFeedUtil {
+export class OpsManagerFeedUtil {
 
 
     static decorateFeedSummary =  (feed: any) =>{

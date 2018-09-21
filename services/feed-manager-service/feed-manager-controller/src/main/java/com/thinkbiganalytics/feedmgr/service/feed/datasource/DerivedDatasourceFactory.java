@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service.feed.datasource;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -190,7 +191,7 @@ public class DerivedDatasourceFactory {
 
         // Create datasource
         final DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(processorType);
-        if(datasourceDefinition != null) {
+        if (datasourceDefinition != null) {
             final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
             final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
             final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
@@ -201,8 +202,7 @@ public class DerivedDatasourceFactory {
 
             final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
             return Collections.singleton(datasource.getId());
-        }
-        else {
+        } else {
             return Collections.emptySet();
         }
     }
@@ -216,6 +216,7 @@ public class DerivedDatasourceFactory {
      */
     @Nonnull
     private Set<Datasource.ID> ensureDataTransformationSourceDatasources(@Nonnull final FeedMetadata feed) {
+        final Set<String> dataSetIds = new HashSet<>();
         final Set<Datasource.ID> datasources = new HashSet<>();
 
         // Extract nodes in chart view model
@@ -229,11 +230,18 @@ public class DerivedDatasourceFactory {
         final DatasourceDefinition jdbcDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_JDBC_DEFINITION);
 
         nodes.forEach(node -> {
+            // Filter data sets
+            if (!StringUtils.equalsAnyIgnoreCase((String) node.get("datasourceId"), null, "HIVE") && node.get("dataset") != null
+                && !Objects.equals(node.get("datasetMatchesUserDataSource"), Boolean.TRUE)) {
+                dataSetIds.add((String) node.get("datasourceId"));
+                return;
+            }
+
             // Extract properties from node
             final DatasourceDefinition datasourceDefinition;
             final Map<String, String> properties = new HashMap<>();
 
-            if (node.get("datasourceId") == null || node.get("datasourceId").equals("HIVE")) {
+            if (node.get("datasourceId") == null || ((String) node.get("datasourceId")).equalsIgnoreCase("HIVE")) {
                 final String name = (String) node.get("name");
                 datasourceDefinition = hiveDefinition;
                 properties.put(HIVE_SCHEMA_KEY, StringUtils.trim(StringUtils.substringBefore(name, ".")));
@@ -243,10 +251,10 @@ public class DerivedDatasourceFactory {
                 datasourceDefinition = jdbcDefinition;
                 properties.put(JDBC_CONNECTION_KEY, datasource.getName());
                 properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
-                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,datasource.getName()));
+                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
 
             }
-            if(datasourceDefinition != null) {
+            if (datasourceDefinition != null) {
                 // Create the derived data source
                 final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
                 final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
@@ -260,6 +268,7 @@ public class DerivedDatasourceFactory {
         // Build the data sources from the data source ids
         final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
         datasourceIds.stream()
+            .filter(id -> !dataSetIds.contains(id))
             .map(datasourceProvider::resolve)
             .forEach(datasources::add);
 
@@ -371,7 +380,7 @@ public class DerivedDatasourceFactory {
 
     private Map<String, String> parseDataTransformControllerServiceProperties(DatasourceDefinition datasourceDefinition, String controllerServiceName) {
         Map<String, String> properties = new HashMap<>();
-        if(datasourceDefinition != null) {
+        if (datasourceDefinition != null) {
             try {
                 if (StringUtils.isNotBlank(controllerServiceName)) {
                     //{Source Database Connection:Database Connection URL}
@@ -439,7 +448,7 @@ public class DerivedDatasourceFactory {
                                  && StringUtils.isNotBlank(p.getPropertyDescriptor().getIdentifiesControllerService())).map(p -> p.getValue()).findFirst().orElse(null);
                 if (controllerServiceId != null) {
                     ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceById(controllerServiceId);
-                    if(csDto != null) {
+                    if (csDto != null) {
                         e.getValue().stream().forEach(propertyKey -> {
                             String value = csDto.getProperties().get(propertyKey);
                             if (value != null) {

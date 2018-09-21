@@ -428,7 +428,8 @@ export class PreviewSchemaComponent implements OnInit {
     selector: 'dataset-simple-table',
     styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/dataset-simple-table.component.css"],
     template:`
-        <div class="dataset-simple-table">
+   
+    <div class="dataset-simple-table">
     <table td-data-table >
       <thead>
       <tr td-data-table-column-row>
@@ -453,8 +454,24 @@ export class PreviewSchemaComponent implements OnInit {
       </tr>
       </tbody>
     </table>
-        </div>
-    
+   </div>
+
+    <!--
+          <td-data-table
+          [data]="filteredData"
+          [columns]="columns"
+          [selectable]="false"
+          [clickable]="true"
+          [multiple]="multiple"
+          [sortable]="false"
+          [sortBy]="sortBy"
+          [(ngModel)]="selected"
+          [sortOrder]="sortOrder"
+          (rowClick)="rowSelected($event)"
+          (sortChange)="sort($event)"
+          [style.height.px]="325" class="dataset-simple-table">
+      </td-data-table>     
+      -->
     
     
     

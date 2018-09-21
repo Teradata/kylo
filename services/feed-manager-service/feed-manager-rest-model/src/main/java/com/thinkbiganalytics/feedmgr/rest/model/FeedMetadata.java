@@ -98,6 +98,8 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     private FeedCategory category;
 
+    @MetadataField
+    private String sourceDataSetIds;
 
     private List<DataSet> sourceDataSets;
 
@@ -545,11 +547,20 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.tableOption = tableOption;
     }
 
+    public String getSourceDataSetIds() {
+        return sourceDataSetIds;
+    }
+
+    public void setSourceDataSetIds(String sourceDataSetIds) {
+        this.sourceDataSetIds = sourceDataSetIds;
+    }
+
     public List<DataSet> getSourceDataSets() {
         return sourceDataSets;
     }
 
     public void setSourceDataSets(List<DataSet> sourceDataSets) {
+        this.sourceDataSetIds = sourceDataSets.stream().map(DataSet::getId).collect(Collectors.joining(","));
         this.sourceDataSets = sourceDataSets;
     }
 

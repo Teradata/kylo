@@ -16,7 +16,7 @@ export class BrowserObject {
      * @param {BrowserColumn} column so that different icons can be returned for different columns
      * @returns {string} icon name
      */
-    getIcon(column: BrowserColumn): string {
+    getIcon(): string {
         return '';
     }
 

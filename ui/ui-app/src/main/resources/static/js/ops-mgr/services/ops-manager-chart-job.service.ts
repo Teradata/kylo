@@ -1,9 +1,9 @@
-import {Nvd3ChartService} from "./nvd3-chart.service";
+import {Nvd3ChartService} from "../../services/chart-services/nvd3-chart.service";
 import { Injectable } from "@angular/core";
-import IconUtil from "./icon-util";
+import IconUtil from "../../services/icon-util";
 
 @Injectable()
-export class ChartJobService {
+export class OpsManagerChartJobService {
 
     renderEndUpdated: any = {};
 

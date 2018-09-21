@@ -27,7 +27,14 @@ import {BaseDraggableDirective} from "./draggable-ng2/base-draggable.directive";
 import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
 import {KyloTimerDirective} from "./timer/kylo-timer.component";
 import {DateTimeService} from "./utils/date-time.service";
-
+import {FilteredPaginatedTableViewComponent} from "./filtered-paginated-table-view/filtered-paginated-table-view.component";
+import {CovalentDataTableModule} from "@covalent/core/data-table";
+import {CovalentPagingModule} from "@covalent/core/paging";
+import {MatCardModule} from "@angular/material/card";
+import {MatSelectModule} from "@angular/material/select";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
+import {CovalentSearchModule} from "@covalent/core/search";
 @NgModule({
     declarations: [
         AddButtonComponent,
@@ -38,7 +45,8 @@ import {DateTimeService} from "./utils/date-time.service";
         KyloVisNetworkComponent,
         BaseDraggableDirective,
         KyloDraggableDirective,
-        KyloTimerDirective
+        KyloTimerDirective,
+        FilteredPaginatedTableViewComponent
     ],
     entryComponents: [
         AddButtonComponent,
@@ -53,15 +61,22 @@ import {DateTimeService} from "./utils/date-time.service";
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
+        CovalentDataTableModule,
+        CovalentPagingModule,
         CovalentFileModule,
+        CovalentSearchModule,
         KyloServicesModule,
         FormsModule,
         MatFormFieldModule,
+        MatCardModule,
+        MatSelectModule,
         MatInputModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
         MatMenuModule,
+        MatToolbarModule,
+        MatProgressBarModule,
         MatProgressSpinnerModule,
         FlexLayoutModule,
         TranslateModule
@@ -73,7 +88,8 @@ import {DateTimeService} from "./utils/date-time.service";
         KyloVisNetworkComponent,
         BaseDraggableDirective,
         KyloDraggableDirective,
-        KyloTimerDirective
+        KyloTimerDirective,
+        FilteredPaginatedTableViewComponent
     ]
 })
 export class KyloCommonModule {
