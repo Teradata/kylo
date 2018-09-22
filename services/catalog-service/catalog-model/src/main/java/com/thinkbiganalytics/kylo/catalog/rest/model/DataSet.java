@@ -38,9 +38,10 @@ import javax.annotation.Nonnull;
 @SuppressWarnings("unused")
 public class DataSet implements DataSetTemplate {
 
+    private String id;
+    private String title;
     private DataSource dataSource;
     private String format;
-    private String id;
     private Map<String, String> options;
     private List<String> paths;
     
@@ -68,6 +69,20 @@ public class DataSet implements DataSetTemplate {
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+    
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+    
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
