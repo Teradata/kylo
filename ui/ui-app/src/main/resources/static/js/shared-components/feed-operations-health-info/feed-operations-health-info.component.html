@@ -11,13 +11,17 @@
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'"  (click)="disableFeed()">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'" [disabled]="!accessControl.allowEdit" (click)="disableFeed()">
           <mat-icon>pause_circle_outline</mat-icon>
           <span >Disable</span>
         </button>
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'"  (click)="enableFeed()">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'" [disabled]="!accessControl.allowEdit"  (click)="enableFeed()">
           <mat-icon>play_arrow</mat-icon>
           <span >Enable</span>
+        </button>
+        <button mat-menu-item [disabled]="startingFeed || !accessControl.allowStart"  (click)="startFeed()">
+          <mat-icon>play_arrow</mat-icon>
+          <span >Start Now</span>
         </button>
         <button mat-menu-item disabled>
           <mat-icon>cloud_upload</mat-icon>

@@ -33,6 +33,10 @@ export class OperationsRestUrlConstants{
 
     static FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = OperationsRestUrlConstants.FEED_MGR_FEED_BASE_URL + "/feed-system-name-to-display-name";
 
+    static FEED_ALERTS_URL = (feedName: any)=> {
+        return "/proxy/v1/dashboard/alerts/feed-name/"+feedName;
+    }
+
 
     static PROVENANCE_EVENT_TIME_FRAME_OPTIONS = OperationsRestUrlConstants.STATS_BASE_V2 + "/time-frame-options";
 

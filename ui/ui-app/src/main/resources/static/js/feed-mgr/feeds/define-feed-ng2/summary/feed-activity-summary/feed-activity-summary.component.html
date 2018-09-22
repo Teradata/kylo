@@ -13,6 +13,7 @@
       <div fxLayout="column" fxFlex="40%">
        <feed-operations-health-info [(feed)]="feed" *ngIf="feed != undefined"></feed-operations-health-info>
         <!-- Alerts -->
+        <feed-alerts [feed]="feed"></feed-alerts>
       </div>
     </div>
  <feed-stats-charts *ngIf="feed && feed.isStream"  [(feed)]="feed" [refreshIntervalTime]="5000" style="width:100%"></feed-stats-charts>

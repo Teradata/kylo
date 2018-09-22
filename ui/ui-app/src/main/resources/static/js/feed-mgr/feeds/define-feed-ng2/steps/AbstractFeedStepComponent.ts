@@ -76,7 +76,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     onFeedEditStateChange(event:FeedEditStateChangeEvent){
         console.log("FEED STATE CHANGED!!!!",event)
         this.feed.readonly = event.readonly;
-        this.feed.allowEdit = event.allowEdit;
+        this.feed.accessControl = event.accessControl;
     }
 
     /**

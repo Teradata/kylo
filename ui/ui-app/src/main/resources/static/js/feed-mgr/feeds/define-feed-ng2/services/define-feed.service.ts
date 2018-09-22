@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Inject, Injectable, Injector, ViewContainerRef} from "@angular/core";
-import {Feed, FeedMode, FeedTemplateType, LoadMode} from "../../../model/feed/feed.model";
+import {Feed, FeedMode, FeedTemplateType, LoadMode, FeedAccessControl} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -45,15 +45,17 @@ import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {TdLoadingService} from "@covalent/core/loading";
 import {Category} from "../../../model/category/category.model";
+import {FeedAccessControlService} from "../services/feed-access-control.service";
 
 
 export class FeedEditStateChangeEvent{
 
     public readonly: boolean;
-    public allowEdit:boolean;
-constructor(readonly:boolean, allowEdit:boolean){
+    public accessControl:FeedAccessControl;
+
+constructor(readonly:boolean, accessControl:FeedAccessControl){
     this.readonly = readonly;
-    this.allowEdit = allowEdit;
+    this.accessControl = accessControl;
 }
 
 }
@@ -120,7 +122,7 @@ export class DefineFeedService {
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
                 private stateService:StateService,
-                @Inject("AccessControlService") accessControlService: AccessControlService){
+                private feedAccessControlService:FeedAccessControlService){
 
 
         this.currentStepSubject = new Subject<Step>();
@@ -136,7 +138,6 @@ export class DefineFeedService {
         this.feedService = $$angularInjector.get("FeedService");
 
         this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
-        this.accessControlService = accessControlService;
 
 
     }
@@ -370,7 +371,7 @@ export class DefineFeedService {
 
         if(this.feed && this.feed.loadMode != LoadMode.DEPLOYED){
             this.feed.readonly = false;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
         }
         else if(this.feed && this.feed.loadMode == LoadMode.DEPLOYED){
             console.log("Unable to Edit a deployed feed ",this.feed)
@@ -380,7 +381,7 @@ export class DefineFeedService {
     markFeedAsReadonly(){
         if(this.feed){
             this.feed.readonly = true;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
         }
     }
 
@@ -503,7 +504,7 @@ export class DefineFeedService {
 
         let checkForDraft = !feed.isDraft() ;
 
-
+        let accessControl = feed.accessControl;
         observable.subscribe((response: any)=> {
 
             let updatedFeed = response;
@@ -525,7 +526,8 @@ export class DefineFeedService {
 
             //reset it to be editable
             savedFeed.readonly = false;
-            savedFeed.allowEdit =true;
+            //reassign accessControl
+            savedFeed.accessControl = accessControl;
 
             savedFeed.updateDate = new Date(updatedFeed.updateDate);
             let valid = savedFeed.validate(true);
@@ -647,15 +649,13 @@ export class DefineFeedService {
                 this.feedLoadMode = loadMode;
             }
 
-            //Check if user has entity access permissions for editing feed
-            fromPromise(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, feedModel, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
-                .subscribe((access: boolean) => {
-                    //console.log("[debug] Does user have entity access permission to edit feed? " + access);
-                    feedModel.allowEdit =  access;
-                    if(load) {
-                        this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.allowEdit))
-                    }
-                });
+            this.feedAccessControlService.accessControlCheck(feedModel).subscribe((accessControl:FeedAccessControl) => {
+                feedModel.accessControl = accessControl;
+                if(load) {
+                    this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.accessControl))
+                }
+            })
+
 
             if(load) {
                 //notify subscribers of a copy

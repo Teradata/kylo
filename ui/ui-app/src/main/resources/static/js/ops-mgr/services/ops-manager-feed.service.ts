@@ -9,6 +9,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {Observable} from "rxjs/Observable";
 import {RestUrlConstants} from "../../feed-mgr/services/RestUrlConstants";
+import {RestResponseStatus} from "../../common/common.model";
 
 @Injectable()
 export class OpsManagerFeedService {
@@ -213,87 +214,12 @@ export class OpsManagerFeedService {
     }
 
     disableFeed(feedId:string) :Observable<FeedSummary>{
-       return <Observable<FeedSummary>>   this.http.post(RestUrlConstants.DISABLE_FEED_URL(feedId),null);
+        return <Observable<FeedSummary>>  this.http.post(RestUrlConstants.DISABLE_FEED_URL(feedId),null);
+
     }
 
-    /**
-     *
-     this.enableFeed = function() {
-        if(!self.enabling && self.allowEdit) {
-            self.enabling = true;
-            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response:any) {
-                self.model.state = response.data.state;
-                FeedService.updateEditModelStateIcon();
-                self.enabling = false;
-            }, function () {
-                $mdDialog.show(
-                    $mdDialog.alert()
-                        .clickOutsideToClose(true)
-                        .title("NiFi Error")
-                        .textContent("The feed could not be enabled.")
-                        .ariaLabel("Cannot enable feed.")
-                        .ok("OK")
-                );
-                self.enabling = false;
-            });
-        }
-    };
+     startFeed(feedId:string) {
+         return <Observable<RestResponseStatus>>  this.http.post(RestUrlConstants.START_FEED_URL(feedId), null);
+     }
 
-     this.disableFeed = function() {
-        if(!self.disabling && self.allowEdit) {
-            self.disabling = true;
-            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function (response:any) {
-                self.model.state = response.data.state;
-                FeedService.updateEditModelStateIcon();
-                self.disabling = false;
-            }, function () {
-                $mdDialog.show(
-                    $mdDialog.alert()
-                        .clickOutsideToClose(true)
-                        .title("NiFi Error")
-                        .textContent("The feed could not be disabled.")
-                        .ariaLabel("Cannot disable feed.")
-                        .ok("OK")
-                );
-                self.disabling = false;
-            });
-        }
-    };
-
-     this.startFeed = function() {
-        if (!self.startingFeed && self.allowStart) {
-            self.startingFeed = true;
-            $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response:any) {
-                let msg = "Feed started";
-                if(response && response.data && response.data.message) {
-                    msg = response.data.message;
-                }
-                $mdToast.show(
-                    $mdToast.simple()
-                        .textContent(msg)
-                        .hideDelay(3000)
-                );
-                self.startingFeed = false;
-            }, function (response : any) {
-                let msg = "The feed could not be started.";
-                if(response && response.data && response.data.message) {
-                    msg +="<br/><br/>"+response.data.message;
-                }
-                console.error("Unable to start the feed ",response);
-                $mdDialog.show(
-                    $mdDialog.alert()
-                        .clickOutsideToClose(true)
-                        .title("Error starting the feed")
-                        .htmlContent(msg)
-                        .ariaLabel("Cannot start feed.")
-                        .ok("OK")
-                );
-                self.startingFeed = false;
-            });
-        }
-    };
-
-
-
-     */
 }

@@ -1,12 +1,13 @@
 import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
-import {Feed} from "../../feed-mgr/model/feed/feed.model";
+import {Feed,FeedAccessControl} from "../../feed-mgr/model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
-import {Input, Output, EventEmitter, Component, OnInit, OnDestroy} from "@angular/core";
+import {Input, Output, EventEmitter, Component, OnInit, OnDestroy, Inject} from "@angular/core";
 import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.service";
 import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../kylo-utils/kylo-icons";
 import BroadcastService from "../../services/broadcast-service";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {RestResponseStatus, RestResponseStatusType} from "../../common/common.model";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -23,10 +24,8 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
     @Output()
     feedHealthRefreshed = new EventEmitter<FeedSummary>();
 
-    feedData:any;
-
     /**
-     * final feed health object
+     * feed operations data
      */
     feedHealth:FeedSummary = new FeedSummary({});
 
@@ -45,6 +44,11 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     kyloIcons = KyloIcons;
 
+    startingFeed:boolean;
+
+    accessControl:FeedAccessControl = FeedAccessControl.NO_ACCESS;
+
+
     getFeedHealth(){
 
         this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response:FeedSummary) => {
@@ -57,8 +61,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
     }
 
     ngOnInit(){
+        this.accessControl = this.feed.accessControl;
         this.getFeedHealth();
         this.refreshInterval = setInterval(this.getFeedHealth.bind(this),this.refreshTime)
+
     }
 
     ngOnDestroy(){
@@ -67,35 +73,75 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         }
     }
 
+
+
+
+
     enableFeed(){
-        this.feedStateChanging = true;
-        this.opsManagerFeedService.enableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
-            this.feed.state = feedSummary.state;
-            this.feedStateChanging = false;
-            this.feedChange.emit(this.feed)
-            this.opsManagerFeedService.openSnackBar("Enabled the feed",5000)
-        }, error1 => {
-            this.feedStateChanging = false;
-            this._dialogService.openAlert({
-                title:"Error enabling the feed",
-                message:"There was an error enabling the feed"
-            })
-        });
+        if(this.accessControl.allowEdit) {
+            this.feedStateChanging = true;
+            this.opsManagerFeedService.enableFeed(this.feed.id).subscribe((feedSummary: FeedSummary) => {
+                this.feed.state = feedSummary.state;
+                this.feedStateChanging = false;
+                this.feedChange.emit(this.feed)
+                this.opsManagerFeedService.openSnackBar("Enabled the feed", 5000)
+            }, error1 => {
+                this.feedStateChanging = false;
+                this._dialogService.openAlert({
+                    title: "Error enabling the feed",
+                    message: "There was an error enabling the feed"
+                })
+            });
+        }
     }
     disableFeed(){
-        this.feedStateChanging = true;
-        this.opsManagerFeedService.disableFeed(this.feed.id).subscribe((feedSummary:FeedSummary)=> {
-            this.feed.state = feedSummary.state;
-            this.feedStateChanging = false;
-            this.feedChange.emit(this.feed)
-            this.opsManagerFeedService.openSnackBar("Disabled the feed",5000)
-        },error1 => {
-            this.feedStateChanging = false;
-            this._dialogService.openAlert({
-                title:"Error disabling the feed",
-                message:"There was an error disabling the feed"
-            })
-        });
+        if(this.accessControl.allowEdit) {
+            this.feedStateChanging = true;
+            this.opsManagerFeedService.disableFeed(this.feed.id).subscribe((feedSummary: FeedSummary) => {
+                this.feed.state = feedSummary.state;
+                this.feedStateChanging = false;
+                this.feedChange.emit(this.feed)
+                this.opsManagerFeedService.openSnackBar("Disabled the feed", 5000)
+            }, error1 => {
+                this.feedStateChanging = false;
+                this._dialogService.openAlert({
+                    title: "Error disabling the feed",
+                    message: "There was an error disabling the feed"
+                })
+            });
+        }
+    }
+    
+    startFeed(){
+        if(this.accessControl.allowStart) {
+            if (!this.startingFeed) {
+                this.startingFeed = true;
+
+                let error = (msg?:string) => {
+                    let errorMessage = msg ? msg : "The feed could not be started.";
+
+                    this._dialogService.openAlert({
+                        title: "Error starting the feed",
+                        message: errorMessage
+                    })
+                }
+                this.opsManagerFeedService.startFeed(this.feed.id).subscribe((response: RestResponseStatus) => {
+                    this.startingFeed = false;
+                    if(response.status == RestResponseStatusType.SUCCESS) {
+                        let msg = response.message ? response.message : "Feed started";
+                        this.opsManagerFeedService.openSnackBar(msg, 5000)
+                    }
+                    else {
+                        error(response.message)
+                    }
+
+                }, (error1: any) => {
+                    this.startingFeed = false
+                    let msg = error1 && (typeof error1 == "string") ? error1 : undefined;
+                    error(msg)
+                });
+            }
+        }
     }
 
 }

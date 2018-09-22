@@ -25,6 +25,7 @@ export class KyloIcons {
         numberOfFlowsFinished:"star",
         jobsList:"library_books",
         info:"details",
+        alerts:"warning",
         Actions:{
             clone:"content_copy",
             enable:"play_arrow",
