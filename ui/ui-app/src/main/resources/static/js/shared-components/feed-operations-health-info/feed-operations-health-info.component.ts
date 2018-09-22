@@ -8,6 +8,7 @@ import {KyloIcons} from "../../kylo-utils/kylo-icons";
 import BroadcastService from "../../services/broadcast-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {RestResponseStatus, RestResponseStatusType} from "../../common/common.model";
+import {FeedStats} from "../../feed-mgr/model/feed/feed-stats.model";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -17,6 +18,9 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     @Input()
     feed:Feed;
+
+    @Input()
+    feedStats?:FeedStats;
 
     @Output()
     feedChange = new EventEmitter<Feed>()

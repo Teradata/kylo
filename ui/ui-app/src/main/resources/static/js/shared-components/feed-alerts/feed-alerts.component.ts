@@ -58,11 +58,13 @@ export class FeedAlertsComponent implements OnInit, OnDestroy{
 
 
     private fetchFeedAlerts() {
-      return  this.http.get(OperationsRestUrlConstants.FEED_ALERTS_URL(this.feed.getFullName()))
-          .pipe(map( (response: any) => this.transformAlertSummaryResponse(response))
-          ).subscribe( (alerts:any[]) =>{
-            this.alerts = alerts
-        });
+        if(this.feed) {
+            return this.http.get(OperationsRestUrlConstants.FEED_ALERTS_URL(this.feed.getFullName()))
+                .pipe(map((response: any) => this.transformAlertSummaryResponse(response))
+                ).subscribe((alerts: any[]) => {
+                    this.alerts = alerts
+                });
+        }
     }
 
 }

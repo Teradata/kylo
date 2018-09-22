@@ -3,6 +3,7 @@ import * as _ from "underscore";
 import { CloneUtil } from "../../../common/utils/clone-util";
 import {  Injectable } from "@angular/core";
 import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
+import {FeedStats} from "../../../feed-mgr/model/feed/feed-stats.model";
 const d3 = require('d3');
 
 @Injectable()
@@ -14,7 +15,7 @@ export class FeedStatsServiceNg2 {
     toMillis: any;
     feedName: string = '';
     processorStatistics: any;
-    summaryStatistics: any;
+    summaryStatistics: FeedStats;
     nullVar: any | null;
     loadingFeedTimeSeriesData: boolean = false;
     loadingProcessorStatistics: boolean = false;
@@ -110,20 +111,7 @@ export class FeedStatsServiceNg2 {
             topNProcessorDurationData: []
         }
 
-        this.summaryStatistics = {
-            lastRefreshTime: '',
-            time: { startTime: 0, endTime: 0 },
-            flowsStartedPerSecond: 0,
-            flowsStarted: 0,
-            flowsFinished: 0,
-            flowDuration: 0,
-            flowsFailed: 0,
-            totalEvents: 0,
-            failedEvents: 0,
-            flowsSuccess: 0,
-            flowsRunning: 0,
-            avgFlowDuration: 0
-        }
+        this.summaryStatistics = new FeedStats();
 
         this.loadingFeedTimeSeriesData = false;
 
@@ -245,9 +233,9 @@ export class FeedStatsServiceNg2 {
                 summary.flowsSuccess = flowsSuccess;
                 summary.flowsStartedPerSecond = flowsStartedPerSecondStr != 0 ? parseFloat(flowsStartedPerSecondStr.toString()) : flowsStartedPerSecond;
                 summary.avgFlowDurationMilis = (flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
-                summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
+                let avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : '0';
 
-                summary.avgFlowDuration = summary.avgFlowDuration != 0 ? parseFloat(summary.avgFlowDuration) : 0;
+                summary.avgFlowDuration = avgFlowDuration != '0' ? parseFloat(avgFlowDuration ) : 0;
 
                 this.processorStatistics.chartData = chartData;
 

@@ -85,6 +85,42 @@
         <p mat-line >Description</p>
       </mat-list-item>
 
+      <ng-container *ngIf="feed.isStream">
+        <mat-divider></mat-divider>
+            <mat-list-item>
+              <mat-icon mat-list-icon >date_range</mat-icon>
+              <h4 mat-line> {{feedStats.time.startTime | date: 'MM/dd/yy HH:mm'}} - {{feedStats.time.endTime | date: 'MM/dd/yy HH:mm'}}</h4>
+              <p mat-line >Date Range</p>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <mat-icon mat-list-icon >{{kyloIcons.Feed.numberOfFlowsStarted}}</mat-icon>
+              <h4 mat-line>{{feedStats.flowsStarted | number}}</h4>
+              <p mat-line translate>views.feed-stats-charts.FS</p>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <mat-icon mat-list-icon >{{kyloIcons.Feed.numberOfFlowsFinished}}</mat-icon>
+              <h4 mat-line>{{feedStats.flowsFinished | number}}</h4>
+              <p mat-line translate>views.feed-stats-charts.FF</p>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <mat-icon mat-list-icon >{{kyloIcons.Feed.running}}</mat-icon>
+              <h4 mat-line>{{feedStats.flowsRunning | number}}</h4>
+              <p mat-line translate>views.feed-stats-charts.FlowsR</p>
+            </mat-list-item>
+            <mat-divider></mat-divider>
+
+            <mat-list-item >
+              <mat-icon mat-list-icon >{{kyloIcons.Feed.flowRate}}</mat-icon>
+              <h4 mat-line>{{feedStats.flowsStartedPerSecond | number}} / {{"views.feed-stats-charts.sec" | translate}}</h4>
+              <p mat-line translate>views.feed-stats-charts.FlowsRate</p>
+            </mat-list-item>
+      </ng-container>
 
     </mat-list>
 

@@ -386,8 +386,7 @@ export class DefineFeedService {
     }
 
     /**
-     * Gets the current feed
-     * This is not the copy!!!
+     * Gets a copy of the current feed
      * @return {Feed}
      */
     getFeed(): Feed{
@@ -563,16 +562,22 @@ export class DefineFeedService {
         return savedFeedObservable$
     }
 
-    deployFeed(feed:Feed) {
+    deployFeed(feed:Feed) :Observable<EntityVersion|any> {
         feed.validate(false)
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
             params.set("action","VERSION,DEPLOY")
 
-             this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
+           let observable =  this.http.post(url,null,{ params:params});
+            observable.subscribe((version:EntityVersion) => {
                 this.openSnackBar("DEPLOYED VERSION "+version.id,5000)
             });
+            return observable;
+        }
+        else {
+            this.openSnackBar("Unable to deploy this feed",5000)
+            return null;
         }
     }
 
