@@ -1,12 +1,12 @@
      <mat-horizontal-stepper [linear]="true" #stepper  (selectionChange)="onStepSelectionChanged($event)">>
             <mat-step [stepControl]="chooseDataSourceForm">
-              <ng-template matStepLabel >Choose data source</ng-template>
+              <ng-template matStepLabel >Choose source</ng-template>
               <!-- Action buttons-->
               <div fxLayout="row" fxFlex *ngIf="displayTopActionButtons" style="margin-top:35px">
                 <button mat-button (click)="onCancel()">Cancel</button>
               </div>
                 <catalog-datasources #catalogDatasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [loading]="loading"
-                                     [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams"></catalog-datasources>
+                                     [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" [readOnly]="true"></catalog-datasources>
               <!-- hidden form to prevent next step from being selected until datasource is chosen-->
               <form [formGroup]="chooseDataSourceForm">
                 <input type="hidden" formControlName="hiddenValidFormCheck" required >
@@ -17,7 +17,7 @@
               </div>
             </mat-step>
             <mat-step [stepControl]="selectDataForm">
-                <ng-template matStepLabel>Select data</ng-template>
+                <ng-template matStepLabel>Select dataset</ng-template>
               <!-- Action buttons-->
               <div fxLayout="row" fxFlex  *ngIf="displayTopActionButtons" style="margin-top:35px">
                 <button mat-button (click)="onCancel()">Cancel</button>

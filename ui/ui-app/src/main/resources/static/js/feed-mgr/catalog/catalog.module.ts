@@ -34,7 +34,7 @@ import {catalogStates} from "./catalog.states";
 import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
 import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-schema.module";
-
+import { CovalentVirtualScrollModule } from '@covalent/core/virtual-scroll';
 @NgModule({
     declarations: [
         DataSourcesComponent,
@@ -60,6 +60,7 @@ import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-sch
         CovalentLayoutModule,
         CovalentLoadingModule,
         CovalentSearchModule,
+        CovalentVirtualScrollModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatCardModule,

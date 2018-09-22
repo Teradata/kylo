@@ -40,7 +40,7 @@
       [sortOrder]="sortOrder"
       (rowClick)="rowSelected($event)"
       (sortChange)="sort($event)"
-      style="height:44vh;overflow-x:hidden">
+      style="height:42vh">
 
     <ng-template tdDataTableTemplate="selection" let-value="value" let-column="column" let-row="row">
       <span>
@@ -62,21 +62,17 @@
     <h3>No results to display.</h3>
   </div>
 
-  <div fxLayout="row" fxLayoutAlign="start center">
-    <div fxFlex="60">
-      <mat-checkbox labelPosition="before" [(ngModel)]="hideInternalTables" *ngIf="showHideInternalOption" (change)="filter()">Hide internal tables?</mat-checkbox>
-    </div>
-    <div fxFlex>
-      <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
-        <span hide-xs>Rows per page:</span>
-        <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
-          <mat-option *ngFor="let size of [50,100,200,500]" [value]="size">
-            {{size}}
-          </mat-option>
-        </mat-select>
-        {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
-      </td-paging-bar>
-    </div>
+  <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+    <mat-checkbox labelPosition="before" [(ngModel)]="hideInternalTables" *ngIf="showHideInternalOption" (change)="filter()">Hide internal tables?</mat-checkbox>
+    <span fxFlex=""></span>
+    <span hide-xs>Rows per page:</span>
+    <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+      <mat-option *ngFor="let size of [50,100,200,500]" [value]="size">
+        {{size}}
+      </mat-option>
+    </mat-select>
+    {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+  </td-paging-bar>
 
-  </div>
+
 </div>
