@@ -11,7 +11,7 @@ export class CategoryAutocompleteValidators {
      * @returns {any}
      */
     static validateFeedCreatePermissionForCategory(control: AbstractControl) {
-        if (control.value!=undefined && !control.value.createFeed) {
+        if (control.value!=undefined && !control.value.createFeed && control.value!='') {
             return { "noFeedCreatePermissionForCategory": true };
         }
 

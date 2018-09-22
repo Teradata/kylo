@@ -59,4 +59,8 @@ export class SystemFeedNameComponent implements OnInit, OnDestroy{
     resetForm(){
         this.formGroup.reset({"feedName":this.feed.feedName,"systemFeedName":this.feed.systemFeedName})
     }
+
+    checkRequired(formGroup: FormGroup, controlName: string) {
+        return formGroup.get(controlName).hasError('required');
+    }
 }
