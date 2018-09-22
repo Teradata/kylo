@@ -359,6 +359,10 @@ export class Feed  implements KyloObject{
             this.dataTransformation = ObjectUtils.getAs(this.dataTransformation, DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
         }
         this.userInterfaceId = _.uniqueId("feed-");
+
+        if(this.registeredTemplate){
+            this.isStream = this.registeredTemplate.isStream
+        }
     }
 
     getFullName(){

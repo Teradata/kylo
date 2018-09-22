@@ -8,7 +8,7 @@ import {Observable} from "rxjs/Observable";
 import {StateRegistry, StateService, Transition} from "@uirouter/angular";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
@@ -567,13 +567,26 @@ export class DefineFeedService {
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
-            params.set("action","VERSION,DEPLOY")
+            params =params.append("action","VERSION,DEPLOY")
 
-           let observable =  this.http.post(url,null,{ params:params});
-            observable.subscribe((version:EntityVersion) => {
-                this.openSnackBar("DEPLOYED VERSION "+version.id,5000)
-            });
-            return observable;
+            let headers :HttpHeaders = new HttpHeaders();
+            headers =headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+
+            this._loadingService.register("processingFeed")
+
+           return this.http.post(url,null,{ params:params,headers:headers})
+               .map((version:EntityVersion) => {
+                this._loadingService.resolve("processingFeed")
+                this.openSnackBar("Deployed feed v."+version.name,5000)
+                   return version;
+            }).catch((error1:any,caught:Observable<any>) => {
+                this._dialogService.openAlert({
+                    title:"Error deploying feed",
+                    message:"There was an error deploying the feed "+error1
+                });
+                this._loadingService.resolve("processingFeed")
+                  return Observable.throw(error1);
+            }).share();
         }
         else {
             this.openSnackBar("Unable to deploy this feed",5000)
@@ -586,9 +599,11 @@ export class DefineFeedService {
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
-            params.set("action","REMOVE")
+            params = params.append("action","REMOVE")
+            let headers :HttpHeaders = new HttpHeaders();
+            headers = headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
 
-            this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
+            this.http.post(url,null,{ params:params,headers:headers}).subscribe((version:EntityVersion) => {
                 this.openSnackBar("Removed draft "+version.id,5000)
             });
         }
