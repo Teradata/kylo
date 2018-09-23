@@ -6,7 +6,7 @@
     <div fxFlex="200px" class="dataset-list">
 
       <mat-nav-list dense >
-        <h3 matSubheader>Data sets</h3>
+        <h3 matSubheader>Datasets</h3>
         <ng-container *ngFor="let dataset of datasets">
         <mat-list-item  (click)="onDatasetSelected(dataset.key)"  [ngClass]="{'selected-dataset': dataset.key == selectedDataSet.key}">
 

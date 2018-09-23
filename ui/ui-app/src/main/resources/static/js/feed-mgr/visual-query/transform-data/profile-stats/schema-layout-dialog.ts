@@ -15,6 +15,7 @@ export class ColumnItem {
     public origIndex: number;
     public newName: string;
     public newType: string;
+    public deleted: boolean = false;
 
     constructor(public origName: string,
                 public origType: string) {
@@ -41,7 +42,7 @@ export class SchemaLayoutDialog {
 
     public trash: ColumnItem[] = [];
 
-    public isValid: boolean = false;
+    public isChanged: boolean = false;
 
 
     // @ts-ignore
@@ -53,23 +54,21 @@ export class SchemaLayoutDialog {
 
     editMode(i: number): void {
         this.columns[i].editMode = true;
-        this.isValid = true;
+        this.isChanged = true;
     }
 
     remove(i: number): void {
-        this.isValid = true;
+        this.isChanged = true;
         this.columns[i].origIndex = i;
-        this.trash.push(this.columns[i]);
-        this.columns.splice(i, 1)
+        this.columns[i].deleted = true;
+        //this.trash.push(this.columns[i]);
+        //this.columns.splice(i, 1)
     }
 
     restore(i: number): void {
-        this.columns.splice(this.trash[i].origIndex, 1, this.trash[i]);
-        this.trash.splice(i, 1);
-    }
-
-    removeMovedItem(i: number, row: any): void {
-
+        this.columns[i].deleted = false;
+        //this.columns.splice(this.trash[i].origIndex, 1, this.trash[i]);
+        //this.trash.splice(i, 1);
     }
 
     setType(i: number, type: string) {
@@ -82,6 +81,7 @@ export class SchemaLayoutDialog {
     }
 
     apply() {
+        this.columns = this.columns.filter( (v:ColumnItem) => { return !v.deleted});
         this.dialog.close(this.columns);
     }
 
