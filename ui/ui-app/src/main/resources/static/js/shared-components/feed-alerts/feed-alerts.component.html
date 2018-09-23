@@ -12,10 +12,7 @@
 
       <ng-container *ngFor="let alert of alerts; let $last=last">
         <mat-list-item (click)="navigateToAlerts(alert)">
-          <h4 mat-line>
-            <span>{{alert.groupDisplayName}}</span>
-            <span translate>{{'views.alerts-template.' + alert.typeDisplayName}}</span>
-          </h4>
+          <h4 mat-line>{{alert.groupDisplayName}} {{'views.alerts-template.' + alert.typeDisplayName | translate}}</h4>
           <div mat-line fxLayout="row" fxLayoutAlign="space-between-stretch">
             <span  *ngIf="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
             <span  *ngIf="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>

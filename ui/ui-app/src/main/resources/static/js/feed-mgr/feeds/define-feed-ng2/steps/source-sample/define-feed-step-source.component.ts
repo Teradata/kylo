@@ -13,7 +13,7 @@ import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-co
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.component";
 import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";

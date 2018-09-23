@@ -99,62 +99,47 @@
 
       </mat-card>
 
-    <div fxLayout="row" >
-      <div fxLayout="column" fxFlex="60">
+    <div fxLayout="column" fxFlex="100" fxFill>
         <!-- THE KPIs -->
-        <div fxLayout="row wrap" fxLayout.xs="column" fxLayoutAlign="space-between center" class="kpi-row">
+        <div fxLayout="row" fxLayoutAlign="space-between center">
 
-          <div flex-gt-md="33" flex-gt-xs="50" class="service-wrapper kpi" >
-            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column" class="kpi">
-              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
-                <span class="md-display-1">{{eventSuccessKpi.value}}% </span>
-                <div class="md-media-sm card-media">
-                  <mat-icon [ngStyle]="{'fill':eventSuccessKpi.color}" size="50">
-                    {{eventSuccessKpi.icon}}}
-                  </mat-icon>
-                </div>
-              </mat-card-title>
-              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-                <span class="mat-title"> {{"views.feed-stats-charts.SR" | translate}} </span>
-              </mat-card-content>
-            </mat-card>
-          </div>
+          <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+            <mat-card-header>
+              <mat-card-title class="mat-title">{{eventSuccessKpi.value}}%</mat-card-title>
+            </mat-card-header>
+            <ng-md-icon [ngStyle]="{'fill':eventSuccessKpi.color}" size="50" [icon]="eventSuccessKpi.icon"></ng-md-icon>
+            <mat-card-content fxLayout="column" fxLayourAlign="center center">
+              <span class="mat-title">{{"views.feed-stats-charts.SR" | translate}}</span>
+            </mat-card-content>
+          </mat-card>
 
-          <div flex-gt-md="33" flex-gt-xs="50" class="kpi" >
-            <mat-card style="padding : 8px;"fxLayoutAlign="center center" fxLayout="column">
-              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
-                <span class="md-display-1">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</span>
-                <div class="md-media-sm card-media">
-                  <mat-icon [ngStyle]="{'fill':flowRateKpi.color}" size="50">{{flowRateKpi.icon}}</mat-icon>
-                </div>
-              </mat-card-title>
+            <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+              <mat-card-header>
+                <mat-card-title class="mat-title">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</mat-card-title>
+              </mat-card-header>
               <mat-card-content fxLayout="column" fxLayourAlign="center center">
+                <ng-md-icon [ngStyle]="{'fill':flowRateKpi.color}" size="50" [icon]="flowRateKpi.icon"></ng-md-icon>
                 <span class="mat-title">{{"views.feed-stats-charts.IFR" | translate}}</span>
               </mat-card-content>
             </mat-card>
-          </div>
 
-          <div flex-gt-md="33" flex-gt-xs="50" class="kpi" >
-            <mat-card fxLayoutAlign="center center" fxLayout="column">
-              <mat-card-title fxLayout="column" fxLayoutAlign="center center" style="width:100%;">
-                <span class="md-display-1">{{avgDurationKpi.value}}</span>
-                <div class="md-media-sm card-media">
-                  <mat-icon [ngStyle]="{'fill':avgDurationKpi.color}" size="50">
-                    {{avgDurationKpi.icon}}
-                  </mat-icon>
-                </div>
-              </mat-card-title>
-              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-                <span class="mat-title">{{"views.feed-stats-charts.FD" | translate}}</span>
-              </mat-card-content>
-            </mat-card>
-          </div>
+          <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+            <mat-card-header>
+              <mat-card-title class="mat-title">{{avgDurationKpi.value}}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content fxLayout="column" fxLayourAlign="center center">
+              <ng-md-icon [ngStyle]="{'fill':avgDurationKpi.color}" size="50" [icon]="avgDurationKpi.icon"></ng-md-icon>
+              <span class="mat-title">{{"views.feed-stats-charts.FD" | translate}}</span>
+            </mat-card-content>
+          </mat-card>
+
+
         </div>
         <!-- END KPIs -->
 
         <div>
           <mat-card fxLayoutAlign="start start" >
-            <mat-card-content flex="100" style="width: 100%; padding: 0">
+            <mat-card-content fxFlex="100" style="width: 100%; padding: 0">
               <div flex fxLayout="row" fxLayoutAlign="start end">
                 <span flex *ngIf="feedTimeChartLoading">
                   <mat-progress-bar [mode]="indeterminate"></mat-progress-bar>
@@ -203,7 +188,7 @@
       </div>
 
 
-    </div>
+
 
 
   </div>

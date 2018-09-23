@@ -37,7 +37,7 @@ import {DynamicFormFieldGroupBuilder} from "../../../../shared/dynamic-form/serv
 import {ConfigurationFieldBuilder, FieldConfigBuilder} from "../../../../shared/dynamic-form/services/field-config-builder";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedNifiPropertiesComponent} from "./feed-nifi-properties.component";
 
 

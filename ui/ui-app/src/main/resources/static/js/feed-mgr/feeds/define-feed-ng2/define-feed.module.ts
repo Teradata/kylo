@@ -68,7 +68,7 @@ import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
 import {MatExpansionModule} from "@angular/material/expansion";
-import {FeedSideNavService} from "./shared/feed-side-nav.service";
+import {FeedSideNavService} from "./services/feed-side-nav.service";
 import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
 import {ProfileStatsComponent} from './summary/profile/container/stats/profile-stats.component';
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';

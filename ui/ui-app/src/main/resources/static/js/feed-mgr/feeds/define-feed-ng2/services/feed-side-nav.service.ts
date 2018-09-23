@@ -1,6 +1,6 @@
 import {Step} from "../../../model/feed/feed-step.model";
 import {Injectable, TemplateRef} from "@angular/core";
-import {FeedLink} from "./feed-link.model";
+import {FeedLink, FeedLinkType} from "../model/feed-link.model";
 import {Feed, LoadMode} from "../../../model/feed/feed.model";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
@@ -8,7 +8,7 @@ import {PartialObserver} from "rxjs/Observer";
 import {ISubscription} from "rxjs/Subscription";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {TranslateService} from "@ngx-translate/core";
-import {LINEAGE_LINK, PROFILE_LINK, SETUP_GUIDE_LINK, SETUP_REVIEW_LINK, SLA_LINK, VERSIONS_LINK} from "./feed-link-constants";
+import {FEED_ACTIVITY_LINK, LINEAGE_LINK, PROFILE_LINK, SETUP_GUIDE_LINK, SETUP_REVIEW_LINK, SLA_LINK, VERSIONS_LINK} from "../model/feed-link-constants";
 import {KyloIcons} from "../../../../kylo-utils/kylo-icons";
 
 
@@ -23,13 +23,11 @@ export class ToolbarActionTemplateChangedEvent{
 @Injectable()
 export class FeedSideNavService {
 
-
     /**
      * Allow other components to listen for changes
      *
      */
     public sideNavSelectionChanged$: Observable<FeedLinkSelectionChangedEvent>;
-
 
     private sideNavSelectionChangedSubject: Subject<FeedLinkSelectionChangedEvent>;
 
@@ -43,26 +41,60 @@ export class FeedSideNavService {
      */
     public staticFeedLinks:FeedLink[] =[];
 
-    latestSetupGuideLink = FeedLink.newStaticLink(SETUP_GUIDE_LINK, "setup-guide",KyloIcons.Links.setupGuide,{"loadMode":LoadMode.LATEST});
+    /**
+     * the current step links
+     * @type {any[]}
+     */
+    stepLinks:FeedLink[] = [];
 
-    deployedSetupGuideLink = FeedLink.newStaticLink(SETUP_REVIEW_LINK, "setup-guide",KyloIcons.Links.setupGuide, {"loadMode":LoadMode.DEPLOYED});
+    /**
+     * all the links
+     */
+    allLinks:FeedLink[] = [];
 
+    selectedLink:FeedLink = null;
+
+    summaryLinkLatestSetupGuideLink = FeedLink.newStaticLink(SETUP_GUIDE_LINK, "setup-guide",KyloIcons.Links.setupGuide,{"loadMode":LoadMode.LATEST});
+
+    summaryLinkDeployedSetupGuideLink = FeedLink.newStaticLink(SETUP_REVIEW_LINK, "setup-guide",KyloIcons.Links.setupGuide, {"loadMode":LoadMode.DEPLOYED});
+
+    feedActivityLink = FeedLink.newStaticLink(FEED_ACTIVITY_LINK, "feed-activity","pages");
+
+
+
+    sectionLinkDeployedSetupGuideLink = FeedLink.newSectionLink(SETUP_REVIEW_LINK, "setup-guide",KyloIcons.Links.setupGuide, {"loadMode":LoadMode.DEPLOYED});
+
+    sectionLinkSetupGuideSummaryLink = FeedLink.newSectionLink(SETUP_GUIDE_LINK, "setup-guide",KyloIcons.Links.setupGuide);
 
 
     constructor(private stateService:StateService, private _translateService: TranslateService){
         this.sideNavSelectionChangedSubject = new Subject<FeedLinkSelectionChangedEvent>();
         this.sideNavSelectionChanged$ = this.sideNavSelectionChangedSubject.asObservable();
-
         this.toolbarActionTemplateChangedSubject = new Subject<ToolbarActionTemplateChangedEvent>();
-        this.staticFeedLinks = [FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',KyloIcons.Links.lineage),
+        this.buildSummaryLinks();
+        this.buildStaticLinks();
+
+
+    }
+
+    buildStaticLinks(){
+        this.staticFeedLinks = [
+            FeedLink.newStaticLink(LINEAGE_LINK,'feed-lineage',KyloIcons.Links.lineage),
             FeedLink.newStaticLink(PROFILE_LINK,"profile",KyloIcons.Links.profile),
             FeedLink.newStaticLink(SLA_LINK,"sla",KyloIcons.Links.sla),
             FeedLink.newStaticLink(VERSIONS_LINK,"version-history",KyloIcons.Links.versions)];
+        this.staticFeedLinks.forEach(link => this.allLinks.push(link));
     }
 
-    feedLinks:FeedLink[] = [];
+    buildSummaryLinks(){
+        this.allLinks.push(this.summaryLinkLatestSetupGuideLink);
+        this.allLinks.push(this.summaryLinkDeployedSetupGuideLink);
+        this.allLinks.push(this.feedActivityLink);
+        this.allLinks.push(this.sectionLinkSetupGuideSummaryLink)
+        this.allLinks.push(this.sectionLinkDeployedSetupGuideLink)
+    }
 
-    selectedLink:FeedLink = null;
+
 
     toolbarActionTemplateRefMap:{ [key: string]: TemplateRef<any> } = {}
 
@@ -71,12 +103,11 @@ export class FeedSideNavService {
         return this.toolbarActionTemplateChangedSubject.subscribe(o);
     }
 
-    registerToolbarActionTemplate(linkName:string,templateRef:TemplateRef<any>){
-        let link = this._findLinkByName(linkName);
+    registerStepToolbarActionTemplate(linkName:string,templateRef:TemplateRef<any>){
+        let link = this._findStepLinkByName(linkName);
         if(link){
             this.toolbarActionTemplateRefMap[linkName] = templateRef;
-            //fire link changed event?
-            console.log("LINK CHANGED!!!!", templateRef)
+            //fire link changed event
             this.toolbarActionTemplateChangedSubject.next(new ToolbarActionTemplateChangedEvent(link,templateRef))
         }
     }
@@ -98,19 +129,23 @@ export class FeedSideNavService {
         }
     }
 
-    selectLinkByName(linkName:string){
-        let link = this._findLinkByName(linkName);
+    selectStaticLinkByName(linkName:string){
+        let link = this._findStaticLinkByName(linkName);
         if(link){
             this.setSelected(link);
         }
     }
 
     private _findStepLink(step:Step):FeedLink{
-        return this.feedLinks.find((link) => link.isStepLink() && link.step.name == step.name);
+        return this.allLinks.find((link) => link.isStepLink() && link.step.name == step.name);
     }
 
-    private _findLinkByName(linkName:string){
-        return this.feedLinks.find((link) => link.label == linkName);
+    private _findStaticLinkByName(linkName:string){
+        return this.allLinks.find((link) => link.label == linkName && link.linkType == FeedLinkType.STATIC);
+    }
+
+    private _findStepLinkByName(linkName:string){
+        return this.allLinks.find((link) => link.label == linkName && link.isStepLink());
     }
 
     subscribeToFeedLinkSelectionChanges(observer:PartialObserver<FeedLinkSelectionChangedEvent>) : ISubscription{
@@ -119,7 +154,7 @@ export class FeedSideNavService {
 
     setSelected(feedLink:FeedLink){
         //unselect previous one
-        let selectedLink = this.feedLinks.find((link) => link.selected);
+        let selectedLink = this.allLinks.find((link) => link.selected);
         if(selectedLink){
             selectedLink.selected = false;
         }
@@ -138,17 +173,25 @@ export class FeedSideNavService {
         }
     }
 
-    buildStepLinks(feed:Feed):FeedLink[]{
-        return feed.steps.map((step:Step) => FeedLink.newStepLink(step))
-    }
-
-    registerFeedLinks(feedLinks:FeedLink[]){
-        this.selectedLink = null;
-        this.feedLinks = feedLinks;
-        let selectedLink = this.feedLinks.find((link) => link.selected);
-        if(selectedLink){
-            this.selectedLink = selectedLink;
+    removeLink(linkToRemove:FeedLink){
+        let idx = this.allLinks.findIndex(link => link ===linkToRemove);
+        if(idx >=0){
+            this.allLinks.splice(idx,1);
         }
-
     }
+
+    buildStepLinks(feed:Feed):FeedLink[]{
+        //remove old step links
+        let stepLinks = this.allLinks.filter(link => link.isStepLink());
+        stepLinks.forEach(link => this.removeLink(link));
+
+         this.stepLinks = feed.steps.map((step:Step) => {
+           let link = FeedLink.newStepLink(step)
+            this.allLinks.push(link);
+           return link;
+        });
+         return this.stepLinks;
+    }
+
+
 }

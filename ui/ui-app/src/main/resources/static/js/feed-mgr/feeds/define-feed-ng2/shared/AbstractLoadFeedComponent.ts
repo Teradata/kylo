@@ -6,7 +6,7 @@ import {StateService} from "@uirouter/angular";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
-import {FeedSideNavService} from "./feed-side-nav.service";
+import {FeedSideNavService} from "../services/feed-side-nav.service";
 import {ISubscription} from "rxjs/Subscription";
 import "rxjs/add/observable/of";
 
@@ -120,7 +120,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         let linkName =this.getLinkName();
         if(linkName && linkName != ''){
             //attempt to select it
-            this.feedSideNavService.selectLinkByName(linkName);
+            this.feedSideNavService.selectStaticLinkByName(linkName);
         }
         if(this.feed == undefined) {
             let feed = this.defineFeedService.getFeed();

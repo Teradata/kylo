@@ -4,11 +4,11 @@ import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
-import {SETUP_GUIDE_LINK} from "../../shared/feed-link-constants";
+import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
 import {Feed, LoadMode} from "../../../../model/feed/feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../../new-feed-dialog/new-feed-dialog.component";

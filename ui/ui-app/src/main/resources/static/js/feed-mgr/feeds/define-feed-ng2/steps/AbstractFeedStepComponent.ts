@@ -8,7 +8,7 @@ import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedSideNavService} from "../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../services/feed-side-nav.service";
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 
@@ -263,7 +263,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
                 //register any custom toolbar actions
                 let toolbarActionTemplate = this.getToolbarTemplateRef();
                 if(toolbarActionTemplate) {
-                    this.feedSideNavService.registerToolbarActionTemplate(this.step.name, toolbarActionTemplate)
+                    this.feedSideNavService.registerStepToolbarActionTemplate(this.step.name, toolbarActionTemplate)
                 }
                 this.defineFeedService.setCurrentStep(this.step)
             }

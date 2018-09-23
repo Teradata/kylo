@@ -15,7 +15,7 @@ import 'rxjs/add/observable/forkJoin'
 import {RestUrlConstants} from "../../../../services/RestUrlConstants";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {Subscription} from "rxjs/Subscription";
 
 import {ProcessorRef} from "../../../../../../lib/feed/processor/processor-ref";

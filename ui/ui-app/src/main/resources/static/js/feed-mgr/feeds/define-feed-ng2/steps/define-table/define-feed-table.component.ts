@@ -41,7 +41,7 @@ import {
 } from "../../../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {FeedLoadingService} from "../../services/feed-loading-service";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedServiceTypes} from "../../../../services/FeedServiceTypes";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 

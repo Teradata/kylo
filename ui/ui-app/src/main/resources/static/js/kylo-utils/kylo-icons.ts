@@ -31,9 +31,20 @@ export class KyloIcons {
             enable:"play_arrow",
             disable:"pause_outline",
             abandon:"call_made",
-            filterHelp:"help"
+            filterHelp:"help",
+            uploadFile:"cloud_upload",
+            startNow:"play_arrow"
         }
     };
+
+    static getBatchFeedRunStatusIcon(feedHealth:any){
+        if(feedHealth.running){
+            return KyloIcons.Feed.running
+        }
+        else {
+            return KyloIcons.Feed.stopped
+        }
+    }
 
     static getFeedStateIcon(state:string){
         if(!state) {

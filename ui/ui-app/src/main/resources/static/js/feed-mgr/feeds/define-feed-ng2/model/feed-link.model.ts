@@ -1,16 +1,20 @@
 import {Step} from "../../../model/feed/feed-step.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../model/feed/feed-constants";
 
-export enum FeedLinkType {
-    STEP=1, SUMMARY=2, LINK=3
+/**
+ * describes where the link is
+ */
+export enum FeedLinkType{
+    SETUP_GUIDE="SETUP_GUIDE",STATIC="STATIC"
 }
+
 export class FeedLink{
     step?:Step;
     sref:string;
     icon?:string;
     selected:boolean;
     srefParams?:any;
-    type:FeedLinkType = FeedLinkType.LINK;
+    linkType?:FeedLinkType;
 
     constructor(public label:string) {
 
@@ -21,20 +25,36 @@ export class FeedLink{
     }
 
 
+    /**
+     * New Link for the Main page
+     * @param {string} label
+     * @param {string} sref
+     * @param {string} icon
+     * @param params
+     * @return {FeedLink}
+     */
     static newStaticLink(label:string,sref:string, icon?:string, params?:any):FeedLink{
         let link = new FeedLink(label);
-        link.setSRef(FEED_DEFINITION_SUMMARY_STATE_NAME+"."+sref,false)
+        link.setSRef(FEED_DEFINITION_SUMMARY_STATE_NAME+"."+sref)
         link.setIcon(icon);
-        link.type = FeedLinkType.LINK
+        link.linkType = FeedLinkType.STATIC;
         link.srefParams = params;
         return link;
     }
 
+    /**
+     * New Link for the step sections
+     * @param {string} label
+     * @param {string} sref
+     * @param {string} icon
+     * @param params
+     * @return {FeedLink}
+     */
     static newSectionLink(label:string,sref:string, icon?:string,params?:any):FeedLink{
         let link = new FeedLink(label);
-        link.setSRef(FEED_DEFINITION_SECTION_STATE_NAME+"."+sref,false)
+        link.setSRef(FEED_DEFINITION_SECTION_STATE_NAME+"."+sref)
         link.setIcon(icon);
-        link.type = FeedLinkType.LINK
+        link.linkType = FeedLinkType.SETUP_GUIDE;
         link.srefParams = params;
         return link;
     }
@@ -45,18 +65,10 @@ export class FeedLink{
         let link = new FeedLink(step.name);
         link.sref =step.sref;
         link.step = step;
+        link.linkType = FeedLinkType.SETUP_GUIDE;
         if(step.icon){
             link.icon = step.icon;
         }
-        link.type = FeedLinkType.STEP
-        return link;
-    }
-
-    static newSummaryLink(label:string,shortSRef:string, icon?:string):FeedLink{
-        let link = new FeedLink(label);
-        link.setSRef(shortSRef,true)
-        link.setIcon(icon);
-        link.type = FeedLinkType.SUMMARY
         return link;
     }
 
@@ -64,13 +76,8 @@ export class FeedLink{
     {
         this.icon = icon;
     }
-    setSRef(sref:string, isShort:boolean = true){
-        if(isShort) {
-            this.sref = FEED_DEFINITION_SECTION_STATE_NAME+"."+sref;
-        }
-        else {
-            this.sref = sref;
-        }
+    setSRef(sref:string){
+       this.sref = sref;
     }
 
     setStep(step:Step){
@@ -78,15 +85,7 @@ export class FeedLink{
     }
 
     isStepLink(){
-        return this.type == FeedLinkType.STEP
-    }
-
-    isFeedLink(){
-        return this.type == FeedLinkType.LINK
-    }
-
-    isSummaryLink(){
-        return this.type == FeedLinkType.SUMMARY
+        return this.step !== undefined;
     }
 
 }
