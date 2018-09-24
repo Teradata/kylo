@@ -40,7 +40,7 @@ public interface DataSetProvider extends BaseProvider<DataSet, DataSet.ID> {
     
     DataSet.ID resolveId(Serializable id);
 
-    DataSet create(DataSource.ID dataSourceId, String systemName);
+    DataSet create(DataSource.ID dataSourceId, String title);
 
     List<DataSet> findByDataSource(DataSource.ID dsId, DataSource.ID... otherIds);
     

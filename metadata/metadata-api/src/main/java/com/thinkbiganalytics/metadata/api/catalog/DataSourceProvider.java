@@ -39,7 +39,7 @@ public interface DataSourceProvider {
     
     DataSource.ID resolveId(Serializable id);
     
-    DataSource create(Connector.ID connId, String systemName);
+    DataSource create(Connector.ID connId, String title);
 
     List<DataSource> findByConnector(Connector.ID connId, Connector.ID... moreIds);
     

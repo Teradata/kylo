@@ -37,7 +37,7 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
- *
+ * An list implementation that wraps a JCR multi-valued property and supports all access and modification operations.
  */
 public class MultiValuePropertyList<E> extends MultiValuePropertyCollection<E> implements List<E> {
     

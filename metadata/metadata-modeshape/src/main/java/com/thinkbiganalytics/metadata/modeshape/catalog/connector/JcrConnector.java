@@ -112,6 +112,14 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     public boolean isActive() {
         return getProperty(IS_ACTIVE);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#setActive(boolean)
+     */
+    @Override
+    public void setActive(boolean flag) {
+        setProperty(IS_ACTIVE, flag);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getPluginId()

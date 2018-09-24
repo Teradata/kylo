@@ -58,6 +58,14 @@ public class CompositeDataSetSparkParameters implements DataSetSparkParameters {
                 .findFirst()
                 .orElse(null);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#setFormat(java.lang.String)
+     */
+    @Override
+    public void setFormat(String format) {
+        throw new UnsupportedOperationException("This DataSetSparkParameters instance is unmodifiable");
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#getFiles()

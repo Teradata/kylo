@@ -68,12 +68,13 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider#create(com.thinkbiganalytics.metadata.api.catalog.Connector.ID, java.lang.String)
      */
     @Override
-    public DataSource create(ID connId, String systemName) {
+    public DataSource create(ID connId, String title) {
         return this.connectorProvider.find(connId)
                 .map(conn -> {
+                    String systemName = generateSystemName(title);
                     Path dsPath = MetadataPaths.dataSourcePath(conn.getSystemName(), systemName);
                     if (JcrUtil.hasNode(getSession(), dsPath)) {
-                        throw DataSourceAlreadyExistsException.fromSystemName(systemName);
+                        throw DataSourceAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
                         return JcrUtil.createJcrObject(connNode, JcrDataSource.class);
@@ -140,5 +141,8 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
         return JcrDataSource.NODE_TYPE;
     }
 
+    private String generateSystemName(String title) {
+        return title.replaceAll("\\s+", "_").toLowerCase();
+    }
 
 }

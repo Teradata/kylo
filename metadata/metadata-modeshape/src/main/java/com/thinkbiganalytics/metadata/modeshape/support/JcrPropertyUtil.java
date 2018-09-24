@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -672,62 +673,6 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static boolean addToSetProperty(Node node, String name, Object value) {
-        return addToSetProperty(node, name, value, false);
-    }
-
-    public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
-        try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
-
-            if (node == null) {
-                throw new IllegalArgumentException("Cannot set a property on a null-node!");
-            }
-            if (name == null) {
-                throw new IllegalArgumentException("Cannot set a property without a provided name");
-            }
-
-            Set<Value> values = null;
-
-            if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues())
-                    .map(v -> {
-                        if (PropertyType.REFERENCE == v.getType() && weakReference) {
-                            try {
-                                Node n = JcrPropertyUtil.asValue(v, node.getSession());
-                                return n.getSession().getValueFactory().createValue(n, true);
-                            } catch (AccessDeniedException e) {
-                                log.debug("Access denied", e);
-                                throw new AccessControlException(e.getMessage());
-                            } catch (RepositoryException e) {
-                                throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
-                            }
-                        } else {
-                            return v;
-                        }
-                    }).collect(Collectors.toSet());
-            } else {
-                values = new HashSet<>();
-            }
-
-            Value newVal = createValue(node.getSession(), value, weakReference);
-
-            boolean result = values.add(newVal);
-            if (weakReference) {
-                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]), PropertyType.WEAKREFERENCE);
-            } else {
-                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
-            }
-
-            return result;
-        } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
-        }
-    }
-    
     public static <E> List<E> getPropertyValuesList(Node node, String propName) {
         try {
             Property prop;
@@ -762,9 +707,8 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static boolean removeAllFromSetProperty(Node node, String name) {
+    public static boolean removeAllFromCollectionProperty(Node node, String name) {
         try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
@@ -772,8 +716,7 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
 
-            Set<Value> values = new HashSet<>();
-            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            node.setProperty(name, (Value[]) null);
             return true;
 
         } catch (AccessDeniedException e) {
@@ -783,31 +726,98 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to remove set property: " + name, e);
         }
     }
+    
+    public static boolean addToListProperty(Node node, String name, Object value) {
+        return addToCollectionProperty(node, name, value, false, () -> new ArrayList<Value>());
+    }
+    
+    public static boolean addToListProperty(Node node, String name, Object value, boolean weakReference) {
+        return addToCollectionProperty(node, name, value, weakReference, () -> new ArrayList<Value>());
+    }
+    
+    public static boolean addToSetProperty(Node node, String name, Object value) {
+        return addToCollectionProperty(node, name, value, false, () -> new HashSet<Value>());
+    }
 
+    public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
+        return addToCollectionProperty(node, name, value, weakReference, () -> new HashSet<Value>());
+    }
+
+    private static boolean addToCollectionProperty(Node node, String name, Object value, boolean weakReference, Supplier<Collection<Value>> collectionSupplier) {
+        try {
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+            
+            Collection<Value> values = null;
+            
+            if (node.hasProperty(name)) {
+                values = Arrays.stream(node.getProperty(name).getValues())
+                                .map(v -> {
+                                    if (PropertyType.REFERENCE == v.getType() && weakReference) {
+                                        try {
+                                            Node n = JcrPropertyUtil.asValue(v, node.getSession());
+                                            return n.getSession().getValueFactory().createValue(n, true);
+                                        } catch (AccessDeniedException e) {
+                                            log.debug("Access denied", e);
+                                            throw new AccessControlException(e.getMessage());
+                                        } catch (RepositoryException e) {
+                                            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+                                        }
+                                    } else {
+                                        return v;
+                                    }
+                                }).collect(Collectors.toCollection(collectionSupplier));
+            } else {
+                values = collectionSupplier.get();
+            }
+            
+            Value newVal = createValue(node.getSession(), value, weakReference);
+            
+            boolean result = values.add(newVal);
+            if (weakReference) {
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]), PropertyType.WEAKREFERENCE);
+            } else {
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            }
+            
+            return result;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+        }
+    }
 
     public static boolean removeFromSetProperty(Node node, String name, Object value) {
-        return removeFromSetProperty(node, name, value, false);
+        return removeFromCollectionProperty(node, name, value, false, () -> new HashSet<Value>());
     }
 
     public static boolean removeFromSetProperty(Node node, String name, Object value, boolean weakRef) {
+        return removeFromCollectionProperty(node, name, value, weakRef, () -> new HashSet<Value>());
+    }
+    
+    private static boolean removeFromCollectionProperty(Node node, String name, Object value, boolean weakRef, Supplier<Collection<Value>> collectionSupplier) {
         try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
-
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
             if (name == null) {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
-
-            Set<Value> values = new HashSet<>();
-
+            
+            Collection<Value> values;
+            
             if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
+                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toCollection(collectionSupplier));
             } else {
-                values = new HashSet<>();
+                values = collectionSupplier.get();
             }
-
+            
             Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
             boolean result = values.remove(existingVal);
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));

@@ -59,7 +59,8 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
      * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#create(java.lang.String, java.lang.String)
      */
     @Override
-    public Connector create(String pluginId, String systemName) {
+    public Connector create(String pluginId, String title) {
+        String systemName = generateSystemName(title);
         Path connPath = MetadataPaths.connectorPath(systemName);
         
         if (JcrUtil.hasNode(getSession(), connPath)) {
@@ -101,6 +102,10 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
     @Override
     public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrConnector.NODE_TYPE;
+    }
+
+    private String generateSystemName(String title) {
+        return title.replaceAll("\\s+", "_").toLowerCase();
     }
 
 }

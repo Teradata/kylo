@@ -40,7 +40,7 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
 /**
- *
+ * An abstract collection that wraps a JCR multi-valued property and supports all access and modification operations.
  */
 public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
 

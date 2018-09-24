@@ -39,7 +39,7 @@ public interface ConnectorProvider {
     
     Connector.ID resolveId(Serializable id);
     
-    Connector create(String pluginId, String systemName);
+    Connector create(String pluginId, String title);
     
     List<Connector> findAll();
     

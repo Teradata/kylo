@@ -35,6 +35,11 @@ public interface DataSetSparkParameters {
      * @return the format
      */
     String getFormat();
+    
+    /**
+     * @param format the format
+     */
+    void setFormat(String format);
 
     /**
      * @return files to be placed in the working directory of each executor

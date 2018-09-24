@@ -1,5 +1,6 @@
 [
   {
+    "title": "Hive",
     "pluginId": "hive",
     "tabs": [
       {
@@ -36,6 +37,7 @@
     ]
   },
   {
+    "title": "Amazon S3",
     "pluginId": "amazon-s3",
     "tabs": [
       {
@@ -99,6 +101,7 @@
     ]
   },
   {
+    "title": "Azure Storage",
     "pluginId": "azure-storage",
     "tabs": [
       {
@@ -132,6 +135,7 @@
     ]
   },
   {
+    "title": "Kafka",
     "pluginId": "kafka",
     "options": [
       {
@@ -159,6 +163,7 @@
     ]
   },
   {
+    "title": "File Upload",
     "pluginId": "file-upload",
     "tabs": [
       {
@@ -183,6 +188,7 @@
     ]
   },
   {
+    "title": "HDFS",
     "pluginId": "hdfs",
     "tabs": [
       {
@@ -206,6 +212,7 @@
     ]
   },
   {
+    "title": "Teradata",
     "pluginId": "teradata",
     "color": "orange-700",
     "tabs": [
@@ -243,6 +250,7 @@
     ]
   },
   {
+    "title": "JDBC",
     "pluginId": "jdbc",
     "tabs": [
       {
@@ -305,6 +313,7 @@
     ]
   },
   {
+    "title": "Oracle",
     "pluginId": "oracle",
     "color": "orange-700",
     "tabs": [
@@ -315,6 +324,7 @@
     ]
   },
   {
+    "title": "Google Cloud Storage",
     "pluginId": "google-cloud-storage",
     "tabs": [
       {
@@ -334,6 +344,7 @@
     ]
   },
   {
+    "title": "Local File System",
     "pluginId": "local-file-system",
     "tabs": [
       {

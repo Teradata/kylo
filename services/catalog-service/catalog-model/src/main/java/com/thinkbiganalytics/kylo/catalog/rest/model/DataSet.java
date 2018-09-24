@@ -56,6 +56,7 @@ public class DataSet implements DataSetTemplate {
         dataSource = (other.dataSource != null) ? new DataSource(other.dataSource) : null;
         format = other.format;
         id = other.id;
+        title = other.title;
         options = (other.options != null) ? new HashMap<>(other.options) : null;
         paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
     }

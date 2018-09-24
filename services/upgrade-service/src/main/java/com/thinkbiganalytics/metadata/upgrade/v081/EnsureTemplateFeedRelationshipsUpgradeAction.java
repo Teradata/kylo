@@ -122,7 +122,7 @@ public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeStat
                         Throwable rootCause = ExceptionUtils.getRootCause(e);
                         if (rootCause != null && rootCause instanceof ItemNotFoundException) {
                             //reset the reference collection.  It will be rebuilt in the subsequent call
-                            JcrPropertyUtil.removeAllFromSetProperty(((JcrFeedTemplate) template).getNode(), JcrFeedTemplate.FEEDS);
+                            JcrPropertyUtil.removeAllFromCollectionProperty(((JcrFeedTemplate) template).getNode(), JcrFeedTemplate.FEEDS);
                         }
                     }
                     if (templateFeeds == null || !templateFeeds.contains(feed)) {

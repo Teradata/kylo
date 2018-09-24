@@ -72,7 +72,7 @@ public class FeedWeakReferenceUpgradeAction implements UpgradeState {
             .map(JcrFeedTemplate::getNode)
             .forEach(templateNode -> {
                 Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(templateNode, JcrFeedTemplate.FEEDS);
-                JcrPropertyUtil.removeAllFromSetProperty(templateNode, JcrFeedTemplate.FEEDS);
+                JcrPropertyUtil.removeAllFromCollectionProperty(templateNode, JcrFeedTemplate.FEEDS);
                 feedNodes.forEach(feedNode -> JcrPropertyUtil.addToSetProperty(templateNode, JcrFeedTemplate.FEEDS, feedNode, true));
             });
         

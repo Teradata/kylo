@@ -69,13 +69,14 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSetProvider#create(com.thinkbiganalytics.metadata.api.catalog.DataSource.ID, java.lang.String)
      */
     @Override
-    public DataSet create(ID dataSourceId, String dsetSystemName) {
+    public DataSet create(ID dataSourceId, String title) {
         return this.dsProvider.find(dataSourceId)
                 .map(dsrc -> {
-                    Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsetSystemName);
+                    String dsSystemName = generateSystemName(title);
+                    Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsSystemName);
                     
                     if (JcrUtil.hasNode(getSession(), dataSetPath)) {
-                        throw DataSetAlreadyExistsException.fromSystemName(dsetSystemName);
+                        throw DataSetAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
                         return JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
@@ -134,4 +135,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     }
 
 
+    private String generateSystemName(String title) {
+        return title.replaceAll("\\s+", "_").toLowerCase();
+    }
 }

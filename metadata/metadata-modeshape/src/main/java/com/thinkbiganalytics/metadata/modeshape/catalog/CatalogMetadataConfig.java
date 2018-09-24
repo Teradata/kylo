@@ -23,6 +23,12 @@ package com.thinkbiganalytics.metadata.modeshape.catalog;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
+import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
@@ -32,6 +38,10 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -52,5 +62,36 @@ public class CatalogMetadataConfig {
     @Bean
     public DataSetProvider metadataDataSetProvider() {
         return new JcrDataSetProvider();
+    }
+    
+    @Bean
+    public PostMetadataConfigAction connectorPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
+        return () -> {
+            metadata.commit(() -> {
+                List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
+                Map<String, Connector> connectorMap =  metadataConnectorProvider().findAll().stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
+                
+                for (ConnectorPlugin plugin : plugins) {
+                    if (connectorMap.containsKey(plugin.getId())) {
+                        connectorMap.get(plugin.getId()).setActive(true);
+                        connectorMap.remove(plugin.getId());
+                    } else {
+                        ConnectorPluginDescriptor descr = plugin.getDescriptor();
+                        String title = descr.getTitle();
+                        Connector connector = metadataConnectorProvider().create(plugin.getId(), title);
+                    }
+                }
+                
+                // Any left over connectors that do not have a corresponding plugin should be either made inactive if they at 
+                // least one data source, or removed if they don't.
+                for (Connector connector : connectorMap.values()) {
+                    if (connector.getDataSources().size() > 0) {
+                        connector.setActive(false);
+                    } else {
+                        metadataConnectorProvider().deleteById(connector.getId());
+                    }
+                }
+            }, MetadataAccess.SERVICE);
+        };
     }
 }

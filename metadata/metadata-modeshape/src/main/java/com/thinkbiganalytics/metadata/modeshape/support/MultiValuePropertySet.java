@@ -35,7 +35,7 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
- *
+ * An set implementation that wraps a JCR multi-valued property and supports all access and modification operations.
  */
 public class MultiValuePropertySet<E> extends MultiValuePropertyCollection<E> implements Set<E> {
 

@@ -60,6 +60,14 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
     public String getFormat() {
         return getProperty(FORMAT);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#setFormat(java.lang.String)
+     */
+    @Override
+    public void setFormat(String format) {
+        setProperty(FORMAT, format);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#getFiles()

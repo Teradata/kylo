@@ -39,6 +39,11 @@ public class ConnectorPluginDescriptor {
      * Connector plugin ID (connector type)
      */
     private String pluginId;
+    
+    /**
+     * Connector title
+     */
+    private String title;
 
     /**
      * UI plugin for creating new data sources
@@ -114,6 +119,14 @@ public class ConnectorPluginDescriptor {
 
     public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public UiPlugin getDataSourcePlugin() {
