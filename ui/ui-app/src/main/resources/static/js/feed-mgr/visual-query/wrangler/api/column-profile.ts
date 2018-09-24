@@ -49,6 +49,7 @@ export class ColumnProfile {
     percEmpty: number;
     emptyCount: string;
     columnDataType: string;
+    columnDataTypePlain: string;
     nullCount: string;
     percNull: number;
     max: string;
@@ -98,6 +99,7 @@ export class ColumnProfile {
                         break;
                     case 'COLUMN_DATATYPE':
                         self.columnDataType = value.metricValue;
+                        self.columnDataTypePlain = self.columnDataType.replace("Type", "");
                         break;
                     case 'MAX_LENGTH':
                         self.maxLen = value.metricValue;

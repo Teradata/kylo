@@ -68,7 +68,7 @@ import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
 import {MatExpansionModule} from "@angular/material/expansion";
-import {FeedSideNavService} from "./shared/feed-side-nav.service";
+import {FeedSideNavService} from "./services/feed-side-nav.service";
 import {ProfileContainerComponent} from './summary/profile/container/profile-container.component';
 import {ProfileStatsComponent} from './summary/profile/container/stats/profile-stats.component';
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
@@ -114,6 +114,8 @@ import {FeedStatsModule} from "../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.
 import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-manager-services.module";
 import {SharedComponentsModule} from "../../../shared-components/shared-components.module";
+import {KyloServicesModule} from "../../../services/services.module";
+import {FeedAccessControlService} from "./services/feed-access-control.service";
 
 @NgModule({
     declarations: [
@@ -177,8 +179,9 @@ import {SharedComponentsModule} from "../../../shared-components/shared-componen
       FilterPartitionFormulaPipe,
       FeedSideNavService,
       FeedItemInfoService,
-        FeedNifiPropertiesService,
-        DefineFeedSourceSampleService
+      FeedNifiPropertiesService,
+      DefineFeedSourceSampleService,
+        FeedAccessControlService
     ],
     imports: [
         CommonModule,
@@ -197,6 +200,7 @@ import {SharedComponentsModule} from "../../../shared-components/shared-componen
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
+        KyloServicesModule,
         RemoteFilesModule,
         FieldPoliciesModule,
         FeedPreconditionModule,

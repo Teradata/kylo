@@ -3,11 +3,11 @@ import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import * as _ from "underscore";
 import * as angular from 'angular';
 import {HttpClient} from "@angular/common/http";
-import {LINEAGE_LINK} from "../../shared/feed-link-constants";
+import {LINEAGE_LINK} from "../../model/feed-link-constants";
 
 @Component({
     selector: "feed-lineage",

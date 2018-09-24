@@ -4,16 +4,17 @@ import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
-import {SETUP_GUIDE_LINK} from "../../shared/feed-link-constants";
+import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
 import {Feed, LoadMode} from "../../../../model/feed/feed.model";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../../new-feed-dialog/new-feed-dialog.component";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
+import {EntityVersion} from "../../../../model/entity-version.model";
 
 
 @Component({
@@ -73,6 +74,15 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.defineFeedService.loadDeployedFeed(this.feed.id).subscribe((feed:Feed) => {
             this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id, loadMode:LoadMode.DEPLOYED},{reload:false});
         });
+    }
+
+    deployFeed(){
+        this.defineFeedService.deployFeed(this.feed).subscribe((response:any) =>{
+            if(response){
+               let  redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity";
+                this.stateService.go(redirectState,{feedId:this.feed.id}, {location:'replace'})
+            }
+        })
     }
 
     onFeedSaved(response:SaveFeedResponse){

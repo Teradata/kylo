@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Inject, Injectable, Injector, ViewContainerRef} from "@angular/core";
-import {Feed, FeedMode, FeedTemplateType, LoadMode} from "../../../model/feed/feed.model";
+import {Feed, FeedMode, FeedTemplateType, LoadMode, FeedAccessControl} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -8,7 +8,7 @@ import {Observable} from "rxjs/Observable";
 import {StateRegistry, StateService, Transition} from "@uirouter/angular";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
@@ -45,15 +45,17 @@ import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
 import {TdLoadingService} from "@covalent/core/loading";
 import {Category} from "../../../model/category/category.model";
+import {FeedAccessControlService} from "../services/feed-access-control.service";
 
 
 export class FeedEditStateChangeEvent{
 
     public readonly: boolean;
-    public allowEdit:boolean;
-constructor(readonly:boolean, allowEdit:boolean){
+    public accessControl:FeedAccessControl;
+
+constructor(readonly:boolean, accessControl:FeedAccessControl){
     this.readonly = readonly;
-    this.allowEdit = allowEdit;
+    this.accessControl = accessControl;
 }
 
 }
@@ -120,7 +122,7 @@ export class DefineFeedService {
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
                 private stateService:StateService,
-                @Inject("AccessControlService") accessControlService: AccessControlService){
+                private feedAccessControlService:FeedAccessControlService){
 
 
         this.currentStepSubject = new Subject<Step>();
@@ -136,7 +138,6 @@ export class DefineFeedService {
         this.feedService = $$angularInjector.get("FeedService");
 
         this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
-        this.accessControlService = accessControlService;
 
 
     }
@@ -370,7 +371,7 @@ export class DefineFeedService {
 
         if(this.feed && this.feed.loadMode != LoadMode.DEPLOYED){
             this.feed.readonly = false;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
         }
         else if(this.feed && this.feed.loadMode == LoadMode.DEPLOYED){
             console.log("Unable to Edit a deployed feed ",this.feed)
@@ -380,13 +381,12 @@ export class DefineFeedService {
     markFeedAsReadonly(){
         if(this.feed){
             this.feed.readonly = true;
-            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.allowEdit))
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
         }
     }
 
     /**
-     * Gets the current feed
-     * This is not the copy!!!
+     * Gets a copy of the current feed
      * @return {Feed}
      */
     getFeed(): Feed{
@@ -503,7 +503,7 @@ export class DefineFeedService {
 
         let checkForDraft = !feed.isDraft() ;
 
-
+        let accessControl = feed.accessControl;
         observable.subscribe((response: any)=> {
 
             let updatedFeed = response;
@@ -525,7 +525,8 @@ export class DefineFeedService {
 
             //reset it to be editable
             savedFeed.readonly = false;
-            savedFeed.allowEdit =true;
+            //reassign accessControl
+            savedFeed.accessControl = accessControl;
 
             savedFeed.updateDate = new Date(updatedFeed.updateDate);
             let valid = savedFeed.validate(true);
@@ -561,16 +562,35 @@ export class DefineFeedService {
         return savedFeedObservable$
     }
 
-    deployFeed(feed:Feed) {
+    deployFeed(feed:Feed) :Observable<EntityVersion|any> {
         feed.validate(false)
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
-            params.set("action","VERSION,DEPLOY")
+            params =params.append("action","VERSION,DEPLOY")
 
-             this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
-                this.openSnackBar("DEPLOYED VERSION "+version.id,5000)
-            });
+            let headers :HttpHeaders = new HttpHeaders();
+            headers =headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+
+            this._loadingService.register("processingFeed")
+
+           return this.http.post(url,null,{ params:params,headers:headers})
+               .map((version:EntityVersion) => {
+                this._loadingService.resolve("processingFeed")
+                this.openSnackBar("Deployed feed v."+version.name,5000)
+                   return version;
+            }).catch((error1:any,caught:Observable<any>) => {
+                this._dialogService.openAlert({
+                    title:"Error deploying feed",
+                    message:"There was an error deploying the feed "+error1
+                });
+                this._loadingService.resolve("processingFeed")
+                  return Observable.throw(error1);
+            }).share();
+        }
+        else {
+            this.openSnackBar("Unable to deploy this feed",5000)
+            return null;
         }
     }
 
@@ -579,9 +599,11 @@ export class DefineFeedService {
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
-            params.set("action","REMOVE")
+            params = params.append("action","REMOVE")
+            let headers :HttpHeaders = new HttpHeaders();
+            headers = headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
 
-            this.http.post(url,null,{ params:params}).subscribe((version:EntityVersion) => {
+            this.http.post(url,null,{ params:params,headers:headers}).subscribe((version:EntityVersion) => {
                 this.openSnackBar("Removed draft "+version.id,5000)
             });
         }
@@ -647,15 +669,13 @@ export class DefineFeedService {
                 this.feedLoadMode = loadMode;
             }
 
-            //Check if user has entity access permissions for editing feed
-            fromPromise(this.accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, feedModel, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
-                .subscribe((access: boolean) => {
-                    //console.log("[debug] Does user have entity access permission to edit feed? " + access);
-                    feedModel.allowEdit =  access;
-                    if(load) {
-                        this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.allowEdit))
-                    }
-                });
+            this.feedAccessControlService.accessControlCheck(feedModel).subscribe((accessControl:FeedAccessControl) => {
+                feedModel.accessControl = accessControl;
+                if(load) {
+                    this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.accessControl))
+                }
+            })
+
 
             if(load) {
                 //notify subscribers of a copy
@@ -663,6 +683,12 @@ export class DefineFeedService {
             }
             loadFeedSubject.next(feedModel.copy());
         }, error1 => {
+            if(load) {
+                this._dialogService.openAlert({
+                    title:"Error loading feed",
+                    message: "There was an error attempting to load the feed "
+                });
+            }
             loadFeedSubject.error(error1)
         })
         return loadFeedObservable$;

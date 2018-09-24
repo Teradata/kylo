@@ -13,8 +13,8 @@ import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent"
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
-import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../shared/feed-side-nav.service";
-import {FeedLink} from "../../shared/feed-link.model";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
+import {FeedLink} from "../../model/feed-link.model";
 
 
 

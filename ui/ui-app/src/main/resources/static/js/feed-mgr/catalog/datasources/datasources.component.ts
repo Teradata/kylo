@@ -50,6 +50,9 @@ export class DataSourcesComponent implements OnInit {
     public stateParams:{}
 
     @Input()
+    public readOnly?:boolean = false;
+
+    @Input()
     public displayInCard?:boolean = true;
 
     @Output()
@@ -118,7 +121,7 @@ export class DataSourcesComponent implements OnInit {
     }
 
     isEditable(datasource: DataSource): boolean {
-        return datasource.id !== "file-uploads" && datasource.id !== "hive";
+        return (!this.readOnly && (datasource.id !== "file-uploads" && datasource.id !== "hive"));
     }
 
     /**

@@ -55,6 +55,21 @@ export enum LoadMode {
     LATEST="LATEST",DEPLOYED="DEPLOYED",DRAFT="DRAFT"
 }
 
+export class FeedAccessControl {
+    allowEdit:boolean;
+    allowChangePermissions:boolean;
+    allowAdmin:boolean;
+    allowSlaAccess:boolean;
+    allowExport:boolean;
+    allowStart:boolean;
+    public constructor(init?: Partial<FeedAccessControl>) {
+        Object.assign(this, init);
+    }
+
+    static NO_ACCESS = new FeedAccessControl();
+
+
+}
 
 export class Feed  implements KyloObject{
 
@@ -258,11 +273,8 @@ export class Feed  implements KyloObject{
 
     readonly: boolean;
 
-    /**
-     * Is editing the feed allowed? (determined by entity-access control permissions)
-     * Set to false by default
-     */
-    allowEdit: boolean;
+    accessControl:FeedAccessControl;
+
 
     /**
      * The name of the sample file used to parse for table schema
@@ -347,6 +359,10 @@ export class Feed  implements KyloObject{
             this.dataTransformation = ObjectUtils.getAs(this.dataTransformation, DefaultFeedDataTransformation, DefaultFeedDataTransformation.OBJECT_TYPE);
         }
         this.userInterfaceId = _.uniqueId("feed-");
+
+        if(this.registeredTemplate){
+            this.isStream = this.registeredTemplate.isStream
+        }
     }
 
     getFullName(){
@@ -385,7 +401,7 @@ export class Feed  implements KyloObject{
 
     initialize() {
         this.readonly = true;
-        this.allowEdit = false;
+        this.accessControl = FeedAccessControl.NO_ACCESS;
         this.systemFeedName = '';
         this.feedName = '';
         this.mode = FeedMode.DRAFT;
@@ -497,7 +513,7 @@ export class Feed  implements KyloObject{
      * @return {boolean}
      */
     canEdit(){
-        return this.allowEdit && this.loadMode != LoadMode.DEPLOYED;
+        return this.accessControl.allowEdit && this.loadMode != LoadMode.DEPLOYED;
     }
 
     /**

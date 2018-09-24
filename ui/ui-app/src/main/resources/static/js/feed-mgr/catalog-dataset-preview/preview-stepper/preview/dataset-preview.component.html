@@ -17,11 +17,9 @@
         </ng-template>
 
     </div>
-
-
   </mat-tab>
   <mat-tab label="Raw" *ngIf="dataset.allowsRawView">
-    <ng-template tdLoading [tdLoadingUntil]="!dataset.rawLoading" tdLoadingStrategy="overlay" tdLoadingType="linear">
+    <ng-template tdLoading tdLoading="DatasetPreviewComponent.rawLoading"  tdLoadingStrategy="overlay" tdLoadingType="linear">
       <div *ngIf="dataset.raw && rawReady">
         <dataset-simple-table  [(columns)]="dataset.raw.columns" [rows]="dataset.raw.rows" ></dataset-simple-table>
       </div>

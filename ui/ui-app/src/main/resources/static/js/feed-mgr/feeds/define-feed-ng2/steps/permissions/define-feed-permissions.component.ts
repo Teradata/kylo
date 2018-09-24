@@ -1,6 +1,6 @@
 import {DefineFeedService} from "../../services/define-feed.service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FormControl, FormGroup} from "@angular/forms";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";

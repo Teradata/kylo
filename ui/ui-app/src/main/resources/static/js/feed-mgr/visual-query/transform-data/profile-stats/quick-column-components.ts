@@ -72,7 +72,7 @@ export class MiniCategoricalComponent implements OnInit {
         this.tooltipData = data;
         return [{
             key: 'Count',
-            color: 'rgba(52, 131, 186,.8)', //'#bcbd22',
+            color: '#d0d0d0', //'#bcbd22',
             values: data
         }];
     }
@@ -173,7 +173,7 @@ export class MiniHistogramComponent implements OnInit {
         this.tooltipData = data;
         return [{
             key: 'Count',
-            color: 'rgba(52, 131, 186,.8)', //color: '#bcbd22',//'''#D07600', //'#80B7DE'
+            color: '#d0d0d0', //color: '#bcbd22',//'''#D07600', //'#80B7DE'
             values: data
         }];
     }

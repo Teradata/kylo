@@ -79,7 +79,8 @@ export class FeedStepBuilderUtil {
 
 
      simpleFeedSteps() :Step[] {
-         return this.add(this.propertiesStep())
+         return this.add(this.sourceStep())
+             .add(this.propertiesStep())
              .add(this.permissionStep())
              .add(this.feedDetailsStep())
              .build()

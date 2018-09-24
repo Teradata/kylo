@@ -358,7 +358,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         if(datasources ) {
             this.availableDatasources = datasources;
         }
-
+/*
         let fileIndex = this.availableDatasources.indexOf(this.fileDataSource);
         if(this.advancedMode == true){
                 if(fileIndex >=0) {
@@ -372,6 +372,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 this.availableDatasources.push(this.fileDataSource);
             }
         }
+        */
     }
 
     private _keydown(evt: KeyboardEvent) {

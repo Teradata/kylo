@@ -19,7 +19,7 @@
           <div fxFlex *ngIf="advancedMode"></div>
 
           <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
-            <mat-select formControlName="datasource" placeholder="Data Source">
+            <mat-select formControlName="datasource" placeholder="Table Source">
               <mat-option *ngFor="let datasource of availableDatasources" [value]="datasource.id">{{datasource.name}}</mat-option>
             </mat-select>
           </mat-form-field>
@@ -54,7 +54,7 @@
             </div>
           </div>
 
-          <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="!selectedTable()"
+          <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="!selectedTable()" style="margin-left:-5px"
                   *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources">
             <ng-md-icon icon="add"></ng-md-icon>
           </button>

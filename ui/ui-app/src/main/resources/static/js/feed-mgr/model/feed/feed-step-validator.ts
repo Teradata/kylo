@@ -15,16 +15,15 @@ export class FeedStepValidator  {
     }
 
     public validate(feed:Feed) : boolean{
-        if(!this.step.visited) {
+        if(this.step.required && !this.step.visited) {
             this.step.setComplete(false);
-        }
-
-        if(this.hasFormErrors){
+        } else if(this.hasFormErrors){
             this.step.setComplete(false);
             this.step.valid = false;
         }
         else {
             this.step.valid = true;
+            this.step.setComplete(true)
         }
         return this.step.valid;
     }

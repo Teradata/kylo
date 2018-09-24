@@ -20,6 +20,7 @@ import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {FeedStats} from "../../../feed-mgr/model/feed/feed-stats.model";
 
 
 export class FeedProcessorErrorTable {
@@ -268,7 +269,9 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
      * Summary stats should come from the service
      * @type {*}
      */
-    summaryStatistics: any;
+    summaryStatistics: FeedStats = new FeedStats();
+
+
 
     feedChartLegendState: any[] = [];
     feedChartData: any[] = [];
@@ -287,11 +290,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
      */
     feedHealth: any;
 
-    /**
-     * Latest summary stats
-     * @type {{}}
-     */
-    summaryStatsData: any = {};
+
 
     eventSuccessKpi: any = {
         value: 0,
@@ -377,6 +376,9 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     @Output()
     feedChange = new EventEmitter<Feed>()
 
+    @Output()
+    feedStatsChange = new EventEmitter<FeedStats>();
+
     constructor(
         private http: HttpClient,
         private snackBar: MatSnackBar,
@@ -393,6 +395,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
         this.showFeedTimeChartLoading = true;
         this.showProcessorChartLoading = true;
         this.summaryStatistics = feedStatsService.summaryStatistics;
+        this.feedStatsChange.emit(this.summaryStatistics)
         this.processorStatsFunctions = feedStatsService.processorStatsFunctions();
         this.feedProcessorErrors = feedStatsService.feedProcessorErrors;
         this.feedProcessorErrorsTable = new FeedProcessorErrorTable(this._dataTableService, this.feedProcessorErrors.visibleData);
@@ -787,13 +790,13 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     }
 
     updateSuccessEventsPercentKpi() {
-        if (this.summaryStatsData.totalEvents == 0) {
+        if (this.summaryStatistics.totalEvents == 0) {
             this.eventSuccessKpi.icon = 'remove';
             this.eventSuccessKpi.color = "#1f77b4"
             this.eventSuccessKpi.value = "--";
         }
         else {
-            var failed = this.summaryStatsData.totalEvents > 0 ? (<any>(this.summaryStatsData.failedEvents / this.summaryStatsData.totalEvents)).toFixed(2) * 100 : 0;
+            var failed = this.summaryStatistics.totalEvents > 0 ? (<any>(this.summaryStatistics.failedEvents / this.summaryStatistics.totalEvents)).toFixed(2) * 100 : 0;
             var value = (100 - failed).toFixed(0);
             var icon = 'offline_pin';
             var iconColor = "#3483BA"
@@ -835,7 +838,8 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
             maxTime = this.zoomedMaxTime
         }
         this.feedStatsService.fetchProcessorStatistics(minTime, maxTime).then((response: any) => {
-            this.summaryStatsData = this.feedStatsService.summaryStatistics;
+            this.summaryStatistics = this.feedStatsService.summaryStatistics;
+            this.feedStatsChange.emit(this.summaryStatistics)
             this.updateSummaryKpis();
             this.processorChartData = this.feedStatsService.buildProcessorDurationChartData();
 

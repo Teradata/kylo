@@ -35,8 +35,9 @@
           <mat-card-content>
             <div fxFlex="100" fxLayout="row">
               <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
-              <span fxFlex="100"> Not ready for deployment</span>
-              <button mat-raised-button color="primary" [disabled]="true">Deploy</button>
+              <span fxFlex="100" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
+              <span fxFlex="100" *ngIf="feed.isComplete()"> Ready for deployment</span>
+              <button mat-raised-button color="primary" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>
             </div>
             <div *ngIf="feed.hasBeenDeployed()">
               Deployed version: <a href="#" (click)="loadDeployedVersion($event)" > {{feed.deployedVersion.name}}</a>

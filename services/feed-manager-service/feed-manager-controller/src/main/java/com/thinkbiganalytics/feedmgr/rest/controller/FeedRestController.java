@@ -344,20 +344,22 @@ public class FeedRestController {
         @ApiResponse(code = 500, message = "The feed could not be started.", response = RestResponseStatus.class)
     })
     public Response startFeed(@PathParam("feedId") String feedId) {
-
+        try {
             FeedSummary feed = getMetadataService().startFeed(feedId);
             RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
             RestResponseStatus status = null;
-            if(feed != null){
-                status = builder.message("Feed " + feed.getCategoryAndFeedDisplayName() +" started successfully")
+            if (feed != null) {
+                status = builder.message("Feed " + feed.getCategoryAndFeedDisplayName() + " started successfully")
                     .buildSuccess();
-            }
-            else {
-                status = builder.message("Error starting feed for id "+feedId).buildError();
+            } else {
+                status = builder.message("Error starting feed for id " + feedId).buildError();
             }
 
-
-        return Response.ok(status).build();
+            return Response.ok(status).build();
+        }catch (Exception e){
+            log.error("Exception starting the feed ",e);
+            throw new InternalServerErrorException("Unexpected exception starting the feed "+feedId+" "+e.getMessage());
+        }
     }
 
     @POST

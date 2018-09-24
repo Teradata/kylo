@@ -10,13 +10,13 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 import {Input, Component, OnInit, OnDestroy} from "@angular/core";
 import {Feed, LoadMode} from "../../../../model/feed/feed.model";
 import {DefineFeedService} from "../../services/define-feed.service";
-import {FeedLink} from "../../shared/feed-link.model";
-import {FeedLinkSelectionChangedEvent, FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedLink} from "../../model/feed-link.model";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService} from "../../services/feed-side-nav.service";
 import {ISubscription} from "rxjs/Subscription";
 import {StateObject} from "@uirouter/core";
 import * as _ from "underscore"
 import {SetupGuideSummaryComponent} from "../../summary/setup-guide-summary/setup-guide-summary.component";
-import {SETUP_GUIDE_LINK, SETUP_REVIEW_LINK} from "../../shared/feed-link-constants";
+import {SETUP_GUIDE_LINK, SETUP_REVIEW_LINK} from "../../model/feed-link-constants";
 
 @Component({
     selector: "feed-definition-side-nav",
@@ -37,9 +37,7 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
 
     feedLoadedSubscription:ISubscription;
 
-    latestSetupGuideLink:FeedLink;
-
-    deployedSetupGuideLink:FeedLink;
+    stepChangedSubscription:ISubscription;
 
     setupGuideLink:FeedLink;
 
@@ -47,9 +45,7 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
 
     constructor(private  stateService:StateService, private defineFeedService:DefineFeedService, private feedSideNavService:FeedSideNavService) {
         this.summarySelected = true;
-        this.defineFeedService.subscribeToStepChanges(this.onStepChanged.bind(this))
-        this.latestSetupGuideLink = this.feedSideNavService.latestSetupGuideLink;
-        this.deployedSetupGuideLink = this.feedSideNavService.deployedSetupGuideLink;
+        this.stepChangedSubscription = this.defineFeedService.subscribeToStepChanges(this.onStepChanged.bind(this))
         this.feedLinkSelectionChangeSubscription =  this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
         this.feedLoadedSubscription = this.defineFeedService.subscribeToFeedLoadedEvent(this.onFeedLoaded.bind(this))
     }
@@ -61,6 +57,7 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
     ngOnDestroy(){
         this.feedLinkSelectionChangeSubscription.unsubscribe();
         this.feedLoadedSubscription.unsubscribe();
+        this.stepChangedSubscription.unsubscribe();
     }
 
     gotoFeedSummary(){
@@ -83,13 +80,12 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
 
     private _initLinks(){
         if(LoadMode.DEPLOYED == this.feed.loadMode) {
-            this.setupGuideLink = this.deployedSetupGuideLink;
+            this.setupGuideLink = this.feedSideNavService.sectionLinkDeployedSetupGuideLink;
         }
         else {
-            this.setupGuideLink = this.latestSetupGuideLink;
+            this.setupGuideLink = this.feedSideNavService.sectionLinkSetupGuideSummaryLink;
         }
         this.stepLinks = this.feedSideNavService.buildStepLinks(this.feed);
-        this.feedSideNavService.registerFeedLinks(this.stepLinks);
     }
 
 

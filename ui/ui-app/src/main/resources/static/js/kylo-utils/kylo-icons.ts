@@ -23,16 +23,34 @@ export class KyloIcons {
         runTime:"alarm",
         numberOfFlowsStarted:"star_border",
         numberOfFlowsFinished:"star",
+        Stats: {
+            eventSuccessKpi:'offline_pin',
+            eventSuccesUndefinedKpi:'remove',
+            averageDurationKpi:'access_time',
+            flowRateKpi:'tune'
+        },
         jobsList:"library_books",
         info:"details",
+        alerts:"warning",
         Actions:{
             clone:"content_copy",
             enable:"play_arrow",
             disable:"pause_outline",
             abandon:"call_made",
-            filterHelp:"help"
+            filterHelp:"help",
+            uploadFile:"cloud_upload",
+            startNow:"play_arrow"
         }
     };
+
+    static getBatchFeedRunStatusIcon(feedHealth:any){
+        if(feedHealth.running){
+            return KyloIcons.Feed.running
+        }
+        else {
+            return KyloIcons.Feed.stopped
+        }
+    }
 
     static getFeedStateIcon(state:string){
         if(!state) {

@@ -320,7 +320,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
      * @returns the date format string
      */
     openNewFeedDialog(config: NewFeedDialogData): Observable<NewFeedDialogResponse> {
-        return this.dialog.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",width:'800px'})
+        return this.dialog.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog"})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

@@ -1,16 +1,18 @@
-<div mat-dialog-title fxLayout="row">
-  <h2 style="color: rgb(52, 131, 186);margin-left:10px">Columns Profile</h2>
+<mat-toolbar [color]="['primary']">
+  <span>Columns Profile</span>
   <span fxFlex="1 1 auto"></span>
-  <button mat-icon-button (click)="hide()" style="opacity: 0.4">
-    <ng-md-icon icon="close" arial-label="Close dialog"></ng-md-icon>
+  <button mat-icon-button (click)="hide()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
   </button>
-</div>
+</mat-toolbar>
+
 <div mat-dialog-content class="mat-dialog-content" style="height:90%;max-height:90%">
   <mat-divider style="margin-bottom:15px"></mat-divider>
   <ng-template let-profile let-last="last" ngFor [ngForOf]="data.items">
 
     <div fxLayout="row">
-      <div style="color:#666;font-weight:bold;width:187px">{{profile.field}}</div>
+      <span style="overflow: hidden;white-space:nowrap;text-overflow:ellipsis;width:150px;display:inline-block;;color:#666;font-weight:bold">{{profile.field}}</span>
+      <span fxFlex="1 1 auto" style="color:#666;font-size:12px">{{profile.columnDataTypePlain}}</span>
       <span class="bar bar-success" matTooltip="{{(100 - profile.percNull)}}% non-null values" [style.width]="(100 - profile.percNull) + 'px'" style="height:12px"></span>
       <span class="bar bar-error"  matTooltip="{{profile.percNull}}% null values" [style.width]="profile.percNull + 'px'" style="height:12px"></span>
     </div>

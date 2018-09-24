@@ -6,7 +6,7 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {FormsModule} from '@angular/forms'
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 
 @Component({
     selector: "define-feed-step-card",

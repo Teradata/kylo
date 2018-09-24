@@ -19,6 +19,7 @@ import {FeedOperationsHealthInfoComponent} from "./feed-operations-health-info/f
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {FeedAlertsComponent} from "./feed-alerts/feed-alerts.component";
 
 //import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
@@ -42,14 +43,16 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
     ],
     declarations: [
         FeedJobActivityComponent,
-        FeedOperationsHealthInfoComponent
+        FeedOperationsHealthInfoComponent,
+        FeedAlertsComponent
     ],
     providers: [
 
     ],
     exports:[
         FeedJobActivityComponent,
-        FeedOperationsHealthInfoComponent
+        FeedOperationsHealthInfoComponent,
+        FeedAlertsComponent
     ]
 })
 export class SharedComponentsModule {

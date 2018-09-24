@@ -1,4 +1,4 @@
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+<mat-toolbar [color]="['primary']">
   <span>{{formConfig.title}}</span>
   <span class="flex"></span>
   <button mat-icon-button (click)="cancel()">
@@ -14,6 +14,7 @@
   </form>
 </div>
 <div mat-dialog-actions class="mat-dialog-actions">
+  <span class="flex"></span>
   <button mat-button (click)="cancel()">Cancel</button>
   <button mat-raised-button [color]="['primary']" [disabled]="!formConfig.form.valid" (click)="apply()">Apply</button>
 </div>

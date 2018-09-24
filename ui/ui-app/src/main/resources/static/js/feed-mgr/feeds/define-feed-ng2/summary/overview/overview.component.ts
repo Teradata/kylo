@@ -4,12 +4,12 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {Step} from '../../../../model/feed/feed-step.model';
-import {FeedSideNavService} from "../../shared/feed-side-nav.service";
+import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
-import {SUMMARY_LINK} from "../../shared/feed-link-constants";
-import {FeedLink} from "../../shared/feed-link.model";
+import {SUMMARY_LINK} from "../../model/feed-link-constants";
+import {FeedLink} from "../../model/feed-link.model";
 
 @Component({
     selector: "define-feed-overview",
