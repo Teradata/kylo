@@ -18,7 +18,7 @@
 
 <ng-container *ngIf="showCatalog && !feed.readonly">
 
-  <dataset-preview-stepper [displayBottomActionButtons]="true" (previewSaved)="onSave($event)" (previewCanceled)="onCancel()"></dataset-preview-stepper>
+  <dataset-preview-stepper [showSkipSourceButton]="showSkipSourceButton"  [displayBottomActionButtons]="true" (previewSaved)="onSave($event)" (previewCanceled)="onCancel($event)"></dataset-preview-stepper>
 
 </ng-container>
 

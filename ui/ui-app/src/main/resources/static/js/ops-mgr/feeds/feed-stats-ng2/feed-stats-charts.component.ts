@@ -294,19 +294,19 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
 
     eventSuccessKpi: any = {
         value: 0,
-        icon: '',
+        icon: KyloIcons.Feed.Stats.eventSuccesUndefinedKpi,
         color: ''
     };
 
     flowRateKpi: any = {
         value: 0,
-        icon: 'tune',
+        icon: KyloIcons.Feed.Stats.flowRateKpi,
         color: '#1f77b4'
     };
 
     avgDurationKpi: any = {
         value: 0,
-        icon: 'access_time',
+        icon: KyloIcons.Feed.Stats.averageDurationKpi,
         color: '#1f77b4'
     };
 
@@ -791,14 +791,14 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
 
     updateSuccessEventsPercentKpi() {
         if (this.summaryStatistics.totalEvents == 0) {
-            this.eventSuccessKpi.icon = 'remove';
+            this.eventSuccessKpi.icon = KyloIcons.Feed.Stats.eventSuccesUndefinedKpi;
             this.eventSuccessKpi.color = "#1f77b4"
             this.eventSuccessKpi.value = "--";
         }
         else {
             var failed = this.summaryStatistics.totalEvents > 0 ? (<any>(this.summaryStatistics.failedEvents / this.summaryStatistics.totalEvents)).toFixed(2) * 100 : 0;
             var value = (100 - failed).toFixed(0);
-            var icon = 'offline_pin';
+            var icon = KyloIcons.Feed.Stats.eventSuccessKpi;
             var iconColor = "#3483BA"
 
             this.eventSuccessKpi.icon = icon;

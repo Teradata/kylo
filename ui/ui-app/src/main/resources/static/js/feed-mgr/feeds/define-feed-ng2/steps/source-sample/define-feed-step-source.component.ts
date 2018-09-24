@@ -11,12 +11,16 @@ import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/mode
 import {PreviewSchemaService} from "../../../../catalog/datasource/preview-schema/service/preview-schema.service";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
-import {DefineFeedService} from "../../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.component";
 import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
+import {ShowCatalogCanceledEvent} from "./define-feed-step-source-sample.component";
+import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
+
+
 
 @Component({
     selector: "define-feed-step-source",
@@ -43,6 +47,8 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     showCatalog: boolean
 
+    showSkipSourceButton:boolean;
+
 
     constructor(defineFeedService: DefineFeedService, stateService: StateService, private selectionService: SelectionService,
                 dialogService: TdDialogService,
@@ -67,17 +73,23 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
         this.defineFeedService.markFeedAsEditable();
     }
 
+    public feedStateChange(event: FeedEditStateChangeEvent) {
+        this.feed.readonly = event.readonly;
+        this.feed.accessControl = event.accessControl;
+    }
+
 
     init() {
-
-
         let paths = this.feed.getSourcePaths();
         //if this was a feed prior to 0.9.2 it will not have any source paths defined.
         //check the sourceTableSchema and see if that exists
         let sourceSchemaDefined = this.feed.table.sourceTableSchema && this.feed.table.sourceTableSchema.isDefined();
+        let userAcknowledgedContinueWithoutSource = this.step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
         //always show the catalog if no paths are available to preview
-        if (!sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
+        if (!userAcknowledgedContinueWithoutSource && !sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
+            this.showSkipSourceButton = true;
             this.showCatalog = true;
+
         }
 
     }
@@ -98,8 +110,15 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
         this.subscribeToFormChanges(this.sourceForm);
     }
 
+    onCatalogCanceled($event:ShowCatalogCanceledEvent){
+        if($event.skip){
+            //mark it in the metadata
+            this.step.addProperty(SKIP_SOURCE_CATALOG_KEY,true);
+        }
+    }
 
     onSampleSourceSaved(previewEvent: DatasetPreviewStepperSavedEvent) {
+        console.log("SAVE SAMPLE ",previewEvent)
         let previews: PreviewDataSet[] = previewEvent.previews;
         if (previews && previews.length) {
             let feedDataSets = this.feed.sourceDataSets;
@@ -134,6 +153,29 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     }
 
     private _setSourceAndTargetAndSaveFeed(event: DatasetPreviewStepperSavedEvent) {
+
+
+        /**
+         * Save the feed
+         */
+        let saveFeed = () => {
+            //TODO validate and mark completion as needed
+
+            this.step.setComplete(true)
+            this.defineFeedService.saveFeed(this.feed).subscribe(result => {
+                this.feedLoadingService.resolveLoading()
+                this.showCatalog = false;
+            }, error1 => {
+                this.step.setComplete(false)
+                this.feedLoadingService.resolveLoading()
+                this.dialogService.openAlert({
+                    message: "There was an error saving the source selection " + error1,
+                    title: "Error saving source selection"
+                });
+            });
+        }
+
+
         let previews = event.previews;
         let singleSelection = event.singleSelection;
         if (previews && previews.length) {
@@ -141,32 +183,22 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
                 const sourceDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
                 if (sourceDataSet.dataSource && sourceDataSet.dataSource.connector && sourceDataSet.dataSource.connector.pluginId) {
                     this.catalogService.getConnectorPlugin(sourceDataSet.dataSource.connector.pluginId)
-                        .subscribe(plugin => this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin));
+                        .subscribe(plugin => {
+                            this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin)
+                            saveFeed();
+                        });
                 } else {
                     this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet);
+                    saveFeed();
                 }
             }
         }
         else {
             //set the source and target to empty
             this.feed.setSourceDataSetAndUpdateTarget(null);
+            saveFeed();
         }
 
-        ///Update the feed properties to match the source type
-        //this.feedPropertyNiFiComponent
-
-        this.step.setComplete(true)
-        this.defineFeedService.saveFeed(this.feed).subscribe(result => {
-            this.feedLoadingService.resolveLoading()
-            this.showCatalog = false;
-        }, error1 => {
-            this.step.setComplete(false)
-            this.feedLoadingService.resolveLoading()
-            this.dialogService.openAlert({
-                message: "There was an error saving the source selection " + error1,
-                title: "Error saving source selection"
-            });
-        });
     }
 
 }

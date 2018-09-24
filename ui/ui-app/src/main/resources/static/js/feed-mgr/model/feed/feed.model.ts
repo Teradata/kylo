@@ -39,7 +39,7 @@ export interface FeedSchedule {
 }
 
 export enum FeedMode {
-    DRAFT="DRAFT", DEPLOYED="DEPLOYED"
+    DRAFT="DRAFT", DEPLOYED="DEPLOYED", DEPLDYED_WITH_ACTIVE_DRAFT="DEPLOYED_ACTIVE_DRAFT"
 }
 
 export enum FeedState {
@@ -70,6 +70,12 @@ export class FeedAccessControl {
 
 
 }
+
+/**
+ * Key set on the step metadata when a user acknowledges that they want to proceed without selecting a source
+ * @type {string}
+ */
+export const SKIP_SOURCE_CATALOG_KEY = "SKIP_SOURCE_CATALOG"
 
 export class Feed  implements KyloObject{
 
@@ -446,7 +452,16 @@ export class Feed  implements KyloObject{
     }
 
     isDraft(){
-        return this.mode == "DRAFT"
+        return this.mode == FeedMode.DRAFT
+    }
+
+
+    isDeployed(){
+        return this.mode == FeedMode.DEPLOYED || this.mode == FeedMode.DEPLDYED_WITH_ACTIVE_DRAFT;
+    }
+
+    isDeployedWithActiveDraft() {
+        return this.mode == FeedMode.DEPLDYED_WITH_ACTIVE_DRAFT;
     }
 
     getStepBySystemName(stepName: string) {

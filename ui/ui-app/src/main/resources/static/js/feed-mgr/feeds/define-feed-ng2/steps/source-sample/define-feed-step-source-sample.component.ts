@@ -9,9 +9,14 @@ import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/mode
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
-import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {DatasetPreviewStepperCanceledEvent, DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {ISubscription} from "rxjs/Subscription";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
+
+
+export class ShowCatalogCanceledEvent{
+    constructor(public showCatalog:boolean,public skip:boolean) {}
+}
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -40,12 +45,21 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     @Output()
     public showCatalogChange:EventEmitter<boolean> = new EventEmitter<boolean>();
 
+    @Output()
+    public showCatalogCanceled:EventEmitter<ShowCatalogCanceledEvent> = new EventEmitter<ShowCatalogCanceledEvent>();
+
     public showCancel:boolean;
 
 
     singleSelection: boolean;
 
     feedSavedSubscription:ISubscription;
+
+    /**
+     * Should this form show the Skip button to allow the user to bypass the sample selection
+     */
+    @Input()
+    showSkipSourceButton:boolean;
 
     constructor(private defineFeedService:DefineFeedService,private stateService: StateService, private selectionService: SelectionService,
                 private _dialogService: TdDialogService,
@@ -121,11 +135,13 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
         this.previewSaved.emit(previewEvent)
     }
 
-    onCancel(){
+    onCancel($event:DatasetPreviewStepperCanceledEvent){
         //cancel it
         this.showCatalog = false;
         this.showCatalogChange.emit(this.showCatalog);
         this.feed = this.defineFeedService.getFeed();
+
+        this.showCatalogCanceled.emit(new ShowCatalogCanceledEvent(this.showCatalog,$event.skip));
     }
 
 

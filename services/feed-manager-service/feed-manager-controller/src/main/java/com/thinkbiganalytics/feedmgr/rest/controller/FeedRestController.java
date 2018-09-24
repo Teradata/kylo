@@ -585,8 +585,8 @@ public class FeedRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Updates a feed with the latest template metadata.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
-        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = FeedMetadata.class),
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = EntityVersion.class),
+        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = EntityVersion.class),
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getLatestFeedVersion(@PathParam("feedId") String feedId,
@@ -606,10 +606,10 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/versions/deployed")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiOperation("Gets the deployed version of the feed or returns a NOT_FOUND code if ")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
-        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = FeedMetadata.class),
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = EntityVersion.class),
+        @ApiResponse(code = 400, message = "Returns the feed or version does not exist."),
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getDeployedFeedVersion(@PathParam("feedId") String feedId,
@@ -625,14 +625,56 @@ public class FeedRestController {
             throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
         }
     }
+
+    @GET
+    @Path("/{feedId}/versions/deployed/exists")
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation("Check if the feed version exists")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns a true if the feed has a deployed version, false if there is no deployed version.", response = Boolean.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response deployedFeedVersionExists(@PathParam("feedId") String feedId) {
+        try {
+            return getMetadataService().getDeployedFeedVersion(feedId,false)
+                .map(version -> Response.ok("true").build())
+                .orElse(Response.ok("false").build());
+        } catch (VersionNotFoundException e) {
+            return Response.ok("false").build();
+        } catch (Exception e) {
+            log.error("Unexpected exception checking if the deployed feed version exists for ["+feedId+"] ", e);
+            throw new InternalServerErrorException("Unexpected exception checking if the deployed feed version exists");
+        }
+    }
+
+    @GET
+    @Path("/{feedId}/versions/draft/exists")
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation("Check if the feed version exists")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns a true if the feed has a draft version, false if there is no draft version.", response = Boolean.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response draftFeedVersionExists(@PathParam("feedId") String feedId) {
+        try {
+            return getMetadataService().getDraftFeedVersion(feedId,false)
+                .map(version -> Response.ok("true").build())
+                .orElse(Response.ok("false").build());
+        } catch (VersionNotFoundException e) {
+            return Response.ok("false").build();
+        } catch (Exception e) {
+            log.error("Unexpected exception checking if the draft feed version exists for ["+feedId+"] ", e);
+            throw new InternalServerErrorException("Unexpected exception checking if the draft feed version exists");
+        }
+    }
     
     @GET
     @Path("/{feedId}/versions/draft")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the draft version of a feed's metadata (if any.)")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
-        @ApiResponse(code = 400, message = "The feed draft version does not exist.", response = RestResponseStatus.class),
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = EntityVersion.class),
+        @ApiResponse(code = 400, message = "The feed draft version does not exist."),
         @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
     })
     public Response getDraftFeedVersion(@PathParam("feedId") String feedId,

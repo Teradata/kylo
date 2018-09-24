@@ -21,38 +21,34 @@
   <div fxLayout="column" *ngIf="dataLoaded">
 
 
-    <mat-card fxLayoutAlign="center center">
-      <mat-card-content fxLayout="column" style="width:100%;">
-        <div fxLayout="row" class="">
-          <div flex="100" fxLayout="column">
-            <div fxLayout="column">
-              <div fxLayout="row" fxLayoutAlign="space-between start" layout-fill>
-                <span class="card-title right-card-title-text">{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
-                <span style="margin-top: 5px;">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
-              </div>
-            </div>
-            <div flex>
-              <div class="md-slider-container" >
-                <span class="hint">{{timeFrameOptions[0].label}}</span>
-                <mat-slider (change)="onTimeFrameChanged()" flex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
-                <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
-              </div>
-            </div>
-            <label *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
-          </div>
-          <span flex style="padding-left: 40px"></span>
-          <div fxLayout="column">
-            <div fxLayout="row">
-              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()">
-                <button mat-button> Refresh</button>
-              </div>
-            </div>
-            <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
-              Auto Refresh
-            </mat-slide-toggle>
-          </div>
-        </div>
+    <mat-card >
+      <mat-card-content  >
+        <div fxLayout="row" fxLayoutAlign="start" fxFlex>
 
+            <div fxLayout="row" fxLayoutAlign="start" >
+                <span >{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
+              <span class="pad-left">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+              <span fxFlex ></span>
+
+              <div fxLayout="column">
+                 <div fxLayout="row">
+                    <button mat-button *ngIf="!autoRefresh" (click)="onRefreshButtonClick()" >Refresh</button>
+                    <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
+                      Auto Refresh
+                    </mat-slide-toggle>
+                 </div>
+                 <div *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</div>
+              </div>
+
+            </div>
+
+            <div fxFlex fxLayout="row">
+                <span class="hint">{{timeFrameOptions[0].label}}</span>
+                <mat-slider (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
+            </div>
+
+          </div>
       </mat-card-content>
     </mat-card>
 
@@ -104,35 +100,29 @@
         <div fxLayout="row" fxLayoutAlign="space-between center">
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
-            <mat-card-header>
-              <mat-card-title class="mat-title">{{eventSuccessKpi.value}}%</mat-card-title>
-            </mat-card-header>
-            <ng-md-icon [ngStyle]="{'fill':eventSuccessKpi.color}" size="50" [icon]="eventSuccessKpi.icon"></ng-md-icon>
-            <mat-card-content fxLayout="column" fxLayourAlign="center center">
+            <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+              <h1 class="mat-headline" fxLayourAlign="center center">{{eventSuccessKpi.value}}%</h1>
+              <mat-icon  class="kpi_icon"[ngStyle]="{'color':eventSuccessKpi.color}" >{{eventSuccessKpi.icon}}</mat-icon>
               <span class="mat-title">{{"views.feed-stats-charts.SR" | translate}}</span>
             </mat-card-content>
           </mat-card>
 
             <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
-              <mat-card-header>
-                <mat-card-title class="mat-title">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</mat-card-title>
-              </mat-card-header>
-              <mat-card-content fxLayout="column" fxLayourAlign="center center">
-                <ng-md-icon [ngStyle]="{'fill':flowRateKpi.color}" size="50" [icon]="flowRateKpi.icon"></ng-md-icon>
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <h1 class="mat-headline">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
+                <mat-icon class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}"  >{{flowRateKpi.icon}}</mat-icon>
                 <span class="mat-title">{{"views.feed-stats-charts.IFR" | translate}}</span>
               </mat-card-content>
             </mat-card>
 
+
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
-            <mat-card-header>
-              <mat-card-title class="mat-title">{{avgDurationKpi.value}}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content fxLayout="column" fxLayourAlign="center center">
-              <ng-md-icon [ngStyle]="{'fill':avgDurationKpi.color}" size="50" [icon]="avgDurationKpi.icon"></ng-md-icon>
+            <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+              <h1 class="mat-headline">{{avgDurationKpi.value}}</h1>
+              <mat-icon class="kpi_icon" [ngStyle]="{'color':avgDurationKpi.color}"  >{{avgDurationKpi.icon}}</mat-icon>
               <span class="mat-title">{{"views.feed-stats-charts.FD" | translate}}</span>
             </mat-card-content>
           </mat-card>
-
 
         </div>
         <!-- END KPIs -->

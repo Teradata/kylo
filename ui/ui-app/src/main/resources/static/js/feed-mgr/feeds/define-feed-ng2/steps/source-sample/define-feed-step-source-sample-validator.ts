@@ -1,5 +1,5 @@
 import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
-import {Feed} from "../../../../model/feed/feed.model";
+import {SKIP_SOURCE_CATALOG_KEY, Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 
 export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
@@ -9,7 +9,8 @@ export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
     }
 
     public validate(feed:Feed) : boolean {
-        if((feed.sourceDataSets && feed.sourceDataSets.length>0) || (feed.table.sourceTableSchema && feed.table.sourceTableSchema.isDefined() )){
+        let userAcknowledgedContinueWithoutSource = this.step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
+        if(userAcknowledgedContinueWithoutSource || (feed.sourceDataSets && feed.sourceDataSets.length>0) || (feed.table.sourceTableSchema && feed.table.sourceTableSchema.isDefined() )){
             this.step.valid = true;
             this.step.setComplete(true)
         }

@@ -16,6 +16,10 @@ export class DatasetPreviewStepperSavedEvent{
     constructor(public previews:PreviewDataSet[], public singleSelection:boolean) {}
 }
 
+export class DatasetPreviewStepperCanceledEvent{
+    constructor(public skip:boolean) {}
+}
+
 @Component({
     selector: "dataset-preview-stepper",
     templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component.html",
@@ -38,6 +42,9 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     @Input()
     allowMultiSelection:boolean;
 
+    @Input()
+    showSkipSourceButton:boolean;
+
     /***
      * the data sources to choose
      */
@@ -52,7 +59,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     previewSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
 
     @Output()
-    previewCanceled:EventEmitter<any> = new EventEmitter<any>();
+    previewCanceled:EventEmitter<DatasetPreviewStepperCanceledEvent> = new EventEmitter<DatasetPreviewStepperCanceledEvent>();
 
     /**
      * first step form to choose the datasource
@@ -244,7 +251,11 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
      * When a user cancels the stepper
      */
     onCancel(){
-        this.previewCanceled.emit();
+        this.previewCanceled.emit(new DatasetPreviewStepperCanceledEvent(false));
+    }
+
+    onSkip(){
+        this.previewCanceled.emit(new DatasetPreviewStepperCanceledEvent(true));
     }
 
 

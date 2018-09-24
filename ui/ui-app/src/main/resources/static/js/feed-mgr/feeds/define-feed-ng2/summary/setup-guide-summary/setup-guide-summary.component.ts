@@ -9,12 +9,13 @@ import {FeedLineageComponment} from "../feed-lineage/feed-lineage.componment";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
 import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
-import {Feed, LoadMode} from "../../../../model/feed/feed.model";
+import {Feed, FeedMode, LoadMode} from "../../../../model/feed/feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../../new-feed-dialog/new-feed-dialog.component";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {EntityVersion} from "../../../../model/entity-version.model";
+import {RestResponseStatus, RestResponseStatusType} from "../../../../../common/common.model";
 
 
 @Component({
@@ -49,13 +50,20 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
      }
 
     init(){
-        if(this.feed.isDraft() && this.feed.canEdit() && this.feed.readonly){
-            this.showEditLink = true;
+        if(this.feed.isDraft()){
+            this.showEditLink = this.feed.canEdit() && this.feed.readonly;
         }
         else{
             //ensure there is not another draft version
-            let draft = this.defineFeedService.getDraftFeed(this.feed.id).subscribe((feed:Feed) => {
-                this.showEditLink = false;
+            let draft = this.defineFeedService.draftVersionExists(this.feed.id).subscribe((exists:string) => {
+                if(exists && exists == "true") {
+                 this.showEditLink = false;
+                 this.feed.mode = FeedMode.DEPLDYED_WITH_ACTIVE_DRAFT;
+                }
+                else {
+                    this.feed.mode = FeedMode.DEPLOYED;
+                    this.showEditLink = this.feed.canEdit() && this.feed.readonly
+                }
             },error1 => {
                 console.log("Error checking for draft ",error1)
                 this.showEditLink = this.feed.canEdit() && this.feed.readonly;
@@ -67,6 +75,18 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.feedSavedSubscription.unsubscribe();
     }
 
+    /**
+     * Load the latest version for this feed.
+     * This will be called only when viewing the deployed version to take the user back to the draft version data
+     * @param {MouseEvent} $event
+     */
+    loadDraftVersion($event:MouseEvent){
+        $event.stopPropagation();
+        $event.preventDefault();
+        this.defineFeedService.loadDraftFeed(this.feed.id).subscribe((feed:Feed) => {
+            this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id, loadMode:LoadMode.LATEST},{reload:false});
+        });
+    }
 
     loadDeployedVersion($event:MouseEvent){
         $event.stopPropagation();

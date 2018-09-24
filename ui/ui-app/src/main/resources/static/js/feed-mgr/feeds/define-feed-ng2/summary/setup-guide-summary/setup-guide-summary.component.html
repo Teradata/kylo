@@ -45,6 +45,18 @@
           </mat-card-content>
         </mat-card>
 
+        <mat-card  *ngIf="!feed.isDraft()">
+          <mat-card-content>
+            <div fxFlex="100" fxLayout="row">
+              <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
+              <span> Version: v.{{feed.versionName}}</span>
+            </div>
+            <div *ngIf="feed.isDeployedWithActiveDraft()">
+                 <a href="#" (click)="loadDraftVersion($event)">Draft Version</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
         <mat-card class="feed-info-card feed-card" >
           <mat-card-header>
             <mat-card-title>

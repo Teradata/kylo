@@ -8,7 +8,7 @@
           <span fxFlex></span>
         </mat-card-header>
         <mat-card-content class="pad-top-none ">
-          <define-feed-step-source-sample [(showCatalog)]="showCatalog" (previewSaved)="onSampleSourceSaved($event)"  [feed]="feed" [step]="step"></define-feed-step-source-sample>
+          <define-feed-step-source-sample [showSkipSourceButton]="showSkipSourceButton" [(showCatalog)]="showCatalog" (previewSaved)="onSampleSourceSaved($event)"  [feed]="feed" [step]="step"></define-feed-step-source-sample>
         </mat-card-content>
 
       </mat-card>
@@ -16,8 +16,8 @@
     </form>
     <mat-card class="feed-card" fxFlex *ngIf="!showCatalog">
       <mat-card-header>
-        <mat-card-title>Source Options</mat-card-title>
-        <mat-card-subtitle>Modify the source options</mat-card-subtitle>
+        <mat-card-title>Source Location</mat-card-title>
+        <mat-card-subtitle>Modify the source location</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <form [formGroup]="sourcePropertiesForm">

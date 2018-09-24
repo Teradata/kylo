@@ -19,6 +19,17 @@ export class Step {
     visited: boolean;
     icon:string;
     validator: FeedStepValidator
+    /**
+     * any additional properties to add and persist for this step
+     */
+    properties:{ [key: string]: any; } = {};
+
+    public constructor(init?: Partial<Step>) {
+        Object.assign(this, init);
+        if(!this.properties){
+            this.properties = {};
+        }
+    }
 
     validate(feed: Feed): boolean {
         if (this.disabled) {
@@ -34,6 +45,26 @@ export class Step {
             }
         }
 
+    }
+
+    addProperty(key:string,value:any){
+        this.properties[key] = value;
+    }
+
+    getProperty(key:string){
+        return this.properties[key];
+    }
+
+    hasProperty(key:string){
+        return this.properties && this.properties[key] !== undefined;
+    }
+
+    getPropertyAsBoolean(key:string):boolean{
+      let p = this.getProperty(key);
+      if(p && typeof p == "boolean") {
+          return <boolean>p;
+      }
+      return false;
     }
 
     markDirty(){
@@ -77,9 +108,7 @@ export class Step {
     }
 
 
-    public constructor(init?: Partial<Step>) {
-        Object.assign(this, init);
-    }
+
 
     setComplete(complete: boolean) {
         this.complete = complete;

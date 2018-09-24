@@ -46,6 +46,7 @@ import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-const
 import {TdLoadingService} from "@covalent/core/loading";
 import {Category} from "../../../model/category/category.model";
 import {FeedAccessControlService} from "../services/feed-access-control.service";
+import {RestResponseStatus} from "../../../../common/common.model";
 
 
 export class FeedEditStateChangeEvent{
@@ -268,6 +269,15 @@ export class DefineFeedService {
         return this._loadFeedVersion(url, LoadMode.DRAFT,false)
     }
 
+    deployedVersionExists(feedId:string):Observable<string> {
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed/exists";
+        return <Observable<string>>this.http.get(url,{responseType:'text'});
+    }
+
+    draftVersionExists(feedId:string):Observable<string> {
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
+        return <Observable<string>>this.http.get(url,{responseType:'text'});
+    }
 
 
 
