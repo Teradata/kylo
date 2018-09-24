@@ -22,6 +22,7 @@ package com.thinkbiganalytics.server;
 
 import com.thinkbiganalytics.auth.config.SessionDestroyEventLogoutHandler;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jaas.http.JaasHttpCallbackHandlerFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +104,7 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
                     .and()
                 .httpBasic()
                     .and()
+                .addFilterBefore(new JaasHttpCallbackHandlerFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
                 .addFilterAfter(logoutFilter(), BasicAuthenticationFilter.class);
 

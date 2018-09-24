@@ -30,6 +30,7 @@ import com.thinkbiganalytics.auth.jaas.DefaultKyloJaasAuthenticationProvider;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
+import com.thinkbiganalytics.auth.jaas.http.JaasHttpCallbackHandlerFilter;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.annotation.Bean;
@@ -72,7 +73,10 @@ public class JaasAuthConfig {
     public static final int DEFAULT_GRANTER_ORDER = Integer.MAX_VALUE - 100;
 
     private static final JaasAuthenticationCallbackHandler[] CALLBACK_HANDLERS 
-        = new JaasAuthenticationCallbackHandler[] { new JaasAuthenticationNameCallbackHandler(), new JaasAuthenticationPasswordCallbackHandler() };
+        = new JaasAuthenticationCallbackHandler[] { new JaasAuthenticationNameCallbackHandler(), 
+                                                    new JaasAuthenticationPasswordCallbackHandler(),
+                                                    JaasHttpCallbackHandlerFilter.CALLBACK_HANDLER
+                                                  };
 
     @Bean(name = UI_AUTH_PROVIDER)
     public AbstractJaasAuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
