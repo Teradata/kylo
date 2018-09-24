@@ -17,107 +17,34 @@
   limitations under the License.
   #L%
   -->
-<card-layout headerCss="filter-header">
-    <header-section>
-        <tba-card-filter-header transclude-to="head" flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions" [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
-        </tba-card-filter-header>
-    </header-section>
-    <body-section transclude-to="body">
-                        <md-divider></md-divider>
-                    <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-                        <div ng-if="vm.showProgress" class="md-list-table-progress">
-                        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                        </div>
-                    <md-list flex layout-fill ng-show="vm.loading == false" ng-hide class="list-item-table">
-                            <md-list-item  dir-paginate="service in vm.services|orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId()"  ng-click="vm.serviceDetails($event,service)"   current-page="vm.currentPage">
-                                <div layout="row" layout-fill>
-                                <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text">
-                                   <span class="item-title">
-                                      {{service.serviceName}}
-                                   </span>
-                                   <span class="{{service.iconstyle}} column-title-bottom" >
-                                       <ng-md-icon icon="{{service.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{service.healthText}}</span>
-                                </div>
-                                <div flex="20" layout="column" hide show-gt-sm class="item-column md-list-item-text" >
-                                   <span class="item-title">{{service.componentsCount}}
-                                   </span>
-                                    <span class="column-title column-title-bottom">Component(s)</span>
-                                </div>
-                                <div flex="20" layout="column"  class="item-column md-list-item-text">
-                                    <span class="item-title" ng-if="service.alertsCount >1">
-                                        {{service.alertsCount}} Alerts
-                                    </span>
-                                      <span class="item-title" ng-if="service.alertsCount == 1" >
-                                        {{service.alertsCount}} Alert
-                                    </span>
-                                      <span class="item-title" ng-if="service.alertsCount ==0">
-                                        None
-                                    </span>
-                                    <span class="column-title column-title-bottom">Alerts</span>
-                                </div>
-                                <div flex="30" layout="column" hide show-gt-md class="item-column md-list-item-text">
-                                    <span class="item-title">{{service.checkDate |  date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                                    <span class="column-title column-title-bottom">Last Checked</span>
-                                </div>
-                                </div>
-                                <md-divider ng-if="!$last"></md-divider>
 
-                        </md-list-item>
-                        <md-item  ng-show="vm.showProgress == false && tab.data.content.length ==0">
-                            No results found
-                        </md-item >
-                        <md-divider></md-divider>
-                        <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                            <dir-pagination-controls pagination-id="vm.paginationId()"
-                                                     auto-hide="false"
-                                                     max-size="5"
-                                                     direction-links="true"
-                                                     boundary-links="false"
-                                                     template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                     on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                     label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                     rows-per-page="vm.paginationData.rowsPerPage"
-                                                     rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                     class="pagination-row">
-                            </dir-pagination-controls>
-                        </md-list-item>
-                    </md-list>
-                    </div>
-                    <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
+  <filtered-paginated-table-view 
+  [cardTitle]="cardTitle"
+  [filteredData]="filteredData"
+  [columns]="columns"
+  [clickable]="true"
+  [sortable]="true"
+  [sortOrder]="sortOrder"
+  [sortBy]="sortBy"
+  [firstLast]="false"
+  [pageSize]="pageSize"
+  [filteredTotal]="filteredTotal"
+  [allowedPageSize]="[5,10,20,50]"
+  (rowClicked)="serviceDetails($event)"
+  (sortChanged)="sort($event)"
+  (searchDebounced)="search($event)"
+  (pageSizeChanged)="onPageSizeChange($event)"
+>
 
-                        <md-table-container>
-                            <table md-table md-progress="vm.deferred.promise">
-                                <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                                <tr md-row>
-                                    <th md-column name="Name" order-by="serviceName">Name</th>
-                                    <th md-column name="Status">Status</th>
-                                    <th md-column name="Components" order-by="componentsCount">Components</th>
-                                    <th md-column name="Alerts" order-by="alertsCount" >Alerts</th>
-                                    <th md-column name="Last Checked" order-by="checkDate"  >Last Checked</th>
-                                </tr>
-                                </thead>
-                                <tbody md-body>
-                                <tr md-row ng-repeat="service in vm.services| orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage" ng-click="vm.serviceDetails($event,service)">
-                                    <td md-cell >{{service.serviceName}}</td>
-                                    <td md-cell>
-                            <span >
-                                        <ng-md-icon icon="{{service.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{service.healthText}}</span>
-
-                                    </td>
-                                    <td md-cell>{{service.componentsCount}}</td>
-                                    <td md-cell>
-                                        {{service.alertsCount}}
-                                    </td>
-                                    <td md-cell >{{service.checkDate |  date : "MM/dd/yyyy 'at' h:mm"}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </md-table-container>
-
-                        <md-table-pagination md-limit="vm.paginationData.rowsPerPage"  md-page="vm.currentPage" md-total="{{vm.totalServices}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50]"></md-table-pagination>
-
-                    </div>
-            </body-section>
-            </card-layout>
+<ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+        <span >
+            <mat-icon size="20" options='{"rotation": "clock"}' >
+                    {{value.icon}}
+            </mat-icon>
+            {{value.healthText}}
+        </span>
+    </ng-template>
+    <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
+            <span>{{row.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+    </ng-template>
+</filtered-paginated-table-view>

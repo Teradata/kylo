@@ -6,8 +6,7 @@ import { DefaultPaginationDataService } from "../../services/PaginationDataServi
 import StateService from "../../services/StateService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { Component } from '@angular/core';
-import { ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableSortingOrder, TdDataTableService } from '@covalent/core/data-table';
-import { IPageChangeEvent } from '@covalent/core/paging';
+import { ITdDataTableColumn,  TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 const PAGE_NAME: string = "users";
 

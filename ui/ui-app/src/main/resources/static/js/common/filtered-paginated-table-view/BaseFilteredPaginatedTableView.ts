@@ -26,7 +26,11 @@ export class BaseFilteredPaginatedTableView {
         this.data = data;
         this.columns = columns;
         this.filteredData = data;
-        this.filteredTotal = data.length;
+        if(data && Array.isArray(data)){
+            this.filteredTotal = data.length;
+        }else{
+            this.filteredTotal = 0;
+        }
     }
 
     setSortBy(sortBy : string) : void{

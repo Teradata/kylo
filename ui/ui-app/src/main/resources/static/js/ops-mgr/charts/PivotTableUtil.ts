@@ -26,7 +26,7 @@ class PivotTableUtilClass{
          }
      * @returns {Array}
      */
-   transformToPivotTable =  (tableData: any, hideColumns: any, pivotNameMap: any, addedColumns?: any)=> {
+   transformToPivotTable  (tableData: any, hideColumns: any, pivotNameMap: any, addedColumns?: any) {
         var pivotRows: any[] = [];
 
         $.each(tableData,  (i: any, row: any)=> {

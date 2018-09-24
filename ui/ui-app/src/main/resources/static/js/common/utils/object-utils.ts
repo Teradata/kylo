@@ -69,5 +69,8 @@ export class ObjectUtils {
     static isFunction(value : any) : boolean {
         return typeof value === 'function';
     }
+    static isObject(value : any) : boolean {
+        return value !== null && typeof value === 'object';
+    }
 
 }

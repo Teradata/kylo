@@ -5,7 +5,6 @@ import { Transition } from '@uirouter/core';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { DatasourcesService } from '../services/DatasourcesService';
-import { controller } from '../../ops-mgr/service-health/ServiceComponentHealthDetailsController';
 import { FeedService } from '../services/FeedService';
 import AddButtonService from '../../services/AddButtonService';
 

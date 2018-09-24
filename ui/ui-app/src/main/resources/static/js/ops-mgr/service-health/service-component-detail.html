@@ -1,4 +1,4 @@
-<!--
+<!-- <!--
   #%L
   thinkbig-ui-operations-manager
   %%
@@ -17,117 +17,65 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" flex >
-    <card-layout flex header-css="filter-header">
-        <header-section>
-            <tba-card-filter-header transclude-to="head" flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions" [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
-            </tba-card-filter-header>
-        </header-section>
-        <body-section transclude-to="body">
+  <div fxLayout="row">
+      <div fxFlex="80">
+  <filtered-paginated-table-view 
+  [cardTitle]="cardTitle"
+  [filteredData]="filteredData"
+  [columns]="columns"
+  [clickable]="false"
+  [sortable]="true"
+  [sortOrder]="sortOrder"
+  [sortBy]="sortBy"
+  [firstLast]="false"
+  [pageSize]="pageSize"
+  [filteredTotal]="filteredTotal"
+  [allowedPageSize]="[5,10,20,50]"
+  (sortChanged)="sort($event)"
+  (searchDebounced)="search($event)"
+  (pageSizeChanged)="onPageSizeChange($event)"
+>
+
+<ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+        <span >
+            <mat-icon class="{{value.iconstyle}}" size="20" options='{"rotation": "clock"}' >
+                    {{value.icon}}
+            </mat-icon>
+            {{value.healthText}}
+        </span>
+    </ng-template>
+    <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
+            <span>{{row.latestTimestamp | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+    </ng-template>
+</filtered-paginated-table-view>
+</div>
+<mat-card fxFlex="20">
+    <mat-card-title class="card-title">
+            Component Details
+    </mat-card-title>
+    <mat-card-content>
+        <mat-list fxFlex fxLayoutFill fxLayout="column" class="list-item-table">
+            <mat-list-item  *ngIf="component && component.iconStyle !== null" class="ListItemContainer">
+                <div layout="column"  class="item-column md-list-item-text">
+                    <span class="item-title">{{componentName}}</span>
+                            <span class="{{component.iconstyle}} column-title-bottom" >
+                                <mat-icon icon="" size="20" options='{"rotation": "clock"}' >
+                                        {{component.icon}}
+                                </mat-icon>
+                                    {{component.healthText}}
+                            </span>
+                </div>
+            </mat-list-item>
             <md-divider></md-divider>
-            <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-               <md-list flex layout-fill ng-show="vm.loading == false" ng-hide class="list-item-table">
-                    <md-list-item layout="row" dir-paginate="alert in vm.component.alerts |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="service-component-details"   current-page="vm.currentPage">
-                        <div flex="20" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column md-list-item-text">
-                                   <span class="item-title">
-                                      {{alert.label}}
-                                   </span>
-                                   <span class="{{alert.iconstyle}} column-title-bottom" >
-                                       <ng-md-icon icon="{{alert.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{alert.state}}
-                                   </span>
-                        </div>
-                        <div flex="60" flex-sm="80" flex-xs="80" layout="column"  class="item-column md-list-item-text">
-                                   <span class="item-title">{{alert.message}}
-                                   </span>
-                            <span class="column-title column-title-bottom">Message</span>
-                        </div>
-                        <div flex="20" layout="column" hide show-gt-md class="item-column md-list-item-text">
-                            <span class="item-title">{{alert.latestTimestamp | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                            <span class="column-title column-title-bottom">Time</span>
-                        </div>
-                        <md-divider ng-if="!$last"></md-divider>
+            <mat-list-item *ngIf="component && component.checkDate !== null" class="ListItemContainer">
+                <div layout="column"  class="item-column md-list-item-text">
+                    <span class="item-title">{{component.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+                    <span class="column-title column-title-bottom">Last Checked</span>
+                </div>
+            </mat-list-item>
 
-                    </md-list-item>
-                    <md-list-item  ng-show="vm.components.alerts.length == 0"  class="item-column md-list-item-text" flex>
-                         No results found
-                    </md-list-item >
-                    <md-divider></md-divider>
-                    <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                        <dir-pagination-controls pagination-id="service-component-details"
-                                                 auto-hide="false"
-                                                 max-size="5"
-                                                 direction-links="true"
-                                                 boundary-links="false"
-                                                 template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                 on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                 label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                 rows-per-page="vm.paginationData.rowsPerPage"
-                                                 rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                 class="pagination-row">
-                        </dir-pagination-controls>
-                    </md-list-item>
-
-
-                </md-list>
-            </div>
-            <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
-
-                <md-table-container>
-                    <table md-table md-progress="vm.deferred.promise">
-                        <thead md-head md-order="vm.paginationData.sort" md-trigger="vm.onOrderChange" >
-                        <tr md-row>
-                            <th md-column name="Name" md-order-by="label">Name</th>
-                            <th md-column name="Status" md-order-by="state">Status</th>
-                            <th md-column name="Message" md-order-by="message">Message</th>
-                            <th md-column name="Time" md-order-by="latestTimestamp"  hide show-gt-md >Time</th>
-                        </tr>
-                        </thead>
-                        <tbody md-body >
-                        <tr md-row ng-repeat="alert in vm.component.alerts| orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage">
-                        <td md-cell>{{alert.label}}</td>
-                        <td md-cell>
-                            <span >
-                                       <ng-md-icon icon="{{alert.icon}}" class="{{alert.iconstyle}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{alert.healthText}}</span>
-
-                        </td>
-                        <td md-cell>
-                            {{alert.message}}
-                        </td>
-                        <td md-cell hide show-gt-md >{{alert.latestTimestamp | date : "MM/dd/yyyy 'at' h:mm"}}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </md-table-container>
-
-                <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.component.alerts.length}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50]"></md-table-pagination>
-
-            </div>
-        </body-section>
-    </card-layout>
-    <card-layout flex="20">
-      <header-section transclude-to="head">
-            <div class="card-title">Component Details</div>
-      </header-section>
-      <body-section transclude-to="body">
-            <md-list flex layout-fill layout="column" class="list-item-table">
-                <md-list-item>
-                    <div layout="column"  class="item-column md-list-item-text">
-                        <span class="item-title">{{vm.componentName}}</span>
-                               <span class="{{vm.component.iconstyle}} column-title-bottom" ><ng-md-icon icon="{{vm.component.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{vm.component.healthText}}</span>
-                    </div>
-                </md-list-item>
-                <md-divider></md-divider>
-                <md-list-item>
-                    <div layout="column"  class="item-column md-list-item-text">
-                        <span class="item-title">{{vm.component.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                        <span class="column-title column-title-bottom">Last Checked</span>
-                    </div>
-                </md-list-item>
-
-            </md-list>
-      </body-section>
-    </card-layout>
+        </mat-list>
+    </mat-card-content>
+        
+</mat-card>
 </div>

@@ -17,73 +17,81 @@
   limitations under the License.
   #L%
   -->
-<div flex layout="row">
-    <card-layout flex>
-        <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Pivot Charts</header-section>
-
-            <body-section layout-fill transclude-to="body" >
-                <div ng-if="vm.loading" style="width:100%">
-                    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                    <br/>
-                </div>
-                <div id="charts_tab_pivot_chart" style="width:100%" class="layout-padding-left-right">
-
-                </div>
-        </body-section>
-    </card-layout>
-
-    <card-layout flex="20" class="filter-chart">
-        <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Filter Chart</header-section>
-        <body-section transclude-to="body" flex layout="column">
-            <div ng-if="vm.message != ''" ng-class="{'error':vm.isWarning}" style="padding-left:25px;">
-                {{vm.message}}
+<div flex fxLayout="row">
+    <mat-card fxFlex="80">
+        <mat-card-title style="white-space:nowrap" class="card-title">
+            Pivot Charts
+        </mat-card-title>
+        <mat-card-content>
+            <div *ngIf="loading" style="width:100%">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                <br/>
             </div>
-            <form role="form">
-            <md-list flex  class="layout-padding-top-bottom" layout="column" class="list-item-table">
-                <md-list-item >
-                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
-                    <md-input-container>
-                        <label>Feed</label>
-                        <md-select multiple ng-model="vm.selectedFeedNames" >
-                            <md-option ng-repeat="feedName in vm.feedNames" value="{{feedName}}">
-                                {{feedName}}
-                            </md-option>
-                        </md-select>
-                    </md-input-container>
-                        </div>
-                </md-list-item>
-                <md-divider></md-divider>
-                <md-list-item>
-                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
-                  <md-datepicker ng-model="vm.startDate" md-placeholder="Start date"></md-datepicker>
-                        </div>
-                </md-list-item>
-                <md-list-item>
-                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
-                        <md-datepicker ng-model="vm.endDate" md-placeholder="End date"></md-datepicker>
-                        </div>
-                </md-list-item>
-                <md-divider></md-divider>
-                <md-list-item >
-                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
-                    <md-input-container>
-                        <label>Limit</label>
-                        <md-select ng-model="vm.limitRows" >
-                            <md-option ng-repeat="limit in vm.limitOptions" value="{{limit}}">
-                                {{limit}}
-                            </md-option>
-                        </md-select>
-                    </md-input-container>
-                        </div>
-                </md-list-item>
-                <md-divider></md-divider>
-                <md-list-item layout-align="space-between start" layout="column">
-                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
-                    <md-button class="border-btn" ng-click="vm.refreshPivotTable()">Update</md-button>
-                        </div>
-                    </md-list-item>
-            </md-list>
-            </form>
-        </body-section>
-    </card-layout>
+            <div id="charts_tab_pivot_chart" style="width:100%" class="layout-padding-left-right">
+
+            </div>
+        </mat-card-content>
+    </mat-card>
+    <mat-card fxFlex="20" class="filter-chart">
+        <mat-card-title style="white-space:nowrap" class="card-title">
+            Filter Chart
+        </mat-card-title>
+        <mat-card-content>
+            <div *ngIf="message != ''" [ngClass]="{'error':isWarning}" style="padding-left:25px;">
+                {{message}}
+            </div>
+            <mat-list flex class="layout-padding-top-bottom" fxLayout="column" class="list-item-table">
+                <mat-list-item class="ListItemContainer">
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
+                        <mat-form-field>
+                            <label>Feed</label>
+                            <mat-select multiple [(ngModel)]="selectedFeedNames" (change)="feedsSelected($event)">
+                                <mat-option *ngFor="let feedName of feedNames" [value]="feedName">
+                                    {{feedName}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item class="ListItemContainer">
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
+                        <mat-form-field>
+                            <input matInput [matDatepicker]="startPicker" placeholder="Start Date">
+                            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #startPicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                </mat-list-item>
+                <mat-list-item class="ListItemContainer">
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
+                        <mat-form-field>
+                            <input matInput [matDatepicker]="endPicker" placeholder="End Date">
+                            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                            <mat-datepicker #endPicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item class="ListItemContainer">
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
+                        <mat-form-field>
+                            <label>Limit</label>
+                            <mat-select [(ngModel)]="limitRows" (change)="limitOptionChanged($event)">
+                                <mat-option *ngFor="let limit of limitOptions" [value]="limit">
+                                    {{limit}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item class="ListItemContainer" layout-align="space-between start" fxLayout="column">
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
+                        <button mat-button class="border-btn" color="primary" (click)="refreshPivotTable()">Update</button>
+                    </div>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
 </div>

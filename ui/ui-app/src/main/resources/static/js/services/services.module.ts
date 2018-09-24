@@ -32,6 +32,7 @@ import SearchService from "./SearchService";
         userGroupServiceProvider,
         fileUploadServiceProvider,
         utilsServiceProvider,
+        httpServiceProvider,
         angularModuleExtensionServiceProvider,
         TemplateService,
         CommonRestUrlService,

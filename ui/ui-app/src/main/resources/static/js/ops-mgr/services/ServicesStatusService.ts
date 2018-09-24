@@ -3,6 +3,7 @@ import * as _ from 'underscore';
 import IconService from "./IconStatusService";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { Subject } from "rxjs/Subject";
 
 @Injectable()
 export default class ServicesStatusData {
@@ -10,6 +11,7 @@ export default class ServicesStatusData {
     SERVICES_URL: string = this.opsManagerRestUrlService.SERVICES_URL;
     fetchServiceInterval: any = null;
     services: any = {};
+    public servicesSubject = new Subject<any>();
     FETCH_INTERVAL: number = 5000;
 
     fetchServiceStatusErrorCount: number = 0;
@@ -22,10 +24,10 @@ export default class ServicesStatusData {
     setFetchTimeout = (timeout: any) => {
         this.FETCH_INTERVAL = timeout;
     }
-    fetchServiceStatus(successCallback: any, errorCallback: any) : Promise<any> {
+    fetchServiceStatus(successCallback?: any, errorCallback?: any) : Promise<any> {
 
         var successFn = (response: any) => {
-            var data = response.data;
+            var data = response;
             this.transformServicesResponse(data);
             if (successCallback) {
                 successCallback(data);
@@ -100,6 +102,7 @@ export default class ServicesStatusData {
                 this.services[service.serviceName] = service;
 
             }
+            this.servicesSubject.next(this.services);
         });
     }
 }

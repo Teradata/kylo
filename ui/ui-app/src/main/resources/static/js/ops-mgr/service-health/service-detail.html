@@ -17,133 +17,63 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" flex >
-    <card-layout flex header-css="filter-header">
-      <header-section>
-          <tba-card-filter-header flex layout [card-title]="vm.cardTitle" page-name="{{vm.pageName}}" [(view-type)]="vm.viewType" [sort-options]="vm.sortOptions"
-                [on-selected-option]="vm.selectedTableOption" [(filter-model)]="vm.filter">
-            </tba-card-filter-header>
-        </header-section>
-      <body-section>
-            <md-divider></md-divider>
-            <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-                <md-list flex layout-fill ng-show="vm.loading == false" ng-hide class="list-item-table">
-                  <md-list-item layout="row" dir-paginate="component in vm.service.components|orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
-                                pagination-id="service-details" ng-click="vm.serviceComponentDetails($event,component)" current-page="vm.currentPage">
-                        <div layout="row" layout-fill>
-                        <div flex="20" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column md-list-item-text">
-                                   <span class="item-title">
-                                      {{component.name}}
-                                   </span>
-                                   <span class="{{component.iconstyle}} column-title-bottom" >
-                                       <ng-md-icon icon="{{component.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{component.healthText}}
-                                   </span>
-                        </div>
-                        <div flex="50" flex-sm="80" flex-xs="80" layout="column"  class="item-column md-list-item-text">
-                                   <span class="item-title">{{component.message}}
-                                   </span>
-                            <span class="column-title column-title-bottom">Message</span>
-                        </div>
-                            <div flex="10" layout="column"  class="item-column md-list-item-text">
-                                    <span class="item-title" ng-if="component.alerts.length >1 || component.alerts.length == 0">
-                                        {{component.alerts.length}} Alerts
-                                    </span>
-                                      <span class="item-title" ng-if="component.alerts.length == 1" >
-                                        {{component.alerts.length}} Alert
-                                    </span>
-                                <span class="column-title column-title-bottom">Alerts</span>
-                            </div>
-                        <div flex="20" layout="column" hide show-gt-md class="item-column md-list-item-text">
-                            <span class="item-title">{{component.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                            <span class="column-title column-title-bottom">Last Checked</span>
-                        </div>
-                        <md-divider ng-if="!$last"></md-divider>
-                        </div>
-                    </md-list-item>
-                    <md-item  ng-show="vm.service.components.length == 0">
-                        No results found
-                    </md-item >
-                    <md-divider></md-divider>
-                    <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                      <dir-pagination-controls pagination-id="service-details"
-                                                 auto-hide="false"
-                                                 max-size="5"
-                                                 direction-links="true"
-                                                 boundary-links="false"
-                                                 template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                                 on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                 label='{{"views.all-page.Rows_per_page" | translate}}'
-                                                 rows-per-page="vm.paginationData.rowsPerPage"
-                                                 rows-per-page-options="vm.paginationData.rowsPerPageOptions"
-                                                 class="pagination-row">
-                        </dir-pagination-controls>
-                    </md-list-item>
-
-
-                </md-list>
-            </div>
-            <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
-
-                <md-table-container>
-                    <table md-table md-progress="vm.deferred.promise">
-                        <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
-                        <tr md-row>
-                          <th md-column name="Name" md-order-by="name">Name</th>
-                          <th md-column name="Status" md-order-by="state">Status</th>
-                          <th md-column name="Message" md-order-by="message">Message</th>
-                            <th md-column  name="Alerts">Alerts</th>
-                          <th md-column name="Last Checked" md-order-by="checkDate" hide show-gt-md>Last Checked</th>
-                        </tr>
-                        </thead>
-                        <tbody md-body>
-                        <tr md-row ng-repeat="component in vm.service.components| orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage" ng-click="vm.serviceComponentDetails($event,component)">
-                        <td md-cell>{{component.name}}</td>
-                        <td md-cell>
-                            <span >
-                                       <ng-md-icon icon="{{component.icon}}" class="{{component.iconstyle}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{component.healthText}}</span>
-
-                        </td>
-                        <td md-cell>
-                            {{component.message}}
-                        </td>
-                        <td md-cell>
-                            {{component.alerts.length}}
-                        </td>
-                        <td md-cell hide show-gt-md >{{component.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </md-table-container>
-
-              <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.service.componentsCount}}" md-on-paginate="vm.onPaginationChange"
-                                   md-limit-options="[5,10,20,50]"></md-table-pagination>
-
-            </div>
-        </body-section>
-    </card-layout>
-    <card-layout flex="20">
-            <header-section transclude-to="head">
+<div layout="row"  >
+    <div fxFlex="80">
+            <filtered-paginated-table-view 
+            [cardTitle]="cardTitle"
+            [filteredData]="filteredData"
+            [columns]="columns"
+            [clickable]="true"
+            [sortable]="true"
+            [sortOrder]="sortOrder"
+            [sortBy]="sortBy"
+            [firstLast]="false"
+            [pageSize]="pageSize"
+            [filteredTotal]="filteredTotal"
+            [allowedPageSize]="[5,10,20,50]"
+            (rowClicked)="serviceComponentDetails($event)"
+            (sortChanged)="sort($event)"
+            (searchDebounced)="search($event)"
+            (pageSizeChanged)="onPageSizeChange($event)"
+        >
+            <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+                <span >
+                    <mat-icon class="{{value.iconstyle}}" size="20" options='{"rotation": "clock"}'>
+                            {{value.icon}}
+                    </mat-icon>
+                    {{value.healthText}}
+                </span>
+            </ng-template>
+            <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
+                    <span>{{row.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+            </ng-template>
+        </filtered-paginated-table-view>
+    </div>
+    <mat-card fxFlex="20">
+        <mat-card-title>
                 <div class="card-title">Service Details</div>
-            </header-section>
-            <body-section transclude-to="body">
-                <md-list flex layout-fill layout="column" class="list-item-table">
-                    <md-list-item>
-                        <div layout="column"  class="item-column md-list-item-text">
-                             <span  class="item-title">{{vm.serviceName}}</span>
-                               <span class="{{vm.service.iconstyle}} column-title-bottom" ><ng-md-icon icon="{{vm.service.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{vm.service.healthText}}</span>
-                           </div>
-                        </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item>
-                        <div layout="column"  class="item-column md-list-item-text">
-                            <span class="item-title">{{vm.service.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                            <span class="column-title column-title-bottom">Last Checked</span>
+        </mat-card-title>
+        <mat-card-content>
+            <mat-list fxFlex fxLayoutFill fxLayout="column" class="list-item-table">
+                <mat-list-item *ngIf="!loading && service && service.iconStyle !== null" class="ListItemContainer">
+                    <div layout="column"  class="item-column mat-list-item-text">
+                            <span  class="item-title">{{serviceName}}</span>
+                            <span class="{{service.iconstyle}} column-title-bottom" >
+                                <mat-icon size="20" options='{"rotation": "clock"}' >
+                                        {{service.icon}}
+                                </mat-icon>
+                                {{service.healthText}}
+                            </span>
                         </div>
-                    </md-list-item>
-                    </md-list>
-                </body-section>
-        </card-layout>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <mat-list-item *ngIf="!loading && service && service.checkDate !== null" class="ListItemContainer">
+                    <div layout="column"  class="item-column md-list-item-text">
+                        <span class="item-title">{{service.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+                        <span class="column-title column-title-bottom">Last Checked</span>
+                    </div>
+                </mat-list-item>
+            </mat-list>
+        </mat-card-content>
+    </mat-card>
 </div>

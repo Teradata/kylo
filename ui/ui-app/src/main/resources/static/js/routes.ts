@@ -241,24 +241,6 @@ class Route {
             loadChildren: 'ops-mgr/feeds/ops-mgr-feeds.module#OpsManagerFeedsModule'
         });
 
-        // $stateProvider.state({
-        //     name: 'feed-stats.**',
-        //     url: '/feed-stats/{feedName}',
-        //     params: {
-        //         feedName: null
-        //     },
-        //     lazyLoad: (transition: any) => {
-        //         transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
-        //             //upon success go back to the state
-        //             $stateProvider.stateService.go('feed-stats', transition.params())
-        //             return args;
-        //         }, function error(err: any) {
-        //             console.log("Error loading feed-stats ", err);
-        //             return err;
-        //         });
-        //     }
-        // });
-
         $stateProvider.state({
             name: 'feed-stats.**',
             url: '/feed-stats/{feedName}',
@@ -283,64 +265,30 @@ class Route {
         $stateProvider.state({
             name: 'service-health.**',
             url: '/service-health',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-health', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-health ", err);
-                    return err;
-                });
-            }
-        }).state({
+            loadChildren: 'ops-mgr/service-health/ops-mgr-service-health.module#OpsManagerServiceHealthModule'
+        });
+        $stateProvider.state({
             name: 'service-details.**',
             url: '/service-details/{serviceName}',
             params: {
                 serviceName: null
             },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-details ", err);
-                    return err;
-                });
-            }
-        }).state({
+            loadChildren: 'ops-mgr/service-health/ops-mgr-service-health.module#OpsManagerServiceHealthModule'
+        });
+        $stateProvider.state({
             name: 'service-component-details.**',
             url: '/service-details/{serviceName}/{componentName}',
             params: {
                 serviceName: null,
                 componentName: null
             },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-component-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-component-details ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/service-health/ops-mgr-service-health.module#OpsManagerServiceHealthModule'
         })
 
         $stateProvider.state({
             name: 'scheduler.**',
             url: '/scheduler',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/scheduler/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('scheduler', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading scheduler ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/scheduler/ops-mgr-scheduler.module#OpsManagerSchedulerModule'
         })
 
         $stateProvider.state({ 
@@ -352,16 +300,7 @@ class Route {
         $stateProvider.state({
             name: 'charts.**',
             url: '/charts',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/charts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('charts', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading charts ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'ops-mgr/charts/ops-mgr-charts.module#OpsManagerChartsModule'
         });
 
         $stateProvider.state({

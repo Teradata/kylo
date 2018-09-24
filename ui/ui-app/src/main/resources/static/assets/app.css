@@ -423,6 +423,17 @@ md-list.padding-left md-list-item {
   border: 1px solid #d7d7d7;
   line-height: inherit;
 }
+.border-btn {
+  background-color: white;
+  text-align: center !important;
+  height: 36px;
+  font-size: 12px;
+  padding: 0;
+  /*padding: 0 16px 0 16px; */
+  color: #666666;
+  border: 1px solid #d7d7d7;
+  line-height: inherit;
+}
 
 .md-button.border-btn-warn {
   background-color: rgb(255, 87, 34);

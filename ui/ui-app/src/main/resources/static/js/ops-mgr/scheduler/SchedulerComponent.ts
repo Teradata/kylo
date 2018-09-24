@@ -1,12 +1,30 @@
-import * as angular from 'angular';
-import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import HttpService from '../../services/HttpService';
+import Utils from '../../services/Utils';
 import AccessControlService from '../../services/AccessControlService';
-import HttpService from "../../services/HttpService";
-import Utils from "../../services/Utils";
+import AccessConstants from '../../constants/AccessConstants';
+import { HttpClient } from '@angular/common/http';
+import { timeout } from 'rxjs/operator/timeout';
+import { ObjectUtils } from '../../common/utils/object-utils';
 
-export class controller implements ng.IComponentController {
+@Component({
+    selector : 'scheduler-component',
+    templateUrl: "js/ops-mgr/scheduler/scheduler.html",
+    styles : [`.ListItemContainer{
+        padding: 0px !important;
+        line-height: inherit;
+        -webkit-box-pack: start;
+        justify-content: flex-start;
+        -webkit-box-align: center;
+        align-items: center;
+        min-height: 48px;
+        height: auto;
+        flex: 1 1 auto;
+    }`]
+})
+export class SchedulerComponent implements OnInit, OnDestroy{
     /**
      * Time to query for the jobs
      * @type {number}
@@ -77,30 +95,18 @@ export class controller implements ng.IComponentController {
     
     static readonly $inject =["$scope","$interval","$timeout","$http","$location", "HttpService","Utils","AccessControlService"];
 
-    constructor(private $scope: any,
-                private $interval: angular.IIntervalService,
-                private $timeout: angular.ITimeoutService,
-                private $http: angular.IHttpService,
-                private $location: angular.ILocationService,
-                private HttpService: any,
-                private Utils: any,
-                private AccessControlService: any) {
+    constructor(private http: HttpClient,
+                private HttpService: HttpService,
+                private utils: Utils,
+                private AccessControlService: AccessControlService) {
 
-        $scope.$on("$destroy", this.ngOnDestroy.bind(this));
     }
 
 
-    $onInit() {
-        this.ngOnInit();
-    }
-
-    $onDestroy() {
-        this.ngOnDestroy();
-    }
 
     ngOnDestroy(){
         if (this.fetchJobsTimeout) {
-            this.$timeout.cancel(this.fetchJobsTimeout);
+            clearTimeout(this.fetchJobsTimeout);
         }
         this.fetchJobsTimeout = null;
         this.destroyed = true;
@@ -111,7 +117,7 @@ export class controller implements ng.IComponentController {
         // Fetch the allowed actions
         this.AccessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                this.allowAdmin = this.AccessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
             });
 
 
@@ -126,7 +132,7 @@ export class controller implements ng.IComponentController {
      * @param job
      */
     pauseJob(job: any) {
-        this.$http.post(this.API_URL_BASE + "/jobs/pause", job.jobIdentifier).then((response: any) => {
+        this.http.post(this.API_URL_BASE + "/jobs/pause", job.jobIdentifier).toPromise().then((response: any) => {
             this.fetchJobs();
         }, (reason: any) => {
             console.log("failed to update the trigger  ",reason)
@@ -138,7 +144,7 @@ export class controller implements ng.IComponentController {
      * @param job
      */
     resumeJob(job: any) {
-        this.$http.post(this.API_URL_BASE + "/jobs/resume", job.jobIdentifier).then((response: any) =>{
+        this.http.post(this.API_URL_BASE + "/jobs/resume", job.jobIdentifier).toPromise().then((response: any) =>{
             this.fetchJobs();
         }, (reason: any) => {
             console.log("failed to update the trigger  ",reason)
@@ -152,7 +158,7 @@ export class controller implements ng.IComponentController {
     triggerJob(job: any) {
         this.justFiredJob(job);
 
-        this.$http.post(this.API_URL_BASE + "/jobs/trigger", job.jobIdentifier).then((response: any) =>{
+        this.http.post(this.API_URL_BASE + "/jobs/trigger", job.jobIdentifier).toPromise().then((response: any) =>{
             this.fetchJobs();
         },  (reason: any) =>{
             console.log("failed to update the trigger  ",reason)
@@ -163,7 +169,7 @@ export class controller implements ng.IComponentController {
      * Pause the entire scheduler
      */
     pauseScheduler() {
-        this.$http.post(this.API_URL_BASE + "/pause",null).then((response: any) =>{
+        this.http.post(this.API_URL_BASE + "/pause",null).toPromise().then((response: any) =>{
             this.fetchSchedulerDetails();
         }, (reason: any) => {
             console.log("failed to standby the scheduler  ",reason)
@@ -174,7 +180,7 @@ export class controller implements ng.IComponentController {
      * Resume the entire scheduler
      */
     resumeScheduler() {
-        this.$http.post(this.API_URL_BASE + "/resume",null).then((response: any) =>{
+        this.http.post(this.API_URL_BASE + "/resume",null).toPromise().then((response: any) =>{
             this.fetchSchedulerDetails();
         }, (reason: any) =>{
             console.log("failed to shutdown the scheduler  ",reason)
@@ -190,7 +196,7 @@ export class controller implements ng.IComponentController {
 
         if (metadata.runningSince) {
             this.schedulerDetails['startTime'] = moment(metadata.runningSince).format('MM/DD/YYYY hh:mm:ss a');
-            this.schedulerDetails["upTime"] =  this.Utils.dateDifference(metadata.runningSince,new Date().getTime());
+            this.schedulerDetails["upTime"] =  this.utils.dateDifference(metadata.runningSince,new Date().getTime());
         }
         else {
             this.schedulerDetails['startTime'] = "N/A";
@@ -228,10 +234,10 @@ export class controller implements ng.IComponentController {
      */
     private fetchSchedulerDetails() {
         this.fetchingMetadata = true;
-        this.$http.get(this.API_URL_BASE + "/metadata").then((response: any) => {
-            var data = response.data;
+        this.http.get(this.API_URL_BASE + "/metadata").toPromise().then((response: any) => {
+            var data = response;
             this.clearSchedulerDetails();
-            if (angular.isObject(data)) {
+            if (ObjectUtils.isObject(data)) {
                 this.populateSchedulerDetails(data);
             }
             this.fetchingMetadata = false;
@@ -249,7 +255,7 @@ export class controller implements ng.IComponentController {
     private justFiredJob(job: any) {
         this.firedJobs[job.jobName] = new Date();
         var jobName = job.jobName;
-        this.$timeout( () => {
+        setTimeout( () => {
             delete this.firedJobs[jobName];
             var currentJob = this.jobMap[jobName];
             if (currentJob != undefined) {
@@ -272,8 +278,8 @@ export class controller implements ng.IComponentController {
      * Reset the timeout to query for the jobs again
      */
     private assignFetchTimeout() {
-        this.$timeout.cancel(this.fetchJobsTimeout);
-        this.fetchJobsTimeout = this.$timeout(() => {
+        clearTimeout(this.fetchJobsTimeout);
+        this.fetchJobsTimeout = setTimeout(() => {
             this.refresh()
         }, this.refreshInterval);
     }
@@ -314,7 +320,7 @@ export class controller implements ng.IComponentController {
         else {
             if (job.nextFireTime != null && job.nextFireTime != undefined) {
 
-                var timeFromNow = this.Utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
+                var timeFromNow = this.utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
                 if (timeFromNow < 45000) {
                     if (timeFromNow < 15000) {
                         job.nextFireTimeString = "in a few seconds";
@@ -341,15 +347,16 @@ export class controller implements ng.IComponentController {
      */
     private fetchJobs() {
 
-        this.$http.get(this.API_URL_BASE + "/jobs").then((response: any) => {
+        this.http.get(this.API_URL_BASE + "/jobs").toPromise().then((response: any) => {
 
             //store a record of the jobs that were processed
             var processedJobGroups = {};
 
-            if (response && response.data) {
+            if (response) {
 
                 var processedJobs: any[] = []
-                angular.forEach(response.data, (job: any, i: any) => {
+                Object.keys(response).forEach(rkey => {
+                    var job = response[rkey];
                     var key = this.jobKey(job);
                     var theJob = this.jobMap[key];
 
@@ -377,7 +384,7 @@ export class controller implements ng.IComponentController {
                     this.setNextFireTimeString(job);
                     this.applyIcon(job);
                     //write it back to the theJob
-                    angular.extend(theJob, job);
+                    _.extend(theJob, job);
 
                     var jobs: any[] = [];
                     var jobMap: any = {};
@@ -394,6 +401,10 @@ export class controller implements ng.IComponentController {
                         this.jobsByGroupMap[theJob.jobGroup].jobMap[key] = theJob;
                     }
                 });
+                this.jobGroups.forEach((jobGroup:any)=> {
+                    jobGroup.jobs.sort((a:any,b:any) => (a.jobName > b.jobName) ? 1 : ((b.jobName > a.jobName) ? -1 : 0));
+                })
+                this.jobGroups.sort((a:any,b:any) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
             }
 
             //reconcile the data back to the ui bound object
@@ -433,9 +444,3 @@ export class controller implements ng.IComponentController {
 
 
 }
-
-angular.module(moduleName).component("schedulerController", {
-    controller: controller,
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/scheduler/scheduler.html"
-});
