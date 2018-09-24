@@ -3,7 +3,7 @@ import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from './RestUrlService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/Observable/of';
+import { of } from 'rxjs/observable/of';
 import { Subject } from 'rxjs/Subject';
 import AccessControlService from "../../services/AccessControlService";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
