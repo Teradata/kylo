@@ -1,6 +1,6 @@
 {
   "name": "kylo",
-  "version": "0.9.1-2-SNAPSHOT",
+  "version": "0.9.1-2",
   "private": true,
   "description": "kylo",
   "scripts": {

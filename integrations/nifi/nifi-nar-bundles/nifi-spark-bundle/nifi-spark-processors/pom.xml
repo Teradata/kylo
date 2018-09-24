@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-spark-bundle</artifactId>
-    <version>0.9.1.2-SNAPSHOT</version>
+    <version>0.9.1.2</version>
   </parent>
   <packaging>jar</packaging>
 

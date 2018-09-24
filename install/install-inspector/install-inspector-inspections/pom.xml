@@ -7,7 +7,7 @@
     <parent>
         <artifactId>kylo-install-inspector</artifactId>
         <groupId>com.thinkbiganalytics.kylo</groupId>
-        <version>0.9.1.2-SNAPSHOT</version>
+        <version>0.9.1.2</version>
     </parent>
     <artifactId>kylo-install-inspector-inspections</artifactId>
     <packaging>jar</packaging>
