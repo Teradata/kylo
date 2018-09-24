@@ -683,6 +683,12 @@ export class DefineFeedService {
             }
             loadFeedSubject.next(feedModel.copy());
         }, error1 => {
+            if(load) {
+                this._dialogService.openAlert({
+                    title:"Error loading feed",
+                    message: "There was an error attempting to load the feed "
+                });
+            }
             loadFeedSubject.error(error1)
         })
         return loadFeedObservable$;
