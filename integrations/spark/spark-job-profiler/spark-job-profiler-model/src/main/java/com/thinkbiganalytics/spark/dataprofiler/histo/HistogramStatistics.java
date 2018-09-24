@@ -54,14 +54,14 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
         this.bins = (config.getBins() != null && config.getBins() > 0 ? config.getBins() : 5);
     }
 
-    public void accomodate(Integer columnIndex, JavaRDD<Row> javaRDD, StructField columnField) {
+    public void accomodate(final Integer columnIndex, JavaRDD<Row> javaRDD, StructField columnField) {
         try {
             if (isNumeric(columnField)) {
 
                 Tuple2<double[], long[]> histogram = javaRDD.mapToDouble(new DoubleFunction<Row>() {
                     @Override
                     public double call(Row row) throws Exception {
-                        return Double.parseDouble(row.get(0).toString());
+                        return Double.parseDouble(row.get(columnIndex).toString());
                     }
                 }).histogram(bins);
 
@@ -76,7 +76,7 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
         }
     }
 
-    private boolean isNumeric(StructField columnField) {
+    public static boolean isNumeric(StructField columnField) {
         DataType columnDataType = columnField.dataType();
 
         switch (columnDataType.simpleString()) {

@@ -52,9 +52,8 @@ class StandardProfiler(val sqlContext: SQLContext, val sparkContextService: Spar
         }
 
       // Add histogram statistics to the combined model
-        if (!result.isEmpty) {
-          for ((colIdx,field) <- schemaMap) result.get.addAggregate(colIdx, dataset, field);
-        }
+
+      for ((colIdx,field) <- schemaMap) result.get.addAggregate(colIdx, dataset, field);
 
       result;
     }

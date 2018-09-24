@@ -4,6 +4,7 @@ export class ColumnProfileHelper {
 
     static createColumnProfiles(profileData: ProfileOutputRow[]): ColumnProfile[] {
         let result: ColumnProfile[] = [];
+
         let i = 0;
         let firstRow;
         let lastField = null;
@@ -14,7 +15,8 @@ export class ColumnProfileHelper {
                 firstRow = i;
             } else if (lastField != item.columnName || (i == profileData.length - 1)) {
                 if (lastField != '(ALL)') {
-                    result.push(new ColumnProfile(lastField, profileData.slice(firstRow, i - 1)));
+                    let sliceTo = (i == profileData.length -1 ? i+1 : i);
+                    result.push(new ColumnProfile(lastField, profileData.slice(firstRow, i)));
                 }
                 lastField = item.columnName;
                 firstRow = i;
