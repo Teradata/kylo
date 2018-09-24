@@ -2,7 +2,7 @@ import PivotTableUtil from "./PivotTableUtil";
 import * as _ from "underscore";
 import * as moment from "moment";
 import * as $ from "jquery";
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import HttpService from '../../services/HttpService';
 import OpsManagerJobService from '../services/OpsManagerJobService';
 import { OpsManagerFeedService } from '../services/OpsManagerFeedService';
@@ -15,6 +15,7 @@ import "pivottable";
 @Component({
     selector: 'ops-mgr-charts',
     templateUrl: 'js/ops-mgr/charts/charts.html',
+    encapsulation: ViewEncapsulation.None,
     styles: [`.ListItemContainer{
         padding: 0px !important;
         line-height: inherit;
