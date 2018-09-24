@@ -24,21 +24,30 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginNiFiControllerService;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
+import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.security.context.SecurityContextUtil;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +55,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -86,7 +97,7 @@ public class DataSourceProvider {
      */
     @Nonnull
     private final ConnectorProvider connectorProvider;
-    
+
     /**
      * Manages credentials of data sources
      */
@@ -112,18 +123,31 @@ public class DataSourceProvider {
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "squid:S2789"})
     private Optional<String> jdbcConnectorId;
 
+    @Nonnull
+    private final NiFiRestClient nifiRestClient;
+
+    @Nonnull
+    private final ConnectorPluginManager pluginManager;
+
+    @Nonnull
+    private final PropertyPlaceholderHelper placeholderHelper = new PropertyPlaceholderHelper("${", "}");
+
     /**
      * Constructs a {@code ConnectorProvider}.
      */
     @Autowired
-    public DataSourceProvider(@Nonnull final DatasourceProvider feedDataSourceProvider, 
+    public DataSourceProvider(@Nonnull final DatasourceProvider feedDataSourceProvider,
                               @Nonnull final DataSourceCredentialManager credentialManager,
                               @Nonnull final DatasourceModelTransform feedDataSourceTransform,
-                              @Nonnull final ConnectorProvider connectorProvider) throws IOException {
+                              @Nonnull final ConnectorProvider connectorProvider,
+                              @Nonnull final NiFiRestClient nifiRestClient,
+                              @Nonnull final ConnectorPluginManager pluginManager) throws IOException {
         this.feedDataSourceProvider = feedDataSourceProvider;
         this.credentialManager = credentialManager;
         this.feedDataSourceTransform = feedDataSourceTransform;
         this.connectorProvider = connectorProvider;
+        this.nifiRestClient = nifiRestClient;
+        this.pluginManager = pluginManager;
 
         // Load data sources
         final String connectionsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-datasources.json"), StandardCharsets.UTF_8);
@@ -156,8 +180,16 @@ public class DataSourceProvider {
         } else {
             dataSource = source;
         }
+
+        // Create or update controller service
+        final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(connector.getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
+
+        if (plugin != null && plugin.getNifiControllerService() != null) {
+            createOrUpdateNiFiControllerService(dataSource, plugin.getNifiControllerService());
+        }
+
+        // Update catalog
         final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(dataSource, SecurityContextUtil.getCurrentPrincipals());
-        
         catalogDataSources.put(dataSource.getId(), updatedDataSource);
 
         // Return a copy with the connector
@@ -171,13 +203,13 @@ public class DataSourceProvider {
      */
     @Nonnull
     @SuppressWarnings("squid:S2259")
-    public Optional<DataSource> findDataSource(@Nonnull final String id){
-        return findDataSource(id,false);
+    public Optional<DataSource> findDataSource(@Nonnull final String id) {
+        return findDataSource(id, false);
     }
 
-   /**
-    * Gets the connector with the specified id.
-    */
+    /**
+     * Gets the connector with the specified id.
+     */
     @Nonnull
     @SuppressWarnings("squid:S2259")
     public Optional<DataSource> findDataSource(@Nonnull final String id, final boolean includeCredentials) {
@@ -189,7 +221,7 @@ public class DataSourceProvider {
             try {
                 final Datasource feedDataSource = feedDataSourceProvider.getDatasource(feedDataSourceProvider.resolve(id));
                 DatasourceModelTransform.Level level = DatasourceModelTransform.Level.FULL;
-                if(includeCredentials){
+                if (includeCredentials) {
                     level = DatasourceModelTransform.Level.ADMIN;
                 }
                 dataSource = toDataSource(feedDataSource, level);
@@ -236,6 +268,49 @@ public class DataSourceProvider {
             .peek(findConnector())
             .collect(Collectors.toList());
         return new PageImpl<>(filteredDataSources, pageable, catalogDataSources.get().count() + feedDataSources.get().count());
+    }
+
+    /**
+     * Creates or updates the NiFi controller service linked to the specified data source.
+     */
+    private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginNiFiControllerService plugin) {
+        // Resolve properties
+        final PropertyPlaceholderHelper.PlaceholderResolver resolver = new DataSourcePlaceholderResolver(dataSource);
+        final Map<String, String> properties = plugin.getProperties().entrySet().stream()
+            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), placeholderHelper.replacePlaceholders(entry.getValue(), resolver)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        // Update or create the controller service
+        ControllerServiceDTO controllerService = null;
+
+        if (dataSource.getNifiControllerServiceId() != null) {
+            controllerService = new ControllerServiceDTO();
+            controllerService.setId(dataSource.getNifiControllerServiceId());
+            controllerService.setName(dataSource.getTitle());
+            controllerService.setProperties(properties);
+            try {
+                controllerService = nifiRestClient.controllerServices().updateServiceAndReferencingComponents(controllerService);
+                dataSource.setNifiControllerServiceId(controllerService.getId());
+            } catch (final NifiComponentNotFoundException e) {
+                log.warn("Controller service is missing for data source: {}", dataSource.getId(), e);
+                controllerService = null;
+            }
+        }
+        if (controllerService == null) {
+            controllerService = new ControllerServiceDTO();
+            controllerService.setType(plugin.getType());
+            controllerService.setName(dataSource.getTitle());
+            controllerService.setProperties(properties);
+            controllerService = nifiRestClient.controllerServices().create(controllerService);
+            try {
+                nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
+            } catch (final NifiClientRuntimeException e) {
+                log.error("Failed to enable controller service for data source: {}", dataSource.getId(), e);
+                nifiRestClient.controllerServices().disableAndDeleteAsync(controllerService.getId());
+                throw e;
+            }
+            dataSource.setNifiControllerServiceId(controllerService.getId());
+        }
     }
 
     /**
@@ -361,6 +436,7 @@ public class DataSourceProvider {
 
     /**
      * Deletes datasource and any credentials stored for this data source
+     *
      * @param dataSourceId datasource to be deleted
      */
     public void delete(String dataSourceId) {

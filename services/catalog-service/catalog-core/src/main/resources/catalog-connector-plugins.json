@@ -65,6 +65,21 @@
         "type": "password",
         "label": "Secret Access Key"
       }
+    ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService",
+      "properties": {
+        "Access Key": "${spark.hadoop.fs.s3a.access.key}",
+        "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object", "org.apache.nifi.processors.aws.sqs.GetSQS", "org.apache.nifi.processors.aws.s3.ListS3"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}"
+        }
+      }
     ]
   },
   {
@@ -246,10 +261,28 @@
         "label": "Password"
       }
     ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.dbcp.DBCPConnectionPool",
+      "properties": {
+        "Database Connection URL": "${url}",
+        "Database Driver Class Name": "${driver}",
+        "database-driver-locations": "${jars}",
+        "Database User": "${user}",
+        "Password": "${password}"
+      }
+    },
     "nifiProperties": [
       {
-        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData", "com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
         "properties": {
+          "Source Database Connection": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      },
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "properties": {
+          "Source Connection Service": "{{ dataSource.nifiControllerServiceId }}",
           "Source Table": "{{ options.dbname }}"
         }
       }

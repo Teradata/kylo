@@ -62,6 +62,11 @@ public class ConnectorPluginDescriptor {
     private String optionsMapperId;
 
     /**
+     * Instructions for creating a NiFi controller service
+     */
+    private ConnectorPluginNiFiControllerService nifiControllerService;
+
+    /**
      * List of NiFi properties that can be overridden by a data set
      */
     private List<ConnectorPluginNiFiProperties> nifiProperties;
@@ -79,6 +84,7 @@ public class ConnectorPluginDescriptor {
         this.pluginId = other.pluginId;
         this.dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         this.optionsMapperId = other.optionsMapperId;
+        this.nifiControllerService = (other.nifiControllerService != null) ? new ConnectorPluginNiFiControllerService(other.nifiControllerService) : null;
 
         if (other.tabs != null) {
             tabs = new ArrayList<>(other.tabs.size());
@@ -140,6 +146,14 @@ public class ConnectorPluginDescriptor {
 
     public void setOptionsMapperId(String optionsMapperId) {
         this.optionsMapperId = optionsMapperId;
+    }
+
+    public ConnectorPluginNiFiControllerService getNifiControllerService() {
+        return nifiControllerService;
+    }
+
+    public void setNifiControllerService(ConnectorPluginNiFiControllerService nifiControllerService) {
+        this.nifiControllerService = nifiControllerService;
     }
 
     public List<ConnectorPluginNiFiProperties> getNifiProperties() {
