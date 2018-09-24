@@ -48,7 +48,7 @@ export class SearchComponent implements OnInit {
         return null;
     };
 
-    constructor(private searchService: SearchService,
+    constructor(@Inject("SearchService") private searchService: SearchService,
                 private transition: StateService,
                 private CategoriesService: CategoriesService,
                 private StateService: StateServices,
