@@ -23,6 +23,12 @@ export class KyloIcons {
         runTime:"alarm",
         numberOfFlowsStarted:"star_border",
         numberOfFlowsFinished:"star",
+        Stats: {
+            eventSuccessKpi:'offline_pin',
+            eventSuccesUndefinedKpi:'remove',
+            averageDurationKpi:'access_time',
+            flowRateKpi:'tune'
+        },
         jobsList:"library_books",
         info:"details",
         alerts:"warning",

@@ -100,7 +100,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         url: "/:feedId/deployed-setup-guide",
         component: SetupGuideSummaryComponent,
         params:{feedId:{type:"string"},
-            loadMode:LoadMode.DEPLOYED, squash: true},
+            loadMode:LoadMode.DEPLOYED,
+            refresh:false},
         resolve: [
             {
                 token: 'stateParams',
@@ -110,6 +111,10 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'loadMode',
                 resolveFn: () => LoadMode.DEPLOYED
+            },
+            {
+                token: 'refresh',
+                resolveFn: () => false
             }
         ]
     },
@@ -149,6 +154,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_SUMMARY_STATE_NAME,
         url: "/:feedId/summary",
         component: FeedSummaryContainerComponent,
+        params: {feedId:{type:"string"},
+                 refresh:false},
         resolve: [
             {
                 token: 'stateParams',

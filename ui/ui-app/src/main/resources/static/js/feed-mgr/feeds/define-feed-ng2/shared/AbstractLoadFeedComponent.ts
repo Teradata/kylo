@@ -26,6 +26,12 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     @Input()
     loadMode?:LoadMode;
 
+    /**
+     * Should the component refresh data from the server
+     */
+    @Input()
+    refresh:boolean;
+
     @Output()
     public feedChange = new EventEmitter<Feed>()
 
@@ -34,6 +40,8 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     private feedEditStateChangeEvent:ISubscription;
 
     private feedLoadedSubscription:ISubscription;
+
+
 
     protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
         this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
@@ -49,6 +57,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     ngOnInit(){
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.loadMode = this.stateParams ? this.stateParams.loadMode : LoadMode.LATEST;
+        this.refresh = this.stateParams ? this.stateParams.refresh : false;
         this.initializeFeed(this.feedId).subscribe((feed:any) => {
             this.init();
         });
@@ -83,9 +92,9 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
 
 
-    private loadFeed(feedId:string) :Observable<Feed>{
+    private loadFeed(feedId:string, refresh:boolean) :Observable<Feed>{
         this.registerLoading();
-      let observable = this.feedLoadingService.loadFeed(feedId, this.loadMode,false);
+      let observable = this.feedLoadingService.loadFeed(feedId, this.loadMode,refresh);
       observable.subscribe((feedModel:Feed) => {
             this.feed = feedModel;
             this._setFeedState();
@@ -125,8 +134,8 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         if(this.feed == undefined) {
             let feed = this.defineFeedService.getFeed();
 
-            if((feed && feedId && (feed.id != feedId || feed.loadMode !=this.loadMode))|| (feed == undefined && feedId != undefined)) {
-               return this.loadFeed(feedId);
+            if((feed && feedId && (this.refresh || (feed.id != feedId || feed.loadMode !=this.loadMode)))|| (feed == undefined && feedId != undefined)) {
+               return this.loadFeed(feedId, this.refresh);
             }
             else if( feed != undefined){
                 this.feed = feed;

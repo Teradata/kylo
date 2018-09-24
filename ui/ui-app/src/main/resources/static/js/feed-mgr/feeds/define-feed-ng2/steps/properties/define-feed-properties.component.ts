@@ -1,4 +1,4 @@
-import {DefineFeedService} from "../../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
@@ -38,16 +38,16 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
 
     init() {
         super.init();
-
-
-
-
-        if(!this.feed.readonly && this.feed.properties.length >0){
-            this.displayEditActions = true;
-        }
+        this.initEditActions();
     }
     destroy(){
 
+    }
+
+    private initEditActions(){
+        if(!this.feed.readonly && this.feed.userProperties.length >0){
+            this.displayEditActions = true;
+        }
     }
 
     ngAfterViewInit(){
@@ -59,6 +59,10 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
                 this.displayEditActions = true;
             }
         });
+    }
+
+    public feedStateChange(event:FeedEditStateChangeEvent){
+        this.initEditActions();
     }
 
     /**
@@ -77,15 +81,25 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
     /**
      * Update the feed model with the form values
      */
-    protected  applyUpdatesToFeed() :(Observable<any>| null){
-        //update the model
-        let formModel = this.formGroup.value;
-
-        if(this.propertyList) {
-            this.propertyList.updateModel();
+    protected  applyUpdatesToFeed() :(Observable<any>| boolean|null){
+        if(this.formGroup.invalid){
+            this.dialogService.openAlert({
+                title:"Validation error",
+                message:"Unable to save the feed properties.  Please fix all form validation errors and try again."
+            });
+            return false;
         }
-        //this.feed. .... = formModel. ...
-        return null;
+        else {
+
+            //update the model
+            let formModel = this.formGroup.value;
+
+            if (this.propertyList) {
+                this.propertyList.updateModel();
+            }
+            //this.feed. .... = formModel. ...
+            return null;
+        }
     }
 
 

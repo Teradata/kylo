@@ -59,7 +59,7 @@ export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
         else {
             redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide";
        }
-        this.stateService.go(redirectState,{feedId:this.feed.id}, {location:'replace'})
+        this.stateService.go(redirectState,{feedId:this.feed.id, refresh:false}, {location:'replace'})
     }
 
     private initializeLinks(){

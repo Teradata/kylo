@@ -32,7 +32,7 @@
         </mat-form-field>
 
         <mat-form-field fxFlex="50" *ngIf="!property.locked">
-          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name">
+          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" required>
           <mat-error *ngIf="hasError(property,'systemName')">
             {{getErrorMessage(property,'systemName')}}
           </mat-error>

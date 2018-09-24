@@ -23,30 +23,30 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     /**
      * The step
      */
-    public step : Step;
+    public step: Step;
 
     /**
      * The name of this step
      * @return {string}
      */
-    public abstract getStepName() :string;
+    public abstract getStepName(): string;
 
     /**
      * flag indicate that the form is valid for this step
      */
-    public formValid:boolean;
+    public formValid: boolean;
 
     /**
      * indicate that this step is subscribing to form changes
      */
-    private subscribingToFormChanges:boolean;
+    private subscribingToFormChanges: boolean;
 
-    private feedEditStateChangeEvent:ISubscription;
+    private feedEditStateChangeEvent: ISubscription;
 
-    protected constructor(protected  defineFeedService:DefineFeedService, protected stateService:StateService,
-                          protected feedLoadingService:FeedLoadingService, protected dialogService: TdDialogService,
-                          protected feedSideNavService:FeedSideNavService) {
-        this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
+    protected constructor(protected  defineFeedService: DefineFeedService, protected stateService: StateService,
+                          protected feedLoadingService: FeedLoadingService, protected dialogService: TdDialogService,
+                          protected feedSideNavService: FeedSideNavService) {
+        this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this._onFeedEditStateChange.bind(this))
     }
 
     /**
@@ -62,21 +62,22 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      *  Component is getting destroyed.
      *  Call any callbacks
      */
-    ngOnDestroy(){
+    ngOnDestroy() {
         try {
-            if(this.feedEditStateChangeEvent){
+            if (this.feedEditStateChangeEvent) {
                 this.feedEditStateChangeEvent.unsubscribe();
             }
             this.destroy();
-        }catch(err){
-            console.error("error in destroy",err);
+        } catch (err) {
+            console.error("error in destroy", err);
         }
     }
 
-    onFeedEditStateChange(event:FeedEditStateChangeEvent){
-        console.log("FEED STATE CHANGED!!!!",event)
+    private _onFeedEditStateChange(event: FeedEditStateChangeEvent) {
+        console.log("FEED STATE CHANGED!!!!", event)
         this.feed.readonly = event.readonly;
         this.feed.accessControl = event.accessControl;
+        this.feedStateChange(event);
     }
 
     /**
@@ -84,7 +85,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * @param {FormGroup} formGroup
      * @param {number} debounceTime
      */
-    subscribeToFormChanges(formGroup:AbstractControl, debounceTime:number = 500) {
+    subscribeToFormChanges(formGroup: AbstractControl, debounceTime: number = 500) {
         this.subscribingToFormChanges = true;
         // initialize stream
         const formValueChanges$ = formGroup.statusChanges;
@@ -100,46 +101,52 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     }
 
-    subscribeToFormDirtyCheck(formGroup:AbstractControl,debounceTime:number = 500){
+    subscribeToFormDirtyCheck(formGroup: AbstractControl, debounceTime: number = 500) {
         //watch for form changes and mark dirty
-            //start watching for form changes after init time
-            formGroup.valueChanges.debounceTime(debounceTime).subscribe(change => {
-                this.onFormChanged(change);
-            });
+        //start watching for form changes after init time
+        formGroup.valueChanges.debounceTime(debounceTime).subscribe(change => {
+            this.onFormChanged(change);
+        });
     }
 
 
+    /**
+     * When a feed changes from read only to edit
+     * @param {FeedEditStateChangeEvent} event
+     */
+    public feedStateChange(event: FeedEditStateChangeEvent) {
 
+    }
 
 
     /**
      * Initialize the component
      */
-    public init(){
+    public init() {
 
     }
 
     /**
      * called when the user moves away from this step
      */
-    public destroy(){
+    public destroy() {
 
     }
 
     /**
      * Callback when a form changes state
      */
-    public onFormChanged(change:any){
-        console.log('FORM CHANGED ',change)
-       if(!this.feed.readonly){
-           this.step.markDirty();
-       }
+    public onFormChanged(change: any) {
+        console.log('FORM CHANGED ', change)
+        if (!this.feed.readonly) {
+            this.step.markDirty();
+        }
     }
 
     /**
      * Callback when a form changes state
      */
-    public onFormStatusChanged(valid:boolean){
+    public onFormStatusChanged(valid: boolean) {
         this.step.setComplete(valid);
     }
 
@@ -147,14 +154,14 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * Override and return a template ref that will be displayed and used in the toolbar
      * @return {TemplateRef<any>}
      */
-    getToolbarTemplateRef():TemplateRef<any> {
+    getToolbarTemplateRef(): TemplateRef<any> {
         return undefined;
     }
 
     /**
      * Called before save to apply updates to the feed model
      */
-    protected applyUpdatesToFeed():(Observable<any>| null){
+    protected applyUpdatesToFeed(): (Observable<any> | boolean | null) {
         return null;
     }
 
@@ -163,12 +170,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    protected cancelFeedEdit(){
+    protected cancelFeedEdit() {
         //get the old feed
         this.defineFeedService.markFeedAsReadonly();
         this.feed = this.defineFeedService.getFeed();
     }
-
 
 
     registerLoading(): void {
@@ -180,36 +186,35 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
 
-
-
-
-
-    onSave(){
+    onSave() {
         this.registerLoading();
 
         let saveCall = () => {
             //notify the subscribers on the actual save call so they can listen when the save finishes
-            this.defineFeedService.saveFeed(this.feed).subscribe((response:SaveFeedResponse) => {
-                this.defineFeedService.openSnackBar("Saved the feed ",3000);
+            this.defineFeedService.saveFeed(this.feed).subscribe((response: SaveFeedResponse) => {
+                this.defineFeedService.openSnackBar("Saved the feed ", 3000);
                 this.resolveLoading();
             }, error1 => {
                 this.resolveLoading()
-                this.defineFeedService.openSnackBar("Error saving the feed ",3000);
+                this.defineFeedService.openSnackBar("Error saving the feed ", 3000);
             })
         }
 
-      let updates =  this.applyUpdatesToFeed();
-      if(updates && updates instanceof Observable){
-          updates.subscribe((response:any) => {
-              saveCall();
-          })
-      }
-      else {
-          saveCall();
-      }
+        let updates = this.applyUpdatesToFeed();
+        if (updates == false) {
+            //no op.  errors applying update
+            this.resolveLoading();
+        }
+        else if (updates && updates instanceof Observable) {
+            updates.subscribe((response: any) => {
+                saveCall();
+            })
+        }
+        else {
+            saveCall();
+        }
 
     }
-
 
 
     /**
@@ -227,7 +232,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
                 width: '500px', //OPTIONAL, defaults to 400px
             }).afterClosed().subscribe((accept: boolean) => {
                 if (accept) {
-                        this.cancelFeedEdit();
+                    this.cancelFeedEdit();
                 } else {
                     // DO SOMETHING ELSE
                 }
@@ -242,37 +247,37 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * is the user allowed to leave this component and transition to a new state?
      * @return {boolean}
      */
-    uiCanExit(newTransition: Transition) :(Promise<any> | boolean) {
-        return this.defineFeedService.uiCanExit(this.step,newTransition)
+    uiCanExit(newTransition: Transition): (Promise<any> | boolean) {
+        return this.defineFeedService.uiCanExit(this.step, newTransition)
     }
 
 
-    protected initData(){
+    protected initData() {
 
 
-        if(this.feed == undefined) {
+        if (this.feed == undefined) {
             this.feed = this.defineFeedService.getFeed();
             if (this.feed == undefined) {
-                this.stateService.go(FEED_DEFINITION_STATE_NAME+ ".select-template")
+                this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
             }
         }
-            this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
-            if (this.step) {
-                this.step.dirty=false;
-                this.step.visited = true;
-                //register any custom toolbar actions
-                let toolbarActionTemplate = this.getToolbarTemplateRef();
-                if(toolbarActionTemplate) {
-                    this.feedSideNavService.registerStepToolbarActionTemplate(this.step.name, toolbarActionTemplate)
-                }
-                this.defineFeedService.setCurrentStep(this.step)
+        this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
+        if (this.step) {
+            this.step.dirty = false;
+            this.step.visited = true;
+            //register any custom toolbar actions
+            let toolbarActionTemplate = this.getToolbarTemplateRef();
+            if (toolbarActionTemplate) {
+                this.feedSideNavService.registerStepToolbarActionTemplate(this.step.name, toolbarActionTemplate)
             }
-            else {
-                //ERROR OUT
-            }
+            this.defineFeedService.setCurrentStep(this.step)
+            let valid = this.feed.validate(true);
+        }
+        else {
+            //ERROR OUT
+        }
 
     }
-
 
 
 }

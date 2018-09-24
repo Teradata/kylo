@@ -122,7 +122,7 @@ export class StateService {
         }
 
         data.navigateToFeedDefinition = (feedId:string) => {
-            this.$state.go(FEED_DEFINITION_SUMMARY_STATE_NAME,{feedId:feedId});
+            this.$state.go(FEED_DEFINITION_SUMMARY_STATE_NAME,{feedId:feedId, refresh:true});
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {
