@@ -100,7 +100,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.defineFeedService.deployFeed(this.feed).subscribe((response:any) =>{
             if(response){
                let  redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity";
-                this.stateService.go(redirectState,{feedId:this.feed.id}, {location:'replace'})
+                this.stateService.go(redirectState,{feedId:this.feed.id,refresh:true}, {location:'replace'})
             }
         })
     }
