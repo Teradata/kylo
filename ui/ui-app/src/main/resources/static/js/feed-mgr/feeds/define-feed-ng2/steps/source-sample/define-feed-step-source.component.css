@@ -10,3 +10,7 @@
 ::ng-deep dataset-preview-stepper  .mat-horizontal-stepper-header {
   height:32px !important;
 }
+
+.mat-form-field-width {
+  width:800px;
+}
