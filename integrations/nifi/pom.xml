@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-integrations</artifactId>
-    <version>0.9.1.2</version>
+    <version>0.9.1.3-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>

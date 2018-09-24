@@ -2,7 +2,7 @@
 var systemLocate = System.locate;
 System.locate = function (load) {
     return Promise.resolve(systemLocate.call(this, load)).then(function (address) {
-        return address + "?ver=0.9.1-2"
+        return address + "?ver=0.9.1-3-SNAPSHOT"
     });
 };
 

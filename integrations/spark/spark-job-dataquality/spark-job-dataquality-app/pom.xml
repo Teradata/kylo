@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-job-dataquality</artifactId>
-    <version>0.9.1.2</version>
+    <version>0.9.1.3-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-spark-job-dataquality-app</artifactId>
 
