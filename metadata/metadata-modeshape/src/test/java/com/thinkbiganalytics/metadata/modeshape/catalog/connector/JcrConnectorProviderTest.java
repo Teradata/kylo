@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
@@ -35,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 
 import org.assertj.core.groups.Tuple;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +76,12 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
         @Primary
         public Resource repositoryConfigurationResource() {
             return new ClassPathResource("/JcrConnectorProviderTest-metadata-repository.json");
+        }
+        
+        @Bean
+        @Primary
+        public ConnectorPluginManager mockConnectorPluginManager() {
+            return Mockito.mock(ConnectorPluginManager.class);
         }
     }
 
@@ -117,7 +125,7 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
             Optional<Connector> conn = this.connectorProvider.findByPlugin("plugin1");
             
             assertThat(conn).isNotNull().isPresent();
-            assertThat(conn.get()).extracting("pluginId", "systemName", "title", "description").contains("plugin1", "Test1 Conn", "Test description 1");
+            assertThat(conn.get()).extracting("pluginId", "systemName", "title", "description").contains("plugin1", "test_1_connector", "Test 1 Connector", "Test description 1");
         }, MetadataAccess.SERVICE);
     }
     
@@ -153,8 +161,7 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
     }
     
     protected Connector createConnector(String tag) {
-        Connector conn1 = this.connectorProvider.create("plugin" + tag, "test" + tag + "_conn");
-        conn1.setTitle("Test" + tag + " Conn");
+        Connector conn1 = this.connectorProvider.create("plugin" + tag, "Test " + tag + " Connector");
         conn1.setDescription("Test description " + tag);
         return conn1;
     }
@@ -164,6 +171,8 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
     }
     
     protected Tuple connectorTuple(String tag) {
-        return tuple("plugin" + tag, "test" + tag + "_conn", "Test" + tag + " Conn", "Test description " + tag);
+        String title = "Test " + tag + " Connector";
+        String sysName = title.replaceAll("\\s+", "_").toLowerCase();
+        return tuple("plugin" + tag, sysName, title, "Test description " + tag);
     }
 }

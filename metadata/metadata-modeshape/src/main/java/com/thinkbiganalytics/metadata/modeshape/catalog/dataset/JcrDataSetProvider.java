@@ -79,7 +79,9 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
                         throw DataSetAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
-                        return JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
+                        JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
+                        ds.setTitle(title);
+                        return ds;
                     } 
                 })
                 .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));

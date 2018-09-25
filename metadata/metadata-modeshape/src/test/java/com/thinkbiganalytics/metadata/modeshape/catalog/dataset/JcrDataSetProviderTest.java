@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
@@ -39,6 +40,7 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 
 import org.assertj.core.groups.Tuple;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,6 +88,12 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
         @Primary
         public Resource repositoryConfigurationResource() {
             return new ClassPathResource("/JcrDataSetProviderTest-metadata-repository.json");
+        }
+        
+        @Bean
+        @Primary
+        public ConnectorPluginManager mockConnectorPluginManager() {
+            return Mockito.mock(ConnectorPluginManager.class);
         }
     }
 
@@ -189,13 +197,14 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
 
     
     protected DataSet createDataSet(DataSource.ID srcId, int tag) {
-        DataSet set = this.dataSetProvider.create(srcId, "dset" + tag);
-        set.setTitle("Test " + tag + " Data Set");
+        DataSet set = this.dataSetProvider.create(srcId, "Test " + tag + " Data Set");
         set.setDescription("Test description " + tag);
         return set;
     }
     
     protected Tuple dataSetTuple(int tag) {
-        return tuple("dset" + tag, "Test " + tag + " Data Set", "Test description " + tag);
+        String title = "Test " + tag + " Data Set";
+        String sysName = title.replaceAll("\\s+", "_").toLowerCase();
+        return tuple(sysName, title, "Test description " + tag);
     }
 }

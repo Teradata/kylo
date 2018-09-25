@@ -77,7 +77,9 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
                         throw DataSourceAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
-                        return JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                        JcrDataSource dsrc = JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                        dsrc.setTitle(title);
+                        return dsrc;
                     } 
                 })
                 .orElseThrow(() -> new ConnectorNotFoundException(connId));

@@ -67,7 +67,9 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
             throw ConnectorAlreadyExistsException.fromSystemName(systemName);
         } else {
             Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
-            return JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
+            JcrConnector conn = JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
+            conn.setTitle(title);
+            return conn;
         }
     }
     

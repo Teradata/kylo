@@ -87,6 +87,7 @@ public class ConnectorPluginDescriptor {
      */
     public ConnectorPluginDescriptor(@Nonnull final ConnectorPluginDescriptor other) {
         this.pluginId = other.pluginId;
+        this.title = other.title;
         this.dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         this.optionsMapperId = other.optionsMapperId;
         this.nifiControllerService = (other.nifiControllerService != null) ? new ConnectorPluginNiFiControllerService(other.nifiControllerService) : null;
