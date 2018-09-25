@@ -75,9 +75,25 @@
     },
     "nifiProperties": [
       {
-        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object", "org.apache.nifi.processors.aws.sqs.GetSQS", "org.apache.nifi.processors.aws.s3.ListS3"],
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}",
+          "Bucket": "{{ paths[0].match('s3\\\\w*:\\\\/+([^/]+)')[1] }}",
+          "Object Key": "{{ paths[0].match('s3\\\\w*:\\\\/+[^/]+\\\\/(.*)')[1] }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.sqs.GetSQS"],
         "properties": {
           "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.ListS3"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}",
+          "Bucket": "{{ paths[0].match('s3\\\\w*:\\\\/+([^/]+)')[1] }}",
+          "prefix": "{{ paths[0].match('s3\\\\w*:\\\\/+[^/]+\\\\/(.*)')[1] }}"
         }
       }
     ]
