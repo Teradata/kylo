@@ -22,6 +22,7 @@ import {FeedFieldPolicyRulesDialogComponent} from "../feed-field-policy-rules/fe
 import {KyloCommonModule} from "../../../common/common.module";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatButtonModule} from "@angular/material/button";
+import {DndListModule} from "ngx-drag-and-drop-lists";
 
 @NgModule({
     declarations: [
@@ -34,6 +35,7 @@ import {MatButtonModule} from "@angular/material/button";
     ],
     imports: [
         CommonModule,
+        DndListModule,
         KyloCommonModule,
         DynamicFormModule,
         FlexLayoutModule,

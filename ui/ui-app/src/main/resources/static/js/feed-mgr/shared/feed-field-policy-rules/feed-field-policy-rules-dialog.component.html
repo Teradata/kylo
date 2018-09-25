@@ -22,28 +22,30 @@
 <mat-dialog-content>
 
     <div *ngIf="policyRules != null && policyRules.length >0 ">
-        <ul dnd-list="policyRules" class="simple-dnd-list">
-        <ng-template ngFor let-rule let-$index="index" let-last="last" [ngForOf]="policyRules">
+        <ul dnd-list
+            [dndList]
+            [dndModel]="policyRules" class="simple-dnd-list">
                 <li
-                    dnd-draggable="rule"
-                    dnd-moved="onMovedPolicyRule($index)"
-                    dnd-effect-allowed="move">
+                    *ngFor="let rule of policyRules; let i = index"
+                    [dndDraggable]
+                    [dndType]="'rule'"
+                    [dndObject]="rule"
+                    (dndMoved)="onMovedPolicyRule(rule, policyRules)">
                     <div fxLayout="row" fxLayoutAlign="start">
                         <div fxLayout="column" fxFlex>
-                            <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
+                            <span class="md-list-item-text">{{i+1}}. {{rule.name}}</span>
                             <span class="md-list-item-text hint">{{rule.type}}</span>
                         </div>
                         <div fxLayout="row">
-                            <button mat-icon-button  (click)="editPolicy($index,rule)">
+                            <button mat-icon-button  (click)="editPolicy(i,rule)">
                                 <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
                             </button>
-                            <button mat-icon-button  (click)="deletePolicy($index)">
+                            <button mat-icon-button  (click)="deletePolicy(i)">
                                 <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
                             </button>
                         </div>
                     </div>
                 </li>
-        </ng-template>
         </ul>
     </div>
         <!-- if loading -->

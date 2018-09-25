@@ -197,13 +197,12 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      * When a policy is reordered
      * @param $index
      */
-    onMovedPolicyRule($index: any) {
-        this.policyRules.splice($index, 1);
+    onMovedPolicyRule(r: any, list: any[]) {
+        list.splice(list.indexOf(r), 1);
         this.moved = true;
         this.pendingEdits = true;
         //resequence
         this.policyRules.forEach((rule:any,index:number) =>rule.sequence = index);
-
     }
 
 
