@@ -590,7 +590,7 @@ public class SparkShellProxyController {
                   })
     public Response fileMetadata(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         TransformRequest request = new TransformRequest();
-        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(dataSet).orElseGet(Collections::emptyList)));
+        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(dataSet).orElseGet(Collections::emptyList), DataSetUtil.mergeTemplates(dataSet).getOptions()));
 
         final SparkShellProcess process = getSparkShellProcess();
         return getModifiedTransformResponse(() -> Optional.of(restClient.transform(process, request)), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));

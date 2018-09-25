@@ -2,7 +2,7 @@ import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../../api/models/browser-object';
 import {Node} from '../../api/models/node';
-import {Component, Input} from "@angular/core";
+import {Component} from "@angular/core";
 
 @Component({
     selector: "catalog-file-browser",
@@ -15,7 +15,7 @@ export class RemoteFilesComponent extends BrowserComponent {
 
     init(): void {
         if (this.params.path === undefined) { //e.g. when navigating from Catalog into Files
-            this.params.path = this.datasource.template.paths[0];
+            this.params.path = (this.datasource.template && this.datasource.template.paths) ? this.datasource.template.paths[0] : this.datasource.connector.template.paths[0];
             if(this.useRouterStates) {
                 this.browseTo(this.params, "replace");
             }
@@ -30,7 +30,7 @@ export class RemoteFilesComponent extends BrowserComponent {
 
 
     createRootNode(): Node {
-        const rootPath = this.datasource.template.paths[0];
+        const rootPath = (this.datasource.template && this.datasource.template.paths) ? this.datasource.template.paths[0] : this.datasource.connector.template.paths[0];
         const root = new Node(rootPath);
         root.setBrowserObject(new RemoteFile(rootPath, rootPath, false, 0, new Date()));
         return root;
