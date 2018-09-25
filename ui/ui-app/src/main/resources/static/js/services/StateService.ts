@@ -133,6 +133,10 @@ export class StateService {
             this.$state.go('define-feed', {templateId: templateId});
         }
 
+        data.navigateToNewFeed = (templateId: any) => {
+            this.$state.go(FEED_DEFINITION_STATE_NAME, {templateId: templateId});
+        }
+
         data.navigateToCloneFeed = (feedName: any) => {
             this.$state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
         }

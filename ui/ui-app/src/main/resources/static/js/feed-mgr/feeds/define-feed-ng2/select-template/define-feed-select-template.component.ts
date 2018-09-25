@@ -114,7 +114,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
         this.displayMoreLink = false;
 
         let sideNavService = $$angularInjector.get("SideNavService");
-        sideNavService.showSideNav();
+        sideNavService.hideSideNav();
 
         //TODO change with Entity Access Control!
         this.allowImport = true;
