@@ -274,11 +274,11 @@ public class LivyRestModelTransformer {
                         ObjectNode fieldDescriptors = (ObjectNode) fieldsIter.next();
                         if (fieldDescriptors.get("name").asText().equals("values")) {
                             ObjectNode fdObj = (ObjectNode) fieldDescriptors.get("type");
-                            StringBuilder sb = new StringBuilder(fdObj.get("type").asText());
-                            sb.append("<");
-                            sb.append(fdObj.get("elementType").asText());
-                            sb.append(">");
-                            return sb.toString();
+                            return new StringBuilder(fdObj.get("type").asText())
+                                .append("<")
+                                .append(fdObj.get("elementType").asText())
+                                .append(">")
+                                .toString();
                         }
                     }
                     return "Unknown UDT";
@@ -291,13 +291,13 @@ public class LivyRestModelTransformer {
                     } // end if
                 } // end if
             } else if (type.equals("map")) {
-                StringBuilder sb = new StringBuilder(dataType.get("type").asText());
-                sb.append("<");
-                sb.append(dataType.get("keyType").asText());
-                sb.append(",");
-                sb.append(dataType.get("valueType").asText());
-                sb.append(">");
-                return sb.toString();
+                return new StringBuilder(dataType.get("type").asText())
+                    .append("<")
+                    .append(dataType.get("keyType").asText())
+                    .append(",")
+                    .append(dataType.get("valueType").asText())
+                    .append(">")
+                    .toString();
             } else if (type.equals("struct")) {
                 ArrayNode fields = (ArrayNode) dataType.get("fields");
                 Iterator<JsonNode> nodes = fields.elements();
@@ -307,10 +307,10 @@ public class LivyRestModelTransformer {
                     ObjectNode node = (ObjectNode) nodes.next();
                     String sfName = node.get("name").asText();
                     String sfType = node.get("type").asText();
-                    sb.append(sfName);
-                    sb.append(":");
-                    sb.append(sfType);
-                    sb.append(",");
+                    sb.append(sfName)
+                        .append(":")
+                        .append(sfType)
+                        .append(",");
                 }
                 sb.deleteCharAt(sb.length() - 1);
                 return sb.toString();
@@ -357,7 +357,7 @@ public class LivyRestModelTransformer {
         }
 
         SaveResponse saveResponse = serializeStatementOutputResponse(sor, SaveResponse.class);
-        if( saveResponse.getStatus() == SaveResponse.Status.ERROR ) {
+        if (saveResponse.getStatus() == SaveResponse.Status.ERROR) {
             throw new SparkLivySaveException(saveResponse.getMessage(), saveResponse.getId());
         }
         return saveResponse;
@@ -394,13 +394,13 @@ public class LivyRestModelTransformer {
         return serializeStatementOutputResponse(sor, URI.class);
     }
 
-    public static ServerStatusResponse toServerStatusResponse( LivyServer livyServer, Integer sessionId ) {
+    public static ServerStatusResponse toServerStatusResponse(LivyServer livyServer, Integer sessionId) {
         LivyServerStatus livyServerStatus = livyServer.getLivyServerStatus();
         LivySessionStatus livySessionStatus = null;
         SessionState sessionState = livyServer.getLivySessionState(sessionId);
-        if( sessionState == null ) {
+        if (sessionState == null) {
             // don't know about session, could compare id to high water to see if dropped
-            if( sessionId <= livyServer.getSessionIdHighWaterMark() ) {
+            if (sessionId <= livyServer.getSessionIdHighWaterMark()) {
                 livySessionStatus = LivySessionStatus.completed;
             } else {
                 throw new WebApplicationException("No session with that id was created on the server", 404);
@@ -409,7 +409,7 @@ public class LivyRestModelTransformer {
             livySessionStatus = LivySessionStatus.completed;
         } else if (SessionState.READY_STATES.contains(sessionState)) {
             livySessionStatus = LivySessionStatus.ready;
-        } else if( livyServerStatus == LivyServerStatus.http_error ) {
+        } else if (livyServerStatus == LivyServerStatus.http_error) {
             livySessionStatus = LivySessionStatus.http_error;
         }
 
@@ -417,7 +417,7 @@ public class LivyRestModelTransformer {
 
         ServerStatusResponse.SessionStatus sessionStatus = ServerStatusResponse.SessionStatus.valueOf(livySessionStatus.toString());
 
-        return ServerStatusResponse.newInstance(serverStatus,sessionId.toString(),sessionStatus);
+        return ServerStatusResponse.newInstance(serverStatus, sessionId.toString(), sessionStatus);
     }
 
 
@@ -427,6 +427,7 @@ public class LivyRestModelTransformer {
         tqr.setRows(Lists.newArrayList());
         return tqr;
     }
+
     private static <T extends Object> T serializeStatementOutputResponse(StatementOutputResponse sor, Class<T> clazz) {
         String errMsg = String.format("Unable to deserialize %s returned from Livy", clazz.getSimpleName());
 

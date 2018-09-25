@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,12 +30,13 @@ import java.util.Map;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SessionsPost {
+
     private String kind;
     private String proxyUser;
-    private Map<String,String> conf;
+    private Map<String, String> conf;
     private List<String> jars;
 
-    SessionsPost(SessionsPost.Builder sgb ) {
+    SessionsPost(SessionsPost.Builder sgb) {
         this.kind = sgb.kind;
         this.proxyUser = sgb.proxyUser;
         this.conf = sgb.conf;
@@ -60,19 +61,20 @@ public class SessionsPost {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SessionsPost{");
-        sb.append("kind='").append(kind).append('\'');
-        sb.append(", proxyUser='").append(proxyUser).append('\'');
-        sb.append(", conf=").append(conf);
-        sb.append(", jars=").append(jars);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("SessionsPost{")
+            .append("kind='").append(kind).append('\'')
+            .append(", proxyUser='").append(proxyUser).append('\'')
+            .append(", conf=").append(conf)
+            .append(", jars=").append(jars)
+            .append('}')
+            .toString();
     }
 
     public static class Builder {
+
         private String kind;
         private String proxyUser;
-        private Map<String,String> conf;
+        private Map<String, String> conf;
         private List<String> jars;
 
         public Builder kind(String kind) {

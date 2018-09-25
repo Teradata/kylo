@@ -64,10 +64,10 @@ public class ScalaScriptService {
         }
 
         // Generate script for Livy
-        livyScript.append(script).append('\n')
+        return livyScript.append(script).append('\n')
             .append("var result = mapper.writeValueAsString(").append(lastLine).append(")\n")
-            .append("%json result");
-        return livyScript.toString();
+            .append("%json result")
+            .toString();
     }
 
     /**
@@ -97,12 +97,10 @@ public class ScalaScriptService {
         script = dfPattern.matcher(script).replaceAll("df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
         script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
 
-        sb.append(wrapScriptWithPaging(script, request.getPageSpec()));
-
-        sb.append("val dfRowsAsJson = mapper.writeValueAsString(dfRows)\n");
-        sb.append("%json dfRowsAsJson\n");
-
-        return sb.toString();
+        return sb.append(wrapScriptWithPaging(script, request.getPageSpec()))
+            .append("val dfRowsAsJson = mapper.writeValueAsString(dfRows)\n")
+            .append("%json dfRowsAsJson\n")
+            .toString();
     }
 
     /**

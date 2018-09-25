@@ -230,7 +230,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
 
     private Session startLivySession(SparkLivyProcess sparkLivyProcess) {
-
         sparkLivyProcess.newSession();  // it was determined we needed a
 
         JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
@@ -264,6 +263,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         } catch (LivyException le) {
             throw le;
         } catch (Exception e) {
+            sparkLivyProcess.startFailed();  // resets the latch
+            this.processStopped(sparkLivyProcess);
             // NOTE: you can get "javax.ws.rs.ProcessingException: java.io.IOException: Error writing to server" on Ubuntu see: https://stackoverflow.com/a/39718929/154461
             throw new LivyException(e);
         }

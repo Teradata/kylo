@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.thinkbiganalytics.kylo.spark.model.enums.StatementOutputStatus;
 
 public class StatementOutputResponse {
+
     private StatementOutputStatus status;
     private Integer execution_count;
     private JsonNode data;
@@ -67,19 +68,20 @@ public class StatementOutputResponse {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("StatementOutputResponse{");
-        sb.append("status='").append(status).append('\'');
-        sb.append(", execution_count=").append(execution_count);
-        sb.append(", data=").append(data);
-        sb.append(", ename='").append(ename).append('\'');
-        sb.append(", evalue='").append(evalue).append('\'');
-        sb.append(", traceback=").append(traceback);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("StatementOutputResponse{")
+            .append("status='").append(status).append('\'')
+            .append(", execution_count=").append(execution_count)
+            .append(", data=").append(data)
+            .append(", ename='").append(ename).append('\'')
+            .append(", evalue='").append(evalue).append('\'')
+            .append(", traceback=").append(traceback)
+            .append('}')
+            .toString();
     }
 
     // response objects don't typically utilize a builder, unless in tests
     public static class Builder {
+
         private StatementOutputStatus status;
         private Integer execution_count;
         private JsonNode data;

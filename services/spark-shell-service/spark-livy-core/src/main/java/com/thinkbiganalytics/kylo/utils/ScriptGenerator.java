@@ -54,11 +54,10 @@ public class ScriptGenerator {
         post = post == null ? "" : post;
 
         // TODO: store in a dedent'ing map, rather than trim here
-        StringBuilder sb = new StringBuilder(pre);
-        sb.append(String.format(scriptRegistry.get(name).trim(), args));
-        sb.append(post).toString();
+        String script = new StringBuilder(pre)
+            .append(String.format(scriptRegistry.get(name).trim(), args))
+            .append(post).toString();
 
-        String script = sb.toString();
         logger.debug("Constructed script with name='{}' as '{}'", name, script);
 
         return script;

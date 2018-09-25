@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.spark.model;
 import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 
 public class Statement {
+
     private Integer id;
     private String code;
     private StatementState state;
@@ -30,9 +31,10 @@ public class Statement {
     private Double progress;
 
     // default constructor
-    public Statement() {}
+    public Statement() {
+    }
 
-    public Statement(Builder sprb ) {
+    public Statement(Builder sprb) {
         this.id = sprb.id;
         this.code = sprb.code;
         this.state = sprb.state;
@@ -62,17 +64,18 @@ public class Statement {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Statement{");
-        sb.append("id=").append(id);
-        sb.append(", code='").append(code).append('\'');
-        sb.append(", state='").append(state).append('\'');
-        sb.append(", output=").append(output);
-        sb.append(", progress=").append(progress);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("Statement{")
+            .append("id=").append(id)
+            .append(", code='").append(code).append('\'')
+            .append(", state='").append(state).append('\'')
+            .append(", output=").append(output)
+            .append(", progress=").append(progress)
+            .append('}')
+            .toString();
     }
 
     public static class Builder {
+
         private Integer id;
         private String code;
         private StatementState state;

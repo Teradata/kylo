@@ -299,26 +299,26 @@ public class LivyProperties {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("LivyProperties{");
-        sb.append("hostname='").append(hostname).append('\'');
-        sb.append(", port=").append(port);
-        sb.append(", proxyUser=").append(proxyUser);
-        sb.append(", truststorePath='").append(truststorePath).append('\'');
-        sb.append(", truststorePassword=").append("XXXXXXX");
-        sb.append(", truststoreType='").append(truststoreType).append('\'');
-        sb.append(", livySessionKind=").append(livySessionKind);
-        sb.append(", monitorLivy=").append(monitorLivy);
-        sb.append(", heartbeatInterval=").append(heartbeatInterval);
-        sb.append(", pollingInterval=").append(pollingInterval);
-        sb.append(", pollingLimit=").append(pollingLimit);
-        sb.append(", triesUntilNotFound=").append(triesUntilNotFound);
-        sb.append(", delayCheckOnFail=").append(delayCheckOnFail);
-        sb.append(", maxDelayCheckOnFail=").append(maxDelayCheckOnFail);
-        sb.append(", waitForStart=").append(waitForStart);
-        sb.append(", sparkProperties=").append(sparkProperties);
-        sb.append(", env=").append(env);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("LivyProperties{")
+            .append("hostname='").append(hostname).append('\'')
+            .append(", port=").append(port)
+            .append(", proxyUser=").append(proxyUser)
+            .append(", truststorePath='").append(truststorePath).append('\'')
+            .append(", truststorePassword=").append("XXXXXXX")
+            .append(", truststoreType='").append(truststoreType).append('\'')
+            .append(", livySessionKind=").append(livySessionKind)
+            .append(", monitorLivy=").append(monitorLivy)
+            .append(", heartbeatInterval=").append(heartbeatInterval)
+            .append(", pollingInterval=").append(pollingInterval)
+            .append(", pollingLimit=").append(pollingLimit)
+            .append(", triesUntilNotFound=").append(triesUntilNotFound)
+            .append(", delayCheckOnFail=").append(delayCheckOnFail)
+            .append(", maxDelayCheckOnFail=").append(maxDelayCheckOnFail)
+            .append(", waitForStart=").append(waitForStart)
+            .append(", sparkProperties=").append(sparkProperties)
+            .append(", env=").append(env)
+            .append('}')
+            .toString();
     }
 
 

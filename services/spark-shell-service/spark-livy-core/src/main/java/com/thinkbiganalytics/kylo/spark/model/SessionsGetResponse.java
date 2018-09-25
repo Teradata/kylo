@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class SessionsGetResponse {
+
     private Integer from;
     private Integer total;
     private List<Session> sessions;
@@ -52,20 +53,21 @@ public class SessionsGetResponse {
 
     public Optional<Session> getSessionWithId(Integer id) {
         return sessions.stream().
-                filter(session -> session.getId().equals(id)).findFirst();
+            filter(session -> session.getId().equals(id)).findFirst();
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SessionsGetResponse{");
-        sb.append("from=").append(from);
-        sb.append(", total=").append(total);
-        sb.append(", sessions=").append(sessions);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("SessionsGetResponse{")
+            .append("from=").append(from)
+            .append(", total=").append(total)
+            .append(", sessions=").append(sessions)
+            .append('}')
+            .toString();
     }
 
     public static class Builder {
+
         private Integer from;
         private Integer total;
         private List<Session> sessions;

@@ -24,6 +24,8 @@ import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
 import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyInvalidSessionException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
@@ -75,6 +77,9 @@ public class DefaultLivyClient implements LivyClient {
                 livyServer.setLivyServerStatus(LivyServerStatus.http_error);
             }
             throw wae;
+        } catch (LivyException le) {
+            livyServer.setLivyServerStatus(LivyServerStatus.http_error);
+            throw le;
         }
     }
 
@@ -92,6 +97,9 @@ public class DefaultLivyClient implements LivyClient {
                 livyServer.setLivyServerStatus(LivyServerStatus.http_error);
             }
             throw wae;
+        } catch (LivyException le) {
+            livyServer.setLivyServerStatus(LivyServerStatus.http_error);
+            throw le;
         }
     }
 
@@ -107,6 +115,9 @@ public class DefaultLivyClient implements LivyClient {
                 livyServer.setLivyServerStatus(LivyServerStatus.http_error);
             }
             throw wae;
+        } catch (LivyException le) {
+            livyServer.setLivyServerStatus(LivyServerStatus.http_error);
+            throw le;
         }
     }
 
@@ -124,6 +135,9 @@ public class DefaultLivyClient implements LivyClient {
                 livyServer.setLivyServerStatus(LivyServerStatus.http_error);
             }
             throw wae;
+        } catch (LivyException le) {
+            livyServer.setLivyServerStatus(LivyServerStatus.http_error);
+            throw le;
         }
     }
 
@@ -150,15 +164,17 @@ public class DefaultLivyClient implements LivyClient {
 
     @Override
     public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId) {
-        return pollStatement(jerseyClient,sparkLivyProcess,stmtId,null);
+        return pollStatement(jerseyClient, sparkLivyProcess, stmtId, null);
     }
 
 
     @Override
     public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait) {
+        logger.entry(jerseyClient,sparkLivyProcess,stmtId,wait);
+
         long stopPolling = Long.MAX_VALUE;
         long startMillis = System.currentTimeMillis();
-        if( wait != null ) {
+        if (wait != null) {
             // Limit the amount of time we will poll for a statement to complete.
             stopPolling = startMillis + livyProperties.getPollingLimit();
         }
@@ -166,46 +182,53 @@ public class DefaultLivyClient implements LivyClient {
         Statement statement;
         int pollCount = 1;
         do {
-            statement = getStatement( jerseyClient, sparkLivyProcess, stmtId );
+            statement = getStatement(jerseyClient, sparkLivyProcess, stmtId);
 
-            if( statement.getState().equals(StatementState.error)) {
+            if (statement.getState().equals(StatementState.error)) {
                 // TODO: what about cancelled? or cancelling?
-                throw new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'");
+                throw logger.throwing(new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'"));
             }
 
-            if( System.currentTimeMillis() > stopPolling || statement.getState().equals(StatementState.available) ) {
+            if (System.currentTimeMillis() > stopPolling || statement.getState().equals(StatementState.available)) {
                 break;
             }
 
-            logger.info("Statement was not ready, polling now with attempt '{}'", pollCount++);
+            logger.trace("Statement was not ready, polling now with attempt '{}'", pollCount++);
             // statement not ready, wait for some time...
             try {
                 Thread.sleep(livyProperties.getPollingInterval());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error( "Thread interrupted while polling Livy", e );
             }
         } while (true);
 
-        // TODO: replace with XLogger
-        logger.info("exit DefaultLivyClient poll statement in '{}' millis ", System.currentTimeMillis() - startMillis);
-        return statement;
+        logger.debug("exit DefaultLivyClient poll statement in '{}' millis, after '{}' attempts ", System.currentTimeMillis() - startMillis, pollCount );
+        return logger.exit(statement);
     }
 
     private final static String SESSIONS_URL = "/sessions";
 
     private String SESSION_URL(Integer sessionId) {
+        if (sessionId == null) {
+            throw new LivyInvalidSessionException("sessionId cannot be null");
+        }
         Validate.notNull(sessionId, "sessionId cannot be null");
         return String.format("/sessions/%s", sessionId);
     }
 
     private String STATEMENT_URL(Integer sessionId, Integer statementId) {
+        if (sessionId == null) {
+            throw new LivyInvalidSessionException("sessionId cannot be null");
+        }
         Validate.notNull(sessionId, "sessionId cannot be null");
         Validate.notNull(statementId, "sessionId cannot be null");
         return String.format("/sessions/%s/statements/%s", sessionId, statementId);
     }
 
     private String STATEMENTS_URL(Integer sessionId) {
-        Validate.notNull(sessionId, "sessionId cannot be null");
+        if (sessionId == null) {
+            throw new LivyInvalidSessionException("sessionId cannot be null");
+        }
         return String.format("/sessions/%s/statements", sessionId);
     }
 

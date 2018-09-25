@@ -49,9 +49,8 @@ public class LivyServer {
     /**
      * update the high water mark to the max of current high water and newly observed session id
      *
-     * NOTE: if the sessionId is observed to be 0, then it is assumed we are seeing a newly started
-     * server (either first ever start of Livy or a restart when not in recovery mode).  This will
-     * reset the SessionState cache
+     * NOTE: if the sessionId is observed to be 0, then it is assumed we are seeing a newly started server (either first ever start of Livy or a restart when not in recovery mode).  This will reset
+     * the SessionState cache
      **/
     public void setSessionIdHighWaterMark(Integer sessionId) {
         Validate.notNull(sessionId, "sessionId cannot be null");
@@ -122,11 +121,11 @@ public class LivyServer {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("LivyServer{");
-        sb.append("sessionIdHighWaterMark=").append(sessionIdHighWaterMark);
-        sb.append(", livySessionStates=").append(livySessionStates);
-        sb.append(", livyServerStatus=").append(livyServerStatus);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("LivyServer{")
+            .append("sessionIdHighWaterMark=").append(sessionIdHighWaterMark)
+            .append(", livySessionStates=").append(livySessionStates)
+            .append(", livyServerStatus=").append(livyServerStatus)
+            .append('}')
+            .toString();
     }
 }
