@@ -1,8 +1,8 @@
 import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
 import {MatDialogRef} from "@angular/material/dialog";
-import FileUpload from "../../services/FileUploadService";
+import FileUpload from "../../../../../../services/FileUploadService";
 import {MAT_DIALOG_DATA} from "@angular/material/dialog";
-import {RestUrlConstants} from "../../feed-mgr/services/RestUrlConstants";
+import {RestUrlConstants} from "../../../../../services/RestUrlConstants";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 export class FeedUploadFileDialogComponentData{
@@ -13,7 +13,7 @@ export class FeedUploadFileDialogComponentData{
 
 @Component({
     selector:"feed-upload-file-dialog",
-    templateUrl: "js/shared-components/feed-upload-file-dialog/feed-upload-file-dialog.component.html"
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component.html"
 })
 export class FeedUploadFileDialogComponent implements OnInit, OnDestroy{
 

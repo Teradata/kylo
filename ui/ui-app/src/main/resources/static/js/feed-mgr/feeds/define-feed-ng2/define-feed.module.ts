@@ -113,9 +113,12 @@ import {MatMenuModule} from "@angular/material/menu";
 import {FeedStatsModule} from "../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module";
 import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-manager-services.module";
-import {SharedComponentsModule} from "../../../shared-components/shared-components.module";
 import {KyloServicesModule} from "../../../services/services.module";
 import {FeedAccessControlService} from "./services/feed-access-control.service";
+import {FeedAlertsComponent} from "./summary/feed-activity-summary/feed-alerts/feed-alerts.component";
+import {FeedJobActivityComponent} from "./summary/feed-activity-summary/feed-job-activity/feed-job-activity.component";
+import {FeedOperationsHealthInfoComponent} from "./summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component";
+import {FeedUploadFileDialogComponent} from "./summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component";
 
 @NgModule({
     declarations: [
@@ -168,10 +171,15 @@ import {FeedAccessControlService} from "./services/feed-access-control.service";
         SetupGuideSummaryComponent,
         FeedActivitySummaryComponent,
         DefineFeedSideNavComponent,
-        FeedSummaryContainerComponent
+        FeedSummaryContainerComponent,
+        FeedAlertsComponent,
+        FeedJobActivityComponent,
+        FeedOperationsHealthInfoComponent,
+        FeedUploadFileDialogComponent
     ],
     entryComponents:[
-        NewFeedDialogComponent
+        NewFeedDialogComponent,
+        FeedUploadFileDialogComponent
     ],
     providers:[
       DefineFeedService,
@@ -241,7 +249,6 @@ import {FeedAccessControlService} from "./services/feed-access-control.service";
         CatalogDatasetPreviewModule,
         KyloFeedModule,
         CatalogApiModule,
-        SharedComponentsModule,
         MatMenuModule,
         OpsManagerServicesModule,
         FeedStatsModule,

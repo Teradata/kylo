@@ -1,19 +1,19 @@
-import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
-import {Feed,FeedAccessControl} from "../../feed-mgr/model/feed/feed.model";
+import {OperationsRestUrlConstants} from "../../../../../../services/operations-rest-url-constants";
+import {Feed,FeedAccessControl} from "../../../../../model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
 import {Input, Output, EventEmitter, Component, OnInit, OnDestroy, Inject} from "@angular/core";
-import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.service";
-import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
-import {KyloIcons} from "../../kylo-utils/kylo-icons";
-import BroadcastService from "../../services/broadcast-service";
+import {OpsManagerFeedService} from "../../../../../../ops-mgr/services/ops-manager-feed.service";
+import {FeedSummary} from "../../../../../model/feed/feed-summary.model";
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
+import BroadcastService from "../../../../../../services/broadcast-service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {RestResponseStatus, RestResponseStatusType} from "../../common/common.model";
-import {FeedStats} from "../../feed-mgr/model/feed/feed-stats.model";
+import {RestResponseStatus, RestResponseStatusType} from "../../../../../../common/common.model";
+import {FeedStats} from "../../../../../model/feed/feed-stats.model";
 import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
 
 @Component({
     selector: "feed-operations-health-info",
-    templateUrl: "js/shared-components/feed-operations-health-info/feed-operations-health-info.component.html"
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component.html"
 })
 export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 

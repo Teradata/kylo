@@ -1,16 +1,16 @@
 import {HttpClient} from "@angular/common/http";
-import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
+import {OperationsRestUrlConstants} from "../../../../../../services/operations-rest-url-constants";
 import {Component, Inject, Input, OnDestroy, OnInit} from "@angular/core";
-import {StateService as KyoStateService} from "../../services/StateService";
-import {Feed} from "../../feed-mgr/model/feed/feed.model";
-import {KyloIcons} from "../../kylo-utils/kylo-icons";
+import {StateService as KyoStateService} from "../../../../../../services/StateService";
+import {Feed} from "../../../../../model/feed/feed.model";
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 import {map} from "rxjs/operators/map";
 import * as moment from "moment"
 
 
 @Component({
     selector: 'feed-alerts',
-    templateUrl: 'js/shared-components/feed-alerts/feed-alerts.component.html'
+    templateUrl: 'js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-alerts/feed-alerts.component.html'
 })
 export class FeedAlertsComponent implements OnInit, OnDestroy{
 
