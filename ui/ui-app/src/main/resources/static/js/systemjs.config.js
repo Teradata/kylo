@@ -181,8 +181,8 @@ System.config({
         "ui-grid": "angular-ui-grid",
         "underscore":"bower:underscore/underscore-min",
         "vis":"bower:vis/dist/vis.min",
-        "mdPickers":"bower:mdPickers/dist/mdPickers.min"
-        //,"ngx-drag-and-drop-lists":"npm:ngx-drag-and-drop-lists/index"
+        "mdPickers":"bower:mdPickers/dist/mdPickers.min",
+        "ngx-drag-and-drop-lists":"npm:ngx-drag-and-drop-lists/bundles/ngx-drag-and-drop-lists.umd.min"
     },
     meta: {
         "@angular/core": {deps:["angular"]},
