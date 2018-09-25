@@ -1,0 +1,15 @@
+<div [formGroup]="formGroup">
+  <mat-card class="feed-card" tabindex="0">
+    <mat-card-header>
+      <mat-card-title>{{title}}</mat-card-title>
+      <mat-card-subtitle>{{subtitle}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div fxLayout="row">
+        <div class="layout-padding-indent-20">
+          <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="readonly" [ngModelOptions]="{standalone: true}" (change)="skipHeaderOptionChanged($event)">{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

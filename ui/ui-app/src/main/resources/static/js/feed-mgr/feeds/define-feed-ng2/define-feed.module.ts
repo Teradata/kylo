@@ -119,6 +119,7 @@ import {FeedAlertsComponent} from "./summary/feed-activity-summary/feed-alerts/f
 import {FeedJobActivityComponent} from "./summary/feed-activity-summary/feed-job-activity/feed-job-activity.component";
 import {FeedOperationsHealthInfoComponent} from "./summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component";
 import {FeedUploadFileDialogComponent} from "./summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component";
+import {SkipHeaderComponent} from "./shared/skip-header/skip-header.component";
 
 @NgModule({
     declarations: [
@@ -175,7 +176,9 @@ import {FeedUploadFileDialogComponent} from "./summary/feed-activity-summary/fee
         FeedAlertsComponent,
         FeedJobActivityComponent,
         FeedOperationsHealthInfoComponent,
-        FeedUploadFileDialogComponent
+        FeedUploadFileDialogComponent,
+        FeedSummaryContainerComponent,
+        SkipHeaderComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,
