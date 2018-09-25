@@ -9,6 +9,7 @@ import BroadcastService from "../../services/broadcast-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {RestResponseStatus, RestResponseStatusType} from "../../common/common.model";
 import {FeedStats} from "../../feed-mgr/model/feed/feed-stats.model";
+import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -52,6 +53,8 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     accessControl:FeedAccessControl = FeedAccessControl.NO_ACCESS;
 
+    uploadFileAllowed:boolean;
+
 
     getFeedHealth(){
 
@@ -68,6 +71,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         this.accessControl = this.feed.accessControl;
         this.getFeedHealth();
         this.refreshInterval = setInterval(this.getFeedHealth.bind(this),this.refreshTime)
+        this.initMenu();
 
     }
 
@@ -77,8 +81,20 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         }
     }
 
+    uploadFile(){
+        if(this.accessControl.allowStart){
+            let config ={data:new FeedUploadFileDialogComponentData(this.feed.id),panelClass:"full-screen-dialog", width:"500px", height:"400px"};
+            this._dialogService.open(FeedUploadFileDialogComponent,config);
+        }
+    }
 
 
+   initMenu(){
+       this.uploadFileAllowed = false;
+       if (this.feed && this.feed.inputProcessorType) {
+          this.uploadFileAllowed = this.feed.inputProcessorType == 'org.apache.nifi.processors.standard.GetFile'
+       }
+   }
 
 
     enableFeed(){

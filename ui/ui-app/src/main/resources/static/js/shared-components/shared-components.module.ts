@@ -20,8 +20,10 @@ import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {FeedAlertsComponent} from "./feed-alerts/feed-alerts.component";
+import {FeedUploadFileDialogComponent} from "./feed-upload-file-dialog/feed-upload-file-dialog.component";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
-//import {previewDatasetCollectionServiceProvider} from "./angular2";
 @NgModule({
     imports: [
         CommonModule,
@@ -34,17 +36,22 @@ import {FeedAlertsComponent} from "./feed-alerts/feed-alerts.component";
         MatButtonToggleModule,
         MatIconModule,
         MatListModule,
+        MatSnackBarModule,
         TranslateModule,
         MatMenuModule,
+        MatToolbarModule,
         KyloCommonModule,
         CovalentDialogsModule,
         MatProgressSpinnerModule
-
     ],
     declarations: [
         FeedJobActivityComponent,
         FeedOperationsHealthInfoComponent,
-        FeedAlertsComponent
+        FeedAlertsComponent,
+        FeedUploadFileDialogComponent
+    ],
+    entryComponents:[
+        FeedUploadFileDialogComponent
     ],
     providers: [
 
@@ -52,7 +59,8 @@ import {FeedAlertsComponent} from "./feed-alerts/feed-alerts.component";
     exports:[
         FeedJobActivityComponent,
         FeedOperationsHealthInfoComponent,
-        FeedAlertsComponent
+        FeedAlertsComponent,
+        FeedUploadFileDialogComponent
     ]
 })
 export class SharedComponentsModule {
