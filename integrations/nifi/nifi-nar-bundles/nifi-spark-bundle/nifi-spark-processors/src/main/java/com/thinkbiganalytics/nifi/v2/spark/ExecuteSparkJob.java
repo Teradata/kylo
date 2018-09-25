@@ -598,8 +598,10 @@ public class ExecuteSparkJob extends BaseProcessor {
                 }
             }
 
-            dataSets.append(']');
-            env.put("DATASETS", dataSets.toString());
+            if (dataSets.length() != 0) {
+                dataSets.append(']');
+                env.put("DATASETS", dataSets.toString());
+            }
         }
 
         if (StringUtils.isNotBlank(datasourceIds)) {
@@ -628,8 +630,10 @@ public class ExecuteSparkJob extends BaseProcessor {
                 }
             }
 
-            datasources.append(']');
-            env.put("DATASOURCES", datasources.toString());
+            if (datasources.length() != 0) {
+                datasources.append(']');
+                env.put("DATASOURCES", datasources.toString());
+            }
         }
 
         return env;
