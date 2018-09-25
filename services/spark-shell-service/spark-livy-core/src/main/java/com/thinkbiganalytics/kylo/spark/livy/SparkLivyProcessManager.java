@@ -36,7 +36,6 @@ import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
-import com.thinkbiganalytics.kylo.utils.LivyUtils;
 import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
@@ -62,7 +61,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     private static final XLogger logger = XLoggerFactory.getXLogger(SparkLivyProcessManager.class);
 
-    List<SparkShellProcessListener> listeners = Lists.newArrayList();
+    private List<SparkShellProcessListener> listeners = Lists.newArrayList();
 
     @Resource
     private ScriptGenerator scriptGenerator;
@@ -153,7 +152,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
      * @return the Jersey REST client
      */
     @Nonnull
-    public JerseyRestClient getClient(@Nonnull final SparkShellProcess process) {
+    JerseyRestClient getClient(@Nonnull final SparkShellProcess process) {
         return clients.computeIfAbsent(process, target -> {
             final JerseyClientConfig config = new JerseyClientConfig();
             config.setHost(target.getHostname());
@@ -213,7 +212,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         sparkLivyProcess.sessionStarted(); // notifies all and any waiting threads session is started, OK to call many times..
     }
 
-    public Optional<Session> getLivySession(SparkLivyProcess sparkLivyProcess) {
+    private Optional<Session> getLivySession(SparkLivyProcess sparkLivyProcess) {
         JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
         SessionsGetResponse sessions = livyClient.getSessions(jerseyClient);
 
@@ -230,7 +229,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
 
-    public Session startLivySession(SparkLivyProcess sparkLivyProcess) {
+    private Session startLivySession(SparkLivyProcess sparkLivyProcess) {
 
         sparkLivyProcess.newSession();  // it was determined we needed a
 
@@ -279,7 +278,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
 
     @Nonnull
-    public Integer getStatementId(@Nonnull String transformId) {
+    Integer getStatementId(@Nonnull String transformId) {
         Integer statementId = statementIdCache.get(transformId);
         if (statementId == null) {
             throw new NullPointerException("transformId has aged out or was not recorded properly");
@@ -289,7 +288,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
 
-    public void setStatementId(@Nonnull String transformId, @Nonnull Integer statementId) {
+    void setStatementId(@Nonnull String transformId, @Nonnull Integer statementId) {
         statementIdCache.put(transformId, statementId);
     }
 
@@ -310,8 +309,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
         Statement statement = livyClient.postStatement(jerseyClient, sparkLivyProcess, sp);
 
-        // TODO: why getStatement now?  so initSession blocks on result.
-        LivyUtils.getStatement(livyClient, jerseyClient, sparkLivyProcess, statement.getId());
+        // NOTE:  why pollStatement now?  so we block on result.
+        livyClient.pollStatement(jerseyClient, sparkLivyProcess, statement.getId());
     }
 
 
@@ -322,7 +321,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         Optional<Session> optSession;
         do {
             try {
-                Thread.sleep(250);
+                Thread.sleep(livyProperties.getPollingInterval());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -341,7 +340,6 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     /**
      * @implNote implementation of SparkShellClusterDelegate.getProcesses
-     *
      */
     @Nonnull
     @Override
@@ -352,9 +350,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
     /**
-     * @implNote implementation of SparkShellClusterDelegate.updateProcess
-     *
      * @param process the SparkLivyProcess coming as a SparkShellProcess
+     * @implNote implementation of SparkShellClusterDelegate.updateProcess
      */
     @Override
     public void updateProcess(@Nonnull SparkShellProcess process) {
@@ -373,16 +370,15 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
 
     /**
-     * @implNote implementation of SparkShellClusterDelegate.removeProcess
-     *
      * @param clientId the sessionId of the process that was stopped on some node of the cluster
+     * @implNote implementation of SparkShellClusterDelegate.removeProcess
      */
     @Override
     public void removeProcess(@Nonnull String clientId) {
         logger.entry(clientId);
 
         processCache.values().stream()
-            .filter(sparkLivyProcess -> sparkLivyProcess.getClientId() == clientId)
+            .filter(sparkLivyProcess -> sparkLivyProcess.getClientId().equals(clientId))
             .forEach(sparkLivyProcess -> {
                 logger.debug("SparkLivyProcess will be remove: {}", sparkLivyProcess);
                 processCache.remove(sparkLivyProcess);
@@ -392,9 +388,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
     /**
-     * @implNote implementation of SparkShellProcessListener.processReady
-     *
      * @param process the Spark Shell process
+     * @implNote implementation of SparkShellProcessListener.processReady
      */
     @Override
     public void processReady(@Nonnull SparkShellProcess process) {
@@ -403,9 +398,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
     /**
-     *  @implNote implementation SparkShellProcessListener.processStarted
-     *
      * @param process the Spark Shell process
+     * @implNote implementation SparkShellProcessListener.processStarted
      */
     @Override
     public void processStarted(@Nonnull SparkShellProcess process) {
@@ -414,9 +408,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     }
 
     /**
-     * @implNote implementation of SparkShellProcessListener.processStopped
-     *
      * @param process the Spark Shell process
+     * @implNote implementation of SparkShellProcessListener.processStopped
      */
     @Override
     public void processStopped(@Nonnull SparkShellProcess process) {

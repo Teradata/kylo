@@ -76,6 +76,8 @@ public class LivyRestModelTransformer {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     // time based expiry to clear out ids not cleared because the UI failed to fetch results
+    //    built here as a static cache; then Spring creates a bean of it to be injected in other places
+    //    TODO: turn this class into a spring service
     public static Cache<String, Integer> statementIdCache = CacheBuilder.newBuilder()
         .expireAfterAccess(24, TimeUnit.HOURS)
         .maximumSize(100)
@@ -119,7 +121,7 @@ public class LivyRestModelTransformer {
                 response.setProfile(toTransformResponseProfileStats(statement.getOutput()));
                 response.setActualCols(1);
                 Integer actualRows = rows.stream()
-                    .filter(metric -> metric.getMetricType().equals(MetricType.TOTAL_COUNT))
+                    .filter(metric -> metric.getMetricType().equals(MetricType.TOTAL_COUNT.toString()))
                     .map(metric -> Integer.valueOf(metric.getMetricValue()))
                     .findFirst().orElse(1);
                 response.setActualRows(actualRows);
@@ -305,7 +307,10 @@ public class LivyRestModelTransformer {
                     ObjectNode node = (ObjectNode) nodes.next();
                     String sfName = node.get("name").asText();
                     String sfType = node.get("type").asText();
-                    sb.append(sfName + ":" + sfType + ",");
+                    sb.append(sfName);
+                    sb.append(":");
+                    sb.append(sfType);
+                    sb.append(",");
                 }
                 sb.deleteCharAt(sb.length() - 1);
                 return sb.toString();
@@ -430,8 +435,7 @@ public class LivyRestModelTransformer {
             JsonNode json = data.get("application/json");
             String jsonString = json.asText();
             try {
-                T clazzInstance = mapper.readValue(jsonString, clazz);
-                return clazzInstance;
+                return mapper.readValue(jsonString, clazz);
             } catch (IOException e) {
                 throw new LivyDeserializationException(errMsg);
             } // end try/catch

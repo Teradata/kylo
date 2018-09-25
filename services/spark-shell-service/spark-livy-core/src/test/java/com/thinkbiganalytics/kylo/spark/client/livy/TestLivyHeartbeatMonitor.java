@@ -224,7 +224,7 @@ public class TestLivyHeartbeatMonitor {
 
         @Bean
         public LivyClient livyClient() {
-            return new DefaultLivyClient(livyServer());
+            return new DefaultLivyClient(livyServer(), livyProperties());
         }
 
         @Bean

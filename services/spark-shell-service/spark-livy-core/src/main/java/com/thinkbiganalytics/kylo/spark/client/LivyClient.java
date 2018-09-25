@@ -35,6 +35,10 @@ public interface LivyClient {
 
     Statement getStatement(JerseyRestClient client,  SparkLivyProcess sparkLivyProcess, Integer statementId);
 
+    Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId);
+
+    Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait);
+
     SessionsGetResponse getSessions(JerseyRestClient client);
 
     Session postSessions(JerseyRestClient client, SessionsPost sessionsPost);

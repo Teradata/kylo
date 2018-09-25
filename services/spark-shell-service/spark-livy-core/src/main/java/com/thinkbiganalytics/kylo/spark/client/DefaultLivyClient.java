@@ -22,12 +22,15 @@ package com.thinkbiganalytics.kylo.spark.client;
 
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
+import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 
@@ -51,8 +54,11 @@ public class DefaultLivyClient implements LivyClient {
 
     private LivyServer livyServer;
 
-    public DefaultLivyClient(LivyServer livyServer) {
+    private LivyProperties livyProperties;
+
+    public DefaultLivyClient(LivyServer livyServer, LivyProperties livyProperties) {
         this.livyServer = livyServer;
+        this.livyProperties = livyProperties;
     }
 
     @Override
@@ -139,6 +145,50 @@ public class DefaultLivyClient implements LivyClient {
             logger.error("Unexpected exception occurred:", e);
             throw e;
         }
+    }
+
+
+    @Override
+    public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId) {
+        return pollStatement(jerseyClient,sparkLivyProcess,stmtId,null);
+    }
+
+
+    @Override
+    public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait) {
+        long stopPolling = Long.MAX_VALUE;
+        long startMillis = System.currentTimeMillis();
+        if( wait != null ) {
+            // Limit the amount of time we will poll for a statement to complete.
+            stopPolling = startMillis + livyProperties.getPollingLimit();
+        }
+
+        Statement statement;
+        int pollCount = 1;
+        do {
+            statement = getStatement( jerseyClient, sparkLivyProcess, stmtId );
+
+            if( statement.getState().equals(StatementState.error)) {
+                // TODO: what about cancelled? or cancelling?
+                throw new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'");
+            }
+
+            if( System.currentTimeMillis() > stopPolling || statement.getState().equals(StatementState.available) ) {
+                break;
+            }
+
+            logger.info("Statement was not ready, polling now with attempt '{}'", pollCount++);
+            // statement not ready, wait for some time...
+            try {
+                Thread.sleep(livyProperties.getPollingInterval());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } while (true);
+
+        // TODO: replace with XLogger
+        logger.info("exit DefaultLivyClient poll statement in '{}' millis ", System.currentTimeMillis() - startMillis);
+        return statement;
     }
 
     private final static String SESSIONS_URL = "/sessions";
