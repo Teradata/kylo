@@ -1,20 +1,22 @@
 import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
 import {Feed} from "../../../../model/feed/feed.model";
+import {Step} from "../../../../model/feed/feed-step.model";
 
 
 export class DefineFeedPropertiesValidator  extends FeedStepValidator {
 
 
 
-    public validate(feed:Feed) : boolean{
-        let valid = super.validate(feed);
+    public validate(feed:Feed, step:Step) : boolean{
+        let valid = super.validate(feed,step);
 
-        if(valid && feed.userProperties.length){
-            this.step.setComplete(true);
+      /*  if(valid && feed.userProperties.length){
+            step.setComplete(true);
         }
         else {
-            this.step.setComplete(false);
+            step.setComplete(false);
         }
+        */
         return valid;
     }
 }

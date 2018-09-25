@@ -8,16 +8,16 @@ export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
         super();
     }
 
-    public validate(feed:Feed) : boolean {
-        let userAcknowledgedContinueWithoutSource = this.step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
+    public validate(feed:Feed, step:Step) : boolean {
+        let userAcknowledgedContinueWithoutSource = step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
         if(userAcknowledgedContinueWithoutSource || (feed.sourceDataSets && feed.sourceDataSets.length>0) || (feed.table.sourceTableSchema && feed.table.sourceTableSchema.isDefined() )){
-            this.step.valid = true;
-            this.step.setComplete(true)
+            step.valid = true;
+            step.setComplete(true)
         }
         else {
-            this.step.valid = false;
-            this.step.setComplete(false)
+            step.valid = false;
+            step.setComplete(false)
         }
-        return this.step.valid;
+        return step.valid;
     }
 }

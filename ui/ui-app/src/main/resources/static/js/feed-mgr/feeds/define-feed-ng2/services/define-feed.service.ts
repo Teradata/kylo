@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import {Inject, Injectable, Injector, ViewContainerRef} from "@angular/core";
-import {Feed, FeedMode, FeedTemplateType, LoadMode, FeedAccessControl} from "../../../model/feed/feed.model";
+import {Feed, FeedMode, FeedTemplateType, LoadMode, FeedAccessControl, StepStateChangeEvent} from "../../../model/feed/feed.model";
 import {Step} from "../../../model/feed/feed-step.model";
 import {Common} from "../../../../common/CommonTypes"
 import { Templates } from "../../../services/TemplateTypes";
@@ -46,7 +46,7 @@ import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-const
 import {TdLoadingService} from "@covalent/core/loading";
 import {Category} from "../../../model/category/category.model";
 import {FeedAccessControlService} from "../services/feed-access-control.service";
-import {RestResponseStatus} from "../../../../common/common.model";
+import {ObjectChanged, RestResponseStatus} from "../../../../common/common.model";
 
 
 export class FeedEditStateChangeEvent{
@@ -104,9 +104,7 @@ export class DefineFeedService {
 
     private feedEditStateChangeSubject: Subject<FeedEditStateChangeEvent>;
 
-
     private feedLoadedSubject: Subject<Feed>;
-
 
     private uiComponentsService :UiComponentsService;
 
@@ -372,9 +370,25 @@ export class DefineFeedService {
         return this.feedEditStateChangeSubject.subscribe(observer);
     }
 
+
     subscribeToFeedLoadedEvent(observer:PartialObserver<Feed>){
         return this.feedLoadedSubject.subscribe(observer);
     }
+
+    onStepStateChangeEvent(stepChanges:StepStateChangeEvent){
+        if(this.feed && stepChanges.feed.id == this.feed.id){
+            //update this feed with the new step changes
+            stepChanges.changes.forEach((change:ObjectChanged<Step>) => {
+
+                let newStep = change.newValue;
+                let currStep = this.feed.getStepBySystemName(newStep.systemName);
+                if(currStep){
+                    currStep.update(newStep);
+                }
+            })
+        }
+    }
+
 
 
     markFeedAsEditable(){
@@ -537,6 +551,10 @@ export class DefineFeedService {
             savedFeed.readonly = false;
             //reassign accessControl
             savedFeed.accessControl = accessControl;
+            if(newFeed && savedFeed.accessControl == FeedAccessControl.NO_ACCESS){
+                // give it edit permisisons
+                savedFeed.accessControl = FeedAccessControl.adminAccess();
+            }
 
             savedFeed.updateDate = new Date(updatedFeed.updateDate);
             let valid = savedFeed.validate(true);

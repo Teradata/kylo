@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 
-import {KyloObject} from "../../../common/common.model";
+import {KyloObject, ObjectChanged} from "../../../common/common.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {ObjectUtils} from "../../../common/utils/object-utils";
 import {ConnectorPlugin} from "../../catalog/api/models/connector-plugin";
@@ -21,6 +21,9 @@ import {Step} from "./feed-step.model";
 import {FeedTableDefinition} from "./feed-table-definition.model";
 import {FeedTableSchema} from "./feed-table-schema.model";
 import {EntityVersion} from "../entity-version.model";
+import {PartialObserver} from "rxjs/Observer";
+import {Observable} from "rxjs/Observable";
+import {Subject} from "rxjs/Subject";
 
 
 export interface TableOptions {
@@ -68,7 +71,34 @@ export class FeedAccessControl {
 
     static NO_ACCESS = new FeedAccessControl();
 
+    allAccess(){
+        this.allowEdit = true;
+        this.allowChangePermissions = true;
+        this.allowAdmin = true;
+        this.allowSlaAccess = true;
+        this.allowExport = true;
+        this.allowStart=true;
+        return this;
+    }
 
+    static adminAccess = () => new FeedAccessControl().allAccess();
+
+
+}
+
+
+
+export class StepStateChangeEvent {
+    public changes:ObjectChanged<Step>[] = [];
+    public constructor(public feed:Feed){}
+
+    addChange(oldStep:Step,newStep:Step){
+        this.changes.push({oldValue:oldStep,newValue:newStep});
+    }
+
+    hasChanges():boolean {
+        return this.changes.length >0;
+    }
 }
 
 /**
@@ -342,6 +372,12 @@ export class Feed  implements KyloObject{
      */
     loadMode:LoadMode;
 
+    stepChangesSubject = new Subject<StepStateChangeEvent>();
+
+    subscribeToStepStateChanges(o:PartialObserver<StepStateChangeEvent>) {
+       return this.stepChangesSubject.subscribe(o);
+    }
+
     public constructor(init?: Partial<Feed>) {
         this.initialize();
         Object.assign(this, init);
@@ -472,6 +508,13 @@ export class Feed  implements KyloObject{
         let valid = true;
         let model = this;
         let disabledSteps: Step[] = [];
+
+        //copy off the old steps
+        let copySteps = this._copySteps();
+        let stepMap = _.indexBy(copySteps,'systemName');
+
+        let changes = new StepStateChangeEvent(this);
+
         this.steps.forEach((step: Step) => {
             valid = valid && step.validate(<Feed>this);
             if (updateStepState) {
@@ -480,7 +523,18 @@ export class Feed  implements KyloObject{
         });
         let enabledSteps = this.steps.filter(step => disabledSteps.indexOf(step) == -1);
         enabledSteps.forEach(step => step.disabled = false);
+        //detect step changes
+        this.steps.forEach((step:Step) => {
+            let oldStep = stepMap[step.systemName];
+            if(oldStep && step.isStepStateChange(oldStep)){
+                changes.addChange(oldStep,step);
+            }
+        });
         this.isValid = valid;
+        if(changes.hasChanges()){
+            this.stepChangesSubject.next(changes);
+        }
+
         return valid;
     }
 
@@ -549,12 +603,7 @@ export class Feed  implements KyloObject{
         return paths;
     }
 
-
-    /**
-     * Deep copy of this object
-     * @return {Feed}
-     */
-    copy(keepCircularReference: boolean = true): Feed {
+    private _copySteps():Step[]{
         //steps have self references back to themselves.
         let allSteps: Step[] = [];
         this.steps.forEach(step => {
@@ -562,6 +611,16 @@ export class Feed  implements KyloObject{
             allSteps.push(copy);
             copy.allSteps = allSteps;
         });
+        return allSteps;
+    }
+
+
+    /**
+     * Deep copy of this object
+     * @return {Feed}
+     */
+    copy(keepCircularReference: boolean = true): Feed {
+        let allSteps = this._copySteps();
         let newFeed: Feed = new Feed(this)
         //  Object.assign(newFeed,this)
         newFeed.steps = null;
@@ -584,6 +643,7 @@ export class Feed  implements KyloObject{
     copyModelForSave(): Feed {
         //create a deep copy
         let copy = this.copy();
+        copy.stepChangesSubject = undefined;
 
         if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
             // Set feed
