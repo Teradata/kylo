@@ -98,8 +98,8 @@ public class ScalaScriptService {
         script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
 
         return sb.append(wrapScriptWithPaging(script, request.getPageSpec()))
-            .append("val dfRowsAsJson = mapper.writeValueAsString(dfRows)\n")
-            .append("%json dfRowsAsJson\n")
+            .append("val dfResultsAsJson = mapper.writeValueAsString(dfResults)\n")
+            .append("%json dfResultsAsJson\n")
             .toString();
     }
 
@@ -118,7 +118,7 @@ public class ScalaScriptService {
                                                  startCol, stopCol, startRow, stopRow);
         } else {
             // No Pagespec so simply return all results
-            return script.concat("val dfRows = List( df.schema.json, df.rdd.collect.map(x => x.toSeq) )\n");
+            return script.concat("df.cache(); val dfResults = List( List( df.schema.json, df.rdd.collect.map(x => x.toSeq) ), df.columns.length, df.count() )\n");
         }
     }
 

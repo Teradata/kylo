@@ -92,7 +92,7 @@ com.thinkbiganalytics.spark.dataprofiler.core.Profiler.profileDataFrame(sparkCon
         <entry key="pagedDataFrame">
           <value>
             <![CDATA[
-var dfRows =  LivyPaginator.page( df, %s, %s, %s, %s )
+var dfResults =  LivyPaginator.page( df, %s, %s, %s, %s )
              ]]>
           </value>
         </entry>

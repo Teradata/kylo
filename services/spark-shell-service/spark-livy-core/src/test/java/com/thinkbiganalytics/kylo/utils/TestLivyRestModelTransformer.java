@@ -61,7 +61,7 @@ public class TestLivyRestModelTransformer {
         QueryResultColumn dt0 = cols.get(0);
         assertThat(dt0).hasFieldOrPropertyWithValue("dataType", "integer");
 
-        List<Object> row1 = Lists.newArrayList( 1, "Toyota Park", "Bridgeview", "IL", 0, "1520786524754");
+        List<Object> row1 = Lists.newArrayList( 1, "Toyota Park", "Bridgeview", "IL", 0, "1527526048390");
         assertThat( tqr.getRows() ).contains(row1);
     }
 

@@ -112,22 +112,22 @@ public class LivyRestModelTransformer {
     }
 
     public static TransformResponse toTransformResponse(Statement statement, String transformId) {
-        TransformResponse response = prepTransformResponse(statement, transformId);
+        TransformResponse transformResponse = prepTransformResponse(statement, transformId);
 
-        if (response.getStatus() == TransformResponse.Status.SUCCESS) {
+        if (transformResponse.getStatus() == TransformResponse.Status.SUCCESS) {
             String code = statement.getCode().trim();
-            if (code.endsWith("dfRowsAsJson")) {
-                response.setResults(toTransformQueryResultWithSchema(statement.getOutput()));
+            if (code.endsWith("dfResultsAsJson")) {
+                transformResponse.setResults(toTransformQueryResultWithSchema(transformResponse,statement.getOutput()));
             } else if (code.endsWith("dfProf")) {
                 List<OutputRow> rows = toTransformResponseProfileStats(statement.getOutput());
-                response.setProfile(toTransformResponseProfileStats(statement.getOutput()));
-                response.setActualCols(1);
+                transformResponse.setProfile(toTransformResponseProfileStats(statement.getOutput()));
+                transformResponse.setActualCols(1);
                 Integer actualRows = rows.stream()
                     .filter(metric -> metric.getMetricType().equals(MetricType.TOTAL_COUNT.toString()))
                     .map(metric -> Integer.valueOf(metric.getMetricValue()))
                     .findFirst().orElse(1);
-                response.setActualRows(actualRows);
-                response.setResults(emptyResult());
+                transformResponse.setActualRows(actualRows);
+                transformResponse.setResults(emptyResult());
             } else if (code.endsWith("transformAsStr")) {
                 /* expects that 'statement' contains a payload of TransformResponse in JSON format */
                 TransformResponse tr = serializeStatementOutputResponse(checkCodeWasWellFormed(statement.getOutput()), TransformResponse.class);
@@ -138,15 +138,17 @@ public class LivyRestModelTransformer {
             } // end if
         }
 
-        return response;
+        return transformResponse;
     }
 
 
-    private static TransformQueryResult toTransformQueryResultWithSchema(StatementOutputResponse sor) {
+    private static TransformQueryResult toTransformQueryResultWithSchema(TransformResponse transformResponse, StatementOutputResponse sor) {
         logger.entry(sor);
         checkCodeWasWellFormed(sor);
 
         TransformQueryResult tqr = new TransformQueryResult();
+        transformResponse.setResults(tqr);
+
         tqr.setColumns(Lists.newArrayList());
 
         JsonNode data = sor.getData();
@@ -160,6 +162,11 @@ public class LivyRestModelTransformer {
             } catch (IOException e) {
                 throw logger.throwing(new LivyDeserializationException("Unable to read dataFrame returned from Livy"));
             } // end try/catch
+
+            // array contains three objects (dfRows, actualCols, actualRows )
+            transformResponse.setActualCols(json.get(1).asInt());
+            transformResponse.setActualRows(json.get(2).asInt());
+            json = (ArrayNode)json.get(0);
 
             int numRows = 0;
 
@@ -262,6 +269,7 @@ public class LivyRestModelTransformer {
             tqr.setRows(rowData);
             //tqr.setValidationResults(null);
         } // end if data!=null
+
         return logger.exit(tqr);
     }
 
