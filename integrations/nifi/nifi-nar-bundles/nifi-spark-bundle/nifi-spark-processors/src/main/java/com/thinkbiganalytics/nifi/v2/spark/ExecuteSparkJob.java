@@ -563,34 +563,7 @@ public class ExecuteSparkJob extends BaseProcessor {
     private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, String dataSetIds,
                                                MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
         final Map<String, String> env = new HashMap<>();
-
-        if (StringUtils.isNotBlank(datasourceIds)) {
-            final StringBuilder datasources = new StringBuilder(10240);
-            final ObjectMapper objectMapper = new ObjectMapper();
-            final MetadataProvider provider = metadataService.getProvider();
-
-            for (final String id : datasourceIds.split(",")) {
-                datasources.append((datasources.length() == 0) ? '[' : ',');
-
-                final Optional<Datasource> datasource = provider.getDatasource(id);
-                if (datasource.isPresent()) {
-                    if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
-                        final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
-                        extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
-                    }
-                    datasources.append(objectMapper.writeValueAsString(datasource.get()));
-
-                } else {
-                    getLog().error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                    flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
-                    session.transfer(flowFile, REL_FAILURE);
-                    return null;
-                }
-            }
-
-            datasources.append(']');
-            env.put("DATASOURCES", datasources.toString());
-        }
+        final Set<String> resolvedDatasources = new HashSet<>();
 
         if (StringUtils.isNotEmpty(dataSetIds)) {
             final StringBuilder dataSets = new StringBuilder(10240);
@@ -613,6 +586,7 @@ public class ExecuteSparkJob extends BaseProcessor {
                         if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getTemplate().getJars() != null) {
                             extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
                         }
+                        resolvedDatasources.add(dataSource.getId());
                     }
                     dataSets.append(objectMapper.writeValueAsString(dataSet.get()));
 
@@ -624,8 +598,42 @@ public class ExecuteSparkJob extends BaseProcessor {
                 }
             }
 
-            dataSets.append(']');
-            env.put("DATASETS", dataSets.toString());
+            if (dataSets.length() != 0) {
+                dataSets.append(']');
+                env.put("DATASETS", dataSets.toString());
+            }
+        }
+
+        if (StringUtils.isNotBlank(datasourceIds)) {
+            final StringBuilder datasources = new StringBuilder(10240);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final MetadataProvider provider = metadataService.getProvider();
+
+            for (final String id : datasourceIds.split(",")) {
+                if (!resolvedDatasources.contains(id)) {
+                    datasources.append((datasources.length() == 0) ? '[' : ',');
+
+                    final Optional<Datasource> datasource = provider.getDatasource(id);
+                    if (datasource.isPresent()) {
+                        if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
+                            final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
+                            extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+                        }
+                        datasources.append(objectMapper.writeValueAsString(datasource.get()));
+
+                    } else {
+                        getLog().error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
+                        session.transfer(flowFile, REL_FAILURE);
+                        return null;
+                    }
+                }
+            }
+
+            if (datasources.length() != 0) {
+                datasources.append(']');
+                env.put("DATASOURCES", datasources.toString());
+            }
         }
 
         return env;

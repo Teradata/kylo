@@ -81,13 +81,22 @@ public class SparkLivyProcess implements Serializable, SparkShellProcess {
      */
     public synchronized boolean waitForStart() {
         final long remaining = readyTime - DateTimeUtils.currentTimeMillis();
-        if (remaining > 0 && startSignal != null ) {
+        if (remaining > 0 && startSignal != null) {
             boolean started = Uninterruptibles.awaitUninterruptibly(startSignal, remaining, TimeUnit.MILLISECONDS);
             logger.debug("Finished waiting for start.  started='{}'", started);
             return started;
         } else {
             return true;
         }
+    }
+
+    /**
+     * start attempt failed. likely reason is that Livy is not running.
+     */
+    public void startFailed() {
+        // NOTE: We probably determined rather quickly that Livy was not running.  If procs were waiting on the
+        //     latch then let their time expire and then fail
+        startSignal = null;
     }
 
     public void newSession() {
@@ -158,11 +167,11 @@ public class SparkLivyProcess implements Serializable, SparkShellProcess {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SparkLivyProcess{");
-        sb.append("sessionId=").append(sessionId);
-        sb.append(", hostname='").append(hostname).append('\'');
-        sb.append(", port=").append(port);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("SparkLivyProcess{")
+            .append("sessionId=").append(sessionId)
+            .append(", hostname='").append(hostname).append('\'')
+            .append(", port=").append(port)
+            .append('}')
+            .toString();
     }
 }

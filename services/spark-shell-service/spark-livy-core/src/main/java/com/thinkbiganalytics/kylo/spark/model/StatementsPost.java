@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,10 +24,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StatementsPost {
+
     private String code;
     private String kind;
 
-    StatementsPost(StatementsPost.Builder sgb ) {
+    StatementsPost(StatementsPost.Builder sgb) {
         this.code = sgb.code;
         this.kind = sgb.kind;
     }
@@ -42,14 +43,15 @@ public class StatementsPost {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("StatementsPost{");
-        sb.append("code='").append(code).append('\'');
-        sb.append(", kind='").append(kind).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("StatementsPost{")
+            .append("code='").append(code).append('\'')
+            .append(", kind='").append(kind).append('\'')
+            .append('}')
+            .toString();
     }
 
     public static class Builder {
+
         private String code;
         private String kind;
 

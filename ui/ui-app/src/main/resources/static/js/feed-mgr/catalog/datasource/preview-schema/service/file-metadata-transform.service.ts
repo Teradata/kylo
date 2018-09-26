@@ -83,6 +83,7 @@ export class FileMetadataTransformService  {
             observable = new Observable<FileMetadataTransformResponse>((observer) => {
 
                 let request: any = {
+                    dataSource: datasource,
                     paths: paths
                 }
                 let statusCheckTime = 300

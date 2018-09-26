@@ -1,4 +1,4 @@
-import {Feed} from "../../../model/feed/feed.model";
+import {Feed, StepStateChangeEvent} from "../../../model/feed/feed.model";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {StateService, Transition} from "@uirouter/angular";
 import {OnDestroy, OnInit, TemplateRef} from "@angular/core";
@@ -44,6 +44,9 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
     private feedEditStateChangeEvent: ISubscription;
 
+    private feedStepStateChangeSubscription:ISubscription;
+
+
     protected constructor(protected  defineFeedService: DefineFeedService, protected stateService: StateService,
                           protected feedLoadingService: FeedLoadingService, protected dialogService: TdDialogService,
                           protected feedSideNavService: FeedSideNavService) {
@@ -67,6 +70,9 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         try {
             if (this.feedEditStateChangeEvent) {
                 this.feedEditStateChangeEvent.unsubscribe();
+            }
+            if(this.feedStepStateChangeSubscription){
+                this.feedStepStateChangeSubscription.unsubscribe();
             }
             this.destroy();
         } catch (err) {
@@ -126,6 +132,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      */
     public feedStateChange(event: FeedEditStateChangeEvent) {
 
+    }
+
+    public onStepStateChangeEvent(event:StepStateChangeEvent){
+        console.log('STEP Component, step CHANGED!!!',this,event)
+        this.defineFeedService.onStepStateChangeEvent(event)
     }
 
 
@@ -272,6 +283,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
                 this.stateService.go(FEED_DEFINITION_STATE_NAME + ".select-template")
             }
         }
+        this.feedStepStateChangeSubscription = this.feed.subscribeToStepStateChanges(this.onStepStateChangeEvent.bind(this))
+
         this.step = this.feed.steps.find(step => step.systemName == this.getStepName());
         if (this.step) {
             this.step.dirty = false;

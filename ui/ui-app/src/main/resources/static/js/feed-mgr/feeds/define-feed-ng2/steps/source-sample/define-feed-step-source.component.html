@@ -30,6 +30,11 @@
       </mat-card-actions>
     </mat-card>
 
+    <skip-header *ngIf="allowSkipHeaderOption()" [formGroup]="sourceForm" [feed]="feed" [readonly]="feed.readonly"
+                 [title]="'views.define-feed-general-info.FeedOptions' | translate" [subtitle]="'views.define-feed-general-info.AdditionalFeedOptions' | translate">
+
+    </skip-header>
+
     <mat-card class="feed-card">
       <mat-card-header>
         <mat-card-title>Advanced Options</mat-card-title>

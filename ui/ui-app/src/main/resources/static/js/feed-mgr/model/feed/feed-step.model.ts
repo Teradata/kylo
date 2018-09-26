@@ -37,8 +37,7 @@ export class Step {
         }
         else {
             if(this.validator){
-                this.validator.step = this;
-                return this.validator.validate(feed);
+                return this.validator.validate(feed, this);
             }
             else {
                 return true;
@@ -156,7 +155,17 @@ export class Step {
     update(step:Step) {
             this.complete = step.complete;
             this.visited = step.visited;
+            this.valid = step.valid
 
+    }
+
+    /**
+     * does this step differ from the incoming step
+     * @param {Step} step
+     * @return {boolean}
+     */
+    isStepStateChange(step:Step){
+        return (this.systemName == step.systemName && (this.valid != step.valid || this.complete != step.complete || this.visited != step.visited))
     }
 
 

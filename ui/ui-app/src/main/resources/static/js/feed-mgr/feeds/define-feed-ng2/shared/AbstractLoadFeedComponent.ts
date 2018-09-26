@@ -1,7 +1,7 @@
 import {OnInit, Input, OnDestroy, Output, EventEmitter} from "@angular/core";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {Observable} from "rxjs/Observable";
-import {Feed, LoadMode} from "../../../model/feed/feed.model";
+import {Feed, LoadMode, StepStateChangeEvent} from "../../../model/feed/feed.model";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../services/define-feed.service";
 import {Step} from "../../../model/feed/feed-step.model";
@@ -42,7 +42,6 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     private feedLoadedSubscription:ISubscription;
 
 
-
     protected  constructor(protected feedLoadingService:FeedLoadingService, protected stateService: StateService, protected defineFeedService : DefineFeedService, protected feedSideNavService:FeedSideNavService){
         this.feedEditStateChangeEvent = this.defineFeedService.subscribeToFeedEditStateChangeEvent(this.onFeedEditStateChange.bind(this))
         this.feedLoadedSubscription = this.defineFeedService.subscribeToFeedLoadedEvent(this.onFeedLoaded.bind(this))
@@ -69,6 +68,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
             this.feedEditStateChangeEvent.unsubscribe();
         }
         this.feedLoadedSubscription.unsubscribe();
+
         this.destroy();
     }
 
@@ -90,6 +90,14 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         }
     }
 
+    onFeedChangeEvent(event:Feed){
+        console.log("FEED  CHANGED!!!!",'old feed', this.feed, 'new feed ',event)
+        this.feed = event;
+    }
+
+    onStepStateChangeEvent(event:StepStateChangeEvent){
+        console.log('Load STEP CHANGED!!!',this,event)
+    }
 
 
     private loadFeed(feedId:string, refresh:boolean) :Observable<Feed>{

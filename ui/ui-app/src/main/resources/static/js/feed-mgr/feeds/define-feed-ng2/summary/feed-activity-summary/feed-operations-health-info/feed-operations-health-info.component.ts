@@ -1,18 +1,19 @@
-import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
-import {Feed,FeedAccessControl} from "../../feed-mgr/model/feed/feed.model";
+import {OperationsRestUrlConstants} from "../../../../../../services/operations-rest-url-constants";
+import {Feed,FeedAccessControl} from "../../../../../model/feed/feed.model";
 import {HttpClient} from "@angular/common/http";
 import {Input, Output, EventEmitter, Component, OnInit, OnDestroy, Inject} from "@angular/core";
-import {OpsManagerFeedService} from "../../ops-mgr/services/ops-manager-feed.service";
-import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
-import {KyloIcons} from "../../kylo-utils/kylo-icons";
-import BroadcastService from "../../services/broadcast-service";
+import {OpsManagerFeedService} from "../../../../../../ops-mgr/services/ops-manager-feed.service";
+import {FeedSummary} from "../../../../../model/feed/feed-summary.model";
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
+import BroadcastService from "../../../../../../services/broadcast-service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {RestResponseStatus, RestResponseStatusType} from "../../common/common.model";
-import {FeedStats} from "../../feed-mgr/model/feed/feed-stats.model";
+import {RestResponseStatus, RestResponseStatusType} from "../../../../../../common/common.model";
+import {FeedStats} from "../../../../../model/feed/feed-stats.model";
+import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
 
 @Component({
     selector: "feed-operations-health-info",
-    templateUrl: "js/shared-components/feed-operations-health-info/feed-operations-health-info.component.html"
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component.html"
 })
 export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
@@ -52,6 +53,8 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     accessControl:FeedAccessControl = FeedAccessControl.NO_ACCESS;
 
+    uploadFileAllowed:boolean;
+
 
     getFeedHealth(){
 
@@ -68,6 +71,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         this.accessControl = this.feed.accessControl;
         this.getFeedHealth();
         this.refreshInterval = setInterval(this.getFeedHealth.bind(this),this.refreshTime)
+        this.initMenu();
 
     }
 
@@ -77,8 +81,20 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
         }
     }
 
+    uploadFile(){
+        if(this.accessControl.allowStart){
+            let config ={data:new FeedUploadFileDialogComponentData(this.feed.id),panelClass:"full-screen-dialog", width:"500px", height:"400px"};
+            this._dialogService.open(FeedUploadFileDialogComponent,config);
+        }
+    }
 
 
+   initMenu(){
+       this.uploadFileAllowed = false;
+       if (this.feed && this.feed.inputProcessorType) {
+          this.uploadFileAllowed = this.feed.inputProcessorType == 'org.apache.nifi.processors.standard.GetFile'
+       }
+   }
 
 
     enableFeed(){

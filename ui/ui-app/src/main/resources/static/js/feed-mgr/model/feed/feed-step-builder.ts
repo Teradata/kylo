@@ -138,9 +138,6 @@ export class StepBuilder {
             //add a default one
             step.validator = new FeedStepValidator();
         }
-        if (step.validator) {
-            step.validator.setStep(step)
-        }
         if(step.name == undefined){
             step.name = step.systemName;
         }

@@ -94,6 +94,14 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     }
 
+    /**
+     * Should the skip header row option be shown?
+     * @returns {boolean}
+     */
+    allowSkipHeaderOption(): boolean {
+        return this.feed.schemaParser && this.feed.schemaParser.allowSkipHeader;
+    }
+
     destroy() {
 
     }

@@ -12,3 +12,8 @@ export interface RestResponseStatus {
     url:string;
     validationError:boolean;
 }
+
+export interface ObjectChanged<T> {
+    oldValue:T;
+    newValue:T;
+}

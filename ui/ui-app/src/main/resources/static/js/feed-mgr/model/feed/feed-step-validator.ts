@@ -3,29 +3,23 @@ import {Step} from "./feed-step.model";
 
 export class FeedStepValidator  {
 
-    public hasFormErrors:boolean;
-
-    public step : Step;
-
+    hasFormErrors:boolean;
     constructor() {
     }
 
-    public setStep(step:Step){
-        this.step = step;
-    }
 
-    public validate(feed:Feed) : boolean{
-        if(this.step.required && !this.step.visited) {
-            this.step.setComplete(false);
+    public validate(feed:Feed, step:Step) : boolean{
+        if(step.required && !step.visited) {
+            step.setComplete(false);
         } else if(this.hasFormErrors){
-            this.step.setComplete(false);
-            this.step.valid = false;
+            step.setComplete(false);
+            step.valid = false;
         }
         else {
-            this.step.valid = true;
-            this.step.setComplete(true)
+            step.valid = true;
+            step.setComplete(true)
         }
-        return this.step.valid;
+        return step.valid;
     }
 
 

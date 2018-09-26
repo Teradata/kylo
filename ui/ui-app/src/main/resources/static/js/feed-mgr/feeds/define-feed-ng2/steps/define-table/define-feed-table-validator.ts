@@ -9,19 +9,19 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
 
 
 
-    public validate(feed:Feed) : boolean{
+    public validate(feed:Feed, step:Step) : boolean{
         if(this.hasFormErrors){
-            this.step.valid = false;
-            this.step.setComplete(false);
+            step.valid = false;
+            step.setComplete(false);
         }
         else if(feed.table.tableSchema.fields.length ==0) {
-            this.step.valid = true;
-         this.step.setComplete(false);
+            step.valid = true;
+         step.setComplete(false);
         }
         else {
-            this.step.valid = true;
-            this.step.setComplete(true);
+            step.valid = true;
+            step.setComplete(true);
         }
-        return this.step.valid;
+        return step.valid;
     }
 }

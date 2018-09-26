@@ -20,6 +20,8 @@ package com.thinkbiganalytics.kylo.spark.client;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyInvalidSessionException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
 import com.thinkbiganalytics.kylo.spark.model.Session;
@@ -71,6 +73,12 @@ public class ReliableLivyClient implements LivyClient {
             }
 
             throw we;
+        } catch( LivyInvalidSessionException le) {
+            // One reason we might be here:  session start was previously attempted and failed.  User is attempting another access of the server let's restart
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            processManager.start(auth.getName());
+
+            return livyClient.postStatement(client, sparkLivyProcess, sp);
         }
     }
 
@@ -89,6 +97,12 @@ public class ReliableLivyClient implements LivyClient {
             }
 
             throw we;
+        } catch( LivyInvalidSessionException le) {
+            // One reason we might be here:  session start was previously attempted and failed.  User is attempting another access of the server let's restart
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            processManager.start(auth.getName());
+
+            return livyClient.getStatement(client, sparkLivyProcess, statementId);
         }
     }
 

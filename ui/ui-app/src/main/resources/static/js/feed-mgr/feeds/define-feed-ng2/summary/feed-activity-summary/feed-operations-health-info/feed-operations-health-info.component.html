@@ -23,9 +23,9 @@
           <mat-icon>{{kyloIcons.Feed.Actions.startNow}}</mat-icon>
           <span >Start Now</span>
         </button>
-        <button mat-menu-item disabled>
+        <button mat-menu-item mat-menu-item [disabled]="!accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
-          <span>UploadFile</span>
+          <span>Upload File</span>
         </button>
       </mat-menu>
     </div>

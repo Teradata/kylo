@@ -1,22 +1,22 @@
 import { Component, Input, OnInit } from "@angular/core";
-import BroadcastService from "../../services/broadcast-service";
+import BroadcastService from "../../../../../../services/broadcast-service";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpClient } from "@angular/common/http";
 
 // d3 and nvd3 should be included somewhere
 import 'd3';
 import 'nvd3';
-import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
-import {OpsManagerChartJobService} from "../../ops-mgr/services/ops-manager-chart-job.service";
-import {Feed} from "../../feed-mgr/model/feed/feed.model";
+import {OperationsRestUrlConstants} from "../../../../../../services/operations-rest-url-constants";
+import {OpsManagerChartJobService} from "../../../../../../ops-mgr/services/ops-manager-chart-job.service";
+import {Feed} from "../../../../../model/feed/feed.model";
 import {MatButtonToggleChange} from "@angular/material";
-import {KyloIcons} from "../../kylo-utils/kylo-icons";
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 declare const d3: any;
 
 @Component({
     selector: "feed-job-activity",
-    templateUrl: "js/shared-components/feed-job-activity/feed-job-activity.component.html"
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-job-activity/feed-job-activity.component.html"
 })
 export class FeedJobActivityComponent implements OnInit {
 

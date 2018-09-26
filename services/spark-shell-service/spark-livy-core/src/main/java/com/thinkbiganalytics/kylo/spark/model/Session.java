@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,12 +27,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @implNote https://livy.incubator.apache.org/docs/latest/rest-api.html#session
- * {"id":0,"appId":null,"owner":null,"proxyUser":null,"state":"starting","kind":"shared",\
- * "appInfo":{"driverLogUrl":null,"sparkUiUrl":null},"log":["stdout: ","\nstderr: "]}
- * ]}
+ * @implNote https://livy.incubator.apache.org/docs/latest/rest-api.html#session {"id":0,"appId":null,"owner":null,"proxyUser":null,"state":"starting","kind":"shared",\
+ * "appInfo":{"driverLogUrl":null,"sparkUiUrl":null},"log":["stdout: ","\nstderr: "]} ]}
  */
 public class Session {
+
     private Integer id;
     private String appId;
     private String size;
@@ -96,22 +95,23 @@ public class Session {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Session{");
-        sb.append("id=").append(id);
-        sb.append(", appId='").append(appId).append('\'');
-        sb.append(", size='").append(size).append('\'');
-        sb.append(", owner='").append(owner).append('\'');
-        sb.append(", proxyUser='").append(proxyUser).append('\'');
-        sb.append(", state='").append(state).append('\'');
-        sb.append(", kind='").append(kind).append('\'');
-        sb.append(", appInfo=").append(appInfo);
-        sb.append(", log=").append(log);
-        sb.append('}');
-        return sb.toString();
+        return new StringBuilder("Session{")
+            .append("id=").append(id)
+            .append(", appId='").append(appId).append('\'')
+            .append(", size='").append(size).append('\'')
+            .append(", owner='").append(owner).append('\'')
+            .append(", proxyUser='").append(proxyUser).append('\'')
+            .append(", state='").append(state).append('\'')
+            .append(", kind='").append(kind).append('\'')
+            .append(", appInfo=").append(appInfo)
+            .append(", log=").append(log)
+            .append('}')
+            .toString();
     }
 
     // Only used in testing, this is typically a response object
     public static class Builder {
+
         private Integer id;
         private String size;
         private String appId;

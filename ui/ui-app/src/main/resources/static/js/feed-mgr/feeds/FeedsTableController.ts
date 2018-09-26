@@ -46,7 +46,7 @@ export default class FeedsTableController implements ng.IComponentController {
             if (accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
                 AddButtonService.registerAddButton("feeds", () => {
                     this.feedService.resetFeed();
-                    StateService.FeedManager().Feed().navigateToDefineFeed()
+                    StateService.FeedManager().Feed().navigateToNewFeed()
                 });
             }
         });
