@@ -30,7 +30,7 @@ html, body {
 }
 
 body {
-  background-color: #F9F9F9 !important;
+  background-color: #e0e0e0 !important;
 }
 
 /* Always show scrollbars */
@@ -124,8 +124,8 @@ md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
 }
 
 md-list .md-button:not(.md-no-style).selected {
-  color: #3483BA;
-  fill: #3483BA;
+  color: #00796B;
+  fill: #00796B;
 }
 
 md-sidenav md-list {
@@ -160,7 +160,7 @@ md-list md-datepicker .md-button.md-icon-button {
 
 md-sidenav .collapse-btn {
   padding: 10px;
-  color: #3483BA;
+  color: #00796B;
   background-color: #F9F9F9;
   cursor: pointer;
 }
@@ -172,7 +172,7 @@ md-sidenav .collapse-btn {
 /* Primary content area */
 
 #content {
-  background-color: #F9F9F9;
+  background-color: #e0e0e0;
 }
 
 #content {
@@ -524,7 +524,7 @@ md-card {
 }
 
 .btn-link.ngTruncateToggleText {
-  color: #3483BA;
+  color: #00796B;
 }
 
 .content-wrapper {
@@ -886,23 +886,23 @@ Status styles
 }
 
 .info-notification {
-  color: #0288d1;
-  background-color: #0288d126;
+  color: #00695c;
+  background-color: #00695c;
 }
 
 .primary-color-1 {
-  color: #3483BA;
-  fill: #3483BA;
+  color: #00796B;
+  fill: #00796B;
 }
 
 .orange {
-  color: #F08C38;
-  fill: #F08C38;
+  color: #EF6C00;
+  fill: #EF6C00;
 }
 
 .accent-color, .accent-color-1 {
-  color: #E4682C;
-  fill: #E4682C;
+  color: #EF6C00;
+  fill: #EF6C00;
 }
 
 .grey {
@@ -1304,9 +1304,9 @@ md-input-container.global-search .md-input {
   align-content: center;
   align-items: center;
   background-color: white;
-  border: 1px solid #2B6C9A;
+  border: 1px solid #00695c;
   border-radius: 50%;
-  color: #3483BA;
+  color: #00796B;
   display: flex;
   height: 40px;
   justify-content: center;
