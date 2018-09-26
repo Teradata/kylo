@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 public enum DatabaseType {
     // For the preview pattern: {0}=columns, {1}=schema, {2}=table, {3}=limit
     IMPALA("Impala", "jdbc:impala:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
-    HIVE("Hive", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    HIVE("Apache Hive", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     DERBY("Apache Derby", "jdbc:derby:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     DB2("DB2", "jdbc:db2", "select 1 from sysibm.sysdummy1", "SELECT {0} FROM {1}.{2} FETCH FIRST {3} ROWS ONLY"),
     FIREBIRD("Firebird", "jdbc:firebird", "select 1 from rdb$database", "SELECT FIRST {3} {0} FROM {1}.{2}"),
@@ -51,6 +51,7 @@ public enum DatabaseType {
     POSTGRES("PostgreSQL", "jdbc:postgresql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SQLITE("SQLite", "jdbc:sqlite", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
+    SPARKSQL("Spark SQL", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SYBASE("Sybase", "jdbc:sybase", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
     TERADATA("Teradata", "jdbc:teradata", "select 1", "SELECT {0} FROM {1}.{2} SAMPLE {3}");
 
