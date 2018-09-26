@@ -11,6 +11,7 @@ import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
 import "jquery";
 import "jquery-ui";
 import "pivottable";
+import "pivottable-c3-renderers";
 
 @Component({
     selector: 'ops-mgr-charts',
@@ -18,14 +19,14 @@ import "pivottable";
     encapsulation: ViewEncapsulation.None,
     styles: [`.ListItemContainer{
         padding: 0px !important;
-        line-height: inherit;
-        -webkit-box-pack: start;
-        justify-content: flex-start;
-        -webkit-box-align: center;
-        align-items: center;
-        min-height: 48px;
-        height: auto;
-        flex: 1 1 auto;
+        line-height: inherit !important;
+        -webkit-box-pack: start !important;
+        justify-content: flex-start !important;
+        -webkit-box-align: center !important;
+        align-items: center !important;
+        min-height: 48px !important;
+        height: auto !important;
+        flex: 1 1 auto !important;
     }`],
     styleUrls:['bower_components/c3/c3.css','js/ops-mgr/charts/pivot.css']
 })
