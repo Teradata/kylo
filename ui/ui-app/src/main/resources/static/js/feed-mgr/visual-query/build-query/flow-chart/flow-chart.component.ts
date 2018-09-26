@@ -413,19 +413,19 @@ export class FlowChartComponent implements  OnInit{
 
 //Style methods
     getAttrCheckboxCheckedClass(attr:any){
-        return attr.selected ? 'show': 'hide';
+        return attr.selected ? 'primary-color-1 show': 'hide';
     }
 
     getAttrCheckboxUnCheckedClass(attr:any){
-        return attr.selected ? 'hide': 'show';
+        return attr.selected ? 'hide': ' primary-color-1 show';
     }
 
     getAllCheckboxCheckedClass(nodeAttrs:any){
-        return nodeAttrs.hasAllSelected() ? 'show': 'hide';
+        return nodeAttrs.hasAllSelected() ? 'primary-color-1 show': 'hide';
     }
 
     getAllCheckboxUnCheckedClass(nodeAttrs:any){
-        return nodeAttrs.hasAllSelected() ? 'hide': 'show';
+        return nodeAttrs.hasAllSelected() ? 'hide': 'primary-color-1 show';
     }
 
     getNodeClass(node:any){
