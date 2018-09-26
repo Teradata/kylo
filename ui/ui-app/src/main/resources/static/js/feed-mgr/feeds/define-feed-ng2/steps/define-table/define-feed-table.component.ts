@@ -158,6 +158,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     indexCheckAll: CheckAll;
 
+    mergeStrategiesForm : FormGroup;
+
+    targetFormatOptionsForm : FormGroup;
+
 
     @ViewChild('virtualScroll')
    virtualScroll: TdVirtualScrollContainerComponent
@@ -187,7 +191,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll = new CheckAll( 'index', false);
         this.defineTableForm = new FormGroup({});
         this.definePartitionForm = new FormGroup({});
+        this.mergeStrategiesForm = new FormGroup({});
+        this.targetFormatOptionsForm = new FormGroup({});
 
+        this.mergeStrategiesForm.registerControl("targetMergeStrategy", new FormControl());
         this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
         this.defineTableForm.registerControl("profileCheckAll",new FormControl(this.profileCheckAll.isChecked))
     }
@@ -225,13 +232,18 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 this.partitionFormulas = functions;
             });
 
+        this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl());
+        this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl());
+
         //listen when the form is valid or invalid
         this.subscribeToFormChanges(this.defineTableForm);
-
         this.subscribeToFormDirtyCheck(this.defineTableForm);
-
-
-
+        this.subscribeToFormChanges(this.definePartitionForm);
+        this.subscribeToFormDirtyCheck(this.definePartitionForm);
+        this.subscribeToFormChanges(this.mergeStrategiesForm);
+        this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
+        this.subscribeToFormChanges(this.targetFormatOptionsForm);
+        this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
     }
 
     protected feedEdit(feed:Feed){
@@ -272,6 +284,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
         this.virtualScroll.refresh();
+        this.defineTableForm.markAsDirty();
         if(this.virtualScroll){
             setTimeout(()=>{this.virtualScroll.scrollToEnd()}, 50);
         }

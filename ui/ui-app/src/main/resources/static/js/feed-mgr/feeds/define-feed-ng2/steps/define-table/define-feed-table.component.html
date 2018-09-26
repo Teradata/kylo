@@ -353,7 +353,7 @@
                 </div>
               </ng-template>
             </div>
-            <button mat-button  (click)="addPartitionField()">Add Partition</button>
+            <button mat-button (click)="addPartitionField()">Add Partition</button>
           </form>
         </div>
       </mat-card-content>
@@ -369,16 +369,24 @@
           <span fxFlex="10" class="property-name">Merge Strategy</span>
           <span>{{feed.table.targetMergeStrategy}}</span>
         </div>
-        <mat-radio-group *ngIf="!feed.readonly" [(ngModel)]="feed.table.targetMergeStrategy" fxLayout="row" fxLayoutAlign="space-evenly" fxLayoutWrap="true" class="layout-padding-top"
-                         name="targetMergeStrategy">
-          <mat-radio-button *ngFor="let strategy of mergeStrategies"
-                            [value]="strategy.type"
-                            [aria-label]="strategy.name"
-                            [disabled]="strategy.disabled">
-            {{strategy.name}}
-            <div class="hint">{{strategy.hint}}</div>
-          </mat-radio-button>
-        </mat-radio-group>
+
+          <form [formGroup]="mergeStrategiesForm">
+          <mat-radio-group *ngIf="!feed.readonly" [(ngModel)]="feed.table.targetMergeStrategy"
+                           class="layout-padding-top-20"
+                           name="targetMergeStrategy"
+                           formControlName="targetMergeStrategy">
+                           <div fxLayout="row wrap" fxLayout.xs="column" class="layout-padding-indent-20" fxLayoutAlign="space-evenly">
+                           <div *ngFor="let strategy of mergeStrategies">
+                              <mat-radio-button [value]="strategy.type"
+                                                [aria-label]="strategy.name"
+                                                [disabled]="strategy.disabled">
+                                {{strategy.name}}
+                                <div class="hint">{{strategy.hint}}</div>
+                              </mat-radio-button>
+                            </div>
+                          </div>
+          </mat-radio-group>
+        </form>
       </mat-card-content>
     </mat-card>
 
@@ -387,30 +395,28 @@
         <mat-card-title>Target Format</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div fxLayout="column" fxLayoutAlign="space-between" fxLayoutGap="10px">
+        <form>
+        <div fxLayout="column" class="layout-padding-indent-20" fxLayoutGap="10px">
           <div fxLayout="row">
-            <div fxFlex class="layout-padding-indent-20">
-              <mat-form-field class="mat-form-field-width">
-                <mat-select placeholder="Target Format" [(ngModel)]="feed.table.targetFormat" [disabled]="feed.readonly">
+              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex class="layout-padding-indent-20">
+                <mat-select formControlName="targetFormat" placeholder="Target Format" [(ngModel)]="feed.table.targetFormat" [disabled]="this.feed.readonly">
                   <mat-option *ngFor="let opt of targetFormatOptions" [value]="opt.value">
                     {{opt.label}}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
-            </div>
           </div>
           <div fxLayout="row">
-            <div fxFlex class="layout-padding-indent-20">
-              <mat-form-field class="mat-form-field-width">
-                <mat-select placeholder="Compression Options" [(ngModel)]="feed.table.options.compressionFormat" [disabled]="feed.readonly">
+              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex class="layout-padding-indent-20">
+                <mat-select formControlName="compressionFormat" placeholder="Compression Options" [(ngModel)]="feed.table.options.compressionFormat" [disabled]="this.feed.readonly">
                   <mat-option *ngFor="let opt of compressionOptions; let i = index" [value]="opt">
                     {{opt}}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
-            </div>
           </div>
         </div>
+      </form>
       </mat-card-content>
     </mat-card>
 

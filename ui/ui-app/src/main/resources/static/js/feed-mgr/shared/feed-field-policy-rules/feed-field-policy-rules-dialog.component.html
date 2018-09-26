@@ -28,7 +28,6 @@
                 <li
                     *ngFor="let rule of policyRules; let i = index"
                     [dndDraggable]
-                    [dndType]="'rule'"
                     [dndObject]="rule"
                     (dndMoved)="onMovedPolicyRule(rule, policyRules)">
                     <div fxLayout="row" fxLayoutAlign="start">

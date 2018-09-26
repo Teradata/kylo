@@ -202,7 +202,8 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
         this.moved = true;
         this.pendingEdits = true;
         //resequence
-        this.policyRules.forEach((rule:any,index:number) =>rule.sequence = index);
+        list.forEach((rule:any,index:number) =>rule.sequence = index);
+        this.policyRules = list;
     }
 
 

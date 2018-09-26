@@ -11,6 +11,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../services/feed-side-nav.service";
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
+import 'rxjs/add/operator/distinctUntilChanged';
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -80,6 +81,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         this.feedStateChange(event);
     }
 
+    orignalVal: string;
+
     /**
      * Allow users to subscribe to their form and mark for changes
      * @param {FormGroup} formGroup
@@ -92,6 +95,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
+
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;
@@ -105,8 +109,14 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         //watch for form changes and mark dirty
         //start watching for form changes after init time
         formGroup.valueChanges.debounceTime(debounceTime).subscribe(change => {
-            this.onFormChanged(change);
+            if(!formGroup.dirty)
+                this.orignalVal = JSON.stringify(change);
+                
+            if(formGroup.dirty && this.orignalVal !== JSON.stringify(change)){
+                this.onFormChanged(change);
+            }
         });
+
     }
 
 
@@ -194,6 +204,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             this.defineFeedService.saveFeed(this.feed).subscribe((response: SaveFeedResponse) => {
                 this.defineFeedService.openSnackBar("Saved the feed ", 3000);
                 this.resolveLoading();
+                this.step.clearDirty();
             }, error1 => {
                 this.resolveLoading()
                 this.defineFeedService.openSnackBar("Error saving the feed ", 3000);

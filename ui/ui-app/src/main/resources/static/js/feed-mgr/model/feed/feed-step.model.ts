@@ -75,6 +75,10 @@ export class Step {
         return this.dirty;
     }
 
+    clearDirty() {
+        this.dirty = false;
+    }
+
     /**
      * updates the state of any dependent steps based upon the state of this feed and returns any steps that are disabled due to this feed not being complete
      * @return {Step[]}
