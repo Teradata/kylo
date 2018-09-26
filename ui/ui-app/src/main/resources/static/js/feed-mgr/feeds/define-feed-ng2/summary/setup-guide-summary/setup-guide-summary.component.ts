@@ -100,7 +100,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     deployFeed(){
 
         if(this.feed.accessControl.allowEdit){
-            let config ={data:new DeployFeedDialogComponentData(this.feed),panelClass:"full-screen-dialog", width:"500px", height:"400px"};
+            let config ={data:new DeployFeedDialogComponentData(this.feed),panelClass:"full-screen-dialog", width:"600px", height:"400px"};
             this._dialogService.open(DeployFeedDialogComponent,config);
         }
 

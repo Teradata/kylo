@@ -1,25 +1,39 @@
 
 <mat-toolbar [color]="['primary']">
-  <span>Deploy feed {{data.feed.getFullName()}}</span>
+  <span>Deploy feed {{feed.getFullName()}}</span>
   <span class="flex"></span>
   <button mat-icon-button (click)="cancel()">
     <mat-icon arial-label="Close dialog">close</mat-icon>
   </button>
 </mat-toolbar>
 <div mat-dialog-content >
-  <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start">
+  <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start" *ngIf="!deployingFeed">
 
-    Deploy Feed
-    <br/>
-    Modify Schedule
-    <br/>
-    Modify Enabled
-    <br/>
+    <div *ngIf="deployError" fxLayout="row">
+      <mat-icon color="warn">error</mat-icon>
+      <span class=" pad-left mat-title">{{deployErrorMessage}}</span>
+    </div>
 
+    <form [formGroup]="formGroup">
+
+      <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed"></feed-schedule>
+
+    <div fxLayout="column">
+      <mat-checkbox #enableFeed formControlName="enableFeed"> {{"views.define-feed-schedule.EFI" | translate}}</mat-checkbox>
+      <span class="hint fade" [hidden]="enableFeed.checked">{{"views.define-feed-schedule.TFW" | translate}}</span>
+      <span class="hint fade" [hidden]="!enableFeed.checked">{{"views.define-feed-schedule.TFW2" | translate}}</span>
+    </div>
+    </form>
     <button mat-raised-button color="primary" (click)="deployFeed()">Deploy</button>
 
 
   </div>
+
+<div *ngIf="deployingFeed" fxFlex fxLayout="column" fxLayoutAlign="center center">
+  <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
+  <h1 class="mat-title">Deploying {{feed.getFullName()}}</h1>
 </div>
 
 
+
+</div>
