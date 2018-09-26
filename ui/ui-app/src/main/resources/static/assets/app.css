@@ -30,7 +30,7 @@ html, body {
 }
 
 body {
-  background-color: #F9F9F9 !important;
+  background-color: #e0e0e0 !important;
 }
 
 /* Always show scrollbars */
@@ -172,7 +172,7 @@ md-sidenav .collapse-btn {
 /* Primary content area */
 
 #content {
-  background-color: #F9F9F9;
+  background-color: #e0e0e0;
 }
 
 #content {
