@@ -23,7 +23,6 @@ export class FeedInfoDescriptionComponent  extends AbstractFeedInfoItemComponent
     save(){
         let values = this.formGroup.value;
         this.feed.description = values.description;
-        this.defineFeedService.saveFeed(this.feed);
         this.saveFeed(this.feed);
     }
 

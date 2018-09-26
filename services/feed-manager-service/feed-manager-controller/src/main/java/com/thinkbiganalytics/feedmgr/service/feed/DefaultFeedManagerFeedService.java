@@ -1115,14 +1115,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         Stopwatch stopwatch = Stopwatch.createStarted();
         boolean enabled = false;
         
-        if (feedMetadata.getState() == null) {
+        //if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {
                 feedMetadata.setState(Feed.State.ENABLED.name());
                 enabled = true;
             } else {
                 feedMetadata.setState(Feed.State.DISABLED.name());
             }
-        }
+        //}
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);

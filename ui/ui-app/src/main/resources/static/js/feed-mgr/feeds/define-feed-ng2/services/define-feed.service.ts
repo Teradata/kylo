@@ -600,11 +600,11 @@ export class DefineFeedService {
             let headers :HttpHeaders = new HttpHeaders();
             headers =headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
 
-            this._loadingService.register("processingFeed")
+           // this._loadingService.register("processingFeed")
 
            return this.http.post(url,null,{ params:params,headers:headers})
                .map((version:EntityVersion) => {
-                this._loadingService.resolve("processingFeed")
+               // this._loadingService.resolve("processingFeed")
                 this.openSnackBar("Deployed feed v."+version.name,5000)
                    return version;
             }).catch((error1:any,caught:Observable<any>) => {
@@ -612,7 +612,7 @@ export class DefineFeedService {
                     title:"Error deploying feed",
                     message:"There was an error deploying the feed "+error1
                 });
-                this._loadingService.resolve("processingFeed")
+             //   this._loadingService.resolve("processingFeed")
                   return Observable.throw(error1);
             }).share();
         }
