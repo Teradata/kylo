@@ -1,13 +1,11 @@
 import * as angular from 'angular';
-/*import 'rxjs/add/operator/toPromise';*/
-import {Headers, RequestOptions, Response} from '@angular/http';
-//const moduleName = require('auth/module-name');
+
 import {moduleName} from "../module-name";
 
 //@Injectable()
 export default class UserService {
     headers: Headers;
-    options: RequestOptions;
+    options: any;
 
     static $inject = ['$http', 'CommonRestUrlService', 'UserGroupService']
 

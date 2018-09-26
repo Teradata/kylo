@@ -1,4 +1,3 @@
-import {HttpClientModule} from "@angular/common/http";
 import {NgModule} from "@angular/core";
 
 import {FileSizePipe} from "./pipes/file-size.pipe";
@@ -12,9 +11,6 @@ import {SelectionService} from './services/selection.service';
     ],
     exports: [
         FileSizePipe
-    ],
-    imports: [
-        HttpClientModule
     ],
     providers: [
         CatalogService,

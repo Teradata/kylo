@@ -288,7 +288,7 @@ export class NotificationService {
         return this.addAlert(errorType, message, detailMsg, "danger", timeout);
     }
 
-    errorWithGroupKey(errorType: string, message: string, groupKey: string, detailMsg: string) {
+    errorWithGroupKey(errorType: string, message: string, groupKey: string, detailMsg?: string) {
         //   console.error("ERROR ",message, detailMsg)
         //Only add the error if it doesnt already exist
         if (groupKey != undefined) {

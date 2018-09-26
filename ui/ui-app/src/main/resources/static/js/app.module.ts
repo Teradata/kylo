@@ -1,4 +1,4 @@
-import {HttpClient, HttpClientModule} from "@angular/common/http";
+import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
 import {FactoryProvider, NgModule, NgModuleFactoryLoader, SystemJsNgModuleLoader} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {BrowserModule} from "@angular/platform-browser";
@@ -12,6 +12,7 @@ import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 
 import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
+import {AngularHttpInterceptor} from "./services/AngularHttpInterceptor";
 import {KyloServicesModule} from "./services/services.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
@@ -42,6 +43,7 @@ const translateConfig: TranslateModuleConfig = {
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,
+        {provide: HTTP_INTERCEPTORS, useClass: AngularHttpInterceptor, multi: true},
         {provide: NgModuleFactoryLoader, useClass: SystemJsNgModuleLoader}
     ]
 })

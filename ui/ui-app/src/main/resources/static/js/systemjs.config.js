@@ -76,7 +76,6 @@ System.config({
         '@angular/flex-layout/flex': 'npm:@angular/flex-layout/bundles/flex-layout-flex.umd.js',
         '@angular/flex-layout/server': 'npm:@angular/flex-layout/bundles/flex-layout-server.umd.js',
         '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.min',
-        '@angular/http': 'npm:@angular/http/bundles/http.umd.min',
         '@angular/material/autocomplete': 'npm:@angular/material/bundles/material-autocomplete.umd.min',
         '@angular/material/button': 'npm:@angular/material/bundles/material-button.umd.min',
         '@angular/material/button-toggle': 'npm:@angular/material/bundles/material-button-toggle.umd.min',
