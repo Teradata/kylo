@@ -193,7 +193,7 @@ public class HiveRestController {
 
         TableSchema tableSchema;
         try {
-            tableSchema = hiveMetadataService.getTableJer(schema, table);
+            tableSchema = hiveMetadataService.getTable(schema, table);
         } catch (DataAccessException e) {
             log.error("Error listing Hive Table schemas from the metastore ", e);
             throw e;
