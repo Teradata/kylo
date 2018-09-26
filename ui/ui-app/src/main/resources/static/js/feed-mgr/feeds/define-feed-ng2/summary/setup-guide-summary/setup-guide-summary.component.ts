@@ -16,6 +16,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {EntityVersion} from "../../../../model/entity-version.model";
 import {RestResponseStatus, RestResponseStatusType} from "../../../../../common/common.model";
+import {DeployFeedDialogComponent, DeployFeedDialogComponentData} from "./deploy-feed-dialog/deploy-feed-dialog.component";
 
 
 @Component({
@@ -97,12 +98,14 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     }
 
     deployFeed(){
-        this.defineFeedService.deployFeed(this.feed).subscribe((response:any) =>{
-            if(response){
-               let  redirectState = FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity";
-                this.stateService.go(redirectState,{feedId:this.feed.id,refresh:true}, {location:'replace'})
-            }
-        })
+
+        if(this.feed.accessControl.allowEdit){
+            let config ={data:new DeployFeedDialogComponentData(this.feed),panelClass:"full-screen-dialog", width:"500px", height:"400px"};
+            this._dialogService.open(DeployFeedDialogComponent,config);
+        }
+
+
+
     }
 
     onFeedSaved(response:SaveFeedResponse){

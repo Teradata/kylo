@@ -120,6 +120,7 @@ import {FeedJobActivityComponent} from "./summary/feed-activity-summary/feed-job
 import {FeedOperationsHealthInfoComponent} from "./summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component";
 import {FeedUploadFileDialogComponent} from "./summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component";
 import {SkipHeaderComponent} from "./shared/skip-header/skip-header.component";
+import {DeployFeedDialogComponent} from "./summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component";
 
 @NgModule({
     declarations: [
@@ -177,12 +178,13 @@ import {SkipHeaderComponent} from "./shared/skip-header/skip-header.component";
         FeedJobActivityComponent,
         FeedOperationsHealthInfoComponent,
         FeedUploadFileDialogComponent,
-        FeedSummaryContainerComponent,
-        SkipHeaderComponent
+        SkipHeaderComponent,
+        DeployFeedDialogComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,
-        FeedUploadFileDialogComponent
+        FeedUploadFileDialogComponent,
+        DeployFeedDialogComponent
     ],
     providers:[
       DefineFeedService,

@@ -1,0 +1,25 @@
+
+<mat-toolbar [color]="['primary']">
+  <span>Deploy feed {{data.feed.getFullName()}}</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content >
+  <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start">
+
+    Deploy Feed
+    <br/>
+    Modify Schedule
+    <br/>
+    Modify Enabled
+    <br/>
+
+    <button mat-raised-button color="primary" (click)="deployFeed()">Deploy</button>
+
+
+  </div>
+</div>
+
+
