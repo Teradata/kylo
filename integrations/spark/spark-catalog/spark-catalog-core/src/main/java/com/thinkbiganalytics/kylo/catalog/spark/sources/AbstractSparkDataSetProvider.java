@@ -38,6 +38,7 @@ import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructType;
 
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -47,6 +48,7 @@ import scala.Function1;
 import scala.Unit;
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
+import scala.collection.Seq$;
 
 /**
  * Base implementation of a data set provider that can read from and write to any Spark data source.
@@ -71,11 +73,23 @@ abstract class AbstractSparkDataSetProvider<T> implements DataSetProvider<T>, Sp
     @Nonnull
     @Override
     public final T read(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options) {
-        // Load data set
+        // Prepare reader
         final SparkDataSetContext<T> context = new SparkDataSetContext<>(options, client, this);
         final DataFrameReader reader = SparkUtil.prepareDataFrameReader(getDataFrameReader(client, context), context, client);
-        final Seq<String> paths = (context.getPaths() != null) ? JavaConversions.asScalaBuffer(context.getPaths()) : null;
-        T dataSet = load(reader, paths);
+        final List<String> paths = context.getPaths();
+
+        // Load and union data sets
+        T dataSet = null;
+
+        if (paths == null || paths.isEmpty() || context.isFileFormat()) {
+            final Seq<String> pathSeq = (paths != null) ? JavaConversions.asScalaBuffer(paths) : null;
+            dataSet = load(reader, pathSeq);
+        } else {
+            for (final String path : paths) {
+                T load = load(reader, Seq$.MODULE$.<String>newBuilder().$plus$eq(path).result());
+                dataSet = (dataSet == null) ? load : union(dataSet, load);
+            }
+        }
 
         // Delete files on job end
         if (context.isFileFormat() && "false".equalsIgnoreCase(SparkUtil.getOrElse(context.getOption(KEEP_SOURCE_FILE_OPTION), ""))) {
@@ -145,4 +159,10 @@ abstract class AbstractSparkDataSetProvider<T> implements DataSetProvider<T>, Sp
      */
     @Nonnull
     protected abstract StructType schema(@Nonnull T dataSet);
+
+    /**
+     * Returns the union of rows for the specified data sets.
+     */
+    @Nonnull
+    protected abstract T union(@Nonnull T left, @Nonnull T right);
 }

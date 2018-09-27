@@ -128,7 +128,7 @@ export class PreviewDataSet {
         let sparkDataSet = new SparkDataSet();
         sparkDataSet.id = this.displayKey;
         sparkDataSet.dataSource = this.dataSource;
-        sparkDataSet.options = this.sparkOptions
+        sparkDataSet.options = this.sparkOptions;
         sparkDataSet.schema = this.schema;
         sparkDataSet.preview = this;
         sparkDataSet.previewPath = this.getPreviewItemPath();

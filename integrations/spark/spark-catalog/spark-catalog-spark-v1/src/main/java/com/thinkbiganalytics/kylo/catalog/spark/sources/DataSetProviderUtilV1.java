@@ -75,7 +75,13 @@ public class DataSetProviderUtilV1 {
      */
     @Nonnull
     static DataFrame load(@Nonnull final DataFrameReader reader, @Nullable final Seq<String> paths) {
-        return (paths != null) ? reader.load(paths) : reader.load();
+        if (paths == null || paths.isEmpty()) {
+            return reader.load();
+        } else if (paths.size() == 1) {
+            return reader.load(paths.apply(0));
+        } else {
+            return reader.load(paths);
+        }
     }
 
     /**

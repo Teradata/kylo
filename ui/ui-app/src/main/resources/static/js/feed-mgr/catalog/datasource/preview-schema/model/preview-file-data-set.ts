@@ -48,8 +48,7 @@ export class PreviewFileDataSet extends PreviewDataSet{
 
     public toSparkDataSet(): SparkDataSet {
         let sparkDataSet = super.toSparkDataSet();
-        let path = this.getPreviewItemPath();
-        sparkDataSet.options['path'] = path;
+        sparkDataSet.paths = Array.isArray(this.files) ? this.files.map(file => file.filePath) : null;
 
         //parse the schemaParser
         if(this.schemaParser){

@@ -113,4 +113,10 @@ public class SparkDataSetProviderV1 extends AbstractSparkDataSetProvider<DataFra
     protected StructType schema(@Nonnull final DataFrame dataSet) {
         return DataSetProviderUtilV1.schema(dataSet);
     }
+
+    @Nonnull
+    @Override
+    protected DataFrame union(@Nonnull final DataFrame left, @Nonnull final DataFrame right) {
+        return left.unionAll(right);
+    }
 }
