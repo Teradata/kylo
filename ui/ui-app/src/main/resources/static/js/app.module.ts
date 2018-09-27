@@ -14,6 +14,8 @@ import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
 import {AngularHttpInterceptor} from "./services/AngularHttpInterceptor";
 import {KyloServicesModule} from "./services/services.module";
+import {MatIconModule} from "@angular/material/icon";
+
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -36,6 +38,7 @@ const translateConfig: TranslateModuleConfig = {
         HttpClientModule,
         KyloCommonModule,
         KyloServicesModule,
+        MatIconModule,
         TranslateModule.forRoot(translateConfig),
         UIRouterModule,
         UIRouterUpgradeModule,

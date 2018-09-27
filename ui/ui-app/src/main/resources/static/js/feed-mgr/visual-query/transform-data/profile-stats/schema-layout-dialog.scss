@@ -1,0 +1,113 @@
+.dndPlaceholder{
+  background-color: #ddd;
+  display: block;
+  min-height: 42px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border: 1px solid rgba(86,61,124,.2);
+  position: relative;
+  padding-right: 15px;
+  padding-left: 15px;
+
+}
+
+.kylo-mat-list-text {
+  padding-left: 16px;
+  padding-right: 0px;
+}
+
+.kylo-mat-list-item {
+  padding:10px;
+}
+
+.kylo-mat-list-handle {
+  margin-left:20px;
+}
+
+mat-icon.kylo-mat-list-avatar {
+  align-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.04);
+  background-repeat: no-repeat;
+  border-bottom-left-radius: 50%;
+  border-bottom-right-radius: 50%;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+  box-sizing: border-box;
+  color: rgb(240, 140, 56);
+  direction: ltr;
+  display: flex;
+  fill: rgb(240, 140, 56);
+  flex-shrink: 0;
+  font-family: "Material Icons";
+  font-feature-settings: "liga";
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 400;
+  height: 40px;
+  justify-content: center;
+  letter-spacing: normal;
+  /* line-height: 24px; */
+  min-width: 40px;
+  overflow-wrap: normal;
+  pointer-events: auto;
+  text-rendering: optimizelegibility;
+  text-transform: none;
+  white-space: nowrap;
+  width: 40px;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.kylo-mat-list-item-content {
+  align-items: center;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  flex-direction: row;
+  font-family: Roboto, monospace;
+  font-size: 16px;
+  height: 56px;
+  padding-bottom: 0px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 0px;
+  pointer-events: auto;
+  position: relative;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.kylo-mat-list-text {
+  padding-left: 16px;
+  padding-right: 0px;
+}
+
+mat-divider.kylo-mat-divider {
+  border-top-color: rgba(0, 0, 0, 0.12);
+  border-top-style: solid;
+  border-top-width: 1px;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.87);
+  display: block;
+  font-family: Roboto, monospace;
+  font-size: 14px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-top: 0px;
+  pointer-events: auto;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.kylo-mat-list-color {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+h4.text-deleted {
+  min-width: 170px;
+  max-width: 170px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-decoration: line-through;
+  font-weight:normal;
+}

@@ -6,6 +6,7 @@ import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
+import {MatIconRegistry} from "@angular/material/icon";
 
 @Component({
     selector: 'visual-query-stepper',
@@ -74,8 +75,10 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
-                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory) {
+                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry) {
         console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
+
+        matIconRegistry.registerFontClassAlias ('fa');
 
         // Manage the sidebar navigation
         this.sideNavService.hideSideNav();

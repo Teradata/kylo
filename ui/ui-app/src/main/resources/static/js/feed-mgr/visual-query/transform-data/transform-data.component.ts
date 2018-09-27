@@ -1039,11 +1039,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     if (columns != null) {
                         let formulaFields : string[] = [];
                         columns.forEach((col:ColumnItem) => {
-                            if (col.isChanged()) {
-                                let castClause = (col.isTypeChanged() ? `.cast("${col.newType}")` : '');
+                            if (!col.deleted) {
+                                let castClause = ((col.newType != col.origType) ? `.cast("${col.newType}")` : '');
                                 formulaFields.push(`${col.origName}${castClause}.as("${col.newName}")`);
-                            } else {
-                                formulaFields.push(`${col.origName}`);
                             }
                         });
                         const formula = `select(${formulaFields.join(",")}`;

@@ -2,6 +2,7 @@ import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {QueryResultColumn} from "../../wrangler";
 
+
 export class SchemaLayoutDialogData {
 
     constructor(public items: QueryResultColumn[]) {
@@ -12,43 +13,59 @@ export class SchemaLayoutDialogData {
 export class ColumnItem {
 
     public editMode: boolean = false;
-    public origIndex: number;
     public newName: string;
     public newType: string;
+    public typeIcon: string;
     public deleted: boolean = false;
 
     constructor(public origName: string,
                 public origType: string) {
         this.newName = this.origName;
         this.newType = this.origType;
-    }
+        switch (this.origType) {
+            case 'string':
+                this.typeIcon = 'text_format';
+                break;
+            case 'float':
+            case 'double':
+            case 'long':
+            case 'bigint':
+            case 'tinyint':
+            case 'smallint':
+            case 'int':
+                this.typeIcon = "exposure_zero"
+                break;
+            case 'timestamp':
+            case 'date':
+                this.typeIcon = "date_range";
+                break;
+            case 'boolean':
+                this.typeIcon = "done";
+                break;
+            default:
+                this.typeIcon = "dehaze";
+                break;
+        }
 
-    isChanged(): boolean {
-        return (this.newName != this.origName || this.isTypeChanged());
-    }
-
-    isTypeChanged(): boolean {
-        return (this.newType != this.origType);
     }
 }
 
 @Component({
     templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/schema-layout-dialog.html',
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/column-analysis.css"]
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/schema-layout-dialog.css"]
 })
 export class SchemaLayoutDialog {
 
     public columns: ColumnItem[] = [];
 
-    public trash: ColumnItem[] = [];
-
     public isChanged: boolean = false;
 
+    source: any;
 
     // @ts-ignore
     constructor(private dialog: MatDialogRef<SchemaLayoutDialog>, @Inject(MAT_DIALOG_DATA) public data: SchemaLayoutDialogData) {
         for (let col of data.items) {
-            this.columns.push(new ColumnItem( col.field, col.dataType));
+            this.columns.push(new ColumnItem(col.field, col.dataType));
         }
     }
 
@@ -57,31 +74,43 @@ export class SchemaLayoutDialog {
         this.isChanged = true;
     }
 
+    removeMovedItem(item: any, items: ColumnItem[]) {
+        let index = items.indexOf(item);
+        items.splice(index, 1);
+        this.columns = items;
+        this.isChanged = true;
+    }
+
+
     remove(i: number): void {
         this.isChanged = true;
-        this.columns[i].origIndex = i;
         this.columns[i].deleted = true;
-        //this.trash.push(this.columns[i]);
-        //this.columns.splice(i, 1)
     }
 
     restore(i: number): void {
+        this.isChanged = true;
         this.columns[i].deleted = false;
-        //this.columns.splice(this.trash[i].origIndex, 1, this.trash[i]);
-        //this.trash.splice(i, 1);
     }
 
     setType(i: number, type: string) {
+        this.isChanged = true;
         this.columns[i].newType = type;
     }
 
-    castOptions() : Array<string> {
-        let values : Array<string> = ['string', 'double'];
+    setName(item: ColumnItem, newName: any) {
+        item.newName = newName;
+        this.isChanged = true;
+    }
+
+    castOptions(): Array<string> {
+        let values: Array<string> = ['string', 'double'];
         return values;
     }
 
     apply() {
-        this.columns = this.columns.filter( (v:ColumnItem) => { return !v.deleted});
+        this.columns = this.columns.filter((v: ColumnItem) => {
+            return !v.deleted
+        });
         this.dialog.close(this.columns);
     }
 

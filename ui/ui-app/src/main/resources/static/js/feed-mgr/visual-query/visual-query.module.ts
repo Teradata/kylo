@@ -66,7 +66,7 @@ import {QuickColumnsDialog} from "./transform-data/profile-stats/quick-columns-d
 import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/quick-column-components";
 import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-dialog";
 import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
-//import {DndListModule} from "ngx-drag-and-drop-lists";
+import {DndListModule} from "ngx-drag-and-drop-lists";
 
 
 registerQueryEngine('spark', SparkQueryEngine);
@@ -116,7 +116,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         CovalentLayoutModule,
         CovalentLoadingModule,
         CovalentVirtualScrollModule,
-        //DndListModule,
+        DndListModule,
         DynamicFormModule,
         FieldPoliciesModule,
         FlexLayoutModule,

@@ -100,8 +100,8 @@ export class ColumnProfile {
                         self.nullCount = value.metricValue;
                         break;
                     case 'COLUMN_DATATYPE':
-                        self.columnDataType = value.metricValue;
-                        self.columnDataTypePlain = self.columnDataType.replace("Type", "");
+                        self.columnDataType = value.metricValue + "";
+                        self.columnDataTypePlain = self.columnDataType.replace("Type", "").toLowerCase();
                         break;
                     case 'MAX_LENGTH':
                         self.maxLen = value.metricValue;

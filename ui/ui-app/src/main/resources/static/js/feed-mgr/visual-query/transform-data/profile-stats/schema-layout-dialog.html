@@ -1,6 +1,7 @@
+
 <form #theForm="ngForm">
   <mat-toolbar [color]="['primary']">
-    <span>Schema Layout</span>
+    <span>Schema</span>
     <span fxFlex="1 1 auto"></span>
     <button mat-icon-button (click)="hide()">
       <mat-icon arial-label="Close dialog">close</mat-icon>
@@ -11,61 +12,55 @@
     <button mat-button (click)="hide()">Cancel</button>
     <button mat-raised-button style="margin-right:10px" [color]="['primary']" [disabled]="theForm.invalid || !isChanged" (click)="apply()">Apply</button>
   </div>
+  <mat-divider [inset]="false"></mat-divider>
 
-  <div mat-dialog-content class="mat-dialog-content" style="max-height:90%">
+  <div mat-dialog-content class="mat-dialog-content" style="height:100%;max-height:80vh;padding:0px;padding-top:10px;overflow-x:hidden;overflow-y:auto">
 
-    <mat-list>
+    <div
+        [dndList]
+        [dndPlaceholder]="placeholder"
+        [dndModel]="columns">
 
-      <td-virtual-scroll-container style="height:75vh;width:100%" [data]="columns">
-        <ng-template let-row="row" let-i="index" let-last="last" tdVirtualScrollRow>
-          <mat-list-item style="margin-top:10px">
-            <mat-icon matListAvatar [color]="['accent']">text_format</mat-icon>
+      <div *ngFor="let row of columns;let i=index;"
+           [dndType]="'item'"
+           dndNoDrag
+           (dndMoved)="removeMovedItem(row, columns)"
+           [dndDraggable]
+           [dndObject]="row" class="mat-list-item mat-list-item-avatar kylo-mat-list-item">
 
-            <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
-              <input matInput placeholder="Name" [(ngModel)]="row.newName" required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$" name="{{row.origName}}">
-            </mat-form-field>
+        <div class="kylo-mat-list-item-content">
 
-            <h4 matLine *ngIf="row.deleted" style="text-decoration: line-through">{{row.newName}}</h4>
+            <mat-icon class="kylo-mat-list-avatar" matListAvatar [color]="['accent']" style="display:inline-block">{{row.typeIcon}}</mat-icon>
+
+            <div class="kylo-mat-list-text">
+              <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
+                <input matInput placeholder="Name" [(ngModel)]="row.newName" (ngModelChange)="setName(row, $event)" class="kylo-mat-list-color"  required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$"
+                       name="{{row.origName}}">
+              </mat-form-field>
+            </div>
+
+            <h4 matLine *ngIf="row.deleted" class="kylo-mat-list-color text-deleted">{{row.newName}}</h4>
 
             <span fxFlex="1 1 auto"></span>
 
             <button mat-icon-button *ngIf="!row.deleted" (click)="remove(i)">
-              <mat-icon class="mat-24">delete</mat-icon>
+              <mat-icon class="mat-24 kylo-mat-list-color">delete</mat-icon>
             </button>
 
             <button mat-icon-button *ngIf="row.deleted" (click)="restore(i)">
-              <mat-icon class="mat-24">restore_from_trash</mat-icon>
+              <mat-icon class="mat-24 kylo-mat-list-color">restore_from_trash</mat-icon>
             </button>
 
-            <!-- <mat-icon style="margin-left:20px" class="mat-24">drag_handle</mat-icon> -->
-          </mat-list-item>
-          <mat-divider *ngIf="!last" [inset]="false"></mat-divider>
-        </ng-template>
+            <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
 
-      </td-virtual-scroll-container>
+        </div>
+        <mat-divider class="kylo-mat-divider" [inset]="false"></mat-divider>
+      </div>
 
-    </mat-list>
-<!--
-    <h2 style="padding-top:20px" *ngIf="trash.length > 0">Trash</h2>
+    </div>
 
-    <mat-list>
-      <mat-list-item>
-        Deleted Column
-      </mat-list-item>
-      <td-virtual-scroll-container style="height:75vh" [data]="trash">
-        <ng-template let-row="row" let-last="last" tdVirtualScrollRow>
-          <mat-list-item>
-            <mat-icon matListAvatar [color]='secondary'>text_format</mat-icon>
-            <h3 mat-line> {{ row.origName }} </h3>
-            <button mat-icon-button (click)="restore(i)">
-              <mat-icon class="mat-24">restore_from_trash</mat-icon>
-            </button>
-            <mat-divider *ngIf="!last" [inset]="true"></mat-divider>
-          </mat-list-item>
-        </ng-template>
+  <div class="dndPlaceholder col-md-12"
+       #placeholder></div>
 
-      </td-virtual-scroll-container>
-    </mat-list>
--->
   </div>
 </form>
