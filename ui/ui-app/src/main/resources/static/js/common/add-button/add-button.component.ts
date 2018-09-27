@@ -29,7 +29,7 @@ export class AddButtonComponent {
 
     ngOnInit() {
 
-        // Register Add button (categories, feeds) on initial application load
+        // Register Add button (categories, feeds, templates) on initial application load
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
                 if (this.accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
@@ -43,6 +43,13 @@ export class AddButtonComponent {
                         this.stateService.FeedManager().Feed().navigateToDefineFeed();
                     });
                 }
+
+                if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                    this.addButtonService.registerAddButton("registered-templates", () => {
+                        this.stateService.FeedManager().Template().navigateToRegisterNewTemplate();
+                    });
+                }
+
                 this.subscribeAndUpdateShowState();
             }, (error: any) => {
             this.subscribeAndUpdateShowState();
