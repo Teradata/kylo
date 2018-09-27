@@ -5,7 +5,7 @@ import {Feed} from "../../../model/feed/feed.model";
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
-import {StateRegistry, StateService} from "@uirouter/angular";
+import {StateService} from "../../../../services/StateService";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../../../model/feed/feed-constants";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {DateFormatDialog} from "../../../visual-query/wrangler/core/columns/date-format.component";
@@ -126,7 +126,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * Navigate to the feed import page
          */
         gotoImportFeed(){
-            this.stateService.go('import-feed');
+            this.stateService.FeedManager().Feed().navigatetoImportFeed();
         }
 
 

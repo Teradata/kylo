@@ -121,6 +121,20 @@ class Route {
                 });
             }
         }).state({
+            name: 'import-feed.**',
+            url: '/import-feed',
+            params: {},
+            lazyLoad: (transition: any) => {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args: any) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('import-feed', transition.params())
+                    return args;
+                }, function error(err: any) {
+                    console.log("Error loading import-feed ", err);
+                    return err;
+                });
+            }
+        }).state({
             name: 'feed-details.**',
             url: '/feed-details/{feedId}',
             params: {
