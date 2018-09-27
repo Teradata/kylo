@@ -320,6 +320,7 @@
 
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
     - tba:datasource (WEAKREFERENCE) mandatory COPY
+    - tba:dataSet (WEAKREFERENCE) mandatory COPY
 
 [tba:feedSource] > tba:feedConnection
 
@@ -440,6 +441,8 @@
 
 [tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
     - mimeType (STRING)
+    - tba:feedSources (WEAKREFERENCE) multiple
+    - tba:feedTargets (WEAKREFERENCE) multiple
 
 [tba:DataSetSparkParams] > tba:propertied
     - tba:format (STRING)
@@ -449,22 +452,3 @@
 
 [tba:DataSetSchema]
 
-/**
-* [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:obligationAssessments (tba:obligationAssessment) sns
-*
-* [tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
-*    - tba:obligation (WEAKREFERENCE) mandatory
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:metricAssessments (tba:metricAssessment) sns
-*
-* [tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
-*     - tba:metric (WEAKREFERENCE) mandatory
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:resource (nt:resource)
-*
-**/

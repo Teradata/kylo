@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.BaseProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -41,10 +42,12 @@ import javax.annotation.Nonnull;
 public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVersionProvider<Feed, Feed.ID> {
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
-
-    FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId);
+    
+    FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId);
 
     FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId);
+    
+    FeedDestination ensureFeedDestination(Feed.ID feedId, DataSet.ID dsId);
 
     Feed ensureFeed(Category.ID categoryId, String feedSystemName);
 
@@ -101,6 +104,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVe
     void removeFeedSources(Feed.ID feedId);
 
     void removeFeedSource(Feed.ID feedId, Datasource.ID dsId);
+    
+    void removeFeedSource(Feed.ID feedId, DataSet.ID dsId);
 
     void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId);
 

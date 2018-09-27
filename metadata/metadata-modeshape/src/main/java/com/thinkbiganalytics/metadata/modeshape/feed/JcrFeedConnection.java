@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -24,10 +26,14 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import java.util.Optional;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -37,7 +43,8 @@ import javax.jcr.RepositoryException;
  */
 public abstract class JcrFeedConnection extends JcrObject implements FeedConnection {
 
-    public static final String DATASOURCE = "tba:datasource";
+    public static final String DATASOURCE = "tba:datasource";  // Legacy Datasource support
+    public static final String DATA_SET = "tba:dataSet";
 
     public JcrFeedConnection(Node node) {
         super(node);
@@ -47,9 +54,26 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
         this(node);
         this.setProperty(DATASOURCE, datasource);
     }
+    
+    public JcrFeedConnection(Node node, JcrDataSet dataSet) {
+        this(node);
+        this.setProperty(DATA_SET, dataSet);
+    }
 
-    public Datasource getDatasource() {
-        return JcrUtil.getReferencedObject(getNode(), DATASOURCE, JcrDatasourceProvider.TYPE_RESOLVER);
+    public Optional<Datasource> getDatasource() {
+        if (JcrPropertyUtil.hasProperty(getNode(), DATASOURCE)) {
+            return Optional.of(JcrUtil.getReferencedObject(getNode(), DATASOURCE, JcrDatasourceProvider.TYPE_RESOLVER));
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    public Optional<DataSet> getDataSet() {
+        if (JcrPropertyUtil.hasProperty(getNode(), DATA_SET)) {
+            return Optional.of(JcrUtil.getReferencedObject(getNode(), DATA_SET, JcrDataSet.class));
+        } else {
+            return Optional.empty();
+        }
     }
 
 

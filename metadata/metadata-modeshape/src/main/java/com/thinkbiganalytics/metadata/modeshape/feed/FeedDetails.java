@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -32,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
@@ -180,7 +183,11 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
     public FeedSource getSource(final Datasource.ID id) {
         List<? extends FeedSource> sources = getSources();
         if (sources != null) {
-            return sources.stream().filter(feedSource -> feedSource.getDatasource().getId().equals(id)).findFirst().orElse(null);
+            return sources.stream()
+                .filter(feedSource -> feedSource.getDatasource().isPresent())
+                .filter(feedSource -> feedSource.getDatasource().get().getId().equals(id))
+                .findFirst()
+                .orElse(null);
         }
         return null;
     }
@@ -188,7 +195,35 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
     public FeedDestination getDestination(final Datasource.ID id) {
         List<? extends FeedDestination> destinations = getDestinations();
         if (destinations != null) {
-            return destinations.stream().filter(feedDestination -> feedDestination.getDatasource().getId().equals(id)).findFirst().orElse(null);
+            return destinations.stream()
+                .filter(feedDestination -> feedDestination.getDatasource().isPresent())
+                .filter(feedDestination -> feedDestination.getDatasource().get().getId().equals(id))
+                .findFirst()
+                .orElse(null);
+        }
+        return null;
+    }
+    
+    public FeedSource getSource(final DataSet.ID id) {
+        List<? extends FeedSource> sources = getSources();
+        if (sources != null) {
+            return sources.stream()
+                .filter(feedSource -> feedSource.getDataSet().isPresent())
+                .filter(feedSource -> feedSource.getDataSet().get().getId().equals(id))
+                .findFirst()
+                .orElse(null);
+        }
+        return null;
+    }
+    
+    public FeedDestination getDestination(final DataSet.ID id) {
+        List<? extends FeedDestination> destinations = getDestinations();
+        if (destinations != null) {
+            return destinations.stream()
+                .filter(feedDestination -> feedDestination.getDataSet().isPresent())
+                .filter(feedDestination -> feedDestination.getDataSet().get().getId().equals(id))
+                .findFirst()
+                .orElse(null);
         }
         return null;
     }
@@ -273,8 +308,18 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
         Node feedSrcNode = JcrUtil.addNode(getNode(), FeedDetails.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
         return new JcrFeedSource(feedSrcNode, datasource);
     }
+    
+    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSource) {
+        Node feedSrcNode = JcrUtil.addNode(getNode(), FeedDetails.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
+        return new JcrFeedSource(feedSrcNode, dataSource);
+    }
 
     protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
+        Node feedDestNode = JcrUtil.addNode(getNode(), FeedDetails.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
+        return new JcrFeedDestination(feedDestNode, datasource);
+    }
+    
+    protected JcrFeedDestination ensureFeedDestination(JcrDataSet datasource) {
         Node feedDestNode = JcrUtil.addNode(getNode(), FeedDetails.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
         return new JcrFeedDestination(feedDestNode, datasource);
     }
@@ -299,15 +344,26 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
         List<? extends FeedSource> sources = getSources();
         if (sources != null && !sources.isEmpty()) {
             //checkout the feed
-            sources.stream().forEach(source -> {
-                try {
-                    Node sourceNode = ((JcrFeedSource) source).getNode();
-                    ((JcrDatasource) ((JcrFeedSource) source).getDatasource()).removeSourceNode(sourceNode);
-                    sourceNode.remove();
-                } catch (RepositoryException e) {
-                    e.printStackTrace();
-                }
-            });
+            sources.stream()
+                .map(JcrFeedSource.class::cast)
+                .forEach(source -> {
+                    try {
+                        Node sourceNode = source.getNode();
+                        
+                        // Either the datasource or dataSet will be present.
+                        source.getDatasource()
+                            .map(JcrDatasource.class::cast)
+                            .ifPresent(dataSrc -> dataSrc.removeSourceNode(sourceNode));
+                        
+                        source.getDataSet()
+                            .map(JcrDataSet.class::cast)
+                            .ifPresent(dataSet -> dataSet.removeSourceNode(sourceNode));
+                        
+                        sourceNode.remove();
+                    } catch (RepositoryException e) {
+                        e.printStackTrace();
+                    }
+                });
         }
     }
 
@@ -315,24 +371,33 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
         List<? extends FeedDestination> destinations = getDestinations();
         
         if (destinations != null && !destinations.isEmpty()) {
-            destinations.stream().forEach(dest -> {
-                try {
-                    // Remove the connection nodes
-                    Node destNode = ((JcrFeedDestination) dest).getNode();
-                    JcrDatasource datasource = (JcrDatasource) dest.getDatasource();
-                    datasource.removeDestinationNode(destNode);
-                    destNode.remove();
-                    
-                    // Remove the datasource if there are no referencing feeds
-                    if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
-                        datasource.remove();
+            destinations.stream()
+                .map(JcrFeedDestination.class::cast)
+                .forEach(dest -> {
+                    try {
+                        Node destNode = dest.getNode();
+                        
+                        // Either the datasource or dataSet will be present.
+                        dest.getDatasource()
+                            .map(JcrDatasource.class::cast)
+                            .ifPresent(datasource -> {
+                                datasource.removeSourceNode(destNode);
+                                
+                                // Remove the datasource if there are no referencing feeds
+                                if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
+                                    datasource.remove();
+                                }
+                           });
+                        
+                        dest.getDataSet()
+                            .map(JcrDataSet.class::cast)
+                            .ifPresent(dataSet -> dataSet.removeSourceNode(destNode));
+                        
+                        destNode.remove();
+                    } catch (RepositoryException e) {
+                        e.printStackTrace();
                     }
-                } catch (RepositoryException e) {
-                    e.printStackTrace();
-                }
-            });
-            
-            
+                });
         }
     }
 

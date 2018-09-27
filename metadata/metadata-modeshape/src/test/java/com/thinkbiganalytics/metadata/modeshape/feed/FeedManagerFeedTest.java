@@ -33,10 +33,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.junit.Test;
@@ -54,14 +52,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Exchanger;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.Session;
-import javax.jcr.lock.Lock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class},loader=AnnotationConfigContextLoader.class,inheritInitializers = false)
@@ -210,7 +202,7 @@ public class FeedManagerFeedTest {
             List<? extends FeedDestination> feedDestinations = feed.getDestinations();
             if (feedDestinations != null) {
                 FeedDestination feedDestination = feedDestinations.get(0);
-                Datasource ds = feedDestination.getDatasource();
+                Datasource ds = feedDestination.getDatasource().get();
                 Assert.assertTrue(ds instanceof DerivedDatasource, "Datasource was not expected DerivedDatasource");
             }
 

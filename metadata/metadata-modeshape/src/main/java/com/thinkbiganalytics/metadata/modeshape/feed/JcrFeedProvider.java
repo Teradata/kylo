@@ -22,6 +22,9 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -55,6 +58,7 @@ import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.category.CategoryDetails;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
@@ -150,6 +154,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private DatasourceProvider datasourceProvider;
+    
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     @Inject
     private SecurityRoleProvider roleProvider;
@@ -319,6 +326,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             feed.removeFeedSource(source);
         }
     }
+    
+    public void removeFeedSource(Feed.ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        JcrFeedSource source = (JcrFeedSource) feed.getSource(dsId);
+        
+        if (source != null) {
+            feed.removeFeedSource(source);
+        }
+    }
 
     public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed feed = (JcrFeed) findById(feedId);
@@ -354,11 +370,33 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return source;
         }
     }
-
+    
     @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id, com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedSource ensureFeedSource(ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
+
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
+    }
+    
+    @Override
+    public FeedDestination ensureFeedDestination(ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedDestination source = feed.getDestination(dsId);
+        
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedDestination((JcrDataSet) ds))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
     }
 
     @Override
@@ -1084,7 +1122,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (!this.destIds.isEmpty()) {
                 List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
-                    if (this.destIds.contains(dest.getDatasource().getId())) {
+                    if (dest.getDatasource().isPresent() && this.destIds.contains(dest.getDatasource().get().getId())) {
                         return true;
                     }
                 }
@@ -1094,7 +1132,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (!this.sourceIds.isEmpty()) {
                 List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
-                    if (this.sourceIds.contains(src.getDatasource().getId())) {
+                    if (src.getDatasource().isPresent() && this.sourceIds.contains(src.getDatasource().get().getId())) {
                         return true;
                     }
                 }

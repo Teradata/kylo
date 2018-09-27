@@ -25,9 +25,12 @@ package com.thinkbiganalytics.metadata.api.catalog;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  *
@@ -39,4 +42,9 @@ public interface DataSet extends SystemEntity, Auditable, DataSetSparkParamsSupp
     ID getId();
 
     DataSource getDataSource();
+
+    Set<FeedSource> getFeedSources();
+
+    Set<FeedDestination> getFeedTargets();
+
 }

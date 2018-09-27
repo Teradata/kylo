@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -34,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
@@ -456,9 +459,19 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public FeedSource getSource(final Datasource.ID id) {
         return getFeedDetails().map(d -> d.getSource(id)).orElse(null);
     }
+    
+    @Override
+    public FeedSource getSource(final DataSet.ID id) {
+        return getFeedDetails().map(d -> d.getSource(id)).orElse(null);
+    }
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
+        return getFeedDetails().map(d -> d.getDestination(id)).orElse(null);
+    }
+    
+    @Override
+    public FeedDestination getDestination(final DataSet.ID id) {
         return getFeedDetails().map(d -> d.getDestination(id)).orElse(null);
     }
 
@@ -603,9 +616,17 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     protected JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
         return getFeedDetails().map(d -> d.ensureFeedSource(datasource)).orElse(null);
     }
+    
+    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSet) {
+        return getFeedDetails().map(d -> d.ensureFeedSource(dataSet)).orElse(null);
+    }
 
     protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
         return getFeedDetails().map(d -> d.ensureFeedDestination(datasource)).orElse(null);
+    }
+    
+    protected JcrFeedDestination ensureFeedDestination(JcrDataSet dataSet) {
+        return getFeedDetails().map(d -> d.ensureFeedDestination(dataSet)).orElse(null);
     }
 
     protected void removeFeedSource(JcrFeedSource source) {

@@ -50,7 +50,9 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -177,6 +179,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     protected FeedProvider feedProvider;
+    
+    @Inject 
+    private DataSetProvider dataSetProvider;
 
     @Inject
     protected MetadataAccess metadataAccess;
@@ -1418,9 +1423,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //remove the older sources only if they have changed
 
         if (domainFeed.getSources() != null) {
-            Set<Datasource.ID>
-                existingSourceIds =
-                ((List<FeedSource>) domainFeed.getSources()).stream().filter(source -> source.getDatasource() != null).map(source1 -> source1.getDatasource().getId()).collect(Collectors.toSet());
+            Set<Datasource.ID> existingSourceIds = domainFeed.getSources().stream()
+                .filter(fs -> fs.getDatasource().isPresent())
+                .map(fs -> fs.getDatasource().get().getId())
+                .collect(Collectors.toSet());
+                    
             if (!sources.containsAll(existingSourceIds) || (sources.size() != existingSourceIds.size())) {
                 //remove older sources
                 //cant do it here for some reason.. need to do it in a separate transaction
@@ -1430,6 +1437,24 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         sources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
         destinations.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
 
+        // Update data sets 
+        Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> feedDataSetIds = feed.getSourceDataSets().stream()
+                .map(DataSet::getId)
+                .map(dataSetProvider::resolveId)
+                .collect(Collectors.toSet());
+        Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> domainDataSetIds = domainFeed.getSources().stream()
+                .map(FeedSource::getDataSet)
+                .filter(Optional::isPresent)
+                .map(optional -> optional.get().getId())
+                .collect(Collectors.toSet());
+
+        feedDataSetIds.stream()
+            .filter(feedDsId -> ! domainDataSetIds.contains(feedDsId))
+            .forEach(dsId -> feedProvider.ensureFeedSource(domainFeedId, dsId));
+        domainDataSetIds.stream()
+            .filter(feedDsId -> ! feedDataSetIds.contains(feedDsId))
+            .forEach(dsId -> feedProvider.removeFeedSource(domainFeedId, dsId));
+        
     }
 
     @Override

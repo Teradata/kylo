@@ -29,7 +29,6 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;

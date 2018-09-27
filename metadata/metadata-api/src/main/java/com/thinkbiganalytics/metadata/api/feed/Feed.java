@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -126,10 +127,14 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
     List<? extends FeedSource> getSources();
 
     FeedSource getSource(Datasource.ID id);
+    
+    FeedSource getSource(DataSet.ID id);
 
     List<? extends FeedDestination> getDestinations();
 
     FeedDestination getDestination(Datasource.ID id);
+    
+    FeedDestination getDestination(DataSet.ID id);
 
     List<? extends HadoopSecurityGroup> getSecurityGroups();
 

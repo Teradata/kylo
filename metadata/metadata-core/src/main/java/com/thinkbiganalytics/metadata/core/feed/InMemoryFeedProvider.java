@@ -111,11 +111,6 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, ID dsId) {
-        return ensureFeedSource(feedId, dsId, null);
-    }
-
-    @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Datasource ds = this.datasetProvider.getDatasource(dsId);
 
@@ -127,7 +122,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
 
-        return ensureFeedSource(feed, ds, slaId);
+        return ensureFeedSource(feed, ds);
     }
 
     @Override
@@ -185,7 +180,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
 
-        ensureFeedSource(feed, sds, null);
+        ensureFeedSource(feed, sds);
         ensureFeedDestination(feed, dds);
 
         return feed;
@@ -452,17 +447,16 @@ public class InMemoryFeedProvider implements FeedProvider {
         return null;
     }
 
-    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
+    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
-            srcIds.put(src.getDatasource().getId(), src);
+            src.getDatasource().ifPresent(fds -> srcIds.put(fds.getId(), src));
         }
 
         if (srcIds.containsKey(ds.getId())) {
             return srcIds.get(ds.getId());
         } else {
-            ServiceLevelAgreement sla = this.slaProvider.getAgreement(slaId);
-            FeedSource src = feed.addSource(ds, sla);
+            FeedSource src = feed.addSource(ds);
             return src;
         }
     }
@@ -533,7 +527,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             if (!this.destIds.isEmpty()) {
                 List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
-                    if (this.destIds.contains(dest.getDatasource().getId())) {
+                    if (dest.getDatasource().isPresent() && this.destIds.contains(dest.getDatasource().get().getId())) {
                         return true;
                     }
                 }
@@ -543,7 +537,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             if (!this.sourceIds.isEmpty()) {
                 List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
-                    if (this.sourceIds.contains(src.getDatasource().getId())) {
+                    if (src.getDatasource().isPresent() && this.sourceIds.contains(src.getDatasource().get().getId())) {
                         return true;
                     }
                 }

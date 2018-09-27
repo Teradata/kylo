@@ -175,7 +175,7 @@ public class JcrPropertyTest {
 
             if (sources != null) {
                 for (FeedSource source : sources) {
-                    Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
+                    Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource().get()).getAllProperties();
                     String type = (String) dataSourceProperties.get(JcrDerivedDatasource.TYPE_NAME);
                     Assert.assertEquals(type, "HiveDatasource");
                 }

@@ -24,8 +24,8 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import javax.jcr.Node;
 
@@ -45,12 +45,10 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
         datasource.addSourceNode(getNode());
     }
 
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedSource#getAgreement()
-     */
-    @Override
-    public ServiceLevelAgreement getAgreement() {
-        return null;
+    public JcrFeedSource(Node node, JcrDataSet dataSet) {
+        super(node, dataSet);
+        dataSet.addSourceNode(getNode());
     }
+    
+    
 }

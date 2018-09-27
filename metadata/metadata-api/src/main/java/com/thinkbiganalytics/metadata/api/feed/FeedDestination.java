@@ -28,7 +28,4 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 public interface FeedDestination extends FeedConnection {
 
-//    interface ID extends Serializable { }
-//
-//    ID getId();
 }

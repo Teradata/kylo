@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -25,14 +27,24 @@ package com.thinkbiganalytics.metadata.api.feed;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
-import java.io.Serializable;
+import java.util.Optional;
 
 /**
- *
+ * A feed may be connected to a the legacy entity Datasource or the new entity DataSet, so either
+ * one is optional but one may must contain a value.
+ * TODO: Remove the Optional when Datasource is removed from the model.
  */
 public interface FeedConnection {
 
     Feed getFeed();
 
-    Datasource getDatasource();
+    /**
+     * @return an optional associated Datasource 
+     */
+    Optional<Datasource> getDatasource();
+    
+    /**
+     * @return an optional associated DataSet 
+     */
+    Optional<DataSet> getDataSet();
 }

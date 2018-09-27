@@ -55,6 +55,8 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemp
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -120,6 +122,9 @@ public class FeedImporter {
     @Inject
     private DatasourceProvider datasourceProvider;
 
+    @Inject
+    private DataSetProvider dataSetProvider;
+    
     /**
      * The {@code Datasource} transformer
      */
@@ -453,6 +458,53 @@ public class FeedImporter {
             importFeed.setValid(false);
         }
 
+        uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
+        return valid;
+    }
+    
+    /**
+     * Validates that user data sets can be imported with provided properties.
+     *
+     * @return {@code true} if the feed can be imported, or {@code false} otherwise
+     */
+    private boolean validateUserDataSets() {
+        FeedMetadata metadata = importFeed.getFeedToImport();
+        final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sources.");
+        
+        // Get data sources needing to be created
+        final Set<String> availableDataSets = metadataAccess.read(() -> 
+                dataSetProvider.findAll().stream()
+                     .map(DataSet::getId)
+                     .map(Object::toString)
+                     .collect(Collectors.toSet()));
+        final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATA_SETS);
+        final List<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> providedDataSets = Optional.ofNullable(metadata.getSourceDataSets()).orElse(Collections.emptyList());
+        
+        if (componentOption.getProperties().isEmpty()) {
+            componentOption.setProperties(providedDataSets.stream()
+                                              .filter(datasource -> !availableDataSets.contains(datasource.getId()))
+                                              .map(dataSet -> new ImportProperty(dataSet.getTitle(), dataSet.getId(), null, null, null))
+                                              .collect(Collectors.toList()) );
+        }
+        
+        // Update feed with re-mapped data sources
+//        final boolean valid = componentOption.getProperties().stream()
+//                        .allMatch(property -> {
+//                            if (property.getPropertyValue() != null) {
+//                                ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+//                                return true;
+//                            } else {
+//                                return false;
+//                            }
+//                        });
+//        
+//        if (valid) {
+//            statusMessage.update("Validated data sources.", true);
+//        } else {
+//            statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
+//            importFeed.setValid(false);
+//        }
+        
         uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
         return valid;
     }
