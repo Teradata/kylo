@@ -354,9 +354,12 @@
     </fileSet>
     <fileSet>
       <outputDirectory>setup/data</outputDirectory>
-      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
       <directory>${project.parent.parent.basedir}/samples</directory>
       <fileMode>755</fileMode>
+      <excludes>
+        <exclude>**/node_modules/**</exclude>
+        <exclude>**/target/**</exclude>
+      </excludes>
     </fileSet>
 
     <fileSet>
