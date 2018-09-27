@@ -248,6 +248,16 @@ export class PreviewDataSet {
         }
     }
 
+    /**
+     * Apply another datasets preview to this dataset
+     * @param {PreviewDataSet} dataset
+     * @param {boolean} rawData
+     */
+    applyPreview(dataset:PreviewDataSet, rawData:boolean){
+        let preview = rawData ? dataset.raw : dataset.preview;
+        this.success(preview,rawData)
+    }
+
 }
 
 

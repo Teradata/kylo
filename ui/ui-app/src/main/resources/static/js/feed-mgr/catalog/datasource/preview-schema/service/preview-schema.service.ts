@@ -118,14 +118,23 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                     request2.dataSource = previewDataSet.dataSource;
                    let parser = CloneUtil.deepCopy(txtParser);
                     request2.schemaParser = parser;
-                        (<PreviewFileDataSet>previewDataSet).schemaParser = parser;
+                    let textDataset = previewDataSet;
+                    //if we are working with raw data we need to copy the dataset so we dont modify the real schema parser
+                    if(rawData) {
+                        textDataset = CloneUtil.deepCopy(previewDataSet);
+                    }
+                    (<PreviewFileDataSet>textDataset).schemaParser = parser;
+                    //clear the spark options
+                    textDataset.sparkOptions = undefined;
 
                         let binaryProperty = request2.schemaParser.properties.find(p => p.name == "Binary");
                         if(binaryProperty){
                             binaryProperty.value = binary? "true" :"false";
                         }
 
-                     this.preview(previewDataSet,request2,rawData).subscribe(dataset => {
+                     this.preview(textDataset,request2,rawData).subscribe(dataset => {
+                         //apply the values back to the incoming previewDataset
+                         previewDataSet.applyPreview(dataset,rawData)
                          previewDataSetSource.next(dataset)
                          previewDataSetSource.complete();
                      },
@@ -146,10 +155,11 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
      * @param {PreviewDataSet} previewDataSet the dataset to preview
      * @param {PreviewDataSetRequest} previewRequest  the request to send to the server
      * @param {boolean} rawData are you trying to show the raw data?  default false
+     * @param {boolean} fallbackToTextOnError if the preview errors should it auto attempt to preview as plain text?
      * @param {boolean} collect do you want to add this dataset to the collection bag ? default false
      * @return {Observable<PreviewDataSet>}
      */
-    preview(previewDataSet: PreviewDataSet, previewRequest: PreviewDataSetRequest, rawData:boolean=false, collect:boolean = false):Observable<PreviewDataSet>{
+    preview(previewDataSet: PreviewDataSet, previewRequest: PreviewDataSetRequest, rawData:boolean=false,fallbackToTextOnError:boolean = true, collect:boolean = false):Observable<PreviewDataSet>{
 
         let hasPreview = rawData ? previewDataSet.hasRaw() : previewDataSet.hasPreview();
         if(!hasPreview) {
@@ -193,7 +203,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSet.error(rawData,"Error previewing the data " + error1);
 
                 //attempt to read the data using raw text
-                if(!rawData && previewDataSet instanceof PreviewFileDataSet && (!previewRequest.schemaParser || (previewRequest.schemaParser && previewRequest.schemaParser.name != SchemaParserType.TEXT_BINARY))) {
+                if(!rawData &&  fallbackToTextOnError &&  previewDataSet instanceof PreviewFileDataSet && (!previewRequest.schemaParser || (previewRequest.schemaParser && previewRequest.schemaParser.name != SchemaParserType.TEXT_BINARY))) {
                     //preview the data as text
                     this.previewAsTextOrBinary(previewDataSet,false,rawData).subscribe((dataset:PreviewDataSet) => {
                         previewDataSetSource.next(previewDataSet)

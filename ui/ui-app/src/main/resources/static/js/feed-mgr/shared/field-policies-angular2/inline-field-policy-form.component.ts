@@ -77,7 +77,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
                 }
             }
             else if(angular.isDefined(this.selectedPolicyRule)){
-                this.skipChangeHandler = true;
+              //  this.skipChangeHandler = true;
                 //this.ruleType = this.selectedPolicyRule
                 this.ruleType = this.findRuleType(this.selectedPolicyRule.name)
                 this.showAdvancedOptions = (this.selectedPolicyRule.properties && this.selectedPolicyRule.properties.length > 0);

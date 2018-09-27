@@ -254,7 +254,7 @@ export class DatasetPreviewStepperService {
         }
     }
 
-    private _populatePreview(dataSets: PreviewDataSet[],datasource:DataSource) :Observable<PreviewDataSetResultEvent> {
+    private _populatePreview(dataSets: PreviewDataSet[],datasource:DataSource, fallbackToTextOnError:boolean = true) :Observable<PreviewDataSetResultEvent> {
         let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let observable = previewReady$.asObservable();
         let previews: Observable<PreviewDataSet>[] = [];
@@ -263,7 +263,10 @@ export class DatasetPreviewStepperService {
                 let previewRequest = new PreviewDataSetRequest();
                 previewRequest.dataSource = datasource;
                 //catch all errors and handle in success of forkjoin
-                previews.push(this.previewSchemaService.preview(dataSet, previewRequest).catch((e: any, obs: Observable<PreviewDataSet>) => Observable.of(e)));
+                previews.push(this.previewSchemaService.preview(dataSet, previewRequest, false, fallbackToTextOnError).catch((e: any, obs: Observable<PreviewDataSet>) => {
+                    console.log("Error previewing dataset ",e);
+                    return Observable.of(e);
+                }));
             })
         }
         Observable.forkJoin(previews).subscribe((results: PreviewDataSet[]) => {
@@ -332,7 +335,9 @@ export class DatasetPreviewStepperService {
             dataset.preview = undefined;
             this._loadingService.register(DatasetPreviewStepperService.PREVIEW_LOADING)
             this.notifyToUpdateView();
-            this.previewSchemaService.preview(dataset,previewRequest).subscribe((result:PreviewDataSet) => {
+            //clear the options so they can be reapplied via the incoming schema parser
+            dataset.sparkOptions = undefined;
+            this.previewSchemaService.preview(dataset,previewRequest, false,false).subscribe((result:PreviewDataSet) => {
                 console.log('FINISHED PREVIEW!!!',result)
                 this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
                 this.notifyToUpdateView();
