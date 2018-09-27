@@ -128,7 +128,7 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
                 // Don't notify for messages from wrangler. These are handled.
                 return;
             }
-            this.notificationService.errorWithGroupKey("Error", message, rejectionMessage, data["message"]);
+            this.errorWithGroupKey("Error", message, rejectionMessage, data["message"]);
         }
     }
 
