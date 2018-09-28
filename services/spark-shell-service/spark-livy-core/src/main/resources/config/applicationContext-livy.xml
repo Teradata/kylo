@@ -19,7 +19,6 @@
   #L%
 -->
 
-
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
@@ -81,8 +80,7 @@ val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
         <entry key="profileDataFrame">
           <value>
             <![CDATA[
-val dfProf =
-com.thinkbiganalytics.spark.dataprofiler.core.Profiler.profileDataFrame(sparkContextService,profiler,df)
+val dfProf = com.thinkbiganalytics.spark.dataprofiler.LivyProfilerDeleteMe.profileDataFrame(sparkContextService,profiler,df)
 %%json dfProf
             ]]>
           </value>
@@ -92,7 +90,7 @@ com.thinkbiganalytics.spark.dataprofiler.core.Profiler.profileDataFrame(sparkCon
         <entry key="pagedDataFrame">
           <value>
             <![CDATA[
-var dfResults =  LivyPaginator.page( df, %s, %s, %s, %s )
+var dfRows = LivyPaginator.page( df, %s, %s, %s, %s )
              ]]>
           </value>
         </entry>

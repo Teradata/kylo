@@ -272,8 +272,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         TransformResponse response = LivyRestModelTransformer.toTransformResponse(statement, transformId);
 
         if (statement.getState() == StatementState.available && response.getStatus() == TransformResponse.Status.PENDING) {
-            // TODO:: change this so that if transformId is a livyQueryID it knows what to do. similar to saveResponse
-
+            // TODO:: change this so that if transformId is a livyQueryID it knows what to do. similar to saveResponse.  A good first stab at this is at KYLO-2639-withLivyId
             // The result came back from Livy, but the transform result still needs to be fetched
             String script = scriptGenerator.script("getTransform", ScalaScriptUtils.scalaStr(transformId));
             statement = submitCode(client, script, process);
