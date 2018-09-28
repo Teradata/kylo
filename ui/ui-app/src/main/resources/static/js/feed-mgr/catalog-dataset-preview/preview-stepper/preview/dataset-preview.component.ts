@@ -27,6 +27,9 @@ export class DatasetPreviewComponent implements OnInit{
     @Input()
     dataset:PreviewDataSet
 
+    @Input()
+    formGroup:FormGroup;
+
 
 
     rawReady:boolean;
@@ -73,9 +76,6 @@ export class DatasetPreviewComponent implements OnInit{
     }
 
 
-    openSchemaParseSettingsDialog(): void {
-        this.datasetPreviewStepperService.openSchemaParseSettingsDialog(<PreviewFileDataSet>this.dataset)
-    }
 
 
     /**

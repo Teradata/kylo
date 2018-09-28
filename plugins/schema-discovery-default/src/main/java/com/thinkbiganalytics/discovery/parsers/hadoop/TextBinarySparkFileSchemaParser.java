@@ -39,6 +39,8 @@ import java.util.Map;
 @SchemaParser(name = "TEXT_BINARY", allowSkipHeader = false, description = "read generice text or binary file", tags = {"TEXT", "BINARY"}, usesSpark = true, primary = true, mimeTypes = "text", sparkFormat = "text")
 public class TextBinarySparkFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
+    public static String NAME = "TEXT_BINARY";
+
     @PolicyProperty(name = "Binary",displayName = "Binary data?", hint = "Set to true if this is binary data", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"true", "false"})
     private boolean binary = false;

@@ -29,6 +29,7 @@ import {FieldPolicyOptionsService} from "../../../../shared/field-policies-angul
 import {CloneUtil} from "../../../../../common/utils/clone-util";
 import * as _ from "underscore"
 import {ReplaySubject} from "rxjs/ReplaySubject";
+import {PreviewTransformResponse} from "./preview-transform-response.model";
 
 
 @Injectable()
@@ -163,6 +164,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
         let hasPreview = rawData ? previewDataSet.hasRaw() : previewDataSet.hasPreview();
         if(!hasPreview) {
+            let previewDataSetCopy = CloneUtil.deepCopy(previewDataSet);
             //set the spark options
             if(!previewDataSet.hasSparkOptions() && previewRequest.schemaParser)
             {
@@ -180,8 +182,21 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSet.applySparkOptions(previewRequest);
             }
 
+            if(previewDataSet instanceof PreviewFileDataSet){
+                previewRequest.filePreview = true;
+            }
+             previewRequest.fallbackToTextOnError = fallbackToTextOnError
+
+
+
             //Call spark shell to transform the data
-            this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: TransformResponse) => {
+            this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: PreviewTransformResponse) => {
+
+                //if its a file based preview and the resulting schema parser doesnt match the requested one, reset it
+                if(previewRequest.filePreview && data.schemaParser && ((<PreviewFileDataSet>previewDataSet).schemaParser == undefined || (<PreviewFileDataSet>previewDataSet).schemaParser.name != data.schemaParser.name )){
+                    (<PreviewFileDataSet>previewDataSet).schemaParser = data.schemaParser;
+                }
+
                 let preview = this.transformResponeTableBuilder.buildTable(data);
                 previewDataSet.success(preview,rawData);
 
@@ -189,7 +204,8 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                     previewDataSet.dataSource = previewRequest.dataSource;
                 }
                 if(!rawData) {
-                    this.cache[this.cacheKey(previewDataSet.dataSource.id, previewDataSet.key)] = previewDataSet;
+                    //save a copy to the cache
+                    this.cache[this.cacheKey(previewDataSet.dataSource.id, previewDataSet.key)] = CloneUtil.deepCopy(previewDataSet);
                     if (collect) {
                         this.addToCollection(previewDataSet);
                     }
@@ -197,30 +213,16 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 previewDataSetSource.next(previewDataSet)
                 previewDataSetSource.complete();
             }, error1 => {
-                //if Errored out with a preview (not when viewing the raw), attempt to preview the data with the generic Text format parser
-
                 //indicate the error on the preview pane.
-                previewDataSet.error(rawData,"Error previewing the data " + error1);
-
-                //attempt to read the data using raw text
-                if(!rawData &&  fallbackToTextOnError &&  previewDataSet instanceof PreviewFileDataSet && (!previewRequest.schemaParser || (previewRequest.schemaParser && previewRequest.schemaParser.name != SchemaParserType.TEXT_BINARY))) {
-                    //preview the data as text
-                    this.previewAsTextOrBinary(previewDataSet,false,rawData).subscribe((dataset:PreviewDataSet) => {
-                        previewDataSetSource.next(previewDataSet)
-                        previewDataSetSource.complete();
-                    },
-                        error2 => {
-                            previewDataSetSource.error(previewDataSet)
-                            previewDataSetSource.complete();
-                        })
-
-                }
-                else if(!rawData) {
                     previewDataSet.error(rawData,"Unable to preview the data " + error1);
+                    //reset the dataset back to the orig.
+                    previewDataSet.sparkOptions = previewDataSetCopy.sparkOptions
+                    if(previewDataSet instanceof PreviewFileDataSet){
+                        (<PreviewFileDataSet>previewDataSet).schemaParser = (<PreviewFileDataSet>previewDataSetCopy).schemaParser;
+                    }
+
                     previewDataSetSource.error(previewDataSet)
                     previewDataSetSource.complete();
-                }
-
             });
 
         return previewedDataSet$;

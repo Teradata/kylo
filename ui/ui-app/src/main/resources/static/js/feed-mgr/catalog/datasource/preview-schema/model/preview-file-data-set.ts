@@ -20,6 +20,11 @@ export class PreviewFileDataSet extends PreviewDataSet{
     public sparkScript?:SparkScript;
     public schemaParser:SchemaParser;
 
+    /**
+     * if a user updates the schema parser via the ui it will update it here
+     */
+    public userModifiedSchemaParser:SchemaParser;
+
     public constructor(init?:Partial<PreviewFileDataSet>) {
         super(init);
         Object.assign(this, init);
@@ -63,6 +68,13 @@ export class PreviewFileDataSet extends PreviewDataSet{
             })
         }
         return sparkDataSet;
+    }
+
+    applyPreview(dataset:PreviewDataSet, rawData:boolean){
+        super.applyPreview(dataset, rawData);
+        if(!rawData){
+            this.schemaParser = (<PreviewFileDataSet>dataset).schemaParser;
+        }
     }
 
 }

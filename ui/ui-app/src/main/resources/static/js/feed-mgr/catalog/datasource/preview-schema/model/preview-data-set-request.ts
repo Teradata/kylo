@@ -36,6 +36,16 @@ export class PreviewDataSetRequest {
 
     addPreviewItemToPath:boolean;
 
+    /**
+     * Should we fallback to use the text parser if it errors out
+     */
+    fallbackToTextOnError:boolean;
+
+    /**
+     * is this a file based preview (i.e. should it use a schema parser)
+     */
+    filePreview:boolean
+
     constructor(){
         this.pageSpec = new PageSpec();
         this.pageSpec.firstRow =0;

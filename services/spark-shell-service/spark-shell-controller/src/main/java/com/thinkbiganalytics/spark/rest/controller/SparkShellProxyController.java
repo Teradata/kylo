@@ -20,6 +20,12 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.FileParserFactory;
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
+import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+import com.thinkbiganalytics.discovery.parsers.hadoop.TextBinarySparkFileSchemaParser;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserAnnotationTransformer;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserDescriptorUtil;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
@@ -51,6 +57,7 @@ import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.ModifiedTransformResponse;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.PreviewDataSetRequest;
+import com.thinkbiganalytics.spark.rest.model.PreviewDataSetTransformResponse;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
@@ -197,6 +204,12 @@ public class SparkShellProxyController {
      */
     @Inject
     SparkJobService sparkJobService;
+
+
+    /**
+     * The Spark Schema parser for generic text file parsing
+     */
+    private SchemaParserDescriptor textSchemaParser;
 
     @POST
     @Path("/job")
@@ -650,24 +663,62 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the dataset preview")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = PreviewDataSetTransformResponse.class),
                       @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
                   })
     public Response preview(PreviewDataSetRequest previewRequest) {
-        //todo pull from request
-        int previewLimit = 20;
 
         DataSource catalogDataSource = fetchCatalogDataSource(previewRequest.getDataSource().getId());
         previewRequest.setDataSource(catalogDataSource);
-
+        if(previewRequest.isFilePreview() && previewRequest.getSchemaParser() == null){
+            // set it to a text preview
+            previewRequest.setSchemaParser(getTextSchemaParserDescriptor());
+        }
         KyloCatalogReadRequest request = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
 
 
         final SparkShellProcess process = getSparkShellProcess();
-        return getTransformResponse(() -> restClient.kyloCatalogTransform(process, request));
+        return getTransformResponse(() -> {
+            PreviewDataSetTransformResponse response = null;
+            boolean fallbackToTextParser = previewRequest.isFallbackToTextOnError();
+            try {
+                TransformResponse transformResponse = restClient.kyloCatalogTransform(process, request);
+                response = new PreviewDataSetTransformResponse(transformResponse,previewRequest.getSchemaParser());
+            }
+            catch (Exception e) {
+                //should we attempt to re preview the data as plain text
+                if(fallbackToTextParser && previewRequest.getSchemaParser() != null && !TextBinarySparkFileSchemaParser.NAME.equalsIgnoreCase(previewRequest.getSchemaParser().getName())){
+                    TextBinarySparkFileSchemaParser textParser = new TextBinarySparkFileSchemaParser();
+                    SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+                    SchemaParserDescriptor schemaParserDescriptor = transformer.toUIModel(textParser);
+                    previewRequest.setSchemaParser(schemaParserDescriptor);
+                    KyloCatalogReadRequest  request2 = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
+                    TransformResponse transformResponse = restClient.kyloCatalogTransform(process, request2);
+                    response = new PreviewDataSetTransformResponse(transformResponse,previewRequest.getSchemaParser());
+                }
+                else {
+                    throw  e;
+                }
+            }
+            return response;
+        });
 
 
+    }
+
+
+    /**
+     * Get the text schema parser, first looking for the cached one if it exists
+     * @return
+     */
+    private SchemaParserDescriptor getTextSchemaParserDescriptor(){
+        if(textSchemaParser == null) {
+            TextBinarySparkFileSchemaParser textParser = new TextBinarySparkFileSchemaParser();
+            SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+            textSchemaParser = transformer.toUIModel(textParser);
+        }
+        return textSchemaParser;
     }
 
 

@@ -164,10 +164,10 @@ export class PreviewDataSet {
         return this.raw != undefined && this.raw.hasColumns();
     }
     public hasPreviewError():boolean {
-        return this.hasPreview() && this.preview.error != undefined && this.preview.error == true;
+        return this.preview && this.preview.error != undefined && this.preview.error == true;
     }
     public hasRawError():boolean {
-        return this.hasRaw()&& this.raw.error != undefined && this.raw.error == true;;
+        return this.raw && this.raw.error != undefined && this.raw.error == true;;
     }
     public clearRawError(){
         if(this.raw){
@@ -256,6 +256,9 @@ export class PreviewDataSet {
     applyPreview(dataset:PreviewDataSet, rawData:boolean){
         let preview = rawData ? dataset.raw : dataset.preview;
         this.success(preview,rawData)
+        if(!rawData){
+            this.sparkOptions = dataset.sparkOptions;
+        }
     }
 
 }

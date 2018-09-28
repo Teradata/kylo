@@ -58,6 +58,11 @@
             <artifactId>kylo-spark-shell-rest-model</artifactId>
             <version>${project.version}</version>
         </dependency>
+      <dependency>
+        <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+        <artifactId>kylo-schema-discovery-default</artifactId>
+        <version>${project.version}</version>
+      </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.kylo</groupId>
             <artifactId>kylo-schema-discovery-model2</artifactId>

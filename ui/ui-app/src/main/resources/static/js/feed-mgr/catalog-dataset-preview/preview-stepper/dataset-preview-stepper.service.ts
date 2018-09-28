@@ -15,47 +15,53 @@ import {PreviewSchemaService} from "../../catalog/datasource/preview-schema/serv
 import {Injectable} from "@angular/core";
 import {FileMetadataTransformService} from "../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {MatDialogConfig} from "@angular/material/dialog";
 import {ReplaySubject} from "rxjs/ReplaySubject";
 import {SchemaParser} from "../../model/field-policy";
 import {SchemaParseSettingsDialog} from "../../catalog/datasource/preview-schema/schema-parse-settings-dialog.component";
 import {PreviewFileDataSet} from "../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {TdLoadingService} from "@covalent/core/loading";
-
-
+import {switchMap} from 'rxjs/operators/switchMap';
+import {catchError} from "rxjs/operators/catchError";
+import {tap} from "rxjs/operators/tap"
+import {FormGroup} from "@angular/forms";
+import {CloneUtil} from "../../../common/utils/clone-util";
 
 
 export enum DataSetType {
-    FILE=1,HIVE=2,JDBC=3
+    FILE = 1, HIVE = 2, JDBC = 3
 }
 
 export class DataSourceChangedEvent {
-    constructor(public dataSource:DataSource,public params:any){}
+    constructor(public dataSource: DataSource, public params: any) {
+    }
 }
 
 export enum PreviewDataSetResultStatus {
-    SUCCESS=1,ERROR=2, EMPTY=3
+    SUCCESS = 1, ERROR = 2, EMPTY = 3
 }
+
 export class PreviewDataSetResultEvent {
     public status: PreviewDataSetResultStatus;
 
-    static EMPTY = new PreviewDataSetResultEvent(null,null)
+    static EMPTY = new PreviewDataSetResultEvent(null, null)
+
     constructor(public dataSets: PreviewDataSet[], public errors: PreviewDataSet[]) {
-        if((this.dataSets == undefined  || this.dataSets == null|| this.dataSets.length == 0) && (this.errors == undefined ||  this.errors == null|| this.errors.length == 0)) {
+        if ((this.dataSets == undefined || this.dataSets == null || this.dataSets.length == 0) && (this.errors == undefined || this.errors == null || this.errors.length == 0)) {
             this.status = PreviewDataSetResultStatus.EMPTY;
         }
-        else if(errors && errors.length >0) {
+        else if (errors && errors.length > 0) {
             this.status = PreviewDataSetResultStatus.ERROR;
         }
         else {
             this.status = PreviewDataSetResultStatus.SUCCESS;
         }
     }
+
     public hasError() {
         return this.status == PreviewDataSetResultStatus.ERROR;
     }
 
-    public isEmpty(){
+    public isEmpty() {
 
     }
 }
@@ -79,13 +85,13 @@ export class DatasetPreviewStepperService {
     /**
      * the datasets to preview
      */
-    public datasets:PreviewDataSet[];
+    public datasets: PreviewDataSet[];
 
 
-    constructor(private _dialogService:TdDialogService,
-                  private _loadingService:TdLoadingService,
-                  private _fileMetadataTransformService: FileMetadataTransformService,
-                  private previewSchemaService: PreviewSchemaService) {
+    constructor(private _dialogService: TdDialogService,
+                private _loadingService: TdLoadingService,
+                private _fileMetadataTransformService: FileMetadataTransformService,
+                private previewSchemaService: PreviewSchemaService) {
 
     }
 
@@ -104,7 +110,7 @@ export class DatasetPreviewStepperService {
         return this.stepChanged$.subscribe(o);
     }
 
-    public subscribeToUpdateView(o:PartialObserver<any>){
+    public subscribeToUpdateView(o: PartialObserver<any>) {
         return this.updateViewEvent$.subscribe(o);
     }
 
@@ -115,16 +121,13 @@ export class DatasetPreviewStepperService {
         }
     }
 
-    public notifyToUpdateView(){
+    public notifyToUpdateView() {
         console.log("NOTIFY OF UPDATE!!!!")
         this.updateViewEvent$.next();
     }
 
 
-
-
-
-   private preparePreviewFiles(node: Node, datasource:DataSource): Observable<PreviewDataSet[]> {
+    private preparePreviewFiles(node: Node, datasource: DataSource): Observable<PreviewDataSet[]> {
         let subject = new ReplaySubject<PreviewDataSet[]>(1);
         this._fileMetadataTransformService.detectFormatForNode(node, datasource).subscribe((response: FileMetadataTransformResponse) => {
             let dataSetMap = response.results.datasets;
@@ -139,7 +142,7 @@ export class DatasetPreviewStepperService {
             }
             subject.next(previews);
             //TODO HANDLE ERRORS
-        }, (error1:any) => {
+        }, (error1: any) => {
 //TODO FIX !!!
 
             this._dialogService.openAlert({
@@ -172,7 +175,7 @@ export class DatasetPreviewStepperService {
 
     }
 
-    private  prepareDatabaseObjectForPreview(dbObject: DatabaseObject,type: DataSetType): PreviewDataSet {
+    private prepareDatabaseObjectForPreview(dbObject: DatabaseObject, type: DataSetType): PreviewDataSet {
         if (DatabaseObjectType.isTableType(dbObject.type)) {
             let dataSet = null;
             if (DataSetType.HIVE == type) {
@@ -197,9 +200,9 @@ export class DatasetPreviewStepperService {
         }
     }
 
-    private prepareBrowserObjectForPreview(obj: BrowserObject, datasource:DataSource): Observable<PreviewDataSet> {
+    private prepareBrowserObjectForPreview(obj: BrowserObject, datasource: DataSource): Observable<PreviewDataSet> {
         if (obj instanceof DatabaseObject) {
-            let type:DataSetType = this.getDataSetType(datasource);
+            let type: DataSetType = this.getDataSetType(datasource);
             let dataSet = this.prepareDatabaseObjectForPreview(<DatabaseObject>obj, type);
             //add in any cached preview responses
             //this.previewSchemaService.updateDataSetsWithCachedPreview([dataSet])
@@ -214,7 +217,7 @@ export class DatasetPreviewStepperService {
                     let dataSet = obj[Object.keys(obj)[0]];
                     subject.next(dataSet);
                 }
-            }, (error1:any) => {
+            }, (error1: any) => {
                 subject.next(PreviewDataSet.EMPTY)
             });
             return o;
@@ -222,7 +225,7 @@ export class DatasetPreviewStepperService {
     }
 
 
-    private getDataSetType(datasource:DataSource): DataSetType {
+    private getDataSetType(datasource: DataSource): DataSetType {
         if (!datasource.connector.template || !datasource.connector.template.format) {
             return DataSetType.FILE;
         }
@@ -238,12 +241,12 @@ export class DatasetPreviewStepperService {
         }
     }
 
-    private preparePreviewDataSets(node: Node, datasource:DataSource): Observable<PreviewDataSet[]> {
+    private preparePreviewDataSets(node: Node, datasource: DataSource): Observable<PreviewDataSet[]> {
 
         let type: DataSetType = this.getDataSetType(datasource);
 
         if (DataSetType.FILE == type) {
-            return this.preparePreviewFiles(node,datasource);
+            return this.preparePreviewFiles(node, datasource);
         }
         else if (DataSetType.HIVE == type || DataSetType.JDBC == type) {
             return this.preparePreviewTables(node, type);
@@ -254,7 +257,7 @@ export class DatasetPreviewStepperService {
         }
     }
 
-    private _populatePreview(dataSets: PreviewDataSet[],datasource:DataSource, fallbackToTextOnError:boolean = true) :Observable<PreviewDataSetResultEvent> {
+    private _populatePreview(dataSets: PreviewDataSet[], datasource: DataSource, fallbackToTextOnError: boolean = true): Observable<PreviewDataSetResultEvent> {
         let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let observable = previewReady$.asObservable();
         let previews: Observable<PreviewDataSet>[] = [];
@@ -264,92 +267,144 @@ export class DatasetPreviewStepperService {
                 previewRequest.dataSource = datasource;
                 //catch all errors and handle in success of forkjoin
                 previews.push(this.previewSchemaService.preview(dataSet, previewRequest, false, fallbackToTextOnError).catch((e: any, obs: Observable<PreviewDataSet>) => {
-                    console.log("Error previewing dataset ",e);
+                    console.log("Error previewing dataset ", e);
                     return Observable.of(e);
                 }));
             })
         }
         Observable.forkJoin(previews).subscribe((results: PreviewDataSet[]) => {
-                let errors: PreviewDataSet[] = [];
-                results.forEach(result => {
-                    if (result.hasPreviewError()) {
-                        errors.push(result);
-                    }
-                });
-             let result = new PreviewDataSetResultEvent(results,errors);
-              previewReady$.next(result)
-
+            let errors: PreviewDataSet[] = [];
+            results.forEach(result => {
+                if (result.hasPreviewError()) {
+                    errors.push(result);
+                }
             });
+            let result = new PreviewDataSetResultEvent(results, errors);
+            previewReady$.next(result)
+
+        });
         return observable;
 
     }
 
 
-    public prepareAndPopulatePreview(node:Node, datasource:DataSource) :Observable<PreviewDataSetResultEvent> {
+    public prepareAndPopulatePreview(node: Node, datasource: DataSource): Observable<PreviewDataSetResultEvent> {
         let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let o = previewReady$.asObservable();
-            if (node.countSelectedDescendants() > 0) {
-                /// preview and save to feed
-                this.preparePreviewDataSets(node,datasource).subscribe(dataSets => {
-                    this._populatePreview(dataSets, datasource).subscribe((ev:PreviewDataSetResultEvent) => {
-                        previewReady$.next(ev);
-                    });
+        if (node.countSelectedDescendants() > 0) {
+            /// preview and save to feed
+            this.preparePreviewDataSets(node, datasource).subscribe(dataSets => {
+                this._populatePreview(dataSets, datasource).subscribe((ev: PreviewDataSetResultEvent) => {
+                    previewReady$.next(ev);
                 });
-            }
-            else {
-                previewReady$.next(PreviewDataSetResultEvent.EMPTY)
-            }
-            return o;
+            });
+        }
+        else {
+            previewReady$.next(PreviewDataSetResultEvent.EMPTY)
+        }
+        return o;
 
     }
 
 
-    public prepareAndPopulatePreviewDataSet(file: BrowserObject, datasource:DataSource)  :Observable<PreviewDataSetResultEvent> {
+    public prepareAndPopulatePreviewDataSet(file: BrowserObject, datasource: DataSource): Observable<PreviewDataSetResultEvent> {
         let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let o = previewReady$.asObservable();
-        this.prepareBrowserObjectForPreview(file,datasource).subscribe((dataSet:PreviewDataSet) => {
-            this._populatePreview([dataSet],datasource).subscribe((ev: PreviewDataSetResultEvent) => {
+        this.prepareBrowserObjectForPreview(file, datasource).subscribe((dataSet: PreviewDataSet) => {
+            this._populatePreview([dataSet], datasource).subscribe((ev: PreviewDataSetResultEvent) => {
                 previewReady$.next(ev);
             });
         })
         return o;
     }
 
-
-
-
-    openSchemaParseSettingsDialog(dataset:PreviewFileDataSet): void {
-        let dialogRef = this._dialogService.open(SchemaParseSettingsDialog, {
-            width: '500px',
-            data: { schemaParser: dataset.schemaParser,
-                sparkScript: dataset.sparkScript
-            }
-        });
-
-        dialogRef.afterClosed().filter(result => result != undefined).subscribe((result:SchemaParser) => {
-            dataset.schemaParser = result
-
-            let previewRequest = new PreviewDataSetRequest();
-            previewRequest.dataSource = dataset.dataSource;
-            //reset the preview
-            dataset.preview = undefined;
-            this._loadingService.register(DatasetPreviewStepperService.PREVIEW_LOADING)
+    markFormAsInvalid(formGroup: FormGroup) {
+        if (formGroup.contains("hiddenValidFormCheck")) {
+            formGroup.get("hiddenValidFormCheck").setValue("")
             this.notifyToUpdateView();
-            //clear the options so they can be reapplied via the incoming schema parser
-            dataset.sparkOptions = undefined;
-            this.previewSchemaService.preview(dataset,previewRequest, false,false).subscribe((result:PreviewDataSet) => {
-                console.log('FINISHED PREVIEW!!!',result)
-                this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
-                this.notifyToUpdateView();
-            },error1 => {
-                this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
-                this.notifyToUpdateView();
-            })
-            ///update it
-        });
+        }
+    }
+
+    markFormAsValid(formGroup: FormGroup) {
+        if (formGroup.contains("hiddenValidFormCheck")) {
+            formGroup.get("hiddenValidFormCheck").setValue("true")
+            this.notifyToUpdateView();
+        }
     }
 
 
+    /**
+     * Open the schema parser dialog settings
+     * @param {PreviewFileDataSet} dataset
+     * @return {Observable<PreviewDataSet>}
+     */
+    openSchemaParseSettingsDialog(dataset: PreviewFileDataSet): Observable<PreviewDataSet> {
+        //copy the dataset so the orig doesnt get modified
+        let copy = CloneUtil.deepCopy(dataset);
+        let schemaParser = copy.schemaParser;
 
+        //reapply the user modified parser only if it was errored out
+        if (copy.hasPreviewError() && copy.userModifiedSchemaParser) {
+            schemaParser = copy.userModifiedSchemaParser;
+        }
+
+
+        let dialogRef = this._dialogService.open(SchemaParseSettingsDialog, {
+            width: '500px',
+            data: {
+                schemaParser: schemaParser
+            }
+        });
+
+        return dialogRef.afterClosed().filter(result => {
+            console.log('filter result ', result);
+            return result != undefined
+        }).pipe(switchMap((result: SchemaParser) => {
+            return this._previewWithSchemaParser(copy, result);
+        }));
+    }
+
+
+    /**
+     * Preview the dataset using the supplied schema.
+     * The incoming dataset will get updated with the schemaParser and preview data.
+     * A copy should be passed in if it does not want to be modified.
+     * @param {PreviewFileDataSet} dataset
+     * @param {SchemaParser} schemaParser
+     * @return {Observable<PreviewDataSet>}
+     * @private
+     */
+    private _previewWithSchemaParser = (dataset: PreviewFileDataSet, schemaParser: SchemaParser) => {
+        dataset.schemaParser = schemaParser
+
+        let previewRequest = new PreviewDataSetRequest();
+        previewRequest.dataSource = dataset.dataSource;
+        //reset the preview
+        dataset.preview = undefined;
+        this._loadingService.register(DatasetPreviewStepperService.PREVIEW_LOADING)
+        this.notifyToUpdateView();
+        //clear the options so they can be reapplied via the incoming schema parser
+        dataset.sparkOptions = undefined;
+
+
+        return this.previewSchemaService.preview(dataset, previewRequest, false, false)
+            .pipe(
+                catchError((error: any, o: Observable<PreviewDataSet>) => {
+                    console.log('error', error, o);
+                    if (error instanceof PreviewDataSet) {
+                        return Observable.throw(error);
+                    }
+                    else {
+                        return Observable.of(PreviewDataSet.EMPTY);
+                    }
+                }),
+                tap((result: PreviewDataSet) => {
+                    console.log('FINISHED PREVIEW!!!', result)
+                    this._loadingService.resolve(DatasetPreviewStepperService.PREVIEW_LOADING)
+                    this.notifyToUpdateView();
+                    return result;
+                })
+            )
+    }
 
 }

@@ -8,11 +8,9 @@ import {SchemaParser} from "../../../model/field-policy";
 })
 export class SchemaParseSettingsDialog {
     private selectedParser : SchemaParser;
-    private sparkScript:string
     constructor(public dialogRef: MatDialogRef<SchemaParseSettingsDialog>,
                 @Inject(MAT_DIALOG_DATA) public data: any) {
     this.selectedParser = data.schemaParser;
-    this.sparkScript = data.sparkScript;
     }
 
     apply(){
