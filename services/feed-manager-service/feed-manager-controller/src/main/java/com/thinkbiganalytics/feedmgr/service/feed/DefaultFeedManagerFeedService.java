@@ -990,6 +990,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         // Update Kylo metastore
         stopwatch.start();
         domainFeed = feedProvider.update(domainFeed);
+        if(domainFeed.getModifiedTime() != null) {
+            feed.setUpdateDate(domainFeed.getModifiedTime().toDate());
+        }
         
         stopwatch.stop();
         log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));

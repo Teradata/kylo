@@ -1,12 +1,15 @@
 
 <td-layout-nav color="none" *ngIf="showHeader">
   <div td-toolbar-content  fxLayout="row" fxFlex >
-    <div>{{feed.getFeedNameAndVersion()}}</div>
+    <div fxLayout="row" fxLayoutAlign="start center" *ngIf="feed != undefined">
+      <span>{{feed.getFeedNameAndVersion()}}</span>
+      <span class="hint pad-left" *ngIf="feed != undefined">Updated: {{feed.updateDate | date:'MM/dd/yyy HH:mm:ss'}}</span>
+    </div>
     <span fxFlex="100"></span>
-    <div>
-      <button mat-icon-button color="accent" (click)="onEdit()" *ngIf="showEditLink"><mat-icon>edit</mat-icon></button>
-      <button mat-icon-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><mat-icon>delete</mat-icon></button>
-      <button mat-icon-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly"><mat-icon>cancel</mat-icon></button>
+    <div fxLayout="row" fxLayoutAlign="space-between">
+      <button mat-raised-button color="accent" (click)="onEdit()" *ngIf="showEditLink"><mat-icon>edit</mat-icon> Edit</button>
+      <button mat-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><mat-icon>delete</mat-icon> <span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
+      <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly"><mat-icon>cancel</mat-icon> Cancel</button>
     </div>
   </div>
   <ng-container [ngTemplateOutlet]="summaryTemplate"
@@ -37,7 +40,7 @@
               <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
               <span fxFlex="100" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
               <span fxFlex="100" *ngIf="feed.isComplete()"> Ready for deployment</span>
-              <button mat-raised-button color="primary" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>
+              <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>
             </div>
             <div *ngIf="feed.hasBeenDeployed()">
               Deployed version: <a href="#" (click)="loadDeployedVersion($event)" > {{feed.deployedVersion.name}}</a>
