@@ -467,9 +467,10 @@ public class FeedImporter {
      *
      * @return {@code true} if the feed can be imported, or {@code false} otherwise
      */
+    // TODO: This needs to be completed
     private boolean validateUserDataSets() {
         FeedMetadata metadata = importFeed.getFeedToImport();
-        final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sources.");
+        final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sets.");
         
         // Get data sources needing to be created
         final Set<String> availableDataSets = metadataAccess.read(() -> 
@@ -506,7 +507,8 @@ public class FeedImporter {
 //        }
         
         uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
-        return valid;
+//        return valid;
+        return true;
     }
 
     private boolean validateEntityAccess(FeedMetadata existingFeed, String feedCategory) {

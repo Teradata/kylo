@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.rest.api;
 
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
@@ -52,6 +54,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.Workspace;
 import org.modeshape.jcr.api.index.IndexDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
@@ -110,6 +114,8 @@ import io.swagger.annotations.Tag;
 @Path("/v1/metadata/debug")
 @SwaggerDefinition(tags = @Tag(name = "Internal", description = "debugging tools"))
 public class DebugController {
+    
+    private static final Logger log = LoggerFactory.getLogger(DebugController.class);
 
     @Context
     private UriInfo uriInfo;
@@ -227,8 +233,12 @@ public class DebugController {
                 } catch (PathNotFoundException e) {
                     return "Path not found: " + path.toString();
                 }
+            } catch (MetadataAccessException | MetadataExecutionException e) {
+                pw.println("Failed to get JCR node tree: " + e.getCause().getMessage());
+                log.error("Failed to get JCR node tree", e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to get JCR node tree", e);
             }
 
             pw.flush();
@@ -296,9 +306,12 @@ public class DebugController {
                     }
                 }
             });
+        } catch (MetadataAccessException | MetadataExecutionException e) {
+            pw.println("Failed to set node property " + abspath + " = '" + value + "': " + e.getCause().getMessage());
+            log.error("Failed to set node property: {} = '{}'", abspath, value, e);
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to set node property: {} = '{}'", abspath, value, e);
         }
     
         pw.flush();
@@ -331,8 +344,12 @@ public class DebugController {
                 pw.println(node.getPath());
                 JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
+            } catch (MetadataAccessException | MetadataExecutionException e) {
+                pw.println("Failed to show JCR node with ID " + jcrId + ": " + e.getCause().getMessage());
+                log.error("Failed to show JCR node with ID: {}", jcrId, e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to show JCR node with ID: {}", jcrId, e);
             }
     
             pw.flush();
@@ -364,14 +381,17 @@ public class DebugController {
                     Item item = getItem(abspath, session);
                     
                     item.remove();
-                    pw.print("DELETED " + abspath);
+                    pw.print("DELETE " + abspath + "  ");
                 } catch (PathNotFoundException e) {
                     pw.print("Path not found: " + path.toString());
                 }
             });
+        } catch (MetadataAccessException | MetadataExecutionException e) {
+            pw.println("Failed to delete JCR node tree: " + e.getCause().getMessage());
+            log.error("Failed to delete JCR node tree: {}", abspath, e);
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to delete JCR node tree: {}", abspath, e);
         }
     
         pw.flush();
@@ -399,9 +419,10 @@ public class DebugController {
                 Node node = session.getNodeByIdentifier(jcrId);
                 String absPath = node.getPath();
                 node.remove();
-                pw.print("DELETED " + absPath);
+                pw.print("DELETE " + absPath + "  ");
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to delete JCR node with ID: {}", jcrId, e);
             }
     
             pw.flush();
@@ -462,7 +483,7 @@ public class DebugController {
             });
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to delete JCR node reference: {}", abspath, e);
         }
     
         pw.flush();

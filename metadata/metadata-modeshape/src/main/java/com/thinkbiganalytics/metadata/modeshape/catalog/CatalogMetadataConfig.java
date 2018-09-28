@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorPr
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -50,17 +51,17 @@ import java.util.stream.Collectors;
 public class CatalogMetadataConfig {
 
     @Bean
-    public ConnectorProvider metadataConnectorProvider() {
+    public ConnectorProvider connectorProvider() {
         return new JcrConnectorProvider();
     }
 
     @Bean
-    public DataSourceProvider metadataDataSourceProvider() {
+    public DataSourceProvider dataSourceProvider() {
         return new JcrDataSourceProvider();
     }
 
     @Bean
-    public DataSetProvider metadataDataSetProvider() {
+    public DataSetProvider dataSetProvider() {
         return new JcrDataSetProvider();
     }
     
@@ -69,7 +70,7 @@ public class CatalogMetadataConfig {
         return () -> {
             metadata.commit(() -> {
                 List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
-                Map<String, Connector> connectorMap =  metadataConnectorProvider().findAll().stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
+                Map<String, Connector> connectorMap =  connectorProvider().findAll().stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
                 
                 for (ConnectorPlugin plugin : plugins) {
                     if (connectorMap.containsKey(plugin.getId())) {
@@ -78,7 +79,11 @@ public class CatalogMetadataConfig {
                     } else {
                         ConnectorPluginDescriptor descr = plugin.getDescriptor();
                         String title = descr.getTitle();
-                        Connector connector = metadataConnectorProvider().create(plugin.getId(), title);
+                        Connector connector = connectorProvider().create(plugin.getId(), title);
+                        
+                        if (StringUtils.isNotBlank(descr.getFormat())) {
+                            connector.getSparkParameters().setFormat(descr.getFormat());
+                        }
                     }
                 }
                 
@@ -88,7 +93,7 @@ public class CatalogMetadataConfig {
                     if (connector.getDataSources().size() > 0) {
                         connector.setActive(false);
                     } else {
-                        metadataConnectorProvider().deleteById(connector.getId());
+                        connectorProvider().deleteById(connector.getId());
                     }
                 }
             }, MetadataAccess.SERVICE);

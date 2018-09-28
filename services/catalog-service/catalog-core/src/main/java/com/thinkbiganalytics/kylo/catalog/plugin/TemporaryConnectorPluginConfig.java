@@ -66,7 +66,7 @@ public class TemporaryConnectorPluginConfig {
     }
     
     @Bean
-    public ConnectorPluginManager ConnectorPluginManager(Optional<List<ConnectorPlugin>> plugins) {
+    public ConnectorPluginManager connectorPluginManager(Optional<List<ConnectorPlugin>> plugins) {
         List<ConnectorPlugin> list = plugins.orElse(Collections.emptyList());
         ConnectorPluginManager mgr = new DefaultConnectorPluginManager();
         list.forEach(plugin -> mgr.register(plugin));

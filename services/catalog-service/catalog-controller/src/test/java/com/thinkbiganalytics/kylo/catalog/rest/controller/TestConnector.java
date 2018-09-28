@@ -78,7 +78,7 @@ public abstract class TestConnector implements Connector {
     }
 
     @Override
-    public String getColor() {
+    public String getIconColor() {
         return "orange-700";
     }
 

@@ -754,4 +754,31 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public FeedSource ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedDestination(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public FeedDestination ensureFeedDestination(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#removeFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public void removeFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        
+    }
 }

@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -83,6 +84,12 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
         public ConnectorPluginManager mockConnectorPluginManager() {
             return Mockito.mock(ConnectorPluginManager.class);
         }
+        
+        @Bean
+        @Primary
+        public PostMetadataConfigAction connectorPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
+            return Mockito.mock(PostMetadataConfigAction.class);
+        }
     }
 
     
@@ -132,7 +139,7 @@ public class JcrConnectorProviderTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods="testDelete")
     public void testFindAll() {
         metadata.read(() -> {
-            List<Connector> conns = this.connectorProvider.findAll();
+            List<Connector> conns = this.connectorProvider.findAll(true);
             
             assertThat(conns).isNotNull();
             assertThat(conns).hasSize(COUNT);

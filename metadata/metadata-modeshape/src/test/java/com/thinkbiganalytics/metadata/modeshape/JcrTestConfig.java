@@ -25,6 +25,9 @@ import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -33,6 +36,9 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProv
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
@@ -71,6 +77,21 @@ public class JcrTestConfig {
     @Primary
     public LoginConfiguration restModeShapeLoginConfiguration() {
         return Mockito.mock(LoginConfiguration.class);
+    }
+    
+    @Bean
+    public ConnectorProvider connectorProvider() {
+        return Mockito.mock(ConnectorProvider.class);
+    }
+    
+    @Bean
+    public DataSourceProvider dataSourceProvider() {
+        return Mockito.mock(DataSourceProvider.class);
+    }
+    
+    @Bean
+    public DataSetProvider dataSetProvider() {
+        return Mockito.mock(DataSetProvider.class);
     }
 
     @Bean

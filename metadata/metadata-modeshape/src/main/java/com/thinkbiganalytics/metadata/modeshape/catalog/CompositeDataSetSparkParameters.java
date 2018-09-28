@@ -119,4 +119,12 @@ public class CompositeDataSetSparkParameters implements DataSetSparkParameters {
         throw new UnsupportedOperationException("Updates not supported");
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#clearOptions()
+     */
+    @Override
+    public boolean clearOptions() {
+        // Updates not supported
+        throw new UnsupportedOperationException("Updates not supported");
+    }
 }

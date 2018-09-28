@@ -146,6 +146,10 @@ public class DataSourceController extends AbstractCatalogController {
             
             return connectorProvider.find(connId)
                 .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
+                .map(domain -> {
+                    modelTransform.updateDataSource(source, domain);
+                    return domain;
+                })
                 .map(modelTransform.dataSourceToRestModel())
                 .map(dataSource -> Response.ok(log.exit(dataSource)).build())
                 .orElseThrow(() -> {
@@ -271,16 +275,17 @@ public class DataSourceController extends AbstractCatalogController {
 
         // Fetch page
         final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
-        final Page<DataSource> page = metadataService.read(() -> { 
+        
+        return metadataService.read(() -> { 
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
-            return domainPage.map(modelTransform.convertDataSourceToRestModel());
-        });
+            final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel());
 
-        // Return results
-        final SearchResult<DataSource> searchResult = new SearchResultImpl<>();
-        searchResult.setData(page.getContent());
-        searchResult.setRecordsTotal(page.getTotalElements());
-        return Response.ok(searchResult).build();
+            // Return results
+            final SearchResult<DataSource> searchResult = new SearchResultImpl<>();
+            searchResult.setData(page.getContent());
+            searchResult.setRecordsTotal(page.getTotalElements());
+            return Response.ok(searchResult).build();
+        });
     }
 
     @GET
@@ -296,9 +301,11 @@ public class DataSourceController extends AbstractCatalogController {
     public Response listFiles(@PathParam("id") final String dataSourceId, @QueryParam("path") final String path) {
         log.entry(dataSourceId, path);
 
-        // List files at path
-        final DataSource dataSource = findDataSource(dataSourceId);
-        return Response.ok(log.exit(doListFiles(path, dataSource))).build();
+        return metadataService.read(() -> {
+            // List files at path
+            final DataSource dataSource = findDataSource(dataSourceId);
+            return Response.ok(log.exit(doListFiles(path, dataSource))).build();
+        });
     }
 
     private List<DataSetFile> doListFiles(@QueryParam("path") String path, DataSource dataSource) {
@@ -341,11 +348,13 @@ public class DataSourceController extends AbstractCatalogController {
     public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("catalog") final String catalogName, @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
 
-        // List tables
-        final DataSource dataSource = findDataSource(dataSourceId);
-        final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
-
-        return Response.ok(log.exit(tables)).build();
+        return metadataService.read(() -> {
+            // List tables
+            final DataSource dataSource = findDataSource(dataSourceId);
+            final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
+    
+            return Response.ok(log.exit(tables)).build();
+        });
     }
 
     private List<DataSetTable> doListTables(@QueryParam("catalog") String catalogName, @QueryParam("schema") String schemaName, DataSource dataSource) {
@@ -438,13 +447,13 @@ public class DataSourceController extends AbstractCatalogController {
     @Nonnull
     private DataSource findDataSource(@Nonnull final String id) {
         return metadataService.read(() -> {
-                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
-                return dataSourceProvider.find(dsId)
-                    .map(modelTransform.dataSourceToRestModel())
-                    .orElseThrow(() -> {
-                        log.debug("Data source not found: {}", id);
-                        return new NotFoundException(getMessage("catalog.datasource.notFound.id", id));
-                    });
-            });
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
+            return dataSourceProvider.find(dsId)
+                .map(modelTransform.dataSourceToRestModel())
+                .orElseThrow(() -> {
+                    log.debug("Data source not found: {}", id);
+                    return new NotFoundException(getMessage("catalog.datasource.notFound.id", id));
+                });
+        });
     }
 }

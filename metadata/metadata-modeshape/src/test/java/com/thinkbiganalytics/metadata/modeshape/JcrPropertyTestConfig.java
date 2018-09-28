@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -24,6 +28,9 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
@@ -36,6 +43,21 @@ import org.springframework.context.annotation.Bean;
  * Defines the beans used by JcrPropertyTest which override the mocks of JcrTestConfig.
  */
 public class JcrPropertyTestConfig {
+    
+    @Bean
+    public ConnectorProvider connectorProvider() {
+        return new JcrConnectorProvider();
+    }
+    
+    @Bean
+    public DataSourceProvider dataSourceProvider() {
+        return new JcrDataSourceProvider();
+    }
+    
+    @Bean
+    public DataSetProvider dataSetProvider() {
+        return new JcrDataSetProvider();
+    }
 
     @Bean
     public CategoryProvider categoryProvider() {

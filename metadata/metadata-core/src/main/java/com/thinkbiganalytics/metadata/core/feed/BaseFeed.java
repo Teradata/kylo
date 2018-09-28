@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet.ID;
 
 /*-
  * #%L
@@ -238,6 +239,28 @@ public class BaseFeed implements Feed {
     }
 
     @Override
+    public FeedSource getSource(DataSet.ID id) {
+        for (FeedSource dest : this.sources) {
+            if (dest.getDataSet().isPresent() && dest.getDataSet().get().getId().equals(id)) {
+                return dest;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public FeedDestination getDestination(DataSet.ID id) {
+        for (FeedDestination dest : this.destinations) {
+            if (dest.getDataSet().isPresent() && dest.getDataSet().get().getId().equals(id)) {
+                return dest;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
     public FeedDestination getDestination(Datasource.ID id) {
         for (FeedDestination dest : this.destinations) {
             if (dest.getDatasource().isPresent() && dest.getDatasource().get().getId().equals(id)) {
@@ -267,9 +290,9 @@ public class BaseFeed implements Feed {
 
     @Override
     public FeedSource getSource(Datasource.ID id) {
-        for (FeedSource src : this.sources) {
-            if (src.getFeed().getId().equals(id)) {
-                return src;
+        for (FeedSource dest : this.sources) {
+            if (dest.getDatasource().isPresent() && dest.getDatasource().get().getId().equals(id)) {
+                return dest;
             }
         }
 

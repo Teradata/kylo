@@ -90,7 +90,7 @@
  */
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
-	+ catalog (tba:catalogFolder) = tba:catalogFolder autocreated mandatory
+	+ catalog (tba:catalogFolder) = tba:catalogFolder autocreated 
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
 	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
@@ -319,8 +319,8 @@
     // TODO: when to check conditions (schedule, event, ...)
 
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
-    - tba:datasource (WEAKREFERENCE) mandatory COPY
-    - tba:dataSet (WEAKREFERENCE) mandatory COPY
+    - tba:datasource (WEAKREFERENCE) 
+    - tba:dataSet (WEAKREFERENCE) 
 
 [tba:feedSource] > tba:feedConnection
 
@@ -444,7 +444,7 @@
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedTargets (WEAKREFERENCE) multiple
 
-[tba:DataSetSparkParams] > tba:propertied
+[tba:DataSetSparkParams] > mix:lastModified, tba:propertied
     - tba:format (STRING)
     - tba:paths (STRING) multiple
     - tba:files (STRING) multiple

@@ -101,7 +101,6 @@ public class DataSetController extends AbstractCatalogController {
         
         try {
             return metadataService.commit(() -> {
-                // TODO We need a title on the data set model that a user can edit.
                 com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dSrcId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                 com.thinkbiganalytics.metadata.api.catalog.DataSet domain = dataSetProvider.create(dSrcId, dataSet.getTitle());
                 

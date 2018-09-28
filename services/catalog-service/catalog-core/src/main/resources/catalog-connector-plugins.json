@@ -2,6 +2,7 @@
   {
     "title": "Hive",
     "pluginId": "hive",
+    "format": "hive",
     "tabs": [
       {
         "label": "Connection",
@@ -137,6 +138,7 @@
   {
     "title": "Kafka",
     "pluginId": "kafka",
+    "format": "org.apache.spark.sql.kafka010.KafkaSourceProvider",
     "options": [
       {
         "key": "kafka.bootstrap.servers",
@@ -214,6 +216,7 @@
   {
     "title": "Teradata",
     "pluginId": "teradata",
+    "format": "jdbc",
     "color": "orange-700",
     "tabs": [
       {
@@ -252,6 +255,7 @@
   {
     "title": "JDBC",
     "pluginId": "jdbc",
+    "format": "jdbc",
     "tabs": [
       {
         "label": "Connection",
@@ -315,6 +319,7 @@
   {
     "title": "Oracle",
     "pluginId": "oracle",
+    "format": "jdbc",
     "color": "orange-700",
     "tabs": [
       {

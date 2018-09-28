@@ -182,7 +182,7 @@ public class Model {
      */
     public FeedSource domainToFeedSource(@Nonnull final com.thinkbiganalytics.metadata.api.feed.FeedSource domain) {
         FeedSource src = new FeedSource();
-        src.setDatasource(domainToDs(domain.getDatasource()));
+        domain.getDatasource().ifPresent(datasource -> src.setDatasource(domainToDs(datasource)));
         return src;
     }
 
@@ -194,7 +194,7 @@ public class Model {
      */
     public FeedDestination domainToFeedDestination(@Nonnull final com.thinkbiganalytics.metadata.api.feed.FeedDestination domain) {
         FeedDestination dest = new FeedDestination();
-        dest.setDatasource(domainToDs(domain.getDatasource()));
+        domain.getDatasource().ifPresent(datasource -> dest.setDatasource(domainToDs(datasource)));
         return dest;
     }
 

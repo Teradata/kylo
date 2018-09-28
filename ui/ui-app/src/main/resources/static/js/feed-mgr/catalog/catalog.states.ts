@@ -85,7 +85,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 token: "connectorPlugin",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
-                    return catalog.getConnectorPlugin(state.transition.params().connectorId)
+                    return catalog.getPluginOfConnector(state.transition.params().connectorId)
                         .pipe(catchError(() => {
                             return state.go("catalog.connectors")
                         }))

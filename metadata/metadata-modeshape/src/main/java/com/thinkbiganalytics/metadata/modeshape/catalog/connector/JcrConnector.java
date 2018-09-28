@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSuppli
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -51,15 +52,13 @@ import javax.jcr.RepositoryException;
 /**
  *
  */
-public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
+public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, IconableMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
     
     public static final String NODE_TYPE = "tba:Connector";
     public static final String DATASOURCES_NODE_TYPE = "tba:ConnectorDataSources";
     
     public static final String IS_ACTIVE = "tba:isActive";
     public static final String PLUGIN_ID = "tba:pluginId";
-    public static final String ICON = "tba:icon";
-    public static final String ICON_COLOR = "tba:iconColor";
     public static final String DATASOURCES = "dataSources";
     
     public JcrConnector(Node node) {
@@ -127,22 +126,6 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     @Override
     public String getPluginId() {
         return getProperty(PLUGIN_ID);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getIcon()
-     */
-    @Override
-    public String getIcon() {
-        return getProperty(ICON);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getColor()
-     */
-    @Override
-    public String getColor() {
-        return getProperty(ICON_COLOR);
     }
 
     /* (non-Javadoc)

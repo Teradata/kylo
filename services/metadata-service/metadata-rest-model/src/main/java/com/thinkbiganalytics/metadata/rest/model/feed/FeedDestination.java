@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.rest.model.feed;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.transform.FieldsPolicy;
 
@@ -46,6 +47,7 @@ public class FeedDestination implements Serializable {
     private String feedId;
     private String datasourceId;
     private Datasource datasource;
+    private DataSet dataSet;
 
     public String getId() {
         return id;
@@ -85,5 +87,13 @@ public class FeedDestination implements Serializable {
 
     public void setDatasource(Datasource datasource) {
         this.datasource = datasource;
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    public void setDataSet(DataSet dataSet) {
+        this.dataSet = dataSet;
     }
 }

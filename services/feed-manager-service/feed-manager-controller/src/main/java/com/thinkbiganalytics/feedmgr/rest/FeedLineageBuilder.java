@@ -118,8 +118,7 @@ public class FeedLineageBuilder {
 
             sources.stream().forEach(feedSource -> {
                 FeedSource src = new FeedSource();
-                Datasource ds = buildDatasource(feedSource.getDatasource());
-                src.setDatasource(ds);
+                feedSource.getDatasource().ifPresent(datasource -> src.setDatasource(buildDatasource(datasource)));
                 feedSources.add(src);
             });
         }
@@ -129,8 +128,7 @@ public class FeedLineageBuilder {
         if (destinations != null) {
             destinations.stream().forEach(feedDestination -> {
                 FeedDestination dest = new FeedDestination();
-                Datasource ds = buildDatasource(feedDestination.getDatasource());
-                dest.setDatasource(ds);
+                feedDestination.getDatasource().ifPresent(datasource -> dest.setDatasource(buildDatasource(datasource)));
                 feedDestinations.add(dest);
             });
         }

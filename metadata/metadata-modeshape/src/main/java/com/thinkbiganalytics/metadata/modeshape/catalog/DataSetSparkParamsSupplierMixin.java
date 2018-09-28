@@ -41,7 +41,7 @@ public interface DataSetSparkParamsSupplierMixin extends WrappedNodeMixin, DataS
     
     @Override
     default DataSetSparkParameters getSparkParameters() {
-        return JcrUtil.getJcrObject(getNode(), JcrDataSetSparkParameters.class);
+        return JcrUtil.getJcrObject(getNode(), SPARK_PARAMS, JcrDataSetSparkParameters.class);
     }
 
     @Override

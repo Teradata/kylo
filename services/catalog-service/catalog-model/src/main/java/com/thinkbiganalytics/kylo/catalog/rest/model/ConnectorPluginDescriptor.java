@@ -44,6 +44,11 @@ public class ConnectorPluginDescriptor {
      * Connector title
      */
     private String title;
+    
+    /**
+     * The default "format" spark parameter if the connector implementation requires it.
+     */
+    private String format;
 
     /**
      * UI plugin for creating new data sources
@@ -88,6 +93,7 @@ public class ConnectorPluginDescriptor {
     public ConnectorPluginDescriptor(@Nonnull final ConnectorPluginDescriptor other) {
         this.pluginId = other.pluginId;
         this.title = other.title;
+        this.format = other.format;
         this.dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         this.optionsMapperId = other.optionsMapperId;
         this.nifiControllerService = (other.nifiControllerService != null) ? new ConnectorPluginNiFiControllerService(other.nifiControllerService) : null;
@@ -128,6 +134,14 @@ public class ConnectorPluginDescriptor {
     
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
     }
 
     public UiPlugin getDataSourcePlugin() {

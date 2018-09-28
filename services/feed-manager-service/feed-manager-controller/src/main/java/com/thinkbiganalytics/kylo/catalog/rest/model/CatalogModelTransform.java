@@ -29,19 +29,16 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import java.util.function.BiConsumer;
+import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 /**
  *
  */
+// TODO: This should be moved back into the kylo-catalog-controller module after the dependencies are worked out
 @Component
 public class CatalogModelTransform {
 
-    /**
-     * 
-     */
     public CatalogModelTransform() {
         super();
     }
@@ -54,7 +51,7 @@ public class CatalogModelTransform {
             model.setDescription(domain.getDescription());
             model.setPluginId(domain.getPluginId());
             model.setIcon(domain.getIcon());
-            model.setColor(domain.getColor());
+            model.setColor(domain.getIconColor());
             model.setTemplate(sparkParamsToRestModel().apply(domain.getSparkParameters()));
             return model;
         };
@@ -77,7 +74,7 @@ public class CatalogModelTransform {
     
     public void updateDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSet domain) {
         domain.setTitle(model.getTitle());
-//        domain.setDescription(generateDescription(model));
+        domain.setDescription(generateDescription(model));
         updateSparkParameters(model, domain.getSparkParameters());
     }
     
@@ -85,57 +82,23 @@ public class CatalogModelTransform {
      * @param model
      * @param sparkParameters
      */
-    public void updateSparkParameters(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSetSparkParameters sparkParams) {
+    public void updateSparkParameters(DataSetTemplate model, DataSetSparkParameters sparkParams) {
         sparkParams.setFormat(model.getFormat());
         sparkParams.getFiles().retainAll(model.getFiles());
         sparkParams.getJars().retainAll(model.getJars());
         sparkParams.getPaths().retainAll(model.getPaths());
-        sparkParams.getOptions().clear();
-        sparkParams.getOptions().putAll(model.getOptions());
+        
+        sparkParams.clearOptions();
+        for (Entry<String, String> entry : model.getOptions().entrySet()) {
+            sparkParams.addOption(entry.getKey(), entry.getValue());
+        }
     }
-
-    public BiConsumer<DataSet, com.thinkbiganalytics.metadata.api.catalog.DataSet> updateDataSet() {
-        return (model, domain) -> {
-            domain.setTitle(model.getTitle());
-            domain.setDescription(generateDescription(model));
-        };
+    
+    public void updateDataSource(DataSource model, com.thinkbiganalytics.metadata.api.catalog.DataSource domain) {
+        domain.setTitle(model.getTitle());
+        domain.setDescription(generateDescription(model));
+        updateSparkParameters(model.getTemplate(), domain.getSparkParameters());
     }
-
-    /**
-     * @param dataSet
-     * @return
-     */
-    public UnaryOperator<com.thinkbiganalytics.metadata.api.catalog.DataSet> updateWithRestModel(DataSet dataSet) {
-        return (domainDs) -> {
-            domainDs.setTitle(dataSet.getTitle());
-            domainDs.setDescription(generateDescription(dataSet));
-            return domainDs;
-        };
-    }
-//    
-//    /**
-//     * @param dataSet
-//     * @return
-//     */
-//    public String generateSystemName(DataSet dataSet) {
-//        return generateTitle(dataSet).replaceAll("\\s+", "_");
-//    }
-//
-//    /**
-//     * @param dataSet
-//     * @return
-//     */
-//    public String generateTitle(DataSet dataSet) {
-//        return dataSet.getDataSource().getTitle() + "-" + UUID.randomUUID();
-//    }
-//
-//    /**
-//     * @param dataSet
-//     * @return
-//     */
-//    public String generateDescription(DataSet dataSet) {
-//        return "";
-//    }
 
     /**
      * @return
@@ -170,13 +133,17 @@ public class CatalogModelTransform {
     }
     
     /**
-     * @return
+     * @return a domain to REST model converter for use by a Page
      */
     public Converter<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> convertDataSourceToRestModel() {
         return (domain) -> dataSourceToRestModel().apply(domain);
     }
+    
+    private String generateDescription(DataSource dataSource) {
+        return "";
+    }
 
-    private String generateDescription(DataSet dataSet) {
+    private String generateDescription(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         return "";
     }
 }

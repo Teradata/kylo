@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 import org.joda.time.DateTime;
@@ -46,6 +47,7 @@ public class FeedSource implements Serializable {
     private String id;
     private String datasourceId;
     private Datasource datasource;
+    private DataSet dataSet;
 
     public String getId() {
         return id;
@@ -78,4 +80,13 @@ public class FeedSource implements Serializable {
     public void setDatasource(Datasource datasource) {
         this.datasource = datasource;
     }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    public void setDataSet(DataSet dataSet) {
+        this.dataSet = dataSet;
+    }
+    
 }

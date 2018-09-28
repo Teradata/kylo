@@ -58,7 +58,7 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String getFormat() {
-        return getProperty(FORMAT);
+        return getProperty(FORMAT, "");
     }
     
     /* (non-Javadoc)
@@ -107,7 +107,7 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public boolean addOption(String name, String value) {
-        String existing = getProperty(name);
+        String existing = getProperty(name, null);
         setProperty(name, value);
         return existing == null || ! existing.equals(value);
     }
@@ -117,9 +117,18 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String removeOption(String name) {
-        String existing = getProperty(name);
+        String existing = getProperty(name, null);
         removeProperty(name);
         return existing;
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#clearOptions()
+     */
+    @Override
+    public boolean clearOptions() {
+        Map<String, Object> existing = getProperties();
+        clearAdditionalProperties();
+        return existing.size() > 0;
+    }
 }

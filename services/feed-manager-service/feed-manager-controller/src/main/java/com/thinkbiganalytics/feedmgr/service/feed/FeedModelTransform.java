@@ -42,6 +42,12 @@ import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -71,6 +77,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -93,6 +100,12 @@ public class FeedModelTransform {
     private FeedProvider feedProvider;
     
     @Inject
+    private DataSourceProvider dataSourceProvider;
+    
+    @Inject
+    private DataSetProvider dataSetProvider;
+    
+    @Inject
     private SecurityModelTransform securityTransform;
 
     @Inject
@@ -100,6 +113,9 @@ public class FeedModelTransform {
 
     @Inject
     private CategoryModelTransform categoryModelTransform;
+    
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
 
     @Inject
     private HiveService hiveService;
@@ -177,8 +193,8 @@ public class FeedModelTransform {
     @Nonnull
     public Feed feedToDomain(@Nonnull final FeedMetadata feedMetadata) {
         //resolve the id
-        Feed.ID domainId = feedMetadata.getId() != null ? feedProvider.resolveId(feedMetadata.getId()) : null;
-        Feed domain = domainId != null ? feedProvider.findById(domainId) : null;
+        Feed.ID inputId = feedMetadata.getId() != null ? feedProvider.resolveId(feedMetadata.getId()) : null;
+        Feed domain = inputId != null ? feedProvider.findById(inputId) : null;
 
         FeedCategory restCategoryModel = feedMetadata.getCategory();
         Category category = restCategoryModel != null ? categoryProvider.findById(categoryProvider.resolveId(restCategoryModel.getId())) : null;
@@ -190,15 +206,17 @@ public class FeedModelTransform {
                 throw new RuntimeException("Category cannot be found while creating feed " + feedMetadata.getSystemFeedName() + ".  Category Id is " + categoryId);
             }
             domain = feedProvider.ensureFeed(category.getId(), feedMetadata.getSystemFeedName());
-            domainId = domain.getId();
+            inputId = domain.getId();
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             domain.setState(state);
 
             //reassign the domain data back to the ui model....
-            feedMetadata.setFeedId(domainId.toString());
+            feedMetadata.setFeedId(inputId.toString());
             feedMetadata.setState(state.name());
 
         }
+        
+        final Feed.ID domainId = inputId;
         
         // Check if the category is changing
         if (category != null && ! category.getId().equals(domain.getCategory().getId())) {
@@ -269,6 +287,23 @@ public class FeedModelTransform {
         
         if (feedMetadata.getTags() != null) {
             domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+        }
+        
+        if (feedMetadata.getSourceDataSets() != null) {
+            feedMetadata.getSourceDataSets().forEach(dataSet -> {
+                com.thinkbiganalytics.metadata.api.catalog.DataSet.ID domainDsId = dataSetProvider.resolveId(dataSet.getId());
+                com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = dataSetProvider.find(domainDsId)
+                    .orElseGet(() -> {
+                        DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                        dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+                        
+                        com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
+                        catalogModelTransform.updateDataSet(dataSet, newDs);
+                        return newDs;
+                    });
+                
+                feedProvider.ensureFeedSource(domainId, domainDsId);
+            });
         }
 
         // Create a new feed metadata stripped of any excess data that does 
@@ -456,6 +491,14 @@ public class FeedModelTransform {
                 .collect(Collectors.toList());
             feed.setUsedByFeeds(usedByFeeds);
         }
+        
+        List<DataSet> srcDataSets = domain.getSources().stream()
+            .map(src -> src.getDataSet())
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(catalogModelTransform.dataSetToRestModel())
+            .collect(Collectors.toList());
+        feed.setSourceDataSets(srcDataSets);
 
         //add in access control items
         securityTransform.applyAccessControl(domain, feed);
