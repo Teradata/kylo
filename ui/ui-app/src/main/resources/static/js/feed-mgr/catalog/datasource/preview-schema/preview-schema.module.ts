@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {UIRouterModule} from "@uirouter/angular";
 
-import {PreviewSchemaComponent, SchemaDefinitionComponent, SimpleTableComponent} from "./preview-schema.component";
+import {PreviewSchemaComponent} from "./preview-schema.component";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatTabsModule} from '@angular/material/tabs';
@@ -33,14 +33,16 @@ import {FileMetadataTransformService} from "./service/file-metadata-transform.se
 import {KyloServicesModule} from "../../../../services/services.module";
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {DatasetSimpleTableComponent} from "./dataset-simple-table.component";
+import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.component";
 
 @NgModule({
     declarations: [
         PreviewSchemaComponent,
         SatusDialogComponent,
         SchemaParseSettingsDialog,
-        SimpleTableComponent,
-        SchemaDefinitionComponent
+        DatasetSimpleTableComponent,
+        DatasetSchemaDefinitionComponent
     ],
     entryComponents: [
         SatusDialogComponent,
@@ -48,9 +50,9 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
     ],
     exports:[
         PreviewSchemaComponent,
-        SimpleTableComponent,
+        DatasetSimpleTableComponent,
         SchemaParseSettingsDialog,
-        SchemaDefinitionComponent
+        DatasetSchemaDefinitionComponent
     ],
     imports: [
         CommonModule,

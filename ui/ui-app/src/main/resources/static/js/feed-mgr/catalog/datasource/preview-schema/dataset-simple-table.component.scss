@@ -2,3 +2,7 @@
   overflow:hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
+
+::ng-deep dataset-simple-table .td-data-table-scrollable {
+  overflow-x: auto!important;
+}
