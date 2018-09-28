@@ -23,7 +23,7 @@ package com.thinkbiganalytics.spark.rest.controller;
 import com.thinkbiganalytics.discovery.FileParserFactory;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
-import com.thinkbiganalytics.discovery.parsers.hadoop.TextBinarySparkFileSchemaParser;
+//import com.thinkbiganalytics.discovery.parsers.hadoop.TextBinarySparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.rest.controller.SchemaParserAnnotationTransformer;
 import com.thinkbiganalytics.discovery.rest.controller.SchemaParserDescriptorUtil;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
@@ -205,11 +205,6 @@ public class SparkShellProxyController {
     @Inject
     SparkJobService sparkJobService;
 
-
-    /**
-     * The Spark Schema parser for generic text file parsing
-     */
-    private SchemaParserDescriptor textSchemaParser;
 
     @POST
     @Path("/job")
@@ -688,11 +683,8 @@ public class SparkShellProxyController {
             }
             catch (Exception e) {
                 //should we attempt to re preview the data as plain text
-                if(fallbackToTextParser && previewRequest.getSchemaParser() != null && !TextBinarySparkFileSchemaParser.NAME.equalsIgnoreCase(previewRequest.getSchemaParser().getName())){
-                    TextBinarySparkFileSchemaParser textParser = new TextBinarySparkFileSchemaParser();
-                    SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-                    SchemaParserDescriptor schemaParserDescriptor = transformer.toUIModel(textParser);
-                    previewRequest.setSchemaParser(schemaParserDescriptor);
+                if(fallbackToTextParser && previewRequest.getSchemaParser() != null && !"text".equalsIgnoreCase(previewRequest.getSchemaParser().getSparkFormat())){
+                    previewRequest.setSchemaParser(getTextSchemaParserDescriptor());
                     KyloCatalogReadRequest  request2 = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
                     TransformResponse transformResponse = restClient.kyloCatalogTransform(process, request2);
                     response = new PreviewDataSetTransformResponse(transformResponse,previewRequest.getSchemaParser());
@@ -700,6 +692,8 @@ public class SparkShellProxyController {
                 else {
                     throw  e;
                 }
+
+           throw e;
             }
             return response;
         });
@@ -712,14 +706,19 @@ public class SparkShellProxyController {
      * Get the text schema parser, first looking for the cached one if it exists
      * @return
      */
+
     private SchemaParserDescriptor getTextSchemaParserDescriptor(){
-        if(textSchemaParser == null) {
-            TextBinarySparkFileSchemaParser textParser = new TextBinarySparkFileSchemaParser();
-            SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-            textSchemaParser = transformer.toUIModel(textParser);
-        }
-        return textSchemaParser;
+            SchemaParserDescriptor textParser = new SchemaParserDescriptor();
+            textParser.setName("Text");
+            textParser.setDisplayName("Text");
+            textParser.setSparkFormat("text");
+            textParser.setUsesSpark(true);
+            textParser.setMimeTypes(new String[] {"text"});
+            textParser.setPrimary(true);
+            textParser.setAllowSkipHeader(true);
+            return textParser;
     }
+
 
 
     private <T> Response getModifiedTransformResponse(Supplier<Optional<TransformResponse>> supplier, TransformResultModifier<T> modifier) {

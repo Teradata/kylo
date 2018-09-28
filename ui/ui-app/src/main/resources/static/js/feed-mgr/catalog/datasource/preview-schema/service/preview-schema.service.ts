@@ -72,7 +72,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
         let observable$ = subject.asObservable();
 
         let parsers = this._fieldPolicyOptionsService.getSparkSchemaParsers().subscribe((parsers:SchemaParser[]) => {
-            let parser = parsers.find((parser:SchemaParser) => parser.name == SchemaParserType.TEXT_BINARY);
+            let parser = parsers.find((parser:SchemaParser) => parser.sparkFormat =="text");
             if(parser){
                 subject.next(parser);
             }
@@ -80,8 +80,6 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 subject.next(undefined);
             }
         });
-        //const parser =  parsers.pipe(first((parser:SchemaParser) => parser.name == SchemaParserType.TEXT_BINARY));
-        //return parser;
         return observable$;
     }
 

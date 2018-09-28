@@ -22,32 +22,24 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
-import com.thinkbiganalytics.policy.PolicyProperty;
-import com.thinkbiganalytics.policy.PolicyPropertyTypes;
-import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Parser for generic text or binary data.
  * NOTE TODO binary script doesnt work yet.
  */
-@SchemaParser(name = "TEXT_BINARY", allowSkipHeader = false, description = "read generice text or binary file", tags = {"TEXT", "BINARY"}, usesSpark = true, primary = true, mimeTypes = "text", sparkFormat = "text")
+@SchemaParser(name = "Text", allowSkipHeader = false, description = "read generice text file resulting in a single column output of text", tags = {"TEXT"}, usesSpark = true, primary = true, mimeTypes = "text", sparkFormat = "text")
 public class TextBinarySparkFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
-    public static String NAME = "TEXT_BINARY";
-
-    @PolicyProperty(name = "Binary",displayName = "Binary data?", hint = "Set to true if this is binary data", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    selectableValues = {"true", "false"})
+   // @PolicyProperty(name = "Binary",displayName = "Binary data?", hint = "Set to true if this is binary data", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true", "false"})
     private boolean binary = false;
 
     @Override
     public SparkFileType getSparkFileType() {
-        return SparkFileType.TEXT_BINARY;
+        return SparkFileType.TEXT;
     }
 
 

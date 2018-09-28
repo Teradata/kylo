@@ -63,7 +63,7 @@ export interface FieldPolicy {
 }
 
 export enum SchemaParserType {
-    CSV="CSV",JSON="JSON",TEXT_BINARY="TEXT_BINARY"
+    CSV="CSV",JSON="JSON",TEXT="TEXT"
 }
 
 
