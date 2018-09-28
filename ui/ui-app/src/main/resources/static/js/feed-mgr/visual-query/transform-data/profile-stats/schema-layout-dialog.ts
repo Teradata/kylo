@@ -52,7 +52,7 @@ export class ColumnItem {
 
 @Component({
     templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/schema-layout-dialog.html',
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/schema-layout-dialog.css"]
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/schema-layout-dialog.scss"]
 })
 export class SchemaLayoutDialog {
 
