@@ -295,7 +295,6 @@ public class HiveMetastoreService {
 
                 metadata.setName(tableName);
                 metadata.setSchemaName(dbName);
-                metadata.setFields(new ArrayList<Field>());
 
                 DefaultField field = new DefaultField();
                 field.setName(columnName);
