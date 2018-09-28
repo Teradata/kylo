@@ -1,4 +1,3 @@
-
 <form #theForm="ngForm">
   <mat-toolbar [color]="['primary']">
     <span>Schema</span>
@@ -28,37 +27,30 @@
            [dndDraggable]
            [dndObject]="row" class="mat-list-item mat-list-item-avatar kylo-mat-list-item">
 
-        <div class="kylo-mat-list-item-content pad-left pad-right" fxLayout="row" fxLayoutAlign="start center" >
+        <div class="kylo-mat-list-item-content">
 
+          <mat-icon class="kylo-mat-list-avatar" matListAvatar [color]="['accent']" style="display:inline-block">{{row.typeIcon}}</mat-icon>
 
+          <div class="kylo-mat-list-text">
+            <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
+              <input matInput placeholder="Name" [(ngModel)]="row.newName" (ngModelChange)="setName(row, $event)" class="kylo-mat-list-color" required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$"
+                     name="{{row.origName}}">
+            </mat-form-field>
+          </div>
 
-          <mat-icon  matListAvatar fontIcon="mdi-cellphone-wireless" fontSet="mdi"></mat-icon>
+          <h4 matLine *ngIf="row.deleted" class="kylo-mat-list-color text-deleted">{{row.newName}}</h4>
 
+          <span fxFlex="1 1 auto"></span>
 
-            <mat-icon class="kylo-mat-list-avatar" matListAvatar svgIcon="fas:clock" ></mat-icon>
+          <button mat-icon-button *ngIf="!row.deleted" (click)="remove(i)">
+            <mat-icon class="mat-24 kylo-mat-list-color">delete</mat-icon>
+          </button>
 
-                    <mat-icon class="kylo-mat-list-avatar" matListAvatar [color]="['accent']" style="display:inline-block">{{row.typeIcon}}</mat-icon>
+          <button mat-icon-button *ngIf="row.deleted" (click)="restore(i)">
+            <mat-icon class="mat-24 kylo-mat-list-color">restore_from_trash</mat-icon>
+          </button>
 
-            <div class="kylo-mat-list-text">
-              <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
-                <input matInput placeholder="Name" [(ngModel)]="row.newName" (ngModelChange)="setName(row, $event)" class="kylo-mat-list-color"  required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$"
-                       name="{{row.origName}}">
-              </mat-form-field>
-            </div>
-
-            <h4 matLine *ngIf="row.deleted" class="kylo-mat-list-color text-deleted">{{row.newName}}</h4>
-
-            <span fxFlex="1 1 auto"></span>
-
-            <button mat-icon-button *ngIf="!row.deleted" (click)="remove(i)">
-              <mat-icon class="mat-24 kylo-mat-list-color">delete</mat-icon>
-            </button>
-
-            <button mat-icon-button *ngIf="row.deleted" (click)="restore(i)">
-              <mat-icon class="mat-24 kylo-mat-list-color">restore_from_trash</mat-icon>
-            </button>
-
-            <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
+          <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
 
         </div>
         <mat-divider class="kylo-mat-divider" [inset]="false"></mat-divider>
@@ -66,8 +58,8 @@
 
     </div>
 
-  <div class="dndPlaceholder col-md-12"
-       #placeholder></div>
+    <div class="dndPlaceholder col-md-12"
+         #placeholder></div>
 
   </div>
 </form>

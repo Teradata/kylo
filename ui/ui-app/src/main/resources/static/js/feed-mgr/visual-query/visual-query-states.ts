@@ -29,7 +29,7 @@ export const visualQueryStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Visual Query",
+            displayName: "Wrangler",
             permissions: AccessConstants.UI_STATES.VISUAL_QUERY.permissions
         }
     }

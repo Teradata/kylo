@@ -68,8 +68,8 @@ public interface FeedServicesAccessControl {
                                                    "Allows listing and querying Hive tables");
 
     Action ACCESS_VISUAL_QUERY = FEEDS_SUPPORT.subAction("accessVisualQuery",
-                                                         "Access Visual Query",
-                                                         "Allows access to visual query data wrangler");
+                                                         "Access Wrangler",
+                                                         "Allows access to data wrangler");
 
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",

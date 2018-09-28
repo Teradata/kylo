@@ -40,10 +40,10 @@ export class ColumnItem {
                 this.typeIcon = "date_range";
                 break;
             case 'boolean':
-                this.typeIcon = "done";
+                this.typeIcon = "check_box";
                 break;
             default:
-                this.typeIcon = "dehaze";
+                this.typeIcon = "storage";
                 break;
         }
 
