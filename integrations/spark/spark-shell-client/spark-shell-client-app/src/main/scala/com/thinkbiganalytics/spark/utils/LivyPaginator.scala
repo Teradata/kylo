@@ -13,7 +13,6 @@ object LivyPaginator {
     var actualRows: Long = 0
 
     LivyLogger.time {
-      actualRows = df.cache().count()
       actualCols = df.columns.length
 
       val lastCol = actualCols - 1
@@ -22,6 +21,8 @@ object LivyPaginator {
 
       val df2 = df.select(dfStartCol to dfStopCol map df.columns map col: _*)
       val dl = df2.collect
+
+      actualRows = dl.size
 
       df.columns.slice(dfStartCol, dfStopCol)
 
