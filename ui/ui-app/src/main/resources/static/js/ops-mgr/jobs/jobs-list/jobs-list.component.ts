@@ -195,8 +195,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     abandonAllJobs() {
 
           let dialog =  this._dialogService.open(AbandonAllJobsDialogComponent, {
-                data: { feedName: this.feedFilter },
-                panelClass: "full-screen-dialog"
+                data: { feedName: this.feedFilter }
             });
         this.opsManagerJobService.abandonAllJobs(this.feedFilter, () => {
             dialog.close();

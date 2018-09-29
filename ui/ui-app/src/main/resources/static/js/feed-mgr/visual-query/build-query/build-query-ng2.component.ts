@@ -847,7 +847,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             dest: dest
         };
 
-        return this._dialogService.open(ConnectionDialog, {data: config, panelClass: "full-screen-dialog"})
+        return this._dialogService.open(ConnectionDialog, {data: config})
             .afterClosed().subscribe((response: ConnectionDialogResponse) => {
                 if(response) {
                     if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {

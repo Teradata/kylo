@@ -1,13 +1,6 @@
-
-<mat-toolbar [color]="['primary']">
-  <span>Deploy feed {{feed.getFullName()}}</span>
-  <span class="flex"></span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
-  </button>
-</mat-toolbar>
+<h2 mat-dialog-title>Deploy feed {{feed.getFullName()}}</h2>
 <div mat-dialog-content >
-  <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start" *ngIf="!deployingFeed">
+  <div class="mat-padding" fxLayout="column" fxLayoutAlign="start" *ngIf="!deployingFeed">
 
     <div *ngIf="deployError" fxLayout="row">
       <mat-icon color="warn">error</mat-icon>
@@ -18,22 +11,26 @@
 
       <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed"></feed-schedule>
 
-    <div fxLayout="column">
+    <div fxLayout="column" class="pad-top pad-bottom">
       <mat-checkbox #enableFeed formControlName="enableFeed"> {{"views.define-feed-schedule.EFI" | translate}}</mat-checkbox>
-      <span class="hint fade" [hidden]="enableFeed.checked">{{"views.define-feed-schedule.TFW" | translate}}</span>
-      <span class="hint fade" [hidden]="!enableFeed.checked">{{"views.define-feed-schedule.TFW2" | translate}}</span>
+      <span class="hint fade" [hidden]="!enableFeed.checked">{{"views.define-feed-schedule.TFW" | translate}}</span>
+      <span class="hint fade" [hidden]="enableFeed.checked">{{"views.define-feed-schedule.TFW2" | translate}}</span>
     </div>
     </form>
-    <button mat-raised-button color="primary" (click)="deployFeed()">Deploy</button>
 
 
   </div>
 
-<div *ngIf="deployingFeed" fxFlex fxLayout="column" fxLayoutAlign="center center">
+<div *ngIf="deployingFeed" fxFlex fxLayout="column" fxLayoutAlign="center center" class="mad-padding">
   <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
-  <h1 class="mat-title">Deploying {{feed.getFullName()}}</h1>
+  <h3 class="subheading-2 pad-top">Deploying your feed</h3>
 </div>
 
 
 
 </div>
+<mat-dialog-actions  *ngIf="!deployingFeed">
+  <span fxFlex></span>
+  <button mat-button [mat-dialog-close]="true">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="formGroup.invalid" (click)="deployFeed()">Deploy</button>
+</mat-dialog-actions>

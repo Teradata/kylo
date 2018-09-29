@@ -1,13 +1,4 @@
-<div mat-dialog aria-label="Abandon all jobs for feed">
-  <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
-    <div class="md-toolbar-tools">
-      <h4>
-        <ng-md-icon size="24" md-icon icon="save" aria-label="Abandon all jobs" style="fill:#3483BA"></ng-md-icon>
-        <span>Abandon all jobs for {{feedName | truncate:50}}</span>
-      </h4>
-      <span flex></span>
-    </div>
-  </mat-toolbar>
+  <h2 mat-dialog-title>Abandon all jobs for {{feedName | truncate:50}}</h2>
   <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
     <div class="md-subhead">{{message}}</div>
     <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
@@ -15,4 +6,3 @@
     </div>
 
   </mat-dialog-content>
-</div>

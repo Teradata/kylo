@@ -1,10 +1,4 @@
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']" fxLayout="row" fxLayoutAlign="center center">
-  <span>{{title}}</span>
-  <span class="flex"></span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
-  </button>
-</mat-toolbar>
+<h2 mat-dialog-title>{{title}}</h2>
 <div mat-dialog-content class="mat-dialog-content">
   <form class="layout-column" [formGroup]="form">
     <p *ngIf="message">{{message}}</p>
