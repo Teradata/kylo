@@ -18,12 +18,7 @@
   #L%
   -->
 
-<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
-  <span>Filter Help</span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
-  </button>
-</mat-toolbar>
+<h2 mat-dialog-title>Filter Help</h2>
   <mat-dialog-content  fxLayout="column">
     <mat-list>
 
@@ -79,3 +74,7 @@
     </mat-list>
 
   </mat-dialog-content>
+<mat-dialog-actions>
+  <span fxFlex></span>
+  <button mat-button [mat-dialog-close]="true">Close</button>
+</mat-dialog-actions>
