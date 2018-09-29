@@ -588,6 +588,7 @@
     "views.card-filter-header-template.Filter": "Filter",
 
     "views.alerts-template.Alerts": "Alerts",
+    "views.alerts-template.AlertsForFeed": "Alerts for feed",
     "views.alerts-template.Na": "No alerts",
     "views.alerts-template.ALERT1": "Alert",
     "views.alerts-template.ALERT2": "Alerts",
