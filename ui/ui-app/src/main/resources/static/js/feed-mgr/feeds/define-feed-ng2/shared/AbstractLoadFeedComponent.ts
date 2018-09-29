@@ -32,6 +32,11 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     @Input()
     refresh:boolean;
 
+    /**
+     * is this a brand new feed
+     */
+    newFeed:boolean;
+
     @Output()
     public feedChange = new EventEmitter<Feed>()
 
@@ -57,6 +62,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.loadMode = this.stateParams ? this.stateParams.loadMode : LoadMode.LATEST;
         this.refresh = this.stateParams ? this.stateParams.refresh : false;
+        this.newFeed = this.stateParams ? this.stateParams.newFeed : false;
         this.initializeFeed(this.feedId).subscribe((feed:any) => {
             this.init();
         });
@@ -105,6 +111,11 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
       let observable = this.feedLoadingService.loadFeed(feedId, this.loadMode,refresh);
       observable.subscribe((feedModel:Feed) => {
             this.feed = feedModel;
+            if(this.newFeed){
+                //mark it as editable
+                this.feed.readonly = false;
+                this.defineFeedService.markFeedAsEditable();
+            }
             this._setFeedState();
             this.onFeedLoaded(this.feed);
             this.loadingFeed = false;

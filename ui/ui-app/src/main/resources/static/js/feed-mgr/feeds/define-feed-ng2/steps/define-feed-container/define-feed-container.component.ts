@@ -54,6 +54,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     onFeedSaveSubscription:ISubscription;
     toolbarActionTemplateChangeSubscription:ISubscription;
 
+
     constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,
                 feedSideNavService:FeedSideNavService) {
