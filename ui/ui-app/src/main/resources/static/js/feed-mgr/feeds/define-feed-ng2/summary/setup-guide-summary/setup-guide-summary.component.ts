@@ -62,8 +62,8 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
                  this.feed.mode = FeedMode.DEPLDYED_WITH_ACTIVE_DRAFT;
                 }
                 else {
+                   this.showEditLink = this.feed.accessControl.allowEdit && this.feed.readonly
                     this.feed.mode = FeedMode.DEPLOYED;
-                    this.showEditLink = this.feed.canEdit() && this.feed.readonly
                 }
             },error1 => {
                 console.log("Error checking for draft ",error1)
@@ -100,7 +100,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     deployFeed(){
 
         if(this.feed.accessControl.allowEdit){
-            let config ={data:new DeployFeedDialogComponentData(this.feed),panelClass:"full-screen-dialog", width:"600px", height:"400px"};
+            let config ={data:new DeployFeedDialogComponentData(this.feed), width:"600px"};
             this._dialogService.open(DeployFeedDialogComponent,config);
         }
 

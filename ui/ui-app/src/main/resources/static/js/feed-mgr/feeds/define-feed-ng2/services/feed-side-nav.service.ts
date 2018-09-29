@@ -105,11 +105,14 @@ export class FeedSideNavService {
 
     registerStepToolbarActionTemplate(linkName:string,templateRef:TemplateRef<any>){
         let link = this._findStepLinkByName(linkName);
+        if(!link){
+            link = this._findSetupGuideLink(linkName);
+        }
         if(link){
             this.toolbarActionTemplateRefMap[linkName] = templateRef;
             //fire link changed event
             this.toolbarActionTemplateChangedSubject.next(new ToolbarActionTemplateChangedEvent(link,templateRef))
-        }
+       }
     }
 
     getSelectedLinkTemplateRef(){
@@ -142,6 +145,10 @@ export class FeedSideNavService {
 
     private _findStaticLinkByName(linkName:string){
         return this.allLinks.find((link) => link.label == linkName && link.linkType == FeedLinkType.STATIC);
+    }
+
+    private _findSetupGuideLink(linkName:string){
+        return this.allLinks.find((link) => link.label == linkName && link.linkType == FeedLinkType.SETUP_GUIDE);
     }
 
     private _findStepLinkByName(linkName:string){

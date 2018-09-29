@@ -63,6 +63,7 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
             .subscribe((updatedRoleMemberships) => {
                 this.defineFeedService.updateFeedRoleMemberships(updatedRoleMemberships);
                 this.feedLoadingService.resolveLoading();
+                this.goToSetupGuideSummary();
             }, error1 => {
             this.feedLoadingService.resolveLoading();
         });

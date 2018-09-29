@@ -303,6 +303,7 @@ public class FeedModelTransform {
         result.setTableOption(source.getTableOption());
         result.setSourceDataSets(source.getSourceDataSets());
         result.setUiState(source.getUiState());
+        result.setActive(source.isActive());
         return result;
     }
 

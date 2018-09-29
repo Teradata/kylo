@@ -5,7 +5,7 @@ import {OnDestroy, OnInit, TemplateRef} from "@angular/core";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {AbstractControl, FormGroup} from "@angular/forms";
 import {Step} from "../../../model/feed/feed-step.model";
-import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_SETUP_GUIDE_STATE_NAME} from "../../../model/feed/feed-constants";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../services/feed-side-nav.service";
@@ -45,6 +45,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     private feedEditStateChangeEvent: ISubscription;
 
     private feedStepStateChangeSubscription:ISubscription;
+
+    protected redirectAfterSave:boolean = true;
 
 
     protected constructor(protected  defineFeedService: DefineFeedService, protected stateService: StateService,
@@ -123,6 +125,11 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             }
         });
 
+    }
+
+    public goToSetupGuideSummary(){
+        let redirectState = FEED_SETUP_GUIDE_STATE_NAME;
+        this.stateService.go(redirectState,{feedId:this.feed.id, refresh:false}, {location:'replace'})
     }
 
 
@@ -216,6 +223,9 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
                 this.defineFeedService.openSnackBar("Saved the feed ", 3000);
                 this.resolveLoading();
                 this.step.clearDirty();
+                if(this.redirectAfterSave) {
+                    this.goToSetupGuideSummary();
+                }
             }, error1 => {
                 this.resolveLoading()
                 this.defineFeedService.openSnackBar("Error saving the feed ", 3000);

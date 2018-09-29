@@ -173,7 +173,7 @@ export class DefineFeedService {
 
             let template = feedToClone.registeredTemplate;
             let config:NewFeedDialogData = new NewFeedDialogData(template," Clone "+feedToClone.getFullName());
-            this._dialogService.open(NewFeedDialogComponent, {data: config, panelClass: "full-screen-dialog",width:'800px'})
+            this._dialogService.open(NewFeedDialogComponent, {data: config, width:'800px'})
                 .afterClosed()
                 .filter(value => typeof value !== "undefined").subscribe((newFeedData:NewFeedDialogResponse) => {
                     this._loadingService.register("processingFeed")

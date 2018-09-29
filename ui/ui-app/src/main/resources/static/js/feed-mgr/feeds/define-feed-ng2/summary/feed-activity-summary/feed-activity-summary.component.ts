@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
@@ -7,6 +7,10 @@ import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent"
 import {FeedStats} from "../../../../model/feed/feed-stats.model";
 import {FEED_ACTIVITY_LINK} from "../../model/feed-link-constants";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
+import {FeedSummary} from "../../../../model/feed/feed-summary.model";
+import {FeedJobActivityComponent} from "./feed-job-activity/feed-job-activity.component";
+import {JobsListComponent} from "../../../../../ops-mgr/jobs/jobs-list/jobs-list.component";
+import {Feed} from "../../../../model/feed/feed.model";
 
 @Component({
     selector: "feed-activity-summary",
@@ -23,6 +27,13 @@ export class FeedActivitySummaryComponent extends AbstractLoadFeedComponent  {
 
     feedStats:FeedStats = new FeedStats();
 
+    @ViewChild("feedJobActivity")
+    private feedJobActivity ?:FeedJobActivityComponent;
+
+
+    @ViewChild("jobsList")
+    private jobsList ?:JobsListComponent;
+
     getLinkName(){
         return FeedActivitySummaryComponent.LINK_NAME;
     }
@@ -35,6 +46,21 @@ export class FeedActivitySummaryComponent extends AbstractLoadFeedComponent  {
         this.feedStats = feedStats;
     }
 
+    onFeedChange(feed:Feed){
+        this.feed = feed;
+    }
+
+
+
+    onFeedHealthRefreshed(feedSummary:FeedSummary){
+        if(this.feedJobActivity){
+            this.feedJobActivity.updateCharts();
+        }
+
+        if(this.jobsList){
+            this.jobsList.loadJobs(true)
+        }
+    }
 
 
 }

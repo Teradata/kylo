@@ -211,17 +211,51 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide",
         url: "/:feedId/summary-setup-guide",
         component: SetupGuideSummaryComponent,
+        params:{feedId:{type:"string"},
+            loadMode:LoadMode.LATEST,
+            refresh:false},
         resolve: [
             {
                 token: 'showHeader',
                 resolveFn: () => true
+            },
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
+            {
+                token: 'loadMode',
+                resolveFn: () => LoadMode.LATEST
+            },
+            {
+                token: 'refresh',
+                resolveFn: () => false
             }
             ]
     },
     {
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity",
         url: "/:feedId/feed-activity",
-        component: FeedActivitySummaryComponent
+        component: FeedActivitySummaryComponent,
+        params:{feedId:{type:"string"},
+            loadMode:LoadMode.DEPLOYED,
+            refresh:false},
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            },
+            {
+                token: 'loadMode',
+                resolveFn: () => LoadMode.DEPLOYED
+            },
+            {
+                token: 'refresh',
+                resolveFn: () => false
+            }
+        ]
     },
 
     /**

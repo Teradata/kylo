@@ -13,11 +13,6 @@
             [ngTemplateOutlet]="toolbarActionLinks ? toolbarActionLinks: defaultToolbarActionLinks">
         </ng-container>
       </div>
-      <div fxLayout="row" fxLayoutAlign="space-between">
-      <button mat-raised-button button color="accent" (click)="onEdit()" *ngIf="feed.canEdit() && feed.readonly"><mat-icon>edit</mat-icon> Edit</button>
-      <button mat-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><mat-icon>delete</mat-icon> <span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
-      <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly"><mat-icon>cancel</mat-icon> Cancel</button>
-      </div>
     </mat-toolbar>
     <ui-view></ui-view>
   </td-layout-manage-list>
@@ -26,4 +21,17 @@
 </td-layout>
 
 <ng-template #defaultToolbarActionLinks>
+  <div fxLayout="row" fxLayoutAlign="space-between">
+    <button mat-raised-button button color="accent" (click)="onEdit()" *ngIf="feed.canEdit() && feed.readonly">Edit</button>
+    <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly">Cancel</button>
+  </div>
+</ng-template>
+
+
+<ng-template #setupGuideToolbarActions>
+  <div fxLayout="row" fxLayoutAlign="space-between">
+    <button mat-raised-button button color="accent" (click)="onEdit()" *ngIf="feed.canEdit() && feed.readonly">Edit</button>
+    <button mat-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
+    <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly">Cancel</button>
+  </div>
 </ng-template>

@@ -49,7 +49,6 @@
 </ng-container>
 
 <ng-container [formGroup]="scheduleForm" *ngIf="editable">
-  <div class="section-header">Schedule</div>
   <mat-form-field>
     <mat-select placeholder="Schedule Strategy" formControlName="scheduleStrategy" >
       <mat-option *ngFor="let opt of scheduleStrategies" [value]="opt.value">

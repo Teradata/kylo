@@ -24,6 +24,10 @@ export class FeedLink{
         return new FeedLink("");
     }
 
+    isSetupGuide(){
+        return this.sref.indexOf("setup-guide") >=0;
+    }
+
 
     /**
      * New Link for the Main page

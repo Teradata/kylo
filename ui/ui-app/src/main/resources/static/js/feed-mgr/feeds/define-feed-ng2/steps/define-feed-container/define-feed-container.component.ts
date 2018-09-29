@@ -15,6 +15,7 @@ import * as angular from "angular";
 import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
 import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
 import {FeedLink} from "../../model/feed-link.model";
+import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
 
 
 
@@ -34,6 +35,10 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
 
     @ViewChild("defaultToolbarActionLinks")
     defaultToolbarActionLinks:TemplateRef<any>;
+
+    @ViewChild("setupGuideToolbarActions")
+    setupGuideToolbarActionLinksTemplate:TemplateRef<any>;
+
 
     public savingFeed:boolean;
 
@@ -58,9 +63,13 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         this.feedLinkSelectionChangeSubscription =  this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
         this.onFeedSaveSubscription =  this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
         this.toolbarActionTemplateChangeSubscription =this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
+
     }
 
-
+    init(){
+      //register the setupguide action template
+            this.feedSideNavService.registerStepToolbarActionTemplate(SETUP_GUIDE_LINK, this.setupGuideToolbarActionLinksTemplate)
+    }
 
     destroy() {
         this.feedLinkSelectionChangeSubscription.unsubscribe();

@@ -6,10 +6,10 @@
       <span class="hint pad-left" *ngIf="feed != undefined">Updated: {{feed.updateDate | date:'MM/dd/yyy HH:mm:ss'}}</span>
     </div>
     <span fxFlex="100"></span>
-    <div fxLayout="row" fxLayoutAlign="space-between">
-      <button mat-raised-button color="accent" (click)="onEdit()" *ngIf="showEditLink"><mat-icon>edit</mat-icon> Edit</button>
-      <button mat-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><mat-icon>delete</mat-icon> <span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
-      <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly"><mat-icon>cancel</mat-icon> Cancel</button>
+    <div fxLayout="row" fxLayoutAlign="space-between" *ngIf="feed != undefined">
+      <button mat-raised-button color="accent" (click)="onEdit()" *ngIf="showEditLink">Edit</button>
+      <button mat-button color="accent" (click)="onDelete()" *ngIf="feed.canEdit() && !feed.readonly"><span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
+      <button mat-button color="accent" (click)="onCancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly">Cancel</button>
     </div>
   </div>
   <ng-container [ngTemplateOutlet]="summaryTemplate"

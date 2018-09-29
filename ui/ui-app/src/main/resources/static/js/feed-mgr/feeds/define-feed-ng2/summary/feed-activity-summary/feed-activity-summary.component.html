@@ -6,16 +6,16 @@
     <div fxLayout="row">
       <div fxFlex="60%" fxLayout="column">
         <ng-container *ngIf="feed && !feed.isStream ">
-            <feed-job-activity [feed]="feed"></feed-job-activity>
+            <feed-job-activity #feedJobActivity [feed]="feed"></feed-job-activity>
             <!-- Job table -->
-           <jobs-list [feedFilter]="feed.getFullName()"></jobs-list>
+           <jobs-list #jobsList [feedFilter]="feed.getFullName()"></jobs-list>
         </ng-container>
         <ng-container *ngIf="feed && feed.isStream ">
         <feed-stats-charts  [(feed)]="feed" (feedStatsChange)="onFeedStatsChange($event)"  [refreshIntervalTime]="5000" style="width:100%"></feed-stats-charts>
         </ng-container>
       </div>
       <div fxLayout="column" fxFlex="40%">
-       <feed-operations-health-info [(feed)]="feed" [feedStats]="feedStats" *ngIf="feed != undefined"></feed-operations-health-info>
+       <feed-operations-health-info [(feed)]="feed" [feedStats]="feedStats" *ngIf="feed != undefined" (feedChange)="onFeedChange($event)" (feedHealthRefreshed)="onFeedHealthRefreshed($event)"></feed-operations-health-info>
         <!-- Alerts -->
         <feed-alerts [feed]="feed"></feed-alerts>
       </div>

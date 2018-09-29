@@ -83,7 +83,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy{
 
     uploadFile(){
         if(this.accessControl.allowStart){
-            let config ={data:new FeedUploadFileDialogComponentData(this.feed.id),panelClass:"full-screen-dialog", width:"500px", height:"400px"};
+            let config ={data:new FeedUploadFileDialogComponentData(this.feed.id), width:"500px", height:"400px"};
             this._dialogService.open(FeedUploadFileDialogComponent,config);
         }
     }

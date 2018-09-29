@@ -650,6 +650,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public FeedMetadata saveDraftFeed(FeedMetadata feedMetadata) {
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
+            //new feeds are always disabled
+            feedMetadata.setState(Feed.State.DISABLED.name());
         }
         
         // Check existence of required category and template entities with service privileges.
@@ -706,7 +708,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
     
             // Draft feeds are always disabled
-            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+           // feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
             
             // Encrypt the metadata properties
             feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
@@ -1244,6 +1246,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
         else if(Feed.State.ENABLED.name().contentEquals(feed.getState())){
             domainFeed.setState(Feed.State.ENABLED);
+        }
+        else {
+            domainFeed.setState(Feed.State.DISABLED);
         }
         stopwatch.stop();
         log.debug("Time to transform the feed to a domain object for saving: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
