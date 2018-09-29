@@ -257,9 +257,12 @@ public class LivyRestModelTransformer {
                         } else if (value.isNumber()) {
                             // easy peasy.. it's just a number
                             newValues.add(value.numberValue());
+                        } else if (value.isValueNode()) {
+                            // value Nodes we just get the raw text..
+                            newValues.add(value.asText());
                         } else {
                             // default = treat it as string..
-                            newValues.add(value.asText());
+                            newValues.add(value.toString());
                         } // end if
                     } // end while
                     rowData.add(newValues);
