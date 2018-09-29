@@ -121,7 +121,7 @@ constructor(private $scope: any,
             formParams['filter'] = filter;
 
 
-            $("#charts_tab_pivot_chart").html('<div class="bg-info"><i class="fa fa-refresh fa-spin"></i> Rendering Pivot Table...</div>')
+            $("#charts_tab_pivot_chart").html('<div class="bg-info">Rendering Pivot Table...</div>')
             var rqst = this.HttpService.newRequestBuilder(this.OpsManagerJobService.JOBS_CHARTS_QUERY_URL).params(formParams).success(successFn).error(errorFn).finally(finallyFn).build();
             this.currentRequest = rqst;
             this.loading = true;

@@ -1,15 +1,22 @@
-import {Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
-import * as angular from "angular";
-import {Subject} from "rxjs/Subject";
+import {Component, ElementRef, Inject, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {MatIconRegistry} from "@angular/material/icon";
+
+declare const SVGMorpheus: any;
 
 /**
- * Displays an SVG icon using AngularJS's ng-md-icon.
+ * Displays an SVG icon.
  */
 @Component({
     selector: "kylo-icon,ng-md-icon",
     template: ""
 })
-export class KyloIconComponent implements OnChanges, OnInit {
+export class KyloIconComponent implements OnChanges {
+
+    static readonly DEFAULT_ICON = "help";
+
+    static readonly DEFAULT_SIZE = "24";
+
+    static readonly DEFAULT_VIEWBOX = "0 0 24 24";
 
     /**
      * Name of the icon
@@ -23,32 +30,76 @@ export class KyloIconComponent implements OnChanges, OnInit {
     @Input()
     public size: string;
 
-    private iconObserver = new Subject();
+    /**
+     * Reference to the <svg> element
+     */
+    private svg: SVGElement;
 
-    private sizeObserver = new Subject();
-
-    constructor(private element: ElementRef) {
-    }
-
-    public ngOnInit(): void {
-        const $element = angular.element(this.element.nativeElement);
-        angular.element(document.body).injector().get("ngMdIconDirective")[0].link(this, $element, this);
+    constructor(element: ElementRef, private iconRegistry: MatIconRegistry, @Inject("ngMdIconService") private iconService: any) {
+        // Manually set template
+        (element.nativeElement as Element).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+        this.svg = (element.nativeElement as Element).childNodes.item(0) as SVGElement;
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
         if (changes.icon) {
-            this.iconObserver.next(changes.icon.currentValue);
+            if (typeof this.iconService.getShape(changes.icon.currentValue) !== "undefined") {
+                // Icon is registered with ngMdIconService
+                this.setIcon(changes.icon.currentValue);
+            } else {
+                // Check MatIconRegistry for icon
+                const key = changes.icon.currentValue.split(":", 2);
+                this.iconRegistry.getNamedSvgIcon((key.length == 2) ? key[1] : key[0], (key.length == 2) ? key[0] : "").subscribe(
+                    svg => this.setShape(svg.innerHTML, svg.getAttribute("viewBox")),
+                    error => {
+                        console.error(error);
+                        this.setIcon();
+                    }
+                );
+            }
         }
         if (changes.size) {
-            this.sizeObserver.next(changes.size.currentValue);
+            this.svg.setAttribute("height", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
+            this.svg.setAttribute("width", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
     }
 
-    public $observe<T>(name: string, fn: (value?: T) => any): void {
-        if (name === "icon") {
-            this.iconObserver.subscribe(fn);
-        } else if (name === "size") {
-            this.sizeObserver.subscribe(fn);
+    /**
+     * Sets the icon with the specified name in {@code ngMdIconService}.
+     */
+    private setIcon(name?: string): void {
+        const shape = this.iconService.getShape(name);
+        if (typeof shape !== "undefined") {
+            this.setShape(shape, this.iconService.getViewBox(name));
+        } else {
+            this.setShape(this.iconService.getShape(KyloIconComponent.DEFAULT_ICON), this.iconService.getViewBox(KyloIconComponent.DEFAULT_ICON));
         }
+    }
+
+    /**
+     * Changes the SVG shape to the specified value.
+     */
+    private setShape(shape: string, viewBox: string): void {
+        if (this.svg.innerHTML == "") {
+            // First-time initialization
+            this.svg.innerHTML = shape;
+        } else if (this.svg.innerHTML !== shape) {
+            // Morph old icon into new icon
+            this.svg.innerHTML = `<g id="newicon" style="display:none">${shape}</g><g id="oldicon" style="display:none">${this.svg.innerHTML}</g>`;
+            try {
+                new SVGMorpheus(this.svg).to("newicon", null, () => {
+                    const path = this.svg.querySelector('path[fill="rgba(-1,-1,-1,0)"]');
+                    if (path) {
+                        path.setAttribute("fill", "");
+                    }
+                });
+            } catch {
+                // SVGMorpheus not supported
+                this.svg.innerHTML = shape;
+            }
+        }
+
+        // Update the view box
+        this.svg.setAttribute("viewBox", viewBox || KyloIconComponent.DEFAULT_VIEWBOX);
     }
 }
