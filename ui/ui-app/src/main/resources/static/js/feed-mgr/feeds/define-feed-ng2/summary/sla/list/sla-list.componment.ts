@@ -1,12 +1,13 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import {Sla} from '../sla.componment';
 import {Feed, FeedState} from '../../../../../model/feed/feed.model';
 import {SlaDetailsComponent} from '../details/sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {FeedLoadingService} from '../../../services/feed-loading-service';
 import AccessConstants from '../../../../../../constants/AccessConstants';
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: "sla-list",
@@ -27,6 +28,8 @@ export class SlaListComponent implements OnInit {
     private allowCreate = false;
     stateDisabled = FeedState.DISABLED;
     private feedModel: Feed;
+
+    public kyloIcons:KyloIcons = KyloIcons;
 
     constructor(private $$angularInjector: Injector, private state: StateService, private loadingService: TdLoadingService, private feedLoadingService: FeedLoadingService) {
         this.slaService = $$angularInjector.get("SlaService");
@@ -78,11 +81,11 @@ export class SlaListComponent implements OnInit {
     }
 
     editExistingSla(sla: Sla): void {
-        this.state.go(FEED_DEFINITION_STATE_NAME+".sla.edit", {slaId: sla.id});
+        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.edit", {slaId: sla.id});
     }
 
     createNewSla(): void {
-        this.state.go(FEED_DEFINITION_STATE_NAME+".sla.new");
+        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.new");
     }
 }
 

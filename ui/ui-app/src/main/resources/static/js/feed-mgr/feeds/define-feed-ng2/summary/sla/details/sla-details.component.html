@@ -10,6 +10,8 @@
     <form [formGroup]="slaForm">
       <sla-form [formGroup]="slaForm" [sla]="sla" [feed]="feedModel" [mode]="mode"></sla-form>
     </form>
+
+    <div>Loading Feed: {{loadingFeed}}, Loading SLA: {{loadingSla}}, allowEdit: {{allowEdit}}</div>
   </mat-card-content>
 
   <mat-card-actions *ngIf="!loadingFeed && !loadingSla && allowEdit">

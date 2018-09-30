@@ -1,5 +1,6 @@
 import {Component, Injector, Input, OnInit} from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: 'profile-container',
@@ -18,6 +19,8 @@ export class ProfileContainerComponent implements OnInit {
 
     private tabs = ['stats', 'valid', 'invalid'];
     private selected = 0;
+
+    public kyloIcons:KyloIcons = KyloIcons;
 
     constructor(private $$angularInjector: Injector) {
         this.hiveService = $$angularInjector.get("HiveService");

@@ -896,8 +896,17 @@
                  "Versions":{"Name":"Versions"}
         }
     },
+    "Lineage":{
+        "Name":"Feed Lineage",
+        "Description":"View feed relationships to data sources and other feeds"
+
+    },
 
     "Profile": {
+        "History":{
+            "Title":"Profile History",
+            "SubTitle":"View profile history of prior feed executions"
+        },
         "Valid": {
             "NoValidRows": "There are no valid rows",
             "Loading": "Loading...",
@@ -910,6 +919,8 @@
             "Filter": "Filter By Rule Violation"
         },
         "Stats": {
+            "Title":"Profile Statistics",
+            "SubTitle":"View profile statistics as of",
             "ShowOnlyProfiled": "Show Only Profiled",
             "NoResults": "No results found",
             "Summary": "Summary",

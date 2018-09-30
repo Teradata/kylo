@@ -1,6 +1,6 @@
 import {Component, Injector, Input, OnInit, ViewContainerRef} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import * as _ from 'underscore';
 import {Sla} from '../sla.componment';
 import {Feed, FeedState} from '../../../../../model/feed/feed.model';
@@ -112,7 +112,10 @@ export class SlaDetailsComponent implements OnInit {
         } else {
             this.mode = FormMode.ModeNew;
             this.sla = new Sla();
+            //allow the user to edit this SLA if it is new
+            this.sla.canEdit = true;
             this.applyEditPermissionsToSLA(this.sla);
+
         }
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
         this.loadFeed(this.feedId);
@@ -173,13 +176,14 @@ export class SlaDetailsComponent implements OnInit {
     private applyEditPermissionsToSLA(sla: Sla) {
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         this.accessControlService.getUserAllowedActions().then((response: any) => {
+            const allowFeedEdit = this.accessControlService.hasAction(AccessConstants.FEEDS_EDIT, response.actions);
+            const allowSlaEdit = this.accessControlService.hasAction(AccessConstants.SLA_EDIT, response.actions);
+
             if (entityAccessControlled) {
-                sla.editable = sla.canEdit;
-                this.allowEdit = sla.canEdit;
+                this.allowEdit = sla.canEdit && allowSlaEdit && allowFeedEdit;
+                sla.editable =  this.allowEdit;
             }
             else {
-                const allowFeedEdit = this.accessControlService.hasAction(AccessConstants.FEEDS_EDIT, response.actions);
-                const allowSlaEdit = this.accessControlService.hasAction(AccessConstants.SLA_EDIT, response.actions);
                 this.allowEdit = allowFeedEdit && allowSlaEdit;
                 sla.editable = this.allowEdit;
             }
@@ -194,7 +198,7 @@ export class SlaDetailsComponent implements OnInit {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
             this.snackBar.open(this.labelSavedSla, this.labelOk, { duration: 3000 });
-            this.state.go(FEED_DEFINITION_STATE_NAME+".sla");
+            this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla");
         }, function () {
             this.loadingService.resolve(SlaDetailsComponent.saveLoader);
             this.savingSla = false;
@@ -203,7 +207,7 @@ export class SlaDetailsComponent implements OnInit {
     }
 
     onCancelSaveSla(): void {
-        this.state.go(FEED_DEFINITION_STATE_NAME+".sla");
+        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla");
     }
 
     onDeleteSla(): void {
@@ -230,7 +234,7 @@ export class SlaDetailsComponent implements OnInit {
             this.loadingService.resolve(SlaDetailsComponent.deleteLoader);
             this.snackBar.open(this.labelDeleted, this.labelOk, { duration: 3000 });
             this.deletingSla = false;
-            this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".sla");
+            this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla");
         }, () => {
             this.loadingService.resolve(SlaDetailsComponent.deleteLoader);
             this.deletingSla = false;

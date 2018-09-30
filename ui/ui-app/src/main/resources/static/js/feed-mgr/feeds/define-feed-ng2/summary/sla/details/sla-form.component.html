@@ -7,18 +7,18 @@
 
   <div class="section">
 
-    <span class="md-subhead" translate>Sla.Details.Conditions</span>
+    <h2 class="mat-subheading-2" translate>Sla.Details.Conditions</h2>
 
-    <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
+    <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="mat-padding">
       <div fxLayout="row">
-        <div class="layout-padding-right md-body-2">{{(idx+1)}}.</div>
-        <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
+        <div class="pad-left pad-right">{{(idx+1)}}.</div>
+        <div fxLayout="column" class="pad-left">
           <span>{{rule.name}}</span>
           <span class="hint">{{rule.description}}</span>
         </div>
         <div>
           <div>
-            <button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaMetric(idx)" *ngIf="rule.editable">
+            <button mat-button class="tc-grey-700" (click)="onDeleteSlaMetric(idx)" *ngIf="rule.editable">
               <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
             </button>
           </div>
@@ -34,7 +34,7 @@
       <span fxFlex></span>
     </div>
 
-    <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="layout-padding-top-20 layout-padding-bottom-15 layout-padding-left-right">
+    <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="mat-padding">
       <mat-form-field>
         <mat-select placeholder="{{'Sla.Details.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
           <mat-option *ngFor="let opt of options;" [value]="opt">
@@ -52,38 +52,38 @@
 
   <div class="section">
 
-    <span class="md-subhead" translate>Sla.Details.Actions</span>
+    <h2 class="mat-subheading-2" translate>Sla.Details.Actions</h2>
 
-    <div *ngIf="editSla.actionConfigurations.length == 0" fxLayout="column" class="layout-padding">
+    <div *ngIf="editSla.actionConfigurations.length == 0" fxLayout="column" class="mat-padding">
       <span translate>Sla.Details.WillGenerateAlert</span>
       <span *ngIf="showActionOptions">{{"Sla.Details.ClickAddAction" | translate}}</span>
     </div>
 
-    <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column" class="layout-padding-left-right">
-      <div class="error md-title bold layout-padding-left" fxLayout="row">
-        <div class="layout-padding-left">
+    <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column" class="pad-left">
+      <div class="error mat-title" fxLayout="row">
+        <div class="pad-left">
           <mat-icon [style.font-size.px]="20" class="error">warning</mat-icon>
         </div>
         <span translate>Sla.Details.ErrorsFound</span>
       </div>
 
-      <div *ngFor="let error of editSla.actionErrors" fxLayout="column" class="layout-padding-left">
+      <div *ngFor="let error of editSla.actionErrors" fxLayout="column" class="pad-left">
         <span class="error">{{error}}</span>
       </div>
     </div>
 
-    <div *ngFor="let rule of editSla.actionConfigurations; last as isLast; let idx = index" fxLayout="column" class="layout-padding">
+    <div *ngFor="let rule of editSla.actionConfigurations; last as isLast; let idx = index" fxLayout="column" class="mat-padding">
       <div fxLayout="row" class="">
-        <div class="layout-padding-right md-body-2">{{(idx+1)}}.</div>
+        <div class="pad-right">{{(idx+1)}}.</div>
 
-        <div fxLayout="column" fxFlex class="layout-padding-left md-body-2">
+        <div fxLayout="column" fxFlex class="pad-left">
           <span>{{rule.name}}</span>
           <span class="hint">{{rule.description}}</span>
           <span *ngIf="rule.validConfiguration == false" class="error"><strong translate>Sla.Details.Warning</strong>  {{"Sla.Details.Warning2" | translate}} {{rule.validationMessage}}</span>
         </div>
         <div>
           <div>
-            <button mat-button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaAction(idx)" *ngIf="rule.editable">
+            <button mat-button class="tc-grey-700" (click)="onDeleteSlaAction(idx)" *ngIf="rule.editable">
               <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
             </button>
           </div>
@@ -95,15 +95,15 @@
       <mat-divider *ngIf="!isLast"></mat-divider>
     </div>
 
-    <div *ngIf="addingSlaAction" class="layout-padding-left-right" fxLayout="row">
-      <mat-form-field class="md-block layout-padding-top-bottom condensed">
+    <div *ngIf="addingSlaAction" class="pad-left pad-right" fxLayout="row">
+      <mat-form-field>
         <mat-select placeholder="{{'Sla.Details.SelectNewAction' | translate}}" [formControl]="slaAction" (change)="onAddSlaActionChange()">
           <mat-option *ngFor="let opt of slaActionOptions;" [value]="opt">
             {{opt.name}}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <button mat-button class="icon-btn md-icon-button auto-height" (click)="addingSlaAction = false">
+      <button mat-button class="tc-grey-700" (click)="addingSlaAction = false">
         <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
       </button>
     </div>

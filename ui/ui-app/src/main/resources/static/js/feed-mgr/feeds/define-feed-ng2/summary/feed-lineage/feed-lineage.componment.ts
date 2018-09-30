@@ -8,6 +8,7 @@ import * as _ from "underscore";
 import * as angular from 'angular';
 import {HttpClient} from "@angular/common/http";
 import {LINEAGE_LINK} from "../../model/feed-link-constants";
+import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: "feed-lineage",
@@ -24,6 +25,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     utils: any;
     StateService: any;
 
+    public kyloIcons:KyloIcons = KyloIcons
 
 
 

@@ -1,11 +1,4 @@
-
-<mat-toolbar [color]="['primary']">
-  <span>Upload file to target</span>
-  <span class="flex"></span>
-  <button mat-icon-button (click)="cancel()">
-    <mat-icon arial-label="Close dialog">close</mat-icon>
-  </button>
-</mat-toolbar>
+<h2 mat-dialog-title>Upload file to target</h2>
 <div mat-dialog-content >
   <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start">
     <mat-progress-spinner [diameter]="50" mode="indeterminent" *ngIf="uploading"></mat-progress-spinner>

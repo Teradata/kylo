@@ -1,7 +1,9 @@
-<mat-card class="mat-typography">
-
-  <mat-card-header>
-    <mat-card-title translate>Sla.ServiceLevelAgreements</mat-card-title>
+<mat-card class="feed-card">
+  <mat-card-header >
+    <mat-card-title>
+      <mat-icon>{{kyloIcons.Links.sla}}</mat-icon>
+      <span translate>Sla.ServiceLevelAgreements</span>
+    </mat-card-title>
     <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
   </mat-card-header>
 

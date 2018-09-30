@@ -3,7 +3,8 @@ import {HttpClient} from '@angular/common/http';
 import * as _ from 'underscore';
 import * as angular from 'angular';
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../../../../model/feed/feed-constants';
+import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: 'profile-history',
@@ -23,6 +24,8 @@ export class ProfileHistoryComponent implements OnInit {
     private profileSummary: Array<any> = [];
     private loading: boolean = false;
     private showNoResults: boolean = false;
+
+    public kyloIcons:KyloIcons = KyloIcons;
 
     constructor(private $$angularInjector: Injector, private http: HttpClient, private state: StateService) {
         this.hiveService = $$angularInjector.get("HiveService");
@@ -121,7 +124,7 @@ export class ProfileHistoryComponent implements OnInit {
     };
 
     goToResults(row: any, type: string) {
-        this.state.go(FEED_DEFINITION_SECTION_STATE_NAME+".profile.results", {processingdttm: row['PROCESSING_DTTM'], t: type});
+        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".profile.results", {processingdttm: row['PROCESSING_DTTM'], t: type});
     }
 
 
