@@ -28,7 +28,10 @@
            [dndDraggable]
            [dndObject]="row" class="mat-list-item mat-list-item-avatar kylo-mat-list-item">
 
-        <div class="kylo-mat-list-item-content">
+        <div class="kylo-mat-list-item-content pad-left pad-right" fxLayout="row" fxLayoutAlign="start center" >
+          <div>
+            <ng-md-icon icon="fas:clock"></ng-md-icon>
+          </div>
 
             <mat-icon class="kylo-mat-list-avatar" matListAvatar [color]="['accent']" style="display:inline-block">{{row.typeIcon}}</mat-icon>
 
