@@ -2,7 +2,7 @@
 
 DRY_RUN=1
 VERBOSE=1
-MODULES=("@angular/animations" "@angular/cdk" "@angular/common" "@angular/compiler" "@angular/core" "@angular/forms" "@angular/http" "@angular/material" "@angular/platform-browser" "@angular/platform-browser-dynamic" "@angular/router" "@angular/upgrade" "@covalent/core" "@ngx-translate/core" "@ngx-translate/http-loader" "@swimlane/ngx-charts" "@uirouter/angular" "@uirouter/angular-hybrid" "@uirouter/angularjs" "@uirouter/core" "@uirouter/rx" "ng2-codemirror" "ng2-nvd3" "rxjs" "systemjs" "tslib" "zone.js")
+MODULES=("@angular/animations" "@angular/cdk" "@angular/common" "@angular/compiler" "@angular/core" "@angular/forms" "@angular/http" "@angular/material" "@angular/platform-browser" "@angular/platform-browser-dynamic" "@angular/router" "@angular/upgrade" "@covalent/core" "@ngx-translate/core" "@ngx-translate/http-loader" "@swimlane/ngx-charts" "@uirouter/angular" "@uirouter/angular-hybrid" "@uirouter/angularjs" "@uirouter/core" "@uirouter/rx" "ng2-codemirror" "ng2-nvd3" "rxjs" "systemjs" "tslib" "zone.js" "@fortawesome/fontawesome-free")
 
 for module in ${MODULES[@]}; do
     echo "Synching ${module}..."
