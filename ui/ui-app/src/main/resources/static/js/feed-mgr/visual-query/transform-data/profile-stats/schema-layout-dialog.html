@@ -28,7 +28,8 @@
            [dndObject]="row" class="mat-list-item mat-list-item-avatar kylo-mat-list-item">
 
         <div class="kylo-mat-list-item-content">
-
+          <ng-md-icon icon="{{row.typeIcon}}"></ng-md-icon>
+          <ng-md-icon icon="fas:location-arrow"></ng-md-icon>
           <mat-icon class="kylo-mat-list-avatar" matListAvatar [color]="['accent']" style="display:inline-block">{{row.typeIcon}}</mat-icon>
 
           <div class="kylo-mat-list-text">

@@ -33,9 +33,13 @@ export class ColumnItem {
             case 'tinyint':
             case 'smallint':
             case 'int':
-                this.typeIcon = "exposure_zero"
+                this.typeIcon = "exposure_zero";
+                //this.typeIcon = "fas:hashtag";
                 break;
             case 'timestamp':
+                //this.typeIcon = "fa:clock";
+                this.typeIcon = "date_range"
+                break;
             case 'date':
                 this.typeIcon = "date_range";
                 break;
