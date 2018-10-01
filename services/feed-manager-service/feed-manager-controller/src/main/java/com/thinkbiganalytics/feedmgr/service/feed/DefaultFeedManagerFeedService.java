@@ -706,53 +706,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             if (feedMetadata.getTable() != null) {
                 feedMetadata.getTable().updateMetadataFieldValues();
             }
-    
-            // Draft feeds are always disabled
-           // feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
-            
+
             // Encrypt the metadata properties
             feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
             
-            // Store ref to the originalFeedProperties before resolving and merging with the template
-            List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
-        
-            // Get all the properties for the metadata
-            RegisteredTemplate registeredTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder()
-                                                                                                         .templateId(feedMetadata.getTemplateId())
-                                                                                                         .templateName(feedMetadata.getTemplateName())
-                                                                                                         .isFeedEdit(true)
-                                                                                                         .includeSensitiveProperties(true)
-                                                                                                         .build());
-        
-            // Copy the registered template properties it a new list so it doest get updated
-            List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
-
-            // Update the template properties with the feedMetadata properties
-            NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties, 
-                                                                feedMetadata.getProperties(), 
-                                                                NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
-
-            registeredTemplate.setProperties(templateProperties);
-            feedMetadata.setProperties(registeredTemplate.getProperties());
-            feedMetadata.setRegisteredTemplate(registeredTemplate);
-        
-            // Skip any properties that the user supplied which are not ${ values
-            List<NifiProperty> propertiesToSkip = originalFeedProperties.stream()
-                    .filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
-                    .collect(Collectors.toList());
-            List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream()
-                    .filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
-                    .collect(Collectors.toList());
-            
-            if (templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()) {
-                propertiesToSkip.addAll(templatePropertiesToSkip);
-            }
-
-            // Resolve any ${metadata.} properties
-            propertyExpressionResolver.resolvePropertyExpressions(feedMetadata, propertiesToSkip);
-            
-            // Set the original feedProperties back to the feed
-            feedMetadata.setProperties(originalFeedProperties);
 
             // Save to the metadata store.
             saveFeedMetadata(feedMetadata);
@@ -766,8 +723,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 //update the access control
                 feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feedMetadata.getId(), roleMembershipChange));
             }
-    
-            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
+
             return feedMetadata;
         });
     }
@@ -1128,11 +1084,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
 
 
-
-        //decrypt the metadata
-        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
-        
-        // Store ref to the originalFeedProperties before resolving and merging with the template
+               // Store ref to the originalFeedProperties before resolving and merging with the template
         List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
 
         // Get all the properties for the metadata
@@ -1142,6 +1094,37 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                                                                                      .isFeedEdit(true)
                                                                                                      .includeSensitiveProperties(true)
                                                                                                      .build());
+
+        // Copy the registered template properties it a new list so it doest get updated
+        List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
+
+        // Update the template properties with the feedMetadata properties
+        NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties,
+                                                            feedMetadata.getProperties(),
+                                                            NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
+
+        registeredTemplate.setProperties(templateProperties);
+        feedMetadata.setProperties(registeredTemplate.getProperties());
+        feedMetadata.setRegisteredTemplate(registeredTemplate);
+
+        // Skip any properties that the user supplied which are not ${ values
+        List<NifiProperty> propertiesToSkip = originalFeedProperties.stream()
+            .filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
+            .collect(Collectors.toList());
+        List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream()
+            .filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue()))
+            .collect(Collectors.toList());
+
+        if (templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()) {
+            propertiesToSkip.addAll(templatePropertiesToSkip);
+        }
+
+        // Resolve any ${metadata.} properties
+        propertyExpressionResolver.resolvePropertyExpressions(feedMetadata, propertiesToSkip);
+
+        //decrypt the metadata
+        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
+
 
         CreateFeedBuilder feedBuilder = CreateFeedBuilder
                 .newFeed(nifiRestClient, 
@@ -1205,6 +1188,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 stopwatch.start();
                 feedBuilder.checkAndRemoveVersionedProcessGroup();
 
+
+
+
             } catch (Exception e) {
                 feed.setSuccess(false);
                 feed.addErrorMessage(e);
@@ -1224,6 +1210,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 entity.setRolledBack(true);
             }
         }
+        feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
 
         return feed;
     }
