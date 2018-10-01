@@ -88,6 +88,8 @@ export class KyloModule {
 
         const fasUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/solid.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fas", fasUrl);
+
+        this.iconRegistry.registerFontClassAlias("mdi","mdi-set")
     }
 
     private initTranslation(): void {
