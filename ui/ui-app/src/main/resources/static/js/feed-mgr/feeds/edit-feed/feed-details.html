@@ -72,31 +72,31 @@
 
                 <md-menu-item ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()">
                   <md-button ng-disabled="(vm.disabling || !vm.allowEdit)">
-                    <ng-md-icon icon="not_interested" class="orange"></ng-md-icon>
+                    <ng-md-icon icon="not_interested" class="accent-color"></ng-md-icon>
                     {{"views.feed-details.Disable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'"  ng-click="vm.enableFeed()" >
                   <md-button ng-disabled="(vm.enabling || !vm.allowEdit)">
-                    <ng-md-icon icon="check_circle" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="check_circle" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     {{"views.feed-details.Enable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item  ng-if="vm.allowStart" ng-click="vm.startFeed()" >
                   <md-button ng-disabled="(vm.startingFeed || self.allowStart)" >
-                    <ng-md-icon icon="play_circle_outline" class="orange" md-menu-align-target="""></ng-md-icon>
+                    <ng-md-icon icon="play_circle_outline" class="accent-color" md-menu-align-target="""></ng-md-icon>
                     {{"views.feed-details.StartFeed" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-click="vm.cloneFeed()" >
                   <md-button ng-disabled="!vm.allowEdit">
-                    <ng-md-icon icon="content_copy" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="content_copy" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     Clone
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()">
                   <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
-                    <ng-md-icon icon="delete_forever" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="delete_forever" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     {{"views.feed-details.Delete" | translate}}
                   </md-button>
                 </md-menu-item>

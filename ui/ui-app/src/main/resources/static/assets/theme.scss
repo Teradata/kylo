@@ -152,3 +152,35 @@ mat-nav-list {
 .tc-warn {
   color: mat-color($warn);
 }
+
+
+
+.primary-color-1 {
+  color: mat-color($primary);
+  fill: mat-color($primary);
+}
+
+
+.accent-color, .accent-color-1 {
+  color:mat-color($accent);
+  fill: mat-color($accent);
+}
+
+.grey {
+  color:rgba(0, 0, 0, 0.54);
+  fill:rgba(0, 0, 0, 0.54);
+}
+
+.info-notification {
+ /* color: #0288d1;
+  bckground-color: #0288d126;
+  */
+  color: mat-color($primary);
+  background-color:mat-color($primary);
+}
+
+
+.warn {
+  color: mat-color($warn);
+  fill: mat-color($warn);
+}

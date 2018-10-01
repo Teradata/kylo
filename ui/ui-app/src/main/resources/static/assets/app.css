@@ -880,47 +880,8 @@ Status styles
   fill: #969696;
 }
 
-.warn {
-  color: #FF9901;
-  fill: #FF9901;
-}
 
-.info-notification {
-  color: #0288d1;
-  background-color: #0288d126;
-}
 
-.primary-color-1 {
-  color: #3483BA;
-  fill: #3483BA;
-}
-
-.orange {
-  color: #F08C38;
-  fill: #F08C38;
-}
-
-.accent-color, .accent-color-1 {
-  color: #E4682C;
-  fill: #E4682C;
-}
-
-.grey {
-  color:rgba(0, 0, 0, 0.54);
-}
-
-.accent-color-2 {
-  color: #7d7d7d;
-  fill: #7d7d7d;
-}
-
-.accent-color-3 {
-  color: #767676
-}
-
-.accent-color-4 {
-  color: #666666
-}
 
 .label-small {
   font-size: 11px;

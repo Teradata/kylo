@@ -54,7 +54,7 @@
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
+          <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
                ng-tt-chars-threshold="150">
           </div>
         </div>
@@ -87,10 +87,10 @@
                 <md-list ng-show="vm.pageState.loading == false" class="list-item-table">
                   <md-divider></md-divider>
                   <md-list-item ng-if="vm.showJobParameters == true">
-                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                    <div flex="30" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Parameters' | translate}}
                     </div>
-                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                    <div flex="70" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
                     <md-divider></md-divider>
@@ -106,10 +106,10 @@
                     <md-divider ng-if="!$last"></md-divider>
                   </md-list-item>
                   <md-list-item ng-if="vm.showJobParameters == false">
-                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                    <div flex="30" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.CP' | translate}}
                     </div>
-                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                    <div flex="70" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
                     <md-divider></md-divider>
@@ -185,16 +185,16 @@
 
 
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
+                      <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
                       <md-list flex layout-fill ng-show="vm.pageState.loading == false" class="list-item-table">
                         <md-divider></md-divider>
                         <md-list-item>
-                          <div flex="30" class="item-column md-list-item-text accent-color-3">
+                          <div flex="30" class="item-column md-list-item-text grey">
                             {{'views.job-details-template.CP' | translate}}
                           </div>
-                          <div flex="70" class="item-column md-list-item-text accent-color-3">
+                          <div flex="70" class="item-column md-list-item-text grey">
                             {{'views.job-details-template.Values' | translate}}
                           </div>
                           <md-divider></md-divider>

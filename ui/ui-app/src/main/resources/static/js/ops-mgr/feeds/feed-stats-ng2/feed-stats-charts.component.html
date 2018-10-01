@@ -24,12 +24,19 @@
     <mat-card >
       <mat-card-content  >
         <div fxLayout="row" fxLayoutAlign="start" fxFlex>
-
-            <div fxLayout="row" fxLayoutAlign="start" >
+            <div fxLayout="column" fxLayoutAlign="start" >
+              <div fxLayout="row" fxLayoutAlign="start" >
                 <span >{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
-              <span class="pad-left">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
-              <span fxFlex ></span>
+                <span class="pad-left">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+                <span fxFlex ></span>
+              </div>
 
+              <div fxFlex fxLayout="row">
+                <span class="hint pad-right-sm">{{timeFrameOptions[0].label}}</span>
+                <mat-slider (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                <span class="hint pad-left-sm">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
+              </div>
+            </div>
               <div fxLayout="column">
                  <div fxLayout="row">
                     <button mat-button *ngIf="!autoRefresh" (click)="onRefreshButtonClick()" >Refresh</button>
@@ -41,14 +48,6 @@
               </div>
 
             </div>
-
-            <div fxFlex fxLayout="row">
-                <span class="hint">{{timeFrameOptions[0].label}}</span>
-                <mat-slider (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
-                <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
-            </div>
-
-          </div>
       </mat-card-content>
     </mat-card>
 

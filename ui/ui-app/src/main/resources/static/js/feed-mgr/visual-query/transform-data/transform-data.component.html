@@ -18,9 +18,9 @@
           <ng-md-icon *ngIf="item.inactive" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
           <ng-md-icon *ngIf="!item.inactive" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
           <p [matTooltip]="item.name" fxFlex="1 1 auto">{{item.name}}</p>
-          <ng-md-icon (click)="toggleItem(i)" style="color:grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="removeItem(i)" style="color:orange" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="toggleItem(i)" style="color:orange" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="toggleItem(i)" class="grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="removeItem(i)" class="accent-color" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="toggleItem(i)" class="accent-color" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
         </mat-list-item>
         <mat-divider></mat-divider>
       </ng-template>

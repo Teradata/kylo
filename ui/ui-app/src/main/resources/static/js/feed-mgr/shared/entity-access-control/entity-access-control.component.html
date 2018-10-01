@@ -43,8 +43,8 @@
             </ng-template>
             <ng-template td-autocomplete-option let-option="option">
               <span class="item-title">
-                <ng-md-icon icon="group" style="fill:orange;" *ngIf="option.type=='group'"></ng-md-icon>
-                <ng-md-icon icon="account_circle" style="fill:blue;" *ngIf="option.type=='user'"></ng-md-icon>
+                <ng-md-icon icon="group" class="accent-color" *ngIf="option.type=='group'"></ng-md-icon>
+                <ng-md-icon icon="account_circle" class="primary-color-1" *ngIf="option.type=='user'"></ng-md-icon>
                 <span> {{option.title}} </span>
               </span>
             </ng-template>
