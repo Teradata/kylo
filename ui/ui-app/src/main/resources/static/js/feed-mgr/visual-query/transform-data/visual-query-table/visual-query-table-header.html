@@ -45,7 +45,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="type in availableCasts">
             <md-button ng-click="header.delegate.castTo(type)">
-              <i class="material-icons" ng-style="{'fill':type.iconColor}">{{type.icon}}</i>
+              <i class="material-icons mdi {{type.icon}}">{{ transform.name }}</i>
               {{type.name}}
             </md-button>
           </md-menu-item>
@@ -90,7 +90,7 @@
         </md-button>
         <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
-            <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
+            <i style="font-size:18px" class="material-icons mdi {{filter.icon}}"></i>
             <md-input-container md-no-float>
               <input placeholder="{{ filter.label }}" type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
             </md-input-container>
@@ -106,7 +106,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.defaults !== 0" ng-repeat="transform in header.delegate.transforms.defaults">
       <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-        <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+        <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
       </md-button>
     </md-menu-item>
 
@@ -118,7 +118,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms.calculate">
             <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+              <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
             </md-button>
           </md-menu-item>
         </md-menu-content>
@@ -133,7 +133,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms.format">
             <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+              <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
             </md-button>
           </md-menu-item>
         </md-menu-content>
@@ -148,7 +148,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms.replace">
             <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+              <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
             </md-button>
           </md-menu-item>
         </md-menu-content>
@@ -163,7 +163,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms.extract">
             <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+              <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
             </md-button>
           </md-menu-item>
         </md-menu-content>
@@ -178,7 +178,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms.ml">
             <md-button ng-click="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+              <i class="material-icons mdi {{transform.icon}}"></i>{{ transform.name }}
             </md-button>
           </md-menu-item>
         </md-menu-content>

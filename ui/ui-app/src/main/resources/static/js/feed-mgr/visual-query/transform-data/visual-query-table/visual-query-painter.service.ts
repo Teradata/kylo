@@ -460,7 +460,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
 
-        if (!(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
+        if (event.button != 0 || !(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
             return;
         }
 

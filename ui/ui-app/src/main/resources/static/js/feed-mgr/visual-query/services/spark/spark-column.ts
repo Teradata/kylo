@@ -20,27 +20,27 @@ import {ColumnUtil} from "../../wrangler/core/column-util";
  */
 const SparkDataType = {
     // Numeric types
-    BYTE: new DataType("byte", "Byte"),
-    SHORT: new DataType("short", "Short"),
-    INT: new DataType("int", "Int"),
-    BIGINT: new DataType("bigint", "Bigint"),
-    FLOAT: new DataType("float", "Float"),
-    DOUBLE: new DataType("double", "Double"),
-    DECIMAL: new DataType("decimal", "Decimal"),
+    BYTE: new DataType("byte", "Byte", "mdi-numeric-1"),
+    SHORT: new DataType("short", "Short", "mdi-numeric-2"),
+    INT: new DataType("int", "Int", "mdi-numeric-2"),
+    BIGINT: new DataType("bigint", "Bigint", "mdi mdi-numeric"),
+    FLOAT: new DataType("float", "Float", "mdi mdi-surround-sound-2-0"),
+    DOUBLE: new DataType("double", "Double", "mdi mdi-surround-sound-2-0"),
+    DECIMAL: new DataType("decimal", "Decimal", "mdi mdi-surround-sound-2-0"),
 
     // Date/time types
-    DATE: new DataType("date", "Date", "today"),
-    TIMESTAMP: new DataType("timestamp", "Timestamp", "access_time"),
+    DATE: new DataType("date", "Date", "mdi mdi-calendar"),
+    TIMESTAMP: new DataType("timestamp", "Timestamp", "mdi mdi-clock-outline"),
 
     // Misc types
-    BOOLEAN: new DataType("boolean", "Boolean"),
-    BINARY: new DataType("binary", "Binary"),
-    STRING: new DataType("string", "String", "format_quote"),
+    BOOLEAN: new DataType("boolean", "Boolean", "mdi mdi-toggle-switch-off-outline"),
+    BINARY: new DataType("binary", "Binary", "mdi mdi-file-image"),
+    STRING: new DataType("string", "String", "mdi mdi-format-color-text"),
 
     // Complex types
-    ARRAY: new DataType("array", "Array"),
-    MAP: new DataType("map", "Map"),
-    STRUCT: new DataType("struct", "Struct")
+    ARRAY: new DataType("array", "Array", "mdi mdi-code-brackets"),
+    MAP: new DataType("map", "Map", "mdi mdi-code-array"),
+    STRUCT: new DataType("struct", "Struct", "mdi mdi-code-braces")
 };
 
 /**

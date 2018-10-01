@@ -33,50 +33,18 @@ mat-icon.kylo-mat-list-avatar {
   border-bottom-right-radius: 50%;
   border-top-left-radius: 50%;
   border-top-right-radius: 50%;
-  box-sizing: border-box;
-  color: rgb(240, 140, 56);
-  direction: ltr;
   display: flex;
-  fill: rgb(240, 140, 56);
-  flex-shrink: 0;
-  font-family: "Material Icons";
-  font-feature-settings: "liga";
-  font-size: 40px;
-  font-style: normal;
-  font-weight: 400;
+  font-size: 24px;
   height: 40px;
   justify-content: center;
-  letter-spacing: normal;
-  /* line-height: 24px; */
   min-width: 40px;
-  overflow-wrap: normal;
-  pointer-events: auto;
-  text-rendering: optimizelegibility;
-  text-transform: none;
-  white-space: nowrap;
   width: 40px;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .kylo-mat-list-item-content {
-  /*align-items: center;
-  box-sizing: border-box;
-  color: rgba(0, 0, 0, 0.87);
-  display: flex;
-  flex-direction: row;
-  font-family: Roboto, monospace;
-  */
   font-size: 16px;
   height: 56px;
-  /*padding-bottom: 0px;
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-top: 0px;
-  */
   pointer-events: auto;
-  /*position: relative;
-  -moz-osx-font-smoothing: grayscale;
-  */
 }
 
 .kylo-mat-list-text {

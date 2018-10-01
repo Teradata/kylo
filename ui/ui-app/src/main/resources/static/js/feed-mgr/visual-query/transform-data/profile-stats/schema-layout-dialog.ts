@@ -24,7 +24,7 @@ export class ColumnItem {
         this.newType = this.origType;
         switch (this.origType) {
             case 'string':
-                this.typeIcon = 'text_format';
+                this.typeIcon = 'mdi-format-color-text';
                 break;
             case 'float':
             case 'double':
@@ -33,21 +33,28 @@ export class ColumnItem {
             case 'tinyint':
             case 'smallint':
             case 'int':
-                this.typeIcon = "exposure_zero";
-                //this.typeIcon = "fas:hashtag";
+                this.typeIcon = "mdi-pound";
                 break;
             case 'timestamp':
-                //this.typeIcon = "fa:clock";
-                this.typeIcon = "date_range"
+                this.typeIcon = "mdi-clock-outline"
                 break;
             case 'date':
-                this.typeIcon = "date_range";
+                this.typeIcon = "mdi-calendar";
                 break;
             case 'boolean':
-                this.typeIcon = "check_box";
+                this.typeIcon = "mdi-toggle-switch-off-outline";
                 break;
+            case 'blob':
+            case 'binary':
+                this.typeIcon = "mdi-file-image";
             default:
-                this.typeIcon = "storage";
+                if (this.origType.indexOf("array") > -1) {
+                    this.typeIcon = "mdi-code-brackets";
+                } else if (this.origType.indexOf("struct") > -1) {
+                    this.typeIcon = "mdi-code-braces";
+                } else {
+                    this.typeIcon = "mdi-google-circles-group";
+                }
                 break;
         }
 

@@ -1057,19 +1057,19 @@ export class ColumnDelegate implements IColumnDelegate {
 
         switch (dataCategory) {
             case DataCategory.STRING:
-                filters.push({condition: this.uiGridConstants.filter.CONTAINS, icon: 'search', label: 'Contains...'});
+                filters.push({condition: this.uiGridConstants.filter.CONTAINS, icon: 'mdi mdi-file-find', label: 'Contains...'});
             // fall through
 
             case DataCategory.NUMERIC:
                 filters.push({
-                        condition: this.uiGridConstants.filter.LESS_THAN, icon: 'keyboard_arrow_left',
+                        condition: this.uiGridConstants.filter.LESS_THAN, icon: 'mdi mdi-code-less-than',
                         label: 'Less than...'
                     },
                     {
-                        condition: this.uiGridConstants.filter.GREATER_THAN, icon: 'keyboard_arrow_right',
+                        condition: this.uiGridConstants.filter.GREATER_THAN, icon: 'mdi mdi-code-greater-than',
                         label: 'Greater than...'
                     },
-                    {condition: this.uiGridConstants.filter.EXACT, icon: '=', label: 'Equal to...'});
+                    {condition: this.uiGridConstants.filter.EXACT, icon: 'mdi mdi-code-equal', label: 'Equal to...'});
                 break;
 
             default:
@@ -1096,17 +1096,17 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Missing values...', operationFn: self.replaceMissing}
             );
             transforms.ml.push(
-                {description: 'Bin values', name: 'Bin values...',icon:'', operationFn: self.binValues},
-                {description: 'Identify outliers',  name: 'Identify outliers',icon:'', operationFn: self.identifyOutliers},
-                {description: 'Impute missing with mean',  name: 'Impute using mean...',icon:'', operationFn: self.imputeMeanColumn},
-                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'', operationFn: self.replaceMissing},
-                {description: 'Rescale min/max',  name: 'Rescale min/max...',icon:'', operationFn: self.rescaleMinMax},
-                {description: 'Convert to a numerical array for ML',  name: 'Vectorize',icon:'', operationFn: self.vectorizeColumn}
+                {description: 'Bin values', name: 'Bin values...',icon:'mdi mdi-group', operationFn: self.binValues},
+                {description: 'Identify outliers',  name: 'Identify outliers',icon:'mdi mdi-chart-histogram', operationFn: self.identifyOutliers},
+                {description: 'Impute missing with mean',  name: 'Impute using mean...',icon:'mdi mdi-basket-fill', operationFn: self.imputeMeanColumn},
+                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'mdi mdi-find-replace', operationFn: self.replaceMissing},
+                {description: 'Rescale min/max',  name: 'Rescale min/max...',icon:'mdi mdi-function-variant', operationFn: self.rescaleMinMax},
+                {description: 'Convert to a numerical array for ML',  name: 'Vectorize',icon:'mdi mdi-matrix', operationFn: self.vectorizeColumn}
             );
             transforms.format.push(
-                {description: 'Round up',  name: 'Round up',icon:'', operation: 'ceil'},
-                {description: 'Round down',  name: 'Round down',icon:'', operation: 'floor'},
-                {description: 'Round number',  name: 'Round...',icon:'', operationFn: self.roundNumeric});
+                {description: 'Round up',  name: 'Round up',icon:'mdi mdi-format-vertical-align-top', operation: 'ceil'},
+                {description: 'Round down',  name: 'Round down',icon:'mdi mdi-format-vertical-align-bottom', operation: 'floor'},
+                {description: 'Round number',  name: 'Round...',icon:'mdi mdi-numeric-0', operationFn: self.roundNumeric});
 
             transforms.calculate.push(
                 {description: 'Degrees of',  name: 'To Degrees',icon:'', operation: 'toDegrees'},
@@ -1124,35 +1124,35 @@ export class ColumnDelegate implements IColumnDelegate {
         }
         else if (dataCategory === DataCategory.STRING) {
 
-            transforms.format.push({description: 'Lowercase', icon: 'arrow_downward', name: 'lowercase', operation: 'lower'},
-                {description: 'Uppercase', icon: 'arrow_upward', name: 'UPPERCASE', operation: 'upper'},
-                {description: 'Title case', icon: 'format_color_text', name: 'TitleCase', operation: 'initcap'},
-                {description: 'Trim whitespace', icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Left pad', icon: 'format_align_right', name: 'Left pad', operationFn: self.leftPad}
+            transforms.format.push({description: 'Lowercase', icon: 'mdi mdi-format-letter-case-lower', name: 'lowercase', operation: 'lower'},
+                {description: 'Uppercase', icon: 'mdi mdi-format-letter-case-upper', name: 'UPPERCASE', operation: 'upper'},
+                {description: 'Title case', icon: 'mdi mdi-format-letter-case', name: 'TitleCase', operation: 'initcap'},
+                {description: 'Trim whitespace', icon: 'mdi mdi-playlist-remove', name: 'Trim', operation: 'trim'},
+                {description: 'Left pad', icon: 'mdi mdi-format-align-right', name: 'Left pad', operationFn: self.leftPad}
             );
 
             transforms.extract.push(
-                {description: 'Extract numeric', name: 'Numbers',icon:'', operationFn: self.extractNumeric},
-                {description: 'Extract regex',  name: 'Regex pattern',icon:'', operationFn: self.extractRegexPattern},
-                {description: 'Extract delimiters', name: 'Between delimiters',icon:'', operationFn: self.extractDelimiters},
+                {description: 'Extract numeric', name: 'Numbers',icon:'mdi mdi-numeric', operationFn: self.extractNumeric},
+                {description: 'Extract regex',  name: 'Regex pattern',icon:'mdi mdi-regex', operationFn: self.extractRegexPattern},
+                {description: 'Extract delimiters', name: 'Between delimiters',icon:'mdi mdi-code-braces', operationFn: self.extractDelimiters},
             );
 
             transforms.ml.push(
-                {description: 'Impute missing values by fill-forward', name: 'Impute missing values...',icon:'', operationFn: self.imputeMissingColumn},
-                {description: 'Index labels', name: 'Index labels',icon:'', operationFn: self.indexColumn},
-                {description: 'One hot encode (or pivot) categorical values',  name: 'One hot encode',icon:'', operationFn: self.oneHotEncodeColumn},
-                {description: 'Replace NAN with a specified value', name: 'Replace NaN...',icon:'', operationFn: self.replaceNaNWithValue},
-                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'', operationFn: self.replaceMissing});
+                {description: 'Impute missing values by fill-forward', name: 'Impute missing values...',icon:'ndi mdi-basket-fill', operationFn: self.imputeMissingColumn},
+                {description: 'Index labels', name: 'Index labels',icon:'mdi mdi-label-outline', operationFn: self.indexColumn},
+                {description: 'One hot encode (or pivot) categorical values',  name: 'One hot encode',icon:'mdi mdi-matrix', operationFn: self.oneHotEncodeColumn},
+                {description: 'Replace NAN with a specified value', name: 'Replace NaN...',icon:'mdi mdi-null', operationFn: self.replaceNaNWithValue},
+                {description: 'Replace empty with a specified value',  name: 'Replace missing...',icon:'mdi mdi-find-replace', operationFn: self.replaceMissing});
 
             transforms.other.push(
                 {description: 'Crosstab', icon: 'poll', name: 'Crosstab...', operationFn: self.crosstabColumn});
 
         } else if (dataCategory === DataCategory.ARRAY) {
             transforms.defaults.push(
-                {description: 'Extract to columns',  name: 'Extract to columns',icon:'', operationFn: self.extractArrayItems},
-                {description: 'Extract item to column',  name: 'Extract item...',icon:'', operationFn: self.extractArrayItem},
-                {description: 'Convert array elements to rows',  name: 'Explode to rows',icon:'', operation: 'explode'},
-                {description: 'Sort', name: 'Sort array',icon:'', operation: 'sort_array'}
+                {description: 'Extract to columns',  name: 'Extract to columns',icon:'mdi mdi-table-column-plus-after', operationFn: self.extractArrayItems},
+                {description: 'Extract item to column',  name: 'Extract item...',icon:'mdi mdi-table-column', operationFn: self.extractArrayItem},
+                {description: 'Convert array elements to rows',  name: 'Explode to rows',icon:'mdi mdi-table-row', operation: 'explode'},
+                {description: 'Sort', name: 'Sort array',icon:'mdi mdi-sort', operation: 'sort_array'}
             );
         }
         else if (dataCategory === DataCategory.BINARY) {
@@ -1174,12 +1174,12 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
         }
         else if (dataCategory == DataCategory.STRUCT) {
-            transforms.defaults.push({description: 'Flatten struct', name: 'Flatten struct',icon:'', operationFn: self.flattenStructColumn});
+            transforms.defaults.push({description: 'Flatten struct', name: 'Flatten struct',icon:'mdi mdi-table-column-plus-after', operationFn: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
-            transforms.defaults.push({description: 'Explode array to rows', name: 'Explode',icon:'', operation: 'explode'});
+            transforms.defaults.push({description: 'Explode array to rows', name: 'Explode',icon:'mdi mdi-table-row', operation: 'explode'});
         } else if (dataCategory === DataCategory.BOOLEAN) {
-            transforms.defaults.push({description: 'Flip boolean',  name: 'Negate boolean',icon:'', operationFn: self.negateBoolean});
+            transforms.defaults.push({description: 'Flip boolean',  name: 'Negate boolean',icon:'mdi-swap-vertical', operationFn: self.negateBoolean});
         }
         return transforms;
     }

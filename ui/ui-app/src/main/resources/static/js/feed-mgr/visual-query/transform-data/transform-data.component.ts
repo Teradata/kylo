@@ -1025,11 +1025,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Shows columns dialog
      */
-    /**
-     * Generates and displays a categorical histogram
-     *
-     * @return {Promise} a promise for when the query completes
-     */
     showSchemaLayout(): void {
 
          let dialogData = new SchemaLayoutDialogData(this.engine.getColumns());
