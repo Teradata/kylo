@@ -11,6 +11,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentSearchModule} from "@covalent/core/search";
+import {TranslateModule} from "@ngx-translate/core";
 
 import {KyloCommonModule} from "../../common/common.module";
 import {CatalogApiModule} from "./api/catalog-api.module";
@@ -78,8 +79,8 @@ import { CovalentVirtualScrollModule } from '@covalent/core/virtual-scroll';
         MatNativeDateModule,
         MatButtonModule,
         MatSnackBarModule,
-        UIRouterModule
-
+        UIRouterModule.forChild(),
+        TranslateModule
     ]
 })
 export class CatalogModule {

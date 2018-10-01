@@ -1,20 +1,25 @@
-import * as angular from 'angular';
-import {Component, Injector, Input, Output, EventEmitter,OnInit} from "@angular/core";
+import {Component, EventEmitter, Inject, Input, OnInit, Output} from "@angular/core";
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading";
+import {TranslateService} from "@ngx-translate/core";
 import {StateService} from "@uirouter/angular";
+import {concatMap} from "rxjs/operators/concatMap";
+import {filter} from "rxjs/operators/filter";
+import {finalize} from 'rxjs/operators/finalize';
+import {tap} from "rxjs/operators/tap";
 
+import AccessControlService from "../../../services/AccessControlService";
 import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";
-import {finalize} from 'rxjs/operators/finalize';
-import {catchError} from 'rxjs/operators/catchError';
-import {MatSnackBar} from '@angular/material/snack-bar';
 
 
 export class DataSourceSelectedEvent {
-    constructor(public dataSource:DataSource, public params:any, public stateRef:string){}
+    constructor(public dataSource: DataSource, public params: any, public stateRef: string) {
+    }
 }
+
 /**
  * Displays available datasources
  */
@@ -35,7 +40,7 @@ export class DataSourcesComponent implements OnInit {
     public datasources: DataSource[];
 
     @Input("loading")
-    public loading : boolean;
+    public loading: boolean;
 
     /**
      * List of available data sources
@@ -44,19 +49,19 @@ export class DataSourcesComponent implements OnInit {
     public selection: string;
 
     @Input()
-    public selectedDatasourceState:string
+    public selectedDatasourceState: string;
 
     @Input()
-    public stateParams:{}
+    public stateParams: {};
 
     @Input()
-    public readOnly?:boolean = false;
+    public readOnly?: boolean = false;
 
     @Input()
-    public displayInCard?:boolean = true;
+    public displayInCard?: boolean = true;
 
     @Output()
-    datasourceSelected :EventEmitter<DataSourceSelectedEvent> = new EventEmitter<DataSourceSelectedEvent>();
+    datasourceSelected: EventEmitter<DataSourceSelectedEvent> = new EventEmitter<DataSourceSelectedEvent>();
 
     /**
      * Filtered list of datasources to display
@@ -68,8 +73,14 @@ export class DataSourcesComponent implements OnInit {
      */
     searchTerm: string;
 
-    constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loadingService: TdLoadingService,
-                private state: StateService, private $$angularInjector: Injector, private snackBarService: MatSnackBar) {
+    constructor(private catalog: CatalogService,
+                private dataTable: TdDataTableService,
+                private dialog: TdDialogService,
+                private loadingService: TdLoadingService,
+                private state: StateService,
+                @Inject("AccessControlService") accessControlService: any,
+                private snackBarService: MatSnackBar,
+                private translateService: TranslateService) {
         this.loadingService.create({
             name: DataSourcesComponent.topOfPageLoader,
             mode: LoadingMode.Indeterminate,
@@ -105,14 +116,14 @@ export class DataSourcesComponent implements OnInit {
      */
     selectDatasource(datasource: DataSource) {
         let stateRef = "catalog.datasource";
-        if(this.selectedDatasourceState != undefined){
+        if (this.selectedDatasourceState != undefined) {
             stateRef = this.selectedDatasourceState;
         }
         let params = {datasourceId: datasource.id};
-        if(this.stateParams){
-            angular.extend(params,this.stateParams);
+        if (this.stateParams) {
+            params = {...params, ...this.stateParams};
         }
-        if(this.datasourceSelected.observers.length >0) {
+        if (this.datasourceSelected.observers.length > 0) {
             this.datasourceSelected.emit(new DataSourceSelectedEvent(datasource, params, stateRef));
         }
         else {
@@ -137,18 +148,23 @@ export class DataSourcesComponent implements OnInit {
      */
     deleteDatasource(event: any, datasource: DataSource) {
         event.stopPropagation();
-        this.loadingService.register(DataSourcesComponent.topOfPageLoader);
-        this.catalog.deleteDataSource(datasource)
-            .pipe(finalize(() => {
-                this.loadingService.resolve(DataSourcesComponent.topOfPageLoader);
-            }))
-            .pipe(catchError((err) => {
-                this.showSnackBar('Failed to delete.', err.message);
-                return [];
-            }))
-            .subscribe(() => {
-                this.state.go("catalog.datasources", {}, {reload: true});
-            });
+        this.translateService.get("CATALOG.DATA_SOURCES.CONFIRM_DELETE").pipe(
+            concatMap(messages => {
+                return this.dialog.openConfirm({
+                    message: messages["MESSAGE"],
+                    title: messages["TITLE"],
+                    acceptButton: messages["ACCEPT"],
+                    cancelButton: messages["CANCEL"]
+                }).afterClosed();
+            }),
+            filter(accept => accept),
+            tap(() => this.loadingService.register(DataSourcesComponent.topOfPageLoader)),
+            concatMap(() => this.catalog.deleteDataSource(datasource)),
+            finalize(() => this.loadingService.resolve(DataSourcesComponent.topOfPageLoader))
+        ).subscribe(
+            () => this.state.go("catalog.datasources", {}, {reload: true}),
+            err => this.showSnackBar('Failed to delete.', err.message)
+        );
     }
 
     /**
@@ -162,6 +178,6 @@ export class DataSourcesComponent implements OnInit {
 
     showSnackBar(msg: string, err: string): void {
         this.snackBarService
-            .open(msg + ' ' + (err ? err : ""), 'OK', { duration: 5000 });
+            .open(msg + ' ' + (err ? err : ""), 'OK', {duration: 5000});
     }
 }

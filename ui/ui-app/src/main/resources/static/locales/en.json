@@ -855,6 +855,19 @@
     "dirPagination.tpl.100": "100",
     "dirPagination.tpl.All": "All",
 
+    "CATALOG": {
+        "DATA_SOURCES": {
+            "CONFIRM_DELETE": {
+                "ACCEPT": "Delete",
+                "CANCEL": "Cancel",
+                "MESSAGE": "Are you sure you want to delete this data source?",
+                "TITLE": "Delete connector"
+            },
+            "CREATE": "Create",
+            "TITLE": "Data Sources"
+        }
+    },
+
     "VISUAL_QUERY": {
         "FEED_STEP": {
             "DATA_TRANSFORMATIONS": "Data Transformations",

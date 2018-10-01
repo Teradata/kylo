@@ -1,22 +1,29 @@
 import {Component, Input} from "@angular/core";
+import {AbstractControl, FormControl, FormGroup, ValidatorFn} from '@angular/forms';
+import {ValidationErrors} from '@angular/forms/src/directives/validators';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {TdDialogService} from "@covalent/core/dialogs";
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {StateService} from "@uirouter/angular";
+import {catchError} from 'rxjs/operators/catchError';
+import {concatMap} from "rxjs/operators/concatMap";
+import {filter} from "rxjs/operators/filter";
+import {finalize} from 'rxjs/operators/finalize';
+import {tap} from "rxjs/operators/tap";
+import * as _ from "underscore";
+
 import {Connector} from '../api/models/connector';
 import {ConnectorPlugin} from '../api/models/connector-plugin';
-import {AbstractControl, FormControl, ValidatorFn} from '@angular/forms';
-import {UiOption} from '../api/models/ui-option';
 import {DataSource} from '../api/models/datasource';
 import {DataSourceTemplate} from '../api/models/datasource-template';
+import {UiOption} from '../api/models/ui-option';
 import {CatalogService} from '../api/services/catalog.service';
-import {finalize} from 'rxjs/operators/finalize';
-import {catchError} from 'rxjs/operators/catchError';
-import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ValidationErrors} from '@angular/forms/src/directives/validators';
-import * as _ from "underscore";
+import {TranslateService} from "@ngx-translate/core";
 
 
 interface UiOptionsMapper {
     mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void;
+
     mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void;
 }
 
@@ -30,6 +37,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
             }
         });
     }
+
     mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
@@ -46,6 +54,7 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
         ds.template.paths.push(controls.get("path").value);
         ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
     }
+
     mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
         controls.get("path").setValue(ds.template.paths[0]);
         _.keys(ds.template.options).forEach(option => {
@@ -92,10 +101,10 @@ export class ConnectorComponent {
                 try {
                     const url: URL = new URL(control.value);
                     if (url.protocol !== params.protocol) {
-                        return { 'url-protocol': true };
+                        return {'url-protocol': true};
                     }
                 } catch (e) {
-                    return { 'url': true };
+                    return {'url': true};
                 }
             } else {
                 return null;
@@ -107,9 +116,12 @@ export class ConnectorComponent {
     private azureOptionsMapper: UiOptionsMapper = new AzureUiOptionsMapper();
     private defaultOptionsMapper: UiOptionsMapper = new DefaultUiOptionsMapper();
 
-    constructor(private state: StateService, private catalogService: CatalogService,
+    constructor(private state: StateService,
+                private catalogService: CatalogService,
                 private snackBarService: MatSnackBar,
-                private loadingService: TdLoadingService) {
+                private loadingService: TdLoadingService,
+                private dialogService: TdDialogService,
+                private translateService: TranslateService) {
         this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
@@ -213,7 +225,7 @@ export class ConnectorComponent {
 
     showSnackBar(msg: string, err?: string): void {
         this.snackBarService
-            .open(msg + ' ' + (err ? err : ""), 'OK', { duration: 5000 });
+            .open(msg + ' ' + (err ? err : ""), 'OK', {duration: 5000});
     }
 
     isInputType(option: UiOption): boolean {
@@ -243,7 +255,7 @@ export class ConnectorComponent {
      * @returns {ValidationErrors}
      */
     private static required(control: AbstractControl): ValidationErrors {
-        return (control.value || '').trim().length === 0 ? { 'required': true } : null;
+        return (control.value || '').trim().length === 0 ? {'required': true} : null;
     }
 
     cancel() {
@@ -254,18 +266,23 @@ export class ConnectorComponent {
      * Delete datasource
      */
     deleteDatasource() {
-        this.loadingService.register(ConnectorComponent.topOfPageLoader);
-        this.catalogService.deleteDataSource(this.datasource)
-            .pipe(finalize(() => {
-                this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
-            }))
-            .pipe(catchError((err) => {
-                this.showSnackBar('Failed to delete.', err.message);
-                return [];
-            }))
-            .subscribe(() => {
-                this.state.go("catalog.datasources", {}, {reload: true});
-            });
+        this.translateService.get("CATALOG.DATA_SOURCES.CONFIRM_DELETE").pipe(
+            concatMap(messages => {
+                return this.dialogService.openConfirm({
+                    message: messages["MESSAGE"],
+                    title: messages["TITLE"],
+                    acceptButton: messages["ACCEPT"],
+                    cancelButton: messages["CANCEL"]
+                }).afterClosed()
+            }),
+            filter(accept => accept),
+            tap(() => this.loadingService.register(ConnectorComponent.topOfPageLoader)),
+            concatMap(() => this.catalogService.deleteDataSource(this.datasource)),
+            finalize(() => this.loadingService.resolve(ConnectorComponent.topOfPageLoader))
+        ).subscribe(
+            () => this.state.go("catalog.datasources", {}, {reload: true}),
+            err => this.showSnackBar('Failed to delete.', err.message)
+        );
     }
 
     /**
