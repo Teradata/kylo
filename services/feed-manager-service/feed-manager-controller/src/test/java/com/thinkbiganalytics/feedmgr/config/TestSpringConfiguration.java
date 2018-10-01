@@ -52,6 +52,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -59,6 +60,9 @@ import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -388,20 +392,40 @@ public class TestSpringConfiguration {
     CategoryModelTransform categoryModelTransform() {
         return new CategoryModelTransform();
     }
+    
+    @Bean
+    CatalogModelTransform catalogModelTransform() {
+        return new CatalogModelTransform();
+    }
+    
+    @Bean
+    public ConnectorProvider connectorProvider() {
+        return Mockito.mock(ConnectorProvider.class);
+    }
+    
+    @Bean
+    public DataSourceProvider dataSourceProvider() {
+        return Mockito.mock(DataSourceProvider.class);
+    }
+    
+    @Bean
+    public DataSetProvider dataSetProvider() {
+        return Mockito.mock(DataSetProvider.class);
+    }
 
     @Bean
     CategoryProvider feedManagerCategoryProvider() {
-        return new Mockito().mock(CategoryProvider.class);
+        return Mockito.mock(CategoryProvider.class);
     }
 
     @Bean
     FeedManagerTemplateProvider feedManagerTemplateProvider() {
-        return new Mockito().mock(FeedManagerTemplateProvider.class);
+        return Mockito.mock(FeedManagerTemplateProvider.class);
     }
 
     @Bean(name = "hiveJdbcTemplate")
     JdbcTemplate hiveJdbcTemplate() {
-        return new Mockito().mock(JdbcTemplate.class);
+        return Mockito.mock(JdbcTemplate.class);
     }
 
     @Bean(name = "kerberosHiveConfiguration")
@@ -411,12 +435,12 @@ public class TestSpringConfiguration {
 
     @Bean
     HadoopSecurityGroupProvider hadoopSecurityGroupProvider() {
-        return new Mockito().mock(HadoopSecurityGroupProvider.class);
+        return Mockito.mock(HadoopSecurityGroupProvider.class);
     }
 
     @Bean
     HiveService hiveService() {
-        return new Mockito().mock(HiveService.class);
+        return Mockito.mock(HiveService.class);
     }
 
     @Bean
