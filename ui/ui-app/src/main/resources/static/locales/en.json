@@ -19,7 +19,6 @@
     "views.main.sla-assessments": "SLA Assessments",
     "views.main.sla-schedule": "SLA Schedule",
     "views.main.charts": "Charts",
-    "views.main.data-sources": "Data Sources",
     "views.main.domain-types": "Domain Types",
     "views.main.properties": "Properties",
     "views.main.templates": "Templates",

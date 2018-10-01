@@ -1,11 +1,17 @@
 <ng-container *tdLoading="'DataSourcesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
   <ng-container *ngIf="datasources && datasources.length > 0">
-    <mat-card *ngIf="displayInCard">
-      <ng-container
-          [ngTemplateOutlet]="datasourcesTemplate"
-          [ngTemplateOutletContext]="{$implict:datasources}">
-      </ng-container>
-    </mat-card>
+    <ng-container *ngIf="displayInCard">
+      <mat-toolbar>
+        <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+          <span>{{'CATALOG.DATA_SOURCES.TITLE' | translate}}</span>
+          <span fxFlex="100%"></span>
+          <button mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
+        </mat-toolbar-row>
+      </mat-toolbar>
+      <mat-card>
+        <ng-container [ngTemplateOutlet]="datasourcesTemplate" [ngTemplateOutletContext]="{$implict:datasources}"></ng-container>
+      </mat-card>
+    </ng-container>
 
     <ng-container *ngIf="!displayInCard"
         [ngTemplateOutlet]="datasourcesTemplate"
@@ -27,8 +33,12 @@
 </ng-container>
 
 <ng-template #datasourcesTemplate let-datasources>
-  <td-search-input placeholder="Search sources" [showUnderline]="true" [debounce]="150" (searchDebounce)="search($event)"></td-search-input>
   <mat-list>
+    <mat-list-item>
+      <ng-md-icon class="push-left-sm push-right-sm" icon="search"></ng-md-icon>
+      <td-search-input placeholder="Search sources" [showUnderline]="false" [debounce]="150" (searchDebounce)="search($event)" fxFlex="100%"></td-search-input>
+    </mat-list-item>
+    <mat-divider></mat-divider>
     <td-virtual-scroll-container #virtualScroll style="height:42vh" [data]="filteredDatasources">
       <ng-template let-datasource="row" let-last="last" tdVirtualScrollRow>
         <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">

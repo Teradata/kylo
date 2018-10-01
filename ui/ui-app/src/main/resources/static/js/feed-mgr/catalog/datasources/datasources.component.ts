@@ -60,6 +60,11 @@ export class DataSourcesComponent implements OnInit {
     @Input()
     public displayInCard?: boolean = true;
 
+    /**
+     * Indicates that edit actions are allowed
+     */
+    allowEdit = false;
+
     @Output()
     datasourceSelected: EventEmitter<DataSourceSelectedEvent> = new EventEmitter<DataSourceSelectedEvent>();
 
@@ -88,17 +93,8 @@ export class DataSourcesComponent implements OnInit {
             color: 'accent',
         });
 
-        // Register Add button
-        let accessControlService = $$angularInjector.get("AccessControlService");
-        let addButtonService = $$angularInjector.get("AddButtonService");
         accessControlService.getUserAllowedActions()
-            .then(function (actionSet:any) {
-                if (accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions)) {
-                    addButtonService.registerAddButton("catalog.datasources", function () {
-                        state.go("catalog.connectors")
-                    });
-                }
-            });
+            .then((actionSet: any) => this.allowEdit = accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions));
     }
 
 
