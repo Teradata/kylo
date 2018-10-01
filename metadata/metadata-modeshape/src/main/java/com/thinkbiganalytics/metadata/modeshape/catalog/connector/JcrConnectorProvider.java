@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 import javax.jcr.Node;
@@ -71,6 +72,31 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
             conn.setTitle(title);
             return conn;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#findAll(boolean)
+     */
+    @Override
+    public List<Connector> findAll(boolean includeInactive) {
+        return find(getFindAllQuery(includeInactive).toString());
+
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getFindAllQuery()
+     */
+    @Override
+    protected StringBuilder getFindAllQuery() {
+        return getFindAllQuery(false);
+    }
+    
+    protected StringBuilder getFindAllQuery(boolean includeInactive) {
+        StringBuilder bldr = super.getFindAllQuery();
+        if (! includeInactive) {
+            bldr.append(" WHERE [tba:isActive] = true ");
+        }
+        return bldr;
     }
     
     /* (non-Javadoc)

@@ -43,6 +43,8 @@ public interface ConnectorProvider {
     
     List<Connector> findAll();
     
+    List<Connector> findAll(boolean includeInactive);
+    
     Page<Connector> findPage(Pageable page, String filter);
     
     Optional<Connector> find(Connector.ID id);

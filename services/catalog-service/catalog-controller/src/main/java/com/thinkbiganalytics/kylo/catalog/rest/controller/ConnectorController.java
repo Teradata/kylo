@@ -36,11 +36,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -101,10 +103,10 @@ public class ConnectorController extends AbstractCatalogController {
                       @ApiResponse(code = 200, message = "Returns the connectors", response = Connector.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response listConnectors() {
+    public Response listConnectors(@QueryParam("inactive") @DefaultValue("false") boolean includeInactive) {
         log.entry();
         return metadataService.read(() -> {
-            List<Connector> connectors = connectorProvider.findAll().stream()
+            List<Connector> connectors = connectorProvider.findAll(includeInactive).stream()
                 .map(modelTransform.connectorToRestModel())
                 .collect(Collectors.toList());
             return Response.ok(log.exit(connectors)).build();
