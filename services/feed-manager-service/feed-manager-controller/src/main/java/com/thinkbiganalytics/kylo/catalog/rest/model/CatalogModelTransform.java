@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.kylo.catalog.rest.model;
 
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+
 /*-
  * #%L
  * kylo-catalog-controller
@@ -25,6 +27,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -32,12 +35,17 @@ import org.springframework.stereotype.Component;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
+import javax.inject.Inject;
+
 /**
  *
  */
 // TODO: This should be moved back into the kylo-catalog-controller module after the dependencies are worked out
 @Component
 public class CatalogModelTransform {
+    
+    @Inject
+    private SecurityModelTransform securityTransform;
 
     public CatalogModelTransform() {
         super();
@@ -53,6 +61,7 @@ public class CatalogModelTransform {
             model.setIcon(domain.getIcon());
             model.setColor(domain.getIconColor());
             model.setTemplate(sparkParamsToRestModel().apply(domain.getSparkParameters()));
+//            securityTransform.applyAccessControl(domain, model);
             return model;
         };
     }
@@ -107,16 +116,17 @@ public class CatalogModelTransform {
      */
     public Function<DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSetToRestModel() {
         return (domain) -> {
-            com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet = new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet();
-            dataSet.setId(domain.getId().toString());
-            dataSet.setDataSource(dataSourceToRestModel().apply(domain.getDataSource()));
-            dataSet.setTitle(domain.getTitle());
+            com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model = new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet();
+            model.setId(domain.getId().toString());
+            model.setDataSource(dataSourceToRestModel().apply(domain.getDataSource()));
+            model.setTitle(domain.getTitle());
             // TODO: add description
             DataSetTemplate template = sparkParamsToRestModel().apply(domain.getSparkParameters());
-            dataSet.setFormat(template.getFormat());
-            dataSet.setOptions(template.getOptions());
-            dataSet.setPaths(template.getPaths());
-            return dataSet;
+            model.setFormat(template.getFormat());
+            model.setOptions(template.getOptions());
+            model.setPaths(template.getPaths());
+//            securityTransform.applyAccessControl(domain, model);
+            return model;
         };
     }
 
@@ -130,6 +140,7 @@ public class CatalogModelTransform {
             model.setTitle(domain.getTitle());
             model.setConnector(connectorToRestModel().apply(domain.getConnector()));
             model.setTemplate(sparkParamsToRestModel().apply(domain.getSparkParameters()));
+            securityTransform.applyAccessControl(domain, model);
             return model;
         };
     }

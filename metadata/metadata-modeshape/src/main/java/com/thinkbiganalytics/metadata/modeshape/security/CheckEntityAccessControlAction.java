@@ -25,9 +25,14 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -38,8 +43,10 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrUserDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -98,6 +105,12 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
 
     @Inject
     private FeedManagerTemplateProvider feedManagerTemplateProvider;
+    
+    @Inject
+    private DatasourceProvider legacyDatasourceProvider;
+    
+    @Inject
+    private DataSourceProvider dataSourceProvider;
 
 
     @Override
@@ -135,6 +148,7 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
         ensureTemplateAccessControl();
         ensureCategoryAccessControl();
         ensureFeedAccessControl();
+        ensureDataSourceAccessControl();
     }
 
     private void createDefaultRoles() {
@@ -272,6 +286,28 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
                 allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
+    }
+    
+    private void ensureDataSourceAccessControl() {
+        List<Datasource> oldDatasources = legacyDatasourceProvider.getDatasources();
+        List<DataSource> newDataSources = dataSourceProvider.findAll();
+        List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+        Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.DATASOURCE);
+
+        oldDatasources.stream()
+            .filter(JcrUserDatasource.class::isInstance)
+            .map(JcrUserDatasource.class::cast)
+            .forEach(datasource -> {
+                Principal owner = datasource.getOwner() != null ? datasource.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> datasource.enableAccessControl((JcrAllowedActions) actions, owner, roles));
+            });
+        
+        newDataSources.stream()
+            .map(JcrDataSource.class::cast)
+            .forEach(dataSource -> {
+                Principal owner = dataSource.getOwner() != null ? dataSource.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> dataSource.enableAccessControl((JcrAllowedActions) actions, owner, roles));
+            });
     }
 
 }

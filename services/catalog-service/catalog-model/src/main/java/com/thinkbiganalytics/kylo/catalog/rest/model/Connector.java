@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import javax.annotation.Nonnull;
 
@@ -32,7 +33,7 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Connector {
+public class Connector extends EntityAccessControl {
 
     /**
      * Unique identifier
