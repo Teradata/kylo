@@ -393,7 +393,6 @@ export class FeedStatsServiceNg2 {
             this.feedProcessorErrors.visibleData = [];
             this.feedProcessorErrors.time.startTime = null;
             this.feedProcessorErrors.newErrorCount = 0;
-
         }
         return new Promise((resolve, reject) => {
             this.provenanceEventStatsService.getFeedProcessorErrors(this.feedName, this.fromMillis, this.toMillis, this.feedProcessorErrors.time.endTime).then((response: any) => {

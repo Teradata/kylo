@@ -35,6 +35,8 @@ import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {MatMenuModule} from "@angular/material/menu";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {CovalentPagingModule} from "@covalent/core/paging";
+import {CovalentSearchModule} from "@covalent/core/search";
 
 
 @NgModule({
@@ -68,7 +70,9 @@ import {MatTooltipModule} from "@angular/material/tooltip";
         MatListModule,
         MatMenuModule,
         CovalentDataTableModule,
-        CovalentDialogsModule
+        CovalentPagingModule,
+        CovalentDialogsModule,
+        CovalentSearchModule
     ],
     exports:[
         FeedStatsChartsComponent

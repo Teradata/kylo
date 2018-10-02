@@ -748,7 +748,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     }
 
 
-    refresh() {
+    refresh(timeFrameChange:boolean = false) {
         var to = new Date().getTime();
         var millis = this.timeFrameOptions[this.timeFrameOptionIndex].properties.millis;
         var from = to - millis;
@@ -757,7 +757,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
         this.maxDisplayTime = to;
 
         this.feedStatsService.setTimeBoundaries(from, to);
-        this.buildChartData(true);
+        this.buildChartData(timeFrameChange);
     }
 
     enableZoom() {
@@ -1099,7 +1099,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
             this.disableZoom();
         }
         this.clearRefreshInterval();
-        this.refresh();
+        this.refresh(true);
 
         //disable refresh if > 30 min timeframe
         if (millis > (1000 * 60 * 30)) {

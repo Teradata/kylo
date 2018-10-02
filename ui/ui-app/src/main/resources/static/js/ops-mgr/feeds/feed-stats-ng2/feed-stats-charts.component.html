@@ -59,47 +59,47 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card *ngIf="feedProcessorErrors.visibleData.length >0">
-        <mat-toolbar  fxLayout="column">
-          <div >
-            <span> {{"views.feed-stats-charts.EM" | translate}} </span>
-            <span flex="5"></span>
-            <div flex style="margin-top:25px">
-              <mat-form-field>
-                <mat-input-container flex layout-fill>
-                  <label> {{"views.feed-stats-charts.Filter" | translate}} </label>
-                  <input [(ngModel)]="feedProcessorErrorsTable.filter" [ngModelOptions]="{debounce:1000}"/>
-                </mat-input-container>
-              </mat-form-field>
+    <mat-card *ngIf="feedProcessorErrors.visibleData.length >0" class="feed-card">
+      <mat-card-content>
+        <div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
+          <span *ngIf="!searchBox.searchVisible" class="push-left-sm">
+           <span translate class="mat-title">views.feed-stats-charts.EM</span>
+          </span>
+          <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Search here" (searchDebounce)="feedProcessorErrorsTable.search($event)" fxFlex>
+          </td-search-box>
+          <div fxLayout="column" fxLayoutAlign="end end" *ngIf="!searchBox.searchVisible">
+            <div fxLayout="row">
+              <mat-slide-toggle matTooltip="Auto refresh the error messages" color="primary" [(ngModel)]="feedProcessorErrors.autoRefresh"
+                                (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
+                Refresh
+              </mat-slide-toggle>
+              <button mat-icon-button color="primary" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
+                <mat-icon>refresh</mat-icon>
+              </button>
             </div>
-            <span flex="5"></span>
-            <div fxLayout="column" fxLayoutAlign="end end">
-              <div fxLayout="row">
-                <mat-slide-toggle class="md-primary" md-no-ink [aria-label]="'Auto Refresh'" [(ngModel)]="feedProcessorErrors.autoRefresh"
-                                  (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
-                  Auto Refresh: {{feedProcessorErrors.autoRefreshMessage}}
-                </mat-slide-toggle>
-                <button mat-icon-button *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
-                  <mat-icon>refresh</mat-icon>
-                </button>
-              </div>
-              <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
-            </div>
+            <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
           </div>
-        </mat-toolbar>
-
+        </div>
+        <mat-divider></mat-divider>
         <td-data-table
             #dataTable
             [data]="feedProcessorErrorsTable.filteredData"
             [columns]="feedProcessorErrorsTable.columns"
             [sortable]="true"
-            [sortBy]="feedProcessorErrorsTable.sortOrder"
+            [sortBy]="feedProcessorErrorsTable.sortBy"
+            [sortOrder]="feedProcessorErrorsTable.sortOrder"
             [style.height.px]="200">
           <ng-template tdDataTableTemplate="errorMessageTimestamp" let-value="value" let-row="row" let-column="column">
             <span>{{value | date: 'HH:mm:ss'}}</span>
           </ng-template>
         </td-data-table>
 
+        <div class="md-padding" *ngIf="!dataTable.hasData" fxLayout="row" fxLayoutAlign="center center">
+          <h3>No results to display.</h3>
+        </div>
+
+
+      </mat-card-content>
       </mat-card>
 
     <div fxLayout="column" fxFlex="100" fxFill>
@@ -142,7 +142,7 @@
                 <span fxFlex></span>
                <button mat-button (click)="onResetZoom()" *ngIf="!zoomEnabled">Reset Zoom</button>
               </mat-card-title>
-              <mat-card-subtitle *ngIf="zoomEnabled" >Zoom in/out and pan left/right to see custom time frame</mat-card-subtitle>
+              <mat-card-subtitle >View how many flows start and stop over time</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content fxFlex="100" style="width: 100%; padding: 0">
               <div flex fxLayout="row" fxLayoutAlign="start end">
@@ -168,6 +168,7 @@
               <mat-card-title>
                 <span translate>views.feed-stats-charts.FPM</span>
               </mat-card-title>
+              <mat-card-subtitle >View various metics about each processor in the feed</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content fxFlex="100" style="width: 100%;" fxLayoutAlign="start" fxLayout="column">
 
