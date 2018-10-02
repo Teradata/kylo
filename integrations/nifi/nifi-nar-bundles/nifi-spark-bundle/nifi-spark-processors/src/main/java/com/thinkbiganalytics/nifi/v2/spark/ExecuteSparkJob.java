@@ -583,7 +583,7 @@ public class ExecuteSparkJob extends BaseProcessor {
                         if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
                             extraJarPaths.addAll(dataSource.getTemplate().getJars());
                         }
-                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
                             extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
                         }
                         resolvedDatasources.add(dataSource.getId());

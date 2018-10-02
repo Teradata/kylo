@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.shell;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,16 +23,13 @@ package com.thinkbiganalytics.spark.shell;
 
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
-import com.thinkbiganalytics.spark.rest.model.Datasource;
-import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.sql.SQLContext;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
@@ -52,7 +49,7 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
     /**
      * Constructs an {@code AbstractDatasourceProvider} with the specified data sources.
      *
-     * @param datasources the data sources
+     * @param dataSets the data sets
      */
     public AbstractCatalogDataSetProvider(@Nonnull final Collection<DataSet> dataSets) {
         this.dataSets = new HashMap<>(dataSets.size());
@@ -75,20 +72,67 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
 
     public abstract T readDataSet(DataSet dataSet);
 
-    public T read(String datasetId){
+    public T read(String datasetId) {
         DataSet dataSet = findById(datasetId);
         return readDataSet(dataSet);
     }
 
+    /**
+     * Merges the data set, data source, and connector templates for the specified data set.
+     */
+    @Nonnull
+    protected DefaultDataSetTemplate mergeTemplates(@Nonnull final DataSet dataSet) {
+        final DefaultDataSetTemplate template;
 
-    public Map<String,String> mergeOptions(Map<String,String> templateOptions, Map<String,String>dataSetOptions){
-        Map<String,String> allOptions = new HashMap<String,String>();
-        if(templateOptions != null){
-            allOptions.putAll(templateOptions);
+        if (dataSet.getDataSource() != null) {
+            final DataSource dataSource = dataSet.getDataSource();
+            template = new DefaultDataSetTemplate();
+
+            if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null) {
+                mergeTemplates(template, dataSource.getConnector().getTemplate());
+            }
+            if (dataSource.getTemplate() != null) {
+                mergeTemplates(template, dataSource.getTemplate());
+            }
+
+            mergeTemplates(template, dataSet);
+        } else {
+            template = new DefaultDataSetTemplate(dataSet);
         }
-        if(dataSetOptions != null){
-            allOptions.putAll(dataSetOptions);
+
+        return template;
+    }
+
+    /**
+     * Merges the specified source template into the specified destination template.
+     */
+    public void mergeTemplates(@Nonnull final DefaultDataSetTemplate dst, @Nonnull final DataSetTemplate src) {
+        if (src.getFiles() != null) {
+            if (dst.getFiles() != null) {
+                dst.getFiles().addAll(src.getFiles());
+            } else {
+                dst.setFiles(new ArrayList<>(src.getFiles()));
+            }
         }
-        return allOptions.isEmpty() ? null : allOptions;
+        if (src.getJars() != null) {
+            if (dst.getJars() != null) {
+                dst.getJars().addAll(src.getJars());
+            } else {
+                dst.setJars(new ArrayList<>(src.getJars()));
+            }
+        }
+        if (src.getFormat() != null) {
+            dst.setFormat(src.getFormat());
+        }
+        if (src.getOptions() != null) {
+            if (dst.getOptions() != null) {
+                dst.getOptions().putAll(src.getOptions());
+            } else {
+                dst.setOptions(new HashMap<>(src.getOptions()));
+            }
+        }
+        if (src.getPaths() != null) {
+            dst.setPaths(src.getPaths());
+        }
     }
 }

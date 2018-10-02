@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.catalog.spark;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,11 +28,8 @@ import com.thinkbiganalytics.spark.shell.AbstractCatalogDataSetProvider;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.springframework.stereotype.Component;
-
 
 import java.util.Collection;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -44,32 +41,28 @@ public class CatalogDataSetProviderV2 extends AbstractCatalogDataSetProvider<Dat
     /**
      * Constructs a {@code DatasourceProviderV1}.
      *
-     * @param datasources the data sources
+     * @param dataSets the data sets
      */
     CatalogDataSetProviderV2(@Nonnull final Collection<DataSet> dataSets) {
         super(dataSets);
     }
 
     @Override
-    public Dataset<Row> readDataSet(DataSet dataSet) {
-        DataSetTemplate dataSetTemplate = dataSet.getDataSource().getTemplate();
-        Map<String,String> allOptions = mergeOptions(dataSetTemplate.getOptions(), dataSet.getOptions());
-        String format = dataSet.getFormat() != null ? dataSet.getFormat() : dataSetTemplate.getFormat();
+    public Dataset<Row> readDataSet(final DataSet dataSet) {
+        final DataSetTemplate dataSetTemplate = mergeTemplates(dataSet);
 
-        KyloCatalogReader reader = KyloCatalog.read().options(allOptions).addJars(dataSetTemplate.getJars()).addFiles(dataSetTemplate.getFiles()).format(format);
-        Object dataFrame = null;
+        KyloCatalogReader reader = KyloCatalog.read().options(dataSetTemplate.getOptions()).addJars(dataSetTemplate.getJars()).addFiles(dataSetTemplate.getFiles()).format(dataSetTemplate.getFormat());
+        Object dataFrame;
 
-        if(dataSet.getPaths() != null && !dataSet.getPaths().isEmpty()) {
-            if(dataSet.getPaths().size() >1) {
-                dataFrame = reader.load(dataSet.getPaths().toArray(new String[dataSet.getPaths().size()]));
+        if (dataSet.getPaths() != null && !dataSet.getPaths().isEmpty()) {
+            if (dataSet.getPaths().size() > 1) {
+                dataFrame = reader.load(dataSet.getPaths().toArray(new String[0]));
+            } else {
+                dataFrame = reader.load(dataSet.getPaths().get(0));
             }
-            else {
-                dataFrame =  reader.load(dataSet.getPaths().get(0));
-            }
-        }
-        else {
+        } else {
             dataFrame = reader.load();
         }
-        return (Dataset<Row>)dataFrame;
+        return (Dataset<Row>) dataFrame;
     }
 }
