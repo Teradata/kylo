@@ -612,7 +612,8 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
                     unzoomEventType: 'dblclick.zoom',
                     useFixedDomain: false,
                     zoomed: (xDomain: any, yDomain: any) => {
-                        //zoomed will get called initially (even if not zoomed)
+                        console.log('zoom check?',xDomain)
+                        //zoomed will get called` initially (even if not zoomed)
                         // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
                         if (!self.preventZoomChange) {
                             self.isZoomed = true;
@@ -737,6 +738,14 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
        );
        */
 
+    formatTimeFrameSliderLabel(value:number | null) {
+
+        if (!value) {
+            return 0;
+        }
+        console.log('FORMAT LABEL!!! ',value, this.timeFrameOptions[value])
+        return value;
+    }
 
 
     refresh() {
@@ -773,8 +782,13 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     onProcessorChartFunctionChanged() {
         this.feedStatsService.setSelectedChartFunction(this.selectedProcessorStatisticFunction);
         var chartData = this.feedStatsService.changeProcessorChartDataFunction(this.selectedProcessorStatisticFunction);
-        this.processorChartData[0].values = chartData.data;
-        this.feedStatsService.updateBarChartHeight(this.processorChartOptions, this.processorChartApi, chartData.data.length, this.selectedProcessorStatisticFunction);
+       // this.processorChartData[0].values = chartData.data;
+       // this.feedStatsService.updateBarChartHeight(this.processorChartOptions, this.processorChartApi, chartData.data.length, this.selectedProcessorStatisticFunction);
+
+        this.processorChartData = this.feedStatsService.buildProcessorDurationChartData();
+
+        this.feedStatsService.updateBarChartHeight(this.processorChartOptions, this.processorChartApi, this.processorChartData[0].values.length, this.selectedProcessorStatisticFunction);
+
     }
 
     buildChartData(timeIntervalChange: boolean) {

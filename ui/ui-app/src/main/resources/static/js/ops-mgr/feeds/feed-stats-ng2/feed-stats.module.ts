@@ -34,6 +34,7 @@ import {FeedStatsComponent} from "./feed-stats.component";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {MatMenuModule} from "@angular/material/menu";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 
 @NgModule({
@@ -58,6 +59,7 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
         MatButtonModule,
         MatSliderModule,
         MatToolbarModule,
+        MatTooltipModule,
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
@@ -71,8 +73,6 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
     exports:[
         FeedStatsChartsComponent
     ],
-    //schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    //{provide: "$injector", useFactory: () => angular.element(document.body).injector()},
     providers : [
         FeedStatsServiceNg2,
         ProvenanceEventStatsServiceNg2]

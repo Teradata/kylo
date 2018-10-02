@@ -908,6 +908,9 @@
                  "Versions":{"Name":"Versions"}
         }
     },
+    "FeedStats":{
+        "Name":"Feed Activity"
+    },
     "Lineage":{
         "Name":"Feed Lineage",
         "Description":"View feed relationships to data sources and other feeds"
