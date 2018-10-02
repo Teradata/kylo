@@ -1,0 +1,48 @@
+.qc-h2 {
+  margin: 10px;
+}
+
+.qc-section {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+}
+
+.qc-margin {
+  margin: 0 10px;
+}
+
+.qc-radio-group {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.qc-radio-group {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.qc-radio-button {
+  margin: 5px;
+}
+
+.qc-margin-rb  {
+  margin: 10px 0px 0px 5px;
+}
+
+div.qc-check-input {
+  display: inline-flex;
+  flex-direction: row;
+}
+
+
+mat-form-field.qc-check-input {
+  margin-top: -12px;
+  margin-left: 10px;
+}
+
+.qc-selected-value {
+  margin: 15px 0 10px 0;
+  font-weight:bold;
+}

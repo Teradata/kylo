@@ -37,7 +37,7 @@
     <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip characters matching '{{ selectionDisplay }}'</md-button>
   </md-menu-item>
   <md-menu-item ng-if="range && value != null && selection &&  selection.length > 0">
-    <md-button ng-click="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract text betweem index {{ range.startOffset }} to {{ range.endOffset }}</md-button>
+    <md-button ng-click="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract text between index {{ range.startOffset }} to {{ range.endOffset }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="range && value != null && selection && selection.length > 1">
     <md-button ng-click="header.delegate.extractRegex(selection, header, table)">Regex extract between selection</md-button>

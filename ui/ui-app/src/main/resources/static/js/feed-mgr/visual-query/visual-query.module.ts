@@ -67,6 +67,7 @@ import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data
 import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-dialog";
 import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 import {DndListModule} from "ngx-drag-and-drop-lists";
+import {QuickCleanDialog} from "./transform-data/profile-stats/quick-clean-dialog";
 
 
 registerQueryEngine('spark', SparkQueryEngine);
@@ -89,6 +90,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         VisualQueryTable,
         MiniCategoricalComponent,
         MiniHistogramComponent,
+        QuickCleanDialog,
         QuickColumnsDialog,
         SchemaLayoutDialog
     ],
@@ -97,6 +99,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         ConnectionDialog,
         SaveOptionsComponent,
         VisualQueryProfileStatsController,
+        QuickCleanDialog,
         QuickColumnsDialog,
         SchemaLayoutDialog
     ],

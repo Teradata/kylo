@@ -477,11 +477,23 @@ export class VisualQueryPainterService extends fattable.Painter {
 
         // Update content
 
+        // Calculate the actual offset considering the inner spans
+        let trueOffset = function(selection:any) {
+            let offset = selection.anchorOffset;
+            let node = ( selection.anchorNode.parentNode.className === 'ws-text' ? selection.anchorNode.parentElement : selection.anchorNode);
+            while (node.previousSibling) {
+                node = node.previousSibling;
+                offset += node.textContent.length;
+            }
+            return offset;
+        }
+
         const $scope: IScope = (this.menuPanel.config as any).scope;
         $scope.DataCategory = DataCategory;
         $scope.header = header;
         $scope.selection = this.cleanDots(selection.toString()); //(header.delegate.dataCategory === DataCategory.STRING) ? cleanDots(selection.toString()) : null;
-        $scope.range = (selection != null ? { startOffset: selection.anchorOffset, endOffset: selection.anchorOffset+$scope.selection.length } : null);
+        let startOffset = trueOffset(selection);
+        $scope.range = (selection != null ? { startOffset: startOffset, endOffset: startOffset+$scope.selection.length } : null);
         $scope.selectionDisplay = this.niceSelection($scope.selection)
         $scope.table = this.delegate;
         $scope.value = isNull ? null : $(cellDiv).data('realValue');

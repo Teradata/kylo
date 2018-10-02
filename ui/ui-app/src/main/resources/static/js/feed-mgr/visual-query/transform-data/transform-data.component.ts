@@ -27,6 +27,7 @@ import {VisualQueryTable} from "./visual-query-table/visual-query-table.componen
 import {QuickColumnsDialog, QuickColumnsDialogData} from "./profile-stats/quick-columns-dialog";
 import {ColumnUtil} from "../wrangler/core/column-util";
 import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./profile-stats/schema-layout-dialog";
+import {QuickCleanDialog, QuickCleanDialogData} from "./profile-stats/quick-clean-dialog";
 
 declare const CodeMirror: any;
 
@@ -1022,6 +1023,21 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
     };
 
+    /**
+     * Show dialog for applying global cleansing operations
+     */
+    showQuickClean() : void {
+
+        let dialogData = new QuickCleanDialogData(this.engine.getColumns());
+
+        this.$mdDialog.open(QuickCleanDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
+            .subscribe((script: String) => {
+                if (script != null) {
+                    this.pushFormula(script, {formula: script, icon: 'blur_linear', name: 'Quick clean'}, true);
+                }
+            });
+
+    }
     /**
      * Shows columns dialog
      */

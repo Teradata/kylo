@@ -201,8 +201,8 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractStringAtSelectedIndex(range: any, column: any, grid: any) {
         const fieldName = ColumnUtil.getColumnFieldName(column);
-        const startOffset = range.startOffset;
-        const endOffset = range.endOffset;
+        const startOffset = (range.startOffset+1);
+        const endOffset = (range.endOffset - startOffset + 1);
         const formula = ColumnUtil.toFormula(`substr(${fieldName}, ${startOffset}, ${endOffset}).as("${fieldName}")`, column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: `Extract string between index ${startOffset} and ${endOffset}`});
     }
