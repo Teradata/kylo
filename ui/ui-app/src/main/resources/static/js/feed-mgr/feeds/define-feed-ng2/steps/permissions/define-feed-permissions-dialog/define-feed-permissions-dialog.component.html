@@ -1,0 +1,21 @@
+<mat-toolbar [color]="['primary']">
+  <span>Permissions for feed {{feed.getFullName()}}</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div mat-dialog-content>
+  <div class="mat-padding" fxLayout="column" fxFlex fxLayoutAlign="start">
+    <form [formGroup]="formGroup">
+      <div fxLayout="column">
+        <entity-access-control-ng2 [parentForm]="formGroup" #entityAccessControl [entity]="feed" [readonly]="false" entityType="feed"></entity-access-control-ng2>
+      </div>
+    </form>
+  </div>
+</div>
+<mat-dialog-actions fxLayout="row" fxLayoutAlign="start stretch" fxFlex>
+  <button mat-button [disabled]="isSaving()" (click)="cancel()">{{cancelButtonLabelKey | translate}}</button>
+  <button mat-button [disabled]="isSaving()" (click)="savePermissions()">{{saveButtonLabelKey | translate}}</button>
+</mat-dialog-actions>

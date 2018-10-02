@@ -21,7 +21,7 @@
 
 
 <ng-template #summaryTemplate >
-  <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+  <div *tdLoading="'processingFeed2'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
     <div fxLayout="row" *ngIf="feed != undefined">
 
       <div fxFlex="60%">
@@ -72,6 +72,11 @@
                 <button mat-menu-item (click)="cloneFeed()">
                   <mat-icon>content_copy</mat-icon>
                   <span>Clone</span>
+                </button>
+                <mat-divider *ngIf="showSetPermissions()"></mat-divider>
+                <button *ngIf="showSetPermissions()" mat-menu-item (click)="setPermissions()">
+                  <mat-icon>person</mat-icon>
+                  <span>Permissions</span>
                 </button>
               </mat-menu>
             </div>

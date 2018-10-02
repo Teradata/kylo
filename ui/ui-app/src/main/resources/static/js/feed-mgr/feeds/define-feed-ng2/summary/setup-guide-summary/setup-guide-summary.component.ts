@@ -17,6 +17,7 @@ import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {EntityVersion} from "../../../../model/entity-version.model";
 import {RestResponseStatus, RestResponseStatusType} from "../../../../../common/common.model";
 import {DeployFeedDialogComponent, DeployFeedDialogComponentData} from "./deploy-feed-dialog/deploy-feed-dialog.component";
+import {DefineFeedPermissionsDialogComponent, DefineFeedPermissionsDialogComponentData} from "../../steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component";
 
 
 @Component({
@@ -146,6 +147,20 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         this.init();
     }
 
+    /**
+     * Should permissions menu be shown?
+     * @returns {boolean}
+     */
+    showSetPermissions() {
+        return this.feed.accessControl.allowAdmin;
+    }
 
+    /**
+     * Show set permissions dialog
+     */
+    setPermissions() {
+        let config = {data: new DefineFeedPermissionsDialogComponentData(this.feed), panelClass: "full-screen-dialog"};
+        this._dialogService.open(DefineFeedPermissionsDialogComponent, config);
+    }
 
 }

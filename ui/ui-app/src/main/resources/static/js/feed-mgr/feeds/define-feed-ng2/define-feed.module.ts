@@ -121,6 +121,7 @@ import {FeedOperationsHealthInfoComponent} from "./summary/feed-activity-summary
 import {FeedUploadFileDialogComponent} from "./summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component";
 import {SkipHeaderComponent} from "./shared/skip-header/skip-header.component";
 import {DeployFeedDialogComponent} from "./summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component";
+import {DefineFeedPermissionsDialogComponent} from "./steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component";
 import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
 
 @NgModule({
@@ -151,6 +152,7 @@ import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
         NewFeedDialogComponent,
         DefineFeedStepCustomContentComponent,
         DefineFeedPermissionsComponent,
+        DefineFeedPermissionsDialogComponent,
         DefineFeedPropertiesComponent,
         FeedInfoItemComponent,
         FeedInfoNameComponent,
@@ -186,7 +188,8 @@ import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
     entryComponents:[
         NewFeedDialogComponent,
         FeedUploadFileDialogComponent,
-        DeployFeedDialogComponent
+        DeployFeedDialogComponent,
+        DefineFeedPermissionsDialogComponent
     ],
     providers:[
       DefineFeedService,
