@@ -80,7 +80,7 @@ val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
         <entry key="profileDataFrame">
           <value>
             <![CDATA[
-val dfProf = com.thinkbiganalytics.spark.dataprofiler.LivyProfilerDeleteMe.profileDataFrame(sparkContextService,profiler,df)
+val dfProf = com.thinkbiganalytics.spark.dataprofiler.LivyProfiler.profileDataFrame(sparkContextService,profiler,df)
 %%json dfProf
             ]]>
           </value>

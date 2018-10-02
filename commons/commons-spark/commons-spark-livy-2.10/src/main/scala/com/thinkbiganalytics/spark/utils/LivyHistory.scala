@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.spark.utils
 
 import org.apache.spark.sql.SQLContext
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory
 
 object LivyHistory {
   val logger = LoggerFactory.getLogger(LivyHistory.getClass)

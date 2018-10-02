@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.spark.utils
 
 import com.thinkbiganalytics.spark.logger.LivyLogger
-import org.slf4j.LoggerFactory
 import org.apache.spark.sql.functions.col
+import org.slf4j.LoggerFactory
 
 object LivyPaginator {
   val logger = LoggerFactory.getLogger(LivyPaginator.getClass)
@@ -10,7 +10,7 @@ object LivyPaginator {
   def page(df: org.apache.spark.sql.DataFrame, startCol: Int, stopCol: Int, pageStart: Int, pageStop: Int): List[Any] = {
     var dfRows: List[Object] = List()
     var actualCols: Integer = 0
-    var actualRows: Long = 0
+    var actualRows: Int = 0
 
     LivyLogger.time {
       actualCols = df.columns.length
@@ -26,9 +26,8 @@ object LivyPaginator {
 
       df.columns.slice(dfStartCol, dfStopCol)
 
-      val (firstRow, lastRow) = (0, dl.size)
-      val dfStartRow = if (lastRow >= pageStart) pageStart else lastRow
-      val dfStopRow = if (lastRow >= pageStop) pageStop else lastRow
+      val dfStartRow = if (actualRows >= pageStart) pageStart else actualRows
+      val dfStopRow = if (actualRows >= pageStop) pageStop else actualRows
 
       val pagedRows = dl.slice(dfStartRow, dfStopRow).map(_.toSeq)
       dfRows = List(df2.schema.json, pagedRows)

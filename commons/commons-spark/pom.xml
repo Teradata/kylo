@@ -21,6 +21,9 @@
     <module>commons-spark-api</module>
     <module>commons-spark-1.6</module>
     <module>commons-spark-2.0</module>
+    <module>commons-spark-livy</module>
+    <module>commons-spark-livy-2.10</module>
+    <module>commons-spark-livy-2.11</module>
     <module>commons-spark-repl</module>
     <module>commons-spark-shell-api</module>
     <module>commons-spark-shell-v1</module>

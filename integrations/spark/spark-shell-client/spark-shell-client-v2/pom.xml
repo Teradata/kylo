@@ -51,6 +51,11 @@
     <!-- Kylo dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-spark-livy-${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>

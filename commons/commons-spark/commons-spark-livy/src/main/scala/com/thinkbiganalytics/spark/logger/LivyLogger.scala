@@ -1,9 +1,8 @@
 package com.thinkbiganalytics.spark.logger
 
-import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.Duration
+import org.joda.time.format.PeriodFormatterBuilder
 import org.slf4j.LoggerFactory
-
 
 object LivyLogger {
   val logger = LoggerFactory.getLogger(LivyLogger.getClass)
