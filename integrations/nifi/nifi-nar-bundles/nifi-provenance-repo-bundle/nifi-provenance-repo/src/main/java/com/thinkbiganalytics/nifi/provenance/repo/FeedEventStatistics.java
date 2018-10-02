@@ -347,7 +347,10 @@ public class FeedEventStatistics implements Serializable {
 
 
     public void load(RemoteMessageResponseWithRelatedFlowFiles response){
+
         RemoteEventMessageResponse remoteEventMessageResponse = response.getRemoteEventMessageResponse();
+
+        log.debug("KYLO-DEBUG: Loading remote events into feed statistics feed flowfile: {}, feed processor: {}, startTime: {}, feed flow running count: {}, tracking details:{}  ",remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedProcessorId(), remoteEventMessageResponse.getFeedFlowFileStartTime(), remoteEventMessageResponse.getFeedFlowRunningCount(),remoteEventMessageResponse.isTrackingDetails() );
         if(remoteEventMessageResponse.isTrackingDetails()){
             this.detailedTrackingFeedFlowFileId.add(remoteEventMessageResponse.getFeedFlowFileId());
         }
@@ -415,13 +418,14 @@ public class FeedEventStatistics implements Serializable {
                     if (feedFlowProcessing.containsKey(startingFlowFile)) {
                         feedFlowProcessing.get(startingFlowFile).incrementAndGet();
                     }
-                    log.info("Received a Remote Event {}, coming from a previous flowfile {}.  Assigning relationship ",event.getFlowFileUuid(),sourceSystemFlowFileIdentifier);
+                    log.info("KYLO-DEBUG: Received a Remote Event.  EventId:{}, Flow File: {}, coming from a previous flowfile {}.  Assigning relationship ",eventId,event.getFlowFileUuid(),sourceSystemFlowFileIdentifier);
                     result.setStartingFlowFileId(startingFlowFile);
                     result.setRegisteredStartingEvent(true);
                 }
                 else {
                     //unable to find feedflowfile for this remote event.
                     //queue up the event and wait for the related data
+                    log.info("KYLO-DEBUG: Unable to find Flow File for Remote Event.  Add event to queue and wait for remote data to become available. EventId: {}, sourceSystemFlowFileIdentifier (remote ff): {}, Flowfile {}.",eventId,sourceSystemFlowFileIdentifier,event.getFlowFileUuid());
                    RemoteProvenanceEventService.getInstance().addRemoteSourceEventToQueue(sourceSystemFlowFileIdentifier, event, eventId);
                    return result;
                 }
@@ -757,10 +761,13 @@ public class FeedEventStatistics implements Serializable {
         String eventType = event.getEventType().name();
         if (ProvenanceEventType.DROP.name().equals(eventType)) {
             boolean canClear = true;
-
             if(RemoteProvenanceEventService.getInstance().isRemoteInputPortEvent(event)){
                 RemoteProvenanceEventService.getInstance().registerRemoteInputPortDropEvent(event,eventId);
                 canClear = RemoteProvenanceEventService.getInstance().canRemoteEventDataBeDeleted(eventFlowFileId);
+                log.debug("KYLO-DEBUG: Received DROP event on RemoteInputPort. EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, SafeToClear: {} ",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType(),canClear);
+            }
+            else {
+                log.debug("KYLO-DEBUG: Received DROP event for EventId:{}, FlowFile: {}, componentId: {}, componentType: {}",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType());
             }
 
             if (canClear) {

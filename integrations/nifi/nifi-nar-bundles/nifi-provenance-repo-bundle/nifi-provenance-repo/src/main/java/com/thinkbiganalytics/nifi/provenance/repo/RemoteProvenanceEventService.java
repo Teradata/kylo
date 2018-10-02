@@ -100,7 +100,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, Set<String>>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, Set<String>> removalNotification) {
-                    log.debug("Removing entry from sourceFlowFileToFlowFileIds {}",removalNotification.getKey());
+                    log.debug("KYLO-DEBUG: SourceFlowFileToFlowFile Cache Removal Listener. Removing entry from sourceFlowFileToFlowFileIds {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, Set<String>>() {
@@ -115,7 +115,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, Set<ProvenanceEventRecordWithId>>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, Set<ProvenanceEventRecordWithId>> removalNotification) {
-                    log.debug("Removing entry from waitingRemoteEvents {}",removalNotification.getKey());
+                    log.debug("KYLO-DEBUG: WaitingRemoteEvents Cache Removal Listener. Removing entry from waitingRemoteEvents {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, Set<ProvenanceEventRecordWithId>>() {
@@ -130,7 +130,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, RemoteSourceFlowFile>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, RemoteSourceFlowFile> removalNotification) {
-                    log.debug("Removing entry from remoteSourceFlowFileInformation {}",removalNotification.getKey());
+                    log.debug("KYLO-DEBUG: RemoteSourceFlowFileInfo Cache Removal Listener. Removing entry from remoteSourceFlowFileInformation {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, RemoteSourceFlowFile>() {
@@ -199,6 +199,7 @@ public class RemoteProvenanceEventService {
      */
     public void checkAndAddRemoteInputPortSendEvent(ProvenanceEventRecord event, Long eventId){
         if(isRemoteInputPortEvent(event) && event.getEventType().name().equalsIgnoreCase("SEND")) {
+            log.debug("KYLO-DEBUG: Register the 'Remote Input Port' SEND event.  eventId: {}, FlowFile: {}, componentId: {}, componentType: {}, Waiting on Remote Events: {} ",eventId,event.getFlowFileUuid(),event.getComponentId(), event.getComponentType());
             sourceRemoteInputPortEvents.add(new ProvenanceEventRecordWithId(eventId, event));
         }
     }
@@ -277,6 +278,7 @@ public class RemoteProvenanceEventService {
                 response.setFeedFlowFileStartTime(FeedEventStatistics.getInstance().getFeedFlowStartTime(feedFlowFile));
                 response.setFeedProcessorId(FeedEventStatistics.getInstance().getFeedProcessorId(feedFlowFile));
                 addRemoteSourceFlowFile(event.getEvent().getFlowFileUuid(),null);
+                log.debug("KYLO-DEBUG: About to send message to notify other nodes about the 'Remote Input Port' SEND events.  isTrackingDetails: {}, Source FF: {}, Feed FF: {}, Feed FF start time: {}, Feed Processor Id: {}",trackingDetails,response.getSourceFlowFileId(),response.getFeedFlowFileId(),response.getFeedFlowFileStartTime(),response.getFeedProcessorId());
                 return response;
                 //  response.setFeedFlowRunningCount(FeedEventStatistics.getInstance().getRunningFeedFlows());
             }).collect(Collectors.toList());
@@ -287,8 +289,11 @@ public class RemoteProvenanceEventService {
             RemoteSourceFlowFile remoteSourceFlowFile = remoteFilesAvailableToBeRemoved.remove(k);
             if(remoteSourceFlowFile != null){
                 removeList.add(remoteSourceFlowFile);
+                log.debug("KYLO-DEBUG: Allow the following Remote source files to be removed and processed as completed. FlowFile: {}, isCollected: {}, Drop Event Id:{}",remoteSourceFlowFile.getFlowFileId(),remoteSourceFlowFile.isCollected(),remoteSourceFlowFile.getDropEventId());
             }
         });
+
+
         FeedEventStatistics.getInstance().checkAndClearRemoteEvents(removeList);
 
         return responseMessages;
@@ -315,6 +320,7 @@ public class RemoteProvenanceEventService {
             sourceFlowFiles.stream().flatMap(sourceFlowFile -> removeAndGetWaitingEvents(sourceFlowFile).stream())
                 .forEach(waitingProvenanceEventRecord -> {
                     FeedStatisticsManager.getInstance().addEvent(waitingProvenanceEventRecord.getEvent(),waitingProvenanceEventRecord.getEventId());
+                    log.debug("Loaded the remote event data.  Adding waiting event and removing from waiting queue.  event id:{}, flow file id: {}, component id: {}, component type: {} ",waitingProvenanceEventRecord.getEventId(),waitingProvenanceEventRecord.getEvent().getFlowFileUuid(), waitingProvenanceEventRecord.getEvent().getComponentId(), waitingProvenanceEventRecord.getEvent().getComponentType());
                     flowFileIdToRemoteFlowFileId.remove(waitingProvenanceEventRecord.getEvent().getFlowFileUuid());
                 });
 
@@ -349,6 +355,7 @@ public class RemoteProvenanceEventService {
     private void addWaitingOnRemoteFlowFile(ProvenanceEventRecord event, Long eventId){
         String remoteSource = flowFileIdToRemoteFlowFileId.get(event.getFlowFileUuid());
         if(remoteSource != null) {
+            log.debug("KYLO-DEBUG: Add waiting event for  flowFile: {}, eventId: {}",event.getFlowFileUuid(),eventId);
             waitingRemoteEvents.getUnchecked(remoteSource).add(new ProvenanceEventRecordWithId(eventId, event));
         }
     }
@@ -377,6 +384,7 @@ public class RemoteProvenanceEventService {
      */
     private RemoteSourceFlowFile addRemoteSourceFlowFile(String flowfileId, Long dropEventId) {
         RemoteSourceFlowFile remoteSourceFlowFile =  remoteSourceFlowFileInformation.getUnchecked(flowfileId);
+        log.debug("");
         if(dropEventId != null) {
             remoteSourceFlowFile.setDropEventId(dropEventId);
         }

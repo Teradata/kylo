@@ -177,6 +177,7 @@ public class FeedStatistics {
         boolean isDropEvent = ProvenanceEventUtil.isEndingFlowFileEvent(event);
         if (isDropEvent && FeedEventStatistics.getInstance().beforeProcessingIsLastEventForTrackedFeed(event, eventId)) {
             batchKey += UUID.randomUUID().toString();
+            log.debug("KYLO-DEBUG: Register DROP event on Event.  EventId:{}, FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
         }
 
         if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() <= limit)) && !lastRecords
@@ -208,12 +209,17 @@ public class FeedStatistics {
             lastRecords.put(batchKey, eventRecordDTO);
 
         } else {
+            if(isDropEvent){
+                boolean trackingDetails = FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid());
+                log.debug("KYLO-DEBUG: DROP found, but not processing. EventId:{}, isStartingFeedFlow:{},  tracking feed details: {}, Event FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,isStartingFeedFlow,trackingDetails,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
+            }
             FeedEventStatistics.getInstance().skip(event, eventId);
         }
         FeedEventStatistics.getInstance().finishedEvent(event, eventId);
 
         boolean isEndingEvent = FeedEventStatistics.getInstance().isEndingFeedFlow(eventId);
         if (eventRecordDTO != null && isEndingEvent) {
+            log.debug("KYLO-DEBUG: Register event as final job event for the feed. EventId: {}, isStartingFeedFlow:{}, Event FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,isStartingFeedFlow,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
             eventRecordDTO.setIsFinalJobEvent(isEndingEvent);
         }
         FeedProcessorStatisticsAggregator.getInstance().add(getStats(event), event, eventId);
