@@ -23,14 +23,17 @@ package com.thinkbiganalytics.kylo.spark.job;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.kylo.spark.job.tasks.BatchJobSupplier;
+import com.thinkbiganalytics.kylo.spark.rest.model.job.DataSetReference;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResources;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
@@ -62,6 +65,15 @@ public class DefaultSparkJobService implements SparkJobService {
      */
     @Nonnull
     private final DataSetProvider dataSetProvider;
+    
+    @Nonnull
+    private final CatalogModelTransform modelTransform;
+    
+    /**
+     * Metadata access service
+     */
+    @Nonnull
+    private MetadataAccess metadataService;
 
     /**
      * Spark job cache service
@@ -106,9 +118,15 @@ public class DefaultSparkJobService implements SparkJobService {
      * Construct a {@code DefaultSparkJobService}.
      */
     @Autowired
-    public DefaultSparkJobService(@Nonnull final DataSetProvider dataSetProvider, @Nonnull final SparkShellProcessManager processManager, @Nonnull final SparkShellRestClient restClient,
+    public DefaultSparkJobService(@Nonnull final MetadataAccess metadata,
+                                  @Nonnull final DataSetProvider dataSetProvider, 
+                                  @Nonnull final CatalogModelTransform modelTransform,
+                                  @Nonnull final SparkShellProcessManager processManager, 
+                                  @Nonnull final SparkShellRestClient restClient,
                                   @Nonnull final SparkJobCacheService cache) {
+        this.metadataService = metadata;
         this.dataSetProvider = dataSetProvider;
+        this.modelTransform = modelTransform;
         this.processManager = processManager;
         this.restClient = restClient;
         this.cache = cache;
@@ -137,8 +155,7 @@ public class DefaultSparkJobService implements SparkJobService {
 
             if (resources.getDataSets() != null) {
                 resources.getDataSets().forEach(dataSetReference -> {
-                    final DataSet dataSet = dataSetProvider.findDataSet(dataSetReference.getDataSetId())
-                        .orElseThrow(() -> new SparkException("job.resources.invalid-dataset", dataSetReference.getDataSetId()));
+                    final DataSet dataSet = findDataSet(dataSetReference);
                     final DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);
 
                     script.append(".addDataSet(\"").append(StringEscapeUtils.escapeJava(dataSet.getId())).append("\")");
@@ -242,5 +259,15 @@ public class DefaultSparkJobService implements SparkJobService {
     @PreDestroy
     public void shutdown() {
         executor.shutdownNow();
+    }
+
+    protected DataSet findDataSet(DataSetReference dataSetReference) {
+        return metadataService.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dataSetId = dataSetProvider.resolveId(dataSetReference.getDataSetId());
+            
+            return dataSetProvider.find(dataSetId)
+                .map(modelTransform.dataSetToRestModel())
+                .orElseThrow(() -> new SparkException("job.resources.invalid-dataset", dataSetReference.getDataSetId()));
+        });
     }
 }

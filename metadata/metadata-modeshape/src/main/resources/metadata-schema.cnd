@@ -425,7 +425,7 @@
 [tba:DataSetSparkParamsSupplier] mixin
     + tba:sparkParams (tba:DataSetSparkParams) = tba:DataSetSparkParams autocreated mandatory
 
-[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:isActive (BOOLEAN) = true
     - tba:pluginId (STRING) mandatory
     + dataSources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
@@ -433,13 +433,13 @@
 [tba:ConnectorDataSources]
     + * (tba:DataSource) 
 
-[tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
     
 [tba:DataSets]
     + * (tba:DataSet) 
 
-[tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - mimeType (STRING)
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedTargets (WEAKREFERENCE) multiple

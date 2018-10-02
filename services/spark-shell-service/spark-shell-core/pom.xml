@@ -46,6 +46,16 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-feed-manager-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-cluster-manager-api</artifactId>
       <version>${project.version}</version>
     </dependency>

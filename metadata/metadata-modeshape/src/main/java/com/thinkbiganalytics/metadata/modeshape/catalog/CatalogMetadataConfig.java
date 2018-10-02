@@ -70,7 +70,7 @@ public class CatalogMetadataConfig {
         return () -> {
             metadata.commit(() -> {
                 List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
-                Map<String, Connector> connectorMap =  connectorProvider().findAll().stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
+                Map<String, Connector> connectorMap =  connectorProvider().findAll(true).stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
                 
                 for (ConnectorPlugin plugin : plugins) {
                     if (connectorMap.containsKey(plugin.getId())) {

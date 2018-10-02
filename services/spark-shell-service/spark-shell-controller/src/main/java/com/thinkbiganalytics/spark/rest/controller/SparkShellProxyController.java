@@ -30,6 +30,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
@@ -44,6 +45,7 @@ import com.thinkbiganalytics.kylo.spark.job.SparkJobStatus;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
@@ -163,7 +165,10 @@ public class SparkShellProxyController {
     private DatasourceProvider datasourceProvider;
 
     @Inject
-    private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider kyloCatalogDataSourceProvider;
+    private DataSourceProvider kyloCatalogDataSourceProvider;
+    
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
 
     /**
      * The {@code Datasource} transformer
@@ -787,12 +792,11 @@ public class SparkShellProxyController {
 
     private DataSource fetchCatalogDataSource(@Nonnull String datasourceId){
         return metadata.read(() -> {
-            Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(datasourceId,true);
-            if (optionalDataSource.isPresent()) {
-                return optionalDataSource.get();
-            } else {
-                throw new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId);
-            }
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = kyloCatalogDataSourceProvider.resolveId(datasourceId);
+            
+            return kyloCatalogDataSourceProvider.find(dsId)
+                .map(catalogModelTransform.dataSourceToRestModel())
+                .orElseThrow(() -> new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId));
         });
 
     }

@@ -21,9 +21,10 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.AccessController;
@@ -61,6 +62,9 @@ public class CatalogMetadataController extends AbstractCatalogController {
 
     @Inject
     DataSetProvider dataSetProvider;
+    
+    @Inject
+    CatalogModelTransform modelTransform;
 
     @Inject
     MetadataAccess metadataService;
@@ -76,15 +80,19 @@ public class CatalogMetadataController extends AbstractCatalogController {
                   })
     public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
-        final DataSet dataSet = metadataService
+        return metadataService
             .read(() -> {
                 accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_DATASOURCES);
-                return dataSetProvider.findDataSet(dataSetId);
-            })
-            .orElseThrow(() -> {
-                log.debug("Data set not found: {}", dataSetId);
-                return new NotFoundException(getMessage("catalog.dataset.notFound"));
+                
+                com.thinkbiganalytics.metadata.api.catalog.DataSet.ID domainId = dataSetProvider.resolveId(dataSetId);
+                
+                return dataSetProvider.find(domainId)
+                    .map(modelTransform.dataSetToRestModel())
+                    .map(dataSet -> Response.ok(log.exit(dataSet)).build())
+                    .orElseThrow(() -> {
+                        log.debug("Data set not found: {}", dataSetId);
+                        return new NotFoundException(getMessage("catalog.dataset.notFound"));
+                    });
             });
-        return Response.ok(log.exit(dataSet)).build();
     }
 }
