@@ -99,10 +99,10 @@ public class FeedStatisticsManager {
         lock.lock();
         try {
             //build up feed flow file map relationships
-            boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
+            boolean isStartingFlowEvent = ProvenanceEventUtil.isStartingFlowEvent(event);
             RemoteProvenanceEventService.getInstance().checkAndAddRemoteInputPortSendEvent(event, eventId);
 
-            if (isStartingFeedFlow) {
+            if (isStartingFlowEvent) {
                 FeedEventStatistics.StartingFlowFileResult result = FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(event, eventId);
                 if (result.isRemote() && result.isRegisteredStartingEvent()) {
                     //clear the remote maps
