@@ -45,8 +45,23 @@ public class ProvenanceEventUtil {
     /**
      * Check if the event is one that kicks off the flow
      */
-    public static boolean isStartingFeedFlow(ProvenanceEventRecord event) {
+    public static boolean isStartingFlowEvent(ProvenanceEventRecord event) {
         return contains(STARTING_EVENT_TYPES, event.getEventType());
+    }
+
+    /**
+     * Determine if this event is one that starts a feed flow
+     * @param event the event
+     * @param checkRemoteSourceFlowFileId  flag to check additional attributes on the flow to verify its not linked to another flow file
+     * @return
+     */
+    public static boolean isStartingFeedFlow(ProvenanceEventRecord event) {
+            if(StringUtils.isBlank(event.getSourceSystemFlowFileIdentifier())) {
+                return contains(STARTING_EVENT_TYPES, event.getEventType());
+            }
+            else {
+                return contains(STARTING_EVENT_TYPES, event.getEventType()) && event.getFlowFileUuid() != event.getSourceSystemFlowFileIdentifier();
+            }
     }
 
 

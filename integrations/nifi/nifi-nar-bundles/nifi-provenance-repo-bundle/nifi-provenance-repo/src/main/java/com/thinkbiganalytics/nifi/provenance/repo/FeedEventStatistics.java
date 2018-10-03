@@ -410,7 +410,7 @@ public class FeedEventStatistics implements Serializable {
 
     public StartingFlowFileResult checkAndAssignStartingFlowFile(ProvenanceEventRecord event, Long eventId) {
         StartingFlowFileResult result = new StartingFlowFileResult();
-        if (ProvenanceEventUtil.isStartingFeedFlow(event)) {
+        if (ProvenanceEventUtil.isStartingFlowEvent(event)) {
             result.setStartingFlowFileId(event.getFlowFileUuid());
             //determine if we are working with a remote input.  if so try to assign this back to the incoming flowfile
             String sourceSystemFlowFileIdentifier = ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event);
