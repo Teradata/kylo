@@ -1133,6 +1133,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Refreshes the table content.
      */
     resample() {
+        let fieldNames : string[] = [];
+        _.each(this.engine.getColumns(),  (item:any) => {
+            fieldNames.push(ColumnUtil.getColumnFieldName(item));
+        });
+
+        this.pushFormulaToEngine(`select(${fieldNames.join(',')})`, {});
         this.query();
     }
 
