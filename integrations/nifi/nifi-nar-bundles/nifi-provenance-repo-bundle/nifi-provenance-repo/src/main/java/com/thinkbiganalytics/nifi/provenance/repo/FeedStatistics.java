@@ -219,8 +219,14 @@ public class FeedStatistics {
 
         boolean isEndingEvent = FeedEventStatistics.getInstance().isEndingFeedFlow(eventId);
         if (eventRecordDTO != null && isEndingEvent) {
-            log.debug("KYLO-DEBUG: Register event as final job event for the feed. EventId: {}, isStartingFeedFlow:{}, Event FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,isStartingFeedFlow,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
-            eventRecordDTO.setIsFinalJobEvent(isEndingEvent);
+                        //if the DROP event is part of a Remote Input Port, then it should not mark the record as the final job
+            if(RemoteProvenanceEventService.getInstance().isRemoteInputPortEvent(event)) {
+               log.debug("KYLO-DEBUG: Final job event found for Remote InputPort.  Skip setting as the final Job, as the Receiving side of the remote port should pick up the event and complete it EventId: {}, isStartingFeedFlow:{}, Event FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,isStartingFeedFlow,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
+            }
+            else {
+                log.debug("KYLO-DEBUG: Register event as final job event for the feed. EventId: {}, isStartingFeedFlow:{}, Event FlowFile: {}, FeedFlowFile:{}, componentId: {}, componentType: {} ",eventId,isStartingFeedFlow,event.getFlowFileUuid(),feedFlowFileId,event.getComponentId(), event.getComponentType());
+                eventRecordDTO.setIsFinalJobEvent(isEndingEvent);
+            }
         }
         FeedProcessorStatisticsAggregator.getInstance().add(getStats(event), event, eventId);
 

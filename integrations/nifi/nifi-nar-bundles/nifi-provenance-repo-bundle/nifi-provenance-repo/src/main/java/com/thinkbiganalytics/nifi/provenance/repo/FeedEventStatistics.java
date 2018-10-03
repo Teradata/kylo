@@ -198,6 +198,10 @@ public class FeedEventStatistics implements Serializable {
      */
     protected List<String> streamingFeedProcessorIdsList = new ArrayList<>();
 
+    protected Cache<Long, ReprocessRemoteDropEvent> remoteDropEventsReprocessCache = CacheBuilder.newBuilder()
+        .expireAfterWrite(1, TimeUnit.MINUTES)
+        .build();
+
 
     private static final FeedEventStatistics instance = new FeedEventStatistics();
 
@@ -350,7 +354,7 @@ public class FeedEventStatistics implements Serializable {
 
         RemoteEventMessageResponse remoteEventMessageResponse = response.getRemoteEventMessageResponse();
 
-        log.debug("KYLO-DEBUG: Loading remote events into feed statistics feed flowfile: {}, feed processor: {}, startTime: {}, feed flow running count: {}, tracking details:{}  ",remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedProcessorId(), remoteEventMessageResponse.getFeedFlowFileStartTime(), remoteEventMessageResponse.getFeedFlowRunningCount(),remoteEventMessageResponse.isTrackingDetails() );
+        log.debug("KYLO-DEBUG: Loading remote events into feed statistics feed flowfile: {}, source flow file: {}, feed processor: {}, startTime: {}, feed flow running count: {}, tracking details:{}  ",remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getSourceFlowFileId(),remoteEventMessageResponse.getFeedProcessorId(), remoteEventMessageResponse.getFeedFlowFileStartTime(), remoteEventMessageResponse.getFeedFlowRunningCount(),remoteEventMessageResponse.isTrackingDetails() );
         if(remoteEventMessageResponse.isTrackingDetails()){
             this.detailedTrackingFeedFlowFileId.add(remoteEventMessageResponse.getFeedFlowFileId());
         }
@@ -358,7 +362,8 @@ public class FeedEventStatistics implements Serializable {
         this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
         this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getSourceFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
         this.feedFlowFileStartTime.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileStartTime());
-        this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(remoteEventMessageResponse.getFeedFlowRunningCount().intValue()));
+        this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(0));
+        //this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(remoteEventMessageResponse.getFeedFlowRunningCount().intValue()));
 
         response.getRelatedFlowFiles().stream().forEach(ff -> allFlowFileToFeedFlowFile.putIfAbsent(ff, remoteEventMessageResponse.getFeedFlowFileId()));
 
@@ -757,7 +762,9 @@ public class FeedEventStatistics implements Serializable {
 
 
     public void checkAndClear(ProvenanceEventRecord event, Long eventId) {
-        String eventFlowFileId = event.getFlowFileUuid();
+
+        checkAndClear(event.getFlowFileUuid(),eventId,event.getEventType().name(),event.getComponentType());
+     /*   String eventFlowFileId = event.getFlowFileUuid();
         String eventType = event.getEventType().name();
         if (ProvenanceEventType.DROP.name().equals(eventType)) {
             boolean canClear = true;
@@ -767,16 +774,116 @@ public class FeedEventStatistics implements Serializable {
                 log.debug("KYLO-DEBUG: Received DROP event on RemoteInputPort. EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, SafeToClear: {} ",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType(),canClear);
             }
             else {
-                log.debug("KYLO-DEBUG: Received DROP event for EventId:{}, FlowFile: {}, componentId: {}, componentType: {}",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType());
+               canClear = !RemoteProvenanceEventService.getInstance().isWaitingRemoteFlowFile(event.getFlowFileUuid());
+               log.debug("KYLO-DEBUG: Received DROP event for EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, canClear: {} ",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType(),canClear);
             }
 
             if (canClear) {
-
                 clearEventAndTrackingData(eventId, eventFlowFileId);
+                eventDuration.remove(eventId);
+                eventStartTime.remove(eventId);
+            }
+            else {
+                //we need to reprocess this
             }
 
-            eventDuration.remove(eventId);
-            eventStartTime.remove(eventId);
+
+        }*/
+    }
+
+    private class ReprocessRemoteDropEvent{
+        Long eventId;
+        String eventType;
+        String componentType;
+        String eventFLowfileId;
+        Long addTime;
+
+        public ReprocessRemoteDropEvent() {
+            this.addTime = new DateTime().getMillis();
+        }
+        public ReprocessRemoteDropEvent(Long eventId, String eventType, String componentType, String eventFLowfileId) {
+            this.eventId = eventId;
+            this.eventType = eventType;
+            this.componentType = componentType;
+            this.eventFLowfileId = eventFLowfileId;
+            this.addTime = new DateTime().getMillis();
+        }
+
+        public Long getEventId() {
+            return eventId;
+        }
+
+        public void setEventId(Long eventId) {
+            this.eventId = eventId;
+        }
+
+        public String getEventType() {
+            return eventType;
+        }
+
+        public void setEventType(String eventType) {
+            this.eventType = eventType;
+        }
+
+        public String getComponentType() {
+            return componentType;
+        }
+
+        public void setComponentType(String componentType) {
+            this.componentType = componentType;
+        }
+
+        public String getEventFLowfileId() {
+            return eventFLowfileId;
+        }
+
+        public void setEventFLowfileId(String eventFLowfileId) {
+            this.eventFLowfileId = eventFLowfileId;
+        }
+
+        public Long getAddTime() {
+            return addTime;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ReprocessRemoteDropEvent{");
+            sb.append("eventId=").append(eventId);
+            sb.append(", eventType='").append(eventType).append('\'');
+            sb.append(", componentType='").append(componentType).append('\'');
+            sb.append(", eventFLowfileId='").append(eventFLowfileId).append('\'');
+            sb.append(", addTime=").append(addTime);
+            sb.append('}');
+            return sb.toString();
+        }
+    }
+
+    public void checkAndClear(String eventFlowFileId, Long eventId, String eventType, String componentType) {
+        if (ProvenanceEventType.DROP.name().equals(eventType)) {
+            boolean canClear = true;
+            if(RemoteProvenanceEventService.getInstance().isRemoteInputPortEvent(componentType)){
+                RemoteProvenanceEventService.getInstance().registerRemoteInputPortDropEvent(eventFlowFileId,eventId);
+                canClear = RemoteProvenanceEventService.getInstance().canRemoteEventDataBeDeleted(eventFlowFileId);
+                log.debug("KYLO-DEBUG: Received DROP event on RemoteInputPort. EventId:{}, FlowFile: {}, componentType: {}, SafeToClear: {} ",eventId,eventFlowFileId,componentType,canClear);
+            }
+            else {
+                canClear = !RemoteProvenanceEventService.getInstance().isWaitingRemoteFlowFile(eventFlowFileId);
+                log.debug("KYLO-DEBUG: Received DROP event for EventId:{}, FlowFile: {}, componentType: {}, canClear: {} ",eventId,eventFlowFileId,componentType,canClear);
+            }
+
+            if (canClear) {
+                clearEventAndTrackingData(eventId, eventFlowFileId);
+                eventDuration.remove(eventId);
+                eventStartTime.remove(eventId);
+            }
+            else {
+                //we need to reprocess this
+                ReprocessRemoteDropEvent reprocessEvent = new ReprocessRemoteDropEvent(eventId,eventType,componentType,eventFlowFileId);
+                log.debug("Reprocess this remote event again {} ",reprocessEvent.toString());
+                remoteDropEventsReprocessCache.put(eventId,reprocessEvent);
+            }
+
+
         }
     }
 
@@ -825,10 +932,16 @@ public class FeedEventStatistics implements Serializable {
 
     public void finishedEvent(ProvenanceEventRecord event, Long eventId) {
 
+
+
         String feedFlowFileId = allFlowFileToFeedFlowFile.get(event.getFlowFileUuid());
-        if (feedFlowFileId != null && ProvenanceEventType.DROP.equals(event.getEventType())) {
+        boolean isDropEvent = ProvenanceEventType.DROP.equals(event.getEventType());
+
+        if (feedFlowFileId != null && isDropEvent) {
+
             //get the feed flow fileId for this event
             AtomicInteger activeCounts = feedFlowProcessing.get(feedFlowFileId);
+            log.debug("KYLO-DEBUG: DROP EVENT issued for EventId:{}, FlowFile:{}, componentId:{}, componentType: {}, activeCounts:{} ",eventId,event.getFlowFileUuid(),event.getComponentId(),event.getComponentType(),activeCounts);
             if (activeCounts != null) {
                 feedFlowProcessing.get(feedFlowFileId).decrementAndGet();
                 if (activeCounts.get() <= 0) {
@@ -838,6 +951,15 @@ public class FeedEventStatistics implements Serializable {
                     decrementRunningProcessorFeedFlows(feedFlowFileId);
                 }
 
+            }
+            else{
+                log.debug("Unable to decrement flows for event. EventId:{}, FlowFile:{}, componentId:{}, componentType: {}, activeCounts:{} ",eventId,event.getFlowFileUuid(),event.getComponentId(),event.getComponentType(),activeCounts);
+            }
+
+        }
+        else {
+            if(isDropEvent) {
+                log.debug("KYLO-DEBUG: DROP EVENT issued but cannot find assocated feed flow file. EventId:{}, FlowFile:{}, componentId:{}, componentType: {}",eventId,event.getFlowFileUuid(),event.getComponentId(),event.getComponentType());
             }
 
         }
@@ -865,6 +987,7 @@ public class FeedEventStatistics implements Serializable {
         sb.append(", allFlowFileToFeedFlowFile=").append(allFlowFileToFeedFlowFile.size());
         sb.append(", feedFlowProcessing=").append(feedFlowProcessing.size());
         sb.append(", skippedEvents=").append(skippedEvents);
+        sb.append(", remoteDropEventsReprocessCache=").append(remoteDropEventsReprocessCache.size());
         sb.append('}');
         return sb.toString();
     }

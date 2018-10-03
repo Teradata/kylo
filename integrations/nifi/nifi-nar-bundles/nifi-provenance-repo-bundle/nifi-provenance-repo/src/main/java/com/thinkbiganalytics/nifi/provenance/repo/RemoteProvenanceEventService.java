@@ -189,7 +189,16 @@ public class RemoteProvenanceEventService {
      * @return true if its from a Remote Input Port, false if not
      */
     public boolean isRemoteInputPortEvent(ProvenanceEventRecord event) {
-        return "Remote Input Port".equalsIgnoreCase(event.getComponentType());
+        return isRemoteInputPortEvent(event.getComponentType());
+    }
+
+    /**
+     * Is the event part of a 'Remote Input Port'
+     * @param event the event to check
+     * @return true if its from a Remote Input Port, false if not
+     */
+    public boolean isRemoteInputPortEvent(String componentType) {
+        return "Remote Input Port".equalsIgnoreCase(componentType);
     }
 
     /**
@@ -259,11 +268,20 @@ public class RemoteProvenanceEventService {
     }
 
     /**
+     * if the event is a DROP and it is a 'Remote Input Port' event then it needs to update the tracking data to make sure this object can be removed from this nodes mapping
+     * @param eventFlowFileId the event flowfile id being dropped
+     * @param eventId the eventId
+     */
+    public void registerRemoteInputPortDropEvent(String eventFlowFileId, Long eventId){
+        addRemoteSourceFlowFile(eventFlowFileId,eventId);
+    }
+
+    /**
      * Take all those "Remote Input Port" SEND events and map them into a Remote object that will be used to notify other nodes about this data.
      * @return
      */
     public List<RemoteEventMessageResponse> processRemoteInputPortSendEvents() {
-        log.debug(this.toString());
+      //  log.debug(this.toString());
         Set<ProvenanceEventRecordWithId>events = new HashSet<>();
         sourceRemoteInputPortEvents.drainTo(events);
         List<RemoteEventMessageResponse> responseMessages = events.stream()
@@ -317,12 +335,21 @@ public class RemoteProvenanceEventService {
                     return message.getSourceFlowFileId();
                 }).collect(Collectors.toSet());
 
+            //TODO queue up all waitingProvenanceEventRecord.getEvent().getFlowFileUuid() and remove them all at once after they are added to the stats manager
+
+            Set<String> waitingFlowFilesThatCanBeRemoved = new HashSet<>();
             sourceFlowFiles.stream().flatMap(sourceFlowFile -> removeAndGetWaitingEvents(sourceFlowFile).stream())
                 .forEach(waitingProvenanceEventRecord -> {
                     FeedStatisticsManager.getInstance().addEvent(waitingProvenanceEventRecord.getEvent(),waitingProvenanceEventRecord.getEventId());
                     log.debug("Loaded the remote event data.  Adding waiting event and removing from waiting queue.  event id:{}, flow file id: {}, component id: {}, component type: {} ",waitingProvenanceEventRecord.getEventId(),waitingProvenanceEventRecord.getEvent().getFlowFileUuid(), waitingProvenanceEventRecord.getEvent().getComponentId(), waitingProvenanceEventRecord.getEvent().getComponentType());
-                    flowFileIdToRemoteFlowFileId.remove(waitingProvenanceEventRecord.getEvent().getFlowFileUuid());
+                    waitingFlowFilesThatCanBeRemoved.add(waitingProvenanceEventRecord.getEvent().getFlowFileUuid());
                 });
+
+
+            if(!waitingFlowFilesThatCanBeRemoved.isEmpty()){
+                log.debug("About to remove waiting flowfiles: {} ",waitingFlowFilesThatCanBeRemoved.stream().collect(Collectors.joining(",")));
+            }
+            waitingFlowFilesThatCanBeRemoved.stream().forEach(ff -> flowFileIdToRemoteFlowFileId.remove(ff));
 
             //TODO Need to  flowFileIdToRemoteFlowFileId for all the sourceFlowFiles ... is there a more efficient way?
             sourceFlowFiles.stream().forEach(s -> flowFileIdToRemoteFlowFileId.remove(s));
