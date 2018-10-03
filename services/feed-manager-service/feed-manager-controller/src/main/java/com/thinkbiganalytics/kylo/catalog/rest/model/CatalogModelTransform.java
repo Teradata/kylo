@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.kylo.catalog.rest.model;
 
-import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
-
 /*-
  * #%L
  * kylo-catalog-controller
@@ -49,6 +47,10 @@ public class CatalogModelTransform {
 
     public CatalogModelTransform() {
         super();
+    }
+    
+    public void setSecurityTransform(SecurityModelTransform securityTransform) {
+        this.securityTransform = securityTransform;
     }
 
     public Function<com.thinkbiganalytics.metadata.api.catalog.Connector, Connector> connectorToRestModel() {
