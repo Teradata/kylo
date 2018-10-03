@@ -362,8 +362,8 @@ public class FeedEventStatistics implements Serializable {
         this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
         this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getSourceFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
         this.feedFlowFileStartTime.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileStartTime());
+        //set the running flow count to 0 for this feed if it doesnt exist  When Kylo processes the remote feed events it will correctly assign the running count.
         this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(0));
-        //this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(remoteEventMessageResponse.getFeedFlowRunningCount().intValue()));
 
         response.getRelatedFlowFiles().stream().forEach(ff -> allFlowFileToFeedFlowFile.putIfAbsent(ff, remoteEventMessageResponse.getFeedFlowFileId()));
 
@@ -762,33 +762,7 @@ public class FeedEventStatistics implements Serializable {
 
 
     public void checkAndClear(ProvenanceEventRecord event, Long eventId) {
-
         checkAndClear(event.getFlowFileUuid(),eventId,event.getEventType().name(),event.getComponentType());
-     /*   String eventFlowFileId = event.getFlowFileUuid();
-        String eventType = event.getEventType().name();
-        if (ProvenanceEventType.DROP.name().equals(eventType)) {
-            boolean canClear = true;
-            if(RemoteProvenanceEventService.getInstance().isRemoteInputPortEvent(event)){
-                RemoteProvenanceEventService.getInstance().registerRemoteInputPortDropEvent(event,eventId);
-                canClear = RemoteProvenanceEventService.getInstance().canRemoteEventDataBeDeleted(eventFlowFileId);
-                log.debug("KYLO-DEBUG: Received DROP event on RemoteInputPort. EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, SafeToClear: {} ",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType(),canClear);
-            }
-            else {
-               canClear = !RemoteProvenanceEventService.getInstance().isWaitingRemoteFlowFile(event.getFlowFileUuid());
-               log.debug("KYLO-DEBUG: Received DROP event for EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, canClear: {} ",eventId,eventFlowFileId,event.getComponentId(), event.getComponentType(),canClear);
-            }
-
-            if (canClear) {
-                clearEventAndTrackingData(eventId, eventFlowFileId);
-                eventDuration.remove(eventId);
-                eventStartTime.remove(eventId);
-            }
-            else {
-                //we need to reprocess this
-            }
-
-
-        }*/
     }
 
     private class ReprocessRemoteDropEvent{
