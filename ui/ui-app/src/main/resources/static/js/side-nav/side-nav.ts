@@ -331,7 +331,6 @@ export default class SideNav implements ng.IComponentController {
     buildAdminMenu: any=()=>{
         
         let links: any[] = [];
-        links.push({sref: "datasources", type: "link", icon: "storage", text: this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: AccessConstants.DATASOURCE_ACCESS});
         links.push({sref: "domain-types", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessConstants.FEEDS_ADMIN});
         links.push({sref: "business-metadata", type:'link', icon: "business", text: this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
         links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
