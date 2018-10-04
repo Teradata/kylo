@@ -20,7 +20,6 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
@@ -51,6 +50,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -113,7 +113,7 @@ public class DataSetController extends AbstractCatalogController {
         }
     }
     
-    @POST
+    @PUT
     @ApiOperation("Updates an existing data set")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Data set updated", response = DataSet.class),

@@ -39,7 +39,6 @@ import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
-import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -47,10 +46,8 @@ import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.context.SecurityContextUtil;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
-import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
@@ -80,6 +77,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -248,7 +246,7 @@ public class DataSourceController extends AbstractCatalogController {
         return Response.ok(log.exit(dataSource)).build();
     }
     
-    @POST
+    @PUT
     @ApiOperation("Updates an existing data source")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Data source updated", response = DataSource.class),
