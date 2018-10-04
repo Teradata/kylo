@@ -112,6 +112,32 @@ public class DataSetController extends AbstractCatalogController {
             throw new BadRequestException(getMessage("catalog.dataset.notfound.id", e.getId()));
         }
     }
+    
+    @POST
+    @ApiOperation("Updates an existing data set")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Data set updated", response = DataSet.class),
+        @ApiResponse(code = 400, message = "Invalid data source", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+    })
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateDataSet(@Nonnull final DataSet dataSet) {
+        log.entry(dataSet);
+        
+        return metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dSetId = dataSetProvider.resolveId(dataSet.getId());
+            
+            return dataSetProvider.find(dSetId)
+                .map(domain -> modelTransform.updateDataSet(dataSet, domain))
+                .map(modelTransform.dataSetToRestModel())
+                .map(dSet -> Response.ok(log.exit(dSet)).build())
+                .orElseThrow(() -> {
+                    log.debug("Data set not found with ID: {}", dSetId);
+                    return new BadRequestException(getMessage("catalog.dataset.notfound.id", dSetId));
+                });
+        });
+    }
 
     @GET
     @Path("{id}")

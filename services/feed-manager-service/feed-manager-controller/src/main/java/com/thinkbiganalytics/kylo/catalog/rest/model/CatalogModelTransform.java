@@ -83,10 +83,11 @@ public class CatalogModelTransform {
         };
     }
     
-    public void updateDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSet domain) {
+    public DataSet updateDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSet domain) {
         domain.setTitle(model.getTitle());
         domain.setDescription(generateDescription(model));
         updateSparkParameters(model, domain.getSparkParameters());
+        return domain;
     }
     
     /**
@@ -107,10 +108,11 @@ public class CatalogModelTransform {
         }
     }
     
-    public void updateDataSource(DataSource model, com.thinkbiganalytics.metadata.api.catalog.DataSource domain) {
+    public com.thinkbiganalytics.metadata.api.catalog.DataSource updateDataSource(DataSource model, com.thinkbiganalytics.metadata.api.catalog.DataSource domain) {
         domain.setTitle(model.getTitle());
         domain.setDescription(generateDescription(model));
         updateSparkParameters(model.getTemplate(), domain.getSparkParameters());
+        return domain;
     }
 
     /**

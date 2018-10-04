@@ -247,6 +247,32 @@ public class DataSourceController extends AbstractCatalogController {
 
         return Response.ok(log.exit(dataSource)).build();
     }
+    
+    @POST
+    @ApiOperation("Updates an existing data source")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Data source updated", response = DataSource.class),
+        @ApiResponse(code = 400, message = "Invalid connector", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+    })
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateDataSource(@Nonnull final DataSource source) {
+        log.entry(source);
+        
+        return metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(source.getId());
+            
+            return dataSourceProvider.find(dsId)
+                .map(domain -> modelTransform.updateDataSource(source, domain))
+                .map(modelTransform.dataSourceToRestModel())
+                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
+                .orElseThrow(() -> {
+                    log.debug("Data source not found with ID: {}", dsId);
+                    return new BadRequestException(getMessage("catalog.datasource.notFound.id", dsId));
+                });
+        });
+    }
 
     @DELETE
     @ApiOperation("Deletes the specified data source")
