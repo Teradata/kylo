@@ -37,6 +37,8 @@
       var url = window.location.search.match(/url=([^&]+)/);
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
+      } else if (window.location.origin) {
+        url = window.location.origin + "/proxy/swagger.json";
       } else {
         url = "http://localhost:8400/proxy/swagger.json";
       }
