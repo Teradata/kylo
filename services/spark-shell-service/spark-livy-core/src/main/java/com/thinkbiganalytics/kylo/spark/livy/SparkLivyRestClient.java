@@ -27,7 +27,7 @@ import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.kylo.spark.client.LivyClient;
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
 import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
-import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyUserException;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
 import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
@@ -207,7 +207,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             || statement.getState() == StatementState.waiting) {
             statement = pollStatement(client, process, statement.getId());
         } else {
-            throw logger.throwing(new LivyException("Unexpected error"));
+            throw logger.throwing(new LivyUserException("livy.unexpected_error"));
         }
 
         URI uri = LivyRestModelTransformer.toUri(statement);
@@ -246,7 +246,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             || statement.getState() == StatementState.waiting) {
             statement = pollStatement(client, process, statement.getId());
         } else {
-            throw new LivyException("Unexpected error");
+            throw logger.throwing(new LivyUserException("livy.unexpected_error"));
         }
 
         return logger.exit(LivyRestModelTransformer.toDataSources(statement));
@@ -279,7 +279,8 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             // associate transformId to this new query and get results on subsequent call
             sparkLivyProcessManager.setStatementId(transformId, statement.getId());
         } else if (response.getStatus() == TransformResponse.Status.ERROR) {
-            throw new LivyException(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
+            logger.error(String.format("Unexpected error found in transform response:\n%s", response.getMessage()));
+            throw new LivyUserException("livy.transform_error");
         } // end if
         return logger.exit(Optional.of(response));
     }
@@ -362,22 +363,13 @@ public class SparkLivyRestClient implements SparkShellRestClient {
         Statement statement = submitCode(client, script, process);
 
         // check the server for script result.  If polling limit reach just return to UI with PENDING status.
-        statement = pollStatement(client,process,statement.getId(), livyProperties.getPollingLimit());
+        statement = pollStatement(client, process, statement.getId(), livyProperties.getPollingLimit());
 
         sparkLivyProcessManager.setStatementId(transformId, statement.getId());
 
         return logger.exit(LivyRestModelTransformer.toTransformResponse(statement, transformId));
 
-        /*
-        sparkLivyProcessManager.setStatementId(transformId, statement.getId());
 
-
-        TransformResponse response = new TransformResponse();
-        response.setStatus(StatementStateTranslator.translate(statement.getState()));
-        response.setProgress(statement.getProgress());
-        response.setTable(transformId);
-
-        return logger.exit(response); */
     }
 
 
@@ -396,7 +388,7 @@ public class SparkLivyRestClient implements SparkShellRestClient {
             || statement.getState() == StatementState.waiting) {
             statement = pollStatement(client, process, statement.getId());
         } else {
-            throw logger.throwing(new LivyException("Unexpected error"));
+            throw logger.throwing(new LivyUserException("livy.unexpected_error"));
         }
 
         // call with null so a transformId will be generated for this query

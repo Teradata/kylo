@@ -25,12 +25,14 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Collectors;
 
+import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
@@ -51,6 +53,19 @@ public class MultiValuePropertyList<E> extends MultiValuePropertyCollection<E> i
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to construct a list from the property: " + prop, e);
         }
+    }
+    
+    public MultiValuePropertyList(Node parent, String propertyName) {
+        super(parent, propertyName, new ArrayList<>());
+    }
+    
+    public MultiValuePropertyList(Node parent, String propertyName, List<Value> list) {
+        super(parent, propertyName, list);
+    }
+    
+    public MultiValuePropertyList(Node parent, String propertyName, List<Value> list, MultiValuePropertyList<E> parentList) {
+        super(parent, propertyName, list);
+        this.parentList = parentList;
     }
 
     public MultiValuePropertyList(Property prop) {
@@ -156,7 +171,11 @@ public class MultiValuePropertyList<E> extends MultiValuePropertyCollection<E> i
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
         List<Value> sublist = getValuesList().subList(fromIndex, toIndex);
-        return new MultiValuePropertyList<>(getProperty(), sublist, this);
+        if (getProperty() == null) {
+            return new MultiValuePropertyList<>(getParent(), getPropertyName(), sublist, this);
+        } else {
+            return new MultiValuePropertyList<>(getProperty(), sublist, this);
+        }
     }
     
     @Override

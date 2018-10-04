@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +80,9 @@ public class DataSetControllerTest {
     @Spy
     private MetadataAccess metadataService = new MockMetadataAccess();
     
+    @Mock
+    private SecurityModelTransform securityTransform = new SecurityModelTransform();
+    
     @Spy
     private CatalogModelTransform modelTransform = new CatalogModelTransform();
 
@@ -104,6 +108,8 @@ public class DataSetControllerTest {
         Mockito.when(dataSetProvider.resolveId(Mockito.anyString())).thenReturn(dataSetId);
         Mockito.when(dataSet.getId()).thenReturn(dataSetId);
         Mockito.when(dataSet.getDataSource()).thenReturn(dataSource);
+        
+        this.modelTransform.setSecurityTransform(this.securityTransform);
     }
     
     

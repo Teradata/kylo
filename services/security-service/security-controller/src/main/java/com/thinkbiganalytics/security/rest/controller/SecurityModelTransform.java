@@ -216,10 +216,10 @@ public class SecurityModelTransform {
             });
             restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
         }
+        
         Principal owner = domain.getOwner();
-        Optional<User> userPrincipal = userService.getUser(owner.getName());
-        if (userPrincipal.isPresent()) {
-            restModel.setOwner(userPrincipal.get());
+        if (owner != null) {
+            userService.getUser(owner.getName()).ifPresent(restModel::setOwner);
         }
     }
 

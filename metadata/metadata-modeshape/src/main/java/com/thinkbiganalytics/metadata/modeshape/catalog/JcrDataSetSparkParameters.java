@@ -99,7 +99,8 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
     @Override
     public Map<String, String> getOptions() {
         return getProperties().entrySet().stream()
-                        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toString()));
+                .filter(entry -> ! entry.getKey().startsWith("jcr:"))
+                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toString()));
     }
 
     /* (non-Javadoc)

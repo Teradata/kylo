@@ -31,8 +31,10 @@ public class SparkShellRestConfig {
     @Bean
     public MessageSource sparkShellMessages() {
         final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("spark-shell");
+        messageSource.setBasenames( "spark-shell", "spark-shell-plugin");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
+
+
 }

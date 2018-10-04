@@ -20,13 +20,13 @@ package com.thinkbiganalytics.kylo.spark.exceptions;
  * #L%
  */
 
-public class LivyDeserializationException extends LivyException {
+public class LivyUserException extends LivyException {
 
-    public LivyDeserializationException(String s) {
+    public LivyUserException(String s) {
         super(s);
     }
 
-    public LivyDeserializationException(Throwable cause) {
+    public LivyUserException(Throwable cause) {
         super(cause);
     }
 }

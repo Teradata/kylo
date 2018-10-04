@@ -6,7 +6,10 @@ import {Subject} from "rxjs/Subject";
 
 import "./module"; // ensure module is loaded first
 import {moduleName} from './module-name';
-
+import {multicast} from "rxjs/operators/multicast";
+import {filter} from "rxjs/operators/filter";
+import { share } from "rxjs/operator/share";
+import {AbstractControl} from "@angular/forms/src/model";
 export interface BroadcastEvent {
 
     /**
@@ -31,7 +34,8 @@ export interface BroadcastEvent {
  */
 export default class BroadcastService {
 
-    private readonly bus = new Subject<BroadcastEvent>();
+    private readonly bus  :{ [key: string]: Subject<BroadcastEvent>; } = {};
+    //new Subject<BroadcastEvent>();
 
     /**
      * map to check if multiple events come in for those that {@code data.notifyAfterTime}
@@ -60,7 +64,10 @@ export default class BroadcastService {
         if (this.waitingEvents[event] == undefined) {
             this.waitingEvents[event] = event;
             this.$timeout(() => {
-                this.bus.next({args: data, name: event} as BroadcastEvent);
+                const subject :Subject<BroadcastEvent> = this.bus[event];
+                if(subject) {
+                    subject.next({args: data, name: event} as BroadcastEvent)
+                }
                 delete this.waitingEvents[event];
             }, waitTime);
         }
@@ -72,15 +79,31 @@ export default class BroadcastService {
     subscribe(event: string): Observable<BroadcastEvent>;
     subscribe(scope: angular.IScope, event: string, callback: ($event: any, ...args: any[]) => void): void;
     subscribe(eventOrScope: string | angular.IScope, event?: string, callback?: ($event: any, ...args: any[]) => void): Observable<BroadcastEvent> | void {
-        const observable = this.bus.filter(event => event.name === eventOrScope);
-        if (typeof eventOrScope === "string") {
-            return observable;
-        } else {
-            const subscription = observable.subscribe(event => callback(event, ...event.args));
-            if (eventOrScope != null) {
-                (eventOrScope as angular.IScope).$on("$destroy", () => subscription.unsubscribe());
+        let eventName = event != undefined ? event : (typeof eventOrScope === "string") ? (<string>eventOrScope) : undefined;
+        if(eventName != undefined) {
+            let subject = this.bus[eventName];
+            if(subject == undefined){
+                subject = new Subject<BroadcastEvent>();
+                this.bus[eventName] = subject;
+            }
+            if (typeof eventOrScope === "string") {
+                return subject.asObservable();
+            } else {
+                const subscription = subject.subscribe(event => callback(event, ...event.args));
+                if (eventOrScope != null) {
+                    (eventOrScope as angular.IScope).$on("$destroy", () => {
+                        console.log('Unsubscribe ',event, eventOrScope)
+                        subscription.unsubscribe()
+                    });
+                }
             }
         }
+        else {
+            //WARN!!
+            console.warn("Unable to subscribe event name is not supplied")
+        }
+
+
     };
 
     /**

@@ -678,10 +678,10 @@ public class JcrPropertyUtil {
             Property prop;
             try {
                 prop = node.getProperty(propName);
+                return new MultiValuePropertyList<>(prop);
             } catch (PathNotFoundException e) {
-                prop = node.setProperty(propName, new Value[0]);
+                return new MultiValuePropertyList<>(node, propName);
             }
-            return new MultiValuePropertyList<>(prop);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());
@@ -695,10 +695,10 @@ public class JcrPropertyUtil {
             Property prop;
             try {
                 prop = node.getProperty(propName);
+                return new MultiValuePropertySet<>(prop);
             } catch (PathNotFoundException e) {
-                prop = node.setProperty(propName, new Value[0]);
+                return new MultiValuePropertySet<>(node, propName);
             }
-            return new MultiValuePropertySet<>(prop);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());

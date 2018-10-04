@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.service.security;
 
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -81,7 +83,10 @@ public class DefaultSecurityService implements SecurityService {
     FeedProvider feedProvider;
 
     @Inject
-    private DatasourceProvider datasourceProvider;
+    private DatasourceProvider legacyDatasourceProvider;
+    
+    @Inject
+    private DataSourceProvider dataSourceProvider;
 
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
@@ -218,6 +223,32 @@ public class DefaultSecurityService implements SecurityService {
         return changeRoleMemberships(change, supplyDatasourceRoleMembership(id, change.getRoleName()));
     }
 
+    
+    @Override
+    public Optional<ActionGroup> getAvailableDataSourceActions(String id) {
+        return getAvailableActions(() -> accessDataSource(id).flatMap(c -> actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)));
+    }
+    
+    @Override
+    public Optional<ActionGroup> getAllowedDataSourceActions(String id, Set<Principal> principals) {
+        return getAllowedActions(principals, supplyDataSourceActions(id));
+    }
+    
+    @Override
+    public synchronized Optional<ActionGroup> changeDataSourcePermissions(String id, PermissionsChange changes) {
+        return changePermissions(changes, supplyDataSourceActions(id));
+    }
+    
+    @Override
+    public Optional<RoleMemberships> getDataSourceRoleMemberships(String id) {
+        return getRoleMemberships(supplyDataSourceRoleMemberships(id));
+    }
+    
+    @Override
+    public synchronized Optional<RoleMembership> changeDataSourceRoleMemberships(String id, RoleMembershipChange change) {
+        return changeRoleMemberships(change, supplyDataSourceRoleMembership(id, change.getRoleName()));
+    }
+
     @Override
     public Optional<PermissionsChange> createFeedPermissionChange(String id, ChangeType changeType, Set<Principal> members) {
         return createPermissionChange(id, changeType, members, supplyFeedActions(id));
@@ -236,6 +267,11 @@ public class DefaultSecurityService implements SecurityService {
     @Override
     public Optional<PermissionsChange> createDatasourcePermissionChange(String id, ChangeType changeType, Set<Principal> members) {
         return createPermissionChange(id, changeType, members, supplyDatasourceActions(id));
+    }
+    
+    @Override
+    public Optional<PermissionsChange> createDataSourcePermissionChange(String id, ChangeType changeType, Set<Principal> members) {
+        return createPermissionChange(id, changeType, members, supplyDataSourceActions(id));
     }
 
     private Optional<Feed> accessFeed(String id) {
@@ -266,18 +302,32 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     /**
-     * Retrieves the data source with the specified id.
+     * Retrieves the legacy datasource with the specified id.
      *
-     * @param id the data source id
+     * @param id the datasource id
      * @return the data source, if found
      */
     @Nonnull
     private Optional<UserDatasource> accessDatasource(@Nonnull final String id) {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
         return Optional.of(id)
-            .map(datasourceProvider::resolve)
-            .map(datasourceProvider::getDatasource)
+            .map(legacyDatasourceProvider::resolve)
+            .map(legacyDatasourceProvider::getDatasource)
             .map(datasource -> (datasource instanceof UserDatasource) ? (UserDatasource) datasource : null);
+    }
+    
+    /**
+     * Retrieves the data source with the specified id.
+     *
+     * @param id the data source id
+     * @return the data source, if found
+     */
+    @Nonnull
+    private Optional<DataSource> accessDataSource(@Nonnull final String id) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+        
+        DataSource.ID templateId = dataSourceProvider.resolveId(id);
+        return dataSourceProvider.find(templateId);
     }
 
     private Supplier<Optional<AllowedActions>> supplyFeedActions(String id) {
@@ -355,13 +405,25 @@ public class DefaultSecurityService implements SecurityService {
     private Supplier<Optional<AllowedActions>> supplyDatasourceActions(String id) {
         return () -> accessDatasource(id).map(AccessControlled::getAllowedActions);
     }
+    
+    private Supplier<Optional<AllowedActions>> supplyDataSourceActions(String id) {
+        return () -> accessDataSource(id).map(AccessControlled::getAllowedActions);
+    }
 
     private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyDatasourceRoleMemberships(String id) {
         return () -> accessDatasource(id).map(AccessControlled::getRoleMemberships);
     }
+    
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyDataSourceRoleMemberships(String id) {
+        return () -> accessDataSource(id).map(AccessControlled::getRoleMemberships);
+    }
 
     private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyDatasourceRoleMembership(String id, String roleName) {
         return () -> accessDatasource(id).flatMap(t -> t.getRoleMembership(roleName));
+    }
+    
+    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyDataSourceRoleMembership(String id, String roleName) {
+        return () -> accessDataSource(id).flatMap(t -> t.getRoleMembership(roleName));
     }
 
     private Optional<ActionGroup> changePermissions(PermissionsChange changes, Supplier<Optional<AllowedActions>> allowedSupplier) {
