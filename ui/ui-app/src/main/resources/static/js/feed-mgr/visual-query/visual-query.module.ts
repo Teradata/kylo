@@ -31,7 +31,7 @@ import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 import {CodemirrorModule} from "ng2-codemirror";
 import {NvD3Module} from "ng2-nvd3";
-import {ILazyLoad} from "oclazyload";
+import {ILazyLoad} from "ocLazyLoad";
 
 import {KyloCommonModule} from "../../common/common.module";
 import {KyloFeedManagerModule} from "../feed-mgr.module";
@@ -68,7 +68,7 @@ import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-d
 import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 import {DndListModule} from "ngx-drag-and-drop-lists";
 import {QuickCleanDialog} from "./transform-data/profile-stats/quick-clean-dialog";
-
+import "./visual-query.component.scss";
 
 registerQueryEngine('spark', SparkQueryEngine);
 
@@ -167,8 +167,6 @@ export class VisualQueryModule {
     constructor(@Inject("$ocLazyLoad") $ocLazyLoad: ILazyLoad) {
         $ocLazyLoad.load({
             files: [
-                "bower_components/fattable/fattable.css",
-                "js/feed-mgr/visual-query/visual-query.component.css"
             ]
         });
     }

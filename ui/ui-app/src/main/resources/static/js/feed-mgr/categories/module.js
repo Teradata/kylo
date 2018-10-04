@@ -17,7 +17,16 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/categories/CategoriesController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
+                    return import(/* webpackChunkName: "feeds.categories.controller" */ './CategoriesController')
+                        .then(mod => {
+                            console.log('imported ./CategoriesController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load CategoriesController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:true,
@@ -36,7 +45,17 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/categories/category-details'])
+                // loadMyCtrl: lazyLoadController(['feed-mgr/categories/category-details'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
+                    return import(/* webpackChunkName: "feeds.category-details" */ './category-details')
+                        .then(mod => {
+                            console.log('imported feed-mgr/categories/category-details mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load CategoriesController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -45,15 +64,8 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 permissions:AccessConstants.default.UI_STATES.CATEGORY_DETAILS.permissions
             }
         })
-
-
-
-
     }]);
 
-    function lazyLoadController(path){
-        return lazyLoadUtil.default.lazyLoadController(path,'feed-mgr/categories/module-require');
-    }
 
 
 

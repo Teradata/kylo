@@ -7,7 +7,7 @@ import {Component} from "@angular/core";
 
 @Component({
     selector: "catalog-table-browser",
-    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.css"],
+    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.scss"],
     templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
 })
 export class TablesComponent extends BrowserComponent {

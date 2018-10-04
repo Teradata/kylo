@@ -17,7 +17,7 @@ export class SelectedItem {
 
 @Component({
     selector: 'selection-dialog',
-    styleUrls: ['js/feed-mgr/catalog/datasource/api/dialog/selection-dialog.component.css'],
+    styleUrls: ['js/feed-mgr/catalog/datasource/api/dialog/selection-dialog.component.scss'],
     templateUrl: 'js/feed-mgr/catalog/datasource/api/dialog/selection-dialog.component.html',
 })
 export class SelectionDialogComponent implements OnInit {

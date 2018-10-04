@@ -19,7 +19,7 @@ import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesService} from "../../../services/DatasourcesService";
-import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
+import {DatasourcesService, TableReference} from "../../../services/DatasourcesService.typings";
 import {HiveService} from "../../../services/HiveService";
 import {RestUrlService} from "../../../services/RestUrlService";
 import {SqlDialect, VisualQueryService} from "../../../services/VisualQueryService";
@@ -328,7 +328,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * @param datasourceId - datasource to search
      * @returns the list of table references
      */
-    searchTableNames(query: string, datasourceId: string): DatasourcesServiceStatic.TableReference[] | Promise<DatasourcesServiceStatic.TableReference[]> {
+    searchTableNames(query: string, datasourceId: string): TableReference[] | Promise<TableReference[]> {
         if (datasourceId === SparkConstants.HIVE_DATASOURCE) {
             const tables = this.HiveService.queryTablesSearch(query);
             if (tables.then) {

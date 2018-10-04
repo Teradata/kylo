@@ -11,7 +11,7 @@ import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: "sla-list",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/list/sla-list.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/list/sla-list.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/list/sla-list.component.html"
 })
 export class SlaListComponent implements OnInit {

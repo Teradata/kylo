@@ -10,20 +10,20 @@ import {Subscription} from "rxjs/Subscription";
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {StateService} from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
-import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
+// import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {VisualQuerySaveService} from "../services/save.service";
 import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SaveOptionsComponent} from "./save-options.component";
-import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
-import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
-import TableReference = DatasourcesServiceStatic.TableReference;
+import {DatasourcesService, JdbcDatasource, TableReference} from "../../services/DatasourcesService.typings";
+// import JdbcDatasource = JdbcDatasource;
+// import TableReference = TableReference;
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
 @Component({
     selector: "thinkbig-visual-query-store",
-    styleUrls: ["js/feed-mgr/visual-query/store/store.component.css"],
+    styleUrls: ["js/feed-mgr/visual-query/store/store.component.scss"],
     templateUrl: "js/feed-mgr/visual-query/store/store.component.html"
 })
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {

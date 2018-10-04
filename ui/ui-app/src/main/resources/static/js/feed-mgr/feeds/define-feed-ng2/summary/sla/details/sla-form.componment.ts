@@ -20,7 +20,7 @@ export function nonEmptyValidator(): ValidatorFn {
 
 @Component({
     selector: "sla-form",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.html"
 })
 export class SlaFormComponent implements OnInit, OnChanges {

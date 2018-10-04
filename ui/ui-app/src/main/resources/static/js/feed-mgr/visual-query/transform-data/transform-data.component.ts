@@ -51,7 +51,7 @@ export class WranglerColumn {
 @Component({
     encapsulation: ViewEncapsulation.None,
     selector: "thinkbig-visual-query-transform",
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/transform-data.component.css"],
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/transform-data.component.scss"],
     templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
 })
 export class TransformDataComponent implements AfterViewInit, ColumnController, OnChanges, OnInit {

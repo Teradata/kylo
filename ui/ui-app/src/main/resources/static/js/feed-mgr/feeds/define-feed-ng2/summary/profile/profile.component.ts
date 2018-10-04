@@ -8,7 +8,7 @@ import {PROFILE_LINK} from "../../model/feed-link-constants";
 
 @Component({
     selector: "define-feed-profile",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/profile.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/profile.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/profile.component.html"
 })
 export class ProfileComponent extends AbstractLoadFeedComponent implements OnInit {

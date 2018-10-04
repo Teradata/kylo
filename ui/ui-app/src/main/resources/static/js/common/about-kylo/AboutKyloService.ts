@@ -1,5 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import '../../../assets/images/kylo-logo-orange.png';
 
 export default class controller implements ng.IComponentController{
 constructor(private $scope: IScope,

@@ -9,6 +9,7 @@ import AccessControlService from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 import SearchService from "../services/SearchService";
 import SideNavService from "../services/SideNavService";
+import '../../assets/images/kylo-logo-orange-200.png';
 
 export interface IMyScope extends ng.IScope {
     $mdMedia?: any;
@@ -36,6 +37,8 @@ export class IndexController implements angular.IComponentController {
      * Timeout for state loader
      */
     stateLoaderTimeout: number;
+
+    template = require("../common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html");
 
     static readonly $inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia",
                                 "$mdBottomSheet", "$log", "$q", "$element","$rootScope", "$transitions", "$$angularInjector",

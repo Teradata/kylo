@@ -4,29 +4,13 @@ import * as _ from "underscore";
 import AccessControlService from "../../services/AccessControlService";
 
  angular.module(moduleName)
-        .run(['$templateCache', ($templateCache: any)=> {
-            $templateCache.put('menu-toggle.tmpl.html',
-            '<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">'
-            + '<div class="title" ng-class="{disabled: section.disabled}" ng-click="toggle()" flex layout-align="start start" layout="row">'
-            + '   <span flex>{{section.text}}</span>'
-            + '   <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>'
-            + '</div>'
-            + ' <div class="accordion-body">'
-            + ' <md-list id="menu-{{section.text}}" class="accordion-list">\n'
-            + '  <md-list-item ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">\n'
-            + '    <menu-link section="item"></menu-link>\n'
-            + '  </md-list-item>\n'
-            + '</md-list> '
-            + ' </div>'
-            + '</div>');
-        }])
         .directive('menuToggle', ['$timeout','AccessControlService', ($timeout: any,accessControlService: AccessControlService)=> {
             return {
                 scope: {
                     section: '='
                 },
                 require: '^accordionMenu',
-                templateUrl: 'menu-toggle.tmpl.html',
+                templateUrl: './menu-toggle.tmpl.html',
                 link: function (scope: any, element: any,attrs: any,controller: any) {
                     scope.section.hidden = true;
 

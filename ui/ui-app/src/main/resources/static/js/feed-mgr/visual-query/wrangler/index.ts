@@ -172,9 +172,9 @@ export interface TableSchema extends Schema {
     databaseName: string;
 }
 
-export declare namespace DatasourcesServiceStatic {
+// export declare namespace DatasourcesServiceStatic {
 
-    interface DatasourcesService {
+export    interface DatasourcesService {
         deleteById(id: string): angular.IPromise<any>;
 
         filterArrayByIds(ids: string | string[], array: JdbcDatasource[]): JdbcDatasource[];
@@ -192,7 +192,7 @@ export declare namespace DatasourcesServiceStatic {
         save(datasource: JdbcDatasource): angular.IPromise<JdbcDatasource>;
     }
 
-    interface JdbcDatasource {
+export    interface JdbcDatasource {
         id?: string;
         name: string;
         description: string;
@@ -205,13 +205,13 @@ export declare namespace DatasourcesServiceStatic {
         password: string;
     }
 
-    interface TableReference {
+export    interface TableReference {
         schema: string;
         tableName: string;
         fullName: string;
         fullNameLower: string;
     }
-}
+// }
 
 /**
  * A data source created and managed by a Kylo user.

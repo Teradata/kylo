@@ -12,7 +12,7 @@ import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: "define-feed-properties",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.html"
 })
 export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {

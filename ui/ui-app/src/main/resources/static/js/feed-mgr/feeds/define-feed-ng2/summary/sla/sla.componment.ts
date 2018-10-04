@@ -21,7 +21,7 @@ export class Sla {
 
 @Component({
     selector: "sla",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/sla.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/sla.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/sla.component.html"
 })
 export class SlaComponent extends AbstractLoadFeedComponent implements OnInit {

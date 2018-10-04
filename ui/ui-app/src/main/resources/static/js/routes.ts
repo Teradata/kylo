@@ -1,6 +1,3 @@
-import * as angular from 'angular';
-//import app from "./app";
-
 import {app} from './common/module-require';
 //const app = require('./common/module-require');//kylo-common
 //import {moduleName} from "./common/module-name";
@@ -11,7 +8,10 @@ import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
-import {CatalogRouterModule} from "./feed-mgr/catalog/catalog.module";
+//import app from "./app";
+
+
+const Angular = require('angular');
 
 'use strict';
 
@@ -22,18 +22,12 @@ class Route {
         /*this.*/
         app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", this.configFn.bind(this)]);
         /*this.*/
-        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService",
+        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService", "$ocLazyLoad"
             this.runFn.bind(this)]);
     }
 
 //var app = angular.module("", ["ngRoute"]);
     configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any) {
-        $ocLazyLoadProvider.config({
-            modules: ['kylo', 'kylo.common', 'kylo.services', 'kylo.feedmgr', 'kylo.feedmgr.templates', 'kylo.opsmgr'],
-            asyncLoader: require,
-            debug: false
-        });
-
         function onOtherwise(AngularModuleExtensionService: any, $state: any, url: any) {
             var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
             if (stateData.valid) {
@@ -73,32 +67,41 @@ class Route {
                 url: '/home',
                 views: {
                     "content": {
-                        //templateUrl: "js/main/home.html",
                         component: 'homeController',
-                        // controllerAs: 'vm'
                     }
                 },
-                resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
-                    loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                        // you can lazy load files for an existing module
-                        return $ocLazyLoad.load('main/HomeController');
-                    }]
+                lazyLoad: ($transition$) => {
+                    const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+                    return import(/* webpackChunkName: "home.module" */ './main/HomeController')
+                        .then(mod => {
+                            console.log('imported home controller', mod);
+                            $ocLazyLoad.load(mod);
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load future.feeds, " + err);
+                        });
                 }
-            })
+            });
 
         //Feed Manager
         $stateProvider.state({
             name: 'feeds.**',
             url: '/feeds',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('feeds')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading feeds ", err);
-                    return err;
-                });
+            lazyLoad: ($transition$) => {
+                const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+
+                return import(/* webpackChunkName: "feedmgr.feeds.module" */ "./feed-mgr/feeds/module")
+                    .then(mod => {
+                        $ocLazyLoad.load(mod.default.module).then(function success(args: any) {
+                            $stateProvider.stateService.go('feeds');
+                        }, function error(err: any) {
+                            console.log("Error loading feeds", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load feed-mgr/feeds/feeds.module, " + err);
+                    });
             }
         }).state({
             name: 'define-feed.**',
@@ -141,15 +144,23 @@ class Route {
                 feedId: null,
                 tabIndex: 0
             },
-            lazyLoad: (transition: any, state: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/edit-feed/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('feed-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading feed-details ", err);
-                    return err;
-                });
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "feedmgr.feed-details.module" */ "./feed-mgr/feeds/edit-feed/module.js")
+                    .then(mod => {
+                        console.log('imported ./feed-mgr/feeds/edit-feed/module', mod);
+                        $ocLazyLoad.load({name: mod.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('feed-details', transition.params());
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading ./feed-mgr/feeds/edit-feed/module ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./feed-mgr/feeds/edit-feed/module, " + err);
+                    });
             }
         }).state({
             name: 'edit-feed.**',
@@ -173,14 +184,20 @@ class Route {
             name: 'categories.**',
             url: '/categories',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('categories')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading categories ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "categories.module" */ "./feed-mgr/categories/module.js")
+                    .then(mod => {
+                        console.log('imported ./feed-mgr/categories/module.js', mod);
+                        return $ocLazyLoad.load({name: 'kylo.feedmgr.categories'}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('categories')
+                        }, function error(err: any) {
+                            console.log("Error loading categories ", err);
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
+                    });
             }
         }).state('category-details.**', {
             url: '/category-details/{categoryId}',
@@ -314,7 +331,7 @@ class Route {
             params: {
                 engine: null
             },
-            loadChildren: "feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
+            loadChildren: "./feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
         });
 
         //Ops Manager
@@ -724,40 +741,40 @@ class Route {
             }
         });
 
-        $stateProvider.state({
-            name: 'catalog.**',
-            url: '/catalog',
-            loadChildren: 'feed-mgr/catalog/catalog.module#CatalogRouterModule'
-        });
-
+        // $stateProvider.state({
+        //     name: 'catalog.**',
+        //     url: '/catalog',
+        //     loadChildren: './feed-mgr/catalog/catalog.module#CatalogRouterModule'
+        // });
+        //
         $stateProvider.state({
             name: 'feed-definition.**',
             url: '/feed-definition',
-            loadChildren: 'feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
+            loadChildren: './feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
         });
-
-        $stateProvider.state({
-            name: 'repository.**',
-            url: '/repository',
-            loadChildren: 'repository/repository.module#RepositoryModule'
-        });
-
-        $stateProvider.state({
-            name: 'template-info.**',
-            url: '/template-info',
-            loadChildren: 'repository/repository.module#RepositoryModule'
-        });
-
-        $stateProvider.state({
-            name: 'import-template.**',
-            url: '/importTemplate',
-            loadChildren: 'repository/repository.module#RepositoryModule'
-        });
+        //
+        // $stateProvider.state({
+        //     name: 'repository.**',
+        //     url: '/repository',
+        //     loadChildren: './repository/repository.module#RepositoryModule'
+        // });
+        //
+        // $stateProvider.state({
+        //     name: 'template-info.**',
+        //     url: '/template-info',
+        //     loadChildren: './repository/repository.module#RepositoryModule'
+        // });
+        //
+        // $stateProvider.state({
+        //     name: 'import-template.**',
+        //     url: '/importTemplate',
+        //     loadChildren: './repository/repository.module#RepositoryModule'
+        // });
     }
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
           $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any,
-          loginNotificationService: LoginNotificationService) {
+          loginNotificationService: LoginNotificationService, $ocLazyLoad) {
         //initialize the access control
         accessControlService.init();
         loginNotificationService.initNotifications();
@@ -815,6 +832,28 @@ class Route {
             }
 
         });
+
+        import(/* webpackChunkName: "services.module" */ './services/module')
+            .then(mod => {
+                $ocLazyLoad.load(mod.default)
+            })
+            .catch(err => {
+                throw new Error("Failed to load services module, " + err);
+            });
+        import(/* webpackChunkName: "common.module" */ './common/module')
+            .then(mod => {
+                $ocLazyLoad.load(mod.default)
+            })
+            .catch(err => {
+                throw new Error("Failed to load common module, " + err);
+            });
+        import(/* webpackChunkName: "feedmgr.module" */ './feed-mgr/module')
+            .then(mod => {
+                $ocLazyLoad.load(mod.default)
+            })
+            .catch(err => {
+                throw new Error("Failed to load feed-mgr module, " + err);
+            });
     }
 }
 

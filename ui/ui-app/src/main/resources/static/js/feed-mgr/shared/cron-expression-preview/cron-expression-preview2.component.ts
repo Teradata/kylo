@@ -10,7 +10,7 @@ declare const CodeMirror: any;
 
 @Component({
     selector: "cron-expression-preview2",
-    styleUrls: ["js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.css"],
+    styleUrls: ["js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.scss"],
     templateUrl: "js/feed-mgr/shared/cron-expression-preview/cron-expression-preview2.component.html"
 })
 export class CronExpressionPreviewComponent implements OnInit {

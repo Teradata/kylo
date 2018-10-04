@@ -15,3 +15,5 @@ module.service('PaginationDataService', downgradeInjectable(DefaultPaginationDat
 module.service('TabService', downgradeInjectable(TabService));
 
 module.service('Nvd3ChartService', downgradeInjectable(Nvd3ChartService));
+
+export default module;

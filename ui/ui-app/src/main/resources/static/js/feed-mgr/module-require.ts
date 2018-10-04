@@ -8,7 +8,7 @@ import "./services/RegisterTemplateServiceFactory";
 
 import "./services/FeedSecurityGroupsService";
 import "./services/FeedDetailsProcessorRenderingHelper";
-import "./services/ImportService";
+// import "./services/ImportService";
 import "./services/SlaService";
 import "./services/DefaultFeedPropertyService";
 import "./shared/policy-input-form/policy-input-form";

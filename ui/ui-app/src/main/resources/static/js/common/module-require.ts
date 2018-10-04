@@ -33,7 +33,7 @@ import "./accordion-menu/accordion-menu";
 import "./accordion-menu/menu_toggle";
 import "./accordion-menu/menulink";
 import "./timer/kylo-timer";
-import "./multiple-email-validator/multiple-email-validator.js";
+// import "./multiple-email-validator/multiple-email-validator.js";
 import "./lazy-load-retain-order/lazy-load-retain-order";
 import "./notifications/angular1";
 import "jquery";

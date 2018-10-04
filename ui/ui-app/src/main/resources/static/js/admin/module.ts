@@ -5,6 +5,7 @@ import "../codemirror-require/module";
 import "../services/services.module";
 import {moduleName} from "./module-name";
 import {StateProvider} from "@uirouter/angularjs";
+// import 'bower_components/angular-ui-grid/ui-grid.css'
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -58,7 +59,7 @@ class ModuleFactory  {
     runFn($ocLazyLoad: oc.ILazyLoad){
         $ocLazyLoad.load({
             name: 'kylo', 
-            files: ['bower_components/angular-ui-grid/ui-grid.css', 'assets/ui-grid-material.css'],
+            files: [],
             serie: true
             })
     }

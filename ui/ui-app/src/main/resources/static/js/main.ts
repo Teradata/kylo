@@ -1,3 +1,7 @@
+import * as angular from 'angular';
+import {setAngularJSGlobal} from '@angular/upgrade/static';
+setAngularJSGlobal(angular);
+
 import {IAngularStatic} from "angular";
 import {Injector} from "@angular/core";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";

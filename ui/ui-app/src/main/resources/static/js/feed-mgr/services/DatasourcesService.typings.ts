@@ -1,8 +1,8 @@
 import {TableSchema} from "../visual-query/wrangler/index";
 
-export declare namespace DatasourcesServiceStatic {
+// export declare namespace DatasourcesServiceStatic {
 
-    interface DatasourcesService {
+export    interface DatasourcesService {
         deleteById(id: string): angular.IPromise<any>;
 
         filterArrayByIds(ids: string | string[], array: JdbcDatasource[]): JdbcDatasource[];
@@ -26,7 +26,7 @@ export declare namespace DatasourcesServiceStatic {
         defaultIconColor(): string;
     }
 
-    interface JdbcDatasource {
+export    interface JdbcDatasource {
         id?: string;
         name: string;
         description: string;
@@ -39,10 +39,10 @@ export declare namespace DatasourcesServiceStatic {
         password: string;
     }
 
-    interface TableReference {
+export    interface TableReference {
         schema: string;
         tableName: string;
         fullName: string;
         fullNameLower: string;
     }
-}
+// }

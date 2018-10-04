@@ -72,9 +72,10 @@ export class CategoriesController {
     };
 
 }
-angular.module(moduleName).component('categoriesController',  {
+const module = angular.module(moduleName).component('categoriesController',  {
     controller: CategoriesController,
     controllerAs: "vm",
     templateUrl: 'js/feed-mgr/categories/categories.html'   
 });
 
+export default module;

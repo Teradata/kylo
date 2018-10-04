@@ -4,6 +4,7 @@ import AccessControlService from '../../services/AccessControlService';
 
 const moduleName = require('feed-mgr/categories/module-name');
 
+import 'feed-mgr/categories/module-require';
 
 export class CategoryDetailsController {
 
@@ -69,6 +70,7 @@ export class CategoryDetailsController {
     * Loads the category data once the list of categories has loaded.
     */
     onLoad() {
+        console.log('CategoryDetailsController onLoad');
         if (angular.isString(this.$transition$.params().categoryId)) {
             this.model = this.CategoriesService.model = this.CategoriesService.findCategory(this.$transition$.params().categoryId);
             if (angular.isDefined(this.CategoriesService.model)) {
@@ -98,7 +100,7 @@ export class CategoryDetailsController {
     }
 
 }
-angular.module(moduleName).component('categoryDetailsController', {
+const module = angular.module(moduleName).component('categoryDetailsController', {
     bindings: {
         $transition$: "<"
     },
@@ -106,3 +108,4 @@ angular.module(moduleName).component('categoryDetailsController', {
     controllerAs: "vm",
     templateUrl: 'js/feed-mgr/categories/category-details.html'
 });
+export default module;

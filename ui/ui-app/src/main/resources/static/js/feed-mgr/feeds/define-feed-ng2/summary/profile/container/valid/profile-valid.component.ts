@@ -12,7 +12,7 @@ declare let d3: any;
 
 @Component({
     selector: "profile-valid",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/valid/profile-valid.component.html"
 })
 export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  {

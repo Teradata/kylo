@@ -3,10 +3,12 @@ import {moduleName} from "../module-name";
 import "@uirouter/angularjs";
 import * as _ from 'underscore';
 import {StateService, Transition} from "@uirouter/core";
+import './breadcrumbs.css';
+
 /**
  * Config
  */
-var templateUrl = 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html';
+var template = '' ; //require('./uiBreadcrumbs.tpl.html');
 
 export default class RouterBreadcrumbs implements ng.IComponentController {
 
@@ -171,7 +173,10 @@ angular.module(moduleName).component("uiRouterBreadcrumbs",{
         displaynameProperty: '@',
         abstractProxyProperty: '@?'
     },
-    templateUrl: ($element: any, $attrs: any)=> {
-        return $attrs.templateUrl || templateUrl;
-    }
+    // templateUrl: ($element: any, $attrs: any)=> {
+    //     return $attrs.templateUrl || templateUrl;
+    // },
+    template: ($element: any, $attrs: any)=> {
+        return $attrs.template || template;
+    },
 });

@@ -14,7 +14,7 @@ declare let d3: any;
 
 @Component({
     selector: "profile-stats2",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/stats/profile-stats.component.html"
 })
 export class ProfileStatsComponent implements OnInit, OnChanges  {

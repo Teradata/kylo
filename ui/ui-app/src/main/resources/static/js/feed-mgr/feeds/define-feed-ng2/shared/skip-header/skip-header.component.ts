@@ -4,7 +4,7 @@ import {Feed} from "../../../../model/feed/feed.model";
 
 @Component({
     selector: "skip-header",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/shared/skip-header/skip-header.component.ts"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/shared/skip-header/skip-header.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/shared/skip-header/skip-header.component.html"
 })
 

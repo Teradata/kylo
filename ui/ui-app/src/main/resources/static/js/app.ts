@@ -16,6 +16,7 @@ import "angular-material-data-table";
 import "angular-sanitize";
 import "angular-ui-grid";
 import "dirPagination";
+import 'gsap';
 import "ng-fx";
 import "ng-text-truncate";
 import "pascalprecht.translate";
@@ -61,9 +62,9 @@ constructor() {
         });
         this.module.constant('__env', env)
         this.module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider',
-                            'ngMdIconServiceProvider','$qProvider', '$translateProvider', 
+                            'ngMdIconServiceProvider','$qProvider', '$translateProvider',
                             'tmhDynamicLocaleProvider','__env',this.configFn.bind(this)]);
-         this.module.run(['$ocLazyLoad', '$translate', this.runFn.bind(this)]); 
+         this.module.run(['$ocLazyLoad', '$translate', this.runFn.bind(this)]);
     }
 
     configFn($mdAriaProvider: any,$mdThemingProvider: any, $mdIconProvider: any, $urlService: any,
@@ -194,14 +195,7 @@ constructor() {
     }
 
     runFn($ocLazyLoad: any, $translate: any){
-        $ocLazyLoad.load({name:'kylo',files:['bower_components/angular-material-icons/angular-material-icons.css',
-                                             'bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css',
-                                             'bower_components/angular-material-data-table/dist/md-data-table.css',
-                                             'bower_components/nvd3/build/nv.d3.css',
-                                             'bower_components/codemirror/lib/codemirror.css',
-                                             'bower_components/vis/dist/vis.min.css'
-        ]})
-
+        $ocLazyLoad.load({name:'kylo'});
     }
 }
 const app = new App();

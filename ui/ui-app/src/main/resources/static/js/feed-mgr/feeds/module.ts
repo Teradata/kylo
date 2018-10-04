@@ -28,8 +28,14 @@ class ModuleFactory  {
                     controllerAs:'vm'
                 }
             },
-            resolve: {
-                loadMyCtrl: this.lazyLoadController('feed-mgr/feeds/FeedsTableController')
+            lazyLoad: ($transition$) => {
+                const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+
+                return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
+                    .then(mod => $ocLazyLoad.load(mod.default))
+                    .catch(err => {
+                        throw new Error("Failed to load FeedsTableController, " + err);
+                    });
             },
             data: {
                 breadcrumbRoot: true,
@@ -40,10 +46,7 @@ class ModuleFactory  {
         });
 
     }
-    lazyLoadController(path:string){
-        return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require']);
-    }
-
 }
 
-export default new ModuleFactory();
+let moduleFactory = new ModuleFactory();
+export default moduleFactory;

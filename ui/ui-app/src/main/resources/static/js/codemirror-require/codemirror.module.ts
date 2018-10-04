@@ -1,5 +1,5 @@
 import {Inject, NgModule} from "@angular/core";
-import {ILazyLoad} from "oclazyload";
+import {ILazyLoad} from "ocLazyLoad";
 
 @NgModule()
 export class KyloCodeMirrorModule {
@@ -11,10 +11,7 @@ export class KyloCodeMirrorModule {
         }
 
         // Load CodeMirror plugins
-        $ocLazyLoad.load(['bower_components/codemirror/lib/codemirror.css',
-            'bower_components/codemirror/addon/hint/show-hint.css',
-            'bower_components/codemirror/addon/dialog/dialog.css',
-            'bower_components/codemirror/addon/tern/tern.css',
+        $ocLazyLoad.load([
             'codemirror/mode/pig/pig',
             'codemirror/mode/properties/properties',
             'codemirror/mode/python/python',

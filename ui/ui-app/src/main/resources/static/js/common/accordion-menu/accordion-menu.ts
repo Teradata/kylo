@@ -3,16 +3,7 @@ import {moduleName} from "../module-name";
 import * as _ from "underscore";
 'use strict';
 
-angular.module(moduleName).run(['$templateCache', ($templateCache: any)=>{
-        $templateCache.put('accordion-menu.tmpl.html',
-            ' <md-list class="side-menu " > \n' +
-            ' <md-list-item ng-repeat="section in vm.menu" flex layout-fill ng-if="!section.hidden"> \n' +
-        ' <menu-link section="section" ng-if="section.type === \'link\'" style="width:100%"></menu-link>\n' +
-        ' <menu-toggle section="section" ng-if="section.type === \'toggle\' " style="width:100%"></menu-toggle>\n' +
-            '<md-divider></md-divider>' +
-        ' </md-list-item>\n'
-            + '</md-list>' + '');
-        }])
+angular.module(moduleName)
         .directive('accordionMenu', ['$location','$timeout','AccordionMenuService',
         ($location: any,$timeout: any,AccordionMenuService: any)=> {
             return {
@@ -22,7 +13,7 @@ angular.module(moduleName).run(['$templateCache', ($templateCache: any)=>{
                     allowMultipleOpen:'=?'
                 },
                 controllerAs: 'vm',
-                templateUrl: 'accordion-menu.tmpl.html',
+                templateUrl: './accordion-menu.tmpl.html',
                 link: function ($scope: any, $element: any) {
 
                 },

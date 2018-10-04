@@ -22,7 +22,7 @@ import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
 
 @Component({
     selector: "define-feed-step-container",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-container/define-feed-container.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-container/define-feed-container.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-container/define-feed-container.component.html"
 })
 export class DefineFeedContainerComponent extends AbstractLoadFeedComponent implements OnInit, OnDestroy {

@@ -1,0 +1,7 @@
+<md-button flex ui-sref="{{section.sref}}" ng-click="selectMenuItem()" class="nav-btn"
+           ng-class="{'selected' : section.selected,'md-icon-button': controller.collapsed}">
+  <div class="layout-padding-left-8 menu-link">
+    <ng-md-icon md-icon icon="{{section.icon}}" class="nav-btn" ng-class="{'selected' : section.selected }"></ng-md-icon>
+    <md-tooltip md-direction="right" ng-if="controller.collapsed">{{section.text}}</md-tooltip>
+    <span style="padding-left:10px;" ng-if="!controller.collapsed">{{section.text}}</span></div>
+</md-button>

@@ -5,15 +5,17 @@ import AccessControlService from '../../services/AccessControlService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { FeedService } from '../services/FeedService';
+import {IComponentOptions} from 'angular';
 const moduleName = require('./module-name');
-export default class FeedsTableController implements ng.IComponentController {
+
+export class FeedsTableController implements ng.IComponentController {
 
     allowExport:boolean = false;
     feedData:any = []
     loading: boolean = false;
     loaded:boolean = false;
     cardTitle = "";
-    
+
     //Pagination DAta
     pageName:string = "feeds";
     paginationData:any = this.PaginationDataService.paginationData(this.pageName);
@@ -22,10 +24,11 @@ export default class FeedsTableController implements ng.IComponentController {
     viewType: any = this.PaginationDataService.viewType(this.pageName);
     sortOptions: any = this.loadSortOptions();
     filter:  any = null;
-    
 
 
 
+    public static $inject = ["$scope","$http","AccessControlService","RestUrlService","PaginationDataService",
+        "TableOptionsService","AddButtonService","FeedService","StateService", '$filter', "EntityAccessControlService"];
     constructor(
         private $scope: angular.IScope,
         private $http: angular.IHttpService,
@@ -171,7 +174,7 @@ export default class FeedsTableController implements ng.IComponentController {
                 this.feedData = [];
             }
         }
-        
+
         var errorFn = (err:any)=> {
             this.loading = false;
             this.loaded = true;
@@ -182,7 +185,7 @@ export default class FeedsTableController implements ng.IComponentController {
         var sort = this.paginationData.sort;
         var filter = this.paginationData.filter;
         var params = {start: start, limit: limit, sort: sort, filter: filter};
-        
+
         var promise = this.$http.get(this.RestUrlService.GET_FEEDS_URL, {params: params});
         promise.then(successFn, errorFn);
         return promise;
@@ -191,7 +194,7 @@ export default class FeedsTableController implements ng.IComponentController {
     populateFeeds(feeds:any) {
         var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         var simpleFeedData:any = [];
-        
+
         angular.forEach(feeds, (feed)=> {
             if(feed.mode == 'DRAFT') {
                 feed.draftIcon = 'insert_drive_file'
@@ -217,7 +220,7 @@ export default class FeedsTableController implements ng.IComponentController {
                 allowEditDetails: !entityAccessControlled || this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
                 allowExport: !entityAccessControlled || this.feedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
             })
-        });        
+        });
         return simpleFeedData;
     }
 
@@ -229,10 +232,20 @@ export default class FeedsTableController implements ng.IComponentController {
 
 
 
-    angular.module(moduleName)
-        .controller('FeedsTableController',
-            ["$scope","$http","AccessControlService","RestUrlService","PaginationDataService",
-            "TableOptionsService","AddButtonService","FeedService","StateService", '$filter', "EntityAccessControlService", 
-            FeedsTableController]);
 
+class FeedTableComponent implements IComponentOptions {
+    private template: any;
+    private controller: FeedsTableController;
+    private controllerAs = 'vm';
+    constructor() {
+        this.template = require("./feeds-table.html");
+        this.controller = FeedsTableController;
+    }
+}
 
+const module = angular
+    .module("feeds.table.module", [])
+    .component("feedTableComponent", new FeedTableComponent())
+    .controller('FeedsTableController', FeedsTableController);
+
+export default module;

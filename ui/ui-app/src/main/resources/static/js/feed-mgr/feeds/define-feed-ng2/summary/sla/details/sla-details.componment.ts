@@ -29,7 +29,7 @@ export class RuleType {
 
 @Component({
     selector: "sla-details",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-details.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-details.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-details.component.html"
 })
 export class SlaDetailsComponent implements OnInit {

@@ -14,7 +14,7 @@ declare let d3: any;
 
 @Component({
     selector: "profile-invalid",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.css"],
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/invalid/profile-invalid.component.html"
 })
 export class ProfileInvalidComponent implements OnInit, AfterViewInit, OnChanges  {

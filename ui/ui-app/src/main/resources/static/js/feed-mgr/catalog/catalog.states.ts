@@ -151,21 +151,21 @@ export const catalogStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.preview.**",
         url: "/preview",
-        loadChildren: "feed-mgr/catalog/datasource/preview-schema/preview-schema.module#PreviewSchemaModule"
+        loadChildren: "./datasource/preview-schema/preview-schema.module#PreviewSchemaModule"
     },
     {
         name: "catalog.datasource.upload.**",
         url: "/upload",
-        loadChildren: "feed-mgr/catalog/datasource/upload/upload.module#UploadModule"
+        loadChildren: "./datasource/upload/upload.module#UploadModule"
     },
     {
         name: "catalog.datasource.browse.**",
         url: "/browse",
-        loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesModule"
+        loadChildren: "./datasource/files/remote-files.module#RemoteFilesModule"
     },
     {
         name: "catalog.datasource.connection.**",
         url: "/tables",
-        loadChildren: "feed-mgr/catalog/datasource/tables/tables.module#TablesModule"
+        loadChildren: "./datasource/tables/tables.module#TablesModule"
     }
 ];
