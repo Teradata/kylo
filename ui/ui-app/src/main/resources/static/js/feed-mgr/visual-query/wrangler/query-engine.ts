@@ -504,11 +504,11 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Requested # of sampled rows (vs. calculated)
      */
-    get reqLimit(): string {
+    get reqLimit(): number {
         return this.reqLimit_;
     }
 
-    set reqLimit(value: string) {
+    set reqLimit(value: number) {
         this.reqLimit_ = value;
     }
 
