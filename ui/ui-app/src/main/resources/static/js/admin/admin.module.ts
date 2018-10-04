@@ -1,6 +1,4 @@
 import { CommonModule } from "@angular/common";
-import { KyloCommonModule } from "../common/common.module";
-import {KyloServicesModule} from "../services/services.module";
 import { UIRouterModule } from "@uirouter/angular";
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatDividerModule} from '@angular/material/divider';
@@ -14,16 +12,15 @@ import { CovalentDialogsModule } from '@covalent/core/dialogs';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatInputModule} from '@angular/material/input';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import * as angular from "angular";
-import { TemplateModule } from "../feed-mgr/templates/templates.module";
 import { JcrQueryComponent } from "./jcr/JcrQueryComponent";
 import { ClusterComponent } from "./cluster/ClusterComponent";
 import { adminStates } from "./admin.states";
 import { MatButtonModule } from "@angular/material/button";
+import {MatTabsModule} from '@angular/material/tabs';
 
 @NgModule({ 
     declarations: [ 
@@ -32,9 +29,6 @@ import { MatButtonModule } from "@angular/material/button";
     ], 
     imports: [ 
         CommonModule, 
-        KyloCommonModule, 
-        KyloServicesModule,
-        TemplateModule,
         MatProgressBarModule,
         MatDividerModule,
         MatListModule,
@@ -45,12 +39,12 @@ import { MatButtonModule } from "@angular/material/button";
         MatFormFieldModule,
         MatChipsModule,
         MatInputModule,
-        MatAutocompleteModule,
         MatSnackBarModule,
         FlexLayoutModule,
         FormsModule,
         ReactiveFormsModule,
         MatButtonModule,
+        MatTabsModule,
         UIRouterModule.forChild({states: adminStates})
     ],
     providers : [

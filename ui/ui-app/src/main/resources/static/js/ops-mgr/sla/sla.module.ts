@@ -17,7 +17,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatStepperModule} from '@angular/material/stepper';
 import { CovalentDialogsModule } from '@covalent/core/dialogs';
-import {BrowserModule} from "@angular/platform-browser";
 
 import { CovalentCommonModule } from '@covalent/core/common';
 import {CovalentLoadingModule} from "@covalent/core/loading";
@@ -40,10 +39,6 @@ import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import * as angular from "angular";
-import TabService from "../services/TabService";
-import OpsManagerJobService from "../services/OpsManagerJobService";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import IconService from "../services/IconStatusService";
 import { kyloServiceLevelAssessments } from "./service-level-assessments";
 import { serviceLevelAssessmentsComponent } from "./service-level-assessments.component";
 import { serviceLevelAssessmentComponent } from "./service-level-assessment.component";
