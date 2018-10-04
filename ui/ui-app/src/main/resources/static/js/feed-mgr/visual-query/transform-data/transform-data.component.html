@@ -32,21 +32,24 @@
       <div fxFlex="1 1 auto" fxLayout="row">
         <mat-menu #actionMenu="matMenu" class="md-kylo-theme">
           <button mat-menu-item (click)="toggleFunctionHistory()">History<span *ngIf="functionHistory.length>0" style="padding-left:10px;">({{functionHistory.length}})</span></button>
-          <button mat-menu-item (click)="toggleSampleMenu()">Sample</button>
+          <button mat-menu-item (click)="showSampleDialog()">Sample</button>
+          <button mat-menu-item (click)="showQuickClean()">Clean</button>
+          <button mat-menu-item (click)="showSchemaLayout()">Schema</button>
+          <button mat-menu-item (click)="showQuickColumnAnalysis()">Profile</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
         </button>
         <button matTooltip="History" mat-raised-button mat-icon-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true" class="text-upper">
-               <ng-md-icon icon="history" class="toolbar-icon"></ng-md-icon>
+          <ng-md-icon icon="history" class="toolbar-icon"></ng-md-icon>
         </button>
-        <button matTooltip="Sample size" mat-raised-button mat-icon-button (click)="toggleSampleMenu()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+        <button matTooltip="Configure sampling" mat-raised-button mat-icon-button (click)="showSampleDialog()" fxShow.gt-md="true" fxHide="true" class="text-upper">
           <ng-md-icon icon="filter_list" class="toolbar-icon"></ng-md-icon>
         </button>
         <button matTooltip="Apply global cleansing operations" mat-raised-button mat-icon-button (click)="showQuickClean()" fxShow.gt-md="true" fxHide="true">
           <i class="toolbar-icon mdi mdi-broom"></i>
         </button>
-        <button matTooltip="Show schema view" mat-raised-button mat-icon-button (click)="showSchemaLayout()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+        <button matTooltip="Show schema view" mat-raised-button mat-icon-button (click)="showSchemaLayout()" fxShow.gt-md="true" fxHide="true">
           <ng-md-icon icon="grid_on" class="toolbar-icon"></ng-md-icon>
         </button>
         <button matTooltip="Show columns profile" mat-raised-button mat-icon-button (click)="showQuickColumnAnalysis()" fxShow.gt-md="true" fxHide="true" class="text-upper">
@@ -74,7 +77,9 @@
         <div fxLayout="row" fxLayoutAlign="start center">
           <h3>Sampling</h3>
           <span fxFlex="1 1 auto"></span>
-          <button mat-icon-button (click)="toggleSampleMenu()"><ng-md-icon icon="close"></ng-md-icon></button>
+          <button mat-icon-button (click)="toggleSampleMenu()">
+            <ng-md-icon icon="close"></ng-md-icon>
+          </button>
         </div>
         <mat-radio-group fxLayout="row" fxLayoutGap="20px" *ngIf="!engine.allowLimitWithSample" (change)="onSampleMethodChange()" [(ngModel)]="sampleMethod">
           <mat-radio-button value="SAMPLE">Sample</mat-radio-button>
@@ -103,3 +108,4 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+

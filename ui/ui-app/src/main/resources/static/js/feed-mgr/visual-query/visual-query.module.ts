@@ -47,8 +47,8 @@ import {VisualQuerySaveService} from "./services/save.service";
 import {SparkQueryEngine} from "./services/spark/spark-query-engine";
 import {SaveOptionsComponent} from "./store/save-options.component";
 import {VisualQueryStoreComponent} from "./store/store.component";
-import {AnalyzeColumnDialog} from "./transform-data/profile-stats/analyze-column-dialog";
-import {ColumnAnalysisController, HistogramController} from "./transform-data/profile-stats/column-analysis";
+import {AnalyzeColumnDialog} from "./transform-data/main-dialogs/analyze-column-dialog";
+import {ColumnAnalysisController, HistogramController} from "./transform-data/main-dialogs/column-analysis";
 import {WranglerDataService} from "./transform-data/services/wrangler-data.service";
 import {WranglerTableService} from "./transform-data/services/wrangler-table.service";
 import {TransformDataComponent} from "./transform-data/transform-data.component";
@@ -60,14 +60,16 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import {INJECTOR} from "./wrangler/api/index";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
-import VisualQueryProfileStatsController from "./transform-data/profile-stats/VisualQueryProfileStats";
+import VisualQueryProfileStatsController from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
-import {QuickColumnsDialog} from "./transform-data/profile-stats/quick-columns-dialog";
-import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/profile-stats/quick-column-components";
-import {SchemaLayoutDialog} from "./transform-data/profile-stats/schema-layout-dialog";
+import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
+import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/main-dialogs/quick-column-components";
+import {SchemaLayoutDialog} from "./transform-data/main-dialogs/schema-layout-dialog";
 import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 import {DndListModule} from "ngx-drag-and-drop-lists";
-import {QuickCleanDialog} from "./transform-data/profile-stats/quick-clean-dialog";
+import {QuickCleanDialog} from "./transform-data/main-dialogs/quick-clean-dialog";
+import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
+import {CovalentMessageModule} from "@covalent/core/message";
 
 
 registerQueryEngine('spark', SparkQueryEngine);
@@ -92,6 +94,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         MiniHistogramComponent,
         QuickCleanDialog,
         QuickColumnsDialog,
+        SampleDialog,
         SchemaLayoutDialog
     ],
     entryComponents: [
@@ -101,6 +104,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         VisualQueryProfileStatsController,
         QuickCleanDialog,
         QuickColumnsDialog,
+        SampleDialog,
         SchemaLayoutDialog
     ],
     exports: [
@@ -118,6 +122,7 @@ registerQueryEngine('spark', SparkQueryEngine);
         CovalentFileModule,
         CovalentLayoutModule,
         CovalentLoadingModule,
+        CovalentMessageModule,
         CovalentVirtualScrollModule,
         DndListModule,
         DynamicFormModule,

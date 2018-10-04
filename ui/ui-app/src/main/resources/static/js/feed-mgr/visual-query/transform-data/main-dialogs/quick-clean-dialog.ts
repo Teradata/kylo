@@ -27,8 +27,8 @@ export class OperationItem {
 }
 
 @Component({
-    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/quick-clean-dialog.html',
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/profile-stats/quick-clean-dialog.scss"]
+    templateUrl: 'js/feed-mgr/visual-query/transform-data/main-dialogs/quick-clean-dialog.html',
+    styleUrls: ["js/feed-mgr/visual-query/transform-data/main-dialogs/quick-clean-dialog.scss"]
 })
 export class QuickCleanDialog {
 
