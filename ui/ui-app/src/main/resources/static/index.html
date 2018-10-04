@@ -22,30 +22,38 @@
   <link rel="mask-icon" href="assets/images/favicons/safari-pinned-tab.svg" color="#ec881d">
 
   <link rel="stylesheet" href="js/vendor/ment.io/styles.css"/>
-  <script src="assets/env.js"></script>
-  <script src="bower_components/core.js/client/shim.min.js"></script>
-  <script src="js/vendor/tern/plugin/acorn.js"></script>
-  <script src="js/vendor/tern/plugin/acorn_loose.js"></script>
-  <script src="js/vendor/tern/plugin/walk.js"></script>
-  <script src="js/vendor/tern/plugin/polyfill.js"></script>
-  <script src="js/vendor/tern/lib/signal.js"></script>
-  <script src="js/vendor/tern/lib/tern.js"></script>
-  <script src="js/vendor/tern/lib/def.js"></script>
-  <script src="js/vendor/tern/lib/comment.js"></script>
-  <script src="js/vendor/tern/lib/infer.js"></script>
-  <script src="js/vendor/tern/plugin/doc_comment.js"></script>
 
   <meta name="apple-mobile-web-app-title" content="Kylo">
   <meta name="application-name" content="Kylo">
-
-  <script src="node_modules/zone.js/dist/zone.min.js?main=browser"></script>
-  <script src="node_modules/systemjs/dist/system.js"></script>
-  <script src="js/systemjs.config.js"></script>
-  <script>
-      System.import("main.js");
-  </script>
 </head>
-<body ng-cloak layout-fill>
-<index-controller></index-controller>
+<body layout-fill style="background:#e0e0e0">
+
+<index-controller>
+  <div style="padding: 20%;text-align:center;">
+    <img src="assets/images/kylo-logo-orange.png" height="50px">
+    <h3>Kylo Loading...</h3>
+  </div>
+</index-controller>
+
+<script src="assets/env.js"></script>
+<script src="bower_components/core.js/client/shim.min.js"></script>
+<script src="js/vendor/tern/plugin/acorn.js"></script>
+<script src="js/vendor/tern/plugin/acorn_loose.js"></script>
+<script src="js/vendor/tern/plugin/walk.js"></script>
+<script src="js/vendor/tern/plugin/polyfill.js"></script>
+<script src="js/vendor/tern/lib/signal.js"></script>
+<script src="js/vendor/tern/lib/tern.js"></script>
+<script src="js/vendor/tern/lib/def.js"></script>
+<script src="js/vendor/tern/lib/comment.js"></script>
+<script src="js/vendor/tern/lib/infer.js"></script>
+<script src="js/vendor/tern/plugin/doc_comment.js"></script>
+
+<script src="node_modules/zone.js/dist/zone.min.js?main=browser"></script>
+<script src="node_modules/systemjs/dist/system.js"></script>
+<script src="js/systemjs.config.js"></script>
+<script>
+    System.import("main.js");
+</script>
+
 </body>
 </html>
