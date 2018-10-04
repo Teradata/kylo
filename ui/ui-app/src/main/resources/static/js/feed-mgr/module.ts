@@ -41,7 +41,6 @@ import "kylo-services";
 import "codemirror-require/module";
 import "jquery";
 import  'angular-drag-and-drop-lists';
-import 'feed-mgr/catalog/catalog.module';
 import    'fattable';
 
 class ModuleFactory  {
