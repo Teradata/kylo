@@ -96,9 +96,21 @@ public class CatalogModelTransform {
      */
     public void updateSparkParameters(DataSetTemplate model, DataSetSparkParameters sparkParams) {
         sparkParams.setFormat(model.getFormat());
-        if (model.getFiles() != null) sparkParams.getFiles().retainAll(model.getFiles());
-        if (model.getJars() != null) sparkParams.getJars().retainAll(model.getJars());
-        if (model.getPaths() != null) sparkParams.getPaths().retainAll(model.getPaths());
+        
+        if (model.getFiles() != null) {
+            sparkParams.getFiles().clear();
+            sparkParams.getFiles().addAll(model.getFiles());
+        }
+        
+        if (model.getJars() != null) {
+            sparkParams.getJars().clear();
+            sparkParams.getJars().addAll(model.getJars());
+        }
+        
+        if (model.getPaths() != null) {
+            sparkParams.getPaths().clear();
+            sparkParams.getPaths().addAll(model.getPaths());
+        }
         
         if (model.getOptions() != null) {
             sparkParams.clearOptions();
