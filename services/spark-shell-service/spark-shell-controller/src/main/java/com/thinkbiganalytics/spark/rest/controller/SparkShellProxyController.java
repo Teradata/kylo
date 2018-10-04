@@ -164,6 +164,9 @@ public class SparkShellProxyController {
     @Inject
     private DatasourceProvider datasourceProvider;
 
+    /**
+     * Provides access to Kylo Catalog data sources
+     */
     @Inject
     private DataSourceProvider kyloCatalogDataSourceProvider;
     
