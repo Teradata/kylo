@@ -1,23 +1,17 @@
-import {Component, ContentChild, Injector, Input, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../model/feed/feed.model";
-import {Step} from "../../../../model/feed/feed-step.model";
-import {DefineFeedService} from "../../services/define-feed.service";
-import {StateRegistry, StateService} from "@uirouter/angular";
-import { TdMediaService } from '@covalent/core/media';
-import { TdLoadingService } from '@covalent/core/loading';
-import {SaveFeedResponse} from "../../model/save-feed-response.model";
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {ISubscription} from "rxjs/Subscription";
-import {FeedLoadingService} from "../../services/feed-loading-service";
-import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
+import {Component, Injector, Input, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from "angular";
-import {FEED_DEFINITION_STATE_NAME,FEED_DEFINITION_SECTION_STATE_NAME} from "../../../../model/feed/feed-constants";
-import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
-import {FeedLink} from "../../model/feed-link.model";
+import {TdLoadingService} from '@covalent/core/loading';
+import {TdMediaService} from '@covalent/core/media';
+import {StateService} from "@uirouter/angular";
+import {ISubscription} from "rxjs/Subscription";
+
 import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
-
-
+import {FeedLink} from "../../model/feed-link.model";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
+import {DefineFeedService} from "../../services/define-feed.service";
+import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
+import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 
 
 @Component({
@@ -28,48 +22,48 @@ import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
 export class DefineFeedContainerComponent extends AbstractLoadFeedComponent implements OnInit, OnDestroy {
 
     @Input()
-    stateParams :any;
+    stateParams: any;
 
     @Input()
-    toolbarActionLinks:TemplateRef<any>;
+    toolbarActionLinks: TemplateRef<any>;
 
     @ViewChild("defaultToolbarActionLinks")
-    defaultToolbarActionLinks:TemplateRef<any>;
+    defaultToolbarActionLinks: TemplateRef<any>;
 
     @ViewChild("setupGuideToolbarActions")
-    setupGuideToolbarActionLinksTemplate:TemplateRef<any>;
+    setupGuideToolbarActionLinksTemplate: TemplateRef<any>;
 
 
-    public savingFeed:boolean;
+    public savingFeed: boolean;
 
     /**
      * copy of the feed name.
      * the template will reference this for display so the name doesnt change until we save
      */
-    public feedName:string;
+    public feedName: string;
 
-    currentLink:FeedLink = FeedLink.emptyLink() ;
+    currentLink: FeedLink = FeedLink.emptyLink();
 
-    feedLinkSelectionChangeSubscription:ISubscription;
-    onFeedSaveSubscription:ISubscription;
-    toolbarActionTemplateChangeSubscription:ISubscription;
+    feedLinkSelectionChangeSubscription: ISubscription;
+    onFeedSaveSubscription: ISubscription;
+    toolbarActionTemplateChangeSubscription: ISubscription;
 
 
-    constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
+    constructor(feedLoadingService: FeedLoadingService, defineFeedService: DefineFeedService, stateService: StateService, private $$angularInjector: Injector, public media: TdMediaService, private loadingService: TdLoadingService, private dialogService: TdDialogService,
                 private viewContainerRef: ViewContainerRef,
-                feedSideNavService:FeedSideNavService) {
-        super(feedLoadingService, stateService,defineFeedService, feedSideNavService);
-          let sideNavService = $$angularInjector.get("SideNavService");
-          sideNavService.hideSideNav();
-        this.feedLinkSelectionChangeSubscription =  this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this))
-        this.onFeedSaveSubscription =  this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
-        this.toolbarActionTemplateChangeSubscription =this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
+                feedSideNavService: FeedSideNavService) {
+        super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
+        let sideNavService = $$angularInjector.get("SideNavService");
+        sideNavService.hideSideNav();
+        this.feedLinkSelectionChangeSubscription = this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this));
+        this.onFeedSaveSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this));
+        this.toolbarActionTemplateChangeSubscription = this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
 
     }
 
-    init(){
-      //register the setupguide action template
-            this.feedSideNavService.registerStepToolbarActionTemplate(SETUP_GUIDE_LINK, this.setupGuideToolbarActionLinksTemplate)
+    init() {
+        //register the setupguide action template
+        this.feedSideNavService.registerStepToolbarActionTemplate(SETUP_GUIDE_LINK, this.setupGuideToolbarActionLinksTemplate)
     }
 
     destroy() {
@@ -78,45 +72,44 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         this.toolbarActionTemplateChangeSubscription.unsubscribe();
     }
 
-    onTemplateActionTemplateChanged(change:ToolbarActionTemplateChangedEvent){
-        console.log('TEMPLATE CHANGED!!!!')
-        if(this.toolbarActionLinks != change.templateRef) {
-         console.log('RESET template!!!')
+    onTemplateActionTemplateChanged(change: ToolbarActionTemplateChangedEvent) {
+        console.log('TEMPLATE CHANGED!!!!');
+        if (this.toolbarActionLinks != change.templateRef) {
+            console.log('RESET template!!!');
             this.toolbarActionLinks = change.templateRef;
         }
     }
 
-    onFeedLinkChanged(link:FeedLinkSelectionChangedEvent){
+    onFeedLinkChanged(link: FeedLinkSelectionChangedEvent) {
         this.currentLink = link.newLink;
         //see if we have an action template
         let templateRef = this.feedSideNavService.getLinkTemplateRef(this.currentLink.label);
         this.toolbarActionLinks = templateRef;
     }
 
-    onEdit(){
+    onEdit() {
         this.feed.readonly = false;
         this.defineFeedService.markFeedAsEditable();
 
     }
 
-    onCancelEdit(){
+    onCancelEdit() {
         this.feed.readonly = true;
         this.defineFeedService.markFeedAsReadonly();
 
     }
 
-    onDelete(){
-      //confirm then delete
+    onDelete() {
+        //confirm then delete
         this.defineFeedService.deleteFeed(this.viewContainerRef);
     }
 
-    onFeedSaved(response:SaveFeedResponse){
-        if(response.success){
+    onFeedSaved(response: SaveFeedResponse) {
+        if (response.success) {
             //update this feed
             this.feed = response.feed;
         }
     }
-
 
 
 }
