@@ -1,10 +1,10 @@
-import * as angular from "angular";
 import "rxjs/add/operator/auditTime";
 import {Subject} from "rxjs/Subject";
 import {Subscription} from "rxjs/Subscription";
-import {moduleName} from "./module-name";
-
+import * as _ from "underscore";
 import "./module"; // ensure module is loaded first
+import { Injectable } from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 declare const IDGenerator: any;
 
@@ -135,7 +135,7 @@ export interface NotificationEventListener {
      */
     onNotificationEvent(event: NotificationEvent): void;
 }
-
+@Injectable()
 export class NotificationService {
 
     static readonly CONNECTION_ERRORS_ALERT_THRESHOLD = 5;
@@ -163,7 +163,7 @@ export class NotificationService {
 
     static readonly $inject = ["$timeout", "$mdToast"];
 
-    constructor(private $timeout: angular.ITimeoutService, private $mdToast: angular.material.IToastService) {
+    constructor(private snackBar: MatSnackBar) {
         // Listen for changes to KyloNotifications and create NotificationEvents
         this.kyloNotificationSubject
             .auditTime(10)
@@ -229,7 +229,7 @@ export class NotificationService {
 
     toastAlert(alert: Alert, timeout: number) {
 
-        let options: { hideDelay: number | false, msg: string } = {hideDelay: false, msg: alert.msg};
+        let options: { hideDelay: number | 0, msg: string } = {hideDelay: 0, msg: alert.msg};
         if (timeout) {
             options.hideDelay = timeout;
         }
@@ -238,21 +238,16 @@ export class NotificationService {
         }
 
         let alertId = alert.id;
-        let toast = this.$mdToast.simple()
-            .textContent(options.msg)
-            .action('Ok')
-            .highlightAction(true)
-            .hideDelay(options.hideDelay);
-        // .position(pinTo);
-        this.$mdToast.show(toast).then((response) => {
+        let toast = this.snackBar.open(options.msg,'OK',{duration : options.hideDelay});
+        toast.onAction().subscribe((response :any) => {
             if (response == 'ok') {
-                this.$mdToast.hide();
+                toast.dismiss();
                 this.removeAlert(alertId)
             }
-        });
+        })
 
         if (timeout) {
-            this.$timeout(() => {
+            setTimeout(() => {
                 this.removeAlert(alertId);
             }, timeout);
         }
@@ -261,7 +256,7 @@ export class NotificationService {
 
     getAlertWithGroupKey(groupKey: string) {
         let returnedAlert: Alert = null;
-        angular.forEach(this.alerts, (alert) => {
+        _.forEach(this.alerts, (alert) => {
             if (returnedAlert == null && alert.groupKey && alert.groupKey == groupKey) {
                 returnedAlert = alert;
             }
@@ -330,6 +325,3 @@ export class NotificationService {
         return this.alerts;
     }
 }
-
-angular.module(moduleName)
-    .service("NotificationService", NotificationService);

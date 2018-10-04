@@ -252,7 +252,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             this.BroadcastService.subscribe(null,
                                             this.opsManagerDashboardService.FEED_SUMMARY_UPDATED,
                                             (event: any,updatedFeeds: any)=> {
-                if (ObjectUtils.isDefined(updatedFeeds) && ObjectUtils.isArray(updatedFeeds) && updatedFeeds.length > 0) {
+                if (ObjectUtils.isDefined(updatedFeeds) && Array.isArray(updatedFeeds) && updatedFeeds.length > 0) {
                     this.mergeUpdatedFeeds(updatedFeeds);
                 }
                 else {

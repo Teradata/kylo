@@ -1,71 +1,71 @@
-<md-content class="md-padding">
+<mat-content class="mat-padding">
 
-  <div layout="column">
+  <div fxLayout="column">
 
-    <div layout="row">
-      <span class="md-title"> Is Kylo Clustered</span>
-      <div flex class="layout-padding-left">
-        <ng-md-icon ng-if="vm.isClustered" icon="check_circle" class="healthy"></ng-md-icon>
-        <ng-md-icon ng-if="!vm.isClustered" icon="do_not_disturb" class="warn"></ng-md-icon>
+    <div fxLayout="row">
+      <span class="mat-title"> Is Kylo Clustered</span>
+      <div fxFlex class="layout-padding-left">
+        <mat-icon *ngIf="isClustered" icon="check_circle" class="healthy"></mat-icon>
+        <mat-icon *ngIf="!isClustered" icon="do_not_disturb" class="warn"></mat-icon>
       </div>
     </div>
   </div>
 
-  <div ng-if="vm.isClustered" class="layout-padding-top">
+  <div *ngIf="isClustered" class="layout-padding-top">
 
-    <div ng-if="vm.members.length <=1" class="layout-padding-bottom" layout="column">
-      <div layout="row" layout-align="start start">
+    <div *ngIf="members.length <=1" class="layout-padding-bottom" fxLayout="column">
+      <div fxLayout="row" layout-align="start start">
             <span>
-              <ng-md-icon icon="warning" class="warn"></ng-md-icon>
+              <mat-icon icon="warning" class="warn"></mat-icon>
             </span>
-        <span class="md-subhead layout-padding-left">Warning.  Only 1 member is found in the cluster. </span>
-        <span flex/>
+        <span class="mat-subhead layout-padding-left">Warning.  Only 1 member is found in the cluster. </span>
+        <span fxFlex/>
       </div>
       <span class="hint">Please ensure your Kylo cluster configuration is configured correctly.</span>
     </div>
 
-    <div layout="column" class="layout-padding-top-bottom">
-      <md-divider></md-divider>
-      <span class="md-title layout-padding-top">Cluster Members</span>
-      <div layout="column" ng-repeat="member in vm.members" class="layout-padding-top layout-padding-left">
+    <div fxLayout="column" class="layout-padding-top-bottom">
+      <mat-divider></mat-divider>
+      <span class="mat-title layout-padding-top">Cluster Members</span>
+      <div fxLayout="column" ng-repeat="member in members" class="layout-padding-top layout-padding-left">
         {{member}}
       </div>
     </div>
 
-    <md-divider></md-divider>
+    <mat-divider></mat-divider>
 
-    <div layout="column">
-      <span class="md-title layout-padding-top">Send a Message</span>
-      <div layout="row" class="layout-padding-top layout-padding-left">
-        <md-input-container class="condensed">
+    <div fxLayout="column">
+      <span class="mat-title layout-padding-top">Send a Message</span>
+      <div fxLayout="row" class="layout-padding-top layout-padding-left">
+        <mat-input-container class="condensed">
           <label>Send a Message</label>
-          <input ng-model="vm.simpleMessage" required>
-        </md-input-container>
-        <md-button ng-click="vm.sendMessage();" class="md-primary md-raised">Send</md-button>
+          <input mat-input [(ngModel)]="simpleMessage" required>
+        </mat-input-container>
+        <button mat-button (click)="sendMessage();" color="primary" class="md-raised">Send</button>
       </div>
     </div>
 
 
-    <md-divider></md-divider>
-    <div layout="column">
-      <span class="md-title layout-padding-top">Received Messages</span>
-      <md-list layout-fill layout="column" class="list-item-table">
-        <md-list-item ng-repeat="msg in vm.receivedMessages|orderBy:'-dateTime' ">
-          <div layout="row" layout-fill>
-            <div flex="60" layout="column" class="item-column md-list-item-text ">
+    <mat-divider></mat-divider>
+    <div fxLayout="column">
+      <span class="mat-title layout-padding-top">Received Messages</span>
+      <mat-list layout-fill fxLayout="column" class="list-item-table">
+        <mat-list-item ng-repeat="msg in receivedMessages|orderBy:'-dateTime' ">
+          <div fxLayout="row" layout-fill>
+            <div fxFlex="60" fxLayout="column" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.message}}</span>
               <span class="column-title column-title-bottom">
                               Message
             </span>
             </div>
 
-            <div layout="column" flex="20" class="item-column md-list-item-text ">
+            <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.from}}</span>
               <span class="column-title column-title-bottom">
                               From
             </span>
             </div>
-            <div layout="column" flex="20" class="item-column md-list-item-text ">
+            <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.dateTime | date:'HH:mm:ss'}}</span>
               <span class="column-title column-title-bottom">
                               Date
@@ -73,18 +73,18 @@
             </div>
 
           </div>
-          <md-divider ng-if="!$last"></md-divider>
-        </md-list-item>
-        <md-list-item ng-if="vm.receivedMessages.length == 0">
+          <mat-divider *ngIf="!$last"></mat-divider>
+        </mat-list-item>
+        <mat-list-item *ngIf="receivedMessages.length == 0">
           <div style="width:100%" class="item-column">
             <span class="item-title">No Messages received</span>
           </div>
-        </md-list-item>
-      </md-list>
+        </mat-list-item>
+      </mat-list>
     </div>
   </div>
 
-  <div ng-if="!vm.isClustered" layout="column">
+  <div *ngIf="!isClustered" fxLayout="column">
     <span>Kylo is not clustered.  Please follow the <a href="http://kylo.readthedocs.io/en/latest/how-to-guides/KyloClusterConfiguration.html" target="_blank">Clustering Kylo" documentation</a> and ensure the following items are configured.</span>
     <span class="hint">The default Kylo installation provides sample configuration files for the items below in the <i>'/opt/kylo/setup/config/kylo-cluster/'</i></span>
 
@@ -115,4 +115,4 @@
       </li>
     </ul>
   </div>
-</md-content>
+</mat-content>

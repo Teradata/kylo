@@ -1,9 +1,8 @@
-import * as angular from 'angular';
 import "jquery";
 
-import {moduleName} from './module-name';
 
 import "./module"; // ensure module is loaded first
+import { Injectable } from "@angular/core";
 
 /**
  * Allow different controllers/services to subscribe and notify each other
@@ -14,9 +13,8 @@ import "./module"; // ensure module is loaded first
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
+@Injectable()
 export default class BroadcastService {
-
-    static readonly $inject = ["$rootScope", "$timeout"];
 
     /**
     * map to check if multiple events come in for those that {@code data.notifyAfterTime}
@@ -27,8 +25,7 @@ export default class BroadcastService {
 
     subscribers = {};
 
-    constructor(private $rootScope: any,
-        private $timeout: angular.ITimeoutService) {
+    constructor() {
 
     }
     /**
@@ -37,49 +34,46 @@ export default class BroadcastService {
     * @param data
     * @param waitTime
     */
-    notify = (event: any, data?: any, waitTime?: any) => {
-        if (waitTime == undefined) {
-            waitTime = 0;
-        }
-        if (this.waitingEvents[event] == undefined) {
-            this.waitingEvents[event] = event;
-            this.$timeout(() => {
-                this.$rootScope.$emit(event, data);
-                delete this.waitingEvents[event];
-            }, waitTime);
-        }
+    notify (event: any, data?: any, waitTime?: any) {
+        // if (waitTime == undefined) {
+        //     waitTime = 0;
+        // }
+        // if (this.waitingEvents[event] == undefined) {
+        //     this.waitingEvents[event] = event;
+        //     setTimeout(() => {
+        //         this.$rootScope.$emit(event, data);
+        //         delete this.waitingEvents[event];
+        //     }, waitTime);
+        // }
     };
     /**
      * Subscribe to some event
      */
-    subscribe = (scope: any, event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, callback);
-        if(this.subscribers[event] == undefined){
-            this.subscribers[event] = 0;
-        }
-        this.subscribers[event] +=1;
-        if (scope != null) {
-            scope.$on('$destroy', ()=>{
-                handler();
-                this.subscribers[event] -= 1;
-            });
-        }
+    subscribe (scope: any, event: any, callback: any) {
+        // const handler: any = this.$rootScope.$on(event, callback);
+        // if(this.subscribers[event] == undefined){
+        //     this.subscribers[event] = 0;
+        // }
+        // this.subscribers[event] +=1;
+        // if (scope != null) {
+        //     scope.$on('$destroy', ()=>{
+        //         handler();
+        //         this.subscribers[event] -= 1;
+        //     });
+        // }
     };
     /**
      * Subscribe to some event
      */
-    subscribeOnce = (event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, () => {
-            try {
-                callback();
-            } catch (err) {
-                console.error("error calling callback for ", event);
-            }
-            //deregister the listener
-            handler();
-        });
+    subscribeOnce (event: any, callback: any) {
+    //     const handler: any = this.$rootScope.$on(event, () => {
+    //         try {
+    //             callback();
+    //         } catch (err) {
+    //             console.error("error calling callback for ", event);
+    //         }
+    //         //deregister the listener
+    //         handler();
+    //     });
     }
 }
-
-
-angular.module(moduleName).service('BroadcastService', BroadcastService);

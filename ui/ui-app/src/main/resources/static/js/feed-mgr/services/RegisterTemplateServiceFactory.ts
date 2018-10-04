@@ -7,7 +7,6 @@ import {Subject} from 'rxjs/Subject';
 import * as _ from "underscore";
 import {Dictionary} from "underscore";
 
-import {AccessControl} from "../../services/AccessControl";
 import AccessControlService from '../../services/AccessControlService';
 import {EmptyTemplate, ExtendedTemplate, SaveAbleTemplate} from '../model/template-models';
 import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';

@@ -1,10 +1,10 @@
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {Component, Inject, OnInit, SecurityContext} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {TemplateService} from "../services/template.service";
+import {TemplateService} from "../../services/template.service";
 import {HttpClient} from "@angular/common/http";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {TemplateRepository} from "../services/model";
+import {TemplateRepository} from "../../services/model";
 
 @Component({
     selector: 'template-publish-dialog',

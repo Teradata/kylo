@@ -20,34 +20,27 @@
 /**
  * Used to programmatically open/close the side nav bar
  */
-import * as angular from 'angular';
-import {moduleName} from './module-name';
 import BroadcastConstants from "./BroadcastConstants";
+import { Injectable } from '@angular/core';
 import BroadcastService from "./broadcast-service";
 
-export default class SideNavService{
+@Injectable()
+export default class SideNavService {
     isLockOpen: any;
-    hideSideNav: any;
-    showSideNav: any;
- constructor (private BroadcastService: any){
-      this.isLockOpen = true;
-
-    this.hideSideNav = function(){
+    constructor(private broadcastService: BroadcastService) {
+        this.isLockOpen = true;
+    }
+    hideSideNav() {
         if (this.isLockOpen) {
             this.isLockOpen = false;
-            BroadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
+            this.broadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
         }
 
     }
-
-    this.showSideNav = function () {
+    showSideNav() {
         if (!this.isLockOpen) {
             this.isLockOpen = true;
-            BroadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
+            this.broadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
         }
     }
- }
 }
-angular.module(moduleName)
-.service('BroadcastService', ["$rootScope", "$timeout",BroadcastService])
-.service('SideNavService', ["BroadcastService",SideNavService]);

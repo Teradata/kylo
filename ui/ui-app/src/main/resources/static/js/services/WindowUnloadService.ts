@@ -1,7 +1,7 @@
-import {TransitionService} from "@uirouter/core/lib";
-import * as angular from "angular";
-import {moduleName} from "./module-name";
+import {TransitionService} from "@uirouter/core";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class WindowUnloadService {
 
     /**
@@ -9,12 +9,10 @@ export class WindowUnloadService {
      */
     private text_: string | null;
 
-    static readonly $inject = ["$transitions", "$window"];
-
-    constructor(private $transitions: TransitionService, $window: Window) {
+    constructor(private $transitions: TransitionService) {
         // Setup event listeners
-        $transitions.onBefore({}, () => this.shouldChangeState());
-        $window.onbeforeunload = (e: BeforeUnloadEvent) => this.onBeforeUnload(e);
+        this.$transitions.onBefore({}, () => this.shouldChangeState());
+        window.onbeforeunload = (e: BeforeUnloadEvent) => this.onBeforeUnload(e);
     }
 
     /**
@@ -36,7 +34,6 @@ export class WindowUnloadService {
         }
         return this.text_;
     }
-
     /**
      * Enables the confirmation dialog and sets the dialog text.
      *
@@ -58,5 +55,3 @@ export class WindowUnloadService {
         }
     }
 }
-
-angular.module(moduleName).service("WindowUnloadService", WindowUnloadService);

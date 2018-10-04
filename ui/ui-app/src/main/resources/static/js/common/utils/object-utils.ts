@@ -63,9 +63,6 @@ export class ObjectUtils {
         return typeof value === 'number';
     }
 
-    static isArray(value : any) : boolean {
-        return typeof value === 'object';
-    }
     static isFunction(value : any) : boolean {
         return typeof value === 'function';
     }

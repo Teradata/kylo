@@ -1,12 +1,44 @@
 import * as angular from 'angular';
-import {moduleName} from './module-name';
-import {TemplateService} from "../repository/services/template.service";
 import {downgradeInjectable} from "@angular/upgrade/static";
 import SearchService from './SearchService';
 import CommonRestUrlService from './CommonRestUrlService';
+import AccessControlService from './AccessControlService';
+import { PreviewDatasetCollectionService } from '../feed-mgr/catalog/api/services/preview-dataset-collection.service';
+import AddButtonService from './AddButtonService';
+import AngularModuleExtensionService from './AngularModuleExtensionService';
+import BroadcastService from './broadcast-service';
+import FileUpload from './FileUploadService';
+import HttpService from './HttpService';
+import LoginNotificationService from './LoginNotificationService';
+import { NotificationService } from './notification.service';
+import { DefaultPaginationDataService } from './PaginationDataService';
+import SideNavService from './SideNavService';
+import StateService from './StateService';
+import { DefaultTableOptionsService } from './TableOptionsService';
+import UserGroupService from './UserGroupService';
+import Utils from './Utils';
+import { WindowUnloadService } from './WindowUnloadService';
+import { TemplateService } from './template.service';
+
+let moduleName= "kylo.services";
 
 export let module= angular.module(moduleName, []);
 module.factory("templateService", downgradeInjectable(TemplateService) as any);
 angular.module(moduleName).service("CommonRestUrlService", downgradeInjectable(CommonRestUrlService) as any);
 angular.module(moduleName).service("SearchService", downgradeInjectable(SearchService) as any);
-
+angular.module(moduleName).service("AccessControlService",downgradeInjectable(AccessControlService) as any);
+angular.module(moduleName).service("AddButtonService",downgradeInjectable(AddButtonService) as any);
+angular.module(moduleName).service("AngularModuleExtensionService",downgradeInjectable(AngularModuleExtensionService) as any);
+angular.module(moduleName).service("BroadcastService",downgradeInjectable(BroadcastService) as any);
+angular.module(moduleName).service("FileUpload",downgradeInjectable(FileUpload) as any);
+angular.module(moduleName).service("HttpService",downgradeInjectable(HttpService) as any);
+angular.module(moduleName).service("NotificationService",downgradeInjectable(NotificationService) as any);
+angular.module(moduleName).service("DefaultPaginationDataService",downgradeInjectable(DefaultPaginationDataService) as any);
+angular.module(moduleName).service("SideNavService",downgradeInjectable(SideNavService) as any);
+angular.module(moduleName).service("StateService",downgradeInjectable(StateService) as any);
+angular.module(moduleName).service("DefaultTableOptionsService",downgradeInjectable(DefaultTableOptionsService) as any);
+angular.module(moduleName).service("UserGroupService",downgradeInjectable(UserGroupService) as any);
+angular.module(moduleName).service("Utils",downgradeInjectable(Utils) as any);
+angular.module(moduleName).service("WindowUnloadService",downgradeInjectable(WindowUnloadService) as any);
+angular.module(moduleName).service("PreviewDatasetCollectionService", downgradeInjectable(PreviewDatasetCollectionService));
+angular.module(moduleName).service("LoginNotificationService",downgradeInjectable(LoginNotificationService) as any);

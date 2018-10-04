@@ -1,5 +1,4 @@
 import * as _ from "underscore";
-import * as angular from "angular";
 import {Common} from "../common/CommonTypes";
 
 declare namespace ListTableView {

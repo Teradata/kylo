@@ -745,7 +745,7 @@ export default class FeedServiceLevelAgreements {
             var entityAccessControlled = this.feed != null && this.accessControlService.isEntityAccessControlled();
 
             //Apply the entity access permissions
-            this.accessControlService.getUserAllowedActions().then((functionalAccess) => {
+            this.accessControlService.getUserAllowedActions().then((functionalAccess : any) => {
                 var allowEditAccess = this.accessControlService.hasAction(AccessControlService.SLA_EDIT, functionalAccess.actions);
                 var slaAccess = this.accessControlService.hasAction(AccessControlService.SLA_ACCESS, functionalAccess.actions);
                 var allowFeedEdit = this.feed != null ? this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, functionalAccess.actions) : true;

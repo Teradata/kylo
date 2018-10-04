@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
-import {TemplateMetadata} from "../services/model";
-import {TemplateService} from "../services/template.service";
+import {TemplateMetadata} from "../../services/model";
+import {TemplateService} from "../../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
 import {MatPaginator} from "@angular/material/paginator";

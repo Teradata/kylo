@@ -59,5 +59,3 @@ export default class CommonRestUrlService{
         this.ANGULAR_EXTENSION_MODULES_URL = "/api/v1/ui/extension-modules"
    }
 }
-
-// angular.module(moduleName).service('CommonRestUrlService',CommonRestUrlService);
