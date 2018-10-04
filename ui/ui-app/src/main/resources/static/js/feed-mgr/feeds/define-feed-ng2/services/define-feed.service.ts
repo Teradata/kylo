@@ -665,6 +665,7 @@ export class DefineFeedService {
             feed.deployedVersion = entityVersion.deployedVersion;
             feed.createdDate = entityVersion.createdDate != null ? new Date(entityVersion.createdDate) : undefined;
 
+            const hasBeenDeployed = feed.mode != FeedMode.DRAFT
             this.selectionService.reset()
             //convert it to our needed class
             let uiState = feed.uiState;
@@ -684,6 +685,9 @@ export class DefineFeedService {
             let mergedSteps:Step[] = defaultSteps.map(step => {
                 if(savedStepMap[step.systemName]){
                     step.update(savedStepMap[step.systemName]);
+                    if(hasBeenDeployed){
+                        step.visited = true;
+                    }
                 }
                 return step;
             });

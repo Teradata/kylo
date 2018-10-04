@@ -191,12 +191,7 @@ constructor(private $scope: IScope,
         }
 
         feedDetails = (event: any, feed: any)=>{
-            if(feed.stream) {
-                this.stateService.OpsManager().Feed().navigateToFeedStats(feed.feed);
-            }
-            else {
-                this.stateService.OpsManager().Feed().navigateToFeedDetails(feed.feed);
-            }
+            this.stateService.FeedManager().Feed().navigateToFeedDefinition(feed.feedHealth.feedId)
         }
         /**
          * Called when a user Clicks on a table Option
