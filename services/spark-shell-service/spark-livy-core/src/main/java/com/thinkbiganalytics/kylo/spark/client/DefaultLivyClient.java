@@ -26,6 +26,7 @@ import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyInvalidSessionException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyUserException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcess;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
@@ -34,15 +35,10 @@ import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
 import com.thinkbiganalytics.kylo.spark.model.enums.StatementState;
 import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 
-import org.apache.commons.lang3.Validate;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
-import java.util.Map;
-
-import javax.annotation.Resource;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -57,6 +53,8 @@ public class DefaultLivyClient implements LivyClient {
     private LivyServer livyServer;
 
     private LivyProperties livyProperties;
+
+    private final static String SESSIONS_URL = "/sessions";
 
     public DefaultLivyClient(LivyServer livyServer, LivyProperties livyProperties) {
         this.livyServer = livyServer;
@@ -170,7 +168,7 @@ public class DefaultLivyClient implements LivyClient {
 
     @Override
     public Statement pollStatement(JerseyRestClient jerseyClient, SparkLivyProcess sparkLivyProcess, Integer stmtId, Long wait) {
-        logger.entry(jerseyClient,sparkLivyProcess,stmtId,wait);
+        logger.entry(jerseyClient, sparkLivyProcess, stmtId, wait);
 
         long stopPolling = Long.MAX_VALUE;
         long startMillis = System.currentTimeMillis();
@@ -186,7 +184,8 @@ public class DefaultLivyClient implements LivyClient {
 
             if (statement.getState().equals(StatementState.error)) {
                 // TODO: what about cancelled? or cancelling?
-                throw logger.throwing(new LivyCodeException("Unexpected error encountered in Statement='" + statement + "'"));
+                logger.error("Unexpected error encountered while processing a statement", new LivyCodeException(statement.toString()));
+                throw logger.throwing(new LivyUserException("livy.unexpected_error"));
             }
 
             if (System.currentTimeMillis() > stopPolling || statement.getState().equals(StatementState.available)) {
@@ -198,38 +197,34 @@ public class DefaultLivyClient implements LivyClient {
             try {
                 Thread.sleep(livyProperties.getPollingInterval());
             } catch (InterruptedException e) {
-                logger.error( "Thread interrupted while polling Livy", e );
+                logger.error("Thread interrupted while polling Livy", e);
             }
         } while (true);
 
-        logger.debug("exit DefaultLivyClient poll statement in '{}' millis, after '{}' attempts ", System.currentTimeMillis() - startMillis, pollCount );
+        logger.debug("exit DefaultLivyClient poll statement in '{}' millis, after '{}' attempts ", System.currentTimeMillis() - startMillis, pollCount);
         return logger.exit(statement);
     }
 
-    private final static String SESSIONS_URL = "/sessions";
-
     private String SESSION_URL(Integer sessionId) {
-        if (sessionId == null) {
-            throw new LivyInvalidSessionException("sessionId cannot be null");
-        }
-        Validate.notNull(sessionId, "sessionId cannot be null");
-        return String.format("/sessions/%s", sessionId);
+        validateId(sessionId);
+        return String.format(SESSIONS_URL + "/%s", sessionId);
     }
 
     private String STATEMENT_URL(Integer sessionId, Integer statementId) {
-        if (sessionId == null) {
-            throw new LivyInvalidSessionException("sessionId cannot be null");
-        }
-        Validate.notNull(sessionId, "sessionId cannot be null");
-        Validate.notNull(statementId, "sessionId cannot be null");
-        return String.format("/sessions/%s/statements/%s", sessionId, statementId);
+        validateId(sessionId);
+        validateId(statementId);
+        return String.format(SESSIONS_URL + "/%s/statements/%s", sessionId, statementId);
     }
 
     private String STATEMENTS_URL(Integer sessionId) {
-        if (sessionId == null) {
-            throw new LivyInvalidSessionException("sessionId cannot be null");
-        }
-        return String.format("/sessions/%s/statements", sessionId);
+        validateId(sessionId);
+        return String.format(SESSIONS_URL + "/%s/statements", sessionId);
     }
 
+    private void validateId(Integer id) {
+        if (id == null) {
+            logger.error("Illegal state occurred: ", new LivyInvalidSessionException("id cannot be null"));
+            throw new LivyUserException("livy.unexpected_error");
+        }
+    }
 }

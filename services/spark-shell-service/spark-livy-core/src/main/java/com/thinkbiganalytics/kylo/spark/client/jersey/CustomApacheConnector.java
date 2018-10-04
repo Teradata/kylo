@@ -20,10 +20,10 @@ package com.thinkbiganalytics.kylo.spark.client.jersey;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyUserException;
 import com.thinkbiganalytics.kylo.utils.ProcessRunner;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
-import jersey.repackaged.com.google.common.util.concurrent.MoreExecutors;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -62,7 +62,11 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentLengthStrategy;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.auth.SPNegoSchemeFactory;
-import org.apache.http.impl.client.*;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.DefaultManagedHttpClientConnection;
 import org.apache.http.impl.conn.ManagedHttpClientConnectionFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -88,6 +92,23 @@ import org.glassfish.jersey.message.internal.Statuses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -97,15 +118,8 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.io.*;
-import java.net.URI;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
+
+import jersey.repackaged.com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * A {@link Connector} that utilizes the Apache HTTP Client to send and receive HTTP request and responses.
@@ -132,6 +146,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @SuppressWarnings("deprecation")
 class CustomApacheConnector implements Connector {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomApacheConnector.class);
 
     private static final VersionInfo vi;
@@ -164,10 +179,10 @@ class CustomApacheConnector implements Connector {
         if (connectionManager != null) {
             if (!(connectionManager instanceof HttpClientConnectionManager)) {
                 LOGGER.warn(
-                        LocalizationMessages.IGNORING_VALUE_OF_PROPERTY(
-                                ApacheClientProperties.CONNECTION_MANAGER,
-                                connectionManager.getClass().getName(),
-                                HttpClientConnectionManager.class.getName())
+                    LocalizationMessages.IGNORING_VALUE_OF_PROPERTY(
+                        ApacheClientProperties.CONNECTION_MANAGER,
+                        connectionManager.getClass().getName(),
+                        HttpClientConnectionManager.class.getName())
                 );
             }
         }
@@ -176,9 +191,9 @@ class CustomApacheConnector implements Connector {
         if (reqConfig != null) {
             if (!(reqConfig instanceof RequestConfig)) {
                 LOGGER.warn(LocalizationMessages.IGNORING_VALUE_OF_PROPERTY(
-                        ApacheClientProperties.REQUEST_CONFIG,
-                        reqConfig.getClass().getName(),
-                        RequestConfig.class.getName())
+                    ApacheClientProperties.REQUEST_CONFIG,
+                    reqConfig.getClass().getName(),
+                    RequestConfig.class.getName())
                 );
                 reqConfig = null;
             }
@@ -190,7 +205,7 @@ class CustomApacheConnector implements Connector {
 
         clientBuilder.setConnectionManager(getConnectionManager(client, config, sslContext));
         clientBuilder.setConnectionManagerShared(
-                PropertiesHelper.getValue(config.getProperties(), ApacheClientProperties.CONNECTION_MANAGER_SHARED, false, null));
+            PropertiesHelper.getValue(config.getProperties(), ApacheClientProperties.CONNECTION_MANAGER_SHARED, false, null));
         clientBuilder.setSslcontext(sslContext);
 
         final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
@@ -214,8 +229,8 @@ class CustomApacheConnector implements Connector {
                 if (password != null) {
                     final CredentialsProvider credsProvider = new BasicCredentialsProvider();
                     credsProvider.setCredentials(
-                            new AuthScope(u.getHost(), u.getPort()),
-                            new UsernamePasswordCredentials(userName, password)
+                        new AuthScope(u.getHost(), u.getPort()),
+                        new UsernamePasswordCredentials(userName, password)
                     );
                     clientBuilder.setDefaultCredentialsProvider(credsProvider);
                 }
@@ -227,15 +242,15 @@ class CustomApacheConnector implements Connector {
             if (kerberosSparkProperties.isKerberosEnabled()) {
                 String kinitPath = kerberosSparkProperties.getKinitPath().toString();
                 List<String> args = Arrays.asList("-kt", kerberosSparkProperties.getKeytabLocation(), kerberosSparkProperties.getKerberosPrincipal());
-                boolean kinitSuccess = processRunner.runScript(kerberosSparkProperties.getKinitPath().toString(),args);
-                if( kinitSuccess ) {
+                boolean kinitSuccess = processRunner.runScript(kerberosSparkProperties.getKinitPath().toString(), args);
+                if (kinitSuccess) {
                     LOGGER.info("kinit performed for '{}' using keytab '{}'", kerberosSparkProperties.getKerberosPrincipal(), kerberosSparkProperties.getKeytabLocation());
                 } else {
                     LOGGER.error("kinit command '{}' failed", kinitPath + " " + String.join(" ", args));
-                    LOGGER.error("kinit returned error code: '{}'", processRunner.getExitCodeFromLastCommand() );
+                    LOGGER.error("kinit returned error code: '{}'", processRunner.getExitCodeFromLastCommand());
                     LOGGER.error("kinit stdout:\n'{}'", processRunner.getOutputFromLastCommand());
                     LOGGER.error("kinit stderr:\n'{}'", processRunner.getErrorFromLastCommand());
-                    throw new LivyException("Unable to kinit");
+                    throw new LivyUserException("livy.kinit");
                 }
 
                 // TODO: this code may need to be extended to do SPNEGO through proxy.. if so, proxy access is demonstrated in this code see: https://github.com/harschware/kerberos-auth-example
@@ -269,33 +284,33 @@ class CustomApacheConnector implements Connector {
 
                 // NOTE: use SPNegoSchemeFactory to avoid password challenge
                 Lookup<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
-                        .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true)).build();
+                    .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true)).build();
 
                 clientBuilder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
             }
         }
 
         final Boolean preemptiveBasicAuthProperty = (Boolean) config.getProperties()
-                .get(ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION);
+            .get(ApacheClientProperties.PREEMPTIVE_BASIC_AUTHENTICATION);
         this.preemptiveBasicAuth = (preemptiveBasicAuthProperty != null) ? preemptiveBasicAuthProperty : false;
 
         // see: https://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html
         PublicSuffixMatcher publicSuffixMatcher = PublicSuffixMatcherLoader.getDefault();
 
         Registry<CookieSpecProvider> r = RegistryBuilder.<CookieSpecProvider>create()
-                .register(CookieSpecs.DEFAULT,
-                        new DefaultCookieSpecProvider(publicSuffixMatcher))
-                .register(CookieSpecs.STANDARD,
-                        new RFC6265CookieSpecProvider(publicSuffixMatcher))
-                .register("livyCookieSpec", new LivyCookieSpecProvider())
-                .build();
+            .register(CookieSpecs.DEFAULT,
+                      new DefaultCookieSpecProvider(publicSuffixMatcher))
+            .register(CookieSpecs.STANDARD,
+                      new RFC6265CookieSpecProvider(publicSuffixMatcher))
+            .register("livyCookieSpec", new LivyCookieSpecProvider())
+            .build();
 
         requestConfig = requestConfigBuilder
-                .setCookieSpec("livyCookieSpec")
-                .setCircularRedirectsAllowed(true)
-                .setRedirectsEnabled(true)
-                .setMaxRedirects(50)
-                .build();
+            .setCookieSpec("livyCookieSpec")
+            .setCircularRedirectsAllowed(true)
+            .setRedirectsEnabled(true)
+            .setMaxRedirects(50)
+            .build();
 
         if (requestConfig.getCookieSpec() == null || !requestConfig.getCookieSpec().equals(CookieSpecs.IGNORE_COOKIES)) {
             this.cookieStore = new BasicCookieStore();
@@ -304,7 +319,7 @@ class CustomApacheConnector implements Connector {
             this.cookieStore = null;
         }
         clientBuilder.setDefaultRequestConfig(requestConfig).
-                setDefaultCookieSpecRegistry(r);
+            setDefaultCookieSpecRegistry(r);
         this.client = clientBuilder.build();
     }
 
@@ -370,60 +385,60 @@ class CustomApacheConnector implements Connector {
                 return (HttpClientConnectionManager) cmObject;
             } else {
                 LOGGER.warn(LocalizationMessages.IGNORING_VALUE_OF_PROPERTY(
-                        ApacheClientProperties.CONNECTION_MANAGER,
-                        cmObject.getClass().getName(),
-                        HttpClientConnectionManager.class.getName())
+                    ApacheClientProperties.CONNECTION_MANAGER,
+                    cmObject.getClass().getName(),
+                    HttpClientConnectionManager.class.getName())
                 );
             }
         }
 
         // Create custom connection manager.
         return createConnectionManager(
-                client,
-                config,
-                sslContext,
-                false);
+            client,
+            config,
+            sslContext,
+            false);
     }
 
     private HttpClientConnectionManager createConnectionManager(
-            final Client client,
-            final Configuration config,
-            final SSLContext sslContext,
-            final boolean useSystemProperties) {
+        final Client client,
+        final Configuration config,
+        final SSLContext sslContext,
+        final boolean useSystemProperties) {
 
         final String[] supportedProtocols = useSystemProperties ? split(
-                System.getProperty("https.protocols")) : null;
+            System.getProperty("https.protocols")) : null;
         final String[] supportedCipherSuites = useSystemProperties ? split(
-                System.getProperty("https.cipherSuites")) : null;
+            System.getProperty("https.cipherSuites")) : null;
 
         HostnameVerifier hostnameVerifier = client.getHostnameVerifier();
 
         final LayeredConnectionSocketFactory sslSocketFactory;
         if (sslContext != null) {
             sslSocketFactory = new SSLConnectionSocketFactory(
-                    sslContext, supportedProtocols, supportedCipherSuites, hostnameVerifier);
+                sslContext, supportedProtocols, supportedCipherSuites, hostnameVerifier);
         } else {
             if (useSystemProperties) {
                 sslSocketFactory = new SSLConnectionSocketFactory(
-                        (SSLSocketFactory) SSLSocketFactory.getDefault(),
-                        supportedProtocols, supportedCipherSuites, hostnameVerifier);
+                    (SSLSocketFactory) SSLSocketFactory.getDefault(),
+                    supportedProtocols, supportedCipherSuites, hostnameVerifier);
             } else {
                 sslSocketFactory = new SSLConnectionSocketFactory(
-                        SSLContexts.createDefault(),
-                        hostnameVerifier);
+                    SSLContexts.createDefault(),
+                    hostnameVerifier);
             }
         }
 
         final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", sslSocketFactory)
-                .build();
+            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+            .register("https", sslSocketFactory)
+            .build();
 
         final Integer chunkSize = ClientProperties.getValue(config.getProperties(),
-                ClientProperties.CHUNKED_ENCODING_SIZE, ClientProperties.DEFAULT_CHUNK_SIZE, Integer.class);
+                                                            ClientProperties.CHUNKED_ENCODING_SIZE, ClientProperties.DEFAULT_CHUNK_SIZE, Integer.class);
 
         final PoolingHttpClientConnectionManager connectionManager =
-                new PoolingHttpClientConnectionManager(registry, new CustomApacheConnector.ConnectionFactory(chunkSize));
+            new PoolingHttpClientConnectionManager(registry, new CustomApacheConnector.ConnectionFactory(chunkSize));
 
         if (useSystemProperties) {
             String s = System.getProperty("http.keepAlive", "true");
@@ -476,8 +491,8 @@ class CustomApacheConnector implements Connector {
             HeaderUtils.checkHeaderChanges(clientHeadersSnapshot, clientRequest.getHeaders(), this.getClass().getName());
 
             final Response.StatusType status = response.getStatusLine().getReasonPhrase() == null
-                    ? Statuses.from(response.getStatusLine().getStatusCode())
-                    : Statuses.from(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+                                               ? Statuses.from(response.getStatusLine().getStatusCode())
+                                               : Statuses.from(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
 
             final ClientResponse responseContext = new ClientResponse(status, clientRequest);
             final List<URI> redirectLocations = context.getRedirectLocations();
@@ -568,19 +583,19 @@ class CustomApacheConnector implements Connector {
         }
 
         final Boolean redirectsEnabled =
-                clientRequest.resolveProperty(ClientProperties.FOLLOW_REDIRECTS, requestConfig.isRedirectsEnabled());
+            clientRequest.resolveProperty(ClientProperties.FOLLOW_REDIRECTS, requestConfig.isRedirectsEnabled());
         requestConfigBuilder.setRedirectsEnabled(redirectsEnabled);
 
         final Boolean bufferingEnabled = clientRequest.resolveProperty(ClientProperties.REQUEST_ENTITY_PROCESSING,
-                RequestEntityProcessing.class) == RequestEntityProcessing.BUFFERED;
+                                                                       RequestEntityProcessing.class) == RequestEntityProcessing.BUFFERED;
         final HttpEntity entity = getHttpEntity(clientRequest, bufferingEnabled);
 
         return RequestBuilder
-                .create(clientRequest.getMethod())
-                .setUri(clientRequest.getUri())
-                .setConfig(requestConfigBuilder.build())
-                .setEntity(entity)
-                .build();
+            .create(clientRequest.getMethod())
+            .setUri(clientRequest.getUri())
+            .setConfig(requestConfigBuilder.build())
+            .setEntity(entity)
+            .build();
     }
 
     private HttpEntity getHttpEntity(final ClientRequest clientRequest, final boolean bufferingEnabled) {
