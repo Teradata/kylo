@@ -2,41 +2,37 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
+import {OpsManagerFeedUtil} from "./ops-manager-feed-util";
 
 export default class OpsManagerDashboardService{
 
-    constructor(private $q: any,
-                private $http: any,
-                private $interval: any,
-                private $timeout: any,
-                private HttpService: any,
-                private IconService: any,
-                private OpsManagerRestUrlService: any,
-                private BroadcastService: any,
-                private OpsManagerFeedService: any
-    ){
-       let data: any;
-        data= {
-             DASHBOARD_UPDATED:'DASHBOARD_UPDATED',
-             FEED_SUMMARY_UPDATED:'FEED_SUMMARY_UPDATED',
-             TAB_SELECTED:'TAB_SELECTED',
-             feedSummaryData:{},
-             feedsArray:[],
-             feedUnhealthyCount:0,
-             feedHealthyCount:0,
-             dashboard:{},
-             feedsSearchResult:{},
-             totalFeeds:0,
-             activeFeedRequest:null,
-             activeDashboardRequest:null,
-             skipDashboardFeedHealth:false,
-             selectFeedHealthTab:(tab: any)=> {
-                 this.BroadcastService.notify(data.TAB_SELECTED,tab);
-             },
-             feedHealthQueryParams:{fixedFilter:'All',filter:'',start:0,limit:10, sort:''}
-            };
+    
+    static readonly $inject = ['$q', '$http', 'OpsManagerRestUrlService','BroadcastService']
+    constructor(private $q: any,private $http: any, private OpsManagerRestUrlService: any, private BroadcastService: any){ }
+     
+             DASHBOARD_UPDATED:string = 'DASHBOARD_UPDATED';
+             FEED_SUMMARY_UPDATED:string ='FEED_SUMMARY_UPDATED';
+             TAB_SELECTED:string = 'TAB_SELECTED';
+             feedSummaryData:any = {};
+             feedsArray:any[]=[];
+             feedUnhealthyCount:number =0;
+             feedHealthyCount:number = 0;
+             dashboard:any = {};
+             feedsSearchResult:any = {};
+             totalFeeds:number = 0;
+             
+             activeFeedRequest:any = null; 
+                 activeDashboardRequest:any = null;
+             skipDashboardFeedHealth:boolean = false
+        
+             selectFeedHealthTab(tab: any) {
+                 this.BroadcastService.notify(this.TAB_SELECTED,tab);
+             }
+             
+            feedHealthQueryParams:any = {fixedFilter:'All',filter:'',start:0,limit:10, sort:''}
+            
 
-            data.setupFeedHealth = (feedsArray: any)=>{
+            setupFeedHealth(feedsArray: any){
              var processedFeeds: any[] = [];
              if(feedsArray) {
                      var processed: any[] = [];
@@ -44,13 +40,13 @@ export default class OpsManagerDashboardService{
                      _.each(feedsArray,  (feedHealth: any) =>{
                          //pointer to the feed that is used/bound to the ui/service
                          var feedData = null;
-                         if (data.feedSummaryData[feedHealth.feed]) {
-                             feedData = data.feedSummaryData[feedHealth.feed]
+                         if (this.feedSummaryData[feedHealth.feed]) {
+                             feedData = this.feedSummaryData[feedHealth.feed]
                              angular.extend(feedData, feedHealth);
                              feedHealth = feedData;
                          }
                          else {
-                             data.feedSummaryData[feedHealth.feed] = feedHealth;
+                             this.feedSummaryData[feedHealth.feed] = feedHealth;
                              feedData = feedHealth;
                          }
                          arr.push(feedData);
@@ -60,7 +56,7 @@ export default class OpsManagerDashboardService{
                              feedData.sinceTimeString = moment(feedData.lastUnhealthyTime).fromNow();
                          }
 
-                        this.OpsManagerFeedService.decorateFeedSummary(feedData);
+                         OpsManagerFeedUtil.decorateFeedSummary(feedData);
                          if(feedData.stream == true && feedData.feedHealth){
                              feedData.runningCount = feedData.feedHealth.runningCount;
                              if(feedData.runningCount == null){
@@ -74,55 +70,55 @@ export default class OpsManagerDashboardService{
                          }
                           processed.push(feedData.feed);
                      });
-                     var keysToRemove=_.difference(Object.keys(data.feedSummaryData),processed);
+                     var keysToRemove=_.difference(Object.keys(this.feedSummaryData),processed);
                      if(keysToRemove != null && keysToRemove.length >0){
                          _.each(keysToRemove,(key: any)=>{
-                             delete  data.feedSummaryData[key];
+                             delete  this.feedSummaryData[key];
                          })
                      }
-                     data.feedsArray = arr;
+                     this.feedsArray = arr;
                  }
                  return processedFeeds;
 
-         };
-
-         data.isFetchingFeedHealth = ()=>{
-             return data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest);
          }
 
-         data.isFetchingDashboard = ()=>{
-             return data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest);
+         isFetchingFeedHealth(){
+             return this.activeFeedRequest != null && angular.isDefined(this.activeFeedRequest);
          }
 
-         data.setSkipDashboardFeedHealth = (skip: any)=>{
-             data.skipDashboardFeedHealth = skip;
+         isFetchingDashboard() {
+             return this.activeDashboardRequest != null && angular.isDefined(this.activeDashboardRequest);
          }
 
-         data.fetchFeeds = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
-             if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
-                 data.activeFeedRequest.reject();
+         setSkipDashboardFeedHealth (skip: boolean){
+             this.skipDashboardFeedHealth = skip;
+         }
+
+         fetchFeeds(tab: string,filter: string,start: number,limit: number, sort: string){
+             if(this.activeFeedRequest != null && angular.isDefined(this.activeFeedRequest)){
+                 this.activeFeedRequest.reject();
              }
              //Cancel any active dashboard queries as this will supercede them
-             if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
-                 data.skipDashboardFeedHealth = true;
+             if(this.activeDashboardRequest != null && angular.isDefined(this.activeDashboardRequest)){
+                 this.skipDashboardFeedHealth = true;
              }
 
              var canceler = this.$q.defer();
 
-             data.activeFeedRequest = canceler;
+             this.activeFeedRequest = canceler;
 
              var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
 
              var initDashboard = (responseData:any) => {
-                 data.feedsSearchResult = responseData;
+                 this.feedsSearchResult = responseData;
                  if(responseData && responseData.data) {
-                     data.setupFeedHealth(responseData.data);
-                     //reset data.dashboard.feeds.data ?
-                     data.totalFeeds = responseData.recordsFiltered;
+                     this.setupFeedHealth(responseData.data);
+                     //reset this.dashboard.feeds.data ?
+                     this.totalFeeds = responseData.recordsFiltered;
                  }
-                 data.activeFeedRequest = null;
-                 data.skipDashboardFeedHealth = false;
-                 BroadcastService.notify(data.DASHBOARD_UPDATED, data.dashboard);
+                 this.activeFeedRequest = null;
+                 this.skipDashboardFeedHealth = false;
+                 this.BroadcastService.notify(this.DASHBOARD_UPDATED, this.dashboard);
              }
              var successFn = (response: any) =>{
                  return response.data;
@@ -130,27 +126,27 @@ export default class OpsManagerDashboardService{
              var errorFn =  (err: any)=> {
                  canceler.reject();
                  canceler = null;
-                 data.activeFeedRequest = null;
-                 data.skipDashboardFeedHealth = false;
+                 this.activeFeedRequest = null;
+                 this.skipDashboardFeedHealth = false;
              }
              var promise = this.$http.get(this.OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL,{timeout: canceler.promise,params:params});
-             promise.then(successFn, errorFn).then(fetchPageableFeedNames).then(initDashboard);
+             promise.then(successFn, errorFn).then(this.fetchPageableFeedNames.bind(this)).then(initDashboard);
              return promise;
          }
 
-         var fetchPageableFeedNames = (resolveObj:any) => {
+         fetchPageableFeedNames(resolveObj:any){
             var feeds = resolveObj.data;
-            return fetchFeedNames(resolveObj, feeds);
-         };
+            return this.fetchFeedNames(resolveObj, feeds);
+         }
 
-         var fetchFeedNames = (resolveObj:any, feeds:any) => {
-             var deferred = $q.defer();
+         fetchFeedNames(resolveObj:any, feeds:any){
+             var deferred = this.$q.defer();
 
              if (feeds.length > 0) {
                  var feedNames = _.map(feeds, (feed:any) => {
                      return feed.feed;
                  });
-                 var namesPromise = $http.post(OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
+                 var namesPromise = this.$http.post(this.OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
                  namesPromise.then((result:any) => {
                      _.each(feeds, (feed:any) => {
                          feed.displayName = _.find(result.data, (systemNameToDisplayName:any) => {
@@ -167,71 +163,66 @@ export default class OpsManagerDashboardService{
              }
 
              return deferred.promise;
-         };
-
-         data.updateFeedHealthQueryParams = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
-             var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
-             angular.extend(data.feedHealthQueryParams,params);
          }
 
-         data.fetchDashboard = ()=>{
-             if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
-                 data.activeDashboardRequest.reject();
+         updateFeedHealthQueryParams(tab: string,filter: string,start: number,limit: number, sort: string){
+             var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
+             angular.extend(this.feedHealthQueryParams,params);
+         }
+
+         fetchDashboard() {
+             if(this.activeDashboardRequest != null && angular.isDefined(this.activeDashboardRequest)){
+                 this.activeDashboardRequest.reject();
              }
-             var canceler = $q.defer();
-             data.activeDashboardRequest = canceler;
+             var canceler = this.$q.defer();
+             this.activeDashboardRequest = canceler;
 
              var initDashboard = (dashboard:any) => {
-                 data.dashboard = dashboard;
+                 this.dashboard = dashboard;
                  //if the pagable feeds query came after this one it will flip the skip flag.
                  // that should supercede this request
-                 if(!data.skipDashboardFeedHealth) {
-                     data.feedsSearchResult = dashboard.feeds;
-                     if (data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
-                         var processedFeeds = data.setupFeedHealth(data.dashboard.feeds.data);
-                         data.dashboard.feeds.data = processedFeeds;
-                         data.totalFeeds = data.dashboard.feeds.recordsFiltered;
+                 if(!this.skipDashboardFeedHealth) {
+                     this.feedsSearchResult = dashboard.feeds;
+                     if (this.dashboard && this.dashboard.feeds && this.dashboard.feeds.data) {
+                         var processedFeeds = this.setupFeedHealth(this.dashboard.feeds.data);
+                         this.dashboard.feeds.data = processedFeeds;
+                         this.totalFeeds = this.dashboard.feeds.recordsFiltered;
                      }
                  }
                  else {
                     //     console.log('Skip processing dashboard results for the feed since it was superceded');
                  }
-                 if(angular.isUndefined(data.dashboard.healthCounts['UNHEALTHY'])) {
-                     data.dashboard.healthCounts['UNHEALTHY'] = 0;
+                 if(angular.isUndefined(this.dashboard.healthCounts['UNHEALTHY'])) {
+                     this.dashboard.healthCounts['UNHEALTHY'] = 0;
                  }
-                 if(angular.isUndefined(data.dashboard.healthCounts['HEALTHY'])) {
-                     data.dashboard.healthCounts['HEALTHY'] = 0;
+                 if(angular.isUndefined(this.dashboard.healthCounts['HEALTHY'])) {
+                     this.dashboard.healthCounts['HEALTHY'] = 0;
                  }
 
-                 data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'] || 0;
-                 data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'] || 0;
-                 data.activeDashboardRequest = null;
-                 BroadcastService.notify(data.DASHBOARD_UPDATED, dashboard);
+                 this.feedUnhealthyCount = this.dashboard.healthCounts['UNHEALTHY'] || 0;
+                 this.feedHealthyCount = this.dashboard.healthCounts['HEALTHY'] || 0;
+                 this.activeDashboardRequest = null;
+                 this.BroadcastService.notify(this.DASHBOARD_UPDATED, dashboard);
              }
              var successFn = (response:any) => {
-                 fetchFeedNames(response.data, response.data.feeds.data).then(initDashboard);
+                 initDashboard(response.data)
+                // fetchFeedNames(response.data, response.this.feeds.data).then(initDashboard);
              }
              var errorFn = (err: any) =>{
                  canceler.reject();
                  canceler = null;
-                 data.activeDashboardRequest = null;
-                 data.skipDashboardFeedHealth = false;
+                 this.activeDashboardRequest = null;
+                 this.skipDashboardFeedHealth = false;
                  console.error("Dashboard error!!!")
              }
-             var params = data.feedHealthQueryParams;
+             var params = this.feedHealthQueryParams;
              var promise = this.$http.get(this.OpsManagerRestUrlService.DASHBOARD_URL,{timeout: canceler.promise,params:params});
 
              promise.then(successFn, errorFn);
 
              return promise;
-         };
+         }
 
-         return data;
-     }
-    
 }
 
-angular.module(moduleName)
-.factory('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
-                                         'OpsManagerRestUrlService','BroadcastService',
-                                        'OpsManagerFeedService',OpsManagerDashboardService]);
+angular.module(moduleName).service('OpsManagerDashboardService',OpsManagerDashboardService);

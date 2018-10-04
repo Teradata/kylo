@@ -552,7 +552,7 @@ export class JobsCardController implements ng.IComponentController{
             this.clearRefreshTimeout(instanceId);
             this.triggerJobActionListener('restartJob', job);
             var xhr = this.OpsManagerJobService.restartJob(job.executionId, {}, (response: any)=> {
-                this.updateJob(instanceId, response.data)
+                this.updateJob(instanceId, response)
                 //  getRunningJobExecutionData(instanceId,data.executionId);
             }, (errMsg: any)=> {
                 this.addJobErrorMessage(executionId, errMsg);
@@ -566,7 +566,7 @@ export class JobsCardController implements ng.IComponentController{
             this.clearRefreshTimeout(instanceId);
             this.triggerJobActionListener('stopJob', job);
             this.OpsManagerJobService.stopJob(job.executionId, {}, (response: any)=> {
-                this.updateJob(instanceId, response.data)
+                this.updateJob(instanceId, response)
                 //  getRunningJobExecutionData(instanceId,data.executionId);
             })
         };
@@ -578,8 +578,8 @@ export class JobsCardController implements ng.IComponentController{
             this.clearRefreshTimeout(instanceId);
             this.triggerJobActionListener('abandonJob', job);
             this.OpsManagerJobService.abandonJob(job.executionId, {}, (response: any)=> {
-                this.updateJob(instanceId, response.data)
-                this.triggerJobActionListener('abandonJob', response.data);
+                this.updateJob(instanceId, response)
+                this.triggerJobActionListener('abandonJob', response);
             })
         };
 
@@ -590,8 +590,8 @@ export class JobsCardController implements ng.IComponentController{
             this.clearRefreshTimeout(instanceId);
             this.triggerJobActionListener('failJob', job);
             this.OpsManagerJobService.failJob(job.executionId, {}, (response: any)=> {
-                this.updateJob(instanceId, response.data)
-                this.triggerJobActionListener('failJob', response.data);
+                this.updateJob(instanceId, response)
+                this.triggerJobActionListener('failJob', response);
             })
         };
 
