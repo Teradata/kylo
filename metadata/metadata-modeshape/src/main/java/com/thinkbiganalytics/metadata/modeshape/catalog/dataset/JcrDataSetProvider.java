@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,7 +73,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     public DataSet create(ID dataSourceId, String title) {
         return this.dsProvider.find(dataSourceId)
                 .map(dsrc -> {
-                    String dsSystemName = generateSystemName(title);
+                    String dsSystemName = UUID.randomUUID().toString();
                     Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsSystemName);
                     
                     if (JcrUtil.hasNode(getSession(), dataSetPath)) {
