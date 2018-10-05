@@ -44,6 +44,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
@@ -53,6 +54,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
@@ -67,6 +69,7 @@ import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.User;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tools.ant.taskdefs.Exit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -75,6 +78,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -287,28 +291,6 @@ public class FeedModelTransform {
         
         if (feedMetadata.getTags() != null) {
             domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
-        }
-        
-        if (feedMetadata.getSourceDataSets() != null) {
-            feedMetadata.getSourceDataSets().forEach(dataSet -> {
-                com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = Optional.ofNullable(dataSet.getId())
-                    .filter(id -> id != null)
-                    .map(dataSetProvider::resolveId)
-                    .flatMap(dataSetProvider::find)
-                    .orElseGet(() -> {
-                        //TODO I think this should be replaced with a findOrCreate using the datasource and title
-
-                        DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
-                        dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
-
-                        com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
-                        catalogModelTransform.updateDataSet(dataSet, newDs);
-                        dataSet.setId(newDs.getId().toString());
-                        return newDs;
-                    });
-                
-                feedProvider.ensureFeedSource(domainId, domainDs.getId());
-            });
         }
 
         // Create a new feed metadata stripped of any excess data that does 

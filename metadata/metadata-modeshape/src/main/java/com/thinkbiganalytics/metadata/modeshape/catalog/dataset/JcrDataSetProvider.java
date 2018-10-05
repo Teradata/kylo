@@ -37,6 +37,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -73,15 +75,16 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     public DataSet create(ID dataSourceId, String title) {
         return this.dsProvider.find(dataSourceId)
                 .map(dsrc -> {
-                    String dsSystemName = UUID.randomUUID().toString();
+                    String ensuredTitle = generateTitle(dsrc, title);  // Should we instead throw and exception if the title is missing?
+                    String dsSystemName = generateSystemName(ensuredTitle);
                     Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsSystemName);
                     
                     if (JcrUtil.hasNode(getSession(), dataSetPath)) {
-                        throw DataSetAlreadyExistsException.fromSystemName(title);
+                        throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
                     } else {
                         Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
                         JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
-                        ds.setTitle(title);
+                        ds.setTitle(ensuredTitle);
                         return ds;
                     } 
                 })
@@ -153,5 +156,9 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
 
     private String generateSystemName(String title) {
         return title.replaceAll("\\s+", "_").toLowerCase();
+    }
+
+    private String generateTitle(DataSource dataSource, String title) {
+        return StringUtils.isEmpty(title) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : title;
     }
 }

@@ -351,8 +351,9 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
                 .map(JcrFeedSource.class::cast)
                 .forEach(source -> {
                     try {
+                        // TODO: Find out why unwrapping of the proxy is necessary and fix it, otherwise see if this unwrapping can be handled in JcrPropertyUtils
                         Node sourceNode = source.getNode();
-                        if (sourceNode instanceof Proxy) {
+                        if (Proxy.isProxyClass(sourceNode.getClass())) {
                             InvocationHandler invocationHandler = Proxy.getInvocationHandler(sourceNode);
                             if (invocationHandler instanceof NodeModificationInvocationHandler) {
                                 sourceNode = ((NodeModificationInvocationHandler) invocationHandler).getWrappedNode();
