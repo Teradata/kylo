@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest;
  */
 
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -80,29 +82,46 @@ public class FeedLineageBuilder {
         if (ds == null) {
             // build the data source
             ds = datasourceTransform.toDatasource(domainDatasource, DatasourceModelTransform.Level.BASIC);
-
             restDatasources.put(ds.getId(), ds);
-            //populate the Feed relationships
-            if (domainDatasource.getFeedSources() != null) {
-
-                List<com.thinkbiganalytics.metadata.rest.model.feed.Feed> feedList = new ArrayList<>();
-                for (com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc : domainDatasource.getFeedSources()) {
-                    com.thinkbiganalytics.metadata.rest.model.feed.Feed feed = build(domainSrc.getFeed());
-                    feedList.add(feed);
-                }
-                ds.getSourceForFeeds().addAll(feedList);
-            }
-            if (domainDatasource.getFeedDestinations() != null) {
-                List<com.thinkbiganalytics.metadata.rest.model.feed.Feed> feedList = new ArrayList<>();
-                for (com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest : domainDatasource.getFeedDestinations()) {
-                    com.thinkbiganalytics.metadata.rest.model.feed.Feed feed = build(domainDest.getFeed());
-                    feedList.add(feed);
-                }
-                ds.getDestinationForFeeds().addAll(feedList);
-            }
+            populateConnections(ds, 
+                                domainDatasource.getFeedSources().stream().collect(Collectors.toSet()), 
+                                domainDatasource.getFeedDestinations().stream().collect(Collectors.toSet()));
         }
         return ds;
+    }
+    
+    private Datasource buildDatasource(DataSet domainDataSet) {
+        Datasource ds = restDatasources.get(domainDataSet.getId().toString());
+        if (ds == null) {
+            // build the data source
+            ds = datasourceTransform.toDatasource(domainDataSet, DatasourceModelTransform.Level.BASIC);
+            restDatasources.put(ds.getId(), ds);
+            populateConnections(ds, domainDataSet.getFeedSources(), domainDataSet.getFeedTargets());
+        }
+        return ds;
+    }
 
+
+    protected void populateConnections(Datasource ds, 
+                                       Set<com.thinkbiganalytics.metadata.api.feed.FeedSource> feedSources, 
+                                       Set<com.thinkbiganalytics.metadata.api.feed.FeedDestination> feedDestinations) {
+        //populate the Feed relationships
+        if (feedSources != null) {
+            List<com.thinkbiganalytics.metadata.rest.model.feed.Feed> feedList = new ArrayList<>();
+            for (com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc : feedSources) {
+                com.thinkbiganalytics.metadata.rest.model.feed.Feed feed = build(domainSrc.getFeed());
+                feedList.add(feed);
+            }
+            ds.getSourceForFeeds().addAll(feedList);
+        }
+        if (feedDestinations != null) {
+            List<com.thinkbiganalytics.metadata.rest.model.feed.Feed> feedList = new ArrayList<>();
+            for (com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest : feedDestinations) {
+                com.thinkbiganalytics.metadata.rest.model.feed.Feed feed = build(domainDest.getFeed());
+                feedList.add(feed);
+            }
+            ds.getDestinationForFeeds().addAll(feedList);
+        }
     }
 
     private com.thinkbiganalytics.metadata.rest.model.feed.Feed build(Feed domainFeed) {
@@ -115,10 +134,10 @@ public class FeedLineageBuilder {
         List<? extends com.thinkbiganalytics.metadata.api.feed.FeedSource> sources = domainFeed.getSources();
         Set<FeedSource> feedSources = new HashSet<FeedSource>();
         if (sources != null) {
-
             sources.stream().forEach(feedSource -> {
                 FeedSource src = new FeedSource();
                 feedSource.getDatasource().ifPresent(datasource -> src.setDatasource(buildDatasource(datasource)));
+                feedSource.getDataSet().ifPresent(dataSet -> src.setDatasource(buildDatasource(dataSet)));
                 feedSources.add(src);
             });
         }
@@ -129,6 +148,7 @@ public class FeedLineageBuilder {
             destinations.stream().forEach(feedDestination -> {
                 FeedDestination dest = new FeedDestination();
                 feedDestination.getDatasource().ifPresent(datasource -> dest.setDatasource(buildDatasource(datasource)));
+                feedDestination.getDataSet().ifPresent(dataSet -> dest.setDatasource(buildDatasource(dataSet)));
                 feedDestinations.add(dest);
             });
         }
