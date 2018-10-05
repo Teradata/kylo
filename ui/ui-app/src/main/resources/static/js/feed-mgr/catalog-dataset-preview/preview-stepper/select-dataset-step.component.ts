@@ -11,18 +11,19 @@ import {PreviewSchemaService} from "../../catalog/datasource/preview-schema/serv
 import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {BrowserComponent} from "../../catalog/datasource/api/browser.component";
 import {BrowserObject} from "../../catalog/api/models/browser-object";
-import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "./preview-dialog/dataset-preview-dialog.component";
 import {PreviewDataSetRequest} from "../../catalog/datasource/preview-schema/model/preview-data-set-request";
 import {FileMetadataTransformResponse} from "../../catalog/datasource/preview-schema/model/file-metadata-transform-response";
 import {Node} from "../../catalog/api/models/node";
 import {DataSource} from "../../catalog/api/models/datasource";
 import {Observable} from "rxjs/Observable";
-import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
+import {DatasetPreviewStepperService} from "./dataset-preview-stepper.service";
+import { DataSourceChangedEvent, PreviewDataSetResultEvent} from "../../catalog/datasource/preview-schema/service/dataset-preview.service"
 import {ISubscription} from "rxjs/Subscription";
 import {BrowserService} from "../../catalog/datasource/api/browser.service";
 import {UploadComponent, UploadFilesChangeEvent} from "../../catalog/datasource/upload/upload.component";
 import {FileUpload} from "../../catalog/datasource/upload/models/file-upload";
 import {RemoteFile} from "../../catalog/datasource/files/remote-file";
+import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "../../catalog/datasource/preview-schema/preview-dialog/dataset-preview-dialog.component";
 
 export enum DataSetMode {
     COLLECT="COLLECT", PREVIEW_AND_COLLECT="PREVIEW_AND_COLLECT"
@@ -62,7 +63,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
     constructor(state: StateService, stateRegistry: StateRegistry, selectionService: SelectionService,previewDatasetCollectionService: PreviewDatasetCollectionService,
         private _dialogService: TdDialogService,
                 private catalogService:CatalogService,
-                private dataSourceService:DatasetPreviewStepperService,
+                private _dataSetPreviewStepperService:DatasetPreviewStepperService,
                 private browserService:BrowserService,
                 private cd:ChangeDetectorRef
                 ) {
@@ -86,7 +87,7 @@ onBrowserComponentFiltered(files:BrowserObject[]){
 
         }
         else {
-        this.dataSourceChangedSubscription =  this.dataSourceService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
+        this.dataSourceChangedSubscription =  this._dataSetPreviewStepperService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
         }
 
     }

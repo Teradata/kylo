@@ -1,13 +1,13 @@
 import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {FileMetadataTransformService} from "../../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
-import {PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
-import {PreviewSchemaService} from "../../../catalog/datasource/preview-schema/service/preview-schema.service";
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {FileMetadataTransformService} from "../service/file-metadata-transform.service";
+import {PreviewDatasetCollectionService} from "../../../api/services/preview-dataset-collection.service";
+import {PreviewSchemaService} from "../service/preview-schema.service";
+import {PreviewDataSet} from "../model/preview-data-set";
 import {TdLoadingService} from "@covalent/core/loading";
-import {DatasetPreviewStepperService, PreviewDataSetResultEvent} from "../dataset-preview-stepper.service";
-import {DataSource} from "../../../catalog/api/models/datasource";
-import {BrowserObject} from "../../../catalog/api/models/browser-object";
+import {DatasetPreviewService, PreviewDataSetResultEvent} from "../service/dataset-preview.service";
+import {DataSource} from "../../../api/models/datasource";
+import {BrowserObject} from "../../../api/models/browser-object";
 
 export class DatasetPreviewDialogData {
 
@@ -19,8 +19,8 @@ constructor(public dataset?:PreviewDataSet)  {  }
 }
 @Component({
     selector: "dataset-preview-dialog",
-    styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component.css"],
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component.html"
+    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/preview-dialog/dataset-preview-dialog.component.scss"],
+    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview-dialog/dataset-preview-dialog.component.html"
 })
 export class DatasetPreviewDialogComponent  implements OnInit, OnDestroy{
     static DIALOG_CONFIG() {
@@ -38,7 +38,7 @@ export class DatasetPreviewDialogComponent  implements OnInit, OnDestroy{
     constructor(private dialog: MatDialogRef<DatasetPreviewDialogComponent>,
                 private _fileMetadataTransformService: FileMetadataTransformService,
                 private previewDatasetCollectionService : PreviewDatasetCollectionService,
-                private _datasetPreviewStepperService:DatasetPreviewStepperService,
+                private _datasetPreviewService:DatasetPreviewService,
                 private _tdLoadingService:TdLoadingService,
                 private previewService:PreviewSchemaService,
                 @Inject(MAT_DIALOG_DATA) public data: DatasetPreviewDialogData) {
@@ -52,7 +52,7 @@ export class DatasetPreviewDialogComponent  implements OnInit, OnDestroy{
     ngOnInit(){
         if(!this.dataset && this.data.file && this.data.datasource) {
             this._tdLoadingService.register(DatasetPreviewDialogComponent.LOADER)
-            this._datasetPreviewStepperService.prepareAndPopulatePreviewDataSet(this.data.file, this.data.datasource).subscribe((ev: PreviewDataSetResultEvent) => {
+            this._datasetPreviewService.prepareAndPopulatePreviewDataSet(this.data.file, this.data.datasource).subscribe((ev: PreviewDataSetResultEvent) => {
                 if (!ev.isEmpty()) {
                     this.dataset = ev.dataSets[0]
                     this._tdLoadingService.resolve(DatasetPreviewDialogComponent.LOADER);

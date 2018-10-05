@@ -1,11 +1,11 @@
 <ng-container *ngIf="datasource">
     <div fxLayout="column" >
       <form [formGroup]="formGroup" fxFlex="1 1 auto" fxLayout="column">
-        <catalog-file-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params" (onCheckboxChange)="onCheckboxChange($event)"
+        <catalog-file-browser  [datasource]="datasource" [useRouterStates]="false" [params]="params" (onCheckboxChange)="onCheckboxChange($event)"
                               *ngIf="datasourceSref=='.browse'">
         </catalog-file-browser>
 
-        <catalog-table-browser [fileRowTemplate]="fileRowTemplate" [datasource]="datasource" [useRouterStates]="false" [params]="params"(onCheckboxChange)="onCheckboxChange($event)" *ngIf="datasourceSref=='.connection'">
+        <catalog-table-browser [datasource]="datasource" [useRouterStates]="false" [params]="params"(onCheckboxChange)="onCheckboxChange($event)" *ngIf="datasourceSref=='.connection'">
         </catalog-table-browser>
 
         <local-files #fileUpload [datasource]="datasource" *ngIf="datasourceSref=='.upload'" (onUploadFilesChange)="onUploadFilesChange($event)"></local-files>

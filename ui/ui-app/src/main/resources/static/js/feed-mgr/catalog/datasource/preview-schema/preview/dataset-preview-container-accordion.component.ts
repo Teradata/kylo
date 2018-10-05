@@ -1,10 +1,9 @@
 import {Component, Input, OnInit} from "@angular/core";
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewDataSet} from "../model/preview-data-set";
 
 @Component({
     selector: "datasets-preview-accordion-container",
-    styleUrls: ["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview/dataset-preview-container-accordion.component.css"],
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/preview/dataset-preview-container-accordion.component.html"
+    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container-accordion.component.html"
 })
 export class DatasetPreviewContainerAccordionComponent implements OnInit{
 

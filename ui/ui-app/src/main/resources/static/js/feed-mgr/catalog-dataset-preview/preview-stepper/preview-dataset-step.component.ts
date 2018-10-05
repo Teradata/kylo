@@ -3,7 +3,7 @@ import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/map';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SelectionService} from "../../catalog/api/services/selection.service";
 import {DatasetCollectionStatus, PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
@@ -15,9 +15,13 @@ import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/
 import {Subject} from "rxjs/Subject";
 import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/preview-hive-data-set";
 import {DatabaseObject, DatabaseObjectType} from "../../catalog/datasource/tables/database-object";
-import {DatasetPreviewStepperService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "./dataset-preview-stepper.service";
+import {DatasetPreviewStepperService} from "./dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
 import {TdLoadingService} from "@covalent/core/loading";
+import {DatasetPreviewService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "../../catalog/datasource/preview-schema/service/dataset-preview.service";
+import {DatasetPreviewContainerComponent} from "../../catalog/datasource/preview-schema/preview/dataset-preview-container.component";
+import {CatalogPreviewDatasetComponent} from "../../catalog/datasource/preview-schema/catalog-preview-dataset.component";
+import {StateService} from "@uirouter/angular";
 
 
 
@@ -27,46 +31,27 @@ import {TdLoadingService} from "@covalent/core/loading";
     styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dataset-step.component.scss"],
     changeDetection:ChangeDetectionStrategy.OnPush
 })
-export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
+export class PreviewDatasetStepComponent extends CatalogPreviewDatasetComponent {
 
     static LOADER = "PreviewDataSetStepComponent.LOADING";
 
 
-    @Input()
-    formGroup:FormGroup;
-
-    @Input()
-    datasource:DataSource;
-
-    previews: PreviewDataSet[] = [];
-
-    singleSelection: boolean;
-
-
-    /**
-     * The index used for the accordion previews
-     * @type {number}
-     */
-    datasetIndex = 0;
-
-    showNoDatasetsExistScreen: boolean = false;
-
-    previewsReady:boolean;
-
-    loading:boolean;
-
-    dataSourceChangedSubscription:ISubscription;
     stepChangedSubscription:ISubscription;
     updateViewSubscription:ISubscription;
 
-    constructor(private selectionService: SelectionService,
-                private _dialogService: TdDialogService,
-                private datasetPreviewStepperService:DatasetPreviewStepperService,
-                private _tdLoadingService:TdLoadingService,
+    constructor(state:StateService,
+                selectionService: SelectionService,
+                _dialogService: TdDialogService,
+                _datasetPreviewService:DatasetPreviewService,
+                _tdLoadingService:TdLoadingService,
+                private _datasetPreviewStepperService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef
     ) {
+        super(state,selectionService,_dialogService,_datasetPreviewService,_tdLoadingService);
         this.singleSelection = this.selectionService.isSingleSelection();
-        this.updateViewSubscription = this.datasetPreviewStepperService.subscribeToUpdateView(this.onUpdateView.bind(this))
+        this.updateViewSubscription = this._datasetPreviewStepperService.subscribeToUpdateView(this.onUpdateView.bind(this))
+
+
     }
     
     onUpdateView(){
@@ -74,24 +59,33 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
     }
 
 
+    onPreviewValid(ds:PreviewDataSet){
+        this._datasetPreviewStepperService.markFormAsValid(this.formGroup)
+    }
+
+    onPreviewInvalid(ds:PreviewDataSet){
+        this._datasetPreviewStepperService.markFormAsInvalid(this.formGroup)
+    }
+
+    onInitialPreviewInvalid(){
+        this._datasetPreviewStepperService.markFormAsInvalid(this.formGroup)
+    }
+    onInitialPreviewValid(){
+        this._datasetPreviewStepperService.markFormAsValid(this.formGroup)
+    }
+
+
+    initProperties(){
+        super.initProperties();
+        this.stepChangedSubscription = this._datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
+    }
     ngOnInit() {
-        if(this.formGroup == undefined){
-            this.formGroup = new FormGroup({});
-        }
-        this.formGroup.addControl("hiddenValidFormCheck",new FormControl())
-
-        this.dataSourceChangedSubscription =  this.datasetPreviewStepperService.subscribeToDataSourceChanges(this.onDataSourceChanged.bind(this));
-
-        this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
-
-        //preview
-        this._previewSelection();
+        super.ngOnInit();
     }
 
     ngOnDestroy() {
-        if(this.dataSourceChangedSubscription){
-            this.dataSourceChangedSubscription.unsubscribe();
-        }
+        super.ngOnDestroy();
+
         if(this.stepChangedSubscription){
             this.stepChangedSubscription.unsubscribe();
         }
@@ -100,90 +94,31 @@ export class PreviewDatasetStepComponent implements OnInit, OnDestroy {
         }
     }
 
-    private  startLoading(){
-        this.loading = true;
-        this._tdLoadingService.register(PreviewDatasetStepComponent.LOADER);
+    protected  startLoading(){
+        super.startLoading();
         this.cd.markForCheck();
     }
 
-    private   finishedLoading(){
-        this.loading = false;
-        this._tdLoadingService.resolve(PreviewDatasetStepComponent.LOADER);
+    protected  finishedLoading(){
+      super.finishedLoading();
         this.cd.markForCheck();
     }
 
 
-    private onDataSourceChanged($event:DataSourceChangedEvent){
-        this.datasource = $event.dataSource;
-    }
 
     private onStepChanged(idx:number){
-        if(idx == 2) {
-            //we are on this step... try to preview
-            this._previewSelection();
-        }
+            if (idx == 2) {
+                if(this.datasetPreviewContainer != undefined) {
+                    this.datasetPreviewContainer.selectedDataSet = undefined;
+                }
+                //we are on this step... try to preview
+                this.previewSelection();
+            }
+
     }
 
 
-    private _previewSelection() {
-        if (this.datasource) {
 
-            this.previews = [];
-            this.previewsReady = false;
-            this.formGroup.get("hiddenValidFormCheck").setValue("")
-            this.startLoading();
-            let node: Node = this.selectionService.get(this.datasource.id);
-            this.datasetPreviewStepperService.prepareAndPopulatePreview(node, this.datasource).subscribe((ev:PreviewDataSetResultEvent) => {
-
-                if(ev.isEmpty()){
-                    //Show "Selection is needed" card
-                    this.showNoDatasetsExistScreen = true;
-                    this._dialogService.openAlert({
-                        message: 'You need to select a source',
-                        disableClose: true,
-                        title: 'A selection is needed'
-                    });
-                    this.finishedLoading();
-                }
-                else {
-                    this.previews = ev.dataSets;
-                    if(ev.hasError()){
-                        let dataSetNames = ev.errors.map((ds:PreviewDataSet) => ds.key).join(",");
-                        let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
-                        if (this.singleSelection) {
-                            message += " You will need to alter the preview settings or manually create the schema"
-                        }
-                        //WARN different datasets
-                        this._dialogService.openAlert({
-                            message: message,
-                            disableClose: true,
-                            title: 'Error parsing source selection',
-                        });
-                    }
-                    else {
-                        this.formGroup.get("hiddenValidFormCheck").setValue("valid")
-
-                    }
-                    this.previewsReady = true;
-                    this.finishedLoading();
-                }
-
-
-            }, err => {
-
-                console.error(err)
-                this._dialogService.openAlert({
-                    message: "ERROR " + err,
-                    disableClose: true,
-                    title: 'Error parsing source selection',
-                });
-                this.previewsReady = true;
-                this.finishedLoading();
-            });
-
-
-        }
-    }
 
 
 

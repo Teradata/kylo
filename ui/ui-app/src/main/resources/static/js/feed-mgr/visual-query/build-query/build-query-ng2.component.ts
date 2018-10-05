@@ -29,7 +29,6 @@ import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
 import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
 import {MatDialogConfig} from "@angular/material/dialog";
-import {DatasetPreviewDialogComponent} from "../../catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component";
 import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {Subject} from "rxjs/Subject";
 

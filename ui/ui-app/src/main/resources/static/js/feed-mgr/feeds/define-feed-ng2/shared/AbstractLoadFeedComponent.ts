@@ -17,7 +17,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
     public loadingFeed:boolean;
 
-    @Input()
+    @Input("feed")
     public feed?:Feed;
 
     /**
@@ -150,26 +150,26 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
             //attempt to select it
             this.feedSideNavService.selectStaticLinkByName(linkName);
         }
-        if(this.feed == undefined) {
-            let feed = this.defineFeedService.getFeed();
 
-            if((feed && feedId && (this.refresh || (feed.id != feedId || feed.loadMode !=this.loadMode)))|| (feed == undefined && feedId != undefined)) {
+        let feed:Feed = this.feed;
+        if(feed == undefined) {
+            feed = this.defineFeedService.getFeed();
+        }
+
+        if((feed && feedId && (this.refresh || (feed.id != feedId || feed.loadMode !=this.loadMode)))|| (feed == undefined && feedId != undefined)) {
+       // if((feed && feedId && (this.refresh || (feed.id != feedId || (feed.isDraft() && this.loadMode == LoadMode.DEPLOYED))))|| (feed == undefined && feedId != undefined)) {
                return this.loadFeed(feedId, this.refresh);
-            }
-            else if( feed != undefined){
-                this.feed = feed;
+        }
+        else if( feed != undefined){
+               this.feed = feed;
                 this._setFeedState();
                 return Observable.of(this.feed)
-            }
-            else {
+         }
+         else {
                 this.stateService.go(FEED_DEFINITION_STATE_NAME+ ".select-template")
                 return Observable.of({})
-            }
-        }
-        else {
-            this._setFeedState();
-            return Observable.of(this.feed)
-        }
+         }
+
     }
 
     /**
