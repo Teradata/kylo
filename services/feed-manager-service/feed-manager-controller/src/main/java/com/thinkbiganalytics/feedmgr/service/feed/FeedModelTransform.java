@@ -291,18 +291,20 @@ public class FeedModelTransform {
         
         if (feedMetadata.getSourceDataSets() != null) {
             feedMetadata.getSourceDataSets().forEach(dataSet -> {
-                com.thinkbiganalytics.metadata.api.catalog.DataSet.ID domainDsId = dataSetProvider.resolveId(dataSet.getId());
-                com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = dataSetProvider.find(domainDsId)
+                com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = Optional.ofNullable(dataSet.getId())
+                    .map(dataSetProvider::resolveId)
+                    .flatMap(dataSetProvider::find)
                     .orElseGet(() -> {
                         DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                         dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
                         
                         com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
                         catalogModelTransform.updateDataSet(dataSet, newDs);
+                        dataSet.setId(newDs.getId().toString());
                         return newDs;
                     });
                 
-                feedProvider.ensureFeedSource(domainId, domainDsId);
+                feedProvider.ensureFeedSource(domainId, domainDs.getId());
             });
         }
 
