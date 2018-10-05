@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
@@ -99,26 +100,22 @@ public class DataSetController extends AbstractCatalogController {
     public Response createDataSet(@Nonnull final DataSet dataSet) {
         log.entry(dataSet);
         
-        try {
-            DataSet ds = findOrCreateDataSet(dataSet);
-            if(ds != null){
-                return Response.ok(log.exit(ds)).build();
+        // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSet() for a more typical REST API
+        if (! StringUtils.isEmpty(dataSet.getId())) {
+            return updateDataSet(dataSet);
+        } else {
+            try {
+                return metadataService.commit(() -> {
+                    com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dSrcId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                    com.thinkbiganalytics.metadata.api.catalog.DataSet domain = dataSetProvider.create(dSrcId, dataSet.getTitle());
+                    
+                    modelTransform.updateDataSet(dataSet, domain);
+                    return Response.ok(log.exit(modelTransform.dataSetToRestModel().apply(domain))).build();
+                });
+            } catch (DataSourceNotFoundException e) {
+                log.debug("Data set not created", e);
+                throw new BadRequestException(getMessage("catalog.dataset.notfound.id", e.getId()));
             }
-            else {
-                throw new BadRequestException(getMessage("catalog.dataset.notfound.id"));
-            }
-            /*
-            return metadataService.commit(() -> {
-                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dSrcId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
-                com.thinkbiganalytics.metadata.api.catalog.DataSet domain = dataSetProvider.create(dSrcId, dataSet.getTitle());
-                
-                modelTransform.updateDataSet(dataSet, domain);
-                return Response.ok(log.exit(modelTransform.dataSetToRestModel().apply(domain))).build();
-            });
-            */
-        } catch (DataSourceNotFoundException e) {
-            log.debug("Data set not created", e);
-            throw new BadRequestException(getMessage("catalog.dataset.notfound.id", e.getId()));
         }
     }
     
