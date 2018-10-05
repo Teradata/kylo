@@ -8,33 +8,6 @@
         "label": "Connection",
         "sref": ".connection"
       }
-    ],
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
     ]
   },
   {
@@ -44,6 +17,17 @@
       {
         "label": "Files",
         "sref": ".upload"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url"
+          }
+        ]
       }
     ],
     "nifiProperties": [
@@ -83,45 +67,6 @@
             }
           }
         ]
-      }
-    ]
-  },
-  {
-    "title": "Teradata",
-    "pluginId": "teradata",
-    "format": "jdbc",
-    "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
       }
     ]
   },
