@@ -2,6 +2,8 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+import 'feed-mgr/feeds/module-require';
+import 'feed-mgr/feeds/define-feed/module-require';
 
 export class DefineFeedController implements ng.IComponentController {
 
@@ -325,6 +327,7 @@ export class DefineFeedController implements ng.IComponentController {
     };
 
 }
-angular.module(moduleName).controller('DefineFeedController',
+const module = angular.module(moduleName).controller('DefineFeedController',
     ["$scope", "$http", "$mdDialog", "$q", "$transition$", "AccessControlService", "FeedService", "FeedSecurityGroups", "RestUrlService", "StateService",
      "UiComponentsService", DefineFeedController]);
+export default module;

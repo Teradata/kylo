@@ -2,9 +2,11 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Transition} from "@uirouter/core";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+import 'feed-mgr/feeds/module-require';
+import 'feed-mgr/feeds/define-feed/module-require';
 
 
-export default class DefineFeedCompleteController {
+export class DefineFeedCompleteController {
 
     model: any;
     error: any;
@@ -65,7 +67,7 @@ export default class DefineFeedCompleteController {
     }
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
     .component('thinkbigDefineFeedCompleteController', {
         bindings: {
             $transition$: '<'
@@ -74,3 +76,4 @@ angular.module(moduleName)
         controllerAs: 'vm',
         controller: DefineFeedCompleteController,
     });
+export default module;

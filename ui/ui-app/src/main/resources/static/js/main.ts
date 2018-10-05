@@ -2,16 +2,13 @@ import * as angular from 'angular';
 import {setAngularJSGlobal} from '@angular/upgrade/static';
 setAngularJSGlobal(angular);
 
-import {IAngularStatic} from "angular";
 import {Injector} from "@angular/core";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {UpgradeModule} from "@angular/upgrade/static";
-// import {getUIRouter} from "@uirouter/angular-hybrid";
 import {servicesPlugin, UrlService, UIRouter} from "@uirouter/core";
 
 import {KyloModule} from "./app.module";
 
-declare const angular: IAngularStatic;
 
 // Fix @uirouter/core unable to load
 servicesPlugin(null);

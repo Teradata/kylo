@@ -234,13 +234,13 @@ export class FeedsTableController implements ng.IComponentController {
 
 
 class FeedTableComponent implements IComponentOptions {
-    private template: any;
-    private controller: FeedsTableController;
-    private controllerAs = 'vm';
-    constructor() {
-        this.template = require("./feeds-table.html");
-        this.controller = FeedsTableController;
-    }
+    templateUrl?: string | ((...args: any[]) => string) | (string | ((...args: any[]) => string))[];
+    bindings?: { [boundProperty: string]: string; };
+    transclude?: boolean | { [slot: string]: string; };
+    require?: { [controller: string]: string; };
+    template = require("./feeds-table.html");
+    controller = FeedsTableController;
+    controllerAs = 'vm';
 }
 
 const module = angular

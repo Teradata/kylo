@@ -22,7 +22,7 @@ class Route {
         /*this.*/
         app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", this.configFn.bind(this)]);
         /*this.*/
-        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService", "$ocLazyLoad"
+        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService", "$ocLazyLoad",
             this.runFn.bind(this)]);
     }
 
@@ -70,7 +70,7 @@ class Route {
                         component: 'homeController',
                     }
                 },
-                lazyLoad: ($transition$) => {
+                lazyLoad: ($transition$: any) => {
                     const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
                     return import(/* webpackChunkName: "home.module" */ './main/HomeController')
                         .then(mod => {
@@ -87,7 +87,7 @@ class Route {
         $stateProvider.state({
             name: 'feeds.**',
             url: '/feeds',
-            lazyLoad: ($transition$) => {
+            lazyLoad: ($transition$: any) => {
                 const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
 
                 return import(/* webpackChunkName: "feedmgr.feeds.module" */ "./feed-mgr/feeds/module")
@@ -128,14 +128,22 @@ class Route {
             url: '/import-feed',
             params: {},
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('import-feed', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading import-feed ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "feedmgr.import-feed.module" */ "./feed-mgr/feeds/define-feed/module.js")
+                    .then(mod => {
+                        console.log('imported feed-mgr/feeds/define-feed/module', mod);
+                        $ocLazyLoad.load({name: 'kylo.feedmgr.definefeed'}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('import-feed', transition.params());
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading import-feed ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load feed-mgr/feeds/define-feed/module, " + err);
+                    });
             }
         }).state({
             name: 'feed-details.**',
@@ -149,7 +157,7 @@ class Route {
                 return import(/* webpackChunkName: "feedmgr.feed-details.module" */ "./feed-mgr/feeds/edit-feed/module.js")
                     .then(mod => {
                         console.log('imported ./feed-mgr/feeds/edit-feed/module', mod);
-                        $ocLazyLoad.load({name: mod.name}).then(function success(args: any) {
+                        $ocLazyLoad.load({name: 'kylo.feedmgr.editfeed'}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('feed-details', transition.params());
                             return args;
@@ -774,7 +782,7 @@ class Route {
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
           $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any,
-          loginNotificationService: LoginNotificationService, $ocLazyLoad) {
+          loginNotificationService: LoginNotificationService, $ocLazyLoad: any) {
         //initialize the access control
         accessControlService.init();
         loginNotificationService.initNotifications();

@@ -27,7 +27,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/DefineFeedController'])
+                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/DefineFeedController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
+                    return import(/* webpackChunkName: "feeds.define-feed.controller" */ 'feed-mgr/feeds/define-feed/DefineFeedController')
+                        .then(mod => {
+                            console.log('imported DefineFeedController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load DefineFeedController, " + err);
+                        });
+                }]
             },
             data: {
                 breadcrumbRoot: false,
@@ -48,7 +58,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController'])
+                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
+                    return import(/* webpackChunkName: "feeds.define-feed-complete.controller" */ 'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController')
+                        .then(mod => {
+                            console.log('imported DefineFeedCompleteController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load DeDefineFeedCompleteControllerfineFeedController, " + err);
+                        });
+                }]
             },
             data: {
                 breadcrumbRoot: false,
@@ -71,7 +91,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/ImportFeedController'])
+                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/ImportFeedController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
+                    return import(/* webpackChunkName: "feeds.import-feed.controller" */ 'feed-mgr/feeds/define-feed/ImportFeedController')
+                        .then(mod => {
+                            console.log('imported ImportFeedController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ImportFeedController, " + err);
+                        });
+                }]
             },
             data: {
                 breadcrumbRoot: false,
@@ -82,7 +112,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         });
 
         function lazyLoadController(path){
-            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/define-feed/module-require']);
+            return lazyLoadUtil.default.lazyLoadController(path);
         }
     }]);
 

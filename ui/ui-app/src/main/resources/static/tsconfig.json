@@ -15,21 +15,7 @@
     "typeRoots": ["../../../../node_modules/@types"],
     "outDir": "../../../../target/classes/static",
     "sourceMap": true,
-//    "paths": {
-//      "app/*": ["."]
-//    },
-    "sourceRoot": "",
-    "allowJs": false,
-    "importHelpers": true
-  },
-  "include": [
-    "."
-  ],
-  "exclude": [
-    "../../../../node_modules",
-    "./node_modules",
-    "./bower_components",
-    "./js/vendor"
-  ]
-
+    "allowJs": true,
+    "sourceRoot": "/"
+  }
 }

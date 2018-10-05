@@ -4,8 +4,6 @@ import {Common} from "../../common/CommonTypes";
 import {Templates} from "./TemplateTypes";
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 
- declare namespace Import {
-
      export const enum ImportComponentType {
         NIFI_TEMPLATE = "NIFI_TEMPLATE",
         TEMPLATE_DATA = "TEMPLATE_DATA",
@@ -222,4 +220,3 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
         reusableTemplateConnections: ReusableTemplateConnectionInfo[];
         importOptions: ImportOptions;
     }
-}

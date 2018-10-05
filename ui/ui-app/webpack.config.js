@@ -11,6 +11,8 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const sass = require('sass');
 const CompressionPlugin = require("compression-webpack-plugin");
 const ShakePlugin = require('webpack-common-shake').Plugin;
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 const devServer = {
     contentBase: path.resolve("dist"),
@@ -32,12 +34,14 @@ const devServer = {
     }]
 };
 
+const tsCompilerOutput = path.resolve(__dirname, 'target/classes/static');
 const nodeModulesDir = path.resolve(__dirname, 'node_modules');
 const staticDir = path.resolve('./src/main/resources/static');
 const staticJsDir = path.join(staticDir, 'js');
 const staticNodeModules = path.join(staticDir, 'node_modules');
 const staticBower = path.join(staticDir, 'bower_components');
 const staticJsVendorDir = path.join(staticJsDir, 'vendor');
+const tsConfigFile = path.resolve(__dirname, 'tsconfig.json');
 
 const webpackConfig = (env) => {
     const config = {
@@ -117,7 +121,7 @@ const webpackConfig = (env) => {
             path: path.join(__dirname, "dist")
         },
         module: {
-            rules: [
+            loaders: [
                 {
                     test: /\.html$/,
                     loader: "raw-loader",
@@ -163,17 +167,7 @@ const webpackConfig = (env) => {
                 {
                     test: /\.js$/,
                     use: [
-                        {
-                            loader: 'babel-loader',
-                            options: {
-                                presets: [
-                                    ['env', { modules: false }], //to allow for tree-shaking
-                                ],
-                                "plugins": [
-                                    "syntax-dynamic-import" //to allow for lazy loading with inline "return import(..." statements
-                                ]
-                            }
-                        },
+                        'babel-loader',
                         {
                             loader: path.resolve('./webpack.angular.module.loader.js'),
                             options: {
@@ -187,7 +181,16 @@ const webpackConfig = (env) => {
                                 baseUrl: "src/main/resources/static",
                                 modules: ["bower_components"]
                             }
-                        }
+                        },
+                        {
+                            loader: path.resolve('./webpack.angular.template.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static"
+                            }
+                        }],
+                    include: [
+                        // tsCompilerOutput,
+                        staticDir
                     ],
                     exclude: [
                         nodeModulesDir,
@@ -196,13 +199,19 @@ const webpackConfig = (env) => {
                         staticJsVendorDir
                     ]
                 },
+                // {
+                //     enforce: "pre",
+                //     test: /\.js$/,
+                //     exclude: /(node_modules|bower_components|vendor)/,
+                //     loader: "eslint-loader",
+                // },
                 {
                     test: /\.ts$/,
                     use: [
                         {
                             loader: 'cache-loader',
                             options: {
-                                cacheDirectory: path.resolve('target/cache-loader')
+                                cacheDirectory: path.resolve('dist/cache-loader')
                             }
                         },
                         {
@@ -215,6 +224,7 @@ const webpackConfig = (env) => {
                         {
                             loader: 'ts-loader',
                             options: {
+                                configFile: tsConfigFile,
                                 transpileOnly: true,
                                 happyPackMode: true
                             }
@@ -264,114 +274,7 @@ const webpackConfig = (env) => {
                     from: 'js/vendor/material-icons/*',
                     to: '[name].[ext]'
                 },
-                // loginPageDependencies
-
-                {
-                    context: './src/main/resources/static',
-                    from: 'login',
-                    to: 'login'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'login.html',
-                    to: 'login.html'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/oclazyload/dist/ocLazyLoad.require.js',
-                    to: 'bower_components/oclazyload/dist/ocLazyLoad.require.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-animate/angular-animate.js',
-                    to: 'bower_components/angular-animate/angular-animate.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-aria/angular-aria.js',
-                    to: 'bower_components/angular-aria/angular-aria.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-messages/angular-messages.js',
-                    to: 'bower_components/angular-messages/angular-messages.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/requirejs/require.js',
-                    to: 'bower_components/requirejs/require.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular/angular.js',
-                    to: 'bower_components/angular/angular.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/underscore/underscore.js',
-                    to: 'bower_components/underscore/underscore.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/jquery/dist/jquery.js',
-                    to: 'bower_components/jquery/dist/jquery.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-material/angular-material.min.css',
-                    to: 'bower_components/angular-material/angular-material.min.css'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-material/angular-material.js',
-                    to: 'bower_components/angular-material/angular-material.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-cookies/angular-cookies.js',
-                    to: 'bower_components/angular-cookies/angular-cookies.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-material-icons/angular-material-icons.js',
-                    to: 'bower_components/angular-material-icons/angular-material-icons.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-translate/angular-translate.js',
-                    to: 'bower_components/angular-translate/angular-translate.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js',
-                    to: 'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-translate-storage-local/angular-translate-storage-local.min.js',
-                    to: 'bower_components/angular-translate-storage-local/angular-translate-storage-local.min.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-translate-handler-log/angular-translate-handler-log.min.js',
-                    to: 'bower_components/angular-translate-handler-log/angular-translate-handler-log.min.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js',
-                    to: 'bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'assets/env.js',
-                    to: 'assets/env.js'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'assets/login.css',
-                    to: 'assets/login.css'
-                },
-
+                ...loginPageDependencies
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -407,7 +310,12 @@ const webpackConfig = (env) => {
                 "window.vis": "vis",
             }),
 
-            new writeFilePlugin(),
+            new FriendlyErrorsWebpackPlugin(),
+            // new ForkTsCheckerWebpackPlugin(),
+            new ForkTsCheckerWebpackPlugin({
+                tsconfig: tsConfigFile
+            }),
+            // new writeFilePlugin(),
 
             // new BundleAnalyzerPlugin()
         ]
@@ -427,7 +335,7 @@ const webpackConfig = (env) => {
             }),
             // new ShakePlugin(), //CommonJS shaking
             new UglifyJSPlugin({
-                cache: path.resolve(__dirname, './target/cache-uglifyjs-plugin'),
+                cache: path.resolve(__dirname, './dist/cache-uglifyjs-plugin'),
                 parallel: 4,
                 sourceMap: false,
                 uglifyOptions: {
@@ -446,3 +354,113 @@ const webpackConfig = (env) => {
 };
 
 module.exports = webpackConfig;
+
+
+const loginPageDependencies = [
+    {
+        context: './src/main/resources/static',
+        from: 'login',
+        to: 'login'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'login.html',
+        to: 'login.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/oclazyload/dist/ocLazyLoad.require.js',
+        to: 'bower_components/oclazyload/dist/ocLazyLoad.require.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-animate/angular-animate.js',
+        to: 'bower_components/angular-animate/angular-animate.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-aria/angular-aria.js',
+        to: 'bower_components/angular-aria/angular-aria.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-messages/angular-messages.js',
+        to: 'bower_components/angular-messages/angular-messages.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/requirejs/require.js',
+        to: 'bower_components/requirejs/require.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular/angular.js',
+        to: 'bower_components/angular/angular.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/underscore/underscore.js',
+        to: 'bower_components/underscore/underscore.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/jquery/dist/jquery.js',
+        to: 'bower_components/jquery/dist/jquery.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-material/angular-material.min.css',
+        to: 'bower_components/angular-material/angular-material.min.css'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-material/angular-material.js',
+        to: 'bower_components/angular-material/angular-material.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-cookies/angular-cookies.js',
+        to: 'bower_components/angular-cookies/angular-cookies.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-material-icons/angular-material-icons.js',
+        to: 'bower_components/angular-material-icons/angular-material-icons.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-translate/angular-translate.js',
+        to: 'bower_components/angular-translate/angular-translate.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js',
+        to: 'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-translate-storage-local/angular-translate-storage-local.min.js',
+        to: 'bower_components/angular-translate-storage-local/angular-translate-storage-local.min.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-translate-handler-log/angular-translate-handler-log.min.js',
+        to: 'bower_components/angular-translate-handler-log/angular-translate-handler-log.min.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js',
+        to: 'bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'assets/env.js',
+        to: 'assets/env.js'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'assets/login.css',
+        to: 'assets/login.css'
+    }
+
+]

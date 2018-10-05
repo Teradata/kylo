@@ -28,7 +28,7 @@ class ModuleFactory  {
                     controllerAs:'vm'
                 }
             },
-            lazyLoad: ($transition$) => {
+            lazyLoad: ($transition$: any) => {
                 const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
 
                 return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
