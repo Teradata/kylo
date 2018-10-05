@@ -37,7 +37,11 @@ import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
+import com.thinkbiganalytics.kylo.spark.model.enums.SessionKind;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementKind;
+import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
+import com.thinkbiganalytics.kylo.utils.ScalaScriptUtils;
 import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
@@ -48,6 +52,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcessListener;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -65,8 +70,9 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     private List<SparkShellProcessListener> listeners = Lists.newArrayList();
 
+
     @Resource
-    private ScriptGenerator scriptGenerator;
+    private ScalaScriptService scalaScriptService;
 
     @Resource
     private KerberosSparkProperties kerberosSparkProperties;
@@ -306,10 +312,11 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     private void initSession(SparkLivyProcess sparkLivyProcess) {
         JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
-        String script = scriptGenerator.script("initSession");
+
+        String script = scalaScriptService.getInitSessionScript();
 
         StatementsPost sp = new StatementsPost.Builder()
-            .kind("spark")
+            .kind(StatementKind.spark.toString())
             .code(script)
             .build();
 

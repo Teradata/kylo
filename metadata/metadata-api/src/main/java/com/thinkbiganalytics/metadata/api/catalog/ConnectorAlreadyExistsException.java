@@ -38,7 +38,7 @@ public class ConnectorAlreadyExistsException extends EntityAlreadyExistsExceptio
      * @return the exception
      */
     public static ConnectorAlreadyExistsException fromSystemName(String systemName) {
-        return new ConnectorAlreadyExistsException("A conector already exists with the name: " + systemName, systemName);
+        return new ConnectorAlreadyExistsException("A connector already exists with the name: " + systemName, systemName);
     }
     
     public ConnectorAlreadyExistsException(String message, String systemName) {
