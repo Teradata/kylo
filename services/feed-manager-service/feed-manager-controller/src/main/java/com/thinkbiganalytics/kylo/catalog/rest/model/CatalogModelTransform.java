@@ -135,6 +135,7 @@ public class CatalogModelTransform {
     public com.thinkbiganalytics.metadata.api.catalog.DataSource updateDataSource(DataSource model, com.thinkbiganalytics.metadata.api.catalog.DataSource domain) {
         domain.setTitle(model.getTitle());
         domain.setDescription(generateDescription(model));
+        domain.setNifiControllerServiceId(model.getNifiControllerServiceId());
         updateSparkParameters(model.getTemplate(), domain.getSparkParameters());
         return domain;
     }
@@ -166,6 +167,7 @@ public class CatalogModelTransform {
             DataSource model = new DataSource();
             model.setId(domain.getId().toString());
             model.setTitle(domain.getTitle());
+            model.setNifiControllerServiceId(domain.getNifiControllerServiceId());
             model.setConnector(connectorToRestModel().apply(domain.getConnector()));
             model.setTemplate(sparkParamsToRestModel().apply(domain.getSparkParameters()));
             securityTransform.applyAccessControl(domain, model);
