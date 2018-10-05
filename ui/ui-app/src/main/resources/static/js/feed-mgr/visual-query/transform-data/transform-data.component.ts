@@ -28,6 +28,7 @@ import {QuickColumnsDialog, QuickColumnsDialogData} from "./profile-stats/quick-
 import {ColumnUtil} from "../wrangler/core/column-util";
 import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./profile-stats/schema-layout-dialog";
 import {QuickCleanDialog, QuickCleanDialogData} from "./profile-stats/quick-clean-dialog";
+import {StringUtils} from "../../../common/utils/StringUtils";
 
 declare const CodeMirror: any;
 

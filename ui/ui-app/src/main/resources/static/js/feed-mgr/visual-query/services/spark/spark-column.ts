@@ -14,6 +14,7 @@ import {DateFormatType, DateFormatUnit, DialogService} from "../../wrangler/api/
 import {ColumnController} from "../../wrangler/column-controller";
 import {ColumnDelegate, DataCategory} from "../../wrangler/column-delegate";
 import {ColumnUtil} from "../../wrangler/core/column-util";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 
 /**
  * Data types supported by Spark and Hive.

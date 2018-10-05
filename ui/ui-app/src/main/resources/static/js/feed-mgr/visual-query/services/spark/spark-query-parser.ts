@@ -4,6 +4,7 @@ import {UserDatasource} from "../../../model/user-datasource";
 import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, SqlDialect, VisualQueryModel, VisualQueryService} from "../../../services/VisualQueryService";
 import {QueryParser} from "../../wrangler/query-parser";
 import {SparkConstants} from "./spark-constants";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 
 /** Name of the DatasourceProvider variable */
 const DATASOURCE_PROVIDER = "datasourceProvider";

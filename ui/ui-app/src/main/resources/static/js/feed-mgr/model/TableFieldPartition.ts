@@ -4,6 +4,8 @@ import {DomainType} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
 import {KyloObject} from "../../common/common.model";
+import {StringUtils} from "../../common/utils/StringUtils";
+
 import {TableFieldPolicy} from "./TableFieldPolicy";
 
 export class TableFieldPartition  implements KyloObject {

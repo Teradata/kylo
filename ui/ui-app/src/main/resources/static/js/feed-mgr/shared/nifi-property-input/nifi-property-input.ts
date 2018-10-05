@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";;
+import {StringUtils} from "../../../common/utils/StringUtils";
 
 var directive = function () {
     return {

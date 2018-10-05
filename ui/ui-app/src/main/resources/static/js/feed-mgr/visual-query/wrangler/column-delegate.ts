@@ -21,6 +21,7 @@ import {ReplaceValueForm} from "./core/columns/replace-value-form";
 import {RescaleForm} from "./core/columns/rescale-form";
 import {RoundNumberForm} from "./core/columns/round-number-form";
 import {AnalyzeColumnDialog} from "../transform-data/profile-stats/analyze-column-dialog";
+import {StringUtils} from "../../../common/utils/StringUtils";
 
 /**
  * Categories for data types.

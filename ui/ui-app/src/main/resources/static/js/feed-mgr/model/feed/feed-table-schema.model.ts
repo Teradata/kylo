@@ -4,6 +4,8 @@ import {FeedTableDefinition} from "./feed-table-definition.model";
 import {TableFieldPolicy} from "../TableFieldPolicy";
 import {KyloObject} from "../../../common/common.model";
 import {ObjectUtils} from "../../../common/utils/object-utils";
+import {StringUtils} from "../../../common/utils/StringUtils";
+
 
 export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
 

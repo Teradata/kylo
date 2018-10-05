@@ -5,6 +5,7 @@ import {SparkConstants} from "./spark-constants";
 import {SparkExpression} from "./spark-expression";
 import {SparkExpressionType} from "./spark-expression-type";
 import {SparkQueryEngine} from "./spark-query-engine";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 
 /**
  * Parses an abstract syntax tree into a Spark script.

@@ -29,6 +29,9 @@ import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 import {ArrayUtils} from "../../../model/utils";
 import {TableForm, TableCreateMethod} from "../../../model/feed/feed-table";
 import {ObjectUtils} from "../../../../common/utils/object-utils";
+import {StringUtils} from "../../../../common/utils/StringUtils";
+
+
 
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 

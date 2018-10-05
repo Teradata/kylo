@@ -6,6 +6,8 @@ import * as _ from "underscore";
 
 import {SparkDataSet} from "../model/spark-data-set.model";
 import {Injectable} from "@angular/core";
+import {StringUtils} from "../../common/utils/StringUtils";
+
 //const moduleName: string = require("feed-mgr/module-name");
 
 /**

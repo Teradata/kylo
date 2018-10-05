@@ -3,6 +3,7 @@ import {DomainType, DomainTypesService} from "../services/DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
 import {CloneUtil} from "../../common/utils/clone-util";
+import {StringUtils} from "../../common/utils/StringUtils";
 import {KyloObject} from "../../common/common.model";
 import {TableFieldPolicy} from "./TableFieldPolicy";
 

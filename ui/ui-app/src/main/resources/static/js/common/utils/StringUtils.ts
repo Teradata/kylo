@@ -1,7 +1,7 @@
 /**
  * A collection of utility functions for strings.
  */
-var StringUtils: any = (function() {
+export var StringUtils: any = (function() {
     function StringUtils() {
     }
 
