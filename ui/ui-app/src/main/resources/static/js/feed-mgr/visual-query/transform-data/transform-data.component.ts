@@ -13,7 +13,12 @@ import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {FeedService} from '../../services/FeedService';
-import {ApplyTableDomainTypesDialog} from "../../shared/apply-domain-type/apply-table-domain-types.component";
+import {
+    ApplyDomainTypesDialogComponent,
+    ApplyDomainTypesResponse,
+    ApplyDomainTypesResponseStatus,
+    ApplyDomainTypesRow
+} from "../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {ColumnProfile, ColumnProfileHelper} from "../wrangler/api/column-profile";
 import {ColumnController} from "../wrangler/column-controller";
 import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column-delegate";
@@ -420,20 +425,23 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.$mdDialog.open(ApplyTableDomainTypesDialog, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
-                .afterClosed().subscribe((selected: any) => {
-                selected.forEach((selection: any) => {
-                    var fieldIndex = fields.findIndex((element: WranglerColumn) => {
-                        return element.name === selection.name;
-                    });
-                    this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
-                    flgChanged = true;
-                });
-                if (flgChanged) {
-                    // Need to supply a formula
-                    const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
-                    this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
-                }
+            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
+                .afterClosed().subscribe((response: ApplyDomainTypesResponse) => {
+                    if(response.status ==ApplyDomainTypesResponseStatus.APPLY ) {
+                        let selected = response.appliedRows;
+                        selected.forEach((selection: ApplyDomainTypesRow) => {
+                            var fieldIndex = fields.findIndex((element: WranglerColumn) => {
+                                return element.name === selection.name;
+                            });
+                            this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
+                            flgChanged = true;
+                        });
+                        if (flgChanged) {
+                            // Need to supply a formula
+                            const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
+                            this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
+                        }
+                    }
             }, () => {
                 // ignore cancel
             });
