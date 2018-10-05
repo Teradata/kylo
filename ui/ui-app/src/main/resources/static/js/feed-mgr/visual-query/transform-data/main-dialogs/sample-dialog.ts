@@ -12,8 +12,7 @@ export class StrategyItem {
 
     constructor(public method: string,
                 public label: string,
-                public description: string,
-                public passes: number) {
+                public description: string) {
     }
 }
 
@@ -32,14 +31,13 @@ export class SampleDialog {
 
     constructor(private dialog: MatDialogRef<SampleDialog>, @Inject(MAT_DIALOG_DATA) public data: SampleDialogData) {
 
-        this.options.push(new StrategyItem("first", "First records", "Sample first n rows", 0));
-        this.options.push(new StrategyItem("rndnum", "Random (#)", "Sample approx. n random rows", 2));
-        this.options.push(new StrategyItem("ratio", "Random (ratio)", "Sample % of random rows", 1));
-
-        //this.options.push(new StrategyItem("last", "Last records", "Sample last n rows"));
+        this.options.push(new StrategyItem("first", "First records", "Sample first n rows"));
+        this.options.push(new StrategyItem("rndnum", "Random (#)", "Sample approx. n random rows"));
+        this.options.push(new StrategyItem("ratio", "Random (ratio)", "Sample % of random rows"));
+        this.options.push(new StrategyItem("none", "No sampling", "Select all rows"));
 
         this.method = (data.method == null ? "first" : data.method);
-        this.ratio = (data.ratio == null ? 10 : data.ratio * 100);
+        this.ratio = (data.ratio == null || data.ratio >= 1 ? 10.0 : data.ratio * 100);
         this.numSamples = data.limit;
     }
 
@@ -61,6 +59,9 @@ export class SampleDialog {
                 data.limit = 0;
                 data.ratio = this.ratio / 100;
                 break;
+            case "none":
+                data.limit=0;
+                data.ratio=1;
             default:
                 break;
         }

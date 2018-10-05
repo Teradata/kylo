@@ -1077,25 +1077,26 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let self = this;
         this.$mdDialog.open(SampleDialog, {data: dialogData, panelClass: "full-screen-dialog", height: '100%', width: '350px', position: {top: '0', right: '0'}}).afterClosed()
             .subscribe((result: SampleDialogData) => {
+                if (result != null) {
+                    this.engine.method = result.method;
+                    this.engine.reqLimit = result.limit;
 
-                this.engine.method = result.method;
-                this.engine.reqLimit = result.limit;
+                    // Fetch the ratio based on the total rows in the dataset against the requested limit
+                    if (result.method == 'rndnum') {
 
-                // Fetch the ratio based on the total rows in the dataset against the requested limit
-                if (result.method == 'rndnum') {
+                        self.extractFormulaResult(`groupBy("1").count()`, 0, 1).then((value: any) => {
+                            let rowCount = value;
+                            let ratio = (result.limit > rowCount ? 1.0 : result.limit / rowCount);
+                            self.engine.sample = ratio;
+                            self.engine.limit = 0;
+                            self.resample();
+                        });
 
-                    self.extractFormulaResult(`groupBy("1").count()`, 0, 1).then((value: any) => {
-                        let rowCount = value;
-                        let ratio = (result.limit > rowCount ? 1.0 : result.limit / rowCount);
-                        self.engine.sample = ratio;
-                        self.engine.limit = 0;
+                    } else {
+                        self.engine.limit = result.limit;
+                        self.engine.sample = result.ratio;
                         self.resample();
-                    });
-
-                } else {
-                    self.engine.limit = result.limit;
-                    self.engine.sample = result.ratio;
-                    self.resample();
+                    }
                 }
 
             });
