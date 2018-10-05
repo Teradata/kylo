@@ -30,10 +30,10 @@ import "./shared/cron-expression-preview/cron-expression-preview";
 import "./services/DatasourcesService";
 import "./shared/entity-access-control/entity-access";
 import "./shared/entity-access-control/EntityAccessControlDialogService";
-import "./shared/profile-stats/ProfileStats";
+
 import "./services/UiComponentsService";
 import "./services/DomainTypesService";
-import "./visual-query/transform-data/profile-stats/column-analysis";
+
 import "./shared/apply-domain-type/ApplyDomainTypeDialog";
 import "./shared/apply-domain-type/apply-table-domain-types.component";
 import "./shared/apply-domain-type/domain-type-conflict.component"
