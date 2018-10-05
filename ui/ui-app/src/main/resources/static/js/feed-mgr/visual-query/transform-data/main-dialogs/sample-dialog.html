@@ -19,7 +19,7 @@
       <div class="sd-subheader">Sample method:</div>
 
       <mat-selection-list #methodList name="sampleMethod">
-        <mat-list-option *ngFor="let item of options" [value]="item.method" [selected]="(item.method == method)" style="margin-top:-20px">
+        <mat-list-option *ngFor="let item of options" [value]="item.method" [selected]="(item.method == method)" style="margin-bottom:-20px">
 
           <h3 matLine>{{item.label}}</h3>
           <p matLine>
@@ -29,13 +29,13 @@
         </mat-list-option>
       </mat-selection-list>
 
-      <div *ngIf="method != 'none'">
+      <div *ngIf="method != 'none'" style="margin-top:5px">
         <div class="sd-subheader">Sample size:</div>
-        <mat-form-field mat-line *ngIf="method == 'ratio'">
+        <mat-form-field mat-line *ngIf="method == 'ratio'" class="sd-input">
           <input matInput placeholder="Ratio %" [(ngModel)]="ratio" type="number" min=".1" max="100" step=".1" required name="ratio" pattern="(?:100(?:\.00?)?|\d?\d(?:\.\d\d?)?)$">
         </mat-form-field>
 
-        <mat-form-field mat-line *ngIf="method != 'ratio'">
+        <mat-form-field mat-line *ngIf="method != 'ratio'" class="sd-input">
           <input matInput placeholder="# Records" type="number" min="1" step="1000" pattern="(^[1-9]\d{0,8}$)" [(ngModel)]="numSamples" required name="records">
         </mat-form-field>
       </div>
