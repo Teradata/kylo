@@ -43,12 +43,15 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.NodeModificationInvocationHandler;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -349,15 +352,22 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
                 .forEach(source -> {
                     try {
                         Node sourceNode = source.getNode();
+                        if (sourceNode instanceof Proxy) {
+                            InvocationHandler invocationHandler = Proxy.getInvocationHandler(sourceNode);
+                            if (invocationHandler instanceof NodeModificationInvocationHandler) {
+                                sourceNode = ((NodeModificationInvocationHandler) invocationHandler).getWrappedNode();
+                            }
+                        }
+                        final Node actualSourceNode = sourceNode;
                         
                         // Either the datasource or dataSet will be present.
                         source.getDatasource()
                             .map(JcrDatasource.class::cast)
-                            .ifPresent(dataSrc -> dataSrc.removeSourceNode(sourceNode));
+                            .ifPresent(dataSrc -> dataSrc.removeSourceNode(actualSourceNode));
                         
                         source.getDataSet()
                             .map(JcrDataSet.class::cast)
-                            .ifPresent(dataSet -> dataSet.removeSourceNode(sourceNode));
+                            .ifPresent(dataSet -> dataSet.removeSourceNode(actualSourceNode));
                         
                         sourceNode.remove();
                     } catch (RepositoryException e) {
