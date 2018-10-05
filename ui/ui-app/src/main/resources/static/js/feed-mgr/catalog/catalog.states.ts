@@ -156,7 +156,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.upload.**",
         url: "/upload",
-        loadChildren: "feed-mgr/catalog/datasource/upload/upload.module#UploadModule"
+        loadChildren: "feed-mgr/catalog/datasource/upload/upload.module#UploadRouterModule"
     },
     {
         name: "catalog.datasource.browse.**",
