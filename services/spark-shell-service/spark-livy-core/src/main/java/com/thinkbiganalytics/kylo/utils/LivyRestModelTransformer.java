@@ -156,7 +156,7 @@ public class LivyRestModelTransformer {
             try {
                 json = (ArrayNode) mapper.readTree(payload);
             } catch (IOException e) {
-                logger.error( "An unexpected IOException occurred",  new LivyDeserializationException( "could not deserialize JSON returned from Livy"));
+                logger.error("An unexpected IOException occurred", new LivyDeserializationException("could not deserialize JSON returned from Livy"));
                 throw logger.throwing(new LivyUserException("livy.unexpected_error"));
             } // end try/catch
 
@@ -223,7 +223,6 @@ public class LivyRestModelTransformer {
                     List<Object> newValues = Lists.newArrayListWithCapacity(tqr.getColumns().size());
                     while (valueNodes.hasNext()) {
                         JsonNode value = valueNodes.next();
-
                         // extract values according to how jackson deserialized it
                         if (value.isObject()) {
                             // spark treats an array as a struct with a single field "values" ...
@@ -255,6 +254,8 @@ public class LivyRestModelTransformer {
                         } else if (value.isNumber()) {
                             // easy peasy.. it's just a number
                             newValues.add(value.numberValue());
+                        } else if (value.isNull()) {
+                            newValues.add(null);
                         } else if (value.isValueNode()) {
                             // value Nodes we just get the raw text..
                             newValues.add(value.asText());
@@ -297,9 +298,9 @@ public class LivyRestModelTransformer {
                 } else {
                     if (dataType.get("class") != null) {
                         logger.error("UDT error encountered", new LivyDeserializationException("don't know how to deserialize UDT types for class = "
-                                                               + dataType.get("class").asText()) );
+                                                                                               + dataType.get("class").asText()));
                     } else {
-                        logger.error("UDT error encountered",  new LivyDeserializationException("don't know how to deserialize UDT type of unspecified class"));
+                        logger.error("UDT error encountered", new LivyDeserializationException("don't know how to deserialize UDT type of unspecified class"));
                     } // end if
                     throw new LivyUserException("livy.unexpected_error");
                 } // end if
@@ -451,10 +452,10 @@ public class LivyRestModelTransformer {
             try {
                 return mapper.readValue(jsonString, clazz);
             } catch (IOException e) {
-                logger.error( "Deserialization error occured", new LivyDeserializationException(errMsg));
+                logger.error("Deserialization error occured", new LivyDeserializationException(errMsg));
             } // end try/catch
         } else {
-            logger.error( "Deserialization error occured", new LivyDeserializationException(errMsg));
+            logger.error("Deserialization error occured", new LivyDeserializationException(errMsg));
         }
         throw new LivyUserException("livy.unexpected_error");
     }
