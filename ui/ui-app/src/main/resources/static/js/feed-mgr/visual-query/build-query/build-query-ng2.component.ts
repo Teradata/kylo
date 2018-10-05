@@ -22,7 +22,7 @@ import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesService} from "../../services/DatasourcesService";
 import {HiveService} from "../../services/HiveService";
 import {VisualQueryService} from "../../services/VisualQueryService";
-import {TableReference, SchemaField, TableSchema} from "../wrangler";
+import {DatasourcesServiceStatic, SchemaField, TableSchema} from "../wrangler";
 import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
@@ -198,7 +198,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Aysnc autocomplete list of tables
      */
-    public filteredTables: Observable<TableReference[]>;
+    public filteredTables: Observable<DatasourcesServiceStatic.TableReference[]>;
 
     /**
      * List of native data sources to exclude from the model.
@@ -260,7 +260,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      * @param {TableReference} table
      * @return {string | undefined}
      */
-    tableAutocompleteDisplay(table?: TableReference): string | undefined {
+    tableAutocompleteDisplay(table?: DatasourcesServiceStatic.TableReference): string | undefined {
         return table ? table.fullName : undefined;
     }
 
@@ -956,8 +956,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Search the list of table names.
      */
-    onAutocompleteQuerySearch(txt: any): Promise<TableReference[]> {
-        let promise: Promise<TableReference[]> = null;
+    onAutocompleteQuerySearch(txt: any): Promise<DatasourcesServiceStatic.TableReference[]> {
+        let promise: Promise<DatasourcesServiceStatic.TableReference[]> = null;
         const tables = this.engine.searchTableNames(txt, this.model.$selectedDatasourceId);
         if (tables instanceof Promise) {
             promise = tables.then((tables: any) => {

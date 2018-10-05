@@ -10,14 +10,11 @@ import {Subscription} from "rxjs/Subscription";
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {StateService} from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
-// import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {VisualQuerySaveService} from "../services/save.service";
 import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SaveOptionsComponent} from "./save-options.component";
-import {DatasourcesService, JdbcDatasource, TableReference} from "../../services/DatasourcesService.typings";
-// import JdbcDatasource = JdbcDatasource;
-// import TableReference = TableReference;
+import {DatasourcesService, JdbcDatasource, TableReference} from '../../services/DatasourcesService';
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 

@@ -7,7 +7,7 @@ import {SaveRequest, SaveResponse} from "./api/rest-model";
 import {WranglerEngine} from "./api/wrangler-engine";
 import {ColumnController} from "./column-controller";
 import {ColumnDelegate} from "./column-delegate";
-import {TableReference, DatasourcesService, ProfileOutputRow, QueryResultColumn, SchemaField, SqlDialect, TableSchema, UserDatasource} from "./index";
+import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaField, SqlDialect, TableSchema, UserDatasource} from "./index";
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
@@ -119,7 +119,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Construct a {@code QueryEngine}.
      */
-    constructor(protected dialog: TdDialogService, protected DatasourcesService: DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
+    constructor(protected dialog: TdDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
     }
 
     /**
@@ -618,7 +618,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @param datasourceId - datasource to search
      * @returns the list of table references
      */
-    searchTableNames(query: string, datasourceId: string): TableReference[] | Promise<TableReference[]> {
+    searchTableNames(query: string, datasourceId: string): DatasourcesServiceStatic.TableReference[] | Promise<DatasourcesServiceStatic.TableReference[]> {
         const tables = this.DatasourcesService.listTables(datasourceId, query);
         return new Promise((resolve, reject) => tables.then(resolve, reject));
     }
