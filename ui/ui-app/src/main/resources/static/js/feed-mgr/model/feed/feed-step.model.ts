@@ -157,7 +157,10 @@ export class Step {
             this.complete = step.complete;
             this.visited = step.visited;
             this.valid = step.valid
+        if(step.properties) {
             this.properties = step.properties;
+        }
+
     }
 
     /**
