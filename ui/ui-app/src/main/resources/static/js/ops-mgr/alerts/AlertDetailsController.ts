@@ -5,6 +5,7 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
 import {Transition} from "@uirouter/core";
+import {FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../feed-mgr/model/feed/feed-constants";
 
    /** Manages the Alert Details page.
      * @constructor
@@ -149,7 +150,10 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
                                 var jobExecutionId = this.alertData.content;
                                 this.alertData.links.push({label: "Job Execution", value: "job-details({executionId:'" + jobExecutionId + "'})"});
                             }
-                            this.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+this.alertData.entityId+"'})"});
+
+
+
+                            this.alertData.links.push({label:"Feed Details",  value:FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity"+"({feedId:'"+this.alertData.entityId+"'})"});
 
                         }
                         else   if(this.alertData.type == 'http://kylo.io/alert/alert/sla/violation') {
