@@ -69,7 +69,11 @@ export class CatalogService {
     }
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
-        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+        if (typeof datasource.id === "string") {
+            return this.http.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
+        } else {
+            return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+        }
     }
 
     deleteDataSource(datasource: DataSource): Observable<any> {
