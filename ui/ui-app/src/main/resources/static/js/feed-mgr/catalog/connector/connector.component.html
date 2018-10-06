@@ -63,6 +63,7 @@
             <ng-md-icon *ngIf="testStatus && !testError" icon="check" size="30" class="test-status status-ok"></ng-md-icon>
           </span>
         </div>
+        <entity-access-control-ng2 *ngIf="datasource" [entity]="datasource" entityType="datasource" [parentForm]="form" [readonly]="false" class="block pad-top"></entity-access-control-ng2>
       </form>
     </mat-card-content>
 
