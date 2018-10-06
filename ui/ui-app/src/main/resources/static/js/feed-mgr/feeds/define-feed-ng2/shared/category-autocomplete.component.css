@@ -3,5 +3,6 @@ mat-form-field {
 }
 
 mat-option{
-  line-height: 20px;
+  line-height:normal;
+  height: 60px;
 }

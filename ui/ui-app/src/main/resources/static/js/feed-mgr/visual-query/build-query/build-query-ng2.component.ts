@@ -11,6 +11,7 @@ import "rxjs/add/operator/filter";
 import 'rxjs/add/operator/map';
 import "rxjs/add/operator/switchMap";
 import 'rxjs/add/operator/toPromise';
+import {map} from 'rxjs/operators';
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -31,6 +32,7 @@ import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} f
 import {MatDialogConfig} from "@angular/material/dialog";
 import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {Subject} from "rxjs/Subject";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
 
 /**
  * Code for the delete key.
@@ -227,7 +229,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 @Inject("HiveService") private hiveService: HiveService,
                 @Inject("SideNavService") private sideNavService: SideNavService,
                 @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
-                @Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
+                @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
+                private catalogService:CatalogService) {
         // Setup environment
         //this.heightOffset = $element.attr("height-offset");
         this.sideNavService.hideSideNav();
@@ -423,28 +426,48 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         return this.allDatasources.find(ds => ds.id == dataSet.dataSource.id) != undefined;
     }
 
+    ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
+        if(dataset.id == undefined){
+         return this.catalogService.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
+             dataset.id = ds.id;
+             return dataset;
+         }))
+        }
+        else {
+            return Observable.of(dataset);
+        }
+
+    }
+    ensureDataSetIds(datasets:SparkDataSet[]) :Observable<SparkDataSet>[]{
+        return datasets.filter(dataset => typeof dataset.preview !== "undefined")
+            .map(dataset => this.ensureDataSetId(dataset))
+
+    }
+
     addSparkDataSets(datasets:SparkDataSet[]) {
         if(datasets && datasets.length >0) {
-            datasets.filter(dataset => typeof dataset.preview !== "undefined").forEach((dataset: SparkDataSet) => {
-                let tableSchema: any = {};
 
-                tableSchema.schemaName = dataset.getSchemaName();
-                tableSchema.tableName=dataset.getTableName();
-                tableSchema.name = dataset.getTableName();
-                tableSchema.fields = dataset.schema.map(tableColumn => {
-                    let field: any = {};
-                    field.name = tableColumn.name;
-                    field.description = null;
-                    field.nativeDataType = tableColumn.dataType;
-                    field.derivedDataType = tableColumn.dataType;
-                    field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
-                    return field;
+            Observable.forkJoin(this.ensureDataSetIds(datasets)).subscribe((dataSets:SparkDataSet[]) => {
+                dataSets.forEach((dataset: SparkDataSet) => {
+                    let tableSchema: any = {};
+
+                    tableSchema.schemaName = dataset.getSchemaName();
+                    tableSchema.tableName = dataset.getTableName();
+                    tableSchema.name = dataset.getTableName();
+                    tableSchema.fields = dataset.schema.map(tableColumn => {
+                        let field: any = {};
+                        field.name = tableColumn.name;
+                        field.description = null;
+                        field.nativeDataType = tableColumn.dataType;
+                        field.derivedDataType = tableColumn.dataType;
+                        field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
+                        return field;
+                    });
+                    let nodeName = dataset.getDisplayIdentifier()
+                    this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
+
                 });
-                let nodeName = dataset.getDisplayIdentifier()
-                this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
-
-            });
-
+            })
 
         }
     }

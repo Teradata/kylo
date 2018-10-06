@@ -292,12 +292,15 @@ public class FeedModelTransform {
         if (feedMetadata.getSourceDataSets() != null) {
             feedMetadata.getSourceDataSets().forEach(dataSet -> {
                 com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = Optional.ofNullable(dataSet.getId())
+                    .filter(id -> id != null)
                     .map(dataSetProvider::resolveId)
                     .flatMap(dataSetProvider::find)
                     .orElseGet(() -> {
+                        //TODO I think this should be replaced with a findOrCreate using the datasource and title
+
                         DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                         dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
-                        
+
                         com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
                         catalogModelTransform.updateDataSet(dataSet, newDs);
                         dataSet.setId(newDs.getId().toString());
@@ -416,7 +419,20 @@ public class FeedModelTransform {
         return deserializeFeedMetadata(domain, true);
     }
 
-
+    /**
+     * Set the FeedMetadata.registeredTemplate with the template data
+     * @param domain the domain JcrFeed
+     * @param feed the FeedMetata REST object
+     */
+    public void setFeedMetadataRegisteredTemplate(@Nonnull final Feed domain,FeedMetadata feed){
+        FeedManagerTemplate template = domain.getTemplate();
+        if (template != null) {
+            RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+            feed.setRegisteredTemplate(registeredTemplate);
+            feed.setTemplateId(registeredTemplate.getId());
+            feed.setTemplateName(registeredTemplate.getTemplateName());
+        }
+    }
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed.
      *
@@ -444,13 +460,8 @@ public class FeedModelTransform {
             feed.setUpdateDate(domain.getModifiedTime().toDate());
         }
 
-        FeedManagerTemplate template = domain.getTemplate();
-        if (template != null) {
-            RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-            feed.setRegisteredTemplate(registeredTemplate);
-            feed.setTemplateId(registeredTemplate.getId());
-            feed.setTemplateName(registeredTemplate.getTemplateName());
-        }
+        setFeedMetadataRegisteredTemplate(domain,feed);
+
         Category category = domain.getCategory();
         if (category != null) {
             feed.setCategory(categoryModelTransform.domainToFeedCategorySimple(category));

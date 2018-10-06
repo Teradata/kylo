@@ -717,7 +717,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             
 
             // Save to the metadata store.
-            saveFeedMetadata(feedMetadata);
+           Feed domainFeed = saveFeedMetadata(feedMetadata);
+           if(feedMetadata.getRegisteredTemplate() == null){
+               //populate it
+               feedModelTransform.setFeedMetadataRegisteredTemplate(domainFeed,feedMetadata);
+           }
             
             // Register the audit for the update event
             if (! feedMetadata.isNew()) {
@@ -925,7 +929,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     
-    private void saveFeedMetadata(final FeedMetadata feed) {
+    private Feed saveFeedMetadata(final FeedMetadata feed) {
         
         Stopwatch stopwatch = Stopwatch.createStarted();
         
@@ -960,6 +964,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         stopwatch.stop();
         log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
+        return domainFeed;
     }
 
     private void saveFeed(final FeedMetadata feed) {

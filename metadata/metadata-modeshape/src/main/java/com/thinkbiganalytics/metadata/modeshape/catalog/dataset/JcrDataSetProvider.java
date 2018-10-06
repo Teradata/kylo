@@ -122,6 +122,19 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetProvider#findByDataSource(java.util.Collection)
+     */
+    @Override
+    public DataSet findByDataSourceAndTitle(ID dataSourceId, String title) {
+        String query = startBaseQuery()
+            .append(" JOIN [").append(JcrDataSource.DATA_SETS_NODE_TYPE).append("] AS dsn ON ISCHILDNODE(e, dsn) ")
+            .append(" JOIN [").append(JcrDataSource.NODE_TYPE).append("] AS ds ON ISCHILDNODE(dsn, ds) ")
+            .append(" WHERE ds.[mode:id] = '").append(dataSourceId.toString()).append("' ")
+        .append(" AND e.[jcr:title] = '").append(title).append("'").toString();
+        return findFirst(query);
+    }
+
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getJcrEntityClass()
      */
     @Override

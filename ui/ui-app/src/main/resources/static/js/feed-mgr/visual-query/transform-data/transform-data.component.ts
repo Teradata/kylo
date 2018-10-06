@@ -34,6 +34,8 @@ import {ColumnUtil} from "../wrangler/core/column-util";
 import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dialogs/schema-layout-dialog";
 import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
+import {DefineFeedService} from "../../feeds/define-feed-ng2/services/define-feed.service";
+import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 
 declare const CodeMirror: any;
 
@@ -1271,11 +1273,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         // Add unsaved filters
 
         // Check if updates are necessary
-        let feedModel = (this.feedModel != null) ? this.feedModel : this.feedService.createFeedModel;
+        let feedModel = (this.feedModel != null) ? this.feedModel : new Feed();//this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
             return new Promise((resolve, reject) => reject(true));
         }
+
 
         // Populate Feed Model from the Visual Query Model
         feedModel.dataTransformation.dataTransformScript = newScript;
@@ -1290,14 +1293,17 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             let fields = this.engine.getFields();
 
             if (fields !== null) {
-                this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
-                this.feedService.syncTableFieldPolicyNames();
+                this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+            let valid =   this.feedModel.validateSchemaDidNotChange();
+            if(!valid)
+                this.feedModel.table.syncTableFieldPolicyNames()
                 this.engine.save();
                 resolve(true);
             } else {
                 this.query().then(() => {
-                    this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
-                    this.feedService.syncTableFieldPolicyNames();
+                    this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+                    this.feedModel.validateSchemaDidNotChange();
+                    this.feedModel.table.syncTableFieldPolicyNames()
                     this.engine.save();
                     resolve(true);
                 });
@@ -1320,12 +1326,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 if (index < fieldPolicies.length) {
                     fieldPolicy = fieldPolicies[index];
                 } else {
-                    fieldPolicy = this.feedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy = TableFieldPolicy.forName(column.hiveColumnLabel);
                     fieldPolicy.fieldName = column.hiveColumnLabel;
                     fieldPolicy.feedFieldName = column.hiveColumnLabel;
                 }
 
                 if (index === columnIndex) {
+                    //TODO MOVE OUT TO COMMON UTIL
                     this.feedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
                 }
                 return fieldPolicy;

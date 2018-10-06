@@ -1,6 +1,6 @@
 <define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="false" [displayEditActions]="false">
   <feed-step-custom-content>
-    <form class="source-sample-container" [formGroup]="sourceForm">
+    <form class="source-sample-container" [formGroup]="sourceForm" *ngIf="showSourceSample">
       <mat-card class="feed-card source-sample-card" fxFlex>
         <mat-card-header>
           <mat-card-title>Source</mat-card-title>

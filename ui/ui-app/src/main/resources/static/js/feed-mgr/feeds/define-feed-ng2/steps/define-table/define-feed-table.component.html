@@ -150,7 +150,7 @@
 
                 </ng-template>
               </td-virtual-scroll-container>
-              <button mat-button (click)="addColumn()">Add Column</button>
+              <button mat-button (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
             </form>
 
           </ng-container>
@@ -347,13 +347,13 @@
                     </mat-error>
                   </mat-form-field>
 
-                  <button mat-icon-button (click)="removePartitionField(index)">
+                  <button mat-icon-button (click)="removePartitionField(index)"  *ngIf="!tablePermissions.tableLocked">
                     <mat-icon class="grey">delete</mat-icon>
                   </button>
                 </div>
               </ng-template>
             </div>
-            <button mat-button (click)="addPartitionField()">Add Partition</button>
+            <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.tableLocked">Add Partition</button>
           </form>
         </div>
       </mat-card-content>

@@ -163,6 +163,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     targetFormatOptionsForm : FormGroup;
 
 
+
     @ViewChild('virtualScroll')
    virtualScroll: TdVirtualScrollContainerComponent
 
@@ -205,6 +206,13 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.profileCheckAll.setup(this.feed.table);
         this.indexCheckAll.setup(this.feed.table);
 
+
+        let locked = this.feed.hasBeenDeployed()  ||this.feed.isDataTransformation()
+        this.tablePermissions.canRemoveFields = !locked
+        this.tablePermissions.dataTypeLocked = locked
+        this.tablePermissions.tableLocked = locked
+
+
         this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.definePartitionForm, this.feed);
 
         this.tableFormControls = new TableFormControls(this.defineTableForm,this.definePartitionForm, this.feedTableColumnDefinitionValidation,this.tablePermissions)
@@ -221,10 +229,13 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         this.availableDefinitionDataTypes = FeedConstants.columnDefinitionDataTypes.slice();
 
+
         //ensure the table field datatypes exist
         this.ensureTableFields();
         //ensure the partition datatypes exist with proper form controls
         this.ensurePartitionData();
+
+
 
         // Retrieve partition formulas
         this.feedService.getPartitionFunctions()
@@ -802,8 +813,8 @@ class TableFormControls {
 
     private buildTableFieldFormControl(field: TableColumnDefinition ) :Common.Map<FormControl> {
         let controls :Common.Map<FormControl> = {}
-        controls[TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX+"_"+field._id] = new FormControl({value:field.name,disabled:field.deleted },[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
-        controls[TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX+"_"+field._id] = new FormControl({value:field.derivedDataType,disabled:field.deleted },[Validators.required]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX+"_"+field._id] = new FormControl({value:field.name,disabled:field.deleted|| this.tablePermissions.tableLocked },[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX+"_"+field._id] = new FormControl({value:field.derivedDataType,disabled:field.deleted|| this.tablePermissions.dataTypeLocked|| this.tablePermissions.tableLocked },[Validators.required]);
         controls[TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX+"_" + field._id] = new FormControl({value:field.precisionScale,disabled:this.tablePermissions.dataTypeLocked || field.deleted},[TableFormControls.precisionScale]);
 
         let index = field.fieldPolicy ? field.fieldPolicy.index : false;
@@ -832,7 +843,7 @@ class TableFormControls {
         let controls :Common.Map<FormControl> = {}
         controls["partitionColumnRef_"+partition._id] = new FormControl('',[Validators.required]);
         controls["partitionFormula_"+partition._id] = new FormControl(partition.formula,[Validators.required]);
-        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(partition.formula == 'val')},[Validators.required]);
+        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(partition.formula == 'val')|| this.tablePermissions.tableLocked},[Validators.required]);
         return controls;
     }
 

@@ -100,6 +100,14 @@ public class DataSetController extends AbstractCatalogController {
         log.entry(dataSet);
         
         try {
+            DataSet ds = findOrCreateDataSet(dataSet);
+            if(ds != null){
+                return Response.ok(log.exit(ds)).build();
+            }
+            else {
+                throw new BadRequestException(getMessage("catalog.dataset.notfound.id"));
+            }
+            /*
             return metadataService.commit(() -> {
                 com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dSrcId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                 com.thinkbiganalytics.metadata.api.catalog.DataSet domain = dataSetProvider.create(dSrcId, dataSet.getTitle());
@@ -107,6 +115,7 @@ public class DataSetController extends AbstractCatalogController {
                 modelTransform.updateDataSet(dataSet, domain);
                 return Response.ok(log.exit(modelTransform.dataSetToRestModel().apply(domain))).build();
             });
+            */
         } catch (DataSourceNotFoundException e) {
             log.debug("Data set not created", e);
             throw new BadRequestException(getMessage("catalog.dataset.notfound.id", e.getId()));
@@ -264,5 +273,26 @@ public class DataSetController extends AbstractCatalogController {
                     return new NotFoundException(getMessage("catalog.dataset.notfound"));
                 });
         });
+    }
+
+    private DataSet findOrCreateDataSet(DataSet dataSet){
+        if(dataSet.getId() != null && !dataSet.getId().equalsIgnoreCase("")){
+            return this.findDataSet(dataSet.getId());
+        }
+        else {
+            return metadataService.commit(() -> {
+                //resolve the real dataset if possible, otherwise create
+                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                com.thinkbiganalytics.metadata.api.catalog.DataSet ds = dataSetProvider.findByDataSourceAndTitle(dataSourceId, dataSet.getTitle());
+                if (ds == null) {
+                    com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
+                    modelTransform.updateDataSet(dataSet, newDs);
+                    ds = newDs;
+                }
+                return modelTransform.dataSetToRestModel().apply(ds);
+            });
+
+
+        }
     }
 }

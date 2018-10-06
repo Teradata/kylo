@@ -539,6 +539,11 @@ export class DefineFeedService {
             let savedFeed = new Feed(updatedFeed);
             savedFeed.steps = feed.steps;
 
+            //if the incoming feed has a templateTableOption set, and the saved feed doesnt... update it
+            if(feed.templateTableOption && !savedFeed.templateTableOption) {
+                savedFeed.templateTableOption = feed.templateTableOption;
+            }
+
             //if the properties are already initialized we should keep those values
             if(feed.propertiesInitialized){
                 savedFeed.inputProcessor =  feed.inputProcessor;

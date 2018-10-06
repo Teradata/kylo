@@ -46,14 +46,14 @@ export class FeedStepBuilderUtil {
         return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
     }
 
-    sourceStep():StepBuilder {
+    sourceStep(required:boolean = true):StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Source.Name")
-        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Browse catalog for a sample and define the source location").setSref("datasources").setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator());
+        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Browse catalog for a sample and define the source location").setSref("datasources").setRequired(required).setValidator(new DefineFeedStepSourceSampleValidator());
     }
 
     wranglerStep():StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Wrangler.Name")
-        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).setSref("wrangler").setRequired(true);
+        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").setSref("wrangler").setRequired(true);
     }
 
      defineTableFeedSteps() :Step[] {

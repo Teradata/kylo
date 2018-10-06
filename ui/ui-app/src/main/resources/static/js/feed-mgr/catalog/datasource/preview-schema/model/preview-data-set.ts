@@ -126,7 +126,8 @@ export class PreviewDataSet {
      */
     public toSparkDataSet(): SparkDataSet {
         let sparkDataSet = new SparkDataSet();
-        sparkDataSet.id = this.displayKey;
+        //sparkDataSet.id = this.displayKey;
+        sparkDataSet.title = this.displayKey;
         sparkDataSet.dataSource = this.dataSource;
         sparkDataSet.options = this.sparkOptions;
         sparkDataSet.schema = this.schema;

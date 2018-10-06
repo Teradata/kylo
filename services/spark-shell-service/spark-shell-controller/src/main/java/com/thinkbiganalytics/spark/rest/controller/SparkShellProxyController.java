@@ -45,6 +45,7 @@ import com.thinkbiganalytics.kylo.spark.job.SparkJobStatus;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -73,6 +74,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellSaveException;
 import com.thinkbiganalytics.spark.shell.SparkShellTransformException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,6 +174,9 @@ public class SparkShellProxyController {
     
     @Inject
     private CatalogModelTransform catalogModelTransform;
+
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     /**
      * The {@code Datasource} transformer
@@ -778,9 +783,34 @@ public class SparkShellProxyController {
         if (request.getCatalogDatasets() == null || request.getCatalogDatasets().isEmpty()) {
             return;
         }
+
             request.getCatalogDatasets().forEach((dataSet) -> {
+                //DataSets will now be added when a user adds them to the wrangler canvas and then associated with an ID
+                //in the unlikely event the DataSet coming in doesnt have an ID, ensure its created.
+                if(StringUtils.isBlank(dataSet.getId())) {
+                    fetchOrCreateDataSet(dataSet);
+                }
                 addDataSourceInformation(dataSet);
             });
+
+
+    }
+
+    private DataSet fetchOrCreateDataSet(DataSet dataSet){
+       return metadata.read(() -> {
+           //resolve the real dataset if possible, otherwise create
+           com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = kyloCatalogDataSourceProvider.resolveId(dataSet.getDataSource().getId());
+           com.thinkbiganalytics.metadata.api.catalog.DataSet ds = dataSetProvider.findByDataSourceAndTitle(dataSourceId, dataSet.getTitle());
+           if(ds == null){
+               com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
+               catalogModelTransform.updateDataSet(dataSet, newDs);
+               dataSet.setId(newDs.getId().toString());
+           }
+           else {
+               dataSet.setId(ds.getId().toString());
+           }
+           return dataSet;
+        });
     }
 
     private void addDataSourceInformation(@Nonnull DataSet dataSet){
