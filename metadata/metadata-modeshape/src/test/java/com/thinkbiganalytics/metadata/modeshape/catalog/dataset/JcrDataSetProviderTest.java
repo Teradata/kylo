@@ -124,13 +124,13 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
             Optional<DataSet> dset0 = this.dataSetProvider.find(this.dSetIds.get(0));
             
             assertThat(dset0).isNotNull().isPresent();
-            assertThat(dset0.get()).extracting("systemName", "title", "description").contains(dataSetTuple(COUNT + 1).toArray());
+            assertThat(dset0.get()).extracting("title", "description").contains(dataSetTuple(COUNT + 1).toArray());
             assertThat(dset0.get().getDataSource()).isNotNull().extracting("id").contains(this.dSrcIds.get(0));
             
             Optional<DataSet> dset1 = this.dataSetProvider.find(this.dSetIds.get(1));
             
             assertThat(dset1).isNotNull().isPresent();
-            assertThat(dset1.get()).extracting("systemName", "title", "description").contains(dataSetTuple(10 + COUNT + 1).toArray());
+            assertThat(dset1.get()).extracting("title", "description").contains(dataSetTuple(10 + COUNT + 1).toArray());
             assertThat(dset1.get().getDataSource()).isNotNull().extracting("id").contains(this.dSrcIds.get(1));
         }, MetadataAccess.SERVICE);
     }
@@ -168,7 +168,7 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
             
             assertThat(conns).isNotNull();
             assertThat(conns).hasSize(5);
-            assertThat(conns).extracting("systemName", "title", "description").contains(dataSetTuple(1), dataSetTuple(2), dataSetTuple(3), dataSetTuple(4), dataSetTuple(5));
+            assertThat(conns).extracting("title", "description").contains(dataSetTuple(1), dataSetTuple(2), dataSetTuple(3), dataSetTuple(4), dataSetTuple(5));
         }, MetadataAccess.SERVICE);
     }
     
@@ -204,7 +204,6 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
     
     protected Tuple dataSetTuple(int tag) {
         String title = "Test " + tag + " Data Set";
-        String sysName = title.replaceAll("\\s+", "_").toLowerCase();
-        return tuple(sysName, title, "Test description " + tag);
+        return tuple(title, "Test description " + tag);
     }
 }
