@@ -53,7 +53,7 @@ export class FeedStepBuilderUtil {
 
     wranglerStep():StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Wrangler.Name")
-        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").setSref("wrangler").setRequired(true);
+        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").setSref("wrangler").setRequired(true).setFullscreen(true);
     }
 
      defineTableFeedSteps() :Step[] {

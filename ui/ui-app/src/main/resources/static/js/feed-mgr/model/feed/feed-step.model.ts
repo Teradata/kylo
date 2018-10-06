@@ -18,6 +18,7 @@ export class Step {
     disabled: boolean;
     visited: boolean;
     icon:string;
+    fullscreen:boolean;
     validator: FeedStepValidator
     /**
      * any additional properties to add and persist for this step
