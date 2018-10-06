@@ -160,7 +160,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Height offset from the top of the page.
      */
-    heightOffset: string = "0";
+    @Input()
+    heightOffset: number;
 
     /**
      * Indicates if the model is valid.
@@ -282,13 +283,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     canChangeDatasource(): boolean {
         return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
-    }
-
-    /**
-     * Gets the browser height offset for the element with the specified offset from the top of this component.
-     */
-    getBrowserHeightOffset(elementOffset: number): number {
-        return parseInt(this.heightOffset) + elementOffset;
     }
 
     selectedTable() : string {

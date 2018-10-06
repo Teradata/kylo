@@ -31,7 +31,7 @@
 </define-feed-step-card>
 
 <visual-query-stepper #visualQuery *ngIf="!feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
-                      (cancel)="onCancelEdit()" (save)="onSave()">
+                      [heightOffset]="64" (cancel)="onCancelEdit()" (save)="onSave()">
 </visual-query-stepper>
 
 
