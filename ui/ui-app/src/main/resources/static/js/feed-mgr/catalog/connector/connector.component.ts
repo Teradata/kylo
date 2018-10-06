@@ -100,7 +100,7 @@ export class ConnectorComponent {
             if (control.value && control.value.trim().length > 0) {
                 try {
                     const url: URL = new URL(control.value);
-                    if (url.protocol !== params.protocol) {
+                    if (params && params.protocol && url.protocol !== params.protocol) {
                         return {'url-protocol': true};
                     }
                 } catch (e) {
