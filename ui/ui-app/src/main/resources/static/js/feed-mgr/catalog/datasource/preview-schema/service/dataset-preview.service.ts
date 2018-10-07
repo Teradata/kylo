@@ -3,7 +3,9 @@ import {Observable} from "rxjs/Observable";
 import {PartialObserver} from "rxjs/Observer";
 import {switchMap} from 'rxjs/operators/switchMap';
 import {catchError} from "rxjs/operators/catchError";
+import {map} from "rxjs/operators/map";
 import {tap} from "rxjs/operators/tap"
+import {take} from "rxjs/operators/take"
 import {ReplaySubject} from "rxjs/ReplaySubject";
 import {DatabaseObject, DatabaseObjectType} from "../../tables/database-object";
 import {Node} from "../../../api/models/node";
@@ -24,8 +26,8 @@ import {CloneUtil} from "../../../../../common/utils/clone-util";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
 import {Injectable} from "@angular/core";
-import {FormGroup} from "@angular/forms";
 
+import 'rxjs/add/observable/forkJoin';
 
 
 export enum DataSetType {
@@ -193,23 +195,25 @@ export class DatasetPreviewService {
         if (obj instanceof DatabaseObject) {
             let type: DataSetType = this.getDataSetType(datasource);
             let dataSet = this.prepareDatabaseObjectForPreview(<DatabaseObject>obj, type);
-            //add in any cached preview responses
-            //this.previewSchemaService.updateDataSetsWithCachedPreview([dataSet])
             return Observable.of(dataSet);
         }
         else if (obj instanceof RemoteFile) {
-            let subject = new ReplaySubject<PreviewDataSet>(1);
-            let o = subject.asObservable();
-            this._fileMetadataTransformService.detectFormatForPaths([obj.getPath()], datasource).subscribe((response: FileMetadataTransformResponse) => {
-                let obj = response.results.datasets;
-                if (obj && Object.keys(obj).length > 0) {
-                    let dataSet = obj[Object.keys(obj)[0]];
-                    subject.next(dataSet);
-                }
-            }, (error1: any) => {
-                subject.next(PreviewDataSet.EMPTY)
-            });
-            return o;
+
+            return this._fileMetadataTransformService.detectFormatForPaths([obj.getPath()], datasource)
+                .pipe(
+                    catchError((error1: any) => {
+                        return Observable.of(PreviewDataSet.EMPTY)
+                    }),
+                    map((response: FileMetadataTransformResponse) => {
+                        let obj = response.results.datasets;
+                        if (obj && Object.keys(obj).length > 0) {
+                            let dataSet = obj[Object.keys(obj)[0]];
+                            return dataSet;
+                        }
+                        return PreviewDataSet.EMPTY
+                    }),
+                    take(1)
+                );
         }
     }
 
@@ -276,8 +280,8 @@ export class DatasetPreviewService {
 
     }
 
-    previewAsTextOrBinary(previewDataSet: PreviewFileDataSet, binary:boolean, rawData:boolean):Observable<PreviewDataSet> {
-        return  this.previewSchemaService.previewAsTextOrBinary(previewDataSet,binary,rawData);
+    previewAsTextOrBinary(previewDataSet: PreviewFileDataSet, binary: boolean, rawData: boolean): Observable<PreviewDataSet> {
+        return this.previewSchemaService.previewAsTextOrBinary(previewDataSet, binary, rawData);
     }
 
 
@@ -315,18 +319,17 @@ export class DatasetPreviewService {
     public prepareAndPopulatePreviewDataSets(files: BrowserObject[], datasource: DataSource): Observable<PreviewDataSetResultEvent> {
         let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
         let o = previewReady$.asObservable();
-        let observables : Observable<PreviewDataSet>[] = [];
-        files.forEach((obj:BrowserObject) => {
-            observables.push(this.prepareBrowserObjectForPreview(obj,datasource));
-        })
-        Observable.forkJoin(observables).subscribe((dataSets:PreviewDataSet[]) => {
-            this._populatePreview(dataSets, datasource).subscribe((ev: PreviewDataSetResultEvent) => {
-                previewReady$.next(ev);
-            });
-
+        let observables: Observable<PreviewDataSet>[] = [];
+        files.forEach((obj: BrowserObject) => {
+            observables.push(this.prepareBrowserObjectForPreview(obj, datasource));
         })
 
-        return o;
+        return Observable.forkJoin(observables).pipe(
+            switchMap((dataSets: PreviewDataSet[]) => {
+                return this._populatePreview(dataSets, datasource)
+            })
+        );
+
     }
 
     /**

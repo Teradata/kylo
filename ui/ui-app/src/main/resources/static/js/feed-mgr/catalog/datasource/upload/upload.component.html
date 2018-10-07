@@ -52,7 +52,7 @@
   <ng-container *ngIf="files.length > 0">
     <mat-divider></mat-divider>
     <mat-card-actions>
-      <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview" >Continue</button>
+      <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" (click)="preview()" >Continue</button>
     </mat-card-actions>
   </ng-container>
 

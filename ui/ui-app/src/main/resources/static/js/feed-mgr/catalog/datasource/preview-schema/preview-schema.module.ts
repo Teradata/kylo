@@ -131,7 +131,8 @@ export class PreviewSchemaModule {
                     url: "/preview",
                     component:CatalogPreviewDatasetComponent,
                     params:{autoSelectSingleDataSet:true,
-                            displayInCard:true},
+                            displayInCard:true,
+                        objectsToPreview:null},
                     resolve: [
                         {
                             token: 'displayInCard',
@@ -140,6 +141,14 @@ export class PreviewSchemaModule {
                         {
                             token: 'autoSelectSingleDataSet',
                             resolveFn: () => true
+                        },
+                        {
+                            token:'objectsToPreview',
+                            deps:[StateService],
+                            resolveFn:(state:StateService)=> {
+                                let params = state.transition.params();
+                                return params.objectsToPreview;
+                            }
                         }
                     ]
 

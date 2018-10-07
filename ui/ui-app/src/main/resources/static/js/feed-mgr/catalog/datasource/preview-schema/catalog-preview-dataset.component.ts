@@ -157,9 +157,15 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
             //set the preview to invalid if needed before re-previewing
             this.onInitialPreviewInvalid();
             this.startLoading();
-            let node: Node = this.selectionService.get(this.datasource.id);
             //if the objects are passed in, preview that, otherwise get the selection from the node
-            const previewRequest = this.objectsToPreview && this.objectsToPreview.length >0 ? this._datasetPreviewService.prepareAndPopulatePreviewDataSets(this.objectsToPreview,this.datasource) : this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource);
+            let previewRequest : Observable<PreviewDataSetResultEvent> = null;
+            if(this.objectsToPreview && this.objectsToPreview.length >0){
+                previewRequest = this._datasetPreviewService.prepareAndPopulatePreviewDataSets(this.objectsToPreview,this.datasource);
+            }
+            else {
+                let node: Node = this.selectionService.get(this.datasource.id);
+                previewRequest = this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource);
+            }
             previewRequest.subscribe((ev:PreviewDataSetResultEvent) => {
 
                 if(ev.isEmpty()){
