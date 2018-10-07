@@ -21,6 +21,8 @@ import {DatasetPreviewService, DataSourceChangedEvent, PreviewDataSetResultEvent
 import {DatasetPreviewContainerComponent} from "../preview-schema/preview/dataset-preview-container.component";
 import {PreviewDatasetStepComponent} from "../../../catalog-dataset-preview/preview-stepper/preview-dataset-step.component";
 import {StateService} from "@uirouter/angular";
+import {BrowserObject} from "../../api/models/browser-object";
+import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 
 @Component({
@@ -46,10 +48,16 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     @Input()
     autoSelectSingleDataSet = false;
 
+    @Input()
+    objectsToPreview?:BrowserObject[];
+
     @ViewChild("datasetPreviewContainer")
     protected datasetPreviewContainer: DatasetPreviewContainerComponent;
 
     previews: PreviewDataSet[] = [];
+
+
+
 
     singleSelection: boolean;
 
@@ -72,14 +80,16 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
                 protected selectionService: SelectionService,
                 protected _dialogService: TdDialogService,
                 protected _datasetPreviewService:DatasetPreviewService,
-                protected _tdLoadingService:TdLoadingService
+                protected _tdLoadingService:TdLoadingService,
+                protected  kyloRouterService:KyloRouterService
     ) {
         this.singleSelection = this.selectionService.isSingleSelection();
 
     }
 
     backToDatasource(){
-        this.state.go("catalog.datasource.browse",{datasourceId:this.datasource.id})
+        this.kyloRouterService.back();
+        //this.state.go("catalog.datasource.browse",{datasourceId:this.datasource.id})
     }
 
 
@@ -148,7 +158,9 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
             this.onInitialPreviewInvalid();
             this.startLoading();
             let node: Node = this.selectionService.get(this.datasource.id);
-            this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource).subscribe((ev:PreviewDataSetResultEvent) => {
+            //if the objects are passed in, preview that, otherwise get the selection from the node
+            const previewRequest = this.objectsToPreview && this.objectsToPreview.length >0 ? this._datasetPreviewService.prepareAndPopulatePreviewDataSets(this.objectsToPreview,this.datasource) : this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource);
+            previewRequest.subscribe((ev:PreviewDataSetResultEvent) => {
 
                 if(ev.isEmpty()){
                     //Show "Selection is needed" card

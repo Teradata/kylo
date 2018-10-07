@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {ModuleWithProviders, NgModule} from "@angular/core";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 
 import {
@@ -16,6 +16,7 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {DefaultPaginationDataService} from "./PaginationDataService";
 import TabService from "./tab.service";
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
+import {KyloRouterService} from "./kylo-router.service";
 
 @NgModule({
     imports: [
@@ -40,4 +41,10 @@ import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services
 })
 export class KyloServicesModule {
 
+    static forRoot() : ModuleWithProviders {
+        return {
+            ngModule:KyloServicesModule,
+            providers:[KyloRouterService]
+        }
+    }
 }

@@ -312,6 +312,23 @@ export class DatasetPreviewService {
     }
 
 
+    public prepareAndPopulatePreviewDataSets(files: BrowserObject[], datasource: DataSource): Observable<PreviewDataSetResultEvent> {
+        let previewReady$ = new ReplaySubject<PreviewDataSetResultEvent>(1);
+        let o = previewReady$.asObservable();
+        let observables : Observable<PreviewDataSet>[] = [];
+        files.forEach((obj:BrowserObject) => {
+            observables.push(this.prepareBrowserObjectForPreview(obj,datasource));
+        })
+        Observable.forkJoin(observables).subscribe((dataSets:PreviewDataSet[]) => {
+            this._populatePreview(dataSets, datasource).subscribe((ev: PreviewDataSetResultEvent) => {
+                previewReady$.next(ev);
+            });
+
+        })
+
+        return o;
+    }
+
     /**
      * Open the schema parser dialog settings
      * @param {PreviewFileDataSet} dataset

@@ -8,7 +8,7 @@
         <catalog-table-browser [datasource]="datasource" [useRouterStates]="false" [params]="params"(onCheckboxChange)="onCheckboxChange($event)" *ngIf="datasourceSref=='.connection'">
         </catalog-table-browser>
 
-        <local-files #fileUpload [datasource]="datasource" *ngIf="datasourceSref=='.upload'" (onUploadFilesChange)="onUploadFilesChange($event)"></local-files>
+        <local-files #fileUpload [displayInCard]="false" [datasource]="datasource" *ngIf="datasourceSref=='.upload'" (onUploadFilesChange)="onUploadFilesChange($event)"></local-files>
 
         <input type="hidden" formControlName="hiddenValidFormCheck" required >
       </form>

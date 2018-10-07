@@ -13,6 +13,8 @@ import {KyloCommonModule} from "../../../../common/common.module";
 import {FileSizePipe} from "./file-size.pipe";
 import {UploadComponent} from "./upload.component";
 import {uploadStates} from "./upload.states";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -34,6 +36,8 @@ import {uploadStates} from "./upload.states";
         MatCardModule,
         MatDividerModule,
         MatListModule,
+        MatToolbarModule,
+        MatIconModule,
         MatProgressBarModule
     ]
 })

@@ -14,6 +14,8 @@ import {DataSetFile} from '../../api/models/dataset-file';
 import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
 import {UploadDataSource} from "./models/upload-dataset";
+import {StateService} from "@uirouter/angular";
+import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 
 export class UploadFilesChangeEvent {
@@ -53,6 +55,9 @@ export class UploadComponent implements OnInit {
     @Input()
     renderContinueButton: boolean;
 
+    @Input()
+    displayInCard?:boolean = true;
+
     /**
      * Called when there is at least 1 valid uploaded file
      * @type {EventEmitter<FileUpload[]>}
@@ -80,7 +85,9 @@ export class UploadComponent implements OnInit {
      */
     loading: boolean = false;
 
-    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService) {
+
+
+    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService, private state:StateService, private kyloRouterService: KyloRouterService) {
     }
 
     public ngOnInit(): void {
@@ -176,6 +183,16 @@ export class UploadComponent implements OnInit {
             );
         }
     }
+
+    goBackToDatasourceList(){
+        this.state.go("catalog.datasources");
+    }
+
+    goBack(){
+        this.kyloRouterService.back("catalog.datasources");
+    }
+
+
 
     /**
      * Deletes a file that has been uploaded.

@@ -22,6 +22,7 @@ import {DatasetPreviewService, DataSourceChangedEvent, PreviewDataSetResultEvent
 import {DatasetPreviewContainerComponent} from "../../catalog/datasource/preview-schema/preview/dataset-preview-container.component";
 import {CatalogPreviewDatasetComponent} from "../../catalog/datasource/preview-schema/catalog-preview-dataset.component";
 import {StateService} from "@uirouter/angular";
+import {KyloRouterService} from "../../../services/kylo-router.service";
 
 
 
@@ -44,10 +45,11 @@ export class PreviewDatasetStepComponent extends CatalogPreviewDatasetComponent 
                 _dialogService: TdDialogService,
                 _datasetPreviewService:DatasetPreviewService,
                 _tdLoadingService:TdLoadingService,
+                kyloRouterService:KyloRouterService,
                 private _datasetPreviewStepperService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef
     ) {
-        super(state,selectionService,_dialogService,_datasetPreviewService,_tdLoadingService);
+        super(state,selectionService,_dialogService,_datasetPreviewService,_tdLoadingService, kyloRouterService);
         this.singleSelection = this.selectionService.isSingleSelection();
         this.updateViewSubscription = this._datasetPreviewStepperService.subscribeToUpdateView(this.onUpdateView.bind(this))
 

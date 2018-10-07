@@ -54,7 +54,7 @@ const translateConfig: TranslateModuleConfig = {
         FlexLayoutModule,
         HttpClientModule,
         KyloCommonModule,
-        KyloServicesModule,
+        KyloServicesModule.forRoot(),
         TranslateModule.forRoot(translateConfig),
         UIRouterModule,
         UIRouterUpgradeModule,
@@ -90,6 +90,9 @@ export class KyloModule {
         this.iconRegistry.addSvgIconSetInNamespace("fas", fasUrl);
 
         this.iconRegistry.registerFontClassAlias("mdi","mdi-set")
+
+        const mdiSvgUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@mdi/fonts/materialdesignicons-webfont.svg");
+        this.iconRegistry.addSvgIconSetInNamespace("mdi", mdiSvgUrl);
     }
 
     private initTranslation(): void {
