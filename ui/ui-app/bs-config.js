@@ -7,7 +7,7 @@ module.exports = {
     server: {
         baseDir: ["src/main/resources/static", "target/classes/static"],
         middleware: [
-            proxy(proxyFilter, {target: "http://localhost:84000/"})
+            proxy(proxyFilter, {target: "http://localhost:8400/"})
         ]
     }
 };
