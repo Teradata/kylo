@@ -3,7 +3,7 @@
 <mat-nav-list *ngIf="hasPreviews && !selectedDataSet" class="dataset-list">
   <h3 mat-subheader>Preview Datasets</h3>
   <ng-container *ngFor="let dataset of previews; let $index = index; let $first = first; let $last = last" >
-  <mat-list-item (click)="selectedDataSet = dataset">
+  <mat-list-item (click)="selectDataSet(dataset)">
     <mat-icon matListIcon *ngIf="dataset.hasPreviewError()" color="warn">warning</mat-icon>
     <h3 matLine> {{dataset.displayKey}} </h3>
     <span></span>
@@ -46,7 +46,7 @@
 <ng-template #seletedDataSetTemplate>
 
     <div  fxLayout="row" fxLayoutAlign="start end">
-      <button class="icon-button"  mat-button (click)="selectedDataSet = undefined" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="!autoSelectSingleDataSet">
+      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="!autoSelectSingleDataSet">
         <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
         {{selectedDataSet.displayKey}}
       </button>

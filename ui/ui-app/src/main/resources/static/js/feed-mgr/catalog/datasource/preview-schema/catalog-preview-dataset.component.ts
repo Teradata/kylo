@@ -27,13 +27,13 @@ import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 @Component({
     selector: "catalog-preview-dataset",
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.html"
-    //styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.scss"],
+    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.html",
+    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.scss"],
     //changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
-    static LOADER = "CatalogPreviewDatasetComponent.LOADING";
+    static LOADER = "CatalogPreviewDatasetComponent.LOADER";
 
 
     @Input()
@@ -76,6 +76,8 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
     dataSourceChangedSubscription:ISubscription;
 
+    datasetName:string = "Preview Datasets";
+
     constructor(protected state:StateService,
                 protected selectionService: SelectionService,
                 protected _dialogService: TdDialogService,
@@ -99,6 +101,15 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
     onPreviewInvalid(ds:PreviewDataSet){
         //this.__datasetPreviewService.markFormAsInvalid(this.formGroup)
+    }
+
+    onPreviewSelected(ds:PreviewDataSet){
+        if(ds && ds != null) {
+            this.datasetName = ds.displayKey
+        }
+        else {
+            this.datasetName = "Preview Datasets";
+        }
     }
 
     onInitialPreviewValid(){
@@ -134,12 +145,14 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     protected  startLoading(){
         this.loading = true;
         this._tdLoadingService.register(CatalogPreviewDatasetComponent.LOADER);
+        console.log("START LOADING ",CatalogPreviewDatasetComponent.LOADER)
 
     }
 
     protected   finishedLoading(){
         this.loading = false;
         this._tdLoadingService.resolve(CatalogPreviewDatasetComponent.LOADER);
+        console.log("FINISHED LOADING ",CatalogPreviewDatasetComponent.LOADER)
     }
 
 
@@ -164,55 +177,62 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
             }
             else {
                 let node: Node = this.selectionService.get(this.datasource.id);
-                previewRequest = this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource);
-            }
-            previewRequest.subscribe((ev:PreviewDataSetResultEvent) => {
-
-                if(ev.isEmpty()){
-                    //Show "Selection is needed" card
-                    this.showNoDatasetsExistScreen = true;
-                    this._dialogService.openAlert({
-                        message: 'You need to select a source',
-                        disableClose: true,
-                        title: 'A selection is needed'
-                    });
-                    this.finishedLoading();
+                if(node != undefined) {
+                    previewRequest = this._datasetPreviewService.prepareAndPopulatePreview(node, this.datasource);
                 }
-                else {
-                    this.previews = ev.dataSets;
-                    if(ev.hasError()){
-                        let dataSetNames = ev.errors.map((ds:PreviewDataSet) => ds.key).join(",");
-                        let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
-                        if (this.singleSelection) {
-                            message += " You will need to alter the preview settings or manually create the schema"
-                        }
-                        //WARN different datasets
+            }
+            if(previewRequest != null) {
+                previewRequest.subscribe((ev: PreviewDataSetResultEvent) => {
+
+                    if (ev.isEmpty()) {
+                        //Show "Selection is needed" card
+                        this.showNoDatasetsExistScreen = true;
                         this._dialogService.openAlert({
-                            message: message,
+                            message: 'You need to select a source',
                             disableClose: true,
-                            title: 'Error parsing source selection',
+                            title: 'A selection is needed'
                         });
+                        this.finishedLoading();
                     }
                     else {
-                      this.onInitialPreviewValid()
+                        this.previews = ev.dataSets;
+                        if (ev.hasError()) {
+                            let dataSetNames = ev.errors.map((ds: PreviewDataSet) => ds.key).join(",");
+                            let message = 'Kylo is unable to determine the schema for the following items:' + dataSetNames;
+                            if (this.singleSelection) {
+                                message += " You will need to alter the preview settings or manually create the schema"
+                            }
+                            //WARN different datasets
+                            this._dialogService.openAlert({
+                                message: message,
+                                disableClose: true,
+                                title: 'Error parsing source selection',
+                            });
+                        }
+                        else {
+                            this.onInitialPreviewValid()
+                        }
+                        this.previewsReady = true;
+                        this.finishedLoading();
                     }
+
+
+                }, (err: any) => {
+
+                    console.error(err)
+                    this._dialogService.openAlert({
+                        message: "ERROR " + err,
+                        disableClose: true,
+                        title: 'Error parsing source selection',
+                    });
+                    this.onInitialPreviewInvalid()
                     this.previewsReady = true;
                     this.finishedLoading();
-                }
-
-
-            }, (err:any) => {
-
-                console.error(err)
-                this._dialogService.openAlert({
-                    message: "ERROR " + err,
-                    disableClose: true,
-                    title: 'Error parsing source selection',
                 });
-                this.onInitialPreviewInvalid()
-                this.previewsReady = true;
-                this.finishedLoading();
-            });
+            }else {
+                //redirect back to the datasource list
+                this.state.go("catalog.datasources");
+            }
 
 
         }

@@ -62,7 +62,7 @@ export class KyloRouterService {
             //the last trans is the current page
             //pop that off, save it and then go to the prev one
             const state = this.states.pop();
-            this._saveState({state: trans.to(), params: trans.params()}, true)
+            this._saveState(state, true)
             const prevState = this.states[this.states.length - 1];
             return this.stateService.go(prevState.state, prevState.params)
         }

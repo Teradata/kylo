@@ -44,6 +44,9 @@ export class DatasetPreviewContainerComponent implements OnInit{
     @Output()
     previewDatasetInvalid = new EventEmitter<PreviewDataSet>()
 
+    @Output()
+    previewSelectionChange = new EventEmitter<PreviewDataSet>();
+
 
     constructor(private _tdDialogService:TdDialogService, private viewContainerRef:ViewContainerRef,    private _datasetPreviewService:DatasetPreviewService ){
 
@@ -59,13 +62,23 @@ export class DatasetPreviewContainerComponent implements OnInit{
         if(this.previews != undefined && this.previews.length > 0) {
             this.hasPreviews = true;
             if(this.previews.length == 1 && this.autoSelectSingleDataSet) {
-                this.selectedDataSet = this.previews[0];
+                this.selectDataSet(this.previews[0])
             }
         }
         else {
             this.hasPreviews = false;
         }
 
+    }
+
+    selectDataSet(dataSet:PreviewDataSet){
+        if(dataSet && dataSet != null) {
+            this.selectedDataSet = dataSet;
+        }
+        else {
+            this.selectedDataSet = undefined;
+        }
+        this.previewSelectionChange.emit(this.selectedDataSet)
     }
 
       openSchemaParseSettingsDialog(dataset:PreviewDataSet): void {
