@@ -2,7 +2,6 @@ import "rxjs/add/operator/auditTime";
 import {Subject} from "rxjs/Subject";
 import {Subscription} from "rxjs/Subscription";
 import * as _ from "underscore";
-import "./module"; // ensure module is loaded first
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 

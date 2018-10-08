@@ -1,6 +1,5 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {UpgradeModule} from "@angular/upgrade/static";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
 import CommonRestUrlService from "./CommonRestUrlService";
 import SearchService from "./SearchService";
@@ -15,9 +14,7 @@ import { DefaultTableOptionsService } from "./TableOptionsService";
 import StateService from "./StateService";
 import UserGroupService from "./UserGroupService";
 import Utils from "./Utils";
-import HttpService from "./HttpService";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
-import { TranslateModule } from "@ngx-translate/core";
 import { TemplateService } from "./template.service";
 import ConfigurationService from "./ConfigurationService";
 import LoginNotificationService from "./LoginNotificationService";
@@ -27,9 +24,7 @@ import { WindowUnloadService } from "./WindowUnloadService";
 @NgModule({
     imports: [
         CommonModule,
-        UpgradeModule,
         MatSnackBarModule,
-        TranslateModule,
     ],
     providers: [
         NotificationService,
@@ -40,7 +35,6 @@ import { WindowUnloadService } from "./WindowUnloadService";
         StateService,
         UserGroupService,
         Utils,
-        HttpService,
         TemplateService,
         CommonRestUrlService,
         ConfigurationService,

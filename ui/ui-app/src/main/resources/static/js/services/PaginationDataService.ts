@@ -5,7 +5,6 @@ import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
 
-import "./module"; // ensure module is loaded first
 import { Injectable } from "@angular/core";
 
 

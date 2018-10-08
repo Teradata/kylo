@@ -23,7 +23,6 @@
 */
 import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
-import "./module"; // ensure module is loaded first
 import { ObjectUtils } from '../common/utils/object-utils';
 import { Injectable } from "@angular/core";
 import { StateService as routerStateService}  from '@uirouter/core';
@@ -45,7 +44,7 @@ export default class StateService {
         this.Tables = this.TableStates;
         this.Categories = this.CategoryStates;
     }
-    AuthStates () {
+    AuthStates = () => {
         var data: any = {}
         /**
          * Navigates to the Groups page.
@@ -81,7 +80,7 @@ export default class StateService {
         };
         return data;
     }
-    TemplateStates () {
+    TemplateStates = () => {
         var data: any = {};
         data.navigateToRegisterNewTemplate = () => {
             this.state.go('register-new-template');
@@ -115,7 +114,7 @@ export default class StateService {
         return data;
     }
 
-    FeedStates () {
+    FeedStates = () => {
         var data: any = {};
         data.navigateToFeedDetails = (feedId: any, tabIndex: any) => {
             if (tabIndex == null || tabIndex == undefined) {
@@ -154,7 +153,7 @@ export default class StateService {
         return data;
     }
 
-    ProfileStates () {
+    ProfileStates = () => {
         var data: any = {};
         data.navigateToProfileSummary = (feedId: any) => {
             this.state.go('feed-details.profile-summary', {feedId: feedId})
@@ -172,7 +171,7 @@ export default class StateService {
 
     }
 
-    TableStates () {
+    TableStates = () => {
         var data: any = {};
         data.navigateToSchemas = (datasource: any) => {
             this.state.go('schemas', {datasource: datasource});
@@ -186,7 +185,7 @@ export default class StateService {
         return data;
     };
 
-    SlaStates () {
+    SlaStates = () => {
         var data: any = {};
         data.navigateToServiceLevelAgreements = () => {
             this.state.go('service-level-agreements');
@@ -203,7 +202,7 @@ export default class StateService {
         return data;
     }
 
-    CategoryStates () {
+    CategoryStates = () => {
         var data: any = {};
         data.navigateToCategoryDetails = (categoryId: any) => {
             this.state.go('category-details', {categoryId: categoryId});
@@ -215,7 +214,7 @@ export default class StateService {
         return data;
     }
 
-    SearchStates () {
+    SearchStates = () => {
         var data: any = {};
         data.navigateToSearch = (resetPaging: any) => {
             if (ObjectUtils.isUndefined(resetPaging)) {
@@ -226,7 +225,7 @@ export default class StateService {
         return data;
     }
 
-    DatasourceStates () {
+    DatasourceStates = () => {
         return {
             navigateToDatasourceDetails: (opt_datasourceId: any) => {
                 var safeDatasourceId = ObjectUtils.isString(opt_datasourceId) ? encodeURIComponent(opt_datasourceId) : null;
@@ -239,7 +238,7 @@ export default class StateService {
         };
     };
 
-    DomainTypeStates () {
+    DomainTypeStates = () => {
         return {
             navigateToDomainTypeDetails: (opt_domainTypeId: any) => {
                 var safeDomainTypeId : any= ObjectUtils.isString(opt_domainTypeId) ? encodeURIComponent(opt_domainTypeId) : null;
@@ -252,7 +251,7 @@ export default class StateService {
         }
     };
 
-    FeedManagerStates () {
+    FeedManagerStates = () => {
         var data: any = {};
         data.Category = this.CategoryStates;
         data.Feed = this.FeedStates;
@@ -265,7 +264,7 @@ export default class StateService {
         return data;
     }
 
-    OpsManagerJobStates () {
+    OpsManagerJobStates = () => {
         var data: any = {};
         data.navigateToJobDetails = (executionId: any) => {
             this.state.go('job-details', {executionId: executionId});
@@ -276,7 +275,7 @@ export default class StateService {
         return data;
     }
 
-    OpsManagerFeedStates () {
+    OpsManagerFeedStates = () => {
         var data: any = {};
         data.navigateToFeedDetails = (feedName: any) => {
             this.state.go('ops-feed-details', {feedName: feedName});
@@ -287,7 +286,7 @@ export default class StateService {
         return data;
     }
 
-    OpsManagerServiceStates () {
+    OpsManagerServiceStates = () => {
         var data: any = {};
         data.navigateToServiceDetails = (serviceName: any) => {
             this.state.go('service-details', {serviceName: serviceName});
@@ -299,7 +298,7 @@ export default class StateService {
         return data;
     }
 
-    AlertStates () {
+    AlertStates = () => {
         var data: any = {};
         /**
          * Navigates to the details page for the specified alert.
@@ -314,7 +313,7 @@ export default class StateService {
         return data;
     }
 
-    SlaAssessmentStates () {
+    SlaAssessmentStates = () => {
         var data: any = {};
         data.navigateToServiceLevelAssessments = (filter: any) => {
             filter = ObjectUtils.isUndefined(filter) ? '' : filter;
@@ -326,7 +325,7 @@ export default class StateService {
         return data;
     }
 
-    OpsManagerStates () {
+    OpsManagerStates = () => {
         var data: any = {};
         data.dashboard = () => {
             this.state.go('dashboard');
@@ -338,10 +337,10 @@ export default class StateService {
         data.Sla = this.SlaAssessmentStates;
         return data;
     }
-    go (state: any, params: any) {
+    go = (state: any, params: any) => {
         this.state.go(state, params);
     }
-    navigateToHome () {
+    navigateToHome = () => {
         this.state.go("home");
     };
 }

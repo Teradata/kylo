@@ -3,12 +3,12 @@ import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import UserGroupService from "./UserGroupService";
 
-import "./module"; // ensure module is loaded first
 import { Injectable } from '@angular/core';
 import { ObjectUtils } from '../common/utils/object-utils';
 import { CloneUtil } from '../common/utils/clone-util';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/observable';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/forkJoin';
 
 @Injectable()
 export default class AccessControlService extends AccessConstants {

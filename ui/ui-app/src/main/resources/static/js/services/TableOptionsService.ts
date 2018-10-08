@@ -4,7 +4,6 @@ import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
 
-import "./module"; // ensure module is loaded first
 import { Injectable } from "@angular/core";
 import { DefaultPaginationDataService } from "./PaginationDataService";
 

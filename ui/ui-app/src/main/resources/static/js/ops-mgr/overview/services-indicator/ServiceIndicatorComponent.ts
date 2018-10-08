@@ -8,7 +8,6 @@ import StateService from "../../../services/StateService";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import BroadcastService from "../../../services/broadcast-service";
 import ServicesStatusData from "../../services/ServicesStatusService";
-import HttpService from "../../../services/HttpService";
 import { TranslateService } from "@ngx-translate/core";
 
 class Indicator {

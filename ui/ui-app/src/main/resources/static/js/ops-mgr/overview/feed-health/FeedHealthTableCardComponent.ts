@@ -8,7 +8,6 @@ import {OpsManagerFeedService} from "../../services/OpsManagerFeedService";
 import { Component, Input } from "@angular/core";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import BroadcastService from "../../../services/broadcast-service";
-import HttpService from "../../../services/HttpService";
 import { ObjectUtils } from "../../../common/utils/object-utils";
 import { ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent, TdDataTableSortingOrder } from "@covalent/core/data-table";
 import { BaseFilteredPaginatedTableView } from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";

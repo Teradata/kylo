@@ -8,20 +8,24 @@
           <div layout="row" layout-align="space-between">
             <span class="mat-title">Execute Query</span>
             <div>
-              <mat-input-container ng-if="previousQueries.length >0">
+              <mat-input-container *ngIf="previousQueries.length >0">
                 <label>Previous Queries</label>
-                <mat-select [(ngModel)]="previousQuery" ng-change="changePreviousQuery()" >
-                <mat-option *ngFor="q of previousQueries"}[(ngModel)]="sql" ui-codemirror-opts="codemirrorOptions">
+                <mat-select [(ngModel)]="previousQuery" (change)="changePreviousQuery()" >
+                  <mat-option *ngFor="let q of previousQueries" [(ngModel)]="sql" ui-codemirror-opts="codemirrorOptions">
+                  </mat-option>
+                </mat-select>
+              </mat-input-container>
+            </div>
         </div>
-        <md-button class="md-primary md-raised" ng-disabled="loading" ng-click="executeQuery()">
+        <button mat-button class="md-primary md-raised" [disabled]="loading" (click)="executeQuery()">
           Execute Query
-        </md-button>
-        <md-progress-linear md-mode="indeterminate" ng-if="loading"></md-progress-linear>
-        <div class="browse-results" ng-if="loading == false ">
-          <span ng-if="queryTime != null" class="md-subhead">The query returned {{resultSize}} rows and took: {{queryTime | timeWithMillis }} </span>
+        </button>
+        <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
+        <div class="browse-results" *ngIf="loading == false ">
+          <span *ngIf="queryTime != null" class="md-subhead">The query returned {{resultSize}} rows and took: {{queryTime }} </span><!--| timeWithMillis -->
           <div ui-grid-auto-resize  style="width:100%;height:500px;" ui-grid="gridOptions"></div>
         </div>
-          <div layout="column" ng-if="explainPlan != null">
+          <div layout="column" *ngIf="explainPlan != null">
             <div class="md-subhead">Explain Plan</div>
             <div style="white-space: pre-wrap;">{{explainPlan}}</div>
           </div>
@@ -35,13 +39,13 @@
         <div layout="column" layout-padding>
           <div layout="row" layout-align="space-between">
             <div class="mat-title">{{indexes.length}} Existing Indexes</div>
-            <button mat-button class="md-primary md-raised"  ng-click="reindex()">
+            <button mat-button class="md-primary md-raised"  (click)="reindex()">
               Re-index
             </button>
           </div>
 
 
-          <mat-table-container>
+          <!-- <mat-table-container>
             <table mat-table md-progress="deferred.promise">
               <thead md-head md-order="indexTable.sort">
               <tr md-row>
@@ -54,16 +58,16 @@
               </thead>
               <tbody md-body>
               <tr md-row
-                  *ngFor="idx of indexes">
+                  *ngFor="let idx of indexes">
                 <td md-cell>{{idx.indexName}}</td>
                 <td md-cell>{{idx.indexKind}}</td>
                 <td md-cell>{{idx.nodeType}}</td>
                 <td md-cell>{{idx.propertyName}}</td>
                 <td md-cell>{{idx.propertyTypes}}</td>
                 <td md-cell>
-                  <md-button class="icon-btn md-icon-button auto-height" ng-click="unregisterIndex(idx.indexName)">
-                    <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
-                  </md-button>
+                  <mat-button class="icon-btn md-icon-button auto-height" (click)="unregisterIndex(idx.indexName)">
+                    <mat-icon icon="delete" size="20" style="fill:grey;"></mat-icon>
+                  </mat-button>
                 </td>
               </tr>
               </tbody>
@@ -71,23 +75,23 @@
           </mat-table-container>
 
           <mat-table-pagination md-limit="indexTable.rowsPerPage" md-page="indexTable.currentPage" md-total="{{indexes.length}}"
-                               md-limit-options="[5,10,20,50]"></mat-table-pagination>
+                               md-limit-options="[5,10,20,50]"></mat-table-pagination> -->
 
 
         </div>
 
         <div layout="column">
-          <form name="indexForm" layout="column">
+          <form #indexForm="ngForm" name="indexForm" layout="column">
           <span class="mat-title">Add a new Index</span>
           <mat-input-container>
             <label>Index Name</label>
-            <input [(ngModel)]="index.indexName" required>
+            <input matInput name="indexName" [(ngModel)]="index.indexName" required>
           </mat-input-container>
 
             <mat-input-container>
               <label>Kind</label>
-              <mat-select [(ngModel)]="index.indexKind">
-                <mat-option *ngFor="kind of indexKinds" ng-value="kind">
+              <mat-select name="indexKind" [(ngModel)]="index.indexKind">
+                <mat-option *ngFor="let kind of indexKinds" ng-value="kind">
                   {{kind}}
                 </mat-option>
               </mat-select>
@@ -95,24 +99,24 @@
 
           <mat-input-container>
             <label>Index Node Type</label>
-            <input [(ngModel)]="index.nodeType" required>
+            <input matInput name="nodeType" [(ngModel)]="index.nodeType" required>
           </mat-input-container>
 
           <mat-input-container>
             <label>Property Name</label>
-            <input [(ngModel)]="index.propertyName" required>
+            <input matInput name="propertyName" [(ngModel)]="index.propertyName" required>
           </mat-input-container>
 
             <mat-input-container>
               <label>Property Type</label>
-              <mat-select [(ngModel)]="index.propertyType">
-                 <mat-option *ngFor="type of propertyTypes" ng-value="type.value">
+              <mat-select name="propertyType" [(ngModel)]="index.propertyType">
+                 <mat-option *ngFor="let type of propertyTypes" ng-value="type.value">
                   {{type.name}}
                 </mat-option>
               </mat-select>
             </mat-input-container>
             <div flex="50">
-              <button mat-button class="md-primary md-raised" ng-disabled="loading" ng-click="registerIndex() ">
+              <button mat-button class="md-primary md-raised" [disabled]="loading" (click)="registerIndex() ">
                 Register Index
               </button>
             </div>
@@ -120,9 +124,6 @@
 
 
         </div>
-
-
-
       </mat-tab-body>
     </mat-tab>
 

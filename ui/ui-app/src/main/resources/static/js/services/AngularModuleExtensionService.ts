@@ -1,7 +1,6 @@
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import BroadcastService from "./broadcast-service";
-import "./module"; // ensure module is loaded first
 import { HttpClient } from '@angular/common/http';
 import { ObjectUtils } from "../common/utils/object-utils";
 import { Injectable } from "@angular/core";

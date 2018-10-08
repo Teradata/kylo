@@ -1,7 +1,6 @@
 import BroadcastService from "./broadcast-service";
 
 
-import "./module"; // ensure module is loaded first
 import { Injectable } from "@angular/core";
 
 @Injectable()
