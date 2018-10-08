@@ -47,6 +47,9 @@ export class DatasetPreviewContainerComponent implements OnInit{
     @Output()
     previewSelectionChange = new EventEmitter<PreviewDataSet>();
 
+    @Input()
+    renderBackButton:boolean = true;
+
 
     constructor(private _tdDialogService:TdDialogService, private viewContainerRef:ViewContainerRef,    private _datasetPreviewService:DatasetPreviewService ){
 

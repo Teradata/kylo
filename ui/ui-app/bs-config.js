@@ -7,7 +7,7 @@ module.exports = {
     server: {
         baseDir: ["src/main/resources/static", "target/classes/static"],
         middleware: [
-            proxy(proxyFilter, {target: "http://kylo-demo:8400/"})
+            proxy(proxyFilter, {target: "http://localhost:84000/"})
         ]
     }
 };

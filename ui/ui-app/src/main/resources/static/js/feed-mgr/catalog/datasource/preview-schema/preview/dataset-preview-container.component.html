@@ -46,11 +46,11 @@
 <ng-template #seletedDataSetTemplate>
 
     <div  fxLayout="row" fxLayoutAlign="start end">
-      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="previews.length >1">
+      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="renderBackButton">
         <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
         {{selectedDataSet.displayKey}}
       </button>
-      <h2 class="mat-subheading-2" *ngIf="autoSelectSingleDataSet"> {{selectedDataSet.displayKey}}</h2>
+      <h2 class="mat-card-title" [style.font-size.px]="20" *ngIf="autoSelectSingleDataSet"> {{selectedDataSet.displayKey}}</h2>
       <span fxFlex></span>
 
       <button class="icon-button" mat-icon-button (click)="openSchemaParseSettingsDialog(selectedDataSet)" *ngIf="selectedDataSet.schemaParser"  matTooltip="Update dataset preview settings ">

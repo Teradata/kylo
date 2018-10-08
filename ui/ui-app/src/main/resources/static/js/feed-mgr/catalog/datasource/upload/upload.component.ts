@@ -102,6 +102,9 @@ export class UploadComponent implements OnInit {
         if (this.datasource.$fileUploads) {
             // Read uploads cached locally in dataset
             this.files = this.datasource.$fileUploads;
+            if(this.files && this.files.length >0){
+                this.isReady = true;
+            }
         } else {
             this.datasource.$fileUploads = this.files;
 
