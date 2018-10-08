@@ -40,6 +40,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,7 +157,11 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
 
 
     private String generateSystemName(String title) {
-        return title.replaceAll("\\s+", "_").toLowerCase();
+        try {
+            return URLEncoder.encode(title.toLowerCase(), "UTF-8");
+        } catch (final UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private String generateTitle(DataSource dataSource, String title) {
