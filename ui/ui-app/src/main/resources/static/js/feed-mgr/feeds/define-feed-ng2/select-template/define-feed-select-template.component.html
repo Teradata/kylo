@@ -55,7 +55,7 @@
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
       <div [id]="template.templateName" flex-gt-lg="25" flex-gt-md="33" flex-md="33" flex-sm="50" flex-xs="50">
 
-        <mat-card fxFlex fxLayout="row" class="pad-none" (click)="selectTemplate(template)" style="width:400px;height:155px;color:#444">
+        <mat-card fxFlex fxLayout="row" class="pad-none cursor-pointer" (click)="selectTemplate(template)" style="width:400px;height:155px;color:#444">
 
           <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
             <mat-icon style="color:white;font-size:45px" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
