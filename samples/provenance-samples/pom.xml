@@ -6,14 +6,14 @@
 
   <groupId>com.example.kylo.spark</groupId>
   <artifactId>kylo-provenance-samples</artifactId>
-  <version>0.9.1.3</version>
+  <version>0.9.1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
 
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-samples</artifactId>
-    <version>0.9.1.3</version>
+    <version>0.9.1.4-SNAPSHOT</version>
   </parent>
 
   <properties>

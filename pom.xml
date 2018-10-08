@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.9.1.3</version>
+  <version>0.9.1.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo is an enterprise-ready, open source, data lake management software platform for Hadoop and Spark integrating
