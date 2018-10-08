@@ -20,6 +20,12 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-catalog-model</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-schema-discovery-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
