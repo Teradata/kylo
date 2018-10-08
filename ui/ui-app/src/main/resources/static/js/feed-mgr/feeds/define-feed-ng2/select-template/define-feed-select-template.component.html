@@ -30,7 +30,7 @@
       </button>
     </div>
   </div>
-  <div class="bgc-grey-50" *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+  <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
     <div fxLayout="column"  *ngIf="recentTemplates.length >0">
       <h3 class="push-sm pad-none pad-top-sm pad-left-sm" mat-subheader>Recent</h3>
       <ng-container [ngTemplateOutlet]="templateCards"
@@ -55,13 +55,13 @@
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
       <div [id]="template.templateName" flex-gt-lg="25" flex-gt-md="33" flex-md="33" flex-sm="50" flex-xs="50">
 
-        <mat-card fxFlex fxLayout="row" class="pad-none" (click)="selectTemplate(template)" style="width:400px;height:162px;color:#444">
+        <mat-card fxFlex fxLayout="row" class="pad-none" (click)="selectTemplate(template)" style="width:400px;height:155px;color:#444">
 
-          <div fxLayout="column" [style.background]="template.iconColor"  fxLayoutAlign="center center" fxFlex="25">
+          <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
             <mat-icon style="color:white;font-size:45px" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
           </div>
           <div fxLayout="column" fxFlex>
-            <mat-card-content fxFlex style="max-height:103px">
+            <mat-card-content fxFlex style="max-height:97px">
 
                 <div class="md-title pad-bottom-sm">{{template.templateName}}</div>
                 <div [matTooltip]="template.description"
@@ -93,7 +93,7 @@
   <div fxLayout="row wrap" tdMediaToggle="gt-xs" [mediaClasses]="['push']">
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
       <div [id]="template.templateName" flex-gt-lg="25" flex-gt-md="33" flex-md="33" flex-sm="50" flex-xs="50">
-        <mat-card class="mat-card-colored" (click)="selectTemplate(template)" style="width:375px;height:150px;color:#444">
+        <mat-card class="mat-card-colored" (click)="selectTemplate(template)" style="width:375px;height:145px;color:#444">
           <mat-card-content fxFlex fxLayout="row" fxLayoutAlign="start">
 
             <div fxFlex="30" [style.background]="template.iconColor" fxLayoutAlign="center" fxLayout="column">
@@ -101,7 +101,7 @@
             </div>
             <div fxFlex fxLayout="column" fxLayoutAlign="start">
               <mat-card-title style="font-size:18px">{{template.templateName}}</mat-card-title>
-              <mat-card-subtitle class="tc-grey-600 block-with-text" style="font-size:14px" [matTooltip]="template.description"
+              <mat-card-subtitle class="tc-grey-600 block-with-text mat-subheading-1" [matTooltip]="template.description"
                                  matTooltipShowDelay="1000">{{template.description}}
               </mat-card-subtitle>
             </div>

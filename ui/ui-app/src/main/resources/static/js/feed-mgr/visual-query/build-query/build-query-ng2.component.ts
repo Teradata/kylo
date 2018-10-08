@@ -278,8 +278,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     let tablePart = tableParts[1];
                     this.onAutocompleteQuerySearch(tablePart).then((tables:any[]) => {
                         if (tables.length > 0) {
-                            tables.find((v:any)=>{
-                                return (v.fullName == tablePart);
+                            this.selectedTable = tables.find((v:any)=>{
+                                return (v.fullName == table);
                             });
                         }
                     });
