@@ -48,6 +48,7 @@ import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
@@ -153,22 +154,27 @@ public class DataSourceController extends AbstractCatalogController {
     public Response createDataSource(@Nonnull final DataSource source) {
         log.entry(source);
         
-        return metadataService.commit(() -> {
-            Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
-            
-            return connectorProvider.find(connId)
-                .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
-                .map(domain -> {
-                    modelTransform.updateDataSource(source, domain);
-                    return domain;
-                })
-                .map(modelTransform.dataSourceToRestModel())
-                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
-                .orElseThrow(() -> {
-                    log.debug("Connector not found with ID: {}", connId);
-                    return new BadRequestException(getMessage("catalog.connector.notFound"));
-                });
-        });
+        // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSource() for a more typical REST API
+        if (! StringUtils.isEmpty(source.getId())) {
+            return updateDataSource(source);
+        } else {
+            return metadataService.commit(() -> {
+                Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
+                
+                return connectorProvider.find(connId)
+                    .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
+                    .map(domain -> {
+                        modelTransform.updateDataSource(source, domain);
+                        return domain;
+                    })
+                    .map(modelTransform.dataSourceToRestModel())
+                    .map(dataSource -> Response.ok(log.exit(dataSource)).build())
+                    .orElseThrow(() -> {
+                        log.debug("Connector not found with ID: {}", connId);
+                        return new BadRequestException(getMessage("catalog.connector.notFound"));
+                    });
+            });
+        }
     }
 
     @POST

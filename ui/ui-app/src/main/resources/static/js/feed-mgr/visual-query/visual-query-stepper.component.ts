@@ -22,6 +22,9 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     @Input()
     engineName: string;
 
+    @Input()
+    heightOffset: number;
+
     /**
      * Allow the user to change data sources and query for tables/files etc
      * This will be disabled when using the new ng2 feed stepper coming from a data wrangler feed as those are populated via the PreviewdatasetCollectionService

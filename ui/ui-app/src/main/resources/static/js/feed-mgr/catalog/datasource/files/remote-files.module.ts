@@ -22,6 +22,8 @@ import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {BrowserModule} from '../api/browser.module';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -54,7 +56,9 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
-        UIRouterModule
+        UIRouterModule,
+        MatToolbarModule,
+        MatIconModule
 
     ]
 })

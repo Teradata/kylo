@@ -4,13 +4,18 @@ import {ValidationErrors} from '@angular/forms/src/directives/validators';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from "@covalent/core/dialogs";
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {TranslateService} from "@ngx-translate/core";
 import {StateService} from "@uirouter/angular";
+import {fromPromise} from "rxjs/observable/fromPromise";
+import {of} from "rxjs/observable/of";
 import {catchError} from 'rxjs/operators/catchError';
 import {concatMap} from "rxjs/operators/concatMap";
 import {filter} from "rxjs/operators/filter";
 import {finalize} from 'rxjs/operators/finalize';
+import {map} from "rxjs/operators/map";
 import {tap} from "rxjs/operators/tap";
 import * as _ from "underscore";
+import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 
 import {Connector} from '../api/models/connector';
 import {ConnectorPlugin} from '../api/models/connector-plugin';
@@ -18,7 +23,6 @@ import {DataSource} from '../api/models/datasource';
 import {DataSourceTemplate} from '../api/models/datasource-template';
 import {UiOption} from '../api/models/ui-option';
 import {CatalogService} from '../api/services/catalog.service';
-import {TranslateService} from "@ngx-translate/core";
 
 
 interface UiOptionsMapper {
@@ -88,6 +92,8 @@ export class ConnectorComponent {
     @Input("connectorPlugin")
     public plugin: ConnectorPlugin;
 
+    form = new FormGroup({});
+
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
     private isLoading: boolean = false;
@@ -100,7 +106,7 @@ export class ConnectorComponent {
             if (control.value && control.value.trim().length > 0) {
                 try {
                     const url: URL = new URL(control.value);
-                    if (url.protocol !== params.protocol) {
+                    if (params && params.protocol && url.protocol !== params.protocol) {
                         return {'url-protocol': true};
                     }
                 } catch (e) {
@@ -121,7 +127,8 @@ export class ConnectorComponent {
                 private snackBarService: MatSnackBar,
                 private loadingService: TdLoadingService,
                 private dialogService: TdDialogService,
-                private translateService: TranslateService) {
+                private translateService: TranslateService,
+                private entityAccessControlService: EntityAccessControlService) {
         this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
@@ -190,18 +197,27 @@ export class ConnectorComponent {
 
         this.isLoading = true;
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
-        this.catalogService.createDataSource(ds)
-            .pipe(finalize(() => {
+        this.catalogService.createDataSource(ds).pipe(
+            concatMap(dataSource => {
+                if (typeof ds.roleMemberships !== "undefined") {
+                    this.entityAccessControlService.updateRoleMembershipsForSave(ds.roleMemberships);
+                    return fromPromise(this.entityAccessControlService.saveRoleMemberships("datasource", dataSource.id, ds.roleMemberships))
+                        .pipe(map(() => dataSource));
+                } else {
+                    return of(dataSource);
+                }
+            }),
+            finalize(() => {
                 this.isLoading = false;
                 this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
-            }))
-            .pipe(catchError((err) => {
+            })
+        ).subscribe(
+            source => this.state.go("catalog.datasources", {datasourceId: source.id}),
+            err => {
+                console.error(err);
                 this.showSnackBar('Failed to save. ', err.message);
-                return [];
-            }))
-            .subscribe((source: DataSource) => {
-                this.state.go("catalog.datasources", {datasourceId: source.id});
-            });
+            }
+        );
     }
 
     getDataSourceFromUi(): DataSource | undefined {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.catalog;
 
 /*-
@@ -12,9 +9,9 @@ package com.thinkbiganalytics.metadata.modeshape.catalog;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,9 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- *
- */
 @Configuration
 public class CatalogMetadataConfig {
 
@@ -64,36 +58,40 @@ public class CatalogMetadataConfig {
     public DataSetProvider dataSetProvider() {
         return new JcrDataSetProvider();
     }
-    
+
     @Bean
     public PostMetadataConfigAction connectorPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
         return () -> {
             metadata.commit(() -> {
                 List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
-                Map<String, Connector> connectorMap =  connectorProvider().findAll(true).stream().collect(Collectors.toMap(c -> c.getPluginId(), c -> c));
-                
+                Map<String, Connector> connectorMap = connectorProvider().findAll(true).stream().collect(Collectors.toMap(Connector::getPluginId, c -> c));
+
                 for (ConnectorPlugin plugin : plugins) {
-                    if (connectorMap.containsKey(plugin.getId())) {
+                    Connector connector = connectorMap.get(plugin.getId());
+                    ConnectorPluginDescriptor descr = plugin.getDescriptor();
+
+                    if (connector != null) {
                         connectorMap.get(plugin.getId()).setActive(true);
                         connectorMap.remove(plugin.getId());
                     } else {
-                        ConnectorPluginDescriptor descr = plugin.getDescriptor();
                         String title = descr.getTitle();
-                        Connector connector = connectorProvider().create(plugin.getId(), title);
-                        
-                        if (StringUtils.isNotBlank(descr.getFormat())) {
-                            connector.getSparkParameters().setFormat(descr.getFormat());
-                        }
+                        connector = connectorProvider().create(plugin.getId(), title);
+                    }
+
+                    connector.setIconColor(descr.getColor());
+                    connector.setIcon(descr.getIcon());
+                    if (StringUtils.isNotBlank(descr.getFormat())) {
+                        connector.getSparkParameters().setFormat(descr.getFormat());
                     }
                 }
-                
+
                 // Any left over connectors that do not have a corresponding plugin should be either made inactive if they at 
                 // least one data source, or removed if they don't.
                 for (Connector connector : connectorMap.values()) {
-                    if (connector.getDataSources().size() > 0) {
-                        connector.setActive(false);
-                    } else {
+                    if (connector.getDataSources().isEmpty()) {
                         connectorProvider().deleteById(connector.getId());
+                    } else {
+                        connector.setActive(false);
                     }
                 }
             }, MetadataAccess.SERVICE);

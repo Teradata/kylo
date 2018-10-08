@@ -14,6 +14,9 @@ import {DataSetFile} from '../../api/models/dataset-file';
 import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
 import {UploadDataSource} from "./models/upload-dataset";
+import {StateService} from "@uirouter/angular";
+import {KyloRouterService} from "../../../../services/kylo-router.service";
+import {RemoteFile} from "../files/remote-file";
 
 
 export class UploadFilesChangeEvent {
@@ -53,6 +56,9 @@ export class UploadComponent implements OnInit {
     @Input()
     renderContinueButton: boolean;
 
+    @Input()
+    displayInCard?:boolean = true;
+
     /**
      * Called when there is at least 1 valid uploaded file
      * @type {EventEmitter<FileUpload[]>}
@@ -80,7 +86,9 @@ export class UploadComponent implements OnInit {
      */
     loading: boolean = false;
 
-    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService) {
+
+
+    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService, private state:StateService, private kyloRouterService: KyloRouterService) {
     }
 
     public ngOnInit(): void {
@@ -177,6 +185,16 @@ export class UploadComponent implements OnInit {
         }
     }
 
+    goBackToDatasourceList(){
+        this.state.go("catalog.datasources");
+    }
+
+    goBack(){
+        this.kyloRouterService.back("catalog.datasources");
+    }
+
+
+
     /**
      * Deletes a file that has been uploaded.
      */
@@ -261,5 +279,13 @@ export class UploadComponent implements OnInit {
         }
         this.isReady = (this.datasource.template.paths.length > 0);
         this.onUploadFilesChange.emit(new UploadFilesChangeEvent(this.isReady, this.files));
+    }
+
+    preview(){
+        //convert the dataset files to RemoteFile objects
+        let fileObjects:RemoteFile[] = this.files.map((file:FileUpload)=> {
+            return new RemoteFile(file.name,file.path,false,file.size,new Date());
+        });
+        this.state.go("catalog.datasource.preview",{datasource:this.datasource,displayInCard:true, objectsToPreview:fileObjects});//, {location: "replace"});
     }
 }

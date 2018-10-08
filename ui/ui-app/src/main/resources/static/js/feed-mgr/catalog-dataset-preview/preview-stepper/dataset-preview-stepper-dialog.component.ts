@@ -16,7 +16,7 @@ constructor(public allowMultiSelection:boolean=false,public saveLabel:string = "
 })
 export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{
     static DIALOG_CONFIG() {
-        return { panelClass: "full-screen-dialog-max-width"}
+        return { panelClass: "full-screen-dialog-max-width",disableClose:true}
     };
 
     @ViewChild("datasetStepper")

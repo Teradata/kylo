@@ -1,8 +1,9 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, Input, Output, OnInit, EventEmitter, TemplateRef, ContentChild} from "@angular/core";
+import { Location } from '@angular/common';
+import {Component, Input, Output, OnInit, EventEmitter, TemplateRef, ContentChild, OnDestroy} from "@angular/core";
 import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
-import {StateService} from "@uirouter/angular";
+import {StateService,Transition, UIRouter,StateObject} from "@uirouter/angular";
 import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService, SelectionStrategy} from '../../api/services/selection.service';
 import {MatDialog} from '@angular/material/dialog';
@@ -15,13 +16,14 @@ import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {NgForOfContext} from "@angular/common";
 import {BrowserService} from "./browser.service";
+import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 @Component({
     selector: "remote-files",
     styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.css"],
     templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
 })
-export class BrowserComponent implements OnInit {
+export class BrowserComponent implements OnInit, OnDestroy {
 
     private static topOfPageLoader: string = "BrowserComponent.topOfPageLoader";
     private static tableLoader: string = "BrowserComponent.tableLoader";
@@ -32,14 +34,14 @@ export class BrowserComponent implements OnInit {
     @Input()
     params: any;
 
-    @Input()
-    fileRowTemplate:TemplateRef<any>;
-
-    @ContentChild(TemplateRef)
-    defaultFileRowTemplate:TemplateRef<any>;
-
     @Output()
     onCheckboxChange=new EventEmitter<any>()
+
+    displayInCard?:boolean = true;
+
+    tableTemplate:string = "NameLinkTableTemplate";
+
+    showSelectionSummary:boolean = true;
 
     /**
      * Use ui-router state to track navigation between paths and folders
@@ -47,7 +49,6 @@ export class BrowserComponent implements OnInit {
      */
     @Input()
     useRouterStates:boolean = true;
-
     columns: BrowserColumn[];
     sortBy: string;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
@@ -74,7 +75,8 @@ export class BrowserComponent implements OnInit {
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
                 private dialog: MatDialog, private loadingService: TdLoadingService,
-                private browserService:BrowserService) {
+                private browserService:BrowserService,
+                private kyloRouterService:KyloRouterService) {
         this.columns = this.getColumns();
         this.sortBy = this.getSortByColumnName();
         this.selectionStrategy = selectionService.getSelectionStrategy();
@@ -93,9 +95,23 @@ export class BrowserComponent implements OnInit {
             //attempt to get it from the selection service
             this.params = this.selectionService.getLastPath(this.datasource.id);
         }
-        if(this.fileRowTemplate == undefined){
-            this.fileRowTemplate = this.defaultFileRowTemplate;
+
+        //if we are using the ui-router states between clicks then we want to display in the card and use the SelectionTableTemplate
+        //otherwise we will use the NameLinkTableTemplate
+
+        if(this.useRouterStates){
+            this.displayInCard = true;
+            this.tableTemplate = "NameLinkTableTemplate";
+            this.showSelectionSummary = false;
         }
+        else {
+            this.displayInCard = false;
+            this.tableTemplate = "SelectionTableTemplate";
+        }
+
+
+
+
         this.initNodes();
         this.init();
     }
@@ -137,12 +153,18 @@ export class BrowserComponent implements OnInit {
                 if(selectLastPath){
                     let lastPath = this.selectionService.getLastPathNodeName(this.datasource.id);
                     if(lastPath && this.node) {
-                        this.selectionStrategy.toggleChild(this.node, lastPath, true);
+                        if(!this.isSelectChildDisabled(lastPath)) {
+                            this.selectionStrategy.toggleChild(this.node, lastPath, true);
+                        }
                     }
                 }
                 this.initSelection();
                 this.filter();
             });
+    }
+
+    ngOnDestroy(){
+
     }
 
 
@@ -267,7 +289,7 @@ export class BrowserComponent implements OnInit {
         this.browse(this.createParentNodeParams(node));
     }
 
-    private browse(params: any): void {
+    protected browse(params: any): void {
         this.browseTo(params, undefined);
     }
 
@@ -281,7 +303,16 @@ export class BrowserComponent implements OnInit {
             if (location !== undefined) {
                 options.location = location;
             }
-            this.state.go(this.getStateName(), params, options);
+            if(params == undefined){
+                //attempt to get it from the selection service
+                params = this.selectionService.getLastPath(this.datasource.id);
+            }
+
+            this.state.go(this.getStateName(), params, options).then((res:any) =>{
+                console.log('transitioned!! ',res)
+            },(err:any) => {
+                console.log('error ',err)
+            });
         }
         else {
             this.params = params;
@@ -371,6 +402,28 @@ export class BrowserComponent implements OnInit {
      */
     applyCustomFilter(data : BrowserObject[]) : BrowserObject[] {
         return data;
+    }
+
+    goBackToDatasourceList(){
+        this.state.go("catalog.datasources");
+    }
+
+    goBack(){
+        this.kyloRouterService.back("catalog.datasources");
+    }
+
+    /**
+     * go to the single privew of the supplied item
+     * @param row
+     * @param {BrowserColumn} column
+     * @param value
+     */
+    preview(row:BrowserObject,column:BrowserColumn,value:any) {
+        console.log('preview ',row,column,value)
+        this.selectionService.clearSelected(this.datasource.id);
+        this.selectionStrategy.toggleChild(this.node, row.name, true);
+        this.initSelection();
+        this.state.go("catalog.datasource.preview",{datasource:this.datasource,displayInCard:true});//, {location: "replace"});
     }
 
     private filter(): void {

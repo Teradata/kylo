@@ -37,12 +37,15 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,15 +75,16 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     public DataSet create(ID dataSourceId, String title) {
         return this.dsProvider.find(dataSourceId)
                 .map(dsrc -> {
-                    String dsSystemName = generateSystemName(title);
+                    String ensuredTitle = generateTitle(dsrc, title);  // Should we instead throw and exception if the title is missing?
+                    String dsSystemName = generateSystemName(ensuredTitle);
                     Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsSystemName);
                     
                     if (JcrUtil.hasNode(getSession(), dataSetPath)) {
-                        throw DataSetAlreadyExistsException.fromSystemName(title);
+                        throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
                     } else {
                         Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
                         JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
-                        ds.setTitle(title);
+                        ds.setTitle(ensuredTitle);
                         return ds;
                     } 
                 })
@@ -121,6 +125,19 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetProvider#findByDataSource(java.util.Collection)
+     */
+    @Override
+    public DataSet findByDataSourceAndTitle(ID dataSourceId, String title) {
+        String query = startBaseQuery()
+            .append(" JOIN [").append(JcrDataSource.DATA_SETS_NODE_TYPE).append("] AS dsn ON ISCHILDNODE(e, dsn) ")
+            .append(" JOIN [").append(JcrDataSource.NODE_TYPE).append("] AS ds ON ISCHILDNODE(dsn, ds) ")
+            .append(" WHERE ds.[mode:id] = '").append(dataSourceId.toString()).append("' ")
+        .append(" AND e.[jcr:title] = '").append(title).append("'").toString();
+        return findFirst(query);
+    }
+
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getJcrEntityClass()
      */
     @Override
@@ -139,5 +156,9 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
 
     private String generateSystemName(String title) {
         return title.replaceAll("\\s+", "_").toLowerCase();
+    }
+
+    private String generateTitle(DataSource dataSource, String title) {
+        return StringUtils.isEmpty(title) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : title;
     }
 }

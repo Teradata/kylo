@@ -6,6 +6,7 @@ import {Connector} from '../models/connector';
 import {ConnectorPlugin} from '../models/connector-plugin';
 import {DataSource} from "../models/datasource";
 import {SearchResult} from "../models/search-result";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
 
 @Injectable()
 export class CatalogService {
@@ -68,7 +69,11 @@ export class CatalogService {
     }
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
-        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+        if (typeof datasource.id === "string") {
+            return this.http.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
+        } else {
+            return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+        }
     }
 
     deleteDataSource(datasource: DataSource): Observable<any> {
@@ -77,5 +82,8 @@ export class CatalogService {
 
     testDataSource(datasource: DataSource): Observable<any> {
         return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
+    }
+    createDataSet(dataSet: SparkDataSet): Observable<SparkDataSet> {
+        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", dataSet);
     }
 }

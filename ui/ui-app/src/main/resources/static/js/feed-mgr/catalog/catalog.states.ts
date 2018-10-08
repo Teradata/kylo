@@ -9,6 +9,10 @@ import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
 import {ConnectorComponent} from './connector/connector.component';
 import {DataSourcesComponent} from './datasources/datasources.component';
+import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-schema.module";
+import {UploadRouterModule} from "./datasource/upload/upload.module";
+import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
+import {TablesRouterModule} from "./datasource/tables/tables.module";
 
 export const catalogStates: Ng2StateDeclaration[] = [
     {
@@ -151,7 +155,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.preview.**",
         url: "/preview",
-        loadChildren: "feed-mgr/catalog/datasource/preview-schema/preview-schema.module#PreviewSchemaModule"
+        loadChildren: "feed-mgr/catalog/datasource/preview-schema/preview-schema.module#PreviewSchemaRouterModule"
     },
     {
         name: "catalog.datasource.upload.**",
@@ -161,11 +165,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.browse.**",
         url: "/browse",
-        loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesModule"
+        loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesRouterModule"
     },
     {
         name: "catalog.datasource.connection.**",
         url: "/tables",
-        loadChildren: "feed-mgr/catalog/datasource/tables/tables.module#TablesModule"
+        loadChildren: "feed-mgr/catalog/datasource/tables/tables.module#TablesRouterModule"
     }
 ];

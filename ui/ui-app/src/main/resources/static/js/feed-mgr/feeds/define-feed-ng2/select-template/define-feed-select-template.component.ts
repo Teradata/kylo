@@ -326,7 +326,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
      * @returns the date format string
      */
     openNewFeedDialog(config: NewFeedDialogData): Observable<NewFeedDialogResponse> {
-        return this.dialog.open(NewFeedDialogComponent, {data: config})
+        return this.dialog.open(NewFeedDialogComponent, {data: config,disableClose:true})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

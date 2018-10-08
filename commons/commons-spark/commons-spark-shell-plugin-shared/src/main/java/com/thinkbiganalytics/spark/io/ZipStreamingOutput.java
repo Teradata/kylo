@@ -37,7 +37,6 @@ import java.util.zip.ZipOutputStream;
  *
  * <p>The folder will be automatically deleted after it is outputted.</p>
  */
-// TODO: This class is a copy from spark-shell-client-app
 public class ZipStreamingOutput implements StreamingOutput {
 
     /**

@@ -50,9 +50,14 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -181,7 +186,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     protected FeedProvider feedProvider;
     
     @Inject 
+    private DataSourceProvider dataSourceProvider;
+    
+    @Inject 
     private DataSetProvider dataSetProvider;
+    
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
 
     @Inject
     protected MetadataAccess metadataAccess;
@@ -717,7 +728,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             
 
             // Save to the metadata store.
-            saveFeedMetadata(feedMetadata);
+           Feed domainFeed = saveFeedMetadata(feedMetadata);
+           if(feedMetadata.getRegisteredTemplate() == null){
+               //populate it
+               feedModelTransform.setFeedMetadataRegisteredTemplate(domainFeed,feedMetadata);
+           }
             
             // Register the audit for the update event
             if (! feedMetadata.isNew()) {
@@ -925,7 +940,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     
-    private void saveFeedMetadata(final FeedMetadata feed) {
+    private Feed saveFeedMetadata(final FeedMetadata feed) {
         
         Stopwatch stopwatch = Stopwatch.createStarted();
         
@@ -960,6 +975,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         stopwatch.stop();
         log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
+        return domainFeed;
     }
 
     private void saveFeed(final FeedMetadata feed) {
@@ -1406,8 +1422,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      */
     private void assignFeedDatasources(FeedMetadata feed, Feed domainFeed) {
         final Feed.ID domainFeedId = domainFeed.getId();
-        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources = new HashSet<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID>();
-        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> destinations = new HashSet<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID>();
+        Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> sourceDataSets = new HashSet<>();
+        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sourceDatasources = new HashSet<>();
+        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> destinationDatasources = new HashSet<>();
 
         String uniqueName = FeedNameUtil.fullName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
 
@@ -1419,7 +1436,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
         //find Definition registration
 
-        derivedDatasourceFactory.populateDatasources(feed, template, sources, destinations);
+        derivedDatasourceFactory.populateDatasources(feed, template, sourceDatasources, destinationDatasources);
         //remove the older sources only if they have changed
 
         if (domainFeed.getSources() != null) {
@@ -1428,32 +1445,49 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 .map(fs -> fs.getDatasource().get().getId())
                 .collect(Collectors.toSet());
                     
-            if (!sources.containsAll(existingSourceIds) || (sources.size() != existingSourceIds.size())) {
+            if (!sourceDatasources.containsAll(existingSourceIds) || (sourceDatasources.size() != existingSourceIds.size())) {
                 //remove older sources
                 //cant do it here for some reason.. need to do it in a separate transaction
                 feedProvider.removeFeedSources(domainFeedId);
             }
         }
-        sources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
-        destinations.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
+        sourceDatasources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
+        destinationDatasources.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
 
         // Update data sets 
-        Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> feedDataSetIds = feed.getSourceDataSets().stream()
-                .map(DataSet::getId)
-                .map(dataSetProvider::resolveId)
-                .collect(Collectors.toSet());
-        Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> domainDataSetIds = domainFeed.getSources().stream()
+        if (feed.getSourceDataSets() != null) {
+            // Collect the IDs of all existing data set sources
+            Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> currentDataSetIds = domainFeed.getSources().stream()
                 .map(FeedSource::getDataSet)
                 .filter(Optional::isPresent)
-                .map(optional -> optional.get().getId())
+                .map(Optional::get)
+                .map(com.thinkbiganalytics.metadata.api.catalog.DataSet::getId)
                 .collect(Collectors.toSet());
-
-        feedDataSetIds.stream()
-            .filter(feedDsId -> ! domainDataSetIds.contains(feedDsId))
-            .forEach(dsId -> feedProvider.ensureFeedSource(domainFeedId, dsId));
-        domainDataSetIds.stream()
-            .filter(feedDsId -> ! feedDataSetIds.contains(feedDsId))
-            .forEach(dsId -> feedProvider.removeFeedSource(domainFeedId, dsId));
+            Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> newDataSetIds = new HashSet<>();
+            
+            feed.getSourceDataSets().forEach(dataSet -> {
+                com.thinkbiganalytics.metadata.api.catalog.DataSet addedDataSet;
+                
+                if (dataSet.getId() == null) {
+                    DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                    dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+                    
+                    addedDataSet = dataSetProvider.create(dataSourceId, dataSet.getTitle());
+                } else {
+                    com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dataSetId = dataSetProvider.resolveId(dataSet.getId());
+                    addedDataSet = dataSetProvider.find(dataSetId).orElseThrow(() -> new DataSetNotFoundException(dataSetId));
+                }
+                
+                newDataSetIds.add(addedDataSet.getId());
+                catalogModelTransform.updateDataSet(dataSet, addedDataSet);
+                feedProvider.ensureFeedSource(domainFeedId, addedDataSet.getId());
+            });
+            
+            // Remove any data set sources no longer referenced in the updated feed.
+            currentDataSetIds.stream()
+                .filter(id -> ! newDataSetIds.contains(id))
+                .forEach(id -> feedProvider.removeFeedSource(domainFeedId, id));
+        }
         
     }
 

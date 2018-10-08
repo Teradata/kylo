@@ -1,0 +1,20 @@
+
+  <mat-toolbar *ngIf="displayInCard">
+    <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+      <div><button mat-button (click)="backToDatasource()"><mat-icon>arrow_back</mat-icon>{{datasource.title}}</button></div>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <div *tdLoading="'CatalogPreviewDatasetComponent.LOADING'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" class="datasets-preview-container-wrapper">
+  <mat-card *ngIf="displayInCard">
+    <datasets-preview-container #datasetPreviewContainer [autoSelectSingleDataSet]="autoSelectSingleDataSet" [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" ></datasets-preview-container>
+    <form [formGroup]="formGroup" >
+      <input type="hidden" formControlName="hiddenValidFormCheck" required >
+    </form>
+  </mat-card>
+  <ng-container *ngIf="!displayInCard">
+    <datasets-preview-container #datasetPreviewContainer [autoSelectSingleDataSet]="autoSelectSingleDataSet" [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" ></datasets-preview-container>
+    <form [formGroup]="formGroup" >
+      <input type="hidden" formControlName="hiddenValidFormCheck" required >
+    </form>
+  </ng-container>
+</div>

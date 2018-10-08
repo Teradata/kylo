@@ -55,6 +55,7 @@ export class DatasourceComponent implements OnInit, OnDestroy {
      */
     constructor(protected state: StateService, protected stateRegistry: StateRegistry, protected selectionService: SelectionService,  protected previewDatasetCollectionService: PreviewDatasetCollectionService) {
         this.dataSetChangedSubscription = this.previewDatasetCollectionService.subscribeToDatasetChanges(this.onDataSetCollectionChanged.bind(this))
+        this.selectionService.multiSelectionStrategy();
     }
 
     protected initTabs(statePrefix?:string ) {
@@ -82,6 +83,10 @@ export class DatasourceComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(){
         this.dataSetChangedSubscription.unsubscribe();
+    }
+
+    public testGo(){
+        this.state.go("catalog.datasource.preview");//, {location: "replace"});
     }
 
     public isDisabled(tab: ConnectorTab) {

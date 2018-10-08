@@ -49,13 +49,18 @@ export class KyloIconComponent implements OnChanges {
             } else {
                 // Check MatIconRegistry for icon
                 const key = changes.icon.currentValue.split(":", 2);
-                this.iconRegistry.getNamedSvgIcon((key.length == 2) ? key[1] : key[0], (key.length == 2) ? key[0] : "").subscribe(
-                    svg => this.setShape(svg.innerHTML, svg.getAttribute("viewBox")),
-                    error => {
-                        console.error(error);
-                        this.setIcon();
-                    }
-                );
+                try {
+                    this.iconRegistry.getNamedSvgIcon((key.length == 2) ? key[1] : key[0], (key.length == 2) ? key[0] : "").subscribe(
+                        svg => this.setShape(svg.innerHTML, svg.getAttribute("viewBox")),
+                        error => {
+                            console.error(error);
+                            this.setIcon();
+                        }
+                    );
+                } catch (error) {
+                    console.error(error);
+                    this.setIcon();
+                }
             }
         }
         if (changes.size) {

@@ -11,6 +11,7 @@ import "rxjs/add/operator/filter";
 import 'rxjs/add/operator/map';
 import "rxjs/add/operator/switchMap";
 import 'rxjs/add/operator/toPromise';
+import {map} from 'rxjs/operators';
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -29,9 +30,9 @@ import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
 import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
 import {MatDialogConfig} from "@angular/material/dialog";
-import {DatasetPreviewDialogComponent} from "../../catalog-dataset-preview/preview-stepper/preview-dialog/dataset-preview-dialog.component";
 import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {Subject} from "rxjs/Subject";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
 
 /**
  * Code for the delete key.
@@ -159,7 +160,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Height offset from the top of the page.
      */
-    heightOffset: string = "0";
+    @Input()
+    heightOffset: number;
 
     /**
      * Indicates if the model is valid.
@@ -228,7 +230,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 @Inject("HiveService") private hiveService: HiveService,
                 @Inject("SideNavService") private sideNavService: SideNavService,
                 @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
-                @Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
+                @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
+                private catalogService:CatalogService) {
         // Setup environment
         //this.heightOffset = $element.attr("height-offset");
         this.sideNavService.hideSideNav();
@@ -280,13 +283,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     canChangeDatasource(): boolean {
         return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
-    }
-
-    /**
-     * Gets the browser height offset for the element with the specified offset from the top of this component.
-     */
-    getBrowserHeightOffset(elementOffset: number): number {
-        return parseInt(this.heightOffset) + elementOffset;
     }
 
     selectedTable() : string {
@@ -424,28 +420,48 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         return this.allDatasources.find(ds => ds.id == dataSet.dataSource.id) != undefined;
     }
 
+    ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
+        if(dataset.id == undefined){
+         return this.catalogService.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
+             dataset.id = ds.id;
+             return dataset;
+         }))
+        }
+        else {
+            return Observable.of(dataset);
+        }
+
+    }
+    ensureDataSetIds(datasets:SparkDataSet[]) :Observable<SparkDataSet>[]{
+        return datasets.filter(dataset => typeof dataset.preview !== "undefined")
+            .map(dataset => this.ensureDataSetId(dataset))
+
+    }
+
     addSparkDataSets(datasets:SparkDataSet[]) {
         if(datasets && datasets.length >0) {
-            datasets.filter(dataset => typeof dataset.preview !== "undefined").forEach((dataset: SparkDataSet) => {
-                let tableSchema: any = {};
 
-                tableSchema.schemaName = dataset.getSchemaName();
-                tableSchema.tableName=dataset.getTableName();
-                tableSchema.name = dataset.getTableName();
-                tableSchema.fields = dataset.schema.map(tableColumn => {
-                    let field: any = {};
-                    field.name = tableColumn.name;
-                    field.description = null;
-                    field.nativeDataType = tableColumn.dataType;
-                    field.derivedDataType = tableColumn.dataType;
-                    field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
-                    return field;
+            Observable.forkJoin(this.ensureDataSetIds(datasets)).subscribe((dataSets:SparkDataSet[]) => {
+                dataSets.forEach((dataset: SparkDataSet) => {
+                    let tableSchema: any = {};
+
+                    tableSchema.schemaName = dataset.getSchemaName();
+                    tableSchema.tableName = dataset.getTableName();
+                    tableSchema.name = dataset.getTableName();
+                    tableSchema.fields = dataset.schema.map(tableColumn => {
+                        let field: any = {};
+                        field.name = tableColumn.name;
+                        field.description = null;
+                        field.nativeDataType = tableColumn.dataType;
+                        field.derivedDataType = tableColumn.dataType;
+                        field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
+                        return field;
+                    });
+                    let nodeName = dataset.getDisplayIdentifier()
+                    this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
+
                 });
-                let nodeName = dataset.getDisplayIdentifier()
-                this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
-
-            });
-
+            })
 
         }
     }

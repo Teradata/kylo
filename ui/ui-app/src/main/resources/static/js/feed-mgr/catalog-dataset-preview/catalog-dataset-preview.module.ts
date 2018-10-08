@@ -24,9 +24,6 @@ import {MatStepperModule} from "@angular/material/stepper";
 import {SelectDatasetStepComponent} from "./preview-stepper/select-dataset-step.component";
 import {PreviewDatasetStepComponent} from "./preview-stepper/preview-dataset-step.component";
 import {DatasetPreviewStepperComponent} from "./preview-stepper/dataset-preview-stepper.component";
-import {DatasetPreviewDialogComponent} from "./preview-stepper/preview-dialog/dataset-preview-dialog.component";
-import {DatasetPreviewContainerComponent} from "./preview-stepper/preview/dataset-preview-container.component";
-import {DatasetPreviewComponent} from "./preview-stepper/preview/dataset-preview.component";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
@@ -47,22 +44,15 @@ import {UIRouterModule} from "@uirouter/angular";
     declarations: [
         SelectDatasetStepComponent,
         DatasetPreviewStepperComponent,
-        DatasetPreviewDialogComponent,
-        DatasetPreviewContainerComponent,
-        DatasetPreviewComponent,
         PreviewDatasetStepComponent,
         DatasetPreviewStepperDialogComponent
     ],
     entryComponents: [
-        DatasetPreviewDialogComponent,
         DatasetPreviewStepperDialogComponent
     ],
     exports:[
         SelectDatasetStepComponent,
         DatasetPreviewStepperComponent,
-        DatasetPreviewDialogComponent,
-        DatasetPreviewContainerComponent,
-        DatasetPreviewComponent,
         PreviewDatasetStepComponent,
         DatasetPreviewStepperDialogComponent
     ],

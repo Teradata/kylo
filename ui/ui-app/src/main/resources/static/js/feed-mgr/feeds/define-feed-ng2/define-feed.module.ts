@@ -101,7 +101,6 @@ import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog
 import {CronExpressionPreviewModule} from '../../shared/cron-expression-preview/cron-expression-preview2.module';
 import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
-import {EntityAccessControlComponent} from "../../shared/entity-access-control/entity-access-control.component";
 import {FeedSetupGuideComponent} from "./summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component";
 import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
 import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
@@ -171,7 +170,6 @@ import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
         FeedInfoTagsComponent,
         FeedDetailsProcessorFieldComponent,
         FeedInfoTagsComponent,
-        EntityAccessControlComponent,
         FeedSetupGuideComponent,
         SetupGuideSummaryComponent,
         FeedActivitySummaryComponent,

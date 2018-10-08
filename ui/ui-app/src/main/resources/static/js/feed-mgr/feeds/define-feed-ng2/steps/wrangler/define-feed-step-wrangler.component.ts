@@ -1,4 +1,4 @@
-import {Component, Injector, Input, ViewChild} from "@angular/core";
+import {Component, Injector, Input, TemplateRef, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TranslateService} from '@ngx-translate/core';
 import {StateService} from "@uirouter/angular";
@@ -18,6 +18,9 @@ import {FeedSideNavService} from "../../services/feed-side-nav.service";
 export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
     @Input() stateParams: any;
+
+    @ViewChild("toolbarActionTemplate")
+    private toolbarActionTemplate:TemplateRef<any>;
 
     @ViewChild("visualQuery")
     visualQuery: VisualQueryStepperComponent;
@@ -39,10 +42,23 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         return FeedStepConstants.STEP_WRANGLER;
     }
 
+    getToolbarTemplateRef(): TemplateRef<any> {
+        return this.toolbarActionTemplate;
+    }
 
-    protected applyUpdatesToFeed(): Observable<any> | null {
+
+    protected applyUpdatesToFeed():(Observable<any> | boolean | null) {
         super.applyUpdatesToFeed();
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
-        return null;
+        if(this.feed.table.schemaChanged){
+            this.dialogService.openAlert({
+                title: 'Error saving feed.  Table Schema Changed.',
+                message:'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.'
+            });
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 }

@@ -51,10 +51,9 @@ public class FileMetadataScalaScriptGenerator {
      */
     public static String getScript(List<String> paths, Map<String, String> options) {
         final StringBuilder sb = new StringBuilder()
-            .append("import scala.collection.mutable.ListBuffer\n")
             .append("import org.apache.spark.sql.functions.{concat, lit, concat_ws,collect_list,split,size,col,when}\n")
             .append("import com.thinkbiganalytics.kylo.catalog._\n")
-            .append("var listBuffer = new ListBuffer[org.apache.spark.sql.DataFrame]()\n");
+            .append("var listBuffer = new scala.collection.mutable.ListBuffer[org.apache.spark.sql.DataFrame]()\n");
 
         sb.append("var kyloClientBuilder = KyloCatalog.builder(sqlContext) \n")
             .append("var kyloClient = kyloClientBuilder.build()\n")

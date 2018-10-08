@@ -12,6 +12,7 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
+import {FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../../../model/feed/feed-constants";
 
 
 @Component({
@@ -33,6 +34,10 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     @ViewChild("setupGuideToolbarActions")
     setupGuideToolbarActionLinksTemplate: TemplateRef<any>;
 
+    /**
+     * should we show the side nav or not
+     */
+    sideNavOpened:boolean = true;
 
     public savingFeed: boolean;
 
@@ -82,6 +87,15 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
 
     onFeedLinkChanged(link: FeedLinkSelectionChangedEvent) {
         this.currentLink = link.newLink;
+        if(this.currentLink.isStepLink()){
+            const fullScreen = this.currentLink.step.fullscreen;
+            if(fullScreen){
+                this.sideNavOpened = false;
+            }
+            else {
+                this.sideNavOpened = true;
+            }
+        }
         //see if we have an action template
         let templateRef = this.feedSideNavService.getLinkTemplateRef(this.currentLink.label);
         this.toolbarActionLinks = templateRef;
@@ -108,6 +122,12 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         if (response.success) {
             //update this feed
             this.feed = response.feed;
+        }
+    }
+
+    gotoFeedSummary(){
+        if(!this.sideNavOpened) {
+            this.stateService.go(FEED_DEFINITION_SUMMARY_STATE_NAME, {feedId: this.feed.id});
         }
     }
 

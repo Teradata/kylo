@@ -44,6 +44,7 @@ export class StepBuilder {
     icon:string;
     validator: FeedStepValidator;
     feedStepBuilder?:FeedStepBuilder
+    fullscreen:boolean;
 
     constructor(){
     }
@@ -113,6 +114,10 @@ export class StepBuilder {
         this.validator = feedStepValidator;
         return this;
     }
+    setFullscreen(fullscreen:boolean){
+        this.fullscreen = fullscreen;
+        return this;
+    }
 
 
     build() {
@@ -129,7 +134,8 @@ export class StepBuilder {
             complete: false,
             dependsUponSteps: this.dependsUponSteps,
             required: this.required,
-            icon:this.icon
+            icon:this.icon,
+            fullscreen:this.fullscreen
         });
         step.allSteps = this.allSteps;
         step.disabled = this.disabled;

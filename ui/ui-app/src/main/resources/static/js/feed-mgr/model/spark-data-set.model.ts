@@ -12,6 +12,7 @@ import {TableColumn} from "../catalog/datasource/preview-schema/model/table-view
 export class SparkDataSet {
     public dataSource: DataSource;
     public id: string
+    public title:string
     public format: string;
     public options: Common.Map<string>;
     public paths: string[];
@@ -51,7 +52,7 @@ export class SparkDataSet {
             path = this.options["path"];
         }
         else {
-            return this.id;
+            return this._getIdentifier;
         }
         if (removeLast) {
             return path.substring(0, path.lastIndexOf("/"));
@@ -83,29 +84,37 @@ export class SparkDataSet {
     }
 
     getDisplayIdentifier() {
-        if (this.format == "hive" || this.format == "jdbc" && this.id.indexOf(".") > 0) {
+        let identifier =this._getIdentifier()
+        if (this.format == "hive" || this.format == "jdbc" && identifier.indexOf(".") > 0) {
             return this.getSchemaName() + "." + this.getTableName();
         }
         else {
-            return this.id;
+            return identifier;
         }
     }
 
     getTableName() {
-        if (this.format == "hive" || this.format == "jdbc" && this.id.indexOf(".") > 0) {
-            return this.id.substring(this.id.lastIndexOf(".") + 1);
+        let identifier =this._getIdentifier()
+        if (this.format == "hive" || this.format == "jdbc" && identifier.indexOf(".") > 0) {
+            return identifier.substring(identifier.lastIndexOf(".") + 1);
         }
         else {
-            return this.id
+            return identifier
         }
     }
 
     getSchemaName() {
-        if (this.format == "hive" || this.format == "jdbc" && this.id.indexOf(".") > 0) {
-            return this.id.substring(0, this.id.lastIndexOf("."));
+        let identifier =this._getIdentifier()
+        if (this.format == "hive" || this.format == "jdbc" && identifier.indexOf(".") > 0) {
+
+            return identifier.substring(0, identifier.lastIndexOf("."));
         } else {
-            return this.id
+            return identifier
         }
+    }
+
+    _getIdentifier(){
+        return  this.title != undefined ? this.title : this.id;
     }
 
     mergeTemplates(): DataSourceTemplate {

@@ -20,6 +20,10 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {CovalentLoadingModule} from '@covalent/core/loading';
 import {BrowserService} from "./browser.service";
+import {CovalentLayoutModule} from "@covalent/core/layout";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {CovalentCommonModule} from "@covalent/core/common";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -35,7 +39,9 @@ import {BrowserService} from "./browser.service";
         FormsModule,
         ReactiveFormsModule,
         CovalentDataTableModule,
+        CovalentLayoutModule,
         CommonModule,
+        CovalentCommonModule,
         CovalentFileModule,
         CovalentSearchModule,
         CovalentPagingModule,
@@ -51,6 +57,9 @@ import {BrowserService} from "./browser.service";
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
+        MatToolbarModule,
+        MatIconModule
+
     ]
 })
 export class BrowserModule {

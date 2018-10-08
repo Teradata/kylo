@@ -45,6 +45,8 @@ public interface DataSetProvider extends BaseProvider<DataSet, DataSet.ID> {
     List<DataSet> findByDataSource(DataSource.ID dsId, DataSource.ID... otherIds);
     
     List<DataSet> findByDataSource(Collection<DataSource.ID> dsIds);
+
+    public DataSet findByDataSourceAndTitle(DataSource.ID dataSourceId, String title);
     
     List<DataSet> findAll();
     
