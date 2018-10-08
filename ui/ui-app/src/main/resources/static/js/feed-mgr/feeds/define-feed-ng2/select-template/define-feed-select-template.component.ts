@@ -262,7 +262,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
                 if (response) {
 
-                    var data = _.chain(response).filter((template) => {
+                    var data = _.chain(response).filter((template:any) => {
                         return template.state === 'ENABLED'
                     }).sortBy('order')
                         .value();
@@ -270,7 +270,9 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                     if (data.length > 1) {
                         this.displayMoreLink = true;
                     }
-                    this.allTemplates = data;
+                    this.allTemplates = data.sort((a:Template,b:Template)=>{
+                        return (a.templateName.localeCompare(b.templateName));
+                    });
                     let recentTemplates:string[] = <string[]>this.localStorageService.getItem(this.LOCAL_STORAGE_KEY);
                     if(recentTemplates) {
                         let recentTemplateObjects = _.filter(data, ((template:Template) => {
