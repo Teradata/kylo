@@ -952,9 +952,7 @@ Vertical section directive
 angular nvd3 styles
  */
 
-.nvd3 text {
-  font-family: Roboto !important;
-}
+
 
 .nvd3.nv-pie .nv-pie-title {
   fill: #807272;
