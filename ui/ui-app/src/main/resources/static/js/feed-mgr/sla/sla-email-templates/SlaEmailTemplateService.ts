@@ -8,7 +8,7 @@ export default class SlaEmailTemplateService {
     template: any = null;
     templates: any[];
     templateMap: any;
-    availableActions: any[];
+    // availableActions: any[];
     static readonly $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService"];
     constructor(private $http: angular.IHttpService,
         private $q: angular.IQService,
@@ -49,7 +49,7 @@ export default class SlaEmailTemplateService {
     };
     getAvailableActionItems = () => {
         var def = this.$q.defer();
-        if (this.data.availableActions.length == 0) {
+        if (this.data.availableActions === undefined || this.data.availableActions.length == 0) {
             this.$http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any) => {
                 if (response.data) {
                     this.data.availableActions = response.data;

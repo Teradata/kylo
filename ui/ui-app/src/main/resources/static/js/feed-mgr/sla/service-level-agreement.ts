@@ -8,7 +8,7 @@ import { DefaultPaginationDataService } from '../../services/PaginationDataServi
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import AddButtonService from '../../services/AddButtonService';
 
-export default class ServiceLevelAgreementController implements ng.IComponentController {
+export class ServiceLevelAgreementController implements ng.IComponentController {
     newSla: any;
     slaId: any;
     feed: any;
@@ -32,7 +32,7 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
         }
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
     .component('thinkbigServiceLevelAgreement',
             {
                 bindings: {
@@ -45,3 +45,4 @@ angular.module(moduleName)
                 controllerAs: 'vm',
                 templateUrl: 'js/feed-mgr/sla/service-level-agreement.html',
             });
+export default module;

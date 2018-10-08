@@ -696,14 +696,21 @@ class Route {
         $stateProvider.state('sla-email-templates.**', {
             url: '/sla-email-templates',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module')
-                    .then(function success(args: any) {
-                        //upon success go back to the state
-                        $stateProvider.stateService.go('sla-email-templates', transition.params())
-                        return args;
-                    }, function error(err: any) {
-                        console.log("Error loading sla email templates ", err);
-                        return err;
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "sla-email-templates.module" */ "./feed-mgr/sla/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name})
+                            .then(function success(args: any) {
+                                //upon success go back to the state
+                                $stateProvider.stateService.go('sla-email-templates', transition.params())
+                                return args;
+                            }, function error(err: any) {
+                                console.log("Error loading sla email templates ", err);
+                                return err;
+                            });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load feed-mgr/sla/module, " + err);
                     });
             }
         });

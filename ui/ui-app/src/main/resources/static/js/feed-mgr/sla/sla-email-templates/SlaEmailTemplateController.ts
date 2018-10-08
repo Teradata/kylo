@@ -5,8 +5,9 @@ import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
 import {StateService} from '../../../services/StateService';
 import {Transition} from "@uirouter/core";
+import '../module-require';
 
-export class SlaEmailTemplatesController implements ng.IComponentController {
+export class controller implements ng.IComponentController {
 
     /**
      * The id of the template
@@ -321,12 +322,6 @@ angular.module(moduleName)
     }
 );
 
-angular.module(moduleName)
-    .component('slaEmailTemplateController', {
-        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
-        controller: SlaEmailTemplatesController,
-        controllerAs: "vm",
-        bindings :  {
-            $transition$ : '<'
-        }
-    });
+const module = angular.module(moduleName)
+    .controller('slaEmailTemplateController', controller);
+export default module;

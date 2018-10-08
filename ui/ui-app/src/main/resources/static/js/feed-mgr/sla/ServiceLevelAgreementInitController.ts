@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import {moduleName} from './module-name';
 import { Transition } from '@uirouter/core';
 
-export default class ServiceLevelAgreementInitController  implements ng.IComponentController{
+export class ServiceLevelAgreementInitController  implements ng.IComponentController{
     
     $transition$: Transition;
     slaId: any;
@@ -19,7 +19,7 @@ export default class ServiceLevelAgreementInitController  implements ng.ICompone
 
 }
 
-angular.module(moduleName).component('serviceLevelAgreementInitComponent',{
+const module = angular.module(moduleName).component('serviceLevelAgreementInitComponent',{
     bindings: {
         $transition$: '<'
     },
@@ -27,3 +27,4 @@ angular.module(moduleName).component('serviceLevelAgreementInitComponent',{
     controllerAs: "vm",
     templateUrl: "js/feed-mgr/sla/service-level-agreements-view.html"
 });
+export default module;

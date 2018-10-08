@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import {moduleName} from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
+import '../module-require';
 
 export class controller implements ng.IComponentController{
         /**
@@ -25,7 +26,7 @@ export class controller implements ng.IComponentController{
                 private AddButtonService: any,
                 private StateService: any,
                 private SlaEmailTemplateService: any){
-           
+
                     // Register Add button
                         AccessControlService.getUserAllowedActions()
                             .then((actionSet: any)=>{
@@ -38,7 +39,7 @@ export class controller implements ng.IComponentController{
                             });
 
                          PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        
+
                             $scope.$watch(()=> {
                                 return this.viewType;
                                 }, (newVal: any)=> {
@@ -80,7 +81,7 @@ export class controller implements ng.IComponentController{
 
         filter: any = this.PaginationDataService.filter(this.pageName);
 
-        
+
 
         onViewTypeChange = (viewType: any)=>{
            this.PaginationDataService.viewType(this.pageName, this.viewType);
@@ -140,9 +141,10 @@ export class controller implements ng.IComponentController{
         }
 }
 
- angular.module(moduleName)
- .controller('SlaEmailTemplatesController', 
+const module = angular.module(moduleName)
+ .controller('SlaEmailTemplatesController',
                                         ["$scope","$http","$mdDialog","$q","$transition$",
                                         "AccessControlService","PaginationDataService",
                                         "TableOptionsService","AddButtonService","StateService",
                                         "SlaEmailTemplateService",controller]);
+export default module;
