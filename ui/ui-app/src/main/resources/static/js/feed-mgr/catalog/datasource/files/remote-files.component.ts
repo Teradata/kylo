@@ -127,7 +127,8 @@ export class RemoteFilesComponent extends BrowserComponent {
             //for all others types of file protocols
             const rootPath = rootUrl.toString(); //normalise root url
             const path = pathUrl.toString(); //normalise path url
-            let relativePath = path.substring(rootPath.length, path.length);
+            let pathPartStart = (rootPath.endsWith("///") ? rootPath.length -1 : rootPath.length);
+            let relativePath = path.substring(pathPartStart, path.length);
             if (relativePath.length > 0) {
                 let node: Node = root;
                 const splits: string[] = relativePath.split("/");

@@ -97,7 +97,9 @@
                    style="height:60vh">
 
       <ng-template tdDataTableTemplate="type" let-value="value" let-column="column" let-row="row">
-        <span class="cell-icon"><ng-md-icon [icon]="row.getIcon()"></ng-md-icon></span>
+        <span class="cell-icon">
+          <ng-md-icon [icon]="row.getIcon()"></ng-md-icon>
+        </span>
       </ng-template>
 
       <ng-template tdDataTableTemplate="name" let-value="value" let-column="column" let-row="row">

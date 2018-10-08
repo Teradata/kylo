@@ -14,7 +14,7 @@ export class RemoteFile extends BrowserObject {
         this.name = name;
         this.path = path;
         this.directory = directory;
-        this.length = length;
+        this.length = ( length == null ? 0 : length);
         this.modificationTime = modificationTime;
     }
 
