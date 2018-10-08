@@ -46,7 +46,7 @@
 <ng-template #seletedDataSetTemplate>
 
     <div  fxLayout="row" fxLayoutAlign="start end">
-      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="!autoSelectSingleDataSet">
+      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="previews.length >1">
         <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
         {{selectedDataSet.displayKey}}
       </button>

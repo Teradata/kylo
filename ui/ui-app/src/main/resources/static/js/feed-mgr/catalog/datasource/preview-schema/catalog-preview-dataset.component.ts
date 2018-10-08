@@ -78,6 +78,8 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
     datasetName:string = "Preview Datasets";
 
+    selectedDataSet:PreviewDataSet;
+
     constructor(protected state:StateService,
                 protected selectionService: SelectionService,
                 protected _dialogService: TdDialogService,
@@ -90,8 +92,14 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     }
 
     backToDatasource(){
-        this.kyloRouterService.back();
-        //this.state.go("catalog.datasource.browse",{datasourceId:this.datasource.id})
+        //go back if we dont have a dataset selected, or if we only have 1 dataset and we are set to auto select it
+
+        if(this.selectedDataSet == undefined || (this.previews && this.previews.length <=1 && this.autoSelectSingleDataSet) ) {
+            this.kyloRouterService.back();
+        }
+        else if(this.selectedDataSet != undefined){
+            this.datasetPreviewContainer.selectDataSet(undefined);
+        }
     }
 
 
@@ -104,6 +112,7 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     }
 
     onPreviewSelected(ds:PreviewDataSet){
+        this.selectedDataSet = ds;
         if(ds && ds != null) {
             this.datasetName = ds.displayKey
         }
