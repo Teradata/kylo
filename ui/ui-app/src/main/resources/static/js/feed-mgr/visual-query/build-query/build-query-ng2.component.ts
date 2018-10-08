@@ -197,6 +197,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     @ViewChild("flowChart")
     flowChart: FlowChartComponent;
 
+    selectedTable: string;
+
     /**
      * Aysnc autocomplete list of tables
      */
@@ -259,6 +261,34 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     /**
+     * Verifies the user selected a valid table
+     */
+    checkValidSelection() : void {
+        this.selectedTable = null;
+        let table = this.selectedTableOption();
+        if (table) {
+            // User selected option from list so must be valid
+            if (table.hasOwnProperty("fullName")) {
+                this.selectedTable = table;
+            } else {
+                if (table.indexOf(".") > -1) {
+                    // User may have manually typed the full name so need to validate
+                    let tableParts = table.split(".");
+                    let schemaPart = tableParts[0];
+                    let tablePart = tableParts[1];
+                    this.onAutocompleteQuerySearch(tablePart).then((tables:any[]) => {
+                        if (tables.length > 0) {
+                            tables.find((v:any)=>{
+                                return (v.fullName == tablePart);
+                            });
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    /**
      * Function for the Autocomplete to display the name of the table object matched
      * @param {TableReference} table
      * @return {string | undefined}
@@ -285,7 +315,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
     }
 
-    selectedTable() : string {
+    selectedTableOption() : any {
         return this.form.contains('tableAutocomplete') ? this.form.get('tableAutocomplete').value : undefined;
     }
 
@@ -294,10 +324,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     onAddTable() {
         this.sideNavService.hideSideNav();
-        let table = this.selectedTable();
+        let table = this.selectedTable;
         if (table) {
             this.onTableClick(table);
             this.form.get('tableAutocomplete').reset('');
+            this.selectedTable = null;
         }
     }
 
