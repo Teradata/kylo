@@ -1,7 +1,7 @@
 <ng-container *ngIf="displayInCard">
   <mat-toolbar >
     <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
-      <div><button mat-button (click)="goBackToDatasourceList()"><mat-icon>arrow_back</mat-icon>{{datasource.title}}</button></div>
+      <div fxLayout="row" fxLayoutAlign="center center" class="cursor-pointer" (click)="goBackToDatasourceList()"><mat-icon>arrow_back</mat-icon>{{datasource.title}}</div>
     </mat-toolbar-row>
   </mat-toolbar>
   <mat-card>
