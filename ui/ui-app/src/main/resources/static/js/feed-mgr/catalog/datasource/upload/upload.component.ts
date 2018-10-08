@@ -95,6 +95,9 @@ export class UploadComponent implements OnInit {
         if (this.datasource.$uploadDataSet) {
             this.uploadDataSet = of(this.datasource.$uploadDataSet);
         }
+        if(this.state.params && this.state.params.renderContinueButton){
+            this.renderContinueButton = this.state.params.renderContinueButton;
+        }
 
         if (this.datasource.$fileUploads) {
             // Read uploads cached locally in dataset

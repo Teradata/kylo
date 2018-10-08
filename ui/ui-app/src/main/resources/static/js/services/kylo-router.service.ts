@@ -1,6 +1,11 @@
 import {StateService, Transition} from "@uirouter/angular";
 import {Injectable} from "@angular/core";
-import {TransitionPromise} from "@uirouter/core";
+import {StateDeclaration, TransitionPromise} from "@uirouter/core";
+
+export interface VisitedState {
+    state: StateDeclaration;
+    params: any;
+}
 
 /**
  * Service that allows you to easily go back/forward between ui-router transitions.
@@ -10,6 +15,9 @@ import {TransitionPromise} from "@uirouter/core";
 @Injectable()
 export class KyloRouterService {
 
+    private states: VisitedState[] = []
+
+    private backStates: VisitedState[] = []
 
     private transitions: Transition[] = []
     private maxSize: number = 10;
@@ -21,17 +29,26 @@ export class KyloRouterService {
 
     }
 
+    private _ensureCollectionLimit(collection: any[]) {
+        if (collection.length > this.maxSize) {
+            collection.splice(0, 1)
+        }
+    }
+
     /**
      * Save the transition in the history map to allow for going forward/back
      * @param {Transition} trans
      */
-    saveTransition(trans: Transition, isBack: boolean = false) {
-        const collection = isBack ? this.backTransitions : this.transitions;
+    saveTransition(trans: Transition) {
+        const states = this.states;
+        let visitedState = {state: trans.to(), params: trans.params()};
+        this._saveState(visitedState)
+    }
 
-        if (collection.length > this.maxSize) {
-            collection.splice(0, 1)
-        }
-        collection.push(trans);
+    private _saveState(visitedState: VisitedState, isBack: boolean = false) {
+        const collection = isBack ? this.backStates : this.states;
+        this._ensureCollectionLimit(collection)
+        collection.push(visitedState);
     }
 
     /**
@@ -41,14 +58,13 @@ export class KyloRouterService {
      * @return {TransitionPromise<any> | null}
      */
     back(defaultState?: string, defaultParams?: any): (TransitionPromise | null) {
-        if (this.transitions.length > 1) {
+        if (this.states.length > 1) {
             //the last trans is the current page
             //pop that off, save it and then go to the prev one
-            const trans = this.transitions.pop();
-            this.saveTransition(trans, true);
-
-            const lastTrans = this.transitions[this.transitions.length - 1];
-            return this.stateService.go(lastTrans.from(), lastTrans.params())
+            const state = this.states.pop();
+            this._saveState({state: trans.to(), params: trans.params()}, true)
+            const prevState = this.states[this.states.length - 1];
+            return this.stateService.go(prevState.state, prevState.params)
         }
         else {
             if (defaultState) {
@@ -66,9 +82,9 @@ export class KyloRouterService {
      * @return {TransitionPromise<any> | null}
      */
     forward(): (TransitionPromise | null) {
-        if (this.backTransitions.length > 0) {
-            const trans = this.backTransitions.pop()
-            return this.stateService.go(trans.from(), trans.params())
+        if (this.backStates.length > 0) {
+            const state = this.backStates.pop()
+            return this.stateService.go(state.state, state.params)
         }
         else {
             return null;

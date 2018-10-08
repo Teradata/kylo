@@ -7,6 +7,7 @@ export const uploadStates: Ng2StateDeclaration[] = [
         name: "catalog.datasource.upload",
         url: "/upload",
         component: UploadComponent,
+        params:{renderContinueButton:true},
         resolve: [
             {
                 token: "renderContinueButton",
