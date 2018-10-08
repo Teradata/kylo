@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.1.3-SNAPSHOT</version>
+    <version>0.9.1.3</version>
   </parent>
 
   <description>A collection of useful helper functions for Spark.</description>
