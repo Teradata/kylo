@@ -96,7 +96,7 @@ const webpackConfig = (env) => {
                 'gsap': path.join(staticBower, 'gsap/src/uncompressed/TweenMax'),
                 'vis': path.join(staticBower, 'vis/dist/vis.min'),
                 'angular-visjs': path.join(staticBower, 'angular-visjs/angular-vis'),
-                'SVGMorpheus': path.join(staticBower, 'svg-morpheus/compile/minified/svg-morpheus'),
+                // 'SVGMorpheus': path.join(staticBower, 'svg-morpheus/compile/minified/svg-morpheus'),
                 'ocLazyLoad': path.join(staticBower, 'oclazyload/dist/ocLazyLoad'), //System.amdRequire with ocLazyLoad.require
 
                 'angular-material-icons': path.join(staticJsVendorDir, 'angular-material-icons/angular-material-icons'),
@@ -128,17 +128,17 @@ const webpackConfig = (env) => {
                     exclude: path.resolve("./src/main/resources/static/js/index.html")
                 },
                 {
-                    test: /.(ttf|otf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,
+                    test: /.(ttf|otf|eot|woff(2)?)(\?[a-z0-9]+)?$/,
                     use: [{
                         loader: 'file-loader',
                         options: {
-                            name: '[name].[ext]',
-                            outputPath: 'fonts/',
-                            publicPath: '../'
+                            name: '[path][name].[ext]',
+                            // outputPath: 'fonts/',
+                            // publicPath: '../'
                         }
                     }]
                 }, {
-                    test: /\.(jpe?g|png|gif)/i,
+                    test: /\.(jpe?g|png|svg|gif)/i,
                     loader: 'file-loader',
                     options: {
                         context: './src/main/resources/static',
@@ -165,47 +165,6 @@ const webpackConfig = (env) => {
                     use: ['to-string-loader', 'css-loader']
                 },
                 {
-                    test: /\.js$/,
-                    use: [
-                        'babel-loader',
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static/js",
-                                modules: ["feed-mgr", "ops-mgr"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static",
-                                modules: ["bower_components"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.template.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static"
-                            }
-                        }],
-                    include: [
-                        // tsCompilerOutput,
-                        staticDir
-                    ],
-                    exclude: [
-                        nodeModulesDir,
-                        staticNodeModules,
-                        staticBower,
-                        staticJsVendorDir
-                    ]
-                },
-                // {
-                //     enforce: "pre",
-                //     test: /\.js$/,
-                //     exclude: /(node_modules|bower_components|vendor)/,
-                //     loader: "eslint-loader",
-                // },
-                {
                     test: /\.ts$/,
                     use: [
                         {
@@ -218,7 +177,8 @@ const webpackConfig = (env) => {
                             loader: 'thread-loader',
                             options: {
                                 // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-                                workers: require('os').cpus().length - 1
+                                // workers: require('os').cpus().length - 1
+                                workers: require('os').cpus().length
                             }
                         },
                         {
@@ -258,23 +218,68 @@ const webpackConfig = (env) => {
                         staticJsVendorDir
                     ]
                 },
+                {
+                    test: /\.js$/,
+                    use: [
+                        // {
+                        //     loader: 'cache-loader',
+                        //     options: {
+                        //         cacheDirectory: path.resolve('dist/cache-loader')
+                        //     }
+                        // },
+                        // {
+                        //     loader: 'thread-loader',
+                        //     options: {
+                        //         // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+                        //         workers: require('os').cpus().length - 1
+                        //     }
+                        // },
+                        'babel-loader',
+                        {
+                            loader: path.resolve('./webpack.angular.module.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static/js",
+                                modules: ["feed-mgr", "ops-mgr"]
+                            }
+                        },
+                        {
+                            loader: path.resolve('./webpack.angular.module.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static",
+                                modules: ["bower_components"]
+                            }
+                        },
+                        {
+                            loader: path.resolve('./webpack.angular.template.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static"
+                            }
+                        }],
+                    // include: [
+                        // tsCompilerOutput,
+                        // staticDir
+                    // ],
+                    exclude: [
+                        nodeModulesDir,
+                        staticNodeModules,
+                        staticBower,
+                        staticJsVendorDir
+                    ]
+                },
+                // {
+                //     enforce: "pre",
+                //     test: /\.js$/,
+                //     exclude: /(node_modules|bower_components|vendor)/,
+                //     loader: "eslint-loader",
+                // },
             ]
         },
         plugins: [
             new CopyWebpackPlugin([
                 {from: './src/main/resources/static/assets/images/favicons', to: 'assets/images/favicons'},
                 {from: './src/main/resources/static/locales/', to: 'locales'},
-                {
-                    context: './src/main/resources/static',
-                    from: 'js/common/dir-pagination/**/*.html',
-                    to: '[path][name].[ext]'
-                },
-                {
-                    context: './src/main/resources/static',
-                    from: 'js/vendor/material-icons/*',
-                    to: '[name].[ext]'
-                },
-                ...loginPageDependencies
+                ...loginPageDependencies,
+                ...templates,
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -306,16 +311,16 @@ const webpackConfig = (env) => {
                 "$": "jquery",
                 "d3": "d3",
                 // "window.moment": "moment", //Can't resolve './locale' in '.../ui-app/src/main/resources/static/node_modules/moment/min'
-                "window.SVGMorpheus": "SVGMorpheus",
+                // "window.SVGMorpheus": "SVGMorpheus",
                 "window.vis": "vis",
             }),
 
             new FriendlyErrorsWebpackPlugin(),
             // new ForkTsCheckerWebpackPlugin(),
-            new ForkTsCheckerWebpackPlugin({
-                tsconfig: tsConfigFile
-            }),
-            // new writeFilePlugin(),
+            // new ForkTsCheckerWebpackPlugin({
+            //     tsconfig: tsConfigFile
+            // }),
+            new writeFilePlugin(),
 
             // new BundleAnalyzerPlugin()
         ]
@@ -355,6 +360,29 @@ const webpackConfig = (env) => {
 
 module.exports = webpackConfig;
 
+
+const templates = [
+    {
+        context: './src/main/resources/static',
+        from: 'js/common/dir-pagination/**/*.html',
+        to: '[path][name].[ext]'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/templates/template-stepper/register-template-stepper.html',
+        to: 'js/feed-mgr/templates/template-stepper/register-template-stepper.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html',
+        to: 'js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html',
+        to: 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html'
+    },
+];
 
 const loginPageDependencies = [
     {
@@ -462,5 +490,4 @@ const loginPageDependencies = [
         from: 'assets/login.css',
         to: 'assets/login.css'
     }
-
-]
+];

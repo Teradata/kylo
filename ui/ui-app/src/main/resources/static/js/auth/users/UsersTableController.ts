@@ -9,7 +9,7 @@ import "../module";
 import "../module-require";
 import {moduleName} from "../module-name";
 const PAGE_NAME:string = "users";
-export default class UsersTableController implements ng.IComponentController {
+export class UsersTableController implements ng.IComponentController {
     /**
      * Page title.
      * @type {string}
@@ -187,9 +187,10 @@ export default class UsersTableController implements ng.IComponentController {
         });
     }
 }
-angular.module(moduleName)
+const module = angular.module(moduleName)
 .component("usersTableController", {
         controller: UsersTableController,
         controllerAs: "vm",
         templateUrl: "js/auth/users/users-table.html"
     });
+export default module;

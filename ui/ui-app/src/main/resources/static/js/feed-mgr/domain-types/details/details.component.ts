@@ -3,7 +3,7 @@ import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
 import {moduleName} from "../module-name";
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from "../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../services/details.service";
 import AccessControlService from "../../../services/AccessControlService";
 
@@ -137,7 +137,7 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
     };
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
     .component("domainTypeDetailsComponent", {
         bindings: {
             model: "<"
@@ -145,3 +145,4 @@ angular.module(moduleName)
         controller: DomainTypeDetailsComponent,
         templateUrl: "js/feed-mgr/domain-types/details/details.component.html"
     });
+export default module;

@@ -1,7 +1,7 @@
 import * as angular from "angular";
 
 import {moduleName} from "../../module-name";
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
 

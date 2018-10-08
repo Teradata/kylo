@@ -1,4 +1,4 @@
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {Component, Inject} from "@angular/core";
 import { TdDataTableService, TdDataTableSortingOrder, ITdDataTableSortChangeEvent, ITdDataTableColumn } from '@covalent/core/data-table';
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";

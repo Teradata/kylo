@@ -66,7 +66,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
-                            throw new Error("Failed to load DeDefineFeedCompleteControllerfineFeedController, " + err);
+                            throw new Error("Failed to load DefineFeedCompleteController, " + err);
                         });
                 }]
             },

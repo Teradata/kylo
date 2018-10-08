@@ -2,7 +2,7 @@ import {Input, OnDestroy, OnInit} from "@angular/core";
 import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from '../../services/DomainTypesService';
 import {DomainTypeDetailsService} from "../services/details.service";
 
 /**

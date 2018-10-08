@@ -8,6 +8,9 @@ import "kylo-common";
 import "ment-io";
 import "jquery";
 import "angular-drag-and-drop-lists";
+import '../../vendor/ment.io/styles.css';
+import '../../vendor/ment.io/templates.js';
+
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -27,7 +30,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/RegisteredTemplatesController'])
+                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/RegisteredTemplatesController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feeds.registered-templates.controller" */ './RegisteredTemplatesController')
+                        .then(mod => {
+                            console.log('imported RegisteredTemplatesController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load RegisteredTemplatesController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:true,
@@ -47,7 +60,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/new-template/RegisterNewTemplateController'])
+                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/new-template/RegisterNewTemplateController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feeds.register-new-template.controller" */ './new-template/RegisterNewTemplateController')
+                        .then(mod => {
+                            console.log('imported RegisterNewTemplateController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load RegisterNewTemplateController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -69,7 +92,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/template-stepper/RegisterTemplateController','@uirouter/angularjs'])
+                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/template-stepper/RegisterTemplateController','@uirouter/angularjs'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feeds.register-template.controller" */ './template-stepper/RegisterTemplateController')
+                        .then(mod => {
+                            console.log('imported RegisterTemplateController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load RegisterTemplateController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -98,13 +131,14 @@ class ModuleFactory  {
     }  
 
    runFn($ocLazyLoad: any){
-        $ocLazyLoad.load({name:moduleName,files:['js/vendor/ment.io/styles.css','vendor/ment.io/templates']})
-    }
-    
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,"feed-mgr/templates/module-require");
-    }
-
+       return import(/* webpackChunkName: "categories.module" */ "./module-require")
+           .then(mod => {
+               $ocLazyLoad.load({name:moduleName});
+           })
+           .catch(err => {
+               throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
+           });
+   }
 } 
 const module = new ModuleFactory();
 export default module;

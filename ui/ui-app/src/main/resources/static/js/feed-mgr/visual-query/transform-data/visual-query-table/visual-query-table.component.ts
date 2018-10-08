@@ -7,7 +7,7 @@ import {Observable} from "rxjs/Observable";
 import * as _ from "underscore";
 
 import {CloneUtil} from "../../../../common/utils/clone-util";
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
 import {WranglerTableService} from "../services/wrangler-table.service";

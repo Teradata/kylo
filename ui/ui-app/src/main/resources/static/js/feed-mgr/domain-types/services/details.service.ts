@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 
 import {moduleName} from "../module-name";
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from "../../services/DomainTypesService";
 
 /**
  * Manages communication between {@link DomainTypeDetailsComponent} and its individual sections.

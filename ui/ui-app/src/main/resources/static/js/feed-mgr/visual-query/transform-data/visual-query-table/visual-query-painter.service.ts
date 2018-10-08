@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import * as angular from "angular";
 import "fattable";
 
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {DataCategory} from "../../wrangler/column-delegate";
 
 /**

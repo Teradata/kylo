@@ -10,7 +10,7 @@ import "../../module";
 import "../../module-require";
 import {Transition} from "@uirouter/core";
 
-export default class GroupDetailsController implements ng.IComponentController {
+export class GroupDetailsController implements ng.IComponentController {
     $transition$: Transition;
     $error:any = {duplicateName: false, missingName: false };
     /**
@@ -242,7 +242,7 @@ export default class GroupDetailsController implements ng.IComponentController {
     };
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
 .component("groupDetailsController", { 
         bindings: {
             $transition$: '<'
@@ -251,3 +251,4 @@ angular.module(moduleName)
         controllerAs: "vm",
         templateUrl: "js/auth/groups/group-details/group-details.html"
     });
+export default module;

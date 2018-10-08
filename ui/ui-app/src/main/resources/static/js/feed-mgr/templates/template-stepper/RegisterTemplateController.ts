@@ -6,7 +6,7 @@ import {StateService} from '../../../services/StateService';
 import AccessControlService from '../../../services/AccessControlService';
 import BroadcastService from '../../../services/broadcast-service';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
-
+import '../../../../assets/images/75_arrow.svg'
 
 export class RegisterTemplateController {
 
@@ -104,7 +104,7 @@ export class RegisterTemplateController {
 
 }
 
-angular.module(moduleName).component('registerTemplateController', {
+const module = angular.module(moduleName).component('registerTemplateController', {
     bindings: {
         $transition$: '<'
     },
@@ -112,3 +112,4 @@ angular.module(moduleName).component('registerTemplateController', {
     controller: RegisterTemplateController,
     controllerAs: 'vm'
 });
+export default module;

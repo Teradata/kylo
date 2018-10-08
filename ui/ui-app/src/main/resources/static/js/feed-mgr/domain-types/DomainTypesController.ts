@@ -85,8 +85,9 @@ export class DomainTypesController {
 
 }
 // Register the controller
-angular.module(moduleName).component("domainTypesController", {
+const module = angular.module(moduleName).component("domainTypesController", {
     templateUrl: "js/feed-mgr/domain-types/domain-types.html",
     controller: DomainTypesController,
     controllerAs: "vm"
 });
+export default module;

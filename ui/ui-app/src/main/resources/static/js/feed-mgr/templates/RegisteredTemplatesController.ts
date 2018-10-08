@@ -217,10 +217,11 @@ export class RegisteredTemplatesController {
     }
 }
 
-angular.module(moduleName).component('registeredTemplatesController', {
+const module = angular.module(moduleName).component('registeredTemplatesController', {
 
     templateUrl: 'js/feed-mgr/templates/registered-templates.html',
     controller: RegisteredTemplatesController,
     controllerAs: 'vm'
 
 });
+export default module;

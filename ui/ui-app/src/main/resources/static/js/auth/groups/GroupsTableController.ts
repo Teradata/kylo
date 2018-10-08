@@ -14,7 +14,7 @@ import "../module-require";
  */
 const PAGE_NAME:string = "groups";
 
-export default class GroupsTableController implements ng.IComponentController {
+export class GroupsTableController implements ng.IComponentController {
     /**
      * Page title.
      * @type {string}
@@ -160,10 +160,11 @@ export default class GroupsTableController implements ng.IComponentController {
         });
     }
 }
-angular.module(moduleName)
+const module = angular.module(moduleName)
 .component("groupsTableController", {
         controller: GroupsTableController,
         controllerAs: "vm",
         templateUrl: "js/auth/groups/groups-table.html"
     });
 //.controller("GroupsTableController", GroupsTableController]);
+export default module;

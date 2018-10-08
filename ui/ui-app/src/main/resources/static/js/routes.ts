@@ -227,16 +227,23 @@ class Route {
         $stateProvider.state('registered-templates.**', {
             url: '/registered-templates',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('registered-templates')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading registered-templates ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "registered-templates.module" */ "./feed-mgr/templates/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('registered-templates')
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading registered-templates ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./feed-mgr/templates/module, " + err);
+                    });
             }
-        })
+        });
 
         $stateProvider.state('register-template.**', {
             url: '/register-template',
@@ -274,15 +281,21 @@ class Route {
             name: 'users.**',
             url: '/users',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('users')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading users ", err);
-                    return err;
-                });
-                ;
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "auth.module" */ "./auth/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('users')
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading users ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./auth/module, " + err);
+                    });
             }
         });
 
@@ -290,14 +303,21 @@ class Route {
             name: 'groups.**',
             url: '/groups',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('auth/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('groups')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading groups ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "auth.module" */ "./auth/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('groups');
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading groups ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./auth/module, " + err);
+                    });
             }
         });
 
@@ -322,14 +342,21 @@ class Route {
             name: 'business-metadata.**',
             url: '/business-metadata',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/business-metadata/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('business-metadata')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading business-metadata ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "categories.module" */ "./feed-mgr/business-metadata/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                        //upon success go back to the state
+                        $stateProvider.stateService.go('business-metadata')
+                        return args;
+                    }, function error(err: any) {
+                        console.log("Error loading business-metadata ", err);
+                        return err;
+                    });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
+                    });
             }
         });
 
@@ -546,14 +573,22 @@ class Route {
             name: "datasources.**",
             url: "/datasources",
             lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go("datasources", transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading datasources.", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                // return import(/* webpackChunkName: "datasources.module" */ "./feed-mgr/datasources/module")
+                //     .then(mod => {
+                //         $ocLazyLoad.load({name: "kylo.feedmgr.datasources"}).then(function success(args: any) {
+                        $ocLazyLoad.load('./feed-mgr/datasources/module"').then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go("datasources", transition.params());
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading datasources.", err);
+                            return err;
+                        });
+                    // })
+                    // .catch(err => {
+                    //     throw new Error("Failed to load ./feed-mgr/datasources/module, " + err);
+                    // });
             }
         }).state({
             name: "datasource-details.**",
@@ -574,14 +609,20 @@ class Route {
             name: "domain-types.**",
             url: "/domain-types",
             lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad")
-                    .load("feed-mgr/domain-types/module")
-                    .then(function (args: any) {
-                        $stateProvider.stateService.go("domain-types", transition.params());
-                        return args;
-                    }, function (err: any) {
-                        console.log("Error loading domain-types.", err);
-                        return err;
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "domain-types.module" */ "./feed-mgr/domain-types/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name})
+                        .then(function (args: any) {
+                            $stateProvider.stateService.go("domain-types", transition.params());
+                            return args;
+                        }, function (err: any) {
+                            console.log("Error loading domain-types.", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load feed-mgr/domain-types/module, " + err);
                     });
             }
         }).state({
@@ -749,35 +790,35 @@ class Route {
             }
         });
 
-        // $stateProvider.state({
-        //     name: 'catalog.**',
-        //     url: '/catalog',
-        //     loadChildren: './feed-mgr/catalog/catalog.module#CatalogRouterModule'
-        // });
-        //
+        $stateProvider.state({
+            name: 'catalog.**',
+            url: '/catalog',
+            loadChildren: './feed-mgr/catalog/catalog.module#CatalogRouterModule'
+        });
+
         $stateProvider.state({
             name: 'feed-definition.**',
             url: '/feed-definition',
             loadChildren: './feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
         });
-        //
-        // $stateProvider.state({
-        //     name: 'repository.**',
-        //     url: '/repository',
-        //     loadChildren: './repository/repository.module#RepositoryModule'
-        // });
-        //
-        // $stateProvider.state({
-        //     name: 'template-info.**',
-        //     url: '/template-info',
-        //     loadChildren: './repository/repository.module#RepositoryModule'
-        // });
-        //
-        // $stateProvider.state({
-        //     name: 'import-template.**',
-        //     url: '/importTemplate',
-        //     loadChildren: './repository/repository.module#RepositoryModule'
-        // });
+
+        $stateProvider.state({
+            name: 'repository.**',
+            url: '/repository',
+            loadChildren: './repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'template-info.**',
+            url: '/template-info',
+            loadChildren: './repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'import-template.**',
+            url: '/importTemplate',
+            loadChildren: './repository/repository.module#RepositoryModule'
+        });
     }
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,

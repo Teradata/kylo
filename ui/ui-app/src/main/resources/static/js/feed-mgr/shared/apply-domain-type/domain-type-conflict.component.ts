@@ -1,6 +1,6 @@
 import * as angular from "angular";
 
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from "../../services/DomainTypesService";
 import {moduleName} from "../../module-name";;
 
 /**
