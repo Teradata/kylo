@@ -77,8 +77,9 @@ public class JcrUtil {
      */
     public static String toSystemName(String text) {
         try {
-            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[[\\]/*|:]*", "_").replaceAll("_{2,}", "_"), "UTF-8");
-//            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[[\\]/*|:]*", "_"), "UTF-8");
+            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_"), "UTF-8");
+//            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_").replaceAll("_{2,}", "_"), "UTF-8");
+//            return URLEncoder.encode("aAa  bBb[]/*|: cCc".toLowerCase().replaceAll("[\\s\\[\\]/*|:]+", "_"), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
         }

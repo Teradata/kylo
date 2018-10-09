@@ -132,11 +132,11 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         return JcrDataSetAllowedActions.class;
     }
     
-    public int getParamsHash() {
+    public long getParamsHash() {
         return getProperty(PARAMS_HASH, 0);
     }
     
-    public void setParamsHash(int hash) {
+    public void setParamsHash(long hash) {
         setProperty(PARAMS_HASH, hash);
     }
     

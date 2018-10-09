@@ -154,7 +154,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         return JcrDataSet.NODE_TYPE;
     }
 
-    private Optional<DataSet> findByParamsHash(int hash) {
+    private Optional<DataSet> findByParamsHash(long hash) {
         String query = startBaseQuery().append(" WHERE e.[tba:paramsHashCode] = ").append(hash).toString();
         return Optional.ofNullable(findFirst(query));
     }
@@ -311,15 +311,15 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
          */
         @Override
         public DataSet build() {
-            int hash = generateDataSetHash();
+            long hash = generateDataSetHash();
             
-            return findByParamsHash(hash).orElse(create(hash));
+            return findByParamsHash(hash).orElseGet(() -> create(hash));
         }
 
         /**
          * @return a hash code uniquely identifying the underlying data
          */
-        private int generateDataSetHash() {
+        private long generateDataSetHash() {
             // TODO delegate to the connector plugin somehow to get the hash.
             // For now just hash all contents of this builder with the values inherited from the data source.
             DataSetSparkParameters sparkParams = this.dataSource.getEffectiveSparkParameters();
@@ -334,7 +334,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             return Objects.hash(effectiveFormat, totalPaths, totalOptions);
         }
 
-        private DataSet create(int hash) {
+        private DataSet create(long hash) {
             String ensuredTitle = generateTitle(this.dataSource, this.title);
             String dsSystemName = generateSystemName(ensuredTitle);
             Path dataSetPath = MetadataPaths.dataSetPath(this.dataSource.getConnector().getSystemName(), this.dataSource.getSystemName(), dsSystemName);

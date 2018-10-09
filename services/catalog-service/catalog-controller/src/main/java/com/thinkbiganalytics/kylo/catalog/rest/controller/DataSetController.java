@@ -281,10 +281,8 @@ public class DataSetController extends AbstractCatalogController {
         if (StringUtils.isBlank(dataSet.getId())) {
             return metadataService.commit(() -> {
                 com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
-                com.thinkbiganalytics.metadata.api.catalog.DataSet ds = dataSetProvider.findByDataSourceAndTitle(dataSourceId, dataSet.getTitle());
-                if (ds == null) {
-                    ds = modelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
-                }
+                com.thinkbiganalytics.metadata.api.catalog.DataSet ds = modelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
+                
                 return modelTransform.dataSetToRestModel().apply(ds);
             });
         } else {
