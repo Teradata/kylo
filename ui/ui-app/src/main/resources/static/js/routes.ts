@@ -346,13 +346,13 @@ class Route {
                 return import(/* webpackChunkName: "categories.module" */ "./feed-mgr/business-metadata/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                        //upon success go back to the state
-                        $stateProvider.stateService.go('business-metadata')
-                        return args;
-                    }, function error(err: any) {
-                        console.log("Error loading business-metadata ", err);
-                        return err;
-                    });
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('business-metadata')
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading business-metadata ", err);
+                            return err;
+                        });
                     })
                     .catch(err => {
                         throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
@@ -375,14 +375,21 @@ class Route {
             name: 'dashboard.**',
             url: '/dashboard',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/overview/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('dashboard')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading ops manager dashboard ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "ops-mgr.module" */ "./ops-mgr/overview/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('dashboard')
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading ops manager dashboard ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./ops-mgr/overview/module, " + err);
+                    });
             }
         });
 
@@ -463,14 +470,21 @@ class Route {
             name: 'service-health.**',
             url: '/service-health',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-health', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-health ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "opsmgr.service-health.module" */ "./ops-mgr/service-health/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('service-health', transition.params())
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading service-health ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ../ops-mgr/service-health/module, " + err);
+                    });
             }
         }).state({
             name: 'service-details.**',

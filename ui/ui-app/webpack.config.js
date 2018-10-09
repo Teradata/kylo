@@ -62,6 +62,7 @@ const webpackConfig = (env) => {
                 'kylo-services-module': path.join(staticJsDir, 'services/module'),
                 'kylo-side-nav': path.join(staticJsDir, 'side-nav/module-require'),
                 'kylo-feedmgr': path.join(staticJsDir, 'feed-mgr/module-require'),
+                'kylo-opsmgr': path.join(staticJsDir, 'ops-mgr/module-require'),
                 'codemirror-require/module': path.join(staticJsDir, 'codemirror-require/module'),
                 'feed-mgr/catalog/catalog.module': path.join(staticJsDir, 'feed-mgr/catalog/catalog.module'),
                 'dirPagination.tpl.html': path.join(staticJsDir, 'common/dir-pagination/dirPagination.tpl.html'),

@@ -6,6 +6,8 @@ import {DefaultTableOptionsService} from "../../services/TableOptionsService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import ServicesStatusData from "../services/ServicesStatusService";
 import {Transition} from "@uirouter/core";
+import 'ops-mgr/service-health/module-require';
+
 
 export class controller implements ng.IComponentController{
 pageName: string;
@@ -136,7 +138,7 @@ constructor(private $scope: IScope,
         }
 }
 
-angular.module(moduleName).component("serviceHealthDetailsController", {
+const module = angular.module(moduleName).component("serviceHealthDetailsController", {
     controller: controller,
     bindings: {
         $transition$: "<"
@@ -144,4 +146,4 @@ angular.module(moduleName).component("serviceHealthDetailsController", {
     controllerAs: "vm",
     templateUrl: "js/ops-mgr/service-health/service-detail.html"
 });
-
+export default module;

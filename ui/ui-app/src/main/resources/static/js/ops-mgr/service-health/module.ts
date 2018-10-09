@@ -26,7 +26,16 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadPage: this.lazyLoad()
+                loadPage: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.service-health-details.controller" */ './module-require')
+                        .then(mod => {
+                            console.log('imported ops-mgr/service-health/module-require mod', mod);
+                            return $ocLazyLoad.load({name: moduleName})
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ops-mgr/service-health/module-require, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:true,
@@ -47,7 +56,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceHealthDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceHealthDetailsController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.service-health-details.controller" */ './ServiceHealthDetailsController')
+                        .then(mod => {
+                            console.log('imported ServiceHealthDetailsController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ServiceHealthDetailsController, " + err);
+                        });
+                }]
             },
             data:{
                 displayName:'Service Details',
@@ -67,7 +86,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceComponentHealthDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceComponentHealthDetailsController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.service-component-health-details.controller" */ './ServiceComponentHealthDetailsController')
+                        .then(mod => {
+                            console.log('imported ServiceComponentHealthDetailsController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ServiceComponentHealthDetailsController, " + err);
+                        });
+                }]
             },
             data:{
                 displayName:'Service Component',
@@ -76,15 +105,7 @@ class ModuleFactory  {
             }
         });
     }  
-
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,["ops-mgr/service-health/module-require"]);
-    }    
-    lazyLoad(){
-        return lazyLoadUtil.lazyLoad(['ops-mgr/service-health/module-require']);
-    }
-      
-} 
+}
 
 const module = new ModuleFactory();
 export default module;

@@ -4,8 +4,10 @@ import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import HttpService from "../../services/HttpService";
+import 'ops-mgr/alerts/module-require';
+import 'ops-mgr/overview/module-require';
 
-export default class OverviewController implements ng.IComponentController{
+export class OverviewController implements ng.IComponentController{
 allowed: boolean;
 loading: boolean;
 refreshInterval: number;    
@@ -178,8 +180,9 @@ constructor(private $scope: IScope,
 
 }
 
-angular.module(moduleName).component("overviewController",{
+const module = angular.module(moduleName).component("overviewController",{
     controller: OverviewController,
     controllerAs: "vm",
     templateUrl: "js/ops-mgr/overview/overview.html"
 });
+export default module;
