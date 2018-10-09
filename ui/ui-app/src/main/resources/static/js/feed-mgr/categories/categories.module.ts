@@ -90,6 +90,7 @@ import * as angular from "angular";
         MatCheckboxModule,
         UIRouterModule.forChild({states: categoriesStates})
     ],
+    exports: [CategoriesComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()}

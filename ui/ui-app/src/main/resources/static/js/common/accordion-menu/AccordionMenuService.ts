@@ -1,11 +1,8 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class AccordionMenuService{
-    
-    static readonly $inject =['$timeout'];
-
-    constructor(private $timeout: angular.ITimeoutService){}
     
     /**
      * open an accordion menu item
@@ -15,10 +12,10 @@ export class AccordionMenuService{
      * @param toggleSections the array of all toggleSections
      */
     
-     openToggleItem(section: any, $accordionElement: any, allowMultipleOpen: any, toggleSections: any) {
+     openToggleItem(section: any, accordionElement: any, allowMultipleOpen: any, toggleSections: any) {
 
         //disable scroll when opening
-        $accordionElement.parent().css('overflow-y','hidden');
+        accordionElement.parent().css('overflow-y','hidden');
 
         if (!allowMultipleOpen) {
             angular.forEach(toggleSections, function (openSection) {
@@ -29,11 +26,8 @@ export class AccordionMenuService{
         section.expanded = true;
         section.expandIcon = 'expand_less';
 
-        this.$timeout(()=>{
-            $accordionElement.parent().css('overflow-y','auto');
+        setTimeout(()=>{
+            accordionElement.parent().css('overflow-y','auto');
         },500)
     }
 }
-
-angular.module(moduleName).service('AccordionMenuService',AccordionMenuService);
-

@@ -10,7 +10,8 @@ import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceP
         angularModuleExtensionServiceProvider,
         fileUploadServiceProvider,
         utilsServiceProvider,
-        httpServiceProvider} from "./angular2";
+        httpServiceProvider,
+        sideNavServiceProvider} from "./angular2";
 import {TemplateService} from "../repository/services/template.service";
 import CommonRestUrlService from "./CommonRestUrlService";
 import SearchService from "./SearchService";
@@ -37,7 +38,8 @@ import SearchService from "./SearchService";
         TemplateService,
         CommonRestUrlService,
         httpServiceProvider,
-        SearchService
+        SearchService,
+        sideNavServiceProvider
     ]
 })
 export class KyloServicesModule {

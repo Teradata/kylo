@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import SearchService from "../../services/SearchService";
 import CategoriesService from "../../feed-mgr/services/CategoriesService";
@@ -13,7 +12,7 @@ import { SLIDE_TOGGLE_INPUT_CONTROL_VALUE_ACCESSOR } from '@covalent/dynamic-for
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
-    templateUrl: 'js/search/common/search.html'
+    templateUrl: 'js/search/common/search.html',
 })
 export class SearchComponent implements OnInit {
     /**
@@ -36,11 +35,11 @@ export class SearchComponent implements OnInit {
     paginationData: any =  this.PaginationDataService.paginationData(this.pageName, this.pageName,10);
     hiveDatasource: any = this.DatasourcesService.getHiveDatasource();
     currentPage: any = this.PaginationDataService.currentPage(this.pageName) || 1;
-    pageSize: number = 2;
+    pageSize: number = 10;
 
     subscription: Subscription;
 
-    categoryForIndex = (indexName: any)=> {
+    categoryForIndex(indexName: any) {
         var category = this.CategoriesService.findCategoryByName(indexName);
         if (category != null) {
             return category;
@@ -62,7 +61,6 @@ export class SearchComponent implements OnInit {
     ngOnInit() {
 
         this.search(true);
-        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
 
         this.subscription = this.searchService.searchQuerySubject.subscribe((searchQuery : string) => {
             if(searchQuery != this.searchService.getSearchQuery() || this.searchResult == null || this.resetPaging == true) {
@@ -76,7 +74,7 @@ export class SearchComponent implements OnInit {
         this.subscription.unsubscribe();
     }
 
-    search = (resetCurrentPage: any)=>{
+    search (resetCurrentPage: any) {
         if(resetCurrentPage == undefined || resetCurrentPage == true) {
             this.PaginationDataService.currentPage(this.pageName, null, 1);
             this.currentPage = 1;
@@ -89,7 +87,7 @@ export class SearchComponent implements OnInit {
         var limit = this.paginationData.rowsPerPage;
         var start = (limit * this.currentPage) - limit; //self.query.page(self.selectedTab));
 
-        this.searchService.search(this.searchService.getSearchQuery(), limit, start)
+        this.searchService.search(limit, start)
             .then((result: any)=> {
                 this.searchResult = result;
                 this.searching = false;
@@ -117,7 +115,8 @@ export class SearchComponent implements OnInit {
     onPaginationChange(page: any, limit: any) {
         var prevPage = this.PaginationDataService.currentPage(this.pageName);
         this.PaginationDataService.currentPage(this.pageName, null, page);
-        this.currentPage = page;
+        this.currentPage = page.page;
+        this.paginationData.rowsPerPage = page.pageSize;
         if(prevPage == undefined || prevPage != page) {
             this._search();
         }
@@ -167,7 +166,7 @@ export class SearchComponent implements OnInit {
         }
     };
 
-    renderHtml(htmlCode: any): any{
+    renderHtml(htmlCode: any): any {
         return this.$injector.get("$sce").trustAsHtml(htmlCode);
     };
 

@@ -26,7 +26,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 export default class SearchService {
 
     private searchQuery: string = "";
-    searchQuerySubject = new BehaviorSubject<string>("");
+    searchQuerySubject = new BehaviorSubject<string>(this.searchQuery);
 
     constructor(private http: HttpClient,
                 private CommonRestUrlService: CommonRestUrlService) {}
@@ -40,12 +40,12 @@ export default class SearchService {
         return this.searchQuery;
     }
 
-    search(query: any, rows: any, start: any) {
-        return this.performSearch(query, rows, start);
+    search(rows: any, start: any) {
+        return this.performSearch(rows, start);
     }
 
-    performSearch(query: any, rowsPerPage: any, start: any){
-        return this.http.get(this.CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}})
+    performSearch(rowsPerPage: any, start: any){
+        return this.http.get(this.CommonRestUrlService.SEARCH_URL, {params: {q: this.searchQuery, rows: rowsPerPage, start: start}})
             .toPromise().then(function (response: any) {
                 return response;
             });

@@ -1,7 +1,7 @@
  <div layout="row" layout-align="center start">
     <div layout="column" flex >
 
-      <mat-card class="centered" body-css="md-padding">
+      <mat-card class="centered" style="width:70%;margin:auto;">
         <mat-card-title layout="row" layout-align="space-between-center" flex>
           <span *ngIf="searchResult != null" class="md-subhead">
             {{"view.search.Srf" | translate}} {{searchResult.from}} {{"view.search.to" | translate}} {{searchResult.to}} {{"view.search.of" | translate}} {{searchResult.totalHits}}  
@@ -9,22 +9,35 @@
           </span>
         </mat-card-title>
 
-        <mat-card-content>
+        <mat-card-content class="md-padding">
           <div *ngIf="searchResult != null">
             <div *ngIf="searchResult.searchResults.length >0 ">
               <mat-list flex layout-fill>
-                <mat-list-item class="md-3-line" (click)="onSearchResultItemClick($event,searchHit)">
+                <mat-list-item class="searchList" style="height:auto; font-size: 14px;" (click)="onSearchResultItemClick($event,searchHit)" 
+                    *ngFor="let searchHit of searchResult.searchResults">
                   <div flex="10" style="z-index: 1" layout="column" layout-xs="row">
-                  <span style="z-index: 1">
-                    <md-tooltip md-direction="left">
-                      <span *ngIf="searchHit.type == 'KYLO_DATA'">{{"view.search.Dft" | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}}</span>
-                      <span *ngIf="searchHit.type == 'KYLO_SCHEMA'">{{"view.search.Sft" | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}</span>
-                      <span *ngIf="searchHit.type == 'KYLO_FEEDS'">{{"view.search.Fmf" | translate}} {{searchHit.feedTitle}}</span>
-                      <span *ngIf="searchHit.type == 'KYLO_CATEGORIES'">{{"view.search.Cmf" | translate}} {{searchHit.categoryTitle}}</span>
-                      <span *ngIf="searchHit.type == 'KYLO_UNKNOWN'">{{"view.search.Urt" | translate}}</span>
-                    </md-tooltip>
-                    <ng-md-icon icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" size="48"></ng-md-icon>
-                  </span>
+                    <span style="z-index: 1">
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_DATA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                                  size="48" matTooltip="{{'view.search.Dft' | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}} "
+                                  placement="left">
+                      </ng-md-icon>
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_SCHEMA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                                  size="48" matTooltip="{{'view.search.Sft' | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}" 
+                                  placement="left">
+                      </ng-md-icon>
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_FEEDS'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                                  size="48" matTooltip="{{'view.search.Fmf' | translate}} {{searchHit.feedTitle}}" 
+                                  placement="left">
+                      </ng-md-icon>
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_CATEGORIES'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                                  size="48" matTooltip="{{'view.search.Cmf' | translate}} {{searchHit.categoryTitle}}" 
+                                  placement="left">
+                      </ng-md-icon>
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_UNKNOWN'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                                  size="48" matTooltip="{{'view.search.Urt' | translate}}"
+                                  placement="left">
+                      </ng-md-icon>
+                    </span>
                   </div>
                   <div flex="90" layout="column" layout-xs="row" layout-fill>
 
@@ -37,18 +50,18 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
-                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="highlight.value"></td>
+                              <tr *ngFor="let highlight of searchHit.highlights;">
+                                <td style="text-align:left; padding-left: 3px;" >{{('view.search.' + highlight.key) | translate}}</td>
+                                <td style="text-align:left; padding-left: 50px;" [innerHTML]="highlight.value"></td>
                               </tr>
                             </table>
                           </div>
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr *ngFor="let field of searchHit.columnNamesAndValues | truncate:3">
-                                <td style="text-align:left; padding-left: 3px;">{{field.key}}</td>
-                                <td style="text-align:left; padding-left: 50px;">{{field.value}}</td>
+                              <tr *ngFor="let field of searchHit.columnNamesAndValues; let i=index">
+                                <td *ngIf="i<3" style="text-align:left; padding-left: 3px;">{{field.key}}</td>
+                                <td *ngIf="i<3" style="text-align:left; padding-left: 50px;">{{field.value}}</td>
                               </tr>
                             </table>
                           </div>
@@ -66,9 +79,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
-                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
+                              <tr *ngFor="let highlight of searchHit.highlights">
+                                <td style="text-align:left; padding-left: 3px;">{{('view.search.' + highlight.key) | translate}}</td>
+                                <td style="text-align:left; padding-left: 50px;" [innerHTML]="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -77,10 +90,10 @@
                             <ul style="list-style-type: none; margin:0; padding:0">
                               <div style="overflow-x:auto; padding-bottom: 10px;">
                                 <table style="border-collapse:collapse; border-spacing:0;">
-                                  <tr *ngFor="let hiveColumn of searchHit.hiveColumns | truncate:3">
-                                    <td style="text-align:left; padding-left: 3px;">{{hiveColumn.columnName}}</td>
-                                    <td style="text-align:left; padding-left: 50px;">{{hiveColumn.columnType}}</td>
-                                    <td style="text-align:left; padding-left: 50px;" *ngIf="hiveColumn.columnComment != ''">{{hiveColumn.columnComment}}</td>
+                                  <tr *ngFor="let hiveColumn of searchHit.hiveColumns; let i=index">
+                                    <td *ngIf="i<2" style="text-align:left; padding-left: 3px;">{{hiveColumn.columnName}}</td>
+                                    <td *ngIf="i<2" style="text-align:left; padding-left: 50px;">{{hiveColumn.columnType}}</td>
+                                    <td style="text-align:left; padding-left: 50px;" *ngIf="hiveColumn.columnComment != '' && i<2">{{hiveColumn.columnComment}}</td>
                                   </tr>
                                 </table>
                               </div>
@@ -102,9 +115,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
-                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
+                              <tr *ngFor="let highlight of searchHit.highlights">
+                                <td style="text-align:left; padding-left: 3px;">{{('view.search.' + highlight.key) | translate}}</td>
+                                <td style="text-align:left; padding-left: 50px;" [innerHTML]="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -112,8 +125,10 @@
                           <div layout-align="start center" style="padding-bottom: 10px;">
                             <ul style="list-style-type: none; margin:0; padding:0">
                               <li>{{searchHit.feedDescription}}</li>
-                              <li *ngFor="let feedTag of searchHit.feedTags | truncate:3">
-                                {{feedTag}}
+                              <li *ngFor="let feedTag of searchHit.feedTags; let i=index">
+                                <ng-template *ngIf="i<2">
+                                  {{feedTag}}
+                                </ng-template>
                               </li>
                             </ul>
                           </div>
@@ -133,9 +148,9 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr *ngFor="let highlight of searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
-                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="renderHtml(highlight.value)"></td>
+                              <tr *ngFor="let highlight of searchHit.highlights">
+                                <td style="text-align:left; padding-left: 3px;">{{('view.search.' + highlight.key) | translate}}</td>
+                                <td style="text-align:left; padding-left: 50px;" [innerHTML]="renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
                           </div>
@@ -171,43 +186,18 @@
                   <mat-divider *ngIf="!last"></mat-divider>
                 </mat-list-item>
                 <mat-divider></mat-divider>
-                <mat-list-item layout-align="end center" layout-row class="pagination-list-item">
                   
-                  <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="searchResult.totalHits" [total]="searchResult" (change)="onPaginationChange($event)">
-                      <span hide-xs>Rows per page:</span>
-                      <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
-                          <mat-option *ngFor="let size of [5, 10, 20, 50, 100]" [value]="size">
-                              {{size}}
-                          </mat-option>
-                      </mat-select>
-                      {{pagingBar.range}}
-                      <span hide-xs>of {{pagingBar.total}}</span>
-                </td-paging-bar>
-
-                <!-- <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="filteredTotal" (change)="onPaginationChange($event)">
+                <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="searchResult.totalHits" (change)="onPaginationChange($event)" style="float: right;">
                     <span hide-xs>Rows per page:</span>
                     <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
-                      <mat-option *ngFor="let size of ['5', '10', '20', '50']" [value]="size">
-                        {{size}}
-                      </mat-option>
+                        <mat-option *ngFor="let size of ['5', '10', '20', '50', '100']" [value]="size">
+                          {{size}}
+                        </mat-option>
                     </mat-select>
-                    {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
-                </td-paging-bar> -->
+                    {{pagingBar.range}}
+                    <span hide-xs>of {{pagingBar.total}}</span>
+                </td-paging-bar>
 
-
-                  <!-- <dir-pagination-controls pagination-id="search"
-                                           auto-hide="false"
-                                           max-size="5"
-                                           direction-links="true"
-                                           boundary-links="false"
-                                           template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                           on-page-change="onPaginationChange(newPageNumber)"
-                                           label='{{"views.all-page.Rows_per_page" | translate}}'
-                                           rows-per-page="paginationData.rowsPerPage"
-                                           rows-per-page-options="paginationData.rowsPerPageOptions"
-                                           class="pagination-row">
-                  </dir-pagination-controls> -->
-                </mat-list-item>
               </mat-list>
             </div>
           </div>
@@ -219,7 +209,6 @@
           </div>
         </mat-card-content>
       </mat-card>
-
 
     </div>
   </div>

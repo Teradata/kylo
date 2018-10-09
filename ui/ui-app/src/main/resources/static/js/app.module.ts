@@ -14,6 +14,7 @@ import "routes"; // load AngularJS application
 import {KyloCommonModule} from "./common/common.module";
 import {KyloFeedManagerModule} from "./feed-mgr/feed-mgr.module";
 import {KyloServicesModule} from "./services/services.module";
+import { SideNavModule } from "./side-nav/side-nav.module";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
@@ -37,6 +38,7 @@ const translateConfig: TranslateModuleConfig = {
         KyloCommonModule,
         KyloFeedManagerModule,
         KyloServicesModule,
+        SideNavModule,
         TranslateModule.forRoot(translateConfig),
         UIRouterModule,
         UIRouterUpgradeModule,

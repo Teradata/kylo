@@ -31,18 +31,6 @@ export class CategoryDetails {
                 private accessControlService: AccessControlService,
                 private state: StateService) {
 
-        // $scope.$watch(
-        //     () => {
-        //         return categoriesService.model
-        //     },
-        //     (newModel: any, oldModel: any) => {
-        //         this.model = newModel;
-        //         if (oldModel && oldModel.id == null && newModel.id != null) {
-        //             this.checkAccessControl();
-        //         }
-        //     },
-        //     true
-        // );
         if (this.categoriesService.categories.length === 0) {
             this.categoriesService.reload().subscribe(() => this.onLoad());
         } else {

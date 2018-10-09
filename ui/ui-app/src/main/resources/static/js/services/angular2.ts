@@ -18,6 +18,7 @@ import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/
 import {TemplateService} from "../repository/services/template.service";
 import Utils from "./Utils";
 import HttpService from "./HttpService";
+import SideNavService from "./SideNavService";
 
 export const addButtonServiceProvider: FactoryProvider = {
     provide: AddButtonService,
@@ -99,6 +100,12 @@ export const utilsServiceProvider : FactoryProvider = {
 export const httpServiceProvider : FactoryProvider = {
     provide : HttpService,
     useFactory : (i: angular.auto.IInjectorService) => i.get("HttpService"),
+    deps : ["$injector"]
+};
+
+export const sideNavServiceProvider : FactoryProvider = {
+    provide : SideNavService,
+    useFactory : (i: angular.auto.IInjectorService) => i.get("SideNavService"),
     deps : ["$injector"]
 };
 
