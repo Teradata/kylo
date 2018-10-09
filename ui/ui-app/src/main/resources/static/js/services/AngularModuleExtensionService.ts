@@ -194,8 +194,8 @@ constructor (private http: HttpClient,
     registerModules(){
         let promise = this.http.get(this.commonRestUrlService.ANGULAR_EXTENSION_MODULES_URL).toPromise();
         promise.then( (response: any) => {
-            if(response.data){
-                _.each(response.data,(extensionModule)=> {
+            if(response){
+                _.each(response,(extensionModule)=> {
                     this.registerStates(extensionModule);
                 });
                 this.initialized=true;

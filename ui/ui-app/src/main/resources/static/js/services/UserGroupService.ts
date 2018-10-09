@@ -102,7 +102,7 @@ export default class UserGroupService {
     getUsers() {
         return this.http.get(this.commonRestUrlService.SECURITY_USERS_URL).toPromise()
             .then((response: any) => {
-                return response.data;
+                return response;
             });
     }
 
@@ -115,7 +115,7 @@ export default class UserGroupService {
     getUsersByGroup(groupId: any) {
         return this.http.get(this.commonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId) + "/users").toPromise()
             .then((response: any) => {
-                return response.data;
+                return response;
             });
     }
 }

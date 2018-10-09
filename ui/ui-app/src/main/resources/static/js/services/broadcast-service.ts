@@ -55,7 +55,7 @@ export default class BroadcastService {
     subscribe (scope: any, event: any, callback: any) {
         // const handler: any = this.$rootScope.$on(event, callback);
         if(!this.eventsMap.has(event)){
-            return;
+            this.eventsMap.set(event, new Subject<any>());
         }
         var subs  = this.eventsMap.get(event).subscribe(callback);
         if(this.subscribers[event] == undefined){
