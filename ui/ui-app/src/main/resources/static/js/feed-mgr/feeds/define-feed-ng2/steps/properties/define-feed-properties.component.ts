@@ -54,7 +54,6 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
         this.subscribeToFormDirtyCheck(this.formGroup);
 
         this.formGroup.get('userPropertyForm').valueChanges.subscribe(changes => {
-            console.log('form changes',changes)
             if(!this.feed.readonly){
                 this.displayEditActions = true;
             }

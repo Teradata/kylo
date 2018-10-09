@@ -52,7 +52,7 @@ export class SparkDataSet {
             path = this.options["path"];
         }
         else {
-            return this._getIdentifier;
+            return this._getIdentifier();
         }
         if (removeLast) {
             return path.substring(0, path.lastIndexOf("/"));

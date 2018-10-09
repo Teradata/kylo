@@ -38,7 +38,7 @@ import {ConfigurationFieldBuilder, FieldConfigBuilder} from "../../../../shared/
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
-import {FeedNifiPropertiesComponent} from "./feed-nifi-properties.component";
+import {FeedNifiPropertiesComponent, NiFiPropertiesProcessorsChangeEvent} from "./feed-nifi-properties.component";
 
 
 
@@ -57,6 +57,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     private loading: boolean;
 
     public form :FormGroup;
+
+    public displayEditActions:boolean = true;
 
     constructor(  defineFeedService:DefineFeedService,  stateService:StateService, private http:HttpClient,
                   private dynamicFormService:DynamicFormService, feedLoadingService:FeedLoadingService,
@@ -78,6 +80,15 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     onFormInitialized(){
         this.subscribeToFormChanges(this.form);
+    }
+
+    onProcessorsChange(event:NiFiPropertiesProcessorsChangeEvent){
+        if(event.noPropertiesExist){
+         this.displayEditActions = false;
+        }
+        else {
+            this.displayEditActions = true;
+        }
     }
 
     /**

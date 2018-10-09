@@ -119,6 +119,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     mergeStrategies: FeedServiceTypes.MergeStrategy[];
 
     /**
+     * The selected strategy defined for this feed.
+     * This will be used when rendering the read only view
+     */
+    mergeStrategy:FeedServiceTypes.MergeStrategy;
+
+    /**
      * The possible target options
      */
     targetFormatOptions: Common.LabelValue[];
@@ -242,6 +248,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             .then((functions: any) => {
                 this.partitionFormulas = functions;
             });
+        if(this.feed.table.targetMergeStrategy) {
+            this.mergeStrategy = this.mergeStrategies.find((strategy: FeedServiceTypes.MergeStrategy) => strategy.type == this.feed.table.targetMergeStrategy)
+        }
 
         this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl());
         this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl());

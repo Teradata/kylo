@@ -28,6 +28,10 @@ export enum FeedDetailsMode{
     INPUT="INPUT", ADDITIONAL="ADDITIONAL", ALL="ALL"
 }
 
+export class NiFiPropertiesProcessorsChangeEvent {
+ constructor(public mode:FeedDetailsMode,public feed:Feed,public inputProcessors: ProcessorRef[],public nonInputProcessors: ProcessorRef[],public noPropertiesExist:boolean)    {}
+}
+
 
 @Component({
     selector: "feed-nifi-properties",
@@ -47,6 +51,9 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
 
     @Output()
     updatedFormControls = new EventEmitter<any>();
+
+    @Output()
+    processorsChange = new EventEmitter<NiFiPropertiesProcessorsChangeEvent>()
 
     @Input()
     formGroup:FormGroup;
@@ -286,6 +293,7 @@ export class FeedNifiPropertiesComponent  implements OnInit, OnDestroy {
             this.noPropertiesExist = true;
         }
         this.updatedFormControls.emit();
+        this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode,this.feed,this.inputProcessors,this.nonInputProcessors,this.noPropertiesExist));
     }
 
     private isShowInputProperties() {

@@ -1,13 +1,12 @@
-<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true"  (cancelEdit)="onCancelEdit()" (saved)="onSave()">
+<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true"  (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
   <feed-step-readonly-content>
-    Feed Details.<br/>
     <form [formGroup]="form">
       <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"></feed-nifi-properties>
     </form>
   </feed-step-readonly-content>
   <feed-step-edit-content>
     <form [formGroup]="form">
-      <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="!feed.readonly" ></feed-nifi-properties>
+      <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="!feed.readonly" (processorsChange)="onProcessorsChange($event)" ></feed-nifi-properties>
     </form>
   </feed-step-edit-content>
 </define-feed-step-card>
