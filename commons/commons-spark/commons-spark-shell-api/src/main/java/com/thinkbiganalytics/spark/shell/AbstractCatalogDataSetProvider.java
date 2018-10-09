@@ -21,6 +21,8 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
@@ -69,8 +71,26 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
         }
     }
 
+    protected abstract KyloCatalogClient<T> getClient();
 
-    public abstract T readDataSet(DataSet dataSet);
+    public T readDataSet(@Nonnull final DataSet dataSet) {
+        final DataSetTemplate dataSetTemplate = mergeTemplates(dataSet);
+
+        KyloCatalogReader<T> reader = getClient().read().options(dataSetTemplate.getOptions()).addJars(dataSetTemplate.getJars()).addFiles(dataSetTemplate.getFiles())
+            .format(dataSetTemplate.getFormat());
+        T dataFrame;
+
+        if (dataSet.getPaths() != null && !dataSet.getPaths().isEmpty()) {
+            if (dataSet.getPaths().size() > 1) {
+                dataFrame = reader.load(dataSet.getPaths().toArray(new String[0]));
+            } else {
+                dataFrame = reader.load(dataSet.getPaths().get(0));
+            }
+        } else {
+            dataFrame = reader.load();
+        }
+        return dataFrame;
+    }
 
     public T read(String datasetId) {
         DataSet dataSet = findById(datasetId);

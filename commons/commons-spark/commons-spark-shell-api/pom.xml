@@ -37,6 +37,11 @@
 
     <!-- Kylo dependencies -->
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-spark-shell-rest-model</artifactId>
       <version>${project.version}</version>
