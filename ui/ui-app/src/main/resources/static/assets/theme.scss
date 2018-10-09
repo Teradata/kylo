@@ -47,7 +47,7 @@ $toolbar-typography: mat-typography-config(
 
 
 $primary: mat-palette($td-slate, 700, 100, 900);
-$accent:  mat-palette($td-teal, 800, 200, 900);
+$accent:  mat-palette($td-orange, 800, 200, 900);
 $warn:    mat-palette($mat-deep-orange, 800, 200, 900);
 $theme: mat-light-theme($primary, $accent, $warn);
 
@@ -204,4 +204,22 @@ body {
 .warn {
   color: mat-color($warn);
   fill: mat-color($warn);
+}
+
+md-list .md-button:not(.md-no-style).selected {
+  color: mat-color($accent);
+  fill: mat-color($accent);
+}
+
+md-list .md-button:not(.md-no-style) {
+  font-weight: 500;
+  text-align: left;
+  text-transform: none;
+}
+
+md-sidenav .collapse-btn {
+  padding: 10px;
+  color: mat-color($primary);
+  background-color: #F9F9F9;
+  cursor: pointer;
 }
