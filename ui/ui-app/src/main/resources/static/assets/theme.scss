@@ -212,9 +212,11 @@ md-list .md-button:not(.md-no-style).selected {
 }
 
 md-list .md-button:not(.md-no-style) {
-  font-weight: 500;
+  font-weight: 400;
   text-align: left;
   text-transform: none;
+  color: mat-color($primary);
+  fill: mat-color($primary);
 }
 
 md-sidenav .collapse-btn {
