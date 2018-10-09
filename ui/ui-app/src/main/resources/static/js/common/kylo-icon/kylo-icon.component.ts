@@ -29,6 +29,10 @@ export class KyloIconComponent implements OnChanges {
      */
     @Input()
     public size: string;
+    @Input()
+    public width?:string;
+    @Input()
+    public height?:string;
 
     /**
      * Reference to the <svg> element
@@ -63,8 +67,14 @@ export class KyloIconComponent implements OnChanges {
                 }
             }
         }
+        if (changes.width) {
+            this.svg.setAttribute("width", changes.width.currentValue || KyloIconComponent.DEFAULT_SIZE);
+        }
+        if(changes.height) {
+            this.svg.setAttribute("height", changes.height.currentValue || KyloIconComponent.DEFAULT_SIZE);
+        }
         if (changes.size) {
-            this.svg.setAttribute("height", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
+            this.svg.setAttribute("height",  changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
             this.svg.setAttribute("width", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
     }

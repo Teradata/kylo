@@ -106,12 +106,6 @@ md-sidenav md-toolbar h1 {
 
 /* Sidenav area*/
 
-md-list .md-button:not(.md-no-style) {
-  color: #607D8B;
-  font-weight: 500;
-  text-align: left;
-  text-transform: none;
-}
 
 md-list-item.with-padding.md-no-proxy {
   padding: 8px !important;
@@ -123,10 +117,7 @@ md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
   line-height: inherit;
 }
 
-md-list .md-button:not(.md-no-style).selected {
-  color: #3483BA;
-  fill: #3483BA;
-}
+
 
 md-sidenav md-list {
   padding: 0px 0px 8px 0px;
@@ -158,12 +149,6 @@ md-list md-datepicker .md-button.md-icon-button {
 }
 
 
-md-sidenav .collapse-btn {
-  padding: 10px;
-  color: #3483BA;
-  background-color: #F9F9F9;
-  cursor: pointer;
-}
 
 .pointer {
   cursor: pointer;
