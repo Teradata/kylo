@@ -440,7 +440,8 @@
     + * (tba:DataSet) 
 
 [tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
-    - mimeType (STRING)
+    - tba:paramsHashCode (INTEGER) = 0
+    - tba:mimeType (STRING)
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedTargets (WEAKREFERENCE) multiple
 

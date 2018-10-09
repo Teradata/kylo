@@ -25,7 +25,9 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource.ID;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
@@ -45,8 +47,14 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,6 +69,10 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     
     @Inject
     private DataSourceProvider dsProvider;
+//    
+//    @Inject
+//    private ConnectorPluginManager pluginManager;
+    
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
@@ -69,28 +81,15 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     public DataSet.ID resolveId(Serializable fid) {
         return new JcrDataSet.DataSetId(fid);
     }
-
+    
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetProvider#create(com.thinkbiganalytics.metadata.api.catalog.DataSource.ID, java.lang.String)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetProvider#build(com.thinkbiganalytics.metadata.api.catalog.DataSource.ID)
      */
     @Override
-    public DataSet create(ID dataSourceId, String title) {
+    public DataSetBuilder build(ID dataSourceId) {
         return this.dsProvider.find(dataSourceId)
-                .map(dsrc -> {
-                    String ensuredTitle = generateTitle(dsrc, title);  // Should we instead throw and exception if the title is missing?
-                    String dsSystemName = generateSystemName(ensuredTitle);
-                    Path dataSetPath = MetadataPaths.dataSetPath(dsrc.getConnector().getSystemName(), dsrc.getSystemName(), dsSystemName);
-                    
-                    if (JcrUtil.hasNode(getSession(), dataSetPath)) {
-                        throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
-                    } else {
-                        Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
-                        JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
-                        ds.setTitle(ensuredTitle);
-                        return ds;
-                    } 
-                })
-                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+            .map(dataSource -> new Builder(dataSource))
+            .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
     /* (non-Javadoc)
@@ -117,13 +116,13 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     @Override
     public List<DataSet> findByDataSource(Collection<ID> dsIds) {
         String ids = dsIds.stream()
-                        .map(id -> "'" + id.toString() + "'")
-                        .collect(Collectors.joining(",", "(", ")"));
+            .map(id -> "'" + id.toString() + "'")
+            .collect(Collectors.joining(",", "(", ")"));
         String query = startBaseQuery()
-                        .append(" JOIN [").append(JcrDataSource.DATA_SETS_NODE_TYPE).append("] AS dsn ON ISCHILDNODE(e, dsn) ")
-                        .append(" JOIN [").append(JcrDataSource.NODE_TYPE).append("] AS ds ON ISCHILDNODE(dsn, ds) ")
-                        .append(" WHERE ds.[mode:id] IN ").append(ids).toString();
-                return find(query);
+            .append(" JOIN [").append(JcrDataSource.DATA_SETS_NODE_TYPE).append("] AS dsn ON ISCHILDNODE(e, dsn) ")
+            .append(" JOIN [").append(JcrDataSource.NODE_TYPE).append("] AS ds ON ISCHILDNODE(dsn, ds) ")
+            .append(" WHERE ds.[mode:id] IN ").append(ids).toString();
+        return find(query);
     }
 
     /* (non-Javadoc)
@@ -155,16 +154,209 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         return JcrDataSet.NODE_TYPE;
     }
 
+    private Optional<DataSet> findByParamsHash(int hash) {
+        String query = startBaseQuery().append(" WHERE e.[tba:paramsHashCode] = ").append(hash).toString();
+        return Optional.ofNullable(findFirst(query));
+    }
 
     private String generateSystemName(String title) {
-        try {
-            return URLEncoder.encode(title.toLowerCase(), "UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return JcrUtil.toSystemName(title);
     }
 
     private String generateTitle(DataSource dataSource, String title) {
         return StringUtils.isEmpty(title) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : title;
+    }
+    
+    private class Builder implements DataSetBuilder {
+
+        private final JcrDataSource dataSource;
+        
+        private String title;
+        private String description;
+        private String format;
+        private final Set<String> paths = new HashSet<>();
+        private final Set<String> jars = new HashSet<>();
+        private final Set<String> files = new HashSet<>();
+        private final Map<String, String> options = new HashMap<>();
+        
+        /**
+         * @param dataSource
+         */
+        public Builder(DataSource dataSource) {
+            DataSetSparkParameters sparkParams = dataSource.getEffectiveSparkParameters();
+            
+            this.dataSource = (JcrDataSource) dataSource;
+            this.format = sparkParams.getFormat();
+            this.options.putAll(sparkParams.getOptions());
+            this.paths.addAll(sparkParams.getPaths());
+            this.jars.addAll(sparkParams.getJars());
+            this.files.addAll(sparkParams.getFiles());
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#title(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#description(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#format(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder format(String format) {
+            this.format = format;
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addOption(java.lang.String, java.lang.String)
+         */
+        @Override
+        public DataSetBuilder addOption(String name, String value) {
+            this.options.put(name, value);
+            return this;
+       }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addOptions(java.util.Map)
+         */
+        @Override
+        public DataSetBuilder addOptions(Map<String, String> options) {
+            if (options != null) {
+                options.entrySet().forEach(entry -> addOption(entry.getKey(), entry.getValue()));
+            }
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addPath(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder addPath(String path) {
+            if (path != null) {
+                this.paths.add(path);
+            }
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addPaths(java.lang.Iterable)
+         */
+        @Override
+        public DataSetBuilder addPaths(Iterable<String> paths) {
+            if (paths != null) {
+                paths.forEach(this::addPath);
+            }
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addJar(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder addJar(String jarPath) {
+            if (jarPath != null) {
+                this.jars.add(jarPath);
+            }
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addJars(java.lang.Iterable)
+         */
+        @Override
+        public DataSetBuilder addJars(Iterable<String> jarPaths) {
+            if (jarPaths != null) {
+                jarPaths.forEach(this::addJar);
+            }
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addFile(java.lang.String)
+         */
+        @Override
+        public DataSetBuilder addFile(String filePath) {
+            if (filePath != null ) {
+                this.files.add(filePath);
+            }
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#addFiles(java.lang.Iterable)
+         */
+        @Override
+        public DataSetBuilder addFiles(Iterable<String> filePaths) {
+            if (filePaths != null) {
+                filePaths.forEach(this::addFile);
+            }
+            return this;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder#build()
+         */
+        @Override
+        public DataSet build() {
+            int hash = generateDataSetHash();
+            
+            return findByParamsHash(hash).orElse(create(hash));
+        }
+
+        /**
+         * @return a hash code uniquely identifying the underlying data
+         */
+        private int generateDataSetHash() {
+            // TODO delegate to the connector plugin somehow to get the hash.
+            // For now just hash all contents of this builder with the values inherited from the data source.
+            DataSetSparkParameters sparkParams = this.dataSource.getEffectiveSparkParameters();
+            String effectiveFormat = this.format != null ? this.format : sparkParams.getFormat();
+            Set<String> totalPaths = Stream.concat(sparkParams.getPaths().stream(), this.paths.stream()).collect(Collectors.toSet());
+//            Set<String> totalJars = Stream.concat(sparkParams.getJars().stream(), this.jars.stream()).collect(Collectors.toSet());
+//            Set<String> totalFiles = Stream.concat(sparkParams.getFiles().stream(), this.files.stream()).collect(Collectors.toSet());
+            Map<String, String> totalOptions = Stream.concat(sparkParams.getOptions().entrySet().stream(), this.options.entrySet().stream())
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v2));
+
+//            return Objects.hash(effectiveFormat, totalPaths, totalJars, totalFiles, totalOptions);
+            return Objects.hash(effectiveFormat, totalPaths, totalOptions);
+        }
+
+        private DataSet create(int hash) {
+            String ensuredTitle = generateTitle(this.dataSource, this.title);
+            String dsSystemName = generateSystemName(ensuredTitle);
+            Path dataSetPath = MetadataPaths.dataSetPath(this.dataSource.getConnector().getSystemName(), this.dataSource.getSystemName(), dsSystemName);
+            
+            if (JcrUtil.hasNode(getSession(), dataSetPath)) {
+                throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
+            } else {
+                Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
+                JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
+                DataSetSparkParameters params = ds.getSparkParameters();
+                
+                ds.setTitle(ensuredTitle);
+                ds.setDescription(this.description);
+                ds.setParamsHash(hash);
+                params.setFormat(this.format);
+                params.getOptions().putAll(this.options);
+                params.getPaths().addAll(this.paths);
+                params.getFiles().addAll(this.files);
+                params.getJars().addAll(this.jars);
+                return ds;
+            } 
+        }
+        
     }
 }

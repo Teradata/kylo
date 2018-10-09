@@ -24,6 +24,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  */
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
@@ -88,6 +89,17 @@ public class CatalogModelTransform {
         domain.setDescription(generateDescription(model));
         updateSparkParameters(model, domain.getSparkParameters());
         return domain;
+    }
+    
+    public DataSet buildDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSetBuilder builder) {
+        return builder
+            .title(model.getTitle())
+            .format(model.getFormat())
+            .addOptions(model.getOptions())
+            .addPaths(model.getPaths())
+            .addFiles(model.getFiles())
+            .addJars(model.getJars())
+            .build();
     }
     
     /**

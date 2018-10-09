@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.MockMetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
@@ -40,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.MessageSource;
 
 import java.util.Optional;
@@ -77,6 +79,9 @@ public class DataSetControllerTest {
     @Spy
     private TestDataSet dataSet;
     
+//    @Mock
+    private DataSetBuilder dataSetBuilder;
+    
     @Spy
     private MetadataAccess metadataService = new MockMetadataAccess();
     
@@ -100,12 +105,18 @@ public class DataSetControllerTest {
         MockitoAnnotations.initMocks(this);
         
         Mockito.when(connector.getId()).thenReturn(connectorId);
-        
+
         Mockito.when(dataSourceProvider.resolveId(Mockito.anyString())).thenReturn(dataSourceId);
         Mockito.when(dataSource.getId()).thenReturn(dataSourceId);
         Mockito.when(dataSource.getConnector()).thenReturn(connector);
         
+        this.dataSetBuilder = Mockito.mock(DataSetBuilder.class, 
+                                           (Answer<?>) (invocation) -> invocation.getMethod().getReturnType().isInstance(invocation.getMock()) 
+                                               ? invocation.getMock() 
+                                               : Mockito.RETURNS_DEFAULTS.answer(invocation));
+        
         Mockito.when(dataSetProvider.resolveId(Mockito.anyString())).thenReturn(dataSetId);
+        Mockito.when(dataSetProvider.build(Mockito.any())).thenReturn(this.dataSetBuilder);
         Mockito.when(dataSet.getId()).thenReturn(dataSetId);
         Mockito.when(dataSet.getDataSource()).thenReturn(dataSource);
         
@@ -118,7 +129,7 @@ public class DataSetControllerTest {
      */
     @Test
     public void createDataSet() {
-        Mockito.when(dataSetProvider.create(Mockito.any(DataSource.ID.class), Mockito.anyString())).thenReturn(dataSet);
+        Mockito.when(dataSetBuilder.build()).thenReturn(dataSet);
         Mockito.when(dataSetId.toString()).thenReturn("dataSet1");
         
         final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource src = modelTransform.dataSourceToRestModel().apply(dataSource);
@@ -134,7 +145,7 @@ public class DataSetControllerTest {
      */
     @Test(expected = BadRequestException.class)
     public void createDataSetWithInvalid() {
-        Mockito.when(dataSetProvider.create(Mockito.any(DataSource.ID.class), Mockito.anyString())).thenThrow(new DataSourceNotFoundException(null));
+        Mockito.when(dataSetBuilder.build()).thenThrow(new DataSourceNotFoundException(null));
         
         final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource src = modelTransform.dataSourceToRestModel().apply(dataSource);
         controller.createDataSet(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(src, ""));

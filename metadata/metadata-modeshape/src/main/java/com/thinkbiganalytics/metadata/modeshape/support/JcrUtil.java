@@ -24,7 +24,6 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  */
 
 import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
@@ -36,7 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -59,11 +60,29 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
+ * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some methods are duplicates of their JCR equivalents 
+ * but do not throw the non-runtime exception RepositoryException.
  */
 public class JcrUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
+    
+    /**
+     * Generates a name from some arbitrary text that is both a valid JCR node name
+     * and is consistent with other "system names".  Generally, it substitutes any sequence of
+     * invalid node name characters and all white space with with an underscore, and then URL 
+     * encodes the result.
+     * @param text
+     * @return
+     */
+    public static String toSystemName(String text) {
+        try {
+            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[[\\]/*|:]*", "_").replaceAll("_{2,}", "_"), "UTF-8");
+//            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[[\\]/*|:]*", "_"), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
+        }
+    }
 
     /**
      * Creates a Path out of the arguments appropriate for JCR.

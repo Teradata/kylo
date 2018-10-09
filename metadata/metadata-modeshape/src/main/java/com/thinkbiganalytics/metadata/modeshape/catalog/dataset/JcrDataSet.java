@@ -57,6 +57,7 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     public static final String MIME_TYPE = "tba:mimeType";
     public static final String FEED_SOURCES = "tba:feedSources";
     public static final String FEED_TARGETS = "tba:feedTargets";
+    public static final String PARAMS_HASH = "tba:paramsHashCode";
     
 
     public JcrDataSet(Node node) {
@@ -129,6 +130,14 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     @Override
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrDataSetAllowedActions.class;
+    }
+    
+    public int getParamsHash() {
+        return getProperty(PARAMS_HASH, 0);
+    }
+    
+    public void setParamsHash(int hash) {
+        setProperty(PARAMS_HASH, hash);
     }
     
     public void addSourceNode(Node node) {

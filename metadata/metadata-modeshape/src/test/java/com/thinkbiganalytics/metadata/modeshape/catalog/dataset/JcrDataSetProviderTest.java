@@ -197,9 +197,10 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
 
     
     protected DataSet createDataSet(DataSource.ID srcId, int tag) {
-        DataSet set = this.dataSetProvider.create(srcId, "Test " + tag + " Data Set");
-        set.setDescription("Test description " + tag);
-        return set;
+        return this.dataSetProvider.build(srcId)
+            .title("Test " + tag + " Data Set")
+            .description("Test description " + tag)
+            .build();
     }
     
     protected Tuple dataSetTuple(int tag) {
