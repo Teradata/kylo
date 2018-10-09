@@ -193,7 +193,7 @@ class Route {
             url: '/categories',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "categories.module" */ "./feed-mgr/categories/module.js")
+                return import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module.js")
                     .then(mod => {
                         console.log('imported ./feed-mgr/categories/module.js', mod);
                         return $ocLazyLoad.load({name: 'kylo.feedmgr.categories'}).then(function success(args: any) {
@@ -228,7 +228,7 @@ class Route {
             url: '/registered-templates',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "registered-templates.module" */ "./feed-mgr/templates/module")
+                return import(/* webpackChunkName: "admin.registered-templates.module" */ "./feed-mgr/templates/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
@@ -282,7 +282,7 @@ class Route {
             url: '/users',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "auth.module" */ "./auth/module")
+                return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
@@ -304,7 +304,7 @@ class Route {
             url: '/groups',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "auth.module" */ "./auth/module")
+                return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
@@ -343,7 +343,7 @@ class Route {
             url: '/business-metadata',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "categories.module" */ "./feed-mgr/business-metadata/module")
+                return import(/* webpackChunkName: "feedmgr.business-metadata.module" */ "./feed-mgr/business-metadata/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
@@ -376,7 +376,7 @@ class Route {
             url: '/dashboard',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "ops-mgr.module" */ "./ops-mgr/overview/module")
+                return import(/* webpackChunkName: "ops-mgr.overview.module" */ "./ops-mgr/overview/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
@@ -436,14 +436,21 @@ class Route {
                 executionId: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/details/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('job-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading job-details ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "ops-mgr.job-details.module" */ './ops-mgr/jobs/details/module')
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('job-details', transition.params())
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading job-details ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./ops-mgr/job/details/module, " + err);
+                    });
             }
         });
 
@@ -455,14 +462,21 @@ class Route {
                 tab: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('jobs', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading jobs ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "ops-mgr.jobs.module" */ "./ops-mgr/jobs/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('jobs', transition.params())
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading jobs ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ops-mgr/jobs/module, " + err);
+                    });
             }
         });
 
@@ -486,84 +500,49 @@ class Route {
                         throw new Error("Failed to load ../ops-mgr/service-health/module, " + err);
                     });
             }
-        }).state({
-            name: 'service-details.**',
-            url: '/service-details/{serviceName}',
-            params: {
-                serviceName: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-details ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'service-component-details.**',
-            url: '/service-details/{serviceName}/{componentName}',
-            params: {
-                serviceName: null,
-                componentName: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/service-health/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-component-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-component-details ", err);
-                    return err;
-                });
-            }
-        })
+        });
 
         $stateProvider.state({
             name: 'scheduler.**',
             url: '/scheduler',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/scheduler/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('scheduler', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading scheduler ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "ops-mgr.scheduler.module" */ './ops-mgr/scheduler/module')
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('scheduler', transition.params())
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading scheduler ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./ops-mgr/scheduler/module, " + err);
+                    });
             }
-        })
+        });
 
         $stateProvider.state({
             name: 'alerts.**',
             url: '/alerts',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('alerts', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading alerts ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'alert-details.**',
-            url: '/alert-details/{alertId}',
-            params: {
-                alertId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/alerts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('alert-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading alert-details ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                return import(/* webpackChunkName: "ops-mgr.alerts.module" */ "./ops-mgr/alerts/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                            //upon success go back to the state
+                            $stateProvider.stateService.go('alerts', transition.params())
+                            return args;
+                        }, function error(err: any) {
+                            console.log("Error loading alerts ", err);
+                            return err;
+                        });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./ops-mgr/alerts/module, " + err);
+                    });
             }
         });
 
@@ -571,60 +550,31 @@ class Route {
             name: 'charts.**',
             url: '/charts',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/charts/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('charts', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading charts ", err);
-                    return err;
-                });
-            }
-        });
-
-
-        $stateProvider.state({
-            name: "datasources.**",
-            url: "/datasources",
-            lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                // return import(/* webpackChunkName: "datasources.module" */ "./feed-mgr/datasources/module")
-                //     .then(mod => {
-                //         $ocLazyLoad.load({name: "kylo.feedmgr.datasources"}).then(function success(args: any) {
-                        $ocLazyLoad.load('./feed-mgr/datasources/module"').then(function success(args: any) {
+                return import(/* webpackChunkName: "ops-mgr.charts.module" */ "./ops-mgr/charts/module")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
-                            $stateProvider.stateService.go("datasources", transition.params());
+                            $stateProvider.stateService.go('charts', transition.params());
                             return args;
                         }, function error(err: any) {
-                            console.log("Error loading datasources.", err);
+                            console.log("Error loading charts ", err);
                             return err;
                         });
-                    // })
-                    // .catch(err => {
-                    //     throw new Error("Failed to load ./feed-mgr/datasources/module, " + err);
-                    // });
-            }
-        }).state({
-            name: "datasource-details.**",
-            url: "/datasource-details",
-            lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go("datasource-details", transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading datasource-details.", err);
-                    return err;
-                });
+                    })
+                    .catch(err => {
+                        throw new Error("Failed to load ./ops-mgr/charts/module, " + err);
+                    });
             }
         });
+
 
         $stateProvider.state({
             name: "domain-types.**",
             url: "/domain-types",
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "domain-types.module" */ "./feed-mgr/domain-types/module")
+                return import(/* webpackChunkName: "admin.domain-types.module" */ "./feed-mgr/domain-types/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name})
                         .then(function (args: any) {
@@ -637,20 +587,6 @@ class Route {
                     })
                     .catch(err => {
                         throw new Error("Failed to load feed-mgr/domain-types/module, " + err);
-                    });
-            }
-        }).state({
-            name: "domain-type-details.**",
-            url: "/domain-type-details/{domainTypeId}",
-            lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad")
-                    .load("feed-mgr/domain-types/module")
-                    .then(function (args: any) {
-                        $stateProvider.stateService.go("domain-type-details", transition.params());
-                        return args;
-                    }, function (err: any) {
-                        console.log("Error loading domain-type-details.", err);
-                        return err;
                     });
             }
         });
@@ -711,7 +647,7 @@ class Route {
             url: '/sla-email-templates',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "sla-email-templates.module" */ "./feed-mgr/sla/module")
+                return import(/* webpackChunkName: "admin.sla-email-templates.module" */ "./feed-mgr/sla/module")
                     .then(mod => {
                         $ocLazyLoad.load({name: mod.default.module.name})
                             .then(function success(args: any) {
@@ -726,25 +662,6 @@ class Route {
                     .catch(err => {
                         throw new Error("Failed to load feed-mgr/sla/module, " + err);
                     });
-            }
-        });
-
-        $stateProvider.state({
-            name: 'sla-email-template.**',
-            url: '/sla-email-template/:emailTemplateId',
-            params: {
-                emailTemplateId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('sla-email-template', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading sla email template ", err);
-                    return err;
-                });
-
             }
         });
 

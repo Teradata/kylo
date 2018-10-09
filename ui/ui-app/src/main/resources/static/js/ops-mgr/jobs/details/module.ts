@@ -31,7 +31,17 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/jobs/details/JobDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['ops-mgr/jobs/details/JobDetailsController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.job-details.controller" */ './JobDetailsController')
+                        .then(mod => {
+                            console.log('imported JobDetailsController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load JobDetailsController, " + err);
+                        });
+                }]
             },
             data:{
                 displayName:'Job Details',
@@ -40,14 +50,7 @@ class ModuleFactory  {
             }
         });
     }  
-
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,['ops-mgr/jobs/module-require','ops-mgr/jobs/details/module-require']);
-    }    
-    lazyLoad(){
-        return lazyLoadUtil.lazyLoad(['ops-mgr/jobs/module-require','ops-mgr/jobs/details/module-require']);
-    }
-} 
+}
 
 const module = new ModuleFactory();
 export default module;

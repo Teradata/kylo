@@ -16,16 +16,7 @@ class ModuleFactory  {
        // Window.CodeMirror = CodeMirror;
         this.module = angular.module(moduleName,[]); 
         this.module.config(["$stateProvider", "$compileProvider", this.configFn.bind(this)]); 
-        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
     }
-    runFn($ocLazyLoad:any){
-        return import(/* webpackChunkName: "categories.module" */ "./module-require")
-            .then(mod => {
-                $ocLazyLoad.load({name: "kylo.feedmgr.domain-types"});
-            }).catch(err => {
-                throw new Error("Failed to load domain-types/module-require, " + err);
-            });
-     }
 
     configFn($stateProvider: any, $compileProvider: any){
            //preassign modules until directives are rewritten to use the $onInit method.
@@ -41,9 +32,8 @@ class ModuleFactory  {
                     }
                 },
                 resolve: {
-                    // loadMyCtrl: this.lazyLoadController(["feed-mgr/domain-types/DomainTypesController"])
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                        return import(/* webpackChunkName: "feeds.domain-types.controller" */ './DomainTypesController')
+                        return import(/* webpackChunkName: "admin.domain-types.controller" */ './DomainTypesController')
                             .then(mod => {
                                 console.log('imported DefineFeedCompleteController mod', mod);
                                 return $ocLazyLoad.load(mod.default)
@@ -77,9 +67,8 @@ class ModuleFactory  {
                             return DomainTypesService.newDomainType();
                         }
                     },
-                    // loadMyCtrl: this.lazyLoadController(["feed-mgr/domain-types/details/details.component"])
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                        return import(/* webpackChunkName: "feeds.domain-types-details.component" */ './details/details.component')
+                        return import(/* webpackChunkName: "admin.domain-types-details.component" */ './details/details.component')
                             .then(mod => {
                                 console.log('imported domainTypeDetailsComponent mod', mod);
                                 return $ocLazyLoad.load(mod.default)

@@ -1,5 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
+import 'ops-mgr/jobs/module-require';
 
 export class controller implements ng.IComponentController{
     filter: any;
@@ -10,4 +11,5 @@ export class controller implements ng.IComponentController{
     }
 }
 
-  angular.module(moduleName).controller('JobsPageController',['$transition$',controller]);
+const module = angular.module(moduleName).controller('JobsPageController',['$transition$',controller]);
+export default module;

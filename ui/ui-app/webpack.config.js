@@ -99,6 +99,10 @@ const webpackConfig = (env) => {
                 'angular-visjs': path.join(staticBower, 'angular-visjs/angular-vis'),
                 // 'SVGMorpheus': path.join(staticBower, 'svg-morpheus/compile/minified/svg-morpheus'),
                 'ocLazyLoad': path.join(staticBower, 'oclazyload/dist/ocLazyLoad'), //System.amdRequire with ocLazyLoad.require
+                'jquery-ui': path.join(staticBower, 'jquery-ui/jquery-ui.min'),
+                'pivottable': path.join(staticBower, 'pivottable/dist/pivot.min'),
+                'pivottable-c3-renderers': path.join(staticBower, 'pivottable/dist/c3_renderers.min'),
+                'c3': path.join(staticBower, 'c3/c3.min'),
 
                 'angular-material-icons': path.join(staticJsVendorDir, 'angular-material-icons/angular-material-icons'),
                 'dirPagination': path.join(staticJsVendorDir, 'dirPagination/dirPagination'),
@@ -382,6 +386,16 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html',
         to: 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/ops-mgr/alerts/alerts-pagination.tpl.html',
+        to: 'js/ops-mgr/alerts/alerts-pagination.tpl.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/ops-mgr/alerts/alert-type-filter-select.html',
+        to: 'js/ops-mgr/alerts/alert-type-filter-select.html'
     },
 ];
 

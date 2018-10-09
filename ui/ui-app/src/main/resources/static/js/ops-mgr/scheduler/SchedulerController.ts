@@ -5,6 +5,7 @@ import * as moment from "moment";
 import AccessControlService from '../../services/AccessControlService';
 import HttpService from "../../services/HttpService";
 import Utils from "../../services/Utils";
+import 'ops-mgr/scheduler/module-require';
 
 export class controller implements ng.IComponentController {
     /**
@@ -434,8 +435,9 @@ export class controller implements ng.IComponentController {
 
 }
 
-angular.module(moduleName).component("schedulerController", {
+const module = angular.module(moduleName).component("schedulerController", {
     controller: controller,
     controllerAs: "vm",
     templateUrl: "js/ops-mgr/scheduler/scheduler.html"
 });
+export default module;

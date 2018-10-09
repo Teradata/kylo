@@ -3,6 +3,11 @@ import {moduleName} from "./module-name";
 import PivotTableUtil from "./PivotTableUtil";
 import * as _ from "underscore";
 import * as moment from "moment";
+import 'ops-mgr/charts/module-require';
+import 'pivottable-c3-renderers';
+import 'bower_components/c3/c3.css';
+import 'ops-mgr/charts/pivot.css';
+import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
 
 export class controller implements ng.IComponentController{
     selectedFeedNames: any;
@@ -24,7 +29,7 @@ constructor(private $scope: any,
             private $http: any,
             private HttpService: any,
             private OpsManagerJobService: any,
-            private OpsManagerFeedService: any){
+            private OpsManagerRestUrlService: any){
         this.selectedFeedNames = ['All'];
         this.startDate = null;
         this.endDate = null;
@@ -142,7 +147,7 @@ constructor(private $scope: any,
             var finallyFn = ()=> {
 
             }
-            this.$http.get(this.OpsManagerFeedService.FEED_NAMES_URL).then( successFn, errorFn);
+            this.$http.get(this.OpsManagerRestUrlService.FEED_NAMES_URL).then( successFn, errorFn);
         }
 
 
@@ -255,6 +260,7 @@ constructor(private $scope: any,
 
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
  .controller('ChartsController',
-["$scope","$element","$http","HttpService","OpsManagerJobService","OpsManagerFeedService",controller]);
+["$scope","$element","$http","HttpService","OpsManagerJobService","OpsManagerRestUrlService",controller]);
+export default module;

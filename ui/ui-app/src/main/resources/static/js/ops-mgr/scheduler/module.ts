@@ -27,7 +27,16 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/scheduler/SchedulerController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.scheduler.controller" */ './SchedulerController')
+                        .then(mod => {
+                            console.log('imported SchedulerController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load SchedulerController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:true,
@@ -37,15 +46,7 @@ class ModuleFactory  {
             }
         });
     }  
-
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,["ops-mgr/scheduler/module-require"]);
-    }    
-    lazyLoad(){
-        return lazyLoadUtil.lazyLoad(['ops-mgr/scheduler/module-require']);
-    }
-      
-} 
+}
 
 const module = new ModuleFactory();
 export default module;

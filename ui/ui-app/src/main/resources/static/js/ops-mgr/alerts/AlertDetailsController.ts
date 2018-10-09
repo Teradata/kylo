@@ -5,6 +5,7 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
 import {Transition} from "@uirouter/core";
+import "ops-mgr/alerts/module-require";
 
    /** Manages the Alert Details page.
      * @constructor
@@ -250,7 +251,7 @@ export class AlertDetailsController implements ng.IComponentController{
     }
 }
 
-angular.module(moduleName).component("alertDetailsController", {
+const module = angular.module(moduleName).component("alertDetailsController", {
         bindings: {
             $transition$: '<'
         },
@@ -258,6 +259,8 @@ angular.module(moduleName).component("alertDetailsController", {
         controllerAs: "vm",
         templateUrl: "js/ops-mgr/alerts/alert-details.html"
     });
+export default module;
+
 angular.module(moduleName).controller("alertDetailsDirectiveController",
          AlertDetailsDirectiveController,
     );

@@ -12,18 +12,6 @@ class ModuleFactory  {
     constructor () {
         this.module = angular.module(moduleName,[]); 
         this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
-        this.module.run(['$ocLazyLoad',this.runFn.bind(this)]);
-
-    }
-
-    runFn($ocLazyLoad: any) {
-        return import(/* webpackChunkName: "categories.module" */ "./module-require")
-            .then(mod => {
-                $ocLazyLoad.load({name: moduleName});
-            })
-            .catch(err => {
-                throw new Error("Failed to load feed-mgr/business-metadata/module-require, " + err);
-            });
     }
 
     configFn($stateProvider:any, $compileProvider: any) {
@@ -42,7 +30,7 @@ class ModuleFactory  {
             resolve: {
                 // loadMyCtrl: this.lazyLoadController(['feed-mgr/business-metadata/BusinessMetadataController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    return import(/* webpackChunkName: "feeds.business-metadata.controller" */ './BusinessMetadataController')
+                    return import(/* webpackChunkName: "feedmgr.business-metadata.controller" */ './BusinessMetadataController')
                         .then(mod => {
                             console.log('imported BusinessMetadataController mod', mod);
                             return $ocLazyLoad.load(mod.default)

@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "./module-name";
 import AccessControlService from '../../services/AccessControlService';
+import './module-require';
 
 export class BusinessMetadataController implements ng.IComponentController {
     /**

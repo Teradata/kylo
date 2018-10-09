@@ -27,7 +27,16 @@ class ModuleFactory  {
                 query: null
             },
             resolve: {
-                loadPage: this.lazyLoad()
+                loadPage: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.alerts.controller" */ './module-require')
+                        .then(mod => {
+                            console.log('imported ops-mgr/alerts/module-require mod', mod);
+                            return $ocLazyLoad.load({name: moduleName})
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ops-mgr/alerts/module-require, " + err);
+                        });
+                }]
             },
             data:{
                 displayName:'Alerts',
@@ -47,7 +56,17 @@ class ModuleFactory  {
                 alertId: null
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/alerts/AlertDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['./AlertDetailsController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.alert-details.controller" */ './AlertDetailsController')
+                        .then(mod => {
+                            console.log('imported AlertDetailsController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load AlertDetailsController, " + err);
+                        });
+                }]
             },
             data:{
                 displayName:'Alert Details',
@@ -56,14 +75,7 @@ class ModuleFactory  {
             }
         });
     }  
-
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,["ops-mgr/alerts/module-require"]);
-    }    
-    lazyLoad(){
-        return lazyLoadUtil.lazyLoad(['ops-mgr/alerts/module-require']);
-    }
-} 
+}
 
 const module = new ModuleFactory();
 export default module;

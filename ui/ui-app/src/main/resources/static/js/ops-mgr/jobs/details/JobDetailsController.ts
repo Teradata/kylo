@@ -1,5 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
+import 'ops-mgr/jobs/module-require';
+import 'ops-mgr/jobs/details/module-require';
 
 export class controller implements ng.IComponentController{
     executionId: any;
@@ -8,4 +10,5 @@ export class controller implements ng.IComponentController{
     }
 }
 
-  angular.module(moduleName).controller('JobDetailsController',['$transition$',controller]);
+const module = angular.module(moduleName).controller('JobDetailsController',['$transition$',controller]);
+export default module;
