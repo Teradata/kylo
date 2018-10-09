@@ -1,10 +1,10 @@
 <td-layout-nav color="none">
   <div td-toolbar-content >
-    <div *ngIf="feed != undefined">Feed Activity - {{feed.feedName}} </div>
+    <!--<div *ngIf="feed != undefined">Feed Activity - {{feed.feedName}} </div>-->
     <span fxFlex="100"></span>
   </div>
     <div fxLayout="row">
-      <div fxFlex="60%" fxLayout="column">
+      <div fxFlex="" fxLayout="column">
         <ng-container *ngIf="feed && !feed.isStream ">
             <feed-job-activity #feedJobActivity [feed]="feed"></feed-job-activity>
             <!-- Job table -->
@@ -14,7 +14,7 @@
         <feed-stats-charts  [(feed)]="feed" (feedStatsChange)="onFeedStatsChange($event)"  [refreshIntervalTime]="5000" style="width:100%"></feed-stats-charts>
         </ng-container>
       </div>
-      <div fxLayout="column" fxFlex="40%">
+      <div fxLayout="column" fxFlex="30%">
        <feed-operations-health-info [(feed)]="feed" [feedStats]="feedStats" *ngIf="feed != undefined" (feedChange)="onFeedChange($event)" (feedHealthRefreshed)="onFeedHealthRefreshed($event)"></feed-operations-health-info>
         <!-- Alerts -->
         <feed-alerts [feed]="feed"></feed-alerts>
