@@ -1445,7 +1445,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 .map(fs -> fs.getDatasource().get().getId())
                 .collect(Collectors.toSet());
                     
-            if (!sourceDatasources.containsAll(existingSourceIds) || (sourceDatasources.size() != existingSourceIds.size())) {
+            if (!existingSourceIds.isEmpty() && (!sourceDatasources.containsAll(existingSourceIds) || (sourceDatasources.size() != existingSourceIds.size()))) {
                 //remove older sources
                 //cant do it here for some reason.. need to do it in a separate transaction
                 feedProvider.removeFeedSources(domainFeedId);
