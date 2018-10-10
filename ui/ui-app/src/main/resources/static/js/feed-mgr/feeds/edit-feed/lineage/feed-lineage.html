@@ -19,7 +19,7 @@
   -->
 <div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left" style="margin-left:-10px;">
   <span flex></span>
-     <span class="md-button-group" layout-align="end center" layout="row">
+  <span class="md-button-group" layout-align="end center" layout="row">
         <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">{{"views.feed-lineage.SF" | translate}}</md-button>
         <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">{{"views.feed-lineage.SFaS" | translate}}</md-button>
      </span>
@@ -76,10 +76,12 @@
                 <span class="hint">{{"views.feed-lineage.State" | translate}}</span>
                 <md-divider></md-divider>
               </div>
-              <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
-                <span>{{value}}</span>
-                <span class="hint">{{key}}</span>
-                <md-divider></md-divider>
+              <div ng-if="vm.selectedNode.content != null">
+                <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
+                  <span>{{value}}</span>
+                  <span class="hint">{{key}}</span>
+                  <md-divider></md-divider>
+                </div>
               </div>
             </div>
           </div>
