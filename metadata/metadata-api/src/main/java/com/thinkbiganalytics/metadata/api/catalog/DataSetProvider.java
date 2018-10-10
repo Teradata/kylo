@@ -39,8 +39,10 @@ import java.util.Optional;
 public interface DataSetProvider extends BaseProvider<DataSet, DataSet.ID> {
     
     DataSet.ID resolveId(Serializable id);
-
-    DataSet create(DataSource.ID dataSourceId, String title);
+//
+//    DataSet create(DataSource.ID dataSourceId, String title);
+    
+    DataSetBuilder build(DataSource.ID dataSourceId);
 
     List<DataSet> findByDataSource(DataSource.ID dsId, DataSource.ID... otherIds);
     

@@ -51,7 +51,6 @@ import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
@@ -1472,7 +1471,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                     dataSourceProvider.find(dataSourceId).orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
                     
-                    addedDataSet = dataSetProvider.create(dataSourceId, dataSet.getTitle());
+                    addedDataSet = catalogModelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
                 } else {
                     com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dataSetId = dataSetProvider.resolveId(dataSet.getId());
                     addedDataSet = dataSetProvider.find(dataSetId).orElseThrow(() -> new DataSetNotFoundException(dataSetId));

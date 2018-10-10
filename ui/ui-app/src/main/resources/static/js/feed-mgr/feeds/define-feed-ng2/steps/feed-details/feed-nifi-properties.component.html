@@ -1,9 +1,8 @@
-
 <ng-template tdLoading [tdLoadingUntil]="feed.propertiesInitialized" tdLoadingStrategy="overlay" tdLoadingType="linear">
-<form [formGroup]="form">
-  <div fxLayout="column" *ngIf="(mode=='INPUT' || mode == 'ALL')">
-    <ng-container *ngIf="!feed.readonly">
+  <form [formGroup]="form">
+    <div fxLayout="column" *ngIf="(mode=='INPUT' || mode == 'ALL')">
 
+      <ng-container *ngIf="!feed.readonly">
         <mat-form-field fxFlex="50">
           <mat-select placeholder="Choose a source" [formControl]="inputProcessorControl">
             <mat-option *ngFor="let inputProcessor of inputProcessors" [value]="inputProcessor">
@@ -11,29 +10,22 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-    </ng-container>
+      </ng-container>
 
-    <ng-container *ngIf="feed.readonly && inputProcessor">
-      <h3 mat-subheader> {{inputProcessor.name}}</h3>
-    </ng-container>
+      <ng-container *ngIf="feed.readonly && inputProcessor">
+        <h3 mat-subheader> {{inputProcessor.name}}</h3>
+      </ng-container>
 
-    <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
+      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
 
+    </div>
 
-  </div>
+    <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly"></feed-details-processor-field>
+  </form>
 
-  <ng-container *ngIf="mode=='ADDITIONAL' || mode == 'ALL'">
-  <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly" ></feed-details-processor-field>
-
-
-
-  </ng-container>
-</form>
-
-  <div *ngIf="noPropertiesExist"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+  <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
     <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
     <h2>No properties exist</h2>
     <h3>There are no properties to set</h3>
   </div>
-
 </ng-template>
