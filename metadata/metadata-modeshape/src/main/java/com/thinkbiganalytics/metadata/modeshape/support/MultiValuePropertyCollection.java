@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.jcr.AccessDeniedException;
+import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -44,15 +45,26 @@ import javax.jcr.ValueFactory;
  */
 public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
 
-    private final Property property;
+    private final Node parent;
+    private final String propertyName;
+    private Property property;
     private Collection<Value> values;
+    
+    protected MultiValuePropertyCollection(Node parent, String propertyName, Collection<Value> values) {
+        this.parent = parent;
+        this.propertyName = propertyName;
+        this.property = null;
+        this.values = values;
+    }
     
     protected MultiValuePropertyCollection(Property prop, Collection<Value> values) {
         try {
-            if (! prop.isMultiple()) {
+            if (prop != null && ! prop.isMultiple()) {
                 throw new IllegalArgumentException("The property provided must be multi-valued: " + prop);
             }
             
+            this.parent = prop.getParent();
+            this.propertyName = prop.getName();
             this.property = prop;
             this.values = values;
         } catch (RepositoryException e) {
@@ -196,6 +208,18 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
     protected Property getProperty() {
         return this.property;
     }
+    
+    protected void setProperty(Property property) {
+        this.property = property;
+    }
+    
+    protected Node getParent() {
+        return parent;
+    }
+    
+    protected String getPropertyName() {
+        return propertyName;
+    }
 
     @SuppressWarnings("unchecked")
     protected E asElement(Value value) {
@@ -222,9 +246,14 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
 
     protected void synchProperty() {
         try {
+            if (getProperty() == null) {
+                Property prop = getParent().setProperty(getPropertyName(), new Value[0]);
+                setProperty(prop);
+            }
+            
             getProperty().setValue(getValues().toArray(new Value[getValues().size()]));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to update values of property: " + getProperty(), e);
+            throw new MetadataRepositoryException("Unable to update values of property: " + getPropertyName(), e);
         }
     }
 
@@ -232,22 +261,22 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
         try {
             return getSession().getValueFactory();
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to obtain ValueFactory from property" + getProperty(), e);
+            throw new MetadataRepositoryException("Unable to obtain ValueFactory from property" + getPropertyName(), e);
         }
     }
     
     protected Session getSession() {
         try {
-            return getProperty().getSession();
+            return getParent().getSession();
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to obtain session from property" + getProperty(), e);
+            throw new MetadataRepositoryException("Unable to obtain session from property" + getPropertyName(), e);
         }
     }
 
     protected Stream<E> elementsStream() {
         return getValues().stream().map(v -> {
             try {
-                return JcrPropertyUtil.asValue(v, getProperty().getSession());
+                return JcrPropertyUtil.asValue(v, getParent().getSession());
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to access the contents of the value: " + v, e);
             }

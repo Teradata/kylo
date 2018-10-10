@@ -4,6 +4,7 @@ import {BrowserObject} from '../../api/models/browser-object';
 import {BrowserColumn} from '../../api/models/browser-column';
 import {Node} from '../../api/models/node';
 import {Component} from "@angular/core";
+import * as _ from "underscore"
 
 @Component({
     selector: "catalog-table-browser",
@@ -17,6 +18,18 @@ export class TablesComponent extends BrowserComponent {
 
     init(): void {
         this.initData();
+    }
+
+    /**
+     * Ensure the params has some values in it to trigger the state to reload
+     * @param params
+     */
+    protected browse(params: any): void {
+        if(_.isEmpty(params)){
+            params.schema="";
+            params.catalog = "";
+        }
+        this.browseTo(params, undefined);
     }
 
     getColumns(): BrowserColumn[] {

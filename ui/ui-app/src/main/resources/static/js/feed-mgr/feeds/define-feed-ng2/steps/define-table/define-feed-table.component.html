@@ -150,7 +150,7 @@
 
                 </ng-template>
               </td-virtual-scroll-container>
-              <button mat-button (click)="addColumn()">Add Column</button>
+              <button mat-button (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
             </form>
 
           </ng-container>
@@ -159,9 +159,9 @@
       </mat-card>
 
       <mat-card *ngIf="feed.table.tableSchema.fields.length >0" fxFlex="20" class="feed-card">
-        <mat-card-header>
+        <mat-card-header >
           <mat-card-title *ngIf="selectedColumn == undefined">Column Details</mat-card-title>
-          <mat-card-title *ngIf="selectedColumn != undefined">{{selectedColumn.field.name}}</mat-card-title>
+          <mat-card-title *ngIf="selectedColumn != undefined" class="text-truncate" [matTooltip]="selectedColumn.field.name">{{selectedColumn.field.name}}</mat-card-title>
           <mat-card-subtitle *ngIf="selectedColumn != undefined">{{selectedColumn.field.dataTypeDisplay}}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
@@ -307,6 +307,10 @@
             <span>{{partition.formula}}</span>
             <span>{{partition.field}}</span>
           </div>
+          <div *ngIf="feed.table.partitions.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+            <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+            <h2>There are partitions defined</h2>
+          </div>
         </div>
         <div *ngIf="!feed.readonly">
           <form [formGroup]="definePartitionForm">
@@ -347,13 +351,19 @@
                     </mat-error>
                   </mat-form-field>
 
-                  <button mat-icon-button (click)="removePartitionField(index)">
+                  <button mat-icon-button (click)="removePartitionField(index)"  *ngIf="!tablePermissions.tableLocked">
                     <mat-icon class="grey">delete</mat-icon>
                   </button>
                 </div>
               </ng-template>
+
+              <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+                <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+                <h2>There are partitions defined</h2>
+              </div>
+
             </div>
-            <button mat-button (click)="addPartitionField()">Add Partition</button>
+            <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.tableLocked">Add Partition</button>
           </form>
         </div>
       </mat-card-content>
@@ -365,9 +375,12 @@
       </mat-card-header>
       <mat-card-content>
 
-        <div class="layout-padding-indent-20" fxLayout="row" *ngIf="feed.readonly">
-          <span fxFlex="10" class="property-name">Merge Strategy</span>
-          <span>{{feed.table.targetMergeStrategy}}</span>
+        <div  fxLayout="row" *ngIf="feed.readonly">
+          <span class="property-name pad-left">Merge Strategy</span>
+          <div fxLayout="column"  *ngIf="mergeStrategy" class="pad-left">
+            <span >{{mergeStrategy.name}}</span>
+            <span class="hint">{{mergeStrategy.hint}}</span>
+          </div>
         </div>
 
           <form [formGroup]="mergeStrategiesForm">
@@ -396,9 +409,9 @@
       </mat-card-header>
       <mat-card-content>
         <form>
-        <div fxLayout="column" class="layout-padding-indent-20" fxLayoutGap="10px">
+        <div fxLayout="column" class="pad-left">
           <div fxLayout="row">
-              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex class="layout-padding-indent-20">
+              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex >
                 <mat-select formControlName="targetFormat" placeholder="Target Format" [(ngModel)]="feed.table.targetFormat" [disabled]="this.feed.readonly">
                   <mat-option *ngFor="let opt of targetFormatOptions" [value]="opt.value">
                     {{opt.label}}
@@ -407,7 +420,7 @@
               </mat-form-field>
           </div>
           <div fxLayout="row">
-              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex class="layout-padding-indent-20">
+              <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex >
                 <mat-select formControlName="compressionFormat" placeholder="Compression Options" [(ngModel)]="feed.table.options.compressionFormat" [disabled]="this.feed.readonly">
                   <mat-option *ngFor="let opt of compressionOptions; let i = index" [value]="opt">
                     {{opt}}

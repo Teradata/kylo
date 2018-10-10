@@ -1,8 +1,7 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {UIRouterModule} from "@uirouter/angular";
+import {StateService, UIRouterModule} from "@uirouter/angular";
 
-import {PreviewSchemaComponent} from "./preview-schema.component";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatTabsModule} from '@angular/material/tabs';
@@ -35,29 +34,49 @@ import {MatStepperModule} from "@angular/material/stepper";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {DatasetSimpleTableComponent} from "./dataset-simple-table.component";
 import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.component";
+import {DatasetPreviewComponent} from "./preview/dataset-preview.component";
+import {DatasetPreviewContainerComponent} from "./preview/dataset-preview-container.component";
+import {DatasetPreviewDialogComponent} from "./preview-dialog/dataset-preview-dialog.component";
+import {DatasetPreviewService} from "./service/dataset-preview.service";
+import {CovalentLoadingModule} from "@covalent/core/loading";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {CatalogPreviewDatasetComponent} from "./catalog-preview-dataset.component";
+import {CatalogComponent} from "../../catalog.component";
+import {CovalentLayoutModule} from "@covalent/core/layout";
+import {DataSource} from "../../api/models/datasource";
+import {MatCardModule} from "@angular/material/card";
+import {LoadMode} from "../../../model/feed/feed.model";
 
 @NgModule({
     declarations: [
-        PreviewSchemaComponent,
         SatusDialogComponent,
         SchemaParseSettingsDialog,
         DatasetSimpleTableComponent,
-        DatasetSchemaDefinitionComponent
+        DatasetSchemaDefinitionComponent,
+        DatasetPreviewComponent,
+        DatasetPreviewContainerComponent,
+        DatasetPreviewDialogComponent,
+        CatalogPreviewDatasetComponent
     ],
     entryComponents: [
         SatusDialogComponent,
-        SchemaParseSettingsDialog
+        SchemaParseSettingsDialog,
+        DatasetPreviewDialogComponent
     ],
     exports:[
-        PreviewSchemaComponent,
         DatasetSimpleTableComponent,
         SchemaParseSettingsDialog,
-        DatasetSchemaDefinitionComponent
+        DatasetSchemaDefinitionComponent,
+        DatasetPreviewComponent,
+        DatasetPreviewContainerComponent,
+        DatasetPreviewDialogComponent,
+        CatalogPreviewDatasetComponent
     ],
     imports: [
         CommonModule,
         CovalentDataTableModule,
         CovalentNotificationsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         FormsModule,
         KyloCommonModule,
@@ -70,9 +89,11 @@ import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.comp
         MatIconModule,
         MatInputModule,
         MatListModule,
+        MatCardModule,
         MatProgressBarModule,
         MatProgressSpinnerModule,
         MatTabsModule,
+        MatToolbarModule,
         MatSelectModule,
         MatSlideToggleModule,
         MatStepperModule,
@@ -80,6 +101,8 @@ import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.comp
         CovalentChipsModule,
         FieldPoliciesModule,
         KyloServicesModule,
+        CovalentLayoutModule,
+        UIRouterModule
         //VisualQuery2Module,
        // WranglerModule,
 
@@ -88,7 +111,8 @@ import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.comp
         FileMetadataTransformService,
         PreviewSchemaService,
         PreviewRawService,
-        TransformResponseTableBuilder
+        TransformResponseTableBuilder,
+        DatasetPreviewService
     ]
 
 })
@@ -98,12 +122,36 @@ export class PreviewSchemaModule {
 @NgModule({
     imports: [
         PreviewSchemaModule,
+        CovalentLayoutModule,
+        CovalentLoadingModule,
         UIRouterModule.forChild({
             states: [
                 {
                     name: "catalog.datasource.preview",
                     url: "/preview",
-                    component: PreviewSchemaComponent
+                    component:CatalogPreviewDatasetComponent,
+                    params:{autoSelectSingleDataSet:true,
+                            displayInCard:true,
+                        objectsToPreview:null},
+                    resolve: [
+                        {
+                            token: 'displayInCard',
+                            resolveFn: () => true
+                        },
+                        {
+                            token: 'autoSelectSingleDataSet',
+                            resolveFn: () => true
+                        },
+                        {
+                            token:'objectsToPreview',
+                            deps:[StateService],
+                            resolveFn:(state:StateService)=> {
+                                let params = state.transition.params();
+                                return params.objectsToPreview;
+                            }
+                        }
+                    ]
+
                 }
             ]
         })

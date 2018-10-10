@@ -24,6 +24,7 @@ import com.thinkbiganalytics.kylo.spark.SparkException;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
+import com.thinkbiganalytics.spark.scala.ScalaImportManager;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,11 +37,12 @@ import javax.annotation.Resource;
 public class ScalaScriptService {
 
     private static Pattern dfPattern = Pattern.compile("^\\s*df\\s*$", Pattern.MULTILINE);
-    private static Pattern removeImportsPattern = Pattern.compile("^\\s*import \\S+\\s*$", Pattern.MULTILINE);
-
 
     @Resource
     private ScriptGenerator scriptGenerator;
+
+    @Resource
+    private ScalaImportManager scalaImportManager;
 
     @Nonnull
     public String wrapScriptForLivy(@Nonnull final SparkJobRequest request) {
@@ -95,7 +97,7 @@ public class ScalaScriptService {
         } // end if
 
         script = dfPattern.matcher(script).replaceAll("df = df.cache(); df.registerTempTable( \"" + transformId + "\" )\n");
-        script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
+        script = scalaImportManager.stripImports(script);  // remove imports due to performance issues, see KYLO-2614
 
         return sb.append(wrapScriptWithPaging(script, request.getPageSpec()))
             .append("val dfResultsAsJson = mapper.writeValueAsString(dfResults)\n")
@@ -142,9 +144,18 @@ public class ScalaScriptService {
 
     private String setParentVar(TransformRequest request) {
         String script = request.getParent().getScript();
-        script = removeImportsPattern.matcher(script).replaceAll("");  // remove imports due to performance issues, see KYLO-2614
+        script = scalaImportManager.stripImports(script);  // remove imports due to performance issues, see KYLO-2614
 
         return scriptGenerator.wrappedScript("readTable", "", "\n",
                                              ScalaScriptUtils.scalaStr(request.getParent().getTable()), script);
+    }
+
+    public String getInitSessionScript() {
+        String imports = StringUtils.join(scalaImportManager.getManagedImports(), "\n");
+        String script = new StringBuilder(scriptGenerator.script("initSession"))
+            .append("\n")
+            .append(imports)
+            .toString();
+        return script;
     }
 }

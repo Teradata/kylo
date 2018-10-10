@@ -45,9 +45,22 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     feedDefintionDatasourceState: string = FEED_DEFINITION_SECTION_STATE_NAME + ".datasource"
 
+    /**
+     * Should the catalog browser be rendered
+     */
     showCatalog: boolean
 
+    /**
+     * When browsing the catalog should the "skip" button appear allowing the user to skip supplying a source sample
+     */
     showSkipSourceButton:boolean;
+
+    /**
+     * Show the source card with the catalog browser be rendered?
+     * For Data Transformation feeds this will be set to false since the wrangler is responsible for defining the source sample
+     * @type {boolean}
+     */
+    showSourceSample:boolean = true;
 
 
     constructor(defineFeedService: DefineFeedService, stateService: StateService, private selectionService: SelectionService,
@@ -89,7 +102,10 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
         if (!userAcknowledgedContinueWithoutSource && !sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
             this.showSkipSourceButton = true;
             this.showCatalog = true;
-
+        }
+        if(this.feed.isDataTransformation()){
+            this.showSourceSample = false;
+            this.showCatalog = false;
         }
 
     }

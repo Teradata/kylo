@@ -40,9 +40,9 @@ import "kylo-common";
 import "kylo-services";
 import "codemirror-require/module";
 import "jquery";
-import 'angular-drag-and-drop-lists';
+import  'angular-drag-and-drop-lists';
+import 'fattable';
 import 'feed-mgr/catalog/catalog.module';
-import  'fattable';
 import './shared/apply-domain-type/apply-table-domain-types.component.scss';
 
 class ModuleFactory  {

@@ -99,14 +99,14 @@ public class FeedStatisticsManager {
         lock.lock();
         try {
             //build up feed flow file map relationships
-            boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
+            boolean isStartingFlowEvent = ProvenanceEventUtil.isStartingFlowEvent(event);
             RemoteProvenanceEventService.getInstance().checkAndAddRemoteInputPortSendEvent(event, eventId);
 
-            if (isStartingFeedFlow) {
+            if (isStartingFlowEvent) {
                 FeedEventStatistics.StartingFlowFileResult result = FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(event, eventId);
                 if (result.isRemote() && result.isRegisteredStartingEvent()) {
                     //clear the remote maps
-                    log.info("Removing Remote Provenance Event maps for {} ", result.getSourceSystemFlowFileIdentifier());
+                    log.info("KYLO-DEBUG: Removing Remote Provenance Event maps for eventId:{}, source flowfile: {} ", eventId,result.getSourceSystemFlowFileIdentifier());
                 }
 
             }
@@ -126,7 +126,8 @@ public class FeedStatisticsManager {
                 //UNABLE TO FIND data in maps
                 String startingFlowFile = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
                 if (startingFlowFile == null) {
-                    RemoteProvenanceEventService.getInstance().checkAndQueueRemoteEvent(event, eventId);
+                    boolean waitingOnRemoteEvents = RemoteProvenanceEventService.getInstance().checkAndQueueRemoteEvent(event, eventId);
+                    log.debug("KYLO-DEBUG: Unable to find a starting flow file for the event. EventId:{}, FlowFile: {}, componentId: {}, componentType: {}, Waiting on Remote Events: {} ",eventId,event.getFlowFileUuid(),event.getComponentId(), event.getComponentType(),waitingOnRemoteEvents);
                 }
             }
         } finally {

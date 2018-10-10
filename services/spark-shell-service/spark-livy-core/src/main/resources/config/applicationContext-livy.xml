@@ -21,6 +21,7 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
@@ -45,12 +46,7 @@ ctx.getBean(classOf[com.thinkbiganalytics.spark.service.SparkUtilityService])
 val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
 mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
 
-import org.slf4j.LoggerFactory
-import com.thinkbiganalytics.spark.logger.LivyLogger
-import com.thinkbiganalytics.spark.utils.LivyPaginator
-import com.thinkbiganalytics.spark.utils.LivyHistory
-import org.apache.spark.sql._
-val logger = LoggerFactory.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
+val logger = org.slf4j.LoggerFactory.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
              ]]>
           </value>
         </entry>
@@ -143,4 +139,5 @@ var parent = LivyHistory.readOrExecute( sqlContext, %s, () => { %s } )
       </map>
     </constructor-arg>
   </bean>
+
 </beans>

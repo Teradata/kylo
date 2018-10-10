@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+
 /*-
  * #%L
  * kylo-catalog-controller
@@ -37,13 +39,16 @@ import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
-import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.context.SecurityContextUtil;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
@@ -54,10 +59,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -70,10 +78,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -101,9 +111,12 @@ public class DataSourceController extends AbstractCatalogController {
 
     @Inject
     private DataSourceProvider dataSourceProvider;
-
+    
     @Inject
-    private DataSetProvider dataSetProvider;
+    private SecurityService securityService;
+    
+    @Inject
+    private SecurityModelTransform securityTransform;
     
     @Inject
     private CatalogModelTransform modelTransform;
@@ -141,22 +154,27 @@ public class DataSourceController extends AbstractCatalogController {
     public Response createDataSource(@Nonnull final DataSource source) {
         log.entry(source);
         
-        return metadataService.commit(() -> {
-            Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
-            
-            return connectorProvider.find(connId)
-                .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
-                .map(domain -> {
-                    modelTransform.updateDataSource(source, domain);
-                    return domain;
-                })
-                .map(modelTransform.dataSourceToRestModel())
-                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
-                .orElseThrow(() -> {
-                    log.debug("Connector not found with ID: {}", connId);
-                    return new BadRequestException(getMessage("catalog.connector.notFound"));
-                });
-        });
+        // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSource() for a more typical REST API
+        if (! StringUtils.isEmpty(source.getId())) {
+            return updateDataSource(source);
+        } else {
+            return metadataService.commit(() -> {
+                Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
+                
+                return connectorProvider.find(connId)
+                    .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
+                    .map(domain -> {
+                        modelTransform.updateDataSource(source, domain);
+                        return domain;
+                    })
+                    .map(modelTransform.dataSourceToRestModel())
+                    .map(dataSource -> Response.ok(log.exit(dataSource)).build())
+                    .orElseThrow(() -> {
+                        log.debug("Connector not found with ID: {}", connId);
+                        return new BadRequestException(getMessage("catalog.connector.notFound"));
+                    });
+            });
+        }
     }
 
     @POST
@@ -232,6 +250,32 @@ public class DataSourceController extends AbstractCatalogController {
         }
 
         return Response.ok(log.exit(dataSource)).build();
+    }
+    
+    @PUT
+    @ApiOperation("Updates an existing data source")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Data source updated", response = DataSource.class),
+        @ApiResponse(code = 400, message = "Invalid connector", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+    })
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateDataSource(@Nonnull final DataSource source) {
+        log.entry(source);
+        
+        return metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(source.getId());
+            
+            return dataSourceProvider.find(dsId)
+                .map(domain -> modelTransform.updateDataSource(source, domain))
+                .map(modelTransform.dataSourceToRestModel())
+                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
+                .orElseThrow(() -> {
+                    log.debug("Data source not found with ID: {}", dsId);
+                    return new BadRequestException(getMessage("catalog.datasource.notFound.id", dsId));
+                });
+        });
     }
 
     @DELETE
@@ -455,5 +499,71 @@ public class DataSourceController extends AbstractCatalogController {
                     return new NotFoundException(getMessage("catalog.datasource.notFound.id", id));
                 });
         });
+    }
+    
+
+    @GET
+    @Path("{id}/actions/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available actions that may be permitted or revoked on a data source.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAvailableActions(@PathParam("id") final String dataSourceIdStr) {
+        log.debug("Get available actions for data source: {}", dataSourceIdStr);
+
+        return this.securityService.getAvailableDataSourceActions(dataSourceIdStr)
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + dataSourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{id}/actions/allowed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of actions permitted for the given username and/or groups.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedActions(@PathParam("id") final String dataSourceIdStr, @QueryParam("user") final Set<String> userNames, @QueryParam("group") final Set<String> groupNames) {
+        log.debug("Get allowed actions for data source: {}", dataSourceIdStr);
+
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+
+        return this.securityService.getAllowedDataSourceActions(dataSourceIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + dataSourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{id}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the data source's roles")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getRoleMemberships(@PathParam("id") final String dataSourceIdStr, @QueryParam("verbose") @DefaultValue("false") final boolean verbose) {
+        return this.securityService.getDataSourceRoleMemberships(dataSourceIdStr)
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + dataSourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @POST
+    @Path("{id}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a data source's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No data source exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("id") final String dataSourceIdStr, final RoleMembershipChange changes) {
+        return this.securityService.changeDataSourceRoleMemberships(dataSourceIdStr, changes)
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("Either a data source with the ID \"" + dataSourceIdStr + "\" does not exist or it does not have a role named \""
+                                                           + changes.getRoleName() + "\"", Response.Status.NOT_FOUND));
     }
 }

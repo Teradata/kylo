@@ -1,3 +1,4 @@
+import * as _ from "underscore";
 import {TableSchema} from "../table-schema";
 import {TableFieldPartition} from "../TableFieldPartition";
 import {TableFieldPolicy} from "../TableFieldPolicy";
@@ -8,6 +9,7 @@ import {SourceTableSchema} from "./feed-source-table-schema.model";
 import {TableOptions} from "./feed.model";
 import {FeedTableSchema} from "./feed-table-schema.model";
 import {KyloObject} from "../../../common/common.model";
+import {SchemaField} from "../schema-field";
 
 
    export class FeedTableDefinition  implements KyloObject{
@@ -153,6 +155,26 @@ import {KyloObject} from "../../../common/common.model";
                 this.fieldPolicies.splice(this.tableSchema.fields.length, 1);
             }
         }
+
+
+       /**
+        * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
+        */
+       setTableFields(fields: TableColumnDefinition[] | SchemaField[], policies: TableFieldPolicy[] = null) {
+           //ensure the fields are of type TableColumnDefinition
+           let newFields =  _.map(fields,(field) => {
+               if(!field['objectType'] || field['objectType'] != 'TableColumnDefinition' ){
+                   return new TableColumnDefinition(field);
+               }
+               else {
+                   return field;
+               }
+           })
+           this.tableSchema.fields = newFields;
+           this.fieldPolicies = (policies != null && policies.length > 0) ? policies : newFields.map(field => TableFieldPolicy.forName(field.name));
+
+       }
+
 
 
 

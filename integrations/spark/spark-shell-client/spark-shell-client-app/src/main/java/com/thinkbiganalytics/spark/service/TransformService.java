@@ -462,25 +462,40 @@ public class TransformService {
 
 
     public TransformResponse kyloReaderResponse(KyloCatalogReadRequest request) throws ScriptException {
-        KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();
-        KyloCatalogReader<?> reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
-        final Object dataFrame;
-        if (!request.getPaths().isEmpty()) {
-            if (request.getPaths().size() > 1) {
-                dataFrame = reader.load(request.getPaths().toArray(new String[0]));
-            } else {
-                dataFrame = reader.load(request.getPaths().get(0));
+        // Change class loader
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(engine.getClassLoader());
+
+            // Ensure SessionState is valid
+            if (SessionState.get() == null && sessionState != null) {
+                SessionState.setCurrentSessionState(sessionState);
             }
-        } else {
-            dataFrame = reader.load();
+
+            // Build DataFrame
+            KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();
+            KyloCatalogReader<?> reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
+            final Object dataFrame;
+            if (!request.getPaths().isEmpty()) {
+                if (request.getPaths().size() > 1) {
+                    dataFrame = reader.load(request.getPaths().toArray(new String[0]));
+                } else {
+                    dataFrame = reader.load(request.getPaths().get(0));
+                }
+            } else {
+                dataFrame = reader.load();
+            }
+
+            // Read DataFrame
+            final DataSet dataSet = sparkContextService.toDataSet(dataFrame);
+
+            TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), request.getPageSpec());
+
+            updateTransformResponse(response, dataSet);
+            return log.exit(response);
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
-
-        final DataSet dataSet = sparkContextService.toDataSet(dataFrame);
-
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), request.getPageSpec());
-
-        updateTransformResponse(response, dataSet);
-        return log.exit(response);
     }
 
     /**

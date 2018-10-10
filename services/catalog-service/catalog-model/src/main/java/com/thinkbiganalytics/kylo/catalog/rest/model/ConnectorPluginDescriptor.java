@@ -82,8 +82,15 @@ public class ConnectorPluginDescriptor {
     private List<ConnectorPluginNiFiProperties> nifiProperties;
 
     /**
-     *
+     * Color of the icon
      */
+    private String color;
+
+    /**
+     * Name of the icon
+     */
+    private String icon;
+
     public ConnectorPluginDescriptor() {
     }
 
@@ -97,6 +104,8 @@ public class ConnectorPluginDescriptor {
         this.dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
         this.optionsMapperId = other.optionsMapperId;
         this.nifiControllerService = (other.nifiControllerService != null) ? new ConnectorPluginNiFiControllerService(other.nifiControllerService) : null;
+        this.color = other.color;
+        this.icon = other.icon;
 
         if (other.tabs != null) {
             tabs = new ArrayList<>(other.tabs.size());
@@ -190,5 +199,21 @@ public class ConnectorPluginDescriptor {
 
     public void setNifiProperties(List<ConnectorPluginNiFiProperties> nifiProperties) {
         this.nifiProperties = nifiProperties;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

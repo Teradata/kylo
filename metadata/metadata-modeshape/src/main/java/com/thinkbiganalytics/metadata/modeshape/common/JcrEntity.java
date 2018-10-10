@@ -67,7 +67,8 @@ public abstract class JcrEntity<I extends Serializable> extends JcrObject implem
     }
 
     public Principal getOwner(){
-        return new UsernamePrincipal(getProperty(OWNER, String.class));
+        String name = getProperty(OWNER, null);
+        return name != null ? new UsernamePrincipal(getProperty(OWNER, String.class)) : null;
     }
 
 

@@ -1,39 +1,59 @@
-<div tdFileDrop (fileDrop)="upload($event)" multiple>
-  <div class="drop-zone-empty" fxLayout="column">
-    <ng-md-icon icon="fa-file" size="64" class="tc-accent"></ng-md-icon>
-    <ng-md-icon icon="fa-folder" size="64" class="tc-primary"></ng-md-icon>
-    <p>Drag and drop files <br>OR</p>
-    <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">Add file</button>
-  </div>
-
-  <div class="drop-zone-list">
-    <mat-list>
-      <ng-template ngFor let-item let-last="last" [ngForOf]="files">
-        <mat-list-item>
-          <ng-md-icon matListIcon [icon]="item.listIcon" [ngClass]="item.listIconClass"></ng-md-icon>
-          <h3 matLine>{{item.name}}</h3>
-          <mat-progress-bar *ngIf="item.status == 0" matLine mode="determinate" [value]="item.progress * 100"></mat-progress-bar>
-          <span *ngIf="item.error" matLine class="mat-hint mat-warn">{{item.error}}</span>
-          <span *ngIf="item.size" class="mat-hint file-size">{{item.size | fileSize}}</span>
-          <button mat-icon-button (click)="cancelFile(item)">
-            <ng-md-icon [icon]="item.buttonIcon"></ng-md-icon>
-          </button>
-        </mat-list-item>
-        <mat-divider *ngIf="!last"></mat-divider>
-      </ng-template>
-    </mat-list>
-  </div>
-</div>
-
-<div class="md-padding" *ngIf="loading" layout="row" layout-align="center center">
-  <h3>Processing...</h3>
-</div>
-
-<input #fileInput id="fileInput" tdFileSelect type="file" multiple style="display: none" (fileSelect)="upload($event)">
-
-<ng-container *ngIf="files.length > 0">
-  <mat-divider></mat-divider>
-  <mat-card-actions>
-    <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview" >Continue</button>
-  </mat-card-actions>
+<ng-container *ngIf="displayInCard">
+  <mat-toolbar >
+    <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+      <div fxLayout="row" fxLayoutAlign="center center" class="cursor-pointer" (click)="goBackToDatasourceList()"><mat-icon>arrow_back</mat-icon>{{datasource.title}}</div>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <mat-card>
+    <ng-container [ngTemplateOutlet]="uploadTemplate">
+    </ng-container>
+  </mat-card>
 </ng-container>
+
+
+<ng-container [ngTemplateOutlet]="uploadTemplate" *ngIf="!displayInCard">
+</ng-container>
+
+
+<ng-template #uploadTemplate>
+  <div tdFileDrop (fileDrop)="upload($event)" multiple>
+    <div class="drop-zone-empty" fxLayout="column">
+      <ng-md-icon icon="fa-file" size="64" class="tc-accent"></ng-md-icon>
+      <ng-md-icon icon="fa-folder" size="64" class="tc-primary"></ng-md-icon>
+      <p>Drag and drop files <br>OR</p>
+      <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">Add file</button>
+    </div>
+
+    <div class="drop-zone-list">
+      <mat-list>
+        <ng-template ngFor let-item let-last="last" [ngForOf]="files">
+          <mat-list-item>
+            <ng-md-icon matListIcon [icon]="item.listIcon" [ngClass]="item.listIconClass"></ng-md-icon>
+            <h3 matLine>{{item.name}}</h3>
+            <mat-progress-bar *ngIf="item.status == 0" matLine mode="determinate" [value]="item.progress * 100"></mat-progress-bar>
+            <span *ngIf="item.error" matLine class="mat-hint mat-warn">{{item.error}}</span>
+            <span *ngIf="item.size" class="mat-hint file-size">{{item.size | fileSize}}</span>
+            <button mat-icon-button (click)="cancelFile(item)">
+              <ng-md-icon [icon]="item.buttonIcon"></ng-md-icon>
+            </button>
+          </mat-list-item>
+          <mat-divider *ngIf="!last"></mat-divider>
+        </ng-template>
+      </mat-list>
+    </div>
+  </div>
+
+  <div class="md-padding" *ngIf="loading" layout="row" layout-align="center center">
+    <h3>Processing...</h3>
+  </div>
+
+  <input #fileInput id="fileInput" tdFileSelect type="file" multiple style="display: none" (fileSelect)="upload($event)">
+
+  <ng-container *ngIf="files.length > 0">
+    <mat-divider></mat-divider>
+    <mat-card-actions>
+      <button *ngIf="isReady && renderContinueButton" mat-button class="text-upper" color="primary" (click)="preview()" >Continue</button>
+    </mat-card-actions>
+  </ng-container>
+
+</ng-template>

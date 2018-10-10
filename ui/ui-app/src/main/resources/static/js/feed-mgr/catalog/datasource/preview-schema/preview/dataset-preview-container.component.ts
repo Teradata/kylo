@@ -1,33 +1,58 @@
-import {Component, Input, OnDestroy, OnInit, ViewContainerRef} from "@angular/core";
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewContainerRef} from "@angular/core";
+import {PreviewDataSet} from "../model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {PreviewFileDataSet} from "../../../catalog/datasource/preview-schema/model/preview-file-data-set";
-import {DatasetPreviewStepperService} from "../dataset-preview-stepper.service";
+import {PreviewFileDataSet} from "../model/preview-file-data-set";
+import {DatasetPreviewService} from "../service/dataset-preview.service";
 import {FormGroup} from "@angular/forms";
 import {ISubscription} from "rxjs/Subscription";
 
 @Component({
     selector: "datasets-preview-container",
-    styleUrls: ["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview/dataset-preview-container.component.scss"],
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/preview/dataset-preview-container.component.html"
+    styleUrls: ["js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container.component.scss"],
+    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container.component.html"
 })
-export class DatasetPreviewContainerComponent implements OnInit, OnDestroy{
+export class DatasetPreviewContainerComponent implements OnInit{
 
     @Input()
     previews:PreviewDataSet[] = [];
 
+    /**
+     * If there is only 1 dataset to preview, should it jump right to the preview
+     * if set to true and the previews collection == 1 then it will auto set the first item as the "selectedDataSet" and wont show the nav list
+     *
+     * @type {boolean}
+     */
+    @Input()
+    autoSelectSingleDataSet:boolean = false;
+
+    /**
+     * The selected dataset to preview
+     */
     selectedDataSet:PreviewDataSet;
 
-
+    /**
+     * Flag to tell the UI that previews exist
+     */
     hasPreviews:boolean;
 
     @Input()
     formGroup:FormGroup
 
-    stepChangedSubscription:ISubscription
+    @Output()
+    previewDatasetValid = new EventEmitter<PreviewDataSet>()
 
-    constructor(private _tdDialogService:TdDialogService, private viewContainerRef:ViewContainerRef,    private datasetPreviewStepperService:DatasetPreviewStepperService ){
-this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
+    @Output()
+    previewDatasetInvalid = new EventEmitter<PreviewDataSet>()
+
+    @Output()
+    previewSelectionChange = new EventEmitter<PreviewDataSet>();
+
+    @Input()
+    renderBackButton:boolean = true;
+
+
+    constructor(private _tdDialogService:TdDialogService, private viewContainerRef:ViewContainerRef,    private _datasetPreviewService:DatasetPreviewService ){
+
     }
     ngOnInit(){
 
@@ -39,6 +64,9 @@ this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStep
 
         if(this.previews != undefined && this.previews.length > 0) {
             this.hasPreviews = true;
+            if(this.previews.length == 1 && this.autoSelectSingleDataSet) {
+                this.selectDataSet(this.previews[0])
+            }
         }
         else {
             this.hasPreviews = false;
@@ -46,24 +74,25 @@ this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStep
 
     }
 
-    ngOnDestroy(){
-        this.stepChangedSubscription.unsubscribe();
-    }
-
-    private onStepChanged(idx:number){
-        if(idx ==2) {
-         this.selectedDataSet = undefined;
+    selectDataSet(dataSet:PreviewDataSet){
+        if(dataSet && dataSet != null) {
+            this.selectedDataSet = dataSet;
         }
+        else {
+            this.selectedDataSet = undefined;
+        }
+        this.previewSelectionChange.emit(this.selectedDataSet)
     }
 
       openSchemaParseSettingsDialog(dataset:PreviewDataSet): void {
         if(dataset instanceof PreviewFileDataSet) {
-            this.datasetPreviewStepperService.openSchemaParseSettingsDialog(<PreviewFileDataSet>dataset).subscribe((ds:PreviewDataSet) => {
+            this._datasetPreviewService.openSchemaParseSettingsDialog(<PreviewFileDataSet>dataset).subscribe((ds:PreviewDataSet) => {
                 console.log('DONE!',ds)
                 //reapply the final dataset back to the main one
                 dataset.applyPreview(ds,false);
                 console.log('DONE!',dataset,ds)
-                this.datasetPreviewStepperService.markFormAsValid(this.formGroup)
+                this.previewDatasetValid.emit(dataset)
+               // this._datasetPreviewService.markFormAsValid(this.formGroup)
             },(error:PreviewFileDataSet) =>{
                 console.log("ERROR ",error)
                 dataset.preview = undefined
@@ -72,8 +101,8 @@ this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStep
 
                 //save the schema parser
                 dataset.userModifiedSchemaParser = error.schemaParser
-
-                this.datasetPreviewStepperService.markFormAsInvalid(this.formGroup)
+                this.previewDatasetInvalid.emit(dataset)
+             //   this._datasetPreviewService.markFormAsInvalid(this.formGroup)
             })
         }
     }
@@ -99,11 +128,13 @@ this.stepChangedSubscription = this.datasetPreviewStepperService.subscribeToStep
                     this.previews.splice(previewIndex,1);
                     if(this.previews.length == 0){
                         this.hasPreviews = false;
-                        this.datasetPreviewStepperService.markFormAsInvalid(this.formGroup)
+                        this.previewDatasetInvalid.emit(dataset)
+                        //this._datasetPreviewService.markFormAsInvalid(this.formGroup)
                     }else {
                         let previewError = this.previews.find(ds => ds.hasPreviewError())
                         if(previewError != undefined){
-                            this.datasetPreviewStepperService.markFormAsInvalid(this.formGroup)
+                            this.previewDatasetInvalid.emit(dataset)
+                            //this._datasetPreviewService.markFormAsInvalid(this.formGroup)
                         }
                     }
                     this.selectedDataSet = undefined

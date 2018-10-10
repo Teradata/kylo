@@ -17,6 +17,7 @@ import {QueryResultColumn} from "../../../visual-query/wrangler/model/query-resu
 import {QueryEngine} from "../../../visual-query/wrangler/query-engine";
 //import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
+import {PreviewUploadDataSet} from "./model/preview-upload-data-set";
 import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.component";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 
@@ -360,8 +361,47 @@ export class PreviewSchemaComponent implements OnInit {
                 this.setAndSelectFirstDataSet(datasets);
 
             }
-        }
-        else {
+        } else if ((this.datasource as any).$uploadDataSet) {
+            this.openStatusDialog("Examining file metadata", "Validating file metadata",true,false);
+
+            const dataSet = (this.datasource as any).$uploadDataSet;
+            this.fileMetadataTransformService.detectFormatForPaths(dataSet.paths, this.datasource).subscribe((response: FileMetadataTransformResponse) => {
+                if (response.results) {
+                    this.message = response.message;
+
+                    //add in any cached preview responses
+                    const resultDataSet: PreviewDataSet = (Object as any).values(response.results.datasets as any)[0];
+                    const previewDataSet = new PreviewUploadDataSet(resultDataSet, dataSet);
+
+                    this.previewSchemaService.updateDataSetsWithCachedPreview([previewDataSet])
+                    if(this.autoCollect && this.editable){
+                        console.log('ADDING dataset ',previewDataSet)
+                        this.addToCollection(previewDataSet);
+                    }
+                    if(this.previewDatasetCollectionService.exists(previewDataSet) && !previewDataSet.isCollected()){
+                        previewDataSet.collectionStatus = DatasetCollectionStatus.COLLECTED;
+                    }
+
+                    //select and transform the first dataset
+                    const map = {};
+                    map[previewDataSet.key] = previewDataSet;
+                    this.setAndSelectFirstDataSet(map);
+                    this.closeStatusDialog();
+                }
+                else {
+                    this.openStatusDialog("Error. Cant process", "No results found ", false,true);
+                }
+            },error1 => (response:FileMetadataTransformResponse) => {
+                this.openStatusDialog("Error","Error",false,true);
+            });
+
+            // const dataSets = {};
+            // dataSets[uploadDataSet.id] = new PreviewSparkDataSet(uploadDataSet);
+            // this.setAndSelectFirstDataSet(daat);
+
+
+
+        } else {
             this.openStatusDialog("No path has been supplied. ","Please select an item to preview from the catalog",false,true);
         }
     }

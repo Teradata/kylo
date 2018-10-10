@@ -40,7 +40,7 @@ import javax.inject.Inject;
  * In 0.9.2 the concept of a deployed Feed version is introduced to track which version of a 
  * particular feed is the one that is deployed; i.e. which version state was used to update NiFi.
  * <p>
- * With all feeds prior to 0.9.2, the latest feed version the one that is deployed, and this action
+ * With all feeds prior to 0.9.2, the latest feed version is the one that is deployed, and this action
  * initialized the reference to the latest version as the deployed one.
  */
 @Component("deployedFeedVersionsUpgradeAction091")
@@ -60,8 +60,6 @@ public class DeployedFeedVersionsUpgradeAction implements UpgradeState {
     @Override
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Set the initialize JcrFeed.mode value to 'COMPLETE' for all existing feeds: {}", targetVersion);
-        
-//        JcrFeedProvider jcrProvider = (JcrFeedProvider) this.feedProvider;
         
         this.feedProvider.getFeeds().stream()
             .map(JcrFeed.class::cast)

@@ -31,40 +31,62 @@
     </div>
   </div>
   <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
-    <div fxLayout="column" class="mat-padding" *ngIf="recentTemplates.length >0">
-      <h3 mat-subheader>Recent</h3>
+    <div fxLayout="column"  *ngIf="favorites.length >0">
+      <h3 class="push-sm pad-none pad-top-sm pad-left-sm" mat-subheader>Favorites</h3>
       <ng-container [ngTemplateOutlet]="templateCards"
-                    [ngTemplateOutletContext]="{$implicit:recentTemplates}">
+                    [ngTemplateOutletContext]="{$implicit:favorites, isFavorite:true}">
       </ng-container>
     </div>
 
 
-    <div fxLayout="column" class="mat-padding">
-      <h3 mat-subheader>All Templates</h3>
+    <div fxLayout="column">
+      <h3 mat-subheader class="push-sm pad-none pad-left-sm">All Templates</h3>
       <ng-container [ngTemplateOutlet]="templateCards"
-                    [ngTemplateOutletContext]="{$implicit:allTemplates}">
+                    [ngTemplateOutletContext]="{$implicit:allTemplates, isFavorite:false}">
       </ng-container>
     </div>
 
 
   </div>
 </td-layout-nav>
-<ng-template #templateCards let-templates>
+
+<ng-template #templateCards let-templates let-isFavorite="isFavorite">
   <div fxLayout="row wrap" tdMediaToggle="gt-xs" [mediaClasses]="['push']">
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
-      <div [id]="template.templateName" fxFlex fxFlex.gt-lg="25%" fxFlex.gt-md="33%" fxFlex.md="33%" fxFlex.sm="50%" fxFlex.xs="50%">
-        <mat-card (click)="selectTemplate(template)" class="mat-card-colored template-card">
-          <mat-toolbar [style.background]="template.iconColor" fxLayout="column" fxLayoutAlign="center center" layout-padding>
-            <mat-icon>{{template.icon}}</mat-icon>
-          </mat-toolbar>
-          <div class="card-content">
-            <div fxLayout="column" fxLayoutAlign="start start" layout-padding class="pad-left pad-right">
-              <div class="mat-subheading-2 text-truncate push-none" [matTooltip]="template.templateName" matTooltipShowDelay="1000">{{template?.templateName}}</div>
-              <div class="mat-caption tc-grey-600 text-truncate" [matTooltip]="template.description" matTooltipShowDelay="1000"> {{template.description}}</div>
-            </div>
+      <div [id]="template.templateName" flex-gt-lg="25" flex-gt-md="33" flex-md="33" flex-sm="50" flex-xs="50">
+
+        <mat-card fxFlex fxLayout="row" class="pad-none cursor-pointer" (click)="selectTemplate(template)" style="width:400px;height:155px;color:#444">
+
+          <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
+            <mat-icon style="color:white;font-size:45px" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
           </div>
+          <div fxLayout="column" fxFlex>
+            <mat-card-content fxFlex style="max-height:97px">
+
+                <div class="md-title pad-bottom-sm">{{template.templateName}}</div>
+                <div [matTooltip]="template.description"
+                     matTooltipShowDelay="1000" class="md-subtitle tc-grey-600 block-with-text">
+                  {{template.description}}
+                </div>
+
+            </mat-card-content>
+            <mat-divider inset></mat-divider>
+            <mat-card-actions fxLayoutAlign="end" style="padding:0px 8px">
+              <button mat-icon-button (click)="removeFavorite($event,template)" *ngIf="isFavorite">
+                <mat-icon>favorite</mat-icon>
+              </button>
+              <button mat-icon-button (click)="makeFavorite($event,template)" *ngIf="!isFavorite">
+                <mat-icon>favorite_border</mat-icon>
+              </button>
+              <button mat-icon-button>
+                <mat-icon>open_in_new</mat-icon>
+              </button>
+            </mat-card-actions>
+          </div>
+
         </mat-card>
       </div>
     </ng-template>
   </div>
 </ng-template>
+

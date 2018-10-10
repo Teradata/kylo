@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ import javax.annotation.Nonnull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @SuppressWarnings("unused")
-public class DataSet implements DataSetTemplate {
+public class DataSet extends EntityAccessControl implements DataSetTemplate {
 
     private String id;
     private String title;

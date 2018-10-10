@@ -8,7 +8,7 @@ import {Feed} from "../../../model/feed/feed.model";
       <div fxLayout="row" fxLayoutAlign="space-between" *ngIf="feed != undefined">
         <button mat-raised-button button color="accent" (click)="edit()" *ngIf="showEditLink">Edit</button>
         <button mat-button color="accent" (click)="deleteFeed()" *ngIf="showDeleteLink && feed.canEdit() && !feed.readonly"><span *ngIf="feed.isDraft()">Remove Draft</span> <span *ngIf="!feed.isDraft()">Delete Feed</span></button>
-        <button mat-button color="accent" (click)="cancelEdit()" *ngIf="feed.canEdit() &&  !feed.readonly">Cancel</button>
+        <button mat-button color="accent" (click)="cancelEdit()" *ngIf="showCancelLink && feed.canEdit() &&  !feed.readonly ">Cancel</button>
       </div>
     `
     }
@@ -24,6 +24,9 @@ export class FeedToolbarActions implements OnInit {
 
     @Input()
     showDeleteLink:boolean = false;
+
+    @Input()
+    showCancelLink:boolean = true;
 
     @Output()
     feedChange=new EventEmitter<Feed>();

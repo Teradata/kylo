@@ -30,11 +30,18 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -55,6 +62,15 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
     
     @Inject
     private ConnectorProvider connectorProvider;
+
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
+
+    @Inject
+    private AccessController accessController;
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
@@ -79,6 +95,16 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
                         Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
                         JcrDataSource dsrc = JcrUtil.createJcrObject(connNode, JcrDataSource.class);
                         dsrc.setTitle(title);
+                        
+                        if (this.accessController.isEntityAccessControlled()) {
+                            final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                            actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                                .ifPresent(actions -> dsrc.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                        } else {
+                            actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                                .ifPresent(actions -> dsrc.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                        }
+                        
                         return dsrc;
                     } 
                 })

@@ -8,7 +8,8 @@ import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
-//import app from "./app";
+import {CatalogRouterModule} from "./feed-mgr/catalog/catalog.module";
+import {KyloRouterService} from "./services/kylo-router.service";
 
 
 const Angular = require('angular');
@@ -22,7 +23,7 @@ class Route {
         /*this.*/
         app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", this.configFn.bind(this)]);
         /*this.*/
-        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService", "$ocLazyLoad",
+        app.run(['$rootScope', '$state', '$location', "$transitions", "$timeout", "$q", "$uiRouter", "AccessControlService", "AngularModuleExtensionService", "LoginNotificationService","KyloRouterService","$ocLazyLoad",
             this.runFn.bind(this)]);
     }
 
@@ -761,7 +762,8 @@ class Route {
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
           $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any,
-          loginNotificationService: LoginNotificationService, $ocLazyLoad: any) {
+          loginNotificationService: LoginNotificationService,
+          kyloRouterService:KyloRouterService, $ocLazyLoad: any) {
         //initialize the access control
         accessControlService.init();
         loginNotificationService.initNotifications();
@@ -787,6 +789,7 @@ class Route {
                             }
                         }
                         else {
+                            kyloRouterService.saveTransition(trans)
                             defer.resolve($state.target(trans.to().name, trans.params()));
                         }
                     });
@@ -798,7 +801,13 @@ class Route {
                             return $state.target("access-denied", {attemptedState: trans.to()});
                         }
                     }
+                    else {
+                        kyloRouterService.saveTransition(trans)
+                    }
                 }
+            }
+            else {
+                kyloRouterService.saveTransition(trans)
             }
         }
 

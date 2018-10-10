@@ -96,6 +96,16 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     protected sample_: number = 1.0;
 
     /**
+     * Sample method
+     */
+    protected method_: string = "first";
+
+    /**
+     * Requested # of rows to sample (vs. calculated limit)
+     */
+    protected reqLimit_: number = 1000;
+
+    /**
      * The source SQL for transformations, escaped for Scala.
      */
     protected source_: string;
@@ -479,6 +489,29 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         this.limit_ = value;
         this.stateChanged = true;
     }
+
+    /**
+     * Sampling routine
+     */
+    get method(): string {
+        return this.method_;
+    }
+
+    set method(value: string) {
+        this.method_ = value;
+    }
+
+    /**
+     * Requested # of sampled rows (vs. calculated)
+     */
+    get reqLimit(): number {
+        return this.reqLimit_;
+    }
+
+    set reqLimit(value: number) {
+        this.reqLimit_ = value;
+    }
+
 
     /**
      * Removes the last transformation from the stack. This action cannot be undone.

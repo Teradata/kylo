@@ -23,9 +23,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/ops-mgr/sla/assessments.html',
-                    component:"serviceLevelAssessmentsInitController",
-                    // controllerAs:"vm"
+                    templateUrl: 'js/ops-mgr/sla/assessments.html',
+                    controller:"serviceLevelAssessmentsInitController",
+                    controllerAs:"vm"
                 }
             },
             resolve: {
@@ -47,9 +47,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/ops-mgr/sla/assessment.html',
-                    component:"serviceLevelAssessmentController",
-                    // controllerAs:"vm"
+                    templateUrl: 'js/ops-mgr/sla/assessment.html',
+                    controller:"serviceLevelAssessmentController",
+                    controllerAs:"vm"
                 }
             },
             resolve: {

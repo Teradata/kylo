@@ -66,9 +66,6 @@
                                    </span>
                 <span class="column-title column-title-bottom">{{"feeds.feed-table.type" | translate}}</span>
               </div>
-              <div flex="15" layout="column" class="item-column md-list-item-text"  ng-click="vm.feedDetails($event,feed)" >
-                Old Stepper
-              </div>
               <!--
               <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
                 <md-button href="{{feed.exportUrl}}" layout-align="center" ng-disabled="!feed.allowExport">
@@ -113,12 +110,12 @@
             </tr>
             </thead>
             <tbody md-body>
-            <tr md-row
+            <tr md-row class="cursor-pointer"
                 ng-repeat="feed in vm.feedData"
                 ng-click="vm.feedDefinition($event,feed)">
-              <td md-cell>{{feed.feedName}}</td>
+              <td md-cell >{{feed.feedName}}</td>
               <td md-cell>
-                <span ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
+                <span  ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
                    <ng-md-icon icon="{{feed.stateIcon}}" size="20">
                    </ng-md-icon>
                    <span>{{feed.state}}</span>

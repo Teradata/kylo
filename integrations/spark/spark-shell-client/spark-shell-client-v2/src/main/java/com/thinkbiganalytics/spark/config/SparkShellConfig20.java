@@ -30,6 +30,7 @@ import com.thinkbiganalytics.spark.service.SparkListenerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService20;
 
 import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -66,7 +67,7 @@ public class SparkShellConfig20 {
      * Gets the class for transform scripts.
      */
     @Bean
-    public KyloCatalogClientBuilder kyloCatalogClientBuilder() {
-        return KyloCatalog.builder();
+    public KyloCatalogClientBuilder kyloCatalogClientBuilder(final SQLContext sqlContext) {
+        return KyloCatalog.builder(sqlContext);
     }
 }

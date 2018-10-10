@@ -50,10 +50,10 @@ export class FeedJobActivityComponent implements OnInit {
                 type: 'lineChart',
                 height: 250,
                 margin: {
-                    top: 10,
-                    right: 20,
+                    top: 5,
+                    right: 10,
                     bottom: 40,
-                    left: 55
+                    left: 50
                 },
                 x: (d: any) => { return d[0]; },
                 y: (d: any) => { return d[1]; },

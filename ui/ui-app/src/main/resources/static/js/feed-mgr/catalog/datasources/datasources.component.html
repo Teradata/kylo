@@ -1,13 +1,14 @@
 <ng-container *tdLoading="'DataSourcesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
+  <mat-toolbar *ngIf="displayInCard">
+    <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+      <span>{{'CATALOG.DATA_SOURCES.TITLE' | translate}}</span>
+      <span fxFlex="100%"></span>
+      <button mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
   <ng-container *ngIf="datasources && datasources.length > 0">
     <ng-container *ngIf="displayInCard">
-      <mat-toolbar>
-        <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
-          <span>{{'CATALOG.DATA_SOURCES.TITLE' | translate}}</span>
-          <span fxFlex="100%"></span>
-          <button mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
-        </mat-toolbar-row>
-      </mat-toolbar>
       <mat-card>
         <ng-container [ngTemplateOutlet]="datasourcesTemplate" [ngTemplateOutletContext]="{$implict:datasources}"></ng-container>
       </mat-card>
@@ -23,13 +24,6 @@
     <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
     <h2 class="tc-grey-500" style="margin-left: 15px">Loading...</h2>
   </div>
-
-  <div *ngIf="!loading && (!datasources || datasources.length == 0)" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
-    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
-    <h2>No datasources</h2>
-    <span>Create new datasources in the admin Data Source tab</span>
-  </div>
-
 </ng-container>
 
 <ng-template #datasourcesTemplate let-datasources>
@@ -58,8 +52,8 @@
   </mat-list>
 </ng-template>
 
-
-
-
-
-
+<div *ngIf="!loading && (!datasources || datasources.length == 0)" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
+  <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+  <h2>{{'CATALOG.DATA_SOURCES.EMPTY.TITLE' | translate}}</h2>
+  <span>{{(displayInCard ? 'CATALOG.DATA_SOURCES.EMPTY.CREATE_TEXT' : 'CATALOG.DATA_SOURCES.EMPTY.CATALOG_TEXT') | translate}}</span>
+</div>

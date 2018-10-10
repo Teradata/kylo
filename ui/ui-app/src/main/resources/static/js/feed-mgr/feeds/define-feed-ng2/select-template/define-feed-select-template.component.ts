@@ -73,16 +73,16 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * All the templates available
          * @type {Array}
          */
-        allTemplates:Array<any>;
+        allTemplates:Array<any> = [];
         
 
         /**
          * Array of the first n templates to be displayed prior to the 'more' link
          * @type {Array}
          */
-        recentTemplates:Array<any>;
+        favorites:Array<any> = [];
 
-        recentTemplateNames:string[];
+        favoriteTemplateNames:string[];
 
         /**
          * flag to indicate we need to display the 'more templates' link
@@ -94,9 +94,9 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * The number of templates to display iniitally
          * @type {number}
          */
-        RECENT_TEMPLATES = 5;
+        FAVORITE_TEMPLATES = 5;
 
-        LOCAL_STORAGE_KEY = "KYLO_RECENT_TEMPLATES";
+        LOCAL_STORAGE_KEY = "KYLO_FAVORITE_TEMPLATES";
 
 
 
@@ -110,14 +110,6 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * @type {null}
          */
         this.model.totalSteps = null;
-
-        this.allTemplates = [];
-
-
-
-        this.recentTemplates = [];
-
-        this.displayMoreLink = false;
 
         let sideNavService = $$angularInjector.get("SideNavService");
         sideNavService.hideSideNav();
@@ -146,7 +138,6 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
         selectTemplate(template:Template){
-            this.updateRecentTemplates(template);
             this.openNewFeedDialog(new NewFeedDialogData(template)).subscribe((response:NewFeedDialogResponse) => {
                 this.createFeed(response)
             })
@@ -235,21 +226,32 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
         };
 
-        private updateRecentTemplates(template:Template){
-            let idx = this.recentTemplateNames.indexOf(template.templateName);
-            if(idx >=0){
-                //remove it
-                this.recentTemplateNames.splice(idx,1)
-            }
-            idx = this.recentTemplates.indexOf(template);
-            if(idx >=0){
-                //remove it
-                this.recentTemplates.splice(idx,1)
-            }
-            this.recentTemplateNames.unshift(template.templateName);
-            this.recentTemplates.unshift(template);
+        public makeFavorite($event:MouseEvent,template:Template){
+            $event.preventDefault();
+            $event.stopPropagation();
+            //push the template to the front
+            //if remove it from the fav array and add it back in
+            this.removeFavorite($event,template);
+            this.favoriteTemplateNames.unshift(template.templateName);
+            this.favorites.unshift(template);
 
-            this.localStorageService.setItem(this.LOCAL_STORAGE_KEY, this.recentTemplateNames);
+            this.localStorageService.setItem(this.LOCAL_STORAGE_KEY, this.favoriteTemplateNames);
+        }
+
+        public removeFavorite($event:MouseEvent,template:Template) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            let idx = this.favoriteTemplateNames.indexOf(template.templateName);
+            if(idx >=0){
+                //remove it
+                this.favoriteTemplateNames.splice(idx,1)
+            }
+            idx = this.favorites.indexOf(template);
+            if(idx >=0){
+                //remove it
+                this.favorites.splice(idx,1)
+            }
+
         }
 
 
@@ -262,7 +264,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
                 if (response) {
 
-                    var data = _.chain(response).filter((template) => {
+                    var data = _.chain(response).filter((template:any) => {
                         return template.state === 'ENABLED'
                     }).sortBy('order')
                         .value();
@@ -270,17 +272,19 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                     if (data.length > 1) {
                         this.displayMoreLink = true;
                     }
-                    this.allTemplates = data;
-                    let recentTemplates:string[] = <string[]>this.localStorageService.getItem(this.LOCAL_STORAGE_KEY);
-                    if(recentTemplates) {
-                        let recentTemplateObjects = _.filter(data, ((template:Template) => {
-                            return _.find(recentTemplates, (templateName) => templateName == template.templateName) != undefined;
+                    this.allTemplates = data.sort((a:Template,b:Template)=>{
+                        return (a.templateName.localeCompare(b.templateName));
+                    });
+                    let favoriteTemplates:string[] = <string[]>this.localStorageService.getItem(this.LOCAL_STORAGE_KEY);
+                    if(favoriteTemplates) {
+                        let favoriteTemplateObjects = _.filter(data, ((template:Template) => {
+                            return _.find(favoriteTemplates, (templateName) => templateName == template.templateName) != undefined;
                         }));
-                        this.recentTemplates = _.first(recentTemplateObjects,this.RECENT_TEMPLATES);
-                        this.recentTemplateNames = recentTemplates
+                        this.favorites = _.first(favoriteTemplateObjects,this.FAVORITE_TEMPLATES);
+                        this.favoriteTemplateNames = favoriteTemplates
                     }
                     else {
-                        this.recentTemplateNames = [];
+                        this.favoriteTemplateNames = [];
                     }
                 }
 
@@ -326,7 +330,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
      * @returns the date format string
      */
     openNewFeedDialog(config: NewFeedDialogData): Observable<NewFeedDialogResponse> {
-        return this.dialog.open(NewFeedDialogComponent, {data: config})
+        return this.dialog.open(NewFeedDialogComponent, {data: config,disableClose:true})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

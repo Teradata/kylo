@@ -26,9 +26,11 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
@@ -47,6 +49,10 @@ public class MultiValuePropertySet<E> extends MultiValuePropertyCollection<E> im
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to construct a set from the property: " + prop, e);
         }
+    }
+    
+    public MultiValuePropertySet(Node parent, String propertyName) {
+        super(parent, propertyName, new HashSet<>());
     }
     
     public MultiValuePropertySet(Property prop) {

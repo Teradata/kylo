@@ -4,19 +4,16 @@ import {Transition} from "@uirouter/core";
 
 export class controller implements ng.IComponentController{
 
-    $transition$: Transition;
+    filter: string
+    slaId: string
+    static readonly $inject = ['$transition$']
+    constructor(private $transition$: Transition){
+        this.filter = this.$transition$.params().filter;
+        this.slaId = this.$transition$.params().slaId;
+    }
 
-    constructor(){}
 
-    filter: any = this.$transition$.params().filter;
-    slaId: any = this.$transition$.params().slaId;
+
 }
 
-angular.module(moduleName).component("serviceLevelAssessmentsInitController", {
-    controller: controller,
-    bindings: {
-        $transition$: "<"
-    },
-    controllerAs: "vm",
-    templateUrl: "js/ops-mgr/sla/assessments.html"
-});
+angular.module(moduleName).controller("serviceLevelAssessmentsInitController", controller);

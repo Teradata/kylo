@@ -202,7 +202,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE;
             }
             //limit
-
             if (sample && this.limitBeforeSample_ && this.limit_ > 0) {
                 sparkScript += ".limit(" + this.limit_ + ")";
             }

@@ -1,8 +1,19 @@
-package com.thinkbiganalytics.spark.conf;
+package com.thinkbiganalytics.spark.conf.model;
+
+import com.thinkbiganalytics.spark.scala.ScalaImportManager;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportResource;
+
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 
 /*-
  * #%L
- * kylo-spark-shell-client-app
+ * kylo-commons-spark-shell-plugin-shared
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,19 +31,14 @@ package com.thinkbiganalytics.spark.conf;
  * #L%
  */
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
-
 @Configuration
-public class CommonSparkShellConfig {
+@ImportResource("classpath:/config/applicationContext-sharedSparkShellPlugin.xml")
+public class SparkShellCommonConfig {
+    @Resource
+    private Map<String,String> optimizedImports;
 
     @Bean
-    public MessageSource sparkShellMessages() {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("spark-shell");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
+    public ScalaImportManager scalaImportManager() {
+        return new ScalaImportManager(optimizedImports);
     }
 }

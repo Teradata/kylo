@@ -29,13 +29,19 @@ import com.thinkbiganalytics.kylo.spark.client.livy.LivyHeartbeatMonitor;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.kylo.spark.config.LivyProperties;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyInvalidSessionException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyServerNotReachableException;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyUserException;
 import com.thinkbiganalytics.kylo.spark.model.Session;
 import com.thinkbiganalytics.kylo.spark.model.SessionsGetResponse;
 import com.thinkbiganalytics.kylo.spark.model.SessionsPost;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementsPost;
+import com.thinkbiganalytics.kylo.spark.model.enums.SessionKind;
 import com.thinkbiganalytics.kylo.spark.model.enums.SessionState;
+import com.thinkbiganalytics.kylo.spark.model.enums.StatementKind;
+import com.thinkbiganalytics.kylo.utils.ScalaScriptService;
+import com.thinkbiganalytics.kylo.utils.ScalaScriptUtils;
 import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
@@ -46,6 +52,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcessListener;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -63,8 +70,9 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     private List<SparkShellProcessListener> listeners = Lists.newArrayList();
 
+
     @Resource
-    private ScriptGenerator scriptGenerator;
+    private ScalaScriptService scalaScriptService;
 
     @Resource
     private KerberosSparkProperties kerberosSparkProperties;
@@ -129,7 +137,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
                 this.processReady(sparkLivyProcess);  // notifies listeners
                 return sparkLivyProcess;
             } else {
-                throw new LivyException("Livy Session did not start");
+                throw new LivyUserException("livy.start_timeout");
             } // end if
         } else {
             // TODO:   username used for proxyUser?
@@ -201,7 +209,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         if (!currentSession.getState().equals(SessionState.idle)) {
             logger.debug("Created session with id='{}', but it was returned with state != idle, state = '{}'", currentSession.getId(), currentSession.getState());
             if (!waitForSessionToBecomeIdle(jerseyClient, currentSessionId)) {
-                throw new LivyException("Livy Session did not start successfully");
+                throw new LivyUserException("livy.start_failed");
             }
 
             // At this point the server is ready and we can send it an initialization command, any following
@@ -217,7 +225,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         SessionsGetResponse sessions = livyClient.getSessions(jerseyClient);
 
         if (sessions == null) {
-            throw new LivyServerNotReachableException("Livy server not reachable");
+            logger.error("Server not reachable", new LivyServerNotReachableException("Empty result from LivyClient.getSessions"));
+            throw new LivyUserException("livy.server_not_found");
         }
         Optional<Session> optSession = sessions.getSessionWithId(sparkLivyProcess.getSessionId());
 
@@ -258,7 +267,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
         try {
             currentSession = livyClient.postSessions(jerseyClient, sessionsPost);
             if (currentSession == null) {
-                throw new LivyServerNotReachableException("Livy server not reachable");
+                logger.error("Server not reachable", new LivyServerNotReachableException("Empty result from LivyClient.postSessions"));
+                throw new LivyUserException("livy.server_not_found");
             }
         } catch (LivyException le) {
             throw le;
@@ -282,7 +292,8 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
     Integer getStatementId(@Nonnull String transformId) {
         Integer statementId = statementIdCache.get(transformId);
         if (statementId == null) {
-            throw new NullPointerException("transformId has aged out or was not recorded properly");
+            logger.error("Stale client call encountered", new LivyInvalidSessionException("transformId has aged out or was not recorded properly"));
+            throw new LivyUserException("livy.unexpected_error");
         } else {
             return statementId;
         }
@@ -301,10 +312,11 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     private void initSession(SparkLivyProcess sparkLivyProcess) {
         JerseyRestClient jerseyClient = getClient(sparkLivyProcess);
-        String script = scriptGenerator.script("initSession");
+
+        String script = scalaScriptService.getInitSessionScript();
 
         StatementsPost sp = new StatementsPost.Builder()
-            .kind("spark")
+            .kind(StatementKind.spark.toString())
             .code(script)
             .build();
 

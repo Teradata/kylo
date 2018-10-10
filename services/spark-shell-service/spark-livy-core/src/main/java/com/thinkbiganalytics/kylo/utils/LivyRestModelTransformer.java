@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
@@ -36,8 +35,7 @@ import com.thinkbiganalytics.kylo.spark.client.model.enums.LivyServerStatus;
 import com.thinkbiganalytics.kylo.spark.client.model.enums.LivySessionStatus;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyCodeException;
 import com.thinkbiganalytics.kylo.spark.exceptions.LivyDeserializationException;
-import com.thinkbiganalytics.kylo.spark.exceptions.LivyException;
-import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
+import com.thinkbiganalytics.kylo.spark.exceptions.LivyUserException;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivySaveException;
 import com.thinkbiganalytics.kylo.spark.model.Statement;
 import com.thinkbiganalytics.kylo.spark.model.StatementOutputResponse;
@@ -51,13 +49,10 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
-import com.thinkbiganalytics.spark.rest.model.SimpleResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
@@ -70,9 +65,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 public class LivyRestModelTransformer {
+
     private static final XLogger logger = XLoggerFactory.getXLogger(LivyRestModelTransformer.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -117,7 +112,7 @@ public class LivyRestModelTransformer {
         if (transformResponse.getStatus() == TransformResponse.Status.SUCCESS) {
             String code = statement.getCode().trim();
             if (code.endsWith("dfResultsAsJson")) {
-                transformResponse.setResults(toTransformQueryResultWithSchema(transformResponse,statement.getOutput()));
+                transformResponse.setResults(toTransformQueryResultWithSchema(transformResponse, statement.getOutput()));
             } else if (code.endsWith("dfProf")) {
                 List<OutputRow> rows = toTransformResponseProfileStats(statement.getOutput());
                 transformResponse.setProfile(toTransformResponseProfileStats(statement.getOutput()));
@@ -134,7 +129,8 @@ public class LivyRestModelTransformer {
                 statementIdCache.put(tr.getTable(), statement.getId());
                 return tr;
             } else {
-                throw new LivyException("Unsupported result type requested of Livy.  Results not recognized");
+                logger.error("Exception Processing Result: ", new LivyCodeException("Unsupported result type requested of Livy.  Results not recognized"));
+                throw new LivyUserException("livy.unsupported_result_type");
             } // end if
         }
 
@@ -160,13 +156,14 @@ public class LivyRestModelTransformer {
             try {
                 json = (ArrayNode) mapper.readTree(payload);
             } catch (IOException e) {
-                throw logger.throwing(new LivyDeserializationException("Unable to read dataFrame returned from Livy"));
+                logger.error("An unexpected IOException occurred", new LivyDeserializationException("could not deserialize JSON returned from Livy"));
+                throw logger.throwing(new LivyUserException("livy.unexpected_error"));
             } // end try/catch
 
             // array contains three objects (dfRows, actualCols, actualRows )
             transformResponse.setActualCols(json.get(1).asInt());
             transformResponse.setActualRows(json.get(2).asInt());
-            json = (ArrayNode)json.get(0);
+            json = (ArrayNode) json.get(0);
 
             int numRows = 0;
 
@@ -181,7 +178,8 @@ public class LivyRestModelTransformer {
                     try {
                         schemaObj = (ObjectNode) mapper.readTree(schemaPayload);
                     } catch (IOException e) {
-                        throw logger.throwing( new LivyDeserializationException("Unable to read deserialize dataFrame schema returned from Livy"));
+                        logger.error("Unexpected error deserializing results", new LivyDeserializationException("Unable to deserialize dataFrame schema as serialized by Livy"));
+                        throw logger.throwing(new LivyUserException("livy.unexpected_error"));
                     } // end try/catch
 
                     //  build column metadata
@@ -225,7 +223,6 @@ public class LivyRestModelTransformer {
                     List<Object> newValues = Lists.newArrayListWithCapacity(tqr.getColumns().size());
                     while (valueNodes.hasNext()) {
                         JsonNode value = valueNodes.next();
-
                         // extract values according to how jackson deserialized it
                         if (value.isObject()) {
                             // spark treats an array as a struct with a single field "values" ...
@@ -257,6 +254,8 @@ public class LivyRestModelTransformer {
                         } else if (value.isNumber()) {
                             // easy peasy.. it's just a number
                             newValues.add(value.numberValue());
+                        } else if (value.isNull()) {
+                            newValues.add(null);
                         } else if (value.isValueNode()) {
                             // value Nodes we just get the raw text..
                             newValues.add(value.asText());
@@ -298,11 +297,12 @@ public class LivyRestModelTransformer {
                     return "Unknown UDT";
                 } else {
                     if (dataType.get("class") != null) {
-                        throw new LivyDeserializationException("don't know how to deserialize UDT types for class = "
-                                                               + dataType.get("class").asText());
+                        logger.error("UDT error encountered", new LivyDeserializationException("don't know how to deserialize UDT types for class = "
+                                                                                               + dataType.get("class").asText()));
                     } else {
-                        throw new LivyDeserializationException("don't know how to deserialize UDT type of unspecified class");
+                        logger.error("UDT error encountered", new LivyDeserializationException("don't know how to deserialize UDT type of unspecified class"));
                     } // end if
+                    throw new LivyUserException("livy.unexpected_error");
                 } // end if
             } else if (type.equals("map")) {
                 return new StringBuilder(dataType.get("type").asText())
@@ -443,7 +443,7 @@ public class LivyRestModelTransformer {
     }
 
     private static <T extends Object> T serializeStatementOutputResponse(StatementOutputResponse sor, Class<T> clazz) {
-        String errMsg = String.format("Unable to deserialize %s returned from Livy", clazz.getSimpleName());
+        String errMsg = String.format("Unable to deserialize JSON returned from Livy into class '%s'", clazz.getSimpleName());
 
         JsonNode data = sor.getData();
         if (data != null) {
@@ -452,11 +452,12 @@ public class LivyRestModelTransformer {
             try {
                 return mapper.readValue(jsonString, clazz);
             } catch (IOException e) {
-                throw new LivyDeserializationException(errMsg);
+                logger.error("Deserialization error occured", new LivyDeserializationException(errMsg));
             } // end try/catch
         } else {
-            throw new LivyDeserializationException(errMsg);
+            logger.error("Deserialization error occured", new LivyDeserializationException(errMsg));
         }
+        throw new LivyUserException("livy.unexpected_error");
     }
 
     private static StatementOutputResponse checkCodeWasWellFormed(StatementOutputResponse statementOutputResponse) {
@@ -465,7 +466,8 @@ public class LivyRestModelTransformer {
                                        statementOutputResponse.getEname(),
                                        statementOutputResponse.getEvalue(),
                                        statementOutputResponse.getTraceback());
-            throw new LivyCodeException(msg);
+            logger.error("Exception Processing Query: ", new LivyCodeException(msg));
+            throw new LivyUserException("livy.syntax");
         }
         return statementOutputResponse;
     }

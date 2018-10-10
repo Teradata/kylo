@@ -29,6 +29,10 @@ export class KyloIconComponent implements OnChanges {
      */
     @Input()
     public size: string;
+    @Input()
+    public width?:string;
+    @Input()
+    public height?:string;
 
     /**
      * Reference to the <svg> element
@@ -49,17 +53,28 @@ export class KyloIconComponent implements OnChanges {
             } else {
                 // Check MatIconRegistry for icon
                 const key = changes.icon.currentValue.split(":", 2);
-                this.iconRegistry.getNamedSvgIcon((key.length == 2) ? key[1] : key[0], (key.length == 2) ? key[0] : "").subscribe(
-                    svg => this.setShape(svg.innerHTML, svg.getAttribute("viewBox")),
-                    error => {
-                        console.error(error);
-                        this.setIcon();
-                    }
-                );
+                try {
+                    this.iconRegistry.getNamedSvgIcon((key.length == 2) ? key[1] : key[0], (key.length == 2) ? key[0] : "").subscribe(
+                        svg => this.setShape(svg.innerHTML, svg.getAttribute("viewBox")),
+                        error => {
+                            console.error(error);
+                            this.setIcon();
+                        }
+                    );
+                } catch (error) {
+                    console.error(error);
+                    this.setIcon();
+                }
             }
         }
+        if (changes.width) {
+            this.svg.setAttribute("width", changes.width.currentValue || KyloIconComponent.DEFAULT_SIZE);
+        }
+        if(changes.height) {
+            this.svg.setAttribute("height", changes.height.currentValue || KyloIconComponent.DEFAULT_SIZE);
+        }
         if (changes.size) {
-            this.svg.setAttribute("height", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
+            this.svg.setAttribute("height",  changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
             this.svg.setAttribute("width", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
     }

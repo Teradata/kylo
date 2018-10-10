@@ -18,6 +18,7 @@ export class Step {
     disabled: boolean;
     visited: boolean;
     icon:string;
+    fullscreen:boolean;
     validator: FeedStepValidator
     /**
      * any additional properties to add and persist for this step
@@ -156,6 +157,9 @@ export class Step {
             this.complete = step.complete;
             this.visited = step.visited;
             this.valid = step.valid
+        if(step.properties) {
+            this.properties = step.properties;
+        }
 
     }
 

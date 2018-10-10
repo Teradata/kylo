@@ -24,6 +24,7 @@ import {EntityVersion} from "../entity-version.model";
 import {PartialObserver} from "rxjs/Observer";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
+import {SchemaField} from "../schema-field";
 
 
 export interface TableOptions {
@@ -231,6 +232,11 @@ export class Feed  implements KyloObject{
      * The table definitions for the feed
      */
     table: FeedTableDefinition;
+
+    /**
+     * A copy of the orig schema if it exists
+     */
+    originalTableSchema:FeedTableSchema;
     /**
      * Category ref of the feed
      */
@@ -395,6 +401,7 @@ export class Feed  implements KyloObject{
         //ensure the tableDef model
         this.table = ObjectUtils.getAs(this.table, FeedTableDefinition, FeedTableDefinition.OBJECT_TYPE);
         this.table.ensureObjectTypes();
+        this.originalTableSchema = CloneUtil.deepCopy(this.table.tableSchema)
 
         if (this.isDataTransformation()) {
             //ensure types
@@ -645,6 +652,8 @@ export class Feed  implements KyloObject{
         let copy = this.copy();
         copy.stepChangesSubject = undefined;
 
+        copy.originalTableSchema = undefined;
+
         if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
             // Set feed
 
@@ -850,5 +859,28 @@ export class Feed  implements KyloObject{
                 this.table.fieldPolicies = [];
             }
         }
+    }
+
+
+
+    validateSchemaDidNotChange(fields?:TableColumnDefinition[]| SchemaField[]){
+        var valid = true;
+        if(fields == undefined && this.table){
+            fields = this.table.tableSchema.fields
+        }
+        //if we are editing we need to make sure we dont modify the originalTableSchema
+        if(this.hasBeenDeployed() && this.originalTableSchema && fields) {
+            //if model.originalTableSchema != model.table.tableSchema  ... ERROR
+            //mark as invalid if they dont match
+            var origFields = _.chain(this.originalTableSchema.fields).sortBy('name').map(function (i) {
+                return i.name + " " + i.derivedDataType;
+            }).value().join()
+            var updatedFields = _.chain(fields).sortBy('name').map(function (i) {
+                return i.name + " " + i.derivedDataType;
+            }).value().join()
+            valid = origFields == updatedFields;
+        }
+        this.table.schemaChanged = !valid;
+        return valid
     }
 }

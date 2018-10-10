@@ -5,6 +5,7 @@ import {KyloObject} from "../../../../common/common.model";
 import {PreviewDataSet} from "../../datasource/preview-schema/model/preview-data-set";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
+import {SelectedItem} from "../../datasource/api/dialog/selection-dialog.component";
 
 /**
  * Defines what to do when Node is selected/de-selected in BrowserComponent
@@ -209,6 +210,18 @@ export class SelectionService {
         else {
             //clear it all
             this.selections.clear()
+        }
+    }
+
+    clearSelected(datasourceId?: string): void {
+        let root:Node = this.get(datasourceId);
+        if(root){
+            const nodes = root.getSelectedDescendants();
+            if(nodes){
+                nodes.forEach((node:Node) => {
+                   node.setSelected(false)
+                });
+            }
         }
     }
 

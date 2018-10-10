@@ -13,21 +13,29 @@ import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {FeedService} from '../../services/FeedService';
-import {ApplyTableDomainTypesDialog} from "../../shared/apply-domain-type/apply-table-domain-types.component";
+import {
+    ApplyDomainTypesDialogComponent,
+    ApplyDomainTypesResponse,
+    ApplyDomainTypesResponseStatus,
+    ApplyDomainTypesRow
+} from "../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {ColumnProfile, ColumnProfileHelper} from "../wrangler/api/column-profile";
 import {ColumnController} from "../wrangler/column-controller";
 import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column-delegate";
 import {ProfileOutputRow, ScriptState, StringUtils} from "../wrangler/index";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
-import {AnalyzeColumnDialog} from "./profile-stats/analyze-column-dialog";
-import VisualQueryProfileStatsController from "./profile-stats/VisualQueryProfileStats";
+import {AnalyzeColumnDialog} from "./main-dialogs/analyze-column-dialog";
+import VisualQueryProfileStatsController from "./main-dialogs/VisualQueryProfileStats";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {VisualQueryTable} from "./visual-query-table/visual-query-table.component";
-import {QuickColumnsDialog, QuickColumnsDialogData} from "./profile-stats/quick-columns-dialog";
+import {QuickColumnsDialog, QuickColumnsDialogData} from "./main-dialogs/quick-columns-dialog";
 import {ColumnUtil} from "../wrangler/core/column-util";
-import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./profile-stats/schema-layout-dialog";
-import {QuickCleanDialog, QuickCleanDialogData} from "./profile-stats/quick-clean-dialog";
+import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dialogs/schema-layout-dialog";
+import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
+import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
+import {DefineFeedService} from "../../feeds/define-feed-ng2/services/define-feed.service";
+import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {StringUtils} from "../../../common/utils/StringUtils";
 
 declare const CodeMirror: any;
@@ -420,20 +428,23 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.$mdDialog.open(ApplyTableDomainTypesDialog, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
-                .afterClosed().subscribe((selected: any) => {
-                selected.forEach((selection: any) => {
-                    var fieldIndex = fields.findIndex((element: WranglerColumn) => {
-                        return element.name === selection.name;
-                    });
-                    this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
-                    flgChanged = true;
-                });
-                if (flgChanged) {
-                    // Need to supply a formula
-                    const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
-                    this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
-                }
+            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
+                .afterClosed().subscribe((response: ApplyDomainTypesResponse) => {
+                    if(response.status ==ApplyDomainTypesResponseStatus.APPLY ) {
+                        let selected = response.appliedRows;
+                        selected.forEach((selection: ApplyDomainTypesRow) => {
+                            var fieldIndex = fields.findIndex((element: WranglerColumn) => {
+                                return element.name === selection.name;
+                            });
+                            this.setDomainType(colIndexes[fieldIndex], domainTypes[fieldIndex].id);
+                            flgChanged = true;
+                        });
+                        if (flgChanged) {
+                            // Need to supply a formula
+                            const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
+                            this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
+                        }
+                    }
             }, () => {
                 // ignore cancel
             });
@@ -955,27 +966,32 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     };
 
     /**
-     * Executes a formula, gathers the value and reverses
-     * @param {string} fieldName
-     * @param {string} formula
+     * Executes a formula, gathers the value and removes it from the histroy stack
+     * @param {string} formula the formula to exexecute
+     * @param {string} numRecords number of records to query (0 = all)
+     * @param {number} colIdx the column index of the result to extract
      * @returns {Promise<ColumnProfile>}
      */
-    extractFormulaResult(formula: string, sample: number): Promise<any> {
+    extractFormulaResult(formula: string, numRecords: number, colIdx:number = 0): Promise<any> {
         const self = this;
         self.pushFormulaToEngine(formula, {});
-        let limit: number = self.engine.limit;
-        self.engine.limit = sample;
+        let priorLimit: number = self.engine.limit;
+        let priorSample: number = self.engine.sample;
+        self.engine.sample = 1.0;
+        self.engine.limit = numRecords;
         let page = PageSpec.emptyPage();
-        page.numRows = page.numCols = 1;
+        page.numRows = page.numCols = colIdx+1;
         page.firstRow = 0;
         return self.query(false, page).then(function () {
             let result = self.engine.getRows();
-            self.engine.limit = limit;
+            self.engine.limit = priorLimit;
+            self.engine.sample = priorSample;
             self.engine.pop();
-            return result[0][0];
+            return result[0][colIdx];
         }).catch(() => {
-            self.engine.limit = limit;
-        });
+            self.engine.limit = priorLimit;
+            self.engine.sample = priorSample;
+        })
     }
 
     extractColumnStatistics(fieldName: string): Promise<ColumnProfile> {
@@ -1064,6 +1080,40 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     };
 
     /**
+     * Shows samples dialog
+     */
+    showSampleDialog(): void {
+
+        let dialogData = new SampleDialogData(this.engine.method, this.engine.reqLimit, this.engine.sample);
+        let self = this;
+        this.$mdDialog.open(SampleDialog, {data: dialogData, panelClass: "full-screen-dialog", height: '100%', width: '350px', position: {top: '0', right: '0'}}).afterClosed()
+            .subscribe((result: SampleDialogData) => {
+                if (result != null) {
+                    this.engine.method = result.method;
+                    this.engine.reqLimit = result.limit;
+
+                    // Fetch the ratio based on the total rows in the dataset against the requested limit
+                    if (result.method == 'rndnum') {
+
+                        self.extractFormulaResult(`groupBy("1").count()`, 0, 1).then((value: any) => {
+                            let rowCount = value;
+                            let ratio = (result.limit > rowCount ? 1.0 : result.limit / rowCount);
+                            self.engine.sample = ratio;
+                            self.engine.limit = 0;
+                            self.resample();
+                        });
+
+                    } else {
+                        self.engine.limit = result.limit;
+                        self.engine.sample = result.ratio;
+                        self.resample();
+                    }
+                }
+
+            });
+    }
+
+    /**
      * Sets the formula in the function bar to the specified value.
      *
      * @param {string} formula the formula
@@ -1134,6 +1184,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Refreshes the table content.
      */
     resample() {
+        let fieldNames : string[] = [];
+        _.each(this.engine.getColumns(),  (item:any) => {
+            fieldNames.push(ColumnUtil.getColumnFieldName(item));
+        });
+
+        this.pushFormulaToEngine(`select(${fieldNames.join(',')})`, {});
         this.query();
     }
 
@@ -1218,11 +1274,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         // Add unsaved filters
 
         // Check if updates are necessary
-        let feedModel = (this.feedModel != null) ? this.feedModel : this.feedService.createFeedModel;
+        let feedModel = (this.feedModel != null) ? this.feedModel : new Feed();//this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
             return new Promise((resolve, reject) => reject(true));
         }
+
 
         // Populate Feed Model from the Visual Query Model
         feedModel.dataTransformation.dataTransformScript = newScript;
@@ -1237,30 +1294,22 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             let fields = this.engine.getFields();
 
             if (fields !== null) {
-                this.feedService.setTableFields(fields, this.engine.getFieldPolicies());
-                this.feedService.syncTableFieldPolicyNames();
+                this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+            let valid =   this.feedModel.validateSchemaDidNotChange();
+            if(!valid)
+                this.feedModel.table.syncTableFieldPolicyNames()
                 this.engine.save();
                 resolve(true);
             } else {
                 this.query().then(() => {
-                    this.feedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
-                    this.feedService.syncTableFieldPolicyNames();
+                    this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+                    this.feedModel.validateSchemaDidNotChange();
+                    this.feedModel.table.syncTableFieldPolicyNames()
                     this.engine.save();
                     resolve(true);
                 });
             }
         });
-    }
-
-    /**
-     * Reset the sample or limit value when the sample method changes.
-     */
-    onSampleMethodChange() {
-        if (this.sampleMethod === "SAMPLE") {
-            this.engine.sample = 0.1;
-        } else if (this.sampleMethod === "LIMIT") {
-            this.engine.limit = 1000;
-        }
     }
 
     /**
@@ -1278,12 +1327,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 if (index < fieldPolicies.length) {
                     fieldPolicy = fieldPolicies[index];
                 } else {
-                    fieldPolicy = this.feedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy = TableFieldPolicy.forName(column.hiveColumnLabel);
                     fieldPolicy.fieldName = column.hiveColumnLabel;
                     fieldPolicy.feedFieldName = column.hiveColumnLabel;
                 }
 
                 if (index === columnIndex) {
+                    //TODO MOVE OUT TO COMMON UTIL
                     this.feedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
                 }
                 return fieldPolicy;

@@ -9,41 +9,40 @@
         "sref": ".connection"
       }
     ],
-    "options": [
+    "nifiProperties": [
       {
-        "key": "driver",
-        "label": "Driver"
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQL"],
+        "properties": {
+          "SQL select query": "SELECT * FROM {{ paths[0] }}"
+        }
       },
       {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
+        "processorTypes": ["org.apache.nifi.processors.hive.SelectHiveQL"],
+        "properties": {
+          "HiveQL Select Query": "SELECT * FROM {{ paths[0] }}"
+        }
       }
     ]
   },
   {
     "title": "File Upload",
     "pluginId": "file-upload",
+    "icon": "file_upload",
     "tabs": [
       {
         "label": "Files",
         "sref": ".upload"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url"
+          }
+        ]
       }
     ],
     "nifiProperties": [
@@ -65,6 +64,7 @@
   {
     "title": "HDFS",
     "pluginId": "hdfs",
+    "icon": "hadoop",
     "tabs": [
       {
         "label": "Files",
@@ -84,44 +84,19 @@
           }
         ]
       }
-    ]
-  },
-  {
-    "title": "Teradata",
-    "pluginId": "teradata",
-    "format": "jdbc",
-    "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
     ],
-    "options": [
+    "nifiProperties": [
       {
-        "key": "driver",
-        "label": "Driver"
+        "processorTypes": ["org.apache.nifi.processors.hadoop.FetchHDFS", "org.apache.nifi.processors.hadoop.ListHDFS"],
+        "properties": {
+          "HDFS Filename": "{{ paths[0] }}"
+        }
       },
       {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
+        "processorTypes": ["org.apache.nifi.processors.hadoop.GetHDFS"],
+        "properties": {
+          "Directory": "{{ paths[0].substring(0, paths[0].lastIndexOf('/')) }}"
+        }
       }
     ]
   },
@@ -192,6 +167,7 @@
   {
     "title": "Local File System",
     "pluginId": "local-file-system",
+    "icon": "fas:folder",
     "tabs": [
       {
         "label": "File",
@@ -224,6 +200,156 @@
         "properties": {
           "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
           "File Filter": "{{ paths[0].substring(paths[0].lastIndexOf('/') + 1) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Amazon S3",
+    "pluginId": "amazon-s3",
+    "icon": "amazon",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "s3a:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "spark.hadoop.fs.s3a.access.key",
+        "label": "Access Key Id"
+      },
+      {
+        "key": "spark.hadoop.fs.s3a.secret.key",
+        "type": "password",
+        "label": "Secret Access Key"
+      }
+    ],
+    "nifiControllerService": {
+      "type": "AWSCredentialsProviderControllerService",
+      "properties": {
+        "Access Key": "${spark.hadoop.fs.s3a.access.key}",
+        "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object"],
+        "properties": {
+          "Bucket": "{{ paths[0].substring(6, paths[0].substring(6).indexOf('/') + 6) }}",
+          "Object Key": "{{ paths[0].substring(paths[0].substring(6).indexOf('/') + 6) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.ListS3"],
+        "properties": {
+          "Bucket": "{{ paths[0].substring(6, paths[0].substring(6).indexOf('/') + 6) }}",
+          "Prefix": "{{ paths[0].substring(paths[0].substring(6).indexOf('/') + 6) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Azure Data Lake",
+    "pluginId": "azure-data-lake",
+    "icon": "windows",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "adl:"
+            }
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.FetchHDFS", "org.apache.nifi.processors.hadoop.ListHDFS"],
+        "properties": {
+          "HDFS Filename": "{{ paths[0] }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.GetHDFS"],
+        "properties": {
+          "Directory": "{{ paths[0].substring(0, paths[0].lastIndexOf('/')) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Azure Storage",
+    "pluginId": "azure-storage",
+    "icon": "windows",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "wasb:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "account-name",
+        "label": "Account Name"
+      },
+      {
+        "key": "account-key",
+        "type": "password",
+        "label": "Account Key"
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["Fetch"],
+        "properties": {
+          "Storage Account Name": "{{ options['account-name'] }}",
+          "Storage Account Key": "{{ options['account-key'] }}",
+          "Container Name": "{{ paths[0].substring(7, paths[0].substring(7).indexOf('/') + 7) }}",
+          "Blob": "{{ paths[0].substring(paths[0].substring(7).indexOf('/') + 7) }}"
+        }
+      },
+      {
+        "processorTypes": ["List"],
+        "properties": {
+          "Storage Account Name": "{{ options['account-name'] }}",
+          "Storage Account Key": "{{ options['account-key'] }}",
+          "Container Name": "{{ paths[0].substring(7, paths[0].substring(7).indexOf('/') + 7) }}",
+          "Prefix": "{{ paths[0].substring(paths[0].substring(7).indexOf('/') + 7) }}"
         }
       }
     ]

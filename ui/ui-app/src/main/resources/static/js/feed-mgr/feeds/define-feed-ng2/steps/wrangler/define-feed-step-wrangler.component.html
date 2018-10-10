@@ -1,6 +1,6 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (saved)="onSave()" [fxHide]="!feed.readonly">
   <feed-step-readonly-content>
-    <div fxLayout="column">
+    <div fxLayout="column" *ngIf="feed.dataTransformation.sql != undefined  && feed.dataTransformation.sql != ''" >
       <div class="read-only-row" fxLayout="row">
         <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.QUERY</div>
         <div fxFlex>{{feed.dataTransformation.sql}}</div>
@@ -11,7 +11,8 @@
           <mat-list fxFlex class="layout-padding-top-bottom">
             <ng-template ngFor let-item let-last="last" [ngForOf]="feed.dataTransformation.states">
               <mat-list-item>
-                <ng-md-icon matListIcon [icon]="item.context.icon"></ng-md-icon>
+                <ng-md-icon *ngIf="!item.context.icon.startsWith('mdi')" matListIcon [icon]="item.context.icon"></ng-md-icon>
+                <i *ngIf="item.context.icon.startsWith('mdi')" matListIcon [class]="item.context.icon + ' material-icons'"></i>
                 <p matLine [matTooltip]="item.context.name" class="tc-black">{{item.context.name}}</p>
               </mat-list-item>
               <mat-divider *ngIf="!last" class="relative"></mat-divider>
@@ -20,9 +21,20 @@
         </div>
       </div>
     </div>
+
+    <div *ngIf="feed.dataTransformation.sql == undefined || feed.dataTransformation.sql == ''"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+      <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+      <h2>Wrangler Incomplete </h2>
+      <h3>No transformation exists yet for this feed</h3>
+    </div>
   </feed-step-readonly-content>
 </define-feed-step-card>
 
 <visual-query-stepper #visualQuery *ngIf="!feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
-                      (cancel)="onCancelEdit()" (save)="onSave()">
+                      [heightOffset]="64" (cancel)="onCancelEdit()" (save)="onSave()">
 </visual-query-stepper>
+
+
+<ng-template #toolbarActionTemplate>
+  <feed-toolbar-actions [(feed)]="feed"(onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false" [showCancelLink]="false"></feed-toolbar-actions>
+</ng-template>
