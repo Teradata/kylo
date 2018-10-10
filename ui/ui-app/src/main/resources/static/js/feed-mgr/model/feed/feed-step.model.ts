@@ -1,6 +1,7 @@
 import {FeedStepValidator} from "./feed-step-validator";
 import {Feed} from "./feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "./feed-constants";
+import {FeedStepRequiredCheck} from "./feed-step-required-check";
 
 
 export class Step {
@@ -37,6 +38,8 @@ export class Step {
     icon:string;
     fullscreen:boolean;
     validator: FeedStepValidator
+
+    feedStepRequiredCheck: FeedStepRequiredCheck;
     /**
      * any additional properties to add and persist for this step
      */
@@ -46,6 +49,9 @@ export class Step {
         Object.assign(this, init);
         if(!this.properties){
             this.properties = {};
+        }
+        if(this.feedStepRequiredCheck == undefined){
+            this.feedStepRequiredCheck = new FeedStepRequiredCheck();
         }
     }
 
@@ -188,6 +194,10 @@ export class Step {
      */
     isStepStateChange(step:Step){
         return (this.systemName == step.systemName && (this.valid != step.valid || this.complete != step.complete || this.visited != step.visited))
+    }
+
+    isRequired(feed:Feed){
+        return this.feedStepRequiredCheck.isRequired(feed,this);
     }
 
 

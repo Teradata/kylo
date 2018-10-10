@@ -25,7 +25,7 @@ export class FeedSetupGuideComponent implements OnInit, OnDestroy{
 
     ngOnInit() {
         this.feed.steps.forEach((step:Step) => {
-            if(step.required){
+            if(step.isRequired(this.feed)){
                 this.requiredSteps.push(step);
             }
             else {

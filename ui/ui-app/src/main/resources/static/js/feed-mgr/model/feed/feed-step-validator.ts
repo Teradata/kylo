@@ -9,7 +9,7 @@ export class FeedStepValidator  {
 
 
     public validate(feed:Feed, step:Step) : boolean{
-        if(step.required && !step.visited) {
+        if(step.isRequired(feed) && !step.visited) {
             step.valid = true;
             step.setComplete(false);
         } else if(this.hasFormErrors){
@@ -18,7 +18,8 @@ export class FeedStepValidator  {
         }
         else {
             step.valid = true;
-            step.setComplete(true)
+            let complete = step.isRequired(feed) && !step.saved ? false : true
+            step.setComplete(complete)
         }
         return step.valid;
     }
