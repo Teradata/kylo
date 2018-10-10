@@ -785,32 +785,18 @@ public class SparkShellProxyController {
         }
 
             request.getCatalogDatasets().forEach((dataSet) -> {
-                //DataSets will now be added when a user adds them to the wrangler canvas and then associated with an ID
-                //in the unlikely event the DataSet coming in doesnt have an ID, ensure its created.
-                if(StringUtils.isBlank(dataSet.getId())) {
-                    fetchOrCreateDataSet(dataSet);
+                // DataSets will now be added when a user adds them to the wrangler canvas and then associated with an ID
+                // In the unlikely event the DataSet coming in doesn't have an ID, ensure it's built.
+                if (StringUtils.isBlank(dataSet.getId())) {
+                    com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = kyloCatalogDataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                    com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = catalogModelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
+                    addDataSourceInformation(catalogModelTransform.dataSetToRestModel().apply(domainDs));
+                } else {
+                    addDataSourceInformation(dataSet);
                 }
-                addDataSourceInformation(dataSet);
             });
 
 
-    }
-
-    private DataSet fetchOrCreateDataSet(DataSet dataSet){
-       return metadata.read(() -> {
-           //resolve the real dataset if possible, otherwise create
-           com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = kyloCatalogDataSourceProvider.resolveId(dataSet.getDataSource().getId());
-           com.thinkbiganalytics.metadata.api.catalog.DataSet ds = dataSetProvider.findByDataSourceAndTitle(dataSourceId, dataSet.getTitle());
-           if(ds == null){
-               com.thinkbiganalytics.metadata.api.catalog.DataSet newDs = dataSetProvider.create(dataSourceId, dataSet.getTitle());
-               catalogModelTransform.updateDataSet(dataSet, newDs);
-               dataSet.setId(newDs.getId().toString());
-           }
-           else {
-               dataSet.setId(ds.getId().toString());
-           }
-           return dataSet;
-        });
     }
 
     private void addDataSourceInformation(@Nonnull DataSet dataSet){

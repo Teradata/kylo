@@ -29,7 +29,7 @@
 
   <mat-sidenav-content style="width: 100%; margin-left: 0" fxFlex="1 1 auto" fxLayout="column" [style.padding-right]="isShowFunctionHistory ? '257px' : '0'" class="md-kylo-powerui">
     <mat-toolbar fxFlex="0 0 auto" class="md-kylo-theme">
-      <div fxFlex="1 1 auto" fxLayout="row">
+      <div fxFlex="1 1 auto" fxLayout="row" class="kylo-action-button">
         <mat-menu #actionMenu="matMenu" class="md-kylo-theme">
           <button mat-menu-item (click)="toggleFunctionHistory()">History<span *ngIf="functionHistory.length>0" style="padding-left:10px;">({{functionHistory.length}})</span></button>
           <button mat-menu-item (click)="showSampleDialog()">Sample</button>

@@ -21,9 +21,8 @@ package com.thinkbiganalytics.kylo.catalog.spark;
  */
 
 import com.thinkbiganalytics.kylo.catalog.KyloCatalog;
-import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.spark.shell.AbstractCatalogDataSetProvider;
 
 import org.apache.spark.sql.Dataset;
@@ -48,21 +47,7 @@ public class CatalogDataSetProviderV2 extends AbstractCatalogDataSetProvider<Dat
     }
 
     @Override
-    public Dataset<Row> readDataSet(final DataSet dataSet) {
-        final DataSetTemplate dataSetTemplate = mergeTemplates(dataSet);
-
-        KyloCatalogReader reader = KyloCatalog.read().options(dataSetTemplate.getOptions()).addJars(dataSetTemplate.getJars()).addFiles(dataSetTemplate.getFiles()).format(dataSetTemplate.getFormat());
-        Object dataFrame;
-
-        if (dataSet.getPaths() != null && !dataSet.getPaths().isEmpty()) {
-            if (dataSet.getPaths().size() > 1) {
-                dataFrame = reader.load(dataSet.getPaths().toArray(new String[0]));
-            } else {
-                dataFrame = reader.load(dataSet.getPaths().get(0));
-            }
-        } else {
-            dataFrame = reader.load();
-        }
-        return (Dataset<Row>) dataFrame;
+    protected KyloCatalogClient<Dataset<Row>> getClient() {
+        return KyloCatalog.builder().build();
     }
 }

@@ -465,12 +465,13 @@ public class TransformService {
         // Change class loader
         final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(engine.getClassLoader());
-
             // Ensure SessionState is valid
             if (SessionState.get() == null && sessionState != null) {
                 SessionState.setCurrentSessionState(sessionState);
             }
+
+            // Change class loader (after SessionState)
+            Thread.currentThread().setContextClassLoader(engine.getClassLoader());
 
             // Build DataFrame
             KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();

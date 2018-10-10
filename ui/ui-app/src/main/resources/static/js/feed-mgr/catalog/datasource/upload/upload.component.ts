@@ -152,9 +152,11 @@ export class UploadComponent implements OnInit {
      * @return {Observable<string>}
      */
     private ensureUploadDataSet(title: string): Observable<SparkDataSet> {
+
         if (typeof this.uploadDataSet === "undefined" || this.uploadDataSet === null) {
             this.loading = true;
-            this.uploadDataSet = this.fileManager.createDataSet(this.datasource.id, title).pipe(
+            const tmpName = title+"_"+new Date().getTime();
+            this.uploadDataSet = this.fileManager.createDataSet(this.datasource.id, tmpName).pipe(
                 tap(ds => this.datasource.$uploadDataSet = ds),
                 finalize(() => this.loading = false),
                 publishLast(),

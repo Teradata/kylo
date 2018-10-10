@@ -55,5 +55,6 @@
 <div *ngIf="!loading && (!datasources || datasources.length == 0)" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
   <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
   <h2>{{'CATALOG.DATA_SOURCES.EMPTY.TITLE' | translate}}</h2>
-  <span>{{(displayInCard ? 'CATALOG.DATA_SOURCES.EMPTY.CREATE_TEXT' : 'CATALOG.DATA_SOURCES.EMPTY.CATALOG_TEXT') | translate}}</span>
+  <span *ngIf="displayInCard; else catalogLink">{{'CATALOG.DATA_SOURCES.EMPTY.CREATE_TEXT' | translate}}</span>
+  <ng-template #catalogLink><a uiSref="catalog" target="_blank">{{'CATALOG.DATA_SOURCES.EMPTY.CATALOG_TEXT' | translate}}</a></ng-template>
 </div>

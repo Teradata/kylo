@@ -322,8 +322,8 @@ constructor() {
         else {
             $mdThemingProvider.theme('kylo')
                 .primaryPalette('td-slate', {'default':'700','hue-1':'100', 'hue-2':'900'})
-                .accentPalette('td-orange',{'default':'800','hue-1':'200', 'hue-2':'900'})
-                .warnPalette('deep-orange',{'default':'800','hue-1':'200', 'hue-2':'900'})
+                .accentPalette('td-teal',{'default':'800','hue-1':'100', 'hue-2':'900'})
+                .warnPalette('deep-orange',{'default':'800','hue-1':'100', 'hue-2':'900'})
         }
 
         $mdThemingProvider.setDefaultTheme('kylo');
