@@ -755,4 +755,9 @@ public class BaseFeed implements Feed {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public boolean isMissingRequiredProperties(@Nonnull Set<UserFieldDescriptor> userFields) {
+        return false;
+    }
 }
