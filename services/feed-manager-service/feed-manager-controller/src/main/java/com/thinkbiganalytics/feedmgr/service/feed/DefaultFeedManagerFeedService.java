@@ -703,7 +703,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         }, MetadataAccess.SERVICE);
 
-        return metadataAccess.commit(() -> {
+        FeedMetadata metadata = metadataAccess.commit(() -> {
             // Check services access to be able to create a feed
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
             
@@ -755,6 +755,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             return feedMetadata;
         });
+
+        if(feedMetadata.isNew()) {
+            //requery it
+          return  metadataAccess.read(() -> {
+              return  getFeedById(metadata.getId());
+            });
+        }
+        else {
+            return metadata;
+        }
     }
 
     /**
