@@ -42,8 +42,6 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,6 +71,11 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
 //    @Inject
 //    private ConnectorPluginManager pluginManager;
     
+
+//    public static long generateHashCode(String format, Collection<String> paths, Collection<String> jars, Collection<String> files, Map<String, String> options) {
+    public static long generateHashCode(String format, Collection<String> paths, Map<String, String> options) {
+        return Objects.hash(format, paths, options);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
@@ -166,7 +169,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
     private String generateTitle(DataSource dataSource, String title) {
         return StringUtils.isEmpty(title) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : title;
     }
-    
+
     private class Builder implements DataSetBuilder {
 
         private final JcrDataSource dataSource;
@@ -330,8 +333,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             Map<String, String> totalOptions = Stream.concat(sparkParams.getOptions().entrySet().stream(), this.options.entrySet().stream())
                     .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v2));
 
-//            return Objects.hash(effectiveFormat, totalPaths, totalJars, totalFiles, totalOptions);
-            return Objects.hash(effectiveFormat, totalPaths, totalOptions);
+            return generateHashCode(effectiveFormat, totalPaths, totalOptions);
         }
 
         private DataSet create(long hash) {
