@@ -152,8 +152,13 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         if (property.required) {
             valueValidators.push(Validators.required)
         }
-        this.userPropertyForm.registerControl(this.formControlKey(property, "value"), new FormControl(property.value, valueValidators));
-        this.userPropertyForm.registerControl(this.formControlKey(property, "systemName"), new FormControl(property.systemName, [Validators.required, this.duplicatePropertyValidator(property)]))
+        let valueControl = new FormControl(property.value, valueValidators);
+        let systemNameControl = new FormControl(property.systemName, [Validators.required, this.duplicatePropertyValidator(property)])
+        this.userPropertyForm.addControl(this.formControlKey(property, "value"), valueControl);
+        this.userPropertyForm.addControl(this.formControlKey(property, "systemName"), systemNameControl)
+        //touch them for validation check
+        valueControl.markAsTouched({onlySelf:true})
+        systemNameControl.markAsTouched({onlySelf:true})
 
     }
 
