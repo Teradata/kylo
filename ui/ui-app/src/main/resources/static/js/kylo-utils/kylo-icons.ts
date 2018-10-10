@@ -16,7 +16,7 @@ export class KyloIcons {
         description:"subject",
         tags:"subject",
         running:"directions_run",
-        stopped:"blocked",
+        stopped:"pause_circle_outline",
         flowRate:"tune",
         dateRange:"date_range",
         timeSince:"timer",
@@ -43,12 +43,32 @@ export class KyloIcons {
         }
     };
 
-    static getBatchFeedRunStatusIcon(feedHealth:any){
-        if(feedHealth.running){
+    static getBatchFeedRunStatusIcon(state:any){
+        if(state.running){
             return KyloIcons.Feed.running
         }
         else {
             return KyloIcons.Feed.stopped
+        }
+    }
+
+    static getBatchFeedRunStatusColor(state:any){
+        if(state.running){
+            return 'tc-emphasis-1';
+        }
+        else {
+            return 'tc-neutral';
+        }
+    }
+
+    static getFeedStateColor(state:string){
+        if(!state) {
+            return "tc-neutral";
+        }
+        if("DISABLED" == state.toUpperCase()){
+            return "tc-caution"
+        } else {
+            return "tc-neutral"
         }
     }
 
@@ -65,6 +85,17 @@ export class KyloIcons {
             return KyloIcons.Feed.status;
         }
     }
+
+    static getFeedHealthColor(state:string){
+        if (!state) return "tc-neutral";
+        if (state == 'UNHEALTHY') {
+            return "tc-negative";
+        } else {
+            return "tc-positive";
+        }
+
+    }
+
 
 
 }

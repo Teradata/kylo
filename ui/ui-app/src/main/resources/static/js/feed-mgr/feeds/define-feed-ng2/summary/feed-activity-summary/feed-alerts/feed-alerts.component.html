@@ -1,7 +1,7 @@
 <mat-card class="feed-info-card feed-card">
   <mat-card-header>
     <mat-card-title>
-      <mat-icon>{{kyloIcons.Feed.alerts}}</mat-icon>
+      <!--<mat-icon>{{kyloIcons.Feed.alerts}}</mat-icon>-->
       <span translate>views.alerts-template.Alerts</span>
     </mat-card-title>
     <mat-card-subtitle>
@@ -10,24 +10,23 @@
     <span fxFlex></span>
   </mat-card-header>
 
-  <mat-card-content>
+  <mat-card-content class="pull">
+    <mat-divider *ngIf="!last"></mat-divider>
     <mat-list role="list">
-      <mat-list-item role="listitem" *ngFor="let alert of alerts; let $last=last" (click)="navigateToAlerts(alert)" fxFill>
-        <button mat-button fxFill>
-          <div fxLayout="column">
-            <div fxLayout="row" fxLayoutWrap>
-              <span class="text-left" fxFlex="50">{{alert.groupDisplayName}}</span>
-              <span class="text-left" fxFlex>{{'views.alerts-template.' + alert.typeDisplayName | translate}}</span>
-            </div>
-            <div fxLayout="row" class="pull-top-sm" fxLayoutWrap>
-              <span class="text-left error" *ngIf="alert.count ==1" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
-              <span class="text-left error" *ngIf="alert.count > 1 && alert.count < 5" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
-              <span class="text-left error" *ngIf="alert.count > 4" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
-              <span class="text-left" fxFlex>{{alert.since}}</span>
-            </div>
-          </div>
-          <mat-divider *ngIf="!last"></mat-divider>
-        </button>
+      <mat-list-item role="listitem" *ngFor="let alert of alerts; let $last=last" (click)="navigateToAlerts(alert)" fxFlex="100">
+        <mat-icon matListAvatar matListIcon class="pull-left" color="warn">warning</mat-icon>
+        <p matLine fxLayout="row" fxFlex="100">
+          <span fxLayoutAlign="start top" fxFlex="50">{{'views.alerts-template.' + alert.typeDisplayName | translate}} </span>
+          <span fxLayoutAlign="end top" fxFlex="50"> {{alert.since}}</span>
+        </p>
+        <p matLine fxLayout="row" fxFlex="100">
+          <span fxLayoutAlign="start top" fxFlex="70">{{alert.groupDisplayName}} </span>
+          <span fxLayoutAlign="end top" fxFlex="30" *ngIf="alert.count ==1" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
+          <span fxLayoutAlign="end top" fxFlex="30" *ngIf="alert.count > 1 && alert.count < 5" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
+          <span fxLayoutAlign="end top" fxFlex="30" *ngIf="alert.count > 4" fxFlex="50">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
+        </p>
+        <mat-divider *ngIf="!last"></mat-divider>
+
       </mat-list-item>
 
       <mat-list-item *ngIf="alerts.length == 0">

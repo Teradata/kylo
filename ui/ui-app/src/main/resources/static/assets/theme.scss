@@ -45,10 +45,20 @@ $toolbar-typography: mat-typography-config(
 // Include covalent color classes
 @include covalent-colors();
 
-
+/*
+Orange
 $primary: mat-palette($td-slate, 700, 100, 900);
-$accent:  mat-palette($td-orange, 800, 200, 900);
-$warn:    mat-palette($mat-deep-orange, 800, 200, 900);
+$accent:  mat-palette($td-orange, 800, 100, 900);
+$warn:    mat-palette($mat-deep-orange, 800, 100, 900);
+*/
+
+/*
+Teal theme
+*/
+$primary: mat-palette($td-slate, 700, 100, 900);
+$accent:  mat-palette($td-teal, 800, 100, 900);
+$warn:    mat-palette($mat-deep-orange, 800, 100, 900);
+
 $theme: mat-light-theme($primary, $accent, $warn);
 
 // Include theme styles for core and each component used in your app.
@@ -57,6 +67,9 @@ $theme: mat-light-theme($primary, $accent, $warn);
 @include angular-material-theme($theme);
 @include covalent-theme($theme, $typography);
 @include teradata-brand($theme);
+
+
+
 
 // Active icon color in list nav
 mat-nav-list {
@@ -85,6 +98,9 @@ $background: map-get($theme, background);
 }
 .tc-warn {
   color: mat-color($warn);
+}
+.kylo-action-button {
+  color: mat-color($primary,600);
 }
 .bgc-primary {
   background-color: mat-color($primary);
