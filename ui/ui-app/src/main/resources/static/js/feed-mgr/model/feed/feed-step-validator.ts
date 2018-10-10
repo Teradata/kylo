@@ -10,6 +10,7 @@ export class FeedStepValidator  {
 
     public validate(feed:Feed, step:Step) : boolean{
         if(step.required && !step.visited) {
+            step.valid = true;
             step.setComplete(false);
         } else if(this.hasFormErrors){
             step.setComplete(false);

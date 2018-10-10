@@ -8,15 +8,32 @@ export class Step {
     systemName: string;
     name: string;
     description: string;
+    /**
+     * is the step complete (passed all validation and is ok to be deployed
+     */
     complete: boolean;
+    /**
+     * is the step valid?
+     */
     valid: boolean;
     dirty:boolean = false;
     sref: string;
     required?: boolean;
     dependsUponSteps?: string[] = [];
     allSteps: Step[];
+    /**
+     * is the step disabled?
+     */
     disabled: boolean;
+    /**
+     * has the user visited this step?
+     */
     visited: boolean;
+    /**
+     * has this feed passed validation and been saved?
+     */
+    saved:boolean = false;
+
     icon:string;
     fullscreen:boolean;
     validator: FeedStepValidator
@@ -157,6 +174,7 @@ export class Step {
             this.complete = step.complete;
             this.visited = step.visited;
             this.valid = step.valid
+        this.saved = step.saved;
         if(step.properties) {
             this.properties = step.properties;
         }

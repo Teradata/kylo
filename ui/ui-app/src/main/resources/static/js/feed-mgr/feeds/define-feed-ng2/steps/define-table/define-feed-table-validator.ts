@@ -10,7 +10,7 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
 
 
     public validate(feed:Feed, step:Step) : boolean{
-        if(this.hasFormErrors){
+        if(this.hasFormErrors || !step.visited){
             step.valid = false;
             step.setComplete(false);
         }
@@ -20,7 +20,7 @@ export class DefineFeedTableValidator  extends FeedStepValidator {
         }
         else {
             step.valid = true;
-            step.setComplete(true);
+            step.setComplete(step.saved);
         }
         return step.valid;
     }
