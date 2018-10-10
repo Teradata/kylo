@@ -5,7 +5,7 @@ import AccessConstants from "../constants/AccessConstants";
 import "./module";
 import "../services/services.module";
 import "pascalprecht.translate";
-import {TransitionService} from "@uirouter/core"; 
+import {Transition, TransitionService} from "@uirouter/core";
 import AccessControlService from "../services/AccessControlService";
 import SideNavService from  "../services/SideNavService";
 import {StateService} from "../services/StateService";
@@ -88,10 +88,11 @@ export default class SideNav implements ng.IComponentController {
             this.buildSideNavMenu();
         }
 
-        this.$transitions.onSuccess({},(transition: any)=>{
+        this.$transitions.onSuccess({},(transition: Transition)=>{
         var currentState = transition.to();
-        var parentMenu = this.menuStateToMenuToggleMap[currentState.name];
-        var menuLink = this.menuStateMap[currentState.name];
+        let currentStateName = (typeof currentState.name === "string" && currentState.name.indexOf(".") !== -1) ? currentState.name.substring(0, currentState.name.indexOf(".")) : currentState.name;
+        var parentMenu = this.menuStateToMenuToggleMap[currentStateName];
+        var menuLink = this.menuStateMap[currentStateName];
         if(menuLink != undefined ){
             if(this.currentMenuLink != null && this.currentMenuLink != menuLink) {
                 this.currentMenuLink.selected = false;
