@@ -54,7 +54,7 @@
         <div ng-show="vm.error" class="alert alert-danger">{{"view.login-app.login-error" | translate}}</div>
 
             <div layout="column" flex layout-fill>
-                <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }" style="margin:0px">
+                <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }" >
                     <label for="username">{{"view.login.Username" | translate}}</label>
                     <input type="text" name="username" id="username" class="form-control" ng-model="vm.username" required />
                     <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">{{"view.login.Uir" | translate}}</span>
