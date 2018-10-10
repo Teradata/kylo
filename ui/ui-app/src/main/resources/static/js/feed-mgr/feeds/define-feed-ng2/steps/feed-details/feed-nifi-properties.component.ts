@@ -261,7 +261,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             .flatten(true)
             .map(_ => _.id)
             .countBy(_ => _)
-            .omit(_ => _ === 1)
+            .omit((_: any) => _ === 1)
             .keys()
             .value();
 
@@ -276,7 +276,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
 
         let hasVisibleProcessors = this.inputProcessors
             .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
-        hasVisibleProcessors |= this.nonInputProcessors.find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
+        hasVisibleProcessors = hasVisibleProcessors || this.nonInputProcessors.find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
 
         if (!hasVisibleProcessors) {
             this.noPropertiesExist = true;
@@ -295,7 +295,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             .flatten(true)
             .map(_ => _.id)
             .countBy(_ => _)
-            .omit(_ => _ === 1)
+            .omit((_: any) => _ === 1)
             .keys()
             .value();
 
