@@ -1,8 +1,6 @@
 import * as angular from 'angular';
 
 import AccessConstants from "../../constants/AccessConstants";
-import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
-//const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
 const moduleName = require('./module-name');
 
 class ModuleFactory  {
@@ -30,11 +28,20 @@ class ModuleFactory  {
             lazyLoad: ($transition$: any) => {
                 const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
 
-                return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
-                    .then(mod => $ocLazyLoad.load(mod.default))
+                return import(/* webpackChunkName: "feed-mgr.module" */ "../module-require")
+                    .then(mod => {
+                        $ocLazyLoad.load({name: "kylo.feedmgr"});
+
+                        return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
+                            .then(mod => $ocLazyLoad.load(mod.default))
+                            .catch(err => {
+                                throw new Error("Failed to load FeedsTableController, " + err);
+                            });
+                    })
                     .catch(err => {
-                        throw new Error("Failed to load FeedsTableController, " + err);
+                        throw new Error("Failed to load kylo.feedmgr, " + err);
                     });
+
             },
             data: {
                 breadcrumbRoot: true,

@@ -6,9 +6,7 @@ import { EntityAccessControlService } from '../shared/entity-access-control/Enti
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { FeedService } from '../services/FeedService';
 import {IComponentOptions} from 'angular';
-const moduleName = require('./module-name');
 import './module-require.js';
-
 
 export class FeedsTableController implements ng.IComponentController {
 

@@ -1,6 +1,4 @@
 import {app} from './common/module-require';
-//const app = require('./common/module-require');//kylo-common
-//import {moduleName} from "./common/module-name";
 import '@uirouter/angular';
 import 'kylo-services';
 import './main/IndexController';
@@ -8,11 +6,7 @@ import './main/HomeController';
 import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
-import {CatalogRouterModule} from "./feed-mgr/catalog/catalog.module";
 import {KyloRouterService} from "./services/kylo-router.service";
-
-
-const Angular = require('angular');
 
 'use strict';
 
