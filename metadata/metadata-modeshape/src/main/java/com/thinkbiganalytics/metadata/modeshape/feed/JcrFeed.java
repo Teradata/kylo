@@ -526,6 +526,10 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         getFeedDetails().ifPresent(d -> d.setUserProperties(userProperties, userFields));
     }
 
+    public boolean isMissingRequiredProperties(@Nonnull final Set<UserFieldDescriptor> userFields) {
+        return getFeedDetails().isPresent() ? getFeedDetails().get().isMissingRequiredProperties(userFields) : false;
+    }
+
     @Override
     public String getJson() {
         return getFeedDetails().map(d -> d.getJson()).orElse(null);

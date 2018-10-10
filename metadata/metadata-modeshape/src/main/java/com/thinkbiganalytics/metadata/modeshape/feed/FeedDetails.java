@@ -439,4 +439,13 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
         JcrPropertyUtil.setUserProperties(getNode(), userFields, userProperties);
     }
 
+    /**
+     * is this feed missing any user properties that are required
+     * @param userFields
+     * @return true if missing properties, false if not
+     */
+   public boolean isMissingRequiredProperties(@Nonnull final Set<UserFieldDescriptor> userFields){
+        return JcrPropertyUtil.isMissingRequiredUserProperties(getNode(),userFields);
+    }
+
 }
