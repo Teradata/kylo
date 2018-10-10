@@ -79,7 +79,7 @@ class Route {
                             $ocLazyLoad.load(mod);
                         })
                         .catch(err => {
-                            throw new Error("Failed to load future.feeds, " + err);
+                            throw new Error("Failed to load home controller, " + err);
                         });
                 }
             });
@@ -93,7 +93,8 @@ class Route {
 
                 return import(/* webpackChunkName: "feedmgr.feeds.module" */ "./feed-mgr/feeds/module")
                     .then(mod => {
-                        $ocLazyLoad.load(mod.default.module).then(function success(args: any) {
+                        console.log('imported feeds module', mod);
+                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             $stateProvider.stateService.go('feeds');
                         }, function error(err: any) {
                             console.log("Error loading feeds", err);
@@ -231,7 +232,8 @@ class Route {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
                 return import(/* webpackChunkName: "admin.registered-templates.module" */ "./feed-mgr/templates/module")
                     .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
+                        console.log('imported templates mod', mod);
+                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('registered-templates')
                             return args;

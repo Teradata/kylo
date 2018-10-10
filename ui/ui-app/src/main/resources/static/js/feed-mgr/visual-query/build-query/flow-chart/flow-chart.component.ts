@@ -11,7 +11,7 @@ import * as _ from "underscore";
 
 @Component({
     selector:'flow-chart',
-    styleUrls:['js/feed-mgr/visual-query/build-query/flow-chart/flow-chart.component.css'],
+    styleUrls:['js/feed-mgr/visual-query/build-query/flow-chart/flow-chart.component.scss'],
     templateUrl:'js/feed-mgr/visual-query/build-query/flow-chart/flow-chart.component.html'
 })
 export class FlowChartComponent implements  OnInit{

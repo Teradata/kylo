@@ -30,7 +30,7 @@ const devServer = {
         target: 'http://127.0.0.1:8400',
         secure: false,
         changeOrigin: false,
-        headers: {host: 'localhost:5000'}
+        headers: {host: 'localhost:3000'}
     }]
 };
 
@@ -325,7 +325,7 @@ const webpackConfig = (env) => {
             // new ForkTsCheckerWebpackPlugin({
             //     tsconfig: tsConfigFile
             // }),
-            new writeFilePlugin(),
+            // new writeFilePlugin(),
 
             // new BundleAnalyzerPlugin()
         ]
