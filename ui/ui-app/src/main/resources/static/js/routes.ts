@@ -846,6 +846,14 @@ class Route {
             .catch(err => {
                 throw new Error("Failed to load feed-mgr module, " + err);
             });
+        import(/* webpackChunkName: "feedmgr.module-require" */ './feed-mgr/module-require')
+            .then(mod => {
+                console.log('imported feed-mgr/module-require', mod);
+                $ocLazyLoad.load(mod)
+            })
+            .catch(err => {
+                throw new Error("Failed to load feed-mgr module-require, " + err);
+            });
     }
 }
 
