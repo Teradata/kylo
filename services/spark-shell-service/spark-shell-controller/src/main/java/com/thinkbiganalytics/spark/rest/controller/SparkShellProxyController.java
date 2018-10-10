@@ -740,7 +740,8 @@ public class SparkShellProxyController {
         try {
             response = supplier.get();
         } catch (final Exception e) {
-            throw transformError(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
+            final String message = (e.getMessage() != null) ? EXCEPTION.matcher(e.getMessage()).replaceAll("") : SparkShellProxyResources.TRANSFORM_ERROR;
+            throw transformError(Response.Status.INTERNAL_SERVER_ERROR, message, e);
         }
         ModifiedTransformResponse modifiedResponse = modifier.modify(response.get());
         return Response.ok(modifiedResponse).build();
