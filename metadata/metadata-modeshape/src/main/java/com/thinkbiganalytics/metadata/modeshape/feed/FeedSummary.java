@@ -32,6 +32,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrChangeComment;
 
+import org.joda.time.DateTime;
+
 import java.util.Optional;
 
 import javax.jcr.Node;
@@ -53,6 +55,36 @@ public class FeedSummary extends JcrObject implements SystemEntityMixin, Auditab
 
     public FeedSummary(Node node, JcrCategory category, JcrFeed feed) {
         this(node, feed);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin#getModifiedTime()
+     */
+    @Override
+    public DateTime getModifiedTime() {
+        DateTime thisTime = AuditableMixin.super.getModifiedTime();
+        
+        return getFeedDetails()
+            .map(FeedDetails::getModifiedTime)
+            .filter(time -> time != null)
+            .filter(time -> time.compareTo(thisTime) > 0)
+            .orElse(thisTime);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin#getModifiedBy()
+     */
+    @Override
+    public String getModifiedBy() {
+        String thisModifier = getModifiedBy();
+        DateTime thisTime = AuditableMixin.super.getModifiedTime();
+        
+        return getFeedDetails()
+            .map(FeedDetails::getModifiedTime)
+            .filter(time -> time != null)
+            .filter(time -> time.compareTo(thisTime) > 0)
+            .map(time -> thisModifier)
+            .orElse(thisModifier);
     }
 
     public Optional<FeedDetails> getFeedDetails() {

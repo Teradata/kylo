@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed.FeedId;
@@ -47,6 +48,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.NodeModificationInvocati
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,7 @@ import javax.jcr.Value;
 /**
  *
  */
-public class FeedDetails extends JcrObject implements PropertiedMixin {
+public class FeedDetails extends JcrObject implements PropertiedMixin, AuditableMixin {
 
     private static final Logger log = LoggerFactory.getLogger(FeedDetails.class);
 
@@ -104,6 +106,30 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
 
     protected FeedSummary getParentSummary() {
         return this.summary;
+    }
+    
+    @Override
+    public DateTime getModifiedTime() {
+        DateTime thisTime = AuditableMixin.super.getModifiedTime();
+        
+        return getPrecondition()
+            .map(JcrFeedPrecondition.class::cast)
+            .map(JcrFeedPrecondition::getModifiedTime)
+            .filter(time -> time.compareTo(thisTime) > 0)
+            .orElse(thisTime);
+    }
+    
+    @Override
+    public String getModifiedBy() {
+        String thisModifier = getModifiedBy();
+        DateTime thisTime = AuditableMixin.super.getModifiedTime();
+        
+        return getPrecondition()
+            .map(JcrFeedPrecondition.class::cast)
+            .map(JcrFeedPrecondition::getModifiedTime)
+            .filter(time -> time.compareTo(thisTime) > 0)
+            .map(time -> thisModifier)
+            .orElse(thisModifier);
     }
 
     public List<? extends FeedSource> getSources() {
@@ -231,16 +257,8 @@ public class FeedDetails extends JcrObject implements PropertiedMixin {
         return null;
     }
 
-    public FeedPrecondition getPrecondition() {
-        try {
-            if (getNode().hasNode(PRECONDITION)) {
-                return new JcrFeedPrecondition(getNode().getNode(PRECONDITION), getParentFeed());
-            } else {
-                return null;
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
-        }
+    public Optional<FeedPrecondition> getPrecondition() {
+        return Optional.ofNullable(JcrUtil.getJcrObject(getNode(), PRECONDITION, JcrFeedPrecondition.class, getParentFeed()));
     }
 
     public FeedManagerTemplate getTemplate() {

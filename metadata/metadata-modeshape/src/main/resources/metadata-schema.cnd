@@ -294,7 +294,7 @@
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
     + tba:versionComment (tba:ChangeComment)
 
-[tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
+[tba:feedDetails] > nt:hierarchyNode, mix:lastModified, tba:propertied, tba:extensibleEntity
     - tba:feedTemplate (WEAKREFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple

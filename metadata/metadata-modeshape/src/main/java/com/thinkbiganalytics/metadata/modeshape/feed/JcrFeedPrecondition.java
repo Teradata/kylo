@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
@@ -37,7 +38,7 @@ import javax.jcr.RepositoryException;
 /**
  *
  */
-public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
+public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition, AuditableMixin {
 
     public static final String NODE_TYPE = "tba:feedPrecondition";
 
