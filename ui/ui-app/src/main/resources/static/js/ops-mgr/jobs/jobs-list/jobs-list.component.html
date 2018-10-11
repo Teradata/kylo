@@ -23,9 +23,9 @@
     <div fxLayout="row" fxFlex="100" fxLayoutAlign="start center"  >
       <div *ngIf="!searchBox.searchVisible" fxLayout="column">
         <mat-card-title fxLayout="row">
-          <mat-icon >{{kyloIcons.Feed.jobsList}}</mat-icon>
-          <span  class="push-left-sm">
-               <span >Jobs</span>
+          <!-- <mat-icon >{{kyloIcons.Feed.jobsList}}</mat-icon> -->
+          <span>
+               <span>Jobs</span>
              </span>
         </mat-card-title>
         <mat-card-subtitle>Execution history</mat-card-subtitle>
@@ -81,9 +81,8 @@
 
             <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
                                     <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
-                                        <ng-md-icon icon="{{row.icon}}" size="20" >
-                                        </ng-md-icon>
-                                        <span hide show-gt-md>{{row.displayStatus}}</span>
+                                        <mat-icon size="20">{{row.icon}}</mat-icon>
+                                        <!--<span hide show-gt-md>{{row.displayStatus}}</span>-->
                                     </span>
             </ng-template>
 
