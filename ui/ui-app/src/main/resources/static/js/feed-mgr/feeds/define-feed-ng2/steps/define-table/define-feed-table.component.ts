@@ -132,7 +132,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     targetFormatOptions: Common.LabelValue[];
 
     /**
-     * The comporession Options
+     * The compression Options
      */
     compressionOptions: any[];
 
@@ -150,7 +150,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * the filter for the partition list
      */
     private filterPartitionFormulaPipe:FilterPartitionFormulaPipe;
-
 
     /**
      * Toggle Check All/None on Profile column
@@ -222,7 +221,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll.setup(this.feed.table);
 
 
-        let locked = this.feed.hasBeenDeployed()  ||this.feed.isDataTransformation()
+        let locked = this.feed.hasBeenDeployed();
         this.tablePermissions.canRemoveFields = !locked
         this.tablePermissions.dataTypeLocked = locked
         this.tablePermissions.tableLocked = locked
@@ -368,7 +367,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tableFormControls.removePartitionFieldFormControls(partitions[0]);
     };
 
-    onIndexCheckAllChange(){
+    onIndexCheckAllChange() : boolean {
         this.indexCheckAll.toggleAll();
         let checked = this.indexCheckAll.isChecked;
             //update the form values
@@ -377,9 +376,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 ctrl.setValue(checked);
                 fieldPolicy.index = checked;
             });
+        return false;
     }
 
-    onProfileCheckAllChange(){
+    onProfileCheckAllChange() : boolean{
         this.profileCheckAll.toggleAll();
         let checked = this.profileCheckAll.isChecked;
         //update the form values
@@ -388,6 +388,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             ctrl.setValue(checked);
             fieldPolicy.profile = checked;
         });
+        return false;
     }
 
     onIndexChange(columnDef:TableColumnDefinition){
@@ -526,6 +527,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             partition.formula = formulas[0];
         }
         partition.updateFieldName();
+        this.updatePartitionNameState(partition);
 
         setTimeout(() => {this.feedTableColumnDefinitionValidation.partitionNamesUnique()}, 50);
 
@@ -543,6 +545,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     onPartitionFormulaChange(partition: TableFieldPartition) {
         partition.updateFieldName();
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
+        this.updatePartitionNameState(partition);
+    }
+
+    updatePartitionNameState(partition: TableFieldPartition) : void {
+        let nameField = this.definePartitionForm.get('partitionName_'+partition._id);
+        if (partition.allowPartitionNameChanges()) {
+            nameField.enable({onlySelf:true});
+        } else {
+            nameField.disable({onlySelf:true});
+        }
+
     }
 
     /**
@@ -555,7 +568,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         partition.replaceSpaces();
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
     };
-
 
     private onFieldChange(columnDef: TableColumnDefinition) {
        this._selectColumn(columnDef);
@@ -868,7 +880,7 @@ class TableFormControls {
         let controls :Common.Map<FormControl> = {}
         controls["partitionColumnRef_"+partition._id] = new FormControl('',[Validators.required]);
         controls["partitionFormula_"+partition._id] = new FormControl(partition.formula,[Validators.required]);
-        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(partition.formula == 'val')|| this.tablePermissions.tableLocked},[Validators.required]);
+        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(!partition.allowPartitionNameChanges() || this.tablePermissions.tableLocked)},[Validators.required]);
         return controls;
     }
 

@@ -118,7 +118,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
 
 
-    viewText :ViewText = {modeText:"Add",title:"Add Field Policies",titleText:"Add a new Policy", addText:"ADD RULE", cancelText:"CANCEL ADD"}
+    viewText :ViewText = {modeText:"Add",title:"Field Policies",titleText:"Add a new policy", addText:"Add Rule", cancelText:"Cancel Add"}
 
     constructor(
         public fieldPolicyOptionsService: FieldPolicyOptionsService,
@@ -345,8 +345,8 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      */
     private cancelEdit() {
         this.editMode = EditMode.NEW;
-        this.viewText.addText = 'ADD RULE';
-        this.viewText.cancelText = 'CANCEL ADD';
+        this.viewText.addText = 'Add Rule';
+        this.viewText.cancelText = 'Cancel Add';
         this.viewText.titleText = 'Add a new policy';
 
         this.ruleType = null;

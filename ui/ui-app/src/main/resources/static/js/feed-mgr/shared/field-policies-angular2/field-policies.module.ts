@@ -23,6 +23,8 @@ import {KyloCommonModule} from "../../../common/common.module";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatButtonModule} from "@angular/material/button";
 import {DndListModule} from "ngx-drag-and-drop-lists";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -51,7 +53,9 @@ import {DndListModule} from "ngx-drag-and-drop-lists";
         MatSlideToggleModule,
         ReactiveFormsModule,
         CovalentChipsModule,
-        MatButtonModule
+        MatButtonModule,
+        MatIconModule,
+        MatDividerModule
     ],
     providers: [
         PolicyInputFormService,
