@@ -12,6 +12,8 @@ import {FeedSideNavService} from "../services/feed-side-nav.service";
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 import 'rxjs/add/operator/distinctUntilChanged';
+import * as _ from "underscore"
+import {CloneUtil} from "../../../../common/utils/clone-util";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -117,10 +119,12 @@ console.log("FORM CHANGED ",changes)
         //watch for form changes and mark dirty
         //start watching for form changes after init time
         formGroup.valueChanges.debounceTime(debounceTime).subscribe(change => {
-            if(!formGroup.dirty)
-                this.orignalVal = JSON.stringify(change);
-                
-            if(formGroup.dirty && this.orignalVal !== JSON.stringify(change)){
+            const changeStringVal = StringUtils.stringify(change);
+            if(!formGroup.dirty) {
+                //stringify without circular ref
+                this.orignalVal = changeStringVal
+            }
+            else if(this.orignalVal !==changeStringVal){
                 this.onFormChanged(change);
             }
         });
