@@ -1,12 +1,12 @@
 <div fxLayout="column" class="info-item">
   <div fxLayout="row" class="info-item-row">
-    <mat-icon>{{icon}}</mat-icon>
+    <mat-icon ngClass="tc-grey-600">{{icon}}</mat-icon>
     <div fxLayout="column" class="info-item-text">
       <div class="info-item-title" >{{name}}</div>
       <div class="info-item-description"> {{description}}</div>
     </div>
     <span fxFlex></span>
-    <button mat-icon-button ngClass="tc-gray-600" (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable"><mat-icon>edit</mat-icon></button>
+    <button mat-icon-button (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable"><mat-icon ngClass="tc-grey-600">edit</mat-icon></button>
   </div>
   <div *ngIf="editing" fxLayout="column" class="info-item-edit">
     <ng-content #content></ng-content>

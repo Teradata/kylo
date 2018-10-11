@@ -82,6 +82,10 @@ export class TableFieldPartition  implements KyloObject {
         }
     }
 
+    public allowPartitionNameChanges() : boolean {
+        return (this.formula && this.formula != 'val');
+    }
+
     updateFieldName() {
         if(angular.isUndefined(this.formula)){
             this.formula = 'val';
