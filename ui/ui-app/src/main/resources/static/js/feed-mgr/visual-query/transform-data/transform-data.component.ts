@@ -237,7 +237,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Height offset from the top of the page.
      */
     @Input()
-    heightOffset: string = "0";
+    heightOffset:any = "0";
 
     @Input()
     warnWhenLeaving?: boolean = true;
@@ -277,7 +277,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
 
         // Get height offset attribute
-        this.heightOffset = $element.nativeElement.getAttribute("height-offset");
+        this.heightOffset = $element.nativeElement.getAttribute("height-offset") || "0";
     }
 
     ngAfterViewInit(): void {
@@ -452,8 +452,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
     /**
      * Gets the browser height offset for the element with the specified offset from the top of this component.
+     * Deprecated
      */
     getBrowserHeightOffset(elementOffset: number): number {
+        if(isNaN(this.heightOffset)){
+            this.heightOffset = "0";
+        }
         return (this.heightOffset != null ? parseInt(this.heightOffset) : 0) + elementOffset;
     }
 
