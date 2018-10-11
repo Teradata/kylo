@@ -108,6 +108,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     feedTableColumnDefinitionValidation: FeedTableColumnDefinitionValidation;
 
+    parentForm:FormGroup;
+
     /**
      * The table form with the fields and virtual repeate
      */
@@ -196,10 +198,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
+        this.parentForm = new FormGroup({})
+
         this.defineTableForm = new FormGroup({});
         this.definePartitionForm = new FormGroup({});
         this.mergeStrategiesForm = new FormGroup({});
         this.targetFormatOptionsForm = new FormGroup({});
+
+        this.parentForm.addControl("defineTableForm",this.defineTableForm)
+        this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
+        this.parentForm.addControl("mergeStrategiesForm",this.mergeStrategiesForm)
+        this.parentForm.addControl("targetFormatOptionsForm",this.targetFormatOptionsForm)
 
         this.mergeStrategiesForm.registerControl("targetMergeStrategy", new FormControl());
         this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
@@ -256,15 +265,16 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl());
 
         //listen when the form is valid or invalid
-        this.subscribeToFormChanges(this.defineTableForm);
+        this.subscribeToFormChanges(this.parentForm);
         this.subscribeToFormDirtyCheck(this.defineTableForm);
-        this.subscribeToFormChanges(this.definePartitionForm);
+        //this.subscribeToFormChanges(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
-        this.subscribeToFormChanges(this.mergeStrategiesForm);
+       // this.subscribeToFormChanges(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
-        this.subscribeToFormChanges(this.targetFormatOptionsForm);
+       // this.subscribeToFormChanges(this.targetFormatOptionsForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
     }
+
 
     protected feedEdit(feed:Feed){
         this.ensureTableFields();
@@ -716,7 +726,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 }
                 columnDef.initFeedColumn()
                 //add the form control
-                this.tableFormControls.addTableFieldFormControl(columnDef);
+                this.tableFormControls.addTableFieldFormControl(columnDef,true);
             });
 
             this.defineTableForm.get("indexCheckAll").setValue(this.indexCheckAll.isChecked)
@@ -747,6 +757,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             columnDef.initFeedColumn()
         });
     }
+
 
 }
 @Pipe({name: 'filterPartitionFormula'})
@@ -839,11 +850,16 @@ class TableFormControls {
 
 
 
-    addTableFieldFormControl(columnDef:TableColumnDefinition){
+    addTableFieldFormControl(columnDef:TableColumnDefinition,touch:boolean =false){
         let formControls :{ [key: string]: AbstractControl; } = this.buildTableFieldFormControl(columnDef);
         let keys :string[] = Object.keys(formControls)
         keys.forEach(key => {
-            this.defineTableForm.registerControl(key,formControls[key]);
+            const ctrl = formControls[key];
+            if(touch) {
+                //mark it as touched to force validation
+                ctrl.markAsTouched({onlySelf:true});
+            }
+            this.defineTableForm.addControl(key,ctrl);
         })
     }
 
@@ -874,7 +890,10 @@ class TableFormControls {
         let formControls :{ [key: string]: AbstractControl; } = this.buildPartitionFieldFormControl(partition);
         let keys :string[] = Object.keys(formControls)
         keys.forEach(key => {
-            this.definePartitionForm.registerControl(key,formControls[key]);
+            const ctrl = formControls[key];
+            //mark it as touched to force validation
+            ctrl.markAsTouched({onlySelf:true});
+            this.definePartitionForm.addControl(key,ctrl);
         })
     }
 

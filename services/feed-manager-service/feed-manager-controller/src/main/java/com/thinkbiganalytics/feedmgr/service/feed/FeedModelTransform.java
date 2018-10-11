@@ -579,7 +579,7 @@ public class FeedModelTransform {
      * @return the user-defined fields
      */
     @Nonnull
-    private Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
+    public Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
         final Set<UserFieldDescriptor> userFields = feedProvider.getUserFields();
         return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId()).orElse(Collections.emptySet())) : userFields;
     }

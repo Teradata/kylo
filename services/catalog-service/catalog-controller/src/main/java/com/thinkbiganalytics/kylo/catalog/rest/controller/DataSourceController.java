@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
-import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
-
 /*-
  * #%L
  * kylo-catalog-controller
@@ -22,6 +20,7 @@ import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
@@ -37,8 +36,6 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSourceCredentials;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.catalog.Connector;
-import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -104,20 +101,17 @@ public class DataSourceController extends AbstractCatalogController {
 
     public static final String BASE = "/v1/catalog/datasource";
 
-    public enum CredentialMode {NONE, EMBED, ATTACH};
-    
-    @Inject
-    private ConnectorProvider connectorProvider;
+    public enum CredentialMode {NONE, EMBED, ATTACH}
 
     @Inject
     private DataSourceProvider dataSourceProvider;
-    
+
     @Inject
     private SecurityService securityService;
-    
+
     @Inject
     private SecurityModelTransform securityTransform;
-    
+
     @Inject
     private CatalogModelTransform modelTransform;
 
@@ -138,9 +132,12 @@ public class DataSourceController extends AbstractCatalogController {
 
     @Inject
     private ConnectorPluginManager pluginManager;
-    
+
     @Inject
     private DataSetController dataSetController;
+
+    @Inject
+    private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider dataSourceService;
 
 
     @POST
@@ -153,28 +150,23 @@ public class DataSourceController extends AbstractCatalogController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createDataSource(@Nonnull final DataSource source) {
         log.entry(source);
-        
+
         // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSource() for a more typical REST API
-        if (! StringUtils.isEmpty(source.getId())) {
+        final DataSource dataSource;
+        if (StringUtils.isNotEmpty(source.getId())) {
             return updateDataSource(source);
         } else {
-            return metadataService.commit(() -> {
-                Connector.ID connId = connectorProvider.resolveId(source.getConnector().getId());
-                
-                return connectorProvider.find(connId)
-                    .map(conn -> dataSourceProvider.create(connId, source.getTitle()))
-                    .map(domain -> {
-                        modelTransform.updateDataSource(source, domain);
-                        return domain;
-                    })
-                    .map(modelTransform.dataSourceToRestModel())
-                    .map(dataSource -> Response.ok(log.exit(dataSource)).build())
-                    .orElseThrow(() -> {
-                        log.debug("Connector not found with ID: {}", connId);
-                        return new BadRequestException(getMessage("catalog.connector.notFound"));
-                    });
-            });
+            try {
+                dataSource = dataSourceService.createDataSource(source);
+            } catch (final CatalogException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Cannot create data source from request: " + source, e);
+                }
+                throw new BadRequestException(getMessage(e));
+            }
         }
+
+        return Response.ok(log.exit(dataSource)).build();
     }
 
     @POST
@@ -251,31 +243,30 @@ public class DataSourceController extends AbstractCatalogController {
 
         return Response.ok(log.exit(dataSource)).build();
     }
-    
+
     @PUT
     @ApiOperation("Updates an existing data source")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Data source updated", response = DataSource.class),
-        @ApiResponse(code = 400, message = "Invalid connector", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Data source updated", response = DataSource.class),
+                      @ApiResponse(code = 400, message = "Invalid connector", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDataSource(@Nonnull final DataSource source) {
         log.entry(source);
-        
-        return metadataService.commit(() -> {
-            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(source.getId());
-            
-            return dataSourceProvider.find(dsId)
-                .map(domain -> modelTransform.updateDataSource(source, domain))
-                .map(modelTransform.dataSourceToRestModel())
-                .map(dataSource -> Response.ok(log.exit(dataSource)).build())
-                .orElseThrow(() -> {
-                    log.debug("Data source not found with ID: {}", dsId);
-                    return new BadRequestException(getMessage("catalog.datasource.notFound.id", dsId));
-                });
-        });
+
+        final DataSource dataSource;
+        try {
+            dataSource = dataSourceService.updateDataSource(source);
+        } catch (final CatalogException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot create data source from request: " + source, e);
+            }
+            throw new BadRequestException(getMessage(e));
+        }
+
+        return Response.ok(log.exit(dataSource)).build();
     }
 
     @DELETE
@@ -319,8 +310,8 @@ public class DataSourceController extends AbstractCatalogController {
 
         // Fetch page
         final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
-        
-        return metadataService.read(() -> { 
+
+        return metadataService.read(() -> {
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
             final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel());
 
@@ -396,7 +387,7 @@ public class DataSourceController extends AbstractCatalogController {
             // List tables
             final DataSource dataSource = findDataSource(dataSourceId);
             final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
-    
+
             return Response.ok(log.exit(tables)).build();
         });
     }
@@ -470,7 +461,6 @@ public class DataSourceController extends AbstractCatalogController {
     }
 
 
-
     @POST
     @Path("{id}/dataset")
     @ApiOperation("creates a new dataset for a datasource")
@@ -479,7 +469,7 @@ public class DataSourceController extends AbstractCatalogController {
         final DataSource dataSource = findDataSource(datasourceId);
         final DataSet dataSet = new DataSet();
         dataSet.setDataSource(dataSource);
-        
+
         return dataSetController.createDataSet(dataSet);
     }
 
@@ -500,7 +490,7 @@ public class DataSourceController extends AbstractCatalogController {
                 });
         });
     }
-    
+
 
     @GET
     @Path("{id}/actions/available")

@@ -137,6 +137,11 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                 this.selectedNode.name = feed.displayName;
                 this.selectedNode.type = 'FEED';
                 this.selectedNode.content = feed;
+                this.cleanProperties(feed);
+                feed.displayProperties = {};
+                //add in any properties of its own
+                angular.extend(feed.displayProperties, feed.properties);
+                this.selectedNode.content.displayProperties = feed.displayProperties
             }
             else {
                 var ds = this.feedLineage.datasourceMap[firstItem];

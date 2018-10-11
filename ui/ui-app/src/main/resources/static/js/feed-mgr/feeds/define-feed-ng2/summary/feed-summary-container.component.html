@@ -1,7 +1,12 @@
 <td-layout>
 
 <td-layout-manage-list opened="true" mode="side">
-    <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">Feeds</mat-toolbar>
+    <mat-toolbar td-sidenav-content (click)="gotoFeeds()" style="cursor:pointer">
+      <mat-toolbar-row>
+        <mat-icon class="push-left-xs" style="margin-right:20px">linear_scale</mat-icon>
+        <span class="push-left-sm">{{'views.main.feeds' | translate}}</span>
+      </mat-toolbar-row>
+    </mat-toolbar>
     <div td-sidenav-content>
       <mat-nav-list>
 

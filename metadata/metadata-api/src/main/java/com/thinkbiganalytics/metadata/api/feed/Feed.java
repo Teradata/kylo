@@ -110,6 +110,13 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
     Map<String, String> getUserProperties();
 
     /**
+     * check to see if this feed has any missing required properties based upon the supplied field descriptors
+     * @param userFields
+     * @return true if missing required properties, false if not
+     */
+    public boolean isMissingRequiredProperties(@Nonnull final Set<UserFieldDescriptor> userFields);
+
+    /**
      * Replaces the user-defined properties for this feed with the specified properties.
      *
      * <p>If the user-defined field descriptors are given then a check is made to ensure that all required properties are specified. These field descriptors should be the union of

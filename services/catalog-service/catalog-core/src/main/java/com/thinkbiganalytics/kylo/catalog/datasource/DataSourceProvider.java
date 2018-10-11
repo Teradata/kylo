@@ -20,13 +20,11 @@ package com.thinkbiganalytics.kylo.catalog.datasource;
  * #L%
  */
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
-import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginNiFiControllerService;
@@ -34,6 +32,8 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -45,7 +45,6 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.security.context.SecurityContextUtil;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.slf4j.Logger;
@@ -57,8 +56,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.PropertyPlaceholderHelper;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -67,7 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -81,16 +77,10 @@ import javax.annotation.Nullable;
 /**
  * Provides access to {@link DataSource} objects.
  */
-@Component
+@Component("dataSourceService")
 public class DataSourceProvider {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceProvider.class);
-
-    /**
-     * Maps id to connection
-     */
-    @Nonnull
-    private final Map<String, DataSource> catalogDataSources;
 
     /**
      * Provides access to connectors
@@ -132,6 +122,15 @@ public class DataSourceProvider {
     @Nonnull
     private final PropertyPlaceholderHelper placeholderHelper = new PropertyPlaceholderHelper("${", "}");
 
+    @Nonnull
+    private final MetadataAccess metadataService;
+
+    @Nonnull
+    private final com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider metadataProvider;
+
+    @Nonnull
+    private final CatalogModelTransform modelTransform;
+
     /**
      * Constructs a {@code ConnectorProvider}.
      */
@@ -141,25 +140,19 @@ public class DataSourceProvider {
                               @Nonnull final DatasourceModelTransform feedDataSourceTransform,
                               @Nonnull final ConnectorProvider connectorProvider,
                               @Nonnull final NiFiRestClient nifiRestClient,
-                              @Nonnull final ConnectorPluginManager pluginManager) throws IOException {
+                              @Nonnull final ConnectorPluginManager pluginManager,
+                              @Nonnull final MetadataAccess metadataService,
+                              @Nonnull final com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider metadataProvider,
+                              @Nonnull final CatalogModelTransform modelTransform) {
         this.feedDataSourceProvider = feedDataSourceProvider;
         this.credentialManager = credentialManager;
         this.feedDataSourceTransform = feedDataSourceTransform;
         this.connectorProvider = connectorProvider;
         this.nifiRestClient = nifiRestClient;
         this.pluginManager = pluginManager;
-
-        // Load data sources
-        final String connectionsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-datasources.json"), StandardCharsets.UTF_8);
-        final List<DataSource> connectionList = ObjectMapperSerializer.deserialize(connectionsJson, new TypeReference<List<DataSource>>() {
-        });
-        catalogDataSources = connectionList.stream()
-            .peek(connection -> {
-                if (connection.getId() == null) {
-                    connection.setId(connection.getTitle().toLowerCase().replaceAll("\\W", "-").replaceAll("-{2,}", "-"));
-                }
-            })
-            .collect(Collectors.toMap(DataSource::getId, Function.identity()));
+        this.metadataService = metadataService;
+        this.metadataProvider = metadataProvider;
+        this.modelTransform = modelTransform;
     }
 
     /**
@@ -168,34 +161,29 @@ public class DataSourceProvider {
      * @throws CatalogException if the data source is not valid
      */
     @Nonnull
-    public DataSource createOrUpdateDataSource(@Nonnull final DataSource source) {
-        // Find connector
-        final Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).flatMap(connectorProvider::findConnector)
-            .orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
+    public DataSource createDataSource(@Nonnull final DataSource source) {
+        return metadataService.commit(() -> {
+            // Find connector
+            final com.thinkbiganalytics.metadata.api.catalog.Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).map(connectorProvider::resolveId)
+                .flatMap(connectorProvider::find).orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
 
-        final DataSource dataSource;
-        if (StringUtils.isBlank(source.getId())) {
-            dataSource = new DataSource(source);
-            dataSource.setId(UUID.randomUUID().toString());
-        } else {
-            dataSource = source;
-        }
+            // Create data source
+            final com.thinkbiganalytics.metadata.api.catalog.DataSource domain = metadataProvider.create(connector.getId(), source.getTitle());
 
-        // Create or update controller service
-        final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(connector.getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
+            // Create or update controller service
+            final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(connector.getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
 
-        if (plugin != null && plugin.getNifiControllerService() != null) {
-            createOrUpdateNiFiControllerService(dataSource, plugin.getNifiControllerService());
-        }
+            if (plugin != null && plugin.getNifiControllerService() != null) {
+                createOrUpdateNiFiControllerService(source, plugin.getNifiControllerService());
+            }
 
-        // Update catalog
-        final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(dataSource, SecurityContextUtil.getCurrentPrincipals());
-        catalogDataSources.put(dataSource.getId(), updatedDataSource);
+            // Update catalog
+            final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(source, SecurityContextUtil.getCurrentPrincipals());
+            modelTransform.updateDataSource(updatedDataSource, domain);
 
-        // Return a copy with the connector
-        final DataSource copy = new DataSource(dataSource);
-        copy.setConnector(connector);
-        return copy;
+            // Return a copy with the connector
+            return modelTransform.dataSourceToRestModel().apply(domain);
+        });
     }
 
     /**
@@ -214,7 +202,7 @@ public class DataSourceProvider {
     @SuppressWarnings("squid:S2259")
     public Optional<DataSource> findDataSource(@Nonnull final String id, final boolean includeCredentials) {
         // Find the data source
-        DataSource dataSource = catalogDataSources.get(id);
+        DataSource dataSource = metadataProvider.find(metadataProvider.resolveId(id)).map(modelTransform.dataSourceToRestModel()).orElse(null);
         if (dataSource != null) {
             dataSource = new DataSource(dataSource);
         } else {
@@ -231,7 +219,8 @@ public class DataSourceProvider {
         }
 
         // Set connector
-        final Optional<Connector> connector = Optional.ofNullable(dataSource).map(DataSource::getConnector).map(Connector::getId).flatMap(connectorProvider::findConnector);
+        final Optional<Connector> connector = Optional.ofNullable(dataSource).map(DataSource::getConnector).map(Connector::getId).map(connectorProvider::resolveId).flatMap(connectorProvider::find)
+            .map(modelTransform.connectorToRestModel());
         if (connector.isPresent()) {
             dataSource.setConnector(connector.get());
             return Optional.of(dataSource);
@@ -249,9 +238,10 @@ public class DataSourceProvider {
     @Nonnull
     public Page<DataSource> findAllDataSources(@Nonnull final Pageable pageable, @Nullable final String filter) {
         // Filter catalog data sources
-        @SuppressWarnings("squid:HiddenFieldCheck") final Supplier<Stream<DataSource>> catalogDataSources = () -> this.catalogDataSources.values().stream()
-            .filter(containsIgnoreCase(DataSource::getTitle, filter))
-            .map(DataSource::new);
+        final Supplier<Stream<DataSource>> catalogDataSources =
+            () -> metadataService.read(
+                () -> metadataProvider.findAll().stream().map(modelTransform.dataSourceToRestModel())
+            );
 
         // Filter feed data sources
         final DatasourceCriteria feedDataSourcesCriteria = feedDataSourceProvider.datasetCriteria().type(UserDatasource.class);
@@ -268,6 +258,35 @@ public class DataSourceProvider {
             .peek(findConnector())
             .collect(Collectors.toList());
         return new PageImpl<>(filteredDataSources, pageable, catalogDataSources.get().count() + feedDataSources.get().count());
+    }
+
+    /**
+     * Updates a data source using the specified template.
+     *
+     * @throws CatalogException if the data source is not valid
+     */
+    @Nonnull
+    public DataSource updateDataSource(@Nonnull final DataSource source) {
+        return metadataService.commit(() -> {
+            // Find data source
+            final Optional<com.thinkbiganalytics.metadata.api.catalog.DataSource.ID> domainId = Optional.ofNullable(source.getId()).map(metadataProvider::resolveId);
+            final com.thinkbiganalytics.metadata.api.catalog.DataSource domain = domainId.flatMap(metadataProvider::find)
+                .orElseThrow(() -> new CatalogException("catalog.datasource.notFound.id", source.getId()));
+
+            // Create or update controller service
+            final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(domain.getConnector().getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
+
+            if (plugin != null && plugin.getNifiControllerService() != null) {
+                createOrUpdateNiFiControllerService(source, plugin.getNifiControllerService());
+            }
+
+            // Update catalog
+            final DataSource updatedDataSource = this.credentialManager.applyPlaceholders(source, SecurityContextUtil.getCurrentPrincipals());
+            modelTransform.updateDataSource(updatedDataSource, domain);
+
+            // Return a copy with the connector
+            return modelTransform.dataSourceToRestModel().apply(domain);
+        });
     }
 
     /**
@@ -364,7 +383,7 @@ public class DataSourceProvider {
             final String connectorId = dataSource.getConnector().getId();
             Optional<Connector> connector = connectors.get(connectorId);
             if (connector == null) {
-                connector = connectorProvider.findConnector(connectorId);
+                connector = connectorProvider.find(connectorProvider.resolveId(connectorId)).map(modelTransform.connectorToRestModel());
                 connectors.put(connectorId, connector);
             }
 
@@ -386,7 +405,8 @@ public class DataSourceProvider {
                 .thenComparing(DataSetTemplate::getJars, nullComparator)
                 .thenComparing(DataSetTemplate::getOptions, nullComparator)
                 .thenComparing(DataSetTemplate::getPaths, nullComparator);
-            jdbcConnectorId = connectorProvider.findAllConnectors().stream()
+            jdbcConnectorId = connectorProvider.findAll().stream()
+                .map(modelTransform.connectorToRestModel())
                 .filter(connector -> {
                     final String format = (connector.getTemplate() != null) ? connector.getTemplate().getFormat() : null;
                     return StringUtils.equalsAnyIgnoreCase(format, "jdbc", "org.apache.spark.sql.jdbc", "org.apache.spark.sql.jdbc.DefaultSource", "org.apache.spark.sql.execution.datasources.jdbc",
@@ -440,7 +460,12 @@ public class DataSourceProvider {
      * @param dataSourceId datasource to be deleted
      */
     public void delete(String dataSourceId) {
-        DataSource ds = catalogDataSources.remove(dataSourceId);
-        credentialManager.removeCredentials(ds);
+        metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSource domain = metadataProvider.find(metadataProvider.resolveId(dataSourceId)).orElse(null);
+            if (domain != null) {
+                metadataProvider.deleteById(metadataProvider.resolveId(dataSourceId));
+                credentialManager.removeCredentials(modelTransform.dataSourceToRestModel().apply(domain));
+            }
+        });
     }
 }

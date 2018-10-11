@@ -278,17 +278,36 @@ export class DefineFeedService {
     }
 
 
-
     /**
      * Save the Feed
      * Users can subscribe to this event via the savedFeedSubject
-     * @return {Observable<Feed>}
+     * @param {Feed} feed
+     * @param {boolean} validateFeed  should we enforce validation of the entire feed (should be called on deploy)
+     * @param {Step} step  pass in the current step to validate the step before saving
+     * @return {Observable<SaveFeedResponse>}
      */
-    saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
+    saveFeed(feed:Feed,validateFeed:boolean = false,step?:Step) : Observable<SaveFeedResponse>{
 
-        let valid = feed.validate(false);
-        //TODO handle validation prevent saving??
-        return this._saveFeed(feed);
+        let valid = validateFeed ? feed.validate(false) : step ? step.validate(feed) : true;
+         if (!valid) {
+             if(step){
+                 step.saved=false;
+             }
+                this._dialogService.openAlert({
+                    title: "Validation Error",
+                    message: "Error saving feed " + feed.feedName + ". You have validation errors"
+                })
+                let response = new SaveFeedResponse(feed, false, "Error saving feed " + feed.feedName + ". You have validation errors");
+                // Allow other components to listen for changes to the currentStep
+                return Observable.throw(response);
+            }
+            else {
+             if(step){
+                 step.saved=true;
+             }
+                return this._saveFeed(feed);
+            }
+
 
        // if(feed.isDraft() || (!feed.isDraft() && valid)) {
         //    return this._saveFeed(feed);

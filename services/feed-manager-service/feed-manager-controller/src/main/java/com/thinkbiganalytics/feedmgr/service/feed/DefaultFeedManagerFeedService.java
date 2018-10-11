@@ -412,6 +412,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     return this.feedProvider.findVersion(domainFeedId, versionId, true)
                         .map(ver -> {
                             Feed feed = ver.getEntity().get();
+
+                            //validate the required user properties
+                            // Set user-defined properties
+                            Set<UserFieldDescriptor> fields = feedModelTransform.getUserFields(feed.getCategory());
+                            if(fields != null && !fields.isEmpty()) {
+                                if(feed.isMissingRequiredProperties(fields)){
+                                    throw new MetadataRepositoryException("Unable to deploy the feed.  It is missing required properties ");
+                                }
+                            }
+
                             FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
                             
                             deployFeed(feedMetadata, ver);
@@ -693,7 +703,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         }, MetadataAccess.SERVICE);
 
-        return metadataAccess.commit(() -> {
+        FeedMetadata metadata = metadataAccess.commit(() -> {
             // Check services access to be able to create a feed
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
             
@@ -745,6 +755,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             return feedMetadata;
         });
+
+        if(feedMetadata.isNew()) {
+            //requery it
+          return  metadataAccess.read(() -> {
+              return  getFeedById(metadata.getId());
+            });
+        }
+        else {
+            return metadata;
+        }
     }
 
     /**

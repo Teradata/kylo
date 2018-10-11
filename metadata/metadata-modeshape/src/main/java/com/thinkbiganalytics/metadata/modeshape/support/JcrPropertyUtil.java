@@ -1110,6 +1110,46 @@ public class JcrPropertyUtil {
     }
 
     /**
+     * Is the node missing any required properties
+     *
+     * @param node
+     * @param fields
+     * @return true if missing, false if they are all set
+     */
+    public static boolean isMissingRequiredUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields) {
+
+        Map<String,String> properties = JcrPropertyUtil.getUserProperties(node);
+        try {
+            return isMissingRequiredUserProperties(fields,properties);
+        } catch(MissingUserPropertyException e){
+           return true;
+        }
+    }
+
+    /**
+     * are the supplied properties missing required ones
+     * @param fields
+     * @param userProperties
+     * @return true if missing, false if they are all set
+     * @throws MissingUserPropertyException
+     */
+    private static boolean isMissingRequiredUserProperties(@Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String,String> userProperties) throws MissingUserPropertyException{
+        boolean missingProperties = false;
+        // Verify required properties are not empty
+        for (final UserFieldDescriptor field : fields) {
+            if (field.isRequired() && StringUtils.isEmpty(userProperties.get(field.getSystemName()))) {
+                missingProperties = true;
+                throw new MissingUserPropertyException("Missing required property: " + field.getSystemName());
+            }
+        }
+        return missingProperties;
+    }
+
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+        setUserProperties(node,fields,properties,false);
+    }
+
+    /**
      * Sets the specified user-defined properties on the specified node.
      *
      * @param node       the target node
@@ -1118,10 +1158,10 @@ public class JcrPropertyUtil {
      * @throws IllegalStateException       if a property name is encoded incorrectly
      * @throws MetadataRepositoryException if the metadata repository is unavailable
      */
-    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties, boolean enforceRequired) {
         // Verify required properties are not empty
         for (final UserFieldDescriptor field : fields) {
-            if (field.isRequired() && StringUtils.isEmpty(properties.get(field.getSystemName()))) {
+            if (enforceRequired && field.isRequired() && StringUtils.isEmpty(properties.get(field.getSystemName()))) {
                 throw new MissingUserPropertyException("Missing required property: " + field.getSystemName());
             }
         }

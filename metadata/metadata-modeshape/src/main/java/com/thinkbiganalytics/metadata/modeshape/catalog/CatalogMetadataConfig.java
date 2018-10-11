@@ -30,10 +30,13 @@ import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorProvider;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,6 +46,9 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class CatalogMetadataConfig {
+    
+    private static final Logger log = LoggerFactory.getLogger(CatalogMetadataConfig.class);
+
 
     @Bean
     public ConnectorProvider connectorProvider() {
@@ -94,6 +100,24 @@ public class CatalogMetadataConfig {
                         connector.setActive(false);
                     }
                 }
+            }, MetadataAccess.SERVICE);
+        };
+    }
+    
+
+    @Bean
+    public PostMetadataConfigAction ennsureDataSetHashAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
+        return () -> {
+            log.info("**********************************************************************");
+            log.info(" TEMPORARY CHECK TO ENSURE DATA SET HASH CODES - REMOVE BEFORE RELEASE ");
+            log.info("**********************************************************************");
+            metadata.commit(() -> {
+                JcrDataSetProvider jcrProvider = (JcrDataSetProvider) dataSetProvider();
+                
+                jcrProvider.findAll().stream()
+                    .map(JcrDataSet.class::cast)
+                    .filter(dataSet -> dataSet.getParamsHash() == 0L)
+                    .forEach(dataSet -> dataSet.generateHashCode());
             }, MetadataAccess.SERVICE);
         };
     }

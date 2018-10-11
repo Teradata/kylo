@@ -103,7 +103,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
-
+console.log("FORM CHANGED ",changes)
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;
@@ -219,7 +219,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         let saveCall = () => {
             //notify the subscribers on the actual save call so they can listen when the save finishes
-            this.defineFeedService.saveFeed(this.feed).subscribe((response: SaveFeedResponse) => {
+            this.defineFeedService.saveFeed(this.feed, false,this.step).subscribe((response: SaveFeedResponse) => {
                 this.defineFeedService.openSnackBar("Saved the feed ", 3000);
                 this.resolveLoading();
                 this.step.clearDirty();

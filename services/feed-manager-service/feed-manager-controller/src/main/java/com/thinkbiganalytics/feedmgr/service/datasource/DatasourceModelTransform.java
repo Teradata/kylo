@@ -21,6 +21,10 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
  */
 
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.metadata.api.catalog.Connector;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
@@ -116,6 +120,38 @@ public class DatasourceModelTransform {
         this.encryptor = encryptor;
         this.nifiRestClient = nifiRestClient;
         this.securityService = securityService;
+    }
+    
+    /**
+     * Transforms the specified domain data set to an equivalent legacy REST Datasource.
+     *
+     * @param domain the domain data set object
+     * @param level  the level of detail
+     * @return the REST object
+     * @throws IllegalArgumentException if the domain object cannot be converted
+     */
+    public Datasource toDatasource(@Nonnull final DataSet domainDataSet, @Nonnull final Level level) {
+        DataSource domainSrc = domainDataSet.getDataSource();
+        Connector domainConn = domainSrc.getConnector();
+        DataSetSparkParameters params = domainDataSet.getEffectiveSparkParameters();
+        UserDatasource ds;
+        
+        if (params.getFormat().equalsIgnoreCase("jdbc")) {
+            JdbcDatasource jdbc = new JdbcDatasource();
+            jdbc.setControllerServiceId(domainSrc.getNifiControllerServiceId());
+            jdbc.setDatabaseDriverClassName(params.getOptions().get("driver"));
+            jdbc.setDatabaseConnectionUrl(params.getOptions().get("url"));
+            ds = jdbc;
+        } else {
+            ds = new UserDatasource();
+        }
+        
+        ds.setId(domainDataSet.getId().toString());
+        ds.setType(domainConn.getPluginId());
+        ds.setIcon(domainConn.getIcon());
+        ds.setIconColor(domainConn.getIconColor());
+        
+        return ds;
     }
 
     /**

@@ -54,6 +54,7 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
     public static final String NODE_TYPE = "tba:DataSource";
     public static final String DATA_SETS_NODE_TYPE = "tba:DataSets";
     public static final String DATA_SETS = "dataSets";
+    public static final String NIFI_CONTROLLER_SVC_ID = "tba:nifiControllerServiceId";
 
     /**
      * @param node
@@ -89,6 +90,19 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
     @Override
     public void setSystemName(String name) {
         JcrUtil.rename(getNode(), name);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSource#getNifiControllerServiceId()
+     */
+    @Override
+    public String getNifiControllerServiceId() {
+        return getProperty(NIFI_CONTROLLER_SVC_ID, String.class, null);
+    }
+    
+    @Override
+    public void setNifiControllerServiceId(String id) {
+        setProperty(NIFI_CONTROLLER_SVC_ID, id);
     }
     
     /* (non-Javadoc)
