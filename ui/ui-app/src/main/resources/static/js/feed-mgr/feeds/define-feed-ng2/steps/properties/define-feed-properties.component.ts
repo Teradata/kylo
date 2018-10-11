@@ -53,11 +53,14 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
     ngAfterViewInit(){
         this.subscribeToFormDirtyCheck(this.formGroup);
 
-        this.formGroup.get('userPropertyForm').valueChanges.subscribe(changes => {
-            if(!this.feed.readonly){
-                this.displayEditActions = true;
-            }
-        });
+       let formGroup =  this.formGroup.get('userPropertyForm');
+       if(formGroup) {
+           formGroup.valueChanges.subscribe(changes => {
+               if(!this.feed.readonly){
+                   this.displayEditActions = true;
+               }
+           });
+       }
     }
 
     public feedStateChange(event:FeedEditStateChangeEvent){
