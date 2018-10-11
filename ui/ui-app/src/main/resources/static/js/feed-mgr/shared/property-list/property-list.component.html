@@ -60,11 +60,13 @@
 
   <div *ngIf="properties.length ==0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
     <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-    <h2>No properties</h2>
-    <h3>You have not added any properties</h3>
+    <h2>No properties are defined</h2>
+    <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
   </div>
 
-  <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
+  <div class="pad-top">
+  <button mat-raised-button color="accent" (click)="addProperty()" *ngIf="properties.length > 0">Add Property</button>
+  </div>
 
 
 </ng-container>
@@ -92,8 +94,7 @@
 
   <div *ngIf="properties.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
     <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-    <h2>No properties</h2>
-    <h3>You have not added any properties</h3>
+    <h2>No properties are defined</h2>
   </div>
 
 </ng-container>
