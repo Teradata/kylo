@@ -72,19 +72,22 @@
 <ng-container *ngIf="!editable">
   <div *ngIf="properties.length >0;" fxLayout="column" fxFlex>
     <div class="section-header" *ngIf="title">{{title}}</div>
-    <div>
-      <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
-        <div fxLayout="row">
-          <div *ngIf="property.locked" fxLayout="column" fxFlex="25">
-            <span>{{property.displayName}}</span>
-            <span class="hint">{{property.description}}</span>
-          </div>
-          <div *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</div>
+      <mat-list>
 
-          <div fxFlex>{{property.value}}</div>
-        </div>
-      </ng-template>
-    </div>
+        <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
+          <mat-list-item>
+            <h2 mat-line fxLayout="row">
+              <span  *ngIf="property.locked" fxFlex="25">{{property.displayName}}</span>
+              <span *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</span>
+              <span fxFlex>{{property.value}}</span>
+            </h2>
+            <p mat-line *ngIf="property.description">{{property.description}}</p>
+
+          </mat-list-item>
+          <mat-divider></mat-divider>
+
+        </ng-template>
+      </mat-list>
   </div>
 
   <div *ngIf="properties.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
