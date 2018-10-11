@@ -180,7 +180,10 @@ export class Step {
             this.complete = step.complete;
             this.visited = step.visited;
             this.valid = step.valid
-        this.saved = step.saved;
+            this.saved = step.saved;
+            if(step.required != undefined){
+                this.required = step.required;
+            }
         if(step.properties) {
             this.properties = step.properties;
         }

@@ -277,6 +277,20 @@ export class DefineFeedService {
         return <Observable<string>>this.http.get(url,{responseType:'text'});
     }
 
+    /**
+     * Updates the main step state for the main feed in the service which is shared.
+     * @param {Feed} feed
+     * @param {Step} step
+     */
+    updateStepState(feed:Feed,step:Step) {
+        //make sure the feeds match
+        if(this.feed.id == feed.id){
+            const feedStep = this.feed.getStepBySystemName(step.systemName);
+            if(feedStep){
+                feedStep.update(step);
+            }
+        }
+    }
 
     /**
      * Save the Feed
