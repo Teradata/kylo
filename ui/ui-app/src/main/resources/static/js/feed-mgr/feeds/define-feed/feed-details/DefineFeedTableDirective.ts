@@ -324,7 +324,7 @@ export class DefineFeedTableController {
         }
 
         if (this.useUnderscoreInsteadOfSpaces) {
-            columnDef.name = StringUtils.replaceSpaces(columnDef.name);
+            columnDef.name = StringUtils.replaceSpaces(columnDef.name, '_');
         }
         columnDef.initFeedColumn();
         //add the column to both the source and destination tables as well as the fieldPolicies array

@@ -125,10 +125,10 @@ class Route {
             params: {},
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.import-feed.module" */ "./feed-mgr/feeds/define-feed/module.js")
+                return import(/* webpackChunkName: "feedmgr.import-feed.module" */ "./feed-mgr/feeds/define-feed/module")
                     .then(mod => {
                         console.log('imported feed-mgr/feeds/define-feed/module', mod);
-                        $ocLazyLoad.load({name: 'kylo.feedmgr.definefeed'}).then(function success(args: any) {
+                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('import-feed', transition.params());
                             return args;
@@ -189,10 +189,10 @@ class Route {
             url: '/categories',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module.js")
+                return import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
                     .then(mod => {
                         console.log('imported ./feed-mgr/categories/module.js', mod);
-                        return $ocLazyLoad.load({name: 'kylo.feedmgr.categories'}).then(function success(args: any) {
+                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('categories')
                         }, function error(err: any) {

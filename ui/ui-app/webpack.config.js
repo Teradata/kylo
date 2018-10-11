@@ -41,7 +41,7 @@ const staticJsDir = path.join(staticDir, 'js');
 const staticNodeModules = path.join(staticDir, 'node_modules');
 const staticBower = path.join(staticDir, 'bower_components');
 const staticJsVendorDir = path.join(staticJsDir, 'vendor');
-const tsConfigFile = path.resolve(__dirname, 'tsconfig.json');
+const tsConfigFile = path.join(staticDir, 'tsconfig.json');
 
 const webpackConfig = (env) => {
     const config = {

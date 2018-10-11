@@ -48,7 +48,7 @@ export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
         }
 
         if (this.useUnderscoreInsteadOfSpaces) {
-            columnDef.name = StringUtils.replaceSpaces(columnDef.name);
+            columnDef.name = StringUtils.replaceSpaces(columnDef.name, "_");
         }
 
         columnDef.initFeedColumn();

@@ -1,16 +1,33 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
-    //LAZY LOADED into the application
-    var module = angular.module(moduleName, []);
-    module.config(["$compileProvider",function($compileProvider) {
-        $compileProvider.preAssignBindingsEnabled(true);
-    }]);
+import * as angular from 'angular';
+const moduleName = require('./module-name');
+import AccessConstants from "../../../constants/AccessConstants";
 
-    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
+class ModuleFactory  {
+
+    module: ng.IModule;
+    constructor () {
+        this.module = angular.module(moduleName,['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr']);
+        this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
+    }
+
+    configFn($stateProvider:any, $compileProvider:any) {
+        $compileProvider.preAssignBindingsEnabled(true);
+
+
+
+// define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+//     //LAZY LOADED into the application
+//     var module = angular.module(moduleName, []);
+//     module.config(["$compileProvider",function($compileProvider) {
+//         $compileProvider.preAssignBindingsEnabled(true);
+//     }]);
+//
+//     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
         //preassign modules until directives are rewritten to use the $onInit method.
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state(AccessConstants.default.UI_STATES.DEFINE_FEED.state, {
+        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
             url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
                 templateId: null,
@@ -28,8 +45,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             },
             resolve: {
                 // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/DefineFeedController'])
-                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
-                    return import(/* webpackChunkName: "feeds.define-feed.controller" */ 'feed-mgr/feeds/define-feed/DefineFeedController')
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feeds.define-feed.controller" */ './DefineFeedController')
                         .then(mod => {
                             console.log('imported DefineFeedController mod', mod);
                             return $ocLazyLoad.load(mod.default)
@@ -43,11 +60,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.default.UI_STATES.DEFINE_FEED.permissions
+                permissions:AccessConstants.UI_STATES.DEFINE_FEED.permissions
             }
         });
 
-        $stateProvider.state(AccessConstants.default.UI_STATES.DEFINE_FEED_COMPLETE.state, {
+        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.state, {
             url: '/define-feed-complete',
             params: {
                 templateId: null
@@ -59,8 +76,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             },
             resolve: {
                 // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController'])
-                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
-                    return import(/* webpackChunkName: "feeds.define-feed-complete.controller" */ 'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController')
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad:any) => {
+                    return import(/* webpackChunkName: "feeds.define-feed-complete.controller" */ './feed-details/DefineFeedCompleteController')
                         .then(mod => {
                             console.log('imported DefineFeedCompleteController mod', mod);
                             return $ocLazyLoad.load(mod.default)
@@ -74,13 +91,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.default.UI_STATES.DEFINE_FEED_COMPLETE.permissions
+                permissions:AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.permissions
             }
         });
 
 
 
-        $stateProvider.state(AccessConstants.default.UI_STATES.IMPORT_FEED.state, {
+        $stateProvider.state(AccessConstants.UI_STATES.IMPORT_FEED.state, {
             url: '/import-feed',
             params: {},
             views: {
@@ -92,8 +109,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             },
             resolve: {
                 // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/ImportFeedController'])
-                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad) => {
-                    return import(/* webpackChunkName: "feeds.import-feed.controller" */ 'feed-mgr/feeds/define-feed/ImportFeedController')
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feeds.import-feed.controller" */ './ImportFeedController')
                         .then(mod => {
                             console.log('imported ImportFeedController mod', mod);
                             return $ocLazyLoad.load(mod.default)
@@ -107,20 +124,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Import Feed',
                 module:moduleName,
-                permissions:AccessConstants.default.UI_STATES.IMPORT_FEED.permissions
+                permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
             }
         });
+    }
+}
 
-        function lazyLoadController(path){
-            return lazyLoadUtil.default.lazyLoadController(path);
-        }
-    }]);
-
-
-
-
-return module;
-
-
-
-});
+const moduleFactory = new ModuleFactory();
+export default moduleFactory;

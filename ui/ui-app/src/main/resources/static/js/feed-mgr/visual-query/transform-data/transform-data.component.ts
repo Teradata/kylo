@@ -36,7 +36,6 @@ import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {DefineFeedService} from "../../feeds/define-feed-ng2/services/define-feed.service";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
-import {StringUtils} from "../../../common/utils/StringUtils";
 
 declare const CodeMirror: any;
 

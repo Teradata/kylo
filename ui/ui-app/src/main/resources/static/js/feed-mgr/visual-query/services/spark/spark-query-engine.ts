@@ -18,7 +18,7 @@ import * as _ from "underscore";
 import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
-import {DatasourcesService, TableReference} from "../../../services/DatasourcesService";
+import {DatasourcesService, TableReference} from "../../../services/DatasourcesServiceIntrefaces";
 import {HiveService} from "../../../services/HiveService";
 import {RestUrlService} from "../../../services/RestUrlService";
 import {SqlDialect, VisualQueryService} from "../../../services/VisualQueryService";

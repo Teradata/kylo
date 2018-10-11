@@ -22,7 +22,8 @@
     "sourceMap": true,
     "allowJs": true,
     "sourceRoot": "src/main/resources/static",
-    "importHelpers": true
+    "importHelpers": true,
+    "skipLibCheck": true //to avoid https://github.com/ui-router/angular-hybrid/issues/70 ,i.e. jqlite.d.ts(29,5): error TS2375: Duplicate number index signature:
   },
   "include": [
     "src/main/resources/static/**/*.ts"
