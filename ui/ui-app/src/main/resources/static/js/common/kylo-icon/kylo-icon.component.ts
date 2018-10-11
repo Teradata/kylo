@@ -35,14 +35,21 @@ export class KyloIconComponent implements OnChanges {
     public height?:string;
 
     /**
+     * Reference to the <kylo-icon> element
+     */
+    private element: HTMLElement;
+
+    /**
      * Reference to the <svg> element
      */
     private svg: SVGElement;
 
     constructor(element: ElementRef, private iconRegistry: MatIconRegistry, @Inject("ngMdIconService") private iconService: any) {
+        this.element = element.nativeElement;
+
         // Manually set template
-        (element.nativeElement as Element).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
-        this.svg = (element.nativeElement as Element).childNodes.item(0) as SVGElement;
+        this.element.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
+        this.svg = this.element.childNodes.item(0) as SVGElement;
     }
 
     public ngOnChanges(changes: SimpleChanges): void {
@@ -68,12 +75,16 @@ export class KyloIconComponent implements OnChanges {
             }
         }
         if (changes.width) {
+            this.element.style.width = changes.width.currentValue ? changes.width.currentValue + "px" : null;
             this.svg.setAttribute("width", changes.width.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
         if(changes.height) {
+            this.element.style.height = changes.height.currentValue ? changes.height.currentValue + "px" : null;
             this.svg.setAttribute("height", changes.height.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
         if (changes.size) {
+            this.element.style.height = changes.size.currentValue ? changes.size.currentValue + "px" : null;
+            this.element.style.width = changes.size.currentValue ? changes.size.currentValue + "px" : null;
             this.svg.setAttribute("height",  changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
             this.svg.setAttribute("width", changes.size.currentValue || KyloIconComponent.DEFAULT_SIZE);
         }
