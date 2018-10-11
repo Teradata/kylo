@@ -71,6 +71,7 @@ import {QuickCleanDialog} from "./transform-data/main-dialogs/quick-clean-dialog
 import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
 import {CovalentMessageModule} from "@covalent/core/message";
 import "./visual-query.component.scss";
+import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 
 
 registerQueryEngine('spark', SparkQueryEngine);
@@ -117,6 +118,7 @@ registerQueryEngine('spark', SparkQueryEngine);
     ],
     imports: [
         CodemirrorModule,
+        KyloCodeMirrorModule,
         CommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,

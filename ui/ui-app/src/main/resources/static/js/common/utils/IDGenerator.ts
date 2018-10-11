@@ -18,20 +18,19 @@
  * #L%
  */
 
-var IDGenerator: any = (function () {
-    function IDGenerator() {
+export class IDGenerator {
+    static idNumber = 0;
+
+    constructor() {
     }
-    (IDGenerator as any).generateId = (prefix: any)=>{
-       (IDGenerator as any).idNumber++;
-        if(prefix){
-            return prefix+'_'+(IDGenerator as any).idNumber;
+
+    static generateId(prefix: any): string {
+        IDGenerator.idNumber++;
+        if (prefix) {
+            return prefix + '_' + IDGenerator.idNumber;
         }
-        else{
-            return (IDGenerator as any).idNumber;
+        else {
+            return IDGenerator.idNumber.toString();
         }
     };
-    (IDGenerator as any).idNumber = 0;
-
-    return IDGenerator;
-})();
-
+}

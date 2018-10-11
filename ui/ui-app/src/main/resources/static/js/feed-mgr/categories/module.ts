@@ -7,7 +7,7 @@ class ModuleFactory {
     module: ng.IModule;
 
     constructor() {
-        this.module = angular.module(moduleName, ['ui.router', 'angular', 'feed-mgr/categories/module-name', 'kylo-utils/LazyLoadUtil', 'constants/AccessConstants', 'app', '@uirouter/angularjs', 'kylo-feedmgr', 'pascalprecht.translate']);
+        this.module = angular.module(moduleName, ['ui.router']);
         this.module.config(['$stateProvider', '$compileProvider', this.configFn.bind(this)]);
     }
 

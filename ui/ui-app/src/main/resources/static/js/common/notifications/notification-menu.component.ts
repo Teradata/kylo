@@ -2,8 +2,7 @@ import {Component, Inject, OnDestroy} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
 import {KyloNotification, NotificationEvent, NotificationEventListener, NotificationService} from "../../services/notification.service";
-
-declare const DateTimeUtils: any;
+import {DateTimeUtils} from '../utils/DateTimeUtils';
 
 /**
  * Displays a toolbar button that opens a menu containing notifications from {@link NotificationService}.
@@ -102,7 +101,7 @@ export class NotificationMenuComponent implements NotificationEventListener, OnD
         // Update durations
         const now = new Date().getTime();
         this.durations = this.notifications.map(notification => {
-            return DateTimeUtils(this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
+            return new DateTimeUtils(this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
         });
     }
 

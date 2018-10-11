@@ -6,6 +6,7 @@ import {moduleName} from "./module-name";
 const d3 = require('d3');
 import * as _ from "underscore";
 import * as moment from "moment";
+import {DateTimeUtils} from '../../../common/utils/DateTimeUtils';
 
 export default class controller{
 
@@ -679,7 +680,7 @@ export default class controller{
 
         updateAvgDurationKpi(){
             var avgMillis = this.summaryStatistics.avgFlowDurationMilis;
-            this.avgDurationKpi.value = DateTimeUtils(this.$filter('translate')).formatMillisAsText(avgMillis,false,true);
+            this.avgDurationKpi.value = new DateTimeUtils(this.$filter('translate')).formatMillisAsText(avgMillis,false,true);
         }
 
         formatSecondsToMinutesAndSeconds(s:number) {   // accepts seconds as Number or String. Returns m:ss

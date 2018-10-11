@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
+import {IDGenerator} from '../common/utils/IDGenerator';
 
 
 export default class HttpService{

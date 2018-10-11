@@ -3,13 +3,13 @@ import {moduleName} from "../module-name";
 import * as moment from "moment";
 import * as _ from 'underscore';
 import "../module";
+import {IDGenerator} from '../../common/utils/IDGenerator';
 
 export default class AlertsService{
     feedFailureAlerts: any = {};
     serviceAlerts: any = {};
     alerts: any = [];
     alertsById: any = {};
-    IDGenerator: any;
     findFeedFailureAlert =  (feedName: any)=> {
             return _.find(this.alerts,  (alert: any)=>{
                 return alert.type == 'Feed' && alert.name == feedName;
@@ -28,7 +28,7 @@ export default class AlertsService{
             if (this.feedFailureAlerts[feedHealth.feed] != undefined) {
                 this.removeFeedFailureAlertByName(feedHealth.feed);
             }
-            var alertId = this.IDGenerator.generateId('alert');
+            var alertId = IDGenerator.generateId('alert');
             var alert = {
                 id: alertId,
                 type: 'Feed',
@@ -47,7 +47,7 @@ export default class AlertsService{
 
         addServiceAlert =  (service: any) =>{
             if (this.serviceAlerts[service.serviceName] == undefined) {
-                var alertId = this.IDGenerator.generateId('service');
+                var alertId = IDGenerator.generateId('service');
 
                 var alert = {
                     id: alertId,

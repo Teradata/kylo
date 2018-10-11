@@ -6,23 +6,11 @@ class ModuleFactory  {
 
     module: ng.IModule;
     constructor () {
-        this.module = angular.module(moduleName,['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr']);
+        this.module = angular.module(moduleName,[]);
         this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
     }
 
     configFn($stateProvider:any, $compileProvider:any) {
-        $compileProvider.preAssignBindingsEnabled(true);
-
-
-
-// define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
-//     //LAZY LOADED into the application
-//     var module = angular.module(moduleName, []);
-//     module.config(["$compileProvider",function($compileProvider) {
-//         $compileProvider.preAssignBindingsEnabled(true);
-//     }]);
-//
-//     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
         //preassign modules until directives are rewritten to use the $onInit method.
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);

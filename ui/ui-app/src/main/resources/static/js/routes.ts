@@ -99,27 +99,8 @@ class Route {
                         throw new Error("Failed to load feed-mgr/feeds/feeds.module, " + err);
                     });
             }
-        }).state({
-            name: 'define-feed.**',
-            url: '/define-feed?templateId&templateName&feedDescriptor',
-            params: {
-                templateId: null,
-                templateName: null,
-                feedDescriptor: null,
-                bcExclude_cloning: null,
-                bcExclude_cloneFeedName: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('define-feed', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading define-feed ", err);
-                    return err;
-                });
-            }
-        }).state({
+        });
+        $stateProvider.state({
             name: 'import-feed.**',
             url: '/import-feed',
             params: {},
@@ -141,49 +122,7 @@ class Route {
                         throw new Error("Failed to load feed-mgr/feeds/define-feed/module, " + err);
                     });
             }
-        }).state({
-            name: 'feed-details.**',
-            url: '/feed-details/{feedId}',
-            params: {
-                feedId: null,
-                tabIndex: 0
-            },
-            lazyLoad: (transition: any) => {
-                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.feed-details.module" */ "./feed-mgr/feeds/edit-feed/module.js")
-                    .then(mod => {
-                        console.log('imported ./feed-mgr/feeds/edit-feed/module', mod);
-                        $ocLazyLoad.load({name: 'kylo.feedmgr.editfeed'}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('feed-details', transition.params());
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading ./feed-mgr/feeds/edit-feed/module ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./feed-mgr/feeds/edit-feed/module, " + err);
-                    });
-            }
-        }).state({
-            name: 'edit-feed.**',
-            url: '/edit-feed/{feedId}',
-            params: {
-                feedId: null
-            },
-            lazyLoad: (transition: any, state: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/edit-feed/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('edit-feed', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading edit-feed", err);
-                    return err;
-                });
-            }
-        })
-
+        });
         $stateProvider.state({
             name: 'categories.**',
             url: '/categories',
@@ -202,21 +141,6 @@ class Route {
                     .catch(err => {
                         throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
                     });
-            }
-        }).state('category-details.**', {
-            url: '/category-details/{categoryId}',
-            params: {
-                categoryId: null
-            },
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/categories/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('category-details', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading categories ", err);
-                    return err;
-                });
             }
         });
 

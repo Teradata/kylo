@@ -4,6 +4,7 @@ import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService";
 import {DataCategory} from "../../wrangler/column-delegate";
+// import './cell-menu.template.scss';
 
 /**
  * Default font.
@@ -161,7 +162,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             escapeToClose: true,
             focusOnOpen: true,
             panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
-            templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
+            template: require("./cell-menu.template.html")
         });
         this.menuPanel.attach();
 

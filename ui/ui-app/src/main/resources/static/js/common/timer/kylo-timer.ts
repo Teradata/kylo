@@ -1,8 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import "pascalprecht.translate";
-
-declare const DateTimeUtils: any;
+import {DateTimeUtils} from '../utils/DateTimeUtils';
 
 angular.module(moduleName).directive("kyloTimer",
   ['$interval','$filter', ($interval, $filter) => {
@@ -43,7 +42,7 @@ angular.module(moduleName).directive("kyloTimer",
 
                 function format() {
                     var ms = $scope.time;
-                    var displayStr = DateTimeUtils($filter('translate')).formatMillisAsText(ms,$scope.truncatedFormat,false);
+                    var displayStr = new DateTimeUtils($filter('translate')).formatMillisAsText(ms,$scope.truncatedFormat,false);
                     if($scope.addAgoSuffix) {
                         displayStr += " ago";
                     }
