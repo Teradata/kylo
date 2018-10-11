@@ -1,7 +1,7 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
 
   <feed-step-readonly-content>
-    <div fxLayout="column">
+    <div fxLayout="column" *ngIf="feed.readonly">
       <!-- feed properties -->
       <property-list title="Additional Properties" [editable]="false" [properties]="feed.userProperties"></property-list>
 
@@ -10,7 +10,7 @@
   </feed-step-readonly-content>
 
   <feed-step-edit-content>
-   <form [formGroup]="formGroup">
+   <form [formGroup]="formGroup" *ngIf="!feed.readonly">
      <!-- feed properties -->
      <property-list #propertyList  [editable]="true" [parentFormGroup]="formGroup" [(properties)]="feed.userProperties"></property-list>
 
