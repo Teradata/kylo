@@ -388,7 +388,7 @@
                            class="layout-padding-top-20"
                            name="targetMergeStrategy"
                            formControlName="targetMergeStrategy">
-                           <div fxLayout="row wrap" fxLayout.xs="column" class="layout-padding-indent-20" fxLayoutAlign="space-evenly">
+                           <div fxLayout="row wrap" fxLayoutAlign="start center" fxLayoutAlign.gt-md="space-evenly">
                            <div *ngFor="let strategy of mergeStrategies">
                               <mat-radio-button [value]="strategy.type"
                                                 [aria-label]="strategy.name"

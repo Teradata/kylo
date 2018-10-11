@@ -33,9 +33,9 @@
         <mat-card *ngIf="feed.isDraft()" >
           <mat-card-content>
             <div fxFlex="100" fxLayout="row">
-              <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
-              <span fxFlex="100" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
-              <span fxFlex="100" *ngIf="feed.isComplete()"> Ready for deployment</span>
+              <mat-icon class="push-top-sm">{{kyloIcons.Links.setupGuide}}</mat-icon>
+              <span fxFlex="100"  class="push-top-sm" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
+              <span fxFlex="100"  class="push-top-sm" *ngIf="feed.isComplete()"> Ready for deployment</span>
               <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>
             </div>
             <div *ngIf="feed.hasBeenDeployed()">
@@ -59,10 +59,10 @@
         <mat-card class="feed-info-card feed-card" >
           <mat-card-header>
             <mat-card-title>
-              <mat-icon>{{kyloIcons.Feed.info}}</mat-icon>
+            <!--  <mat-icon>{{kyloIcons.Feed.info}}</mat-icon>-->
               <span>Feed Info</span>
             </mat-card-title>
-            <mat-card-subtitle>Additional details</mat-card-subtitle>
+            <mat-card-subtitle>Additional configuration</mat-card-subtitle>
             <span fxFlex></span>
             <div class="pad-right">
               <button mat-icon-button [matMenuTriggerFor]="menu">

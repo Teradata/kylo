@@ -1453,29 +1453,35 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             template = templateRestProvider.getRegisteredTemplate(feed.getTemplateId());
 
         }
+        
+        // Collect the IDs of the legacy datasources the feed had referenced
+        Set<Datasource.ID> previousSourceIds = domainFeed.getSources().stream()
+            .filter(fs -> fs.getDatasource().isPresent())
+            .map(fs -> fs.getDatasource().get().getId())
+            .collect(Collectors.toSet());
+        Set<Datasource.ID> previousDestIds = domainFeed.getDestinations().stream()
+            .filter(fs -> fs.getDatasource().isPresent())  // Currently will always be true as there are no destination data sets yet.
+            .map(fs -> fs.getDatasource().get().getId())
+            .collect(Collectors.toSet());
+
         //find Definition registration
-
         derivedDatasourceFactory.populateDatasources(feed, template, sourceDatasources, destinationDatasources);
-        //remove the older sources only if they have changed
 
-        if (domainFeed.getSources() != null) {
-            Set<Datasource.ID> existingSourceIds = domainFeed.getSources().stream()
-                .filter(fs -> fs.getDatasource().isPresent())
-                .map(fs -> fs.getDatasource().get().getId())
-                .collect(Collectors.toSet());
-                    
-            if (!existingSourceIds.isEmpty() && (!sourceDatasources.containsAll(existingSourceIds) || (sourceDatasources.size() != existingSourceIds.size()))) {
-                //remove older sources
-                //cant do it here for some reason.. need to do it in a separate transaction
-                feedProvider.removeFeedSources(domainFeedId);
-            }
-        }
-        sourceDatasources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
-        destinationDatasources.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
-
+        // Replace the older legacy datasource references with the new ones.
+        previousSourceIds.stream()
+            .filter(id -> ! sourceDatasources.contains(id))
+            .forEach(id -> feedProvider.removeFeedSource(domainFeedId, id));
+        sourceDatasources.stream()
+            .forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
+        previousDestIds.stream()
+            .filter(id -> ! sourceDatasources.contains(id))
+            .forEach(id -> feedProvider.removeFeedSource(domainFeedId, id));
+        destinationDatasources.stream()
+            .forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
+        
         // Update data sets 
         if (feed.getSourceDataSets() != null) {
-            // Collect the IDs of all existing data set sources
+            // Collect the IDs of source data sets the feed had referenced
             Set<com.thinkbiganalytics.metadata.api.catalog.DataSet.ID> currentDataSetIds = domainFeed.getSources().stream()
                 .map(FeedSource::getDataSet)
                 .filter(Optional::isPresent)
