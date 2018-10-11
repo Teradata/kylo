@@ -33,11 +33,11 @@
   </mat-card-header>
   <mat-card-content class="pull-top pull-left">
     <mat-divider></mat-divider>
-    <mat-list role="list" dense >
+    <mat-list role="list" >
 
       <mat-list-item>
-        <mat-icon mat-list-icon ng-class="kyloIcons.getFeedStateColor(feed.state)">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
-        <h4 mat-line *ngIf="!feedStateChanging" class="{{kyloIcons.getFeedStateColor(feed.state)}}"> {{feed.state}}</h4>
+        <mat-icon mat-list-icon [ngClass]="kyloIcons.getFeedStateColor(feed.state)">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
+        <h4 mat-line *ngIf="!feedStateChanging" [ngClass]="kyloIcons.getFeedStateColor(feed.state)"> {{feed.state}}</h4>
         <h4 mat-line *ngIf="feedStateChanging">
           <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
         </h4>
@@ -46,8 +46,8 @@
       <mat-divider></mat-divider>
 
       <mat-list-item  *ngIf="feedHealthAvailable && !feed.isStream">
-        <mat-icon mat-list-icon>{{kyloIcons.getBatchFeedRunStatusIcon(feedHealth)}}</mat-icon>
-        <h4 mat-line> {{feedHealth.state}}</h4>
+        <mat-icon mat-list-icon [ngClass]="kyloIcons.getBatchFeedRunStatusColor(feed.state)">{{kyloIcons.getBatchFeedRunStatusIcon(feedHealth)}}</mat-icon>
+        <h4 mat-line [ngClass]="kyloIcons.getBatchFeedRunStatusColor(feed.state)"> {{feedHealth.state}}</h4>
         <p mat-line >Run Status</p>
       </mat-list-item>
       <mat-divider></mat-divider>
@@ -60,7 +60,7 @@
 
       <mat-list-item *ngIf="feedHealthAvailable && feedHealth && feedHealth.healthText">
         <mat-icon mat-list-icon *ngIf="feedHealth.icon" [ngClass]="kyloIcons.getFeedHealthColor(feedHealth.healthText)">{{feedHealth.icon}}</mat-icon>
-      <h4 mat-line class="{{kyloIcons.getFeedHealthColor(feedHealth.healthText)}}">{{feedHealth.healthText}}</h4>
+      <h4 mat-line [ngClass]="kyloIcons.getFeedHealthColor(feedHealth.healthText)">{{feedHealth.healthText}}</h4>
       <p mat-line >Feed Health</p>
       </mat-list-item>
       <mat-divider></mat-divider>
