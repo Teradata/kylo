@@ -4,10 +4,10 @@
   "private": true,
   "description": "kylo",
   "scripts": {
-    "build:webpack:dev": "webpack --env.dev",
+    "build:webpack:dev": "webpack --env.dev --profile --progress",
     "build:webpack:prod": "webpack --env.production",
-    "start:webpack:dev": "webpack-dev-server --devtool inline-source-map --env.dev",
-    "start:webpack:prod": "webpack-dev-server --devtool inline-source-map --env.production",
+    "start:webpack:dev": "webpack-dev-server --devtool eval --env.dev --progress --profile",
+    "start:webpack:prod": "webpack-dev-server --devtool eval --env.production",
     "build:lib": "ng-packagr -p src/main/resources/static/lib/feed/package.json",
     "build:ts": "tsc -p src/main/resources/static/tsconfig.json",
     "watch:ts": "npm run build:ts -- -w",

@@ -32,7 +32,7 @@ $mdi-font-path: "../node_modules/@mdi/font/fonts";
 //$fa-font-path: "~font-awesome/fonts";
 //@import '~font-awesome/scss/font-awesome.scss';
 
-//@import '../js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.css';
+@import '../js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.scss';
 @import '../bower_components/fattable/fattable.css';
 @import '../js/feed-mgr/services/fattable/fattable-service.css';
 
@@ -40,3 +40,5 @@ $mdi-font-path: "../node_modules/@mdi/font/fonts";
 @import '../bower_components/codemirror/addon/hint/show-hint.css';
 @import '../bower_components/codemirror/addon/dialog/dialog.css';
 @import '../bower_components/codemirror/addon/tern/tern.css';
+
+@import "../js/feed-mgr/visual-query/visual-query.component.scss";

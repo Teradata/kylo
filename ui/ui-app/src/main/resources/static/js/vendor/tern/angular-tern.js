@@ -1,4 +1,4 @@
-define(["angular","ocLazyLoad","underscore", "vendor/tern/plugin/acorn"], function () {
+define(["angular","ocLazyLoad","underscore", "./plugin/acorn"], function () {
 
     angular.module("tern", ['oc.lazyLoad'])
         .run(['$ocLazyLoad', function ($ocLazyLoad) {

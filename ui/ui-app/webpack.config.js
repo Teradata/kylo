@@ -13,6 +13,7 @@ const CompressionPlugin = require("compression-webpack-plugin");
 const ShakePlugin = require('webpack-common-shake').Plugin;
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ProgressPlugin = require('webpack/lib/ProgressPlugin');
 
 const devServer = {
     contentBase: path.resolve("dist"),
@@ -108,8 +109,10 @@ const webpackConfig = (env) => {
                 'dirPagination': path.join(staticJsVendorDir, 'dirPagination/dirPagination'),
                 'ng-text-truncate': path.join(staticJsVendorDir, 'ng-text-truncate/ng-text-truncate'),
                 'ment-io': path.join(staticJsVendorDir, 'ment.io/mentio'),
+                // 'tern': path.join(staticJsVendorDir, 'tern/angular-tern'),
 
                 'ng2-nvd3': path.join(staticNodeModules, 'ng2-nvd3/build/index'),
+                'ng2-codemirror': path.join(staticNodeModules, 'ng2-codemirror/lib/index'),
                 // 'moment': path.join(staticNodeModules, 'moment/min/moment.min'), //loaded from root node_modules
 
                 'urlParams': path.join(staticDir, 'login/jquery.urlParam.js'),
@@ -170,6 +173,54 @@ const webpackConfig = (env) => {
                     use: ['to-string-loader', 'css-loader']
                 },
                 {
+                    test: /\.js$/,
+                    use: [
+                        // {
+                        //     loader: 'cache-loader',
+                        //     options: {
+                        //         cacheDirectory: path.resolve('dist/cache-loader')
+                        //     }
+                        // },
+                        // {
+                        //     loader: 'thread-loader',
+                        //     options: {
+                        //         workers: require('os').cpus().length
+                        //     }
+                        // },
+                        'babel-loader',
+                        // "source-map-loader",
+                        {
+                            loader: path.resolve('./webpack.angular.module.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static/js",
+                                modules: ["feed-mgr", "ops-mgr"]
+                            }
+                        },
+                        {
+                            loader: path.resolve('./webpack.angular.module.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static",
+                                modules: ["bower_components"]
+                            }
+                        },
+                        {
+                            loader: path.resolve('./webpack.angular.template.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static"
+                            }
+                        }],
+                    // include: [
+                    // tsCompilerOutput,
+                    // staticDir
+                    // ],
+                    exclude: [
+                        nodeModulesDir,
+                        staticNodeModules,
+                        staticBower,
+                        staticJsVendorDir
+                    ]
+                },
+                {
                     test: /\.ts$/,
                     use: [
                         {
@@ -223,54 +274,6 @@ const webpackConfig = (env) => {
                         staticJsVendorDir
                     ]
                 },
-                {
-                    test: /\.js$/,
-                    use: [
-                        // {
-                        //     loader: 'cache-loader',
-                        //     options: {
-                        //         cacheDirectory: path.resolve('dist/cache-loader')
-                        //     }
-                        // },
-                        // {
-                        //     loader: 'thread-loader',
-                        //     options: {
-                        //         // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-                        //         workers: require('os').cpus().length - 1
-                        //     }
-                        // },
-                        'babel-loader',
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static/js",
-                                modules: ["feed-mgr", "ops-mgr"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static",
-                                modules: ["bower_components"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.template.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static"
-                            }
-                        }],
-                    // include: [
-                        // tsCompilerOutput,
-                        // staticDir
-                    // ],
-                    exclude: [
-                        nodeModulesDir,
-                        staticNodeModules,
-                        staticBower,
-                        staticJsVendorDir
-                    ]
-                },
                 // {
                 //     enforce: "pre",
                 //     test: /\.js$/,
@@ -285,6 +288,7 @@ const webpackConfig = (env) => {
                 {from: './src/main/resources/static/locales/', to: 'locales'},
                 ...loginPageDependencies,
                 ...templates,
+                ...wranlgerDeps,
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -318,9 +322,12 @@ const webpackConfig = (env) => {
                 // "window.moment": "moment", //Can't resolve './locale' in '.../ui-app/src/main/resources/static/node_modules/moment/min'
                 // "window.SVGMorpheus": "SVGMorpheus",
                 "window.vis": "vis",
+                // "tern": "tern",
+                // "window.tern": "tern"
             }),
 
             new FriendlyErrorsWebpackPlugin(),
+            new ProgressPlugin(),
             // new ForkTsCheckerWebpackPlugin(),
             // new ForkTsCheckerWebpackPlugin({
             //     tsconfig: tsConfigFile
@@ -332,6 +339,7 @@ const webpackConfig = (env) => {
     };
 
     config.devServer = devServer;
+    // config.devtool = "eval";
     config.plugins.push(
         new webpack.NamedModulesPlugin(),
         new webpack.HotModuleReplacementPlugin()
@@ -366,6 +374,29 @@ const webpackConfig = (env) => {
 module.exports = webpackConfig;
 
 
+const wranlgerDeps = [
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/**/*.js',
+        to: '[path][name].[ext]'
+    },
+    {
+        context: './src/main/resources/static',
+        from: './bower_components/angular-ui-grid/ui-grid.css',
+        to: './bower_components/angular-ui-grid/ui-grid.css'
+    },
+    {
+        context: './src/main/resources/static',
+        from: './bower_components/angular-ui-grid/ui-grid.woff',
+        to: './bower_components/angular-ui-grid/ui-grid.woff'
+    },
+    {
+        context: './src/main/resources/static',
+        from: './bower_components/angular-ui-grid/ui-grid.ttf',
+        to: './bower_components/angular-ui-grid/ui-grid.ttf'
+    },
+]
+
 const templates = [
     {
         context: './src/main/resources/static',
@@ -396,6 +427,11 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/ops-mgr/alerts/alert-type-filter-select.html',
         to: 'js/ops-mgr/alerts/alert-type-filter-select.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html',
+        to: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html'
     },
 ];
 
