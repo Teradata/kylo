@@ -1,7 +1,7 @@
 <define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true"  (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
   <feed-step-readonly-content>
     <form [formGroup]="form">
-      <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"></feed-nifi-properties>
+      <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"  (processorsChange)="onProcessorsChange($event)"></feed-nifi-properties>
     </form>
   </feed-step-readonly-content>
   <feed-step-edit-content>
