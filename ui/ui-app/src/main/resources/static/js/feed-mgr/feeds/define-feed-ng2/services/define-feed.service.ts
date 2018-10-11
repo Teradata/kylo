@@ -277,18 +277,51 @@ export class DefineFeedService {
         return <Observable<string>>this.http.get(url,{responseType:'text'});
     }
 
-
+    /**
+     * Updates the main step state for the main feed in the service which is shared.
+     * @param {Feed} feed
+     * @param {Step} step
+     */
+    updateStepState(feed:Feed,step:Step) {
+        //make sure the feeds match
+        if(this.feed.id == feed.id){
+            const feedStep = this.feed.getStepBySystemName(step.systemName);
+            if(feedStep){
+                feedStep.update(step);
+            }
+        }
+    }
 
     /**
      * Save the Feed
      * Users can subscribe to this event via the savedFeedSubject
-     * @return {Observable<Feed>}
+     * @param {Feed} feed
+     * @param {boolean} validateFeed  should we enforce validation of the entire feed (should be called on deploy)
+     * @param {Step} step  pass in the current step to validate the step before saving
+     * @return {Observable<SaveFeedResponse>}
      */
-    saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
+    saveFeed(feed:Feed,validateFeed:boolean = false,step?:Step) : Observable<SaveFeedResponse>{
 
-        let valid = feed.validate(false);
-        //TODO handle validation prevent saving??
-        return this._saveFeed(feed);
+        let valid = validateFeed ? feed.validate(false) : step ? step.validate(feed) : true;
+         if (!valid) {
+             if(step){
+                 step.saved=false;
+             }
+                this._dialogService.openAlert({
+                    title: "Validation Error",
+                    message: "Error saving feed " + feed.feedName + ". You have validation errors"
+                })
+                let response = new SaveFeedResponse(feed, false, "Error saving feed " + feed.feedName + ". You have validation errors");
+                // Allow other components to listen for changes to the currentStep
+                return Observable.throw(response);
+            }
+            else {
+             if(step){
+                 step.saved=true;
+             }
+                return this._saveFeed(feed);
+            }
+
 
        // if(feed.isDraft() || (!feed.isDraft() && valid)) {
         //    return this._saveFeed(feed);

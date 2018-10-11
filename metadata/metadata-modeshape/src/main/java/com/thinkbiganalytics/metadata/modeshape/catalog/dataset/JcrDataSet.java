@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
  */
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -133,7 +134,7 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     }
     
     public long getParamsHash() {
-        return getProperty(PARAMS_HASH, 0);
+        return getProperty(PARAMS_HASH, 0L);
     }
     
     public void setParamsHash(long hash) {
@@ -155,7 +156,15 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     public void removeTargetNode(Node node) {
         JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS).remove(node);
     }
-    
+
+    public long generateHashCode() {
+        DataSetSparkParameters params = getEffectiveSparkParameters();
+//        long hash = JcrDataSetProvider.generateHashCode(params.getFormat(), params.getPaths(), params.getJars(), params.getFiles(), params.getOptions());
+        long hash = JcrDataSetProvider.generateHashCode(params.getFormat(), params.getPaths(), params.getOptions());
+        setParamsHash(hash);
+        return hash;
+    }
+
     
     public static class DataSetId extends JcrEntity.EntityId implements DataSet.ID {
         
@@ -165,6 +174,7 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
             super(ser);
         }
     }
+
 
 
 }

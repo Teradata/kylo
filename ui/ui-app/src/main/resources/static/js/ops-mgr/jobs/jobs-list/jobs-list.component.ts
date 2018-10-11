@@ -72,9 +72,9 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     kyloIcons = KyloIcons;
     columns: ITdDataTableColumn[] = [
-        { name: 'jobName', label: 'Job Name', sortable: true, filter: true, hidden: false  },
+        { name: 'jobName', label: 'Job Name', sortable: true, filter: true, hidden: true  },
         { name: 'state', label: 'State', sortable: false, filter: false },
-        { name: 'feedName', label: 'Feed', sortable: true, filter: true },
+        { name: 'feedName', label: 'Feed', sortable: true, filter: true, hidden:true },
         { name: 'startTime', label: 'Start Time', sortable: true, filter: true },
         { name: 'runTimeStr', label: 'Run Time', sortable: false, filter: false },
         // { name: 'status', label: 'Status', sortable: true, filter: true },

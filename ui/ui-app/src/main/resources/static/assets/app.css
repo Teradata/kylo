@@ -23,7 +23,7 @@ Common styles for feed-mgr and ops-mgr
  */
 
 html, body {
-  font-size: 14px;
+  font-size: 16px;
   height: 100%;
   margin: 0px;
   padding: 0px;
@@ -1353,4 +1353,8 @@ mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container
 
 .mat-icon.mat-green {
   color: #009933;
+}
+
+mat-nav-list a[mat-list-item] .mat-list-item-content {
+   font-size: 16px !important;
 }

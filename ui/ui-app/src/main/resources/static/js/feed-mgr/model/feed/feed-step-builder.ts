@@ -1,6 +1,7 @@
 import {Step} from "./feed-step.model";
 import {FeedStepValidator} from "./feed-step-validator";
 import {FEED_DEFINITION_SECTION_STATE_NAME} from "./feed-constants";
+import {FeedStepRequiredCheck} from "./feed-step-required-check";
 
 export class FeedStepBuilder {
 
@@ -43,6 +44,7 @@ export class StepBuilder {
     disabled: boolean;
     icon:string;
     validator: FeedStepValidator;
+    feedStepRequiredCheck:FeedStepRequiredCheck;
     feedStepBuilder?:FeedStepBuilder
     fullscreen:boolean;
 
@@ -114,6 +116,10 @@ export class StepBuilder {
         this.validator = feedStepValidator;
         return this;
     }
+    setFeedStepRequiredCheck(feedStepRequiredCheck:FeedStepRequiredCheck){
+        this.feedStepRequiredCheck = feedStepRequiredCheck;
+        return this;
+    }
     setFullscreen(fullscreen:boolean){
         this.fullscreen = fullscreen;
         return this;
@@ -146,6 +152,10 @@ export class StepBuilder {
         }
         if(step.name == undefined){
             step.name = step.systemName;
+        }
+        step.feedStepRequiredCheck = this.feedStepRequiredCheck;
+        if(step.feedStepRequiredCheck == undefined){
+            step.feedStepRequiredCheck = new FeedStepRequiredCheck();
         }
         this.allSteps.push(step)
         return step;

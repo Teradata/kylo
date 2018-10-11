@@ -14,7 +14,7 @@
               <!-- Action buttons-->
               <div fxLayout="row" fxFlex *ngIf="displayBottomActionButtons" style="margin-top:35px">
                 <button mat-button (click)="onCancel()">Cancel</button>
-                <button mat-button (click)="onSkip()" *ngIf="showSkipSourceButton" matTooltip="Skip and continue on without selecting a sournce. ">Skip</button>
+                <button mat-button (click)="onSkip()" *ngIf="showSkipSourceButton" matTooltip="Skip and continue on without selecting a source. ">Skip</button>
               </div>
             </mat-step>
             <mat-step [stepControl]="selectDataForm">

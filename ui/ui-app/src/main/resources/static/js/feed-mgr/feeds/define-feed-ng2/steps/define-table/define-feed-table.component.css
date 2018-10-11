@@ -20,3 +20,6 @@
   font-size: 12px;
 }
 
+.selected-column-card .mat-card-header .mat-card-header-text {
+  overflow: hidden !important;
+}

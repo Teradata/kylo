@@ -5,6 +5,7 @@ import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define
 import {FeedStepBuilder, StepBuilder} from "../../../model/feed/feed-step-builder";
 import {TranslateService} from "@ngx-translate/core";
 import {DefineFeedPropertiesValidator} from "../steps/properties/define-feed-properties-validator";
+import {DefineFeedPropertiesRequiredCheck} from "../steps/properties/define-feed-properties-required-check";
 
 
 export class FeedStepBuilderUtil {
@@ -38,7 +39,7 @@ export class FeedStepBuilderUtil {
 
     propertiesStep():StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Properties.Name")
-        return  new StepBuilder().setName(name).setIcon("assignment").setSystemName(FeedStepConstants.STEP_PROPERTIES).setDescription("Define and set extra properties for this feed").setSref("feed-properties").setValidator(new DefineFeedPropertiesValidator());
+        return  new StepBuilder().setName(name).setIcon("assignment").setSystemName(FeedStepConstants.STEP_PROPERTIES).setDescription("Define and set extra properties for this feed").setSref("feed-properties").setValidator(new DefineFeedPropertiesValidator()).setFeedStepRequiredCheck(new DefineFeedPropertiesRequiredCheck());
     }
 
     targetStep():StepBuilder {

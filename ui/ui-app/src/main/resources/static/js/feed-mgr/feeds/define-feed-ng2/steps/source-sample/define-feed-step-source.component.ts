@@ -164,6 +164,9 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
                         }
                     });
                 }
+                else {
+                    this._setSourceAndTargetAndSaveFeed(previewEvent);
+                }
             }
             else {
                 this._setSourceAndTargetAndSaveFeed(previewEvent);

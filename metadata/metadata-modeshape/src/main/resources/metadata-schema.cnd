@@ -434,6 +434,7 @@
     + * (tba:DataSource) 
 
 [tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+    - tba:nifiControllerServiceId (STRING)
     + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
     
 [tba:DataSets]

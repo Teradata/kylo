@@ -101,8 +101,8 @@
       <mat-progress-bar class="wrangler-determinate-theme" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0" style="top: 0;height:2px"></mat-progress-bar>
       <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
       <visual-query-table [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
-                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState"
-                          browser-height browser-height-scroll-y="false" [browser-height-offset]="getBrowserHeightOffset(64)"
+                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" offset-height="0"
+                          browser-height browser-height-scroll-y="false" [browser-height-offset]="128"
                           style="width: 100%; height: 500px;" fxFlex="1 1 auto">
       </visual-query-table>
     </div>

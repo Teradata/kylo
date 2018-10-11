@@ -83,11 +83,20 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     }
 
     onProcessorsChange(event:NiFiPropertiesProcessorsChangeEvent){
+        let prevRequiredValue = this.step.required;
         if(event.noPropertiesExist){
          this.displayEditActions = false;
+         // mark this step as being optional
+         this.step.required = false;
         }
         else {
+            this.step.required = true;
             this.displayEditActions = true;
+        }
+        if(prevRequiredValue != this.step.required){
+            //re validate
+            this.step.validate(this.feed);
+            this.defineFeedService.updateStepState(this.feed, this.step);
         }
     }
 

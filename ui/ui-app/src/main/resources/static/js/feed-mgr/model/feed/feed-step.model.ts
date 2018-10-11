@@ -1,6 +1,7 @@
 import {FeedStepValidator} from "./feed-step-validator";
 import {Feed} from "./feed.model";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME} from "./feed-constants";
+import {FeedStepRequiredCheck} from "./feed-step-required-check";
 
 
 export class Step {
@@ -8,18 +9,37 @@ export class Step {
     systemName: string;
     name: string;
     description: string;
+    /**
+     * is the step complete (passed all validation and is ok to be deployed
+     */
     complete: boolean;
+    /**
+     * is the step valid?
+     */
     valid: boolean;
     dirty:boolean = false;
     sref: string;
     required?: boolean;
     dependsUponSteps?: string[] = [];
     allSteps: Step[];
+    /**
+     * is the step disabled?
+     */
     disabled: boolean;
+    /**
+     * has the user visited this step?
+     */
     visited: boolean;
+    /**
+     * has this feed passed validation and been saved?
+     */
+    saved:boolean = false;
+
     icon:string;
     fullscreen:boolean;
     validator: FeedStepValidator
+
+    feedStepRequiredCheck: FeedStepRequiredCheck;
     /**
      * any additional properties to add and persist for this step
      */
@@ -29,6 +49,9 @@ export class Step {
         Object.assign(this, init);
         if(!this.properties){
             this.properties = {};
+        }
+        if(this.feedStepRequiredCheck == undefined){
+            this.feedStepRequiredCheck = new FeedStepRequiredCheck();
         }
     }
 
@@ -157,6 +180,10 @@ export class Step {
             this.complete = step.complete;
             this.visited = step.visited;
             this.valid = step.valid
+            this.saved = step.saved;
+            if(step.required != undefined){
+                this.required = step.required;
+            }
         if(step.properties) {
             this.properties = step.properties;
         }
@@ -170,6 +197,10 @@ export class Step {
      */
     isStepStateChange(step:Step){
         return (this.systemName == step.systemName && (this.valid != step.valid || this.complete != step.complete || this.visited != step.visited))
+    }
+
+    isRequired(feed:Feed){
+        return this.feedStepRequiredCheck.isRequired(feed,this);
     }
 
 

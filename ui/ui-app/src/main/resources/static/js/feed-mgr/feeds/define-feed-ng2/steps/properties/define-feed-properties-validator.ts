@@ -8,6 +8,12 @@ export class DefineFeedPropertiesValidator  extends FeedStepValidator {
 
 
     public validate(feed:Feed, step:Step) : boolean{
+
+
+
+        if(step.isRequired(feed) && !step.saved) {
+
+        }
         let valid = super.validate(feed,step);
 
       /*  if(valid && feed.userProperties.length){

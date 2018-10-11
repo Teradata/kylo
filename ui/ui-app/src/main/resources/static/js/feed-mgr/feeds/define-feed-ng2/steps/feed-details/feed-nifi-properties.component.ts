@@ -300,14 +300,19 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             .value();
 
         if (this.isShowInputProperties()) {
+            let selectedProcessorRef:ProcessorRef = null;
+            //set the value after inputProcessors is defined so the valuechanges callback is called after this.inputProcessors is initialized
             this.inputProcessors = inputProcessors.map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
                 if (ref.id === selected.id) {
-                    this.inputProcessorControl.setValue(ref);
-                    this.form.setControl(0, ref.form);
+                    selectedProcessorRef = ref;
                 }
                 return ref;
             });
+            if(selectedProcessorRef != null){
+                this.inputProcessorControl.setValue(selectedProcessorRef);
+                this.form.setControl(0, selectedProcessorRef.form);
+            }
 
             hasVisibleProcessors = this.inputProcessors
                 .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
