@@ -110,7 +110,7 @@ md-content.md-kylo-theme{
     width: 24px;
 }
 
-md-sidenav md-toolbar h1 {
+.mat-sidenav md-toolbar h1 {
   margin: auto;
 }
 
@@ -138,11 +138,19 @@ md-list .md-button:not(.md-no-style).selected {
   fill: #3483BA;
 }
 
-md-sidenav md-list {
+.nav-btn.selected span {
+  color:#3483BA !important;
+}
+
+.nav-btn.selected {
+  fill: #3483BA !important;
+}
+
+.mat-sidenav md-list {
   padding: 0px 0px 8px 0px;
 }
 
-md-sidenav md-list .alerts-count {
+.mat-sidenav md-list .alerts-count {
   background-color: red;
   color: white;
   padding: 3px;
@@ -150,13 +158,13 @@ md-sidenav md-list .alerts-count {
   margin-left: 10px;
 }
 
-md-sidenav:not(.collapsed), md-sidenav.md-locked-open:not(.collapsed) {
+.mat-sidenav:not(.collapsed), .mat-sidenav.md-locked-open:not(.collapsed) {
   max-width: 200px;
   min-width: 200px;
   width: 200px;
 }
 
-md-sidenav.collapsed, md-sidenav.md-locked-open.collapsed {
+.mat-sidenav.collapsed, .mat-sidenav.md-locked-open.collapsed {
   max-width: 50px;
   min-width: 50px;
   width: 50px;
@@ -168,7 +176,7 @@ md-list md-datepicker .md-button.md-icon-button {
 }
 
 
-md-sidenav .collapse-btn {
+.mat-sidenav .collapse-btn {
   padding: 10px;
   color: #3483BA;
   background-color: #F9F9F9;
@@ -1410,4 +1418,26 @@ md-input-container.global-search .md-input {
 
 .browse-results {
   margin-top: 20px;
+}
+
+accordion-menu .mat-list-item-content {
+  padding: 0 !important;
+}
+
+.searchList.mat-list-item:hover{
+  background-color:rgba(158,158,158,0.2);
+  cursor: pointer;
+}
+
+.searchBar label {
+  font-size: 14px;
+  color: white;
+}
+
+.searchBar .mat-input-underline.mat-form-field-underline {
+  background-color: white;
+}
+
+.searchBar .mat-input-infix.mat-form-field-infix {
+  padding: 0;
 }

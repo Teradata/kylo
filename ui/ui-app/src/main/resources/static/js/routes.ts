@@ -5,10 +5,10 @@ import {app} from './common/module-require';
 import '@uirouter/angular';
 import 'kylo-services';
 import './main/IndexController';
-import './main/HomeController';
-import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
+import { AccessDeniedComponent } from './main/AccessDeniedComponent';
+import { HomeComponent } from './main/HomeComponent';
 
 'use strict';
 
@@ -70,15 +70,13 @@ class Route {
                 url: '/home',
                 views: {
                     "content": {
-                        //templateUrl: "js/main/home.html",
-                        component: 'homeController',
-                        // controllerAs: 'vm'
+                        component: HomeComponent,
                     }
                 },
                 resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                         // you can lazy load files for an existing module
-                        return $ocLazyLoad.load('main/HomeController');
+                        return $ocLazyLoad.load('main/HomeComponent');
                     }]
                 }
             })
@@ -405,15 +403,13 @@ class Route {
             params: {attemptedState: null},
             views: {
                 "content": {
-                    // templateUrl: "js/main/access-denied.html",
-                    component: 'acessDeniedController',
-                    //controllerAs:'vm'
+                    component: AccessDeniedComponent,
                 }
             },
             resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     // you can lazy load files for an existing module
-                    return $ocLazyLoad.load('main/AccessDeniedController');
+                    return $ocLazyLoad.load('main/AccessDeniedComponent');
                 }]
             }
         });
@@ -422,6 +418,59 @@ class Route {
             name: 'catalog.**',
             url: '/catalog',
             loadChildren: 'feed-mgr/catalog/catalog.module#CatalogModule'
+        });
+
+        $stateProvider.state({
+            name: 'schemas.**',
+            url: '/catalog/{datasource}/schemas',
+            params: {
+                datasource: null
+            },
+            lazyLoad: (transition: any)=>{
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas', transition.params());
+                    return args;
+                }, function error(err: any) {
+                    console.log("Error loading schemas ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas-schema.**',
+            url: '/catalog/{datasource}/schemas/{schema}',
+            params: {
+                datasource: null,
+                schema: null
+            },
+            lazyLoad: (transition: any)=>{
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas-schema', transition.params());
+                    return args;
+                }, function error(err: any) {
+                    console.log("Error loading tables ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas-schema-table.**',
+            url: '/catalog/{datasource}/schemas/{schema}/{tableName}',
+            params: {
+                datasource: null,
+                schema: null,
+                tableName: null
+            },
+            lazyLoad: (transition: any)=>{
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas-schema-table', transition.params())
+                    return args;
+                }, function error(err: any) {
+                    console.log("Error loading table ", err);
+                    return err;
+                });
+            }
         });
 
         $stateProvider.state({

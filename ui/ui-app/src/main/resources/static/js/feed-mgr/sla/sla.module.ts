@@ -115,6 +115,7 @@ import * as angular from "angular";
         MatDatepickerModule,
         UIRouterModule.forChild({states: slaStates})
     ],
+    exports: [ServiceLevelAgreementInit],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()},

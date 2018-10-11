@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
-import "../services/services.module";
+import "kylo-services";
+import { SideNavModule } from './side-nav.module';
 
 class ModuleFactory  {
     module: ng.IModule;

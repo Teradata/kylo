@@ -68,14 +68,6 @@ export class CategoryProperties {
         this.CategoriesService.modelSubject.subscribe((newValue: any) => {
             this.isNew = !ObjectUtils.isString(newValue.id)
         });
-        // $scope.$watch(
-        //     () => {
-        //         return CategoriesService.model.id
-        //     },
-        //     (newValue: any) => {
-        //         this.isNew = !angular.isString(newValue)
-        //     }
-        // );
 
     }
     /**

@@ -40,6 +40,13 @@ import {KyloTimerDirective} from "./timer/kylo-timer.component";
 import {RouterBreadcrumbsComponent} from "./ui-router-breadcrumbs/ui-router-breadcrumbs.component";
 import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout.component";
 import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-selection.component";
+import { AccordianMenuComponent } from "./accordion-menu/accordionMenuComponent";
+import { MenuToggleComponent } from "./accordion-menu/menuToggleComponent";
+import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
+import { IfPermissionDirective } from "./ng-if-permission/ng-if-permission.directive";
+import { AccordionMenuService } from "./accordion-menu/AccordionMenuService";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { UIRouterModule } from "@uirouter/angular";
 
 @NgModule({
     declarations: [
@@ -57,7 +64,11 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
         IconPickerDialog,
         AboutKyloDialogController,
         FilteredPaginatedTableViewComponent,
-        KyloTimerDirective
+        KyloTimerDirective,
+        IfPermissionDirective,
+        AccordianMenuComponent,
+        MenuToggleComponent,
+        menuLinkComponent
     ],
     entryComponents: [
         AddButtonComponent,
@@ -72,7 +83,11 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
         CardLayoutComponent,
         AboutKyloDialogController,
         IconPickerDialog,
-        FilteredPaginatedTableViewComponent
+        FilteredPaginatedTableViewComponent,
+        AccordianMenuComponent,
+        MenuToggleComponent,
+        menuLinkComponent,
+        menuLinkComponent
     ],
     imports: [
         CommonModule,
@@ -98,7 +113,9 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
         FlexLayoutModule,
         HttpClientModule,
         TranslateModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        MatTooltipModule,
+        UIRouterModule.forChild()
     ],
     exports: [
         KyloIconComponent,
@@ -108,11 +125,19 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
         FilteredPaginatedTableViewComponent,
         UploadFileComponent,
         CovalentDataTableModule,
-        KyloTimerDirective
+        KyloTimerDirective,
+        IfPermissionDirective,
+        AccordianMenuComponent,
+        MenuToggleComponent,
+        AddButtonComponent,
+        RouterBreadcrumbsComponent,
+        NotificationMenuComponent,
+        KyloOptionsComponent
     ],
     providers: [
         AboutKyloService,
-        RestUrlService
+        RestUrlService,
+        AccordionMenuService
     ]
 })
 export class KyloCommonModule {
