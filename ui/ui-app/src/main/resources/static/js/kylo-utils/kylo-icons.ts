@@ -35,11 +35,12 @@ export class KyloIcons {
         Actions:{
             clone:"content_copy",
             enable:"play_arrow",
-            disable:"pause_outline",
+            disable:"pause",
             abandon:"call_made",
             filterHelp:"help",
             uploadFile:"cloud_upload",
-            startNow:"play_arrow"
+            startNow:"play_arrow",
+            delete: "delete"
         }
     };
 
