@@ -53,6 +53,9 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
 
     singleSelection: boolean;
 
+    @Input()
+    allowEdit:boolean = false;
+
     feedSavedSubscription:ISubscription;
 
     /**

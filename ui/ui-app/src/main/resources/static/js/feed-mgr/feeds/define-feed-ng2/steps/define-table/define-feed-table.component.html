@@ -1,5 +1,20 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="false">
   <feed-step-custom-content>
+
+    <form class="source-sample-container" [formGroup]="sourceSampleForm" >
+      <mat-card class="feed-card source-sample-card" fxFlex>
+        <mat-card-header>
+          <mat-card-title>Sample File</mat-card-title>
+          <mat-card-subtitle>Choose a source to help build the target schema</mat-card-subtitle>
+          <span fxFlex></span>
+        </mat-card-header>
+        <mat-card-content class="pad-top-none ">
+          <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly"  [showSkipSourceButton]="false" [showCatalog]="showSourceSampleCatalog" (previewSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
+        </mat-card-content>
+      </mat-card>
+    </form>
+
+
     <div fxLayout="row">
 
       <mat-card class="feed-card" fxFlex="80">
