@@ -24,7 +24,7 @@
           <mat-icon>{{kyloIcons.Feed.Actions.startNow}}</mat-icon>
           <span >Start Now</span>
         </button>
-        <button mat-menu-item *ngIf="feed.state == 'DISABLED'" (click)="onDelete()">
+        <button mat-menu-item *ngIf="accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
           <mat-icon>{{kyloIcons.Feed.Actions.delete}}</mat-icon>
           <span>{{"views.feed-details.Delete" | translate}}</span>
         </button>
