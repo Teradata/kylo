@@ -12,6 +12,8 @@ import {FeedScheduleComponent} from "../feed-schedule/feed-schedule.component";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
+import {Templates} from "../../../../../services/TemplateTypes";
+import {FeedStepConstants} from "../../../../../model/feed/feed-step-constants";
 
 export class DeployFeedDialogComponentData{
     constructor(public feed:Feed){
@@ -71,6 +73,20 @@ this.deployErrorMessage = '';
                     this.deployErrorMessage= "There was an error deploying your feed";
                 }
             })
+        }
+
+        //if we are not showing the source
+
+        if(this.feed.inputProcessor == undefined || this.feed.inputProcessorType) {
+            //get the first input processor and select it
+            let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
+            if(inputProcessors.length >0) {
+                let input: Templates.Processor = inputProcessors;
+                this.feed.inputProcessor = input;
+                this.feed.inputProcessorName = input.name;
+                this.feed.inputProcessorType = input.type;
+                console.log("set default input processor to be ", input.name)
+            }
         }
 
 
