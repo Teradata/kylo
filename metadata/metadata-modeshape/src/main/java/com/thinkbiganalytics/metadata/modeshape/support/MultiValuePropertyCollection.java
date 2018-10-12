@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
@@ -47,12 +48,14 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
 
     private final Node parent;
     private final String propertyName;
+    private final boolean weakReferences;
     private Property property;
     private Collection<Value> values;
     
-    protected MultiValuePropertyCollection(Node parent, String propertyName, Collection<Value> values) {
+    protected MultiValuePropertyCollection(Node parent, String propertyName, boolean weakRefs, Collection<Value> values) {
         this.parent = parent;
         this.propertyName = propertyName;
+        this.weakReferences = weakRefs;
         this.property = null;
         this.values = values;
     }
@@ -65,6 +68,7 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
             
             this.parent = prop.getParent();
             this.propertyName = prop.getName();
+            this.weakReferences = prop.getType() == PropertyType.WEAKREFERENCE;
             this.property = prop;
             this.values = values;
         } catch (RepositoryException e) {
@@ -142,7 +146,7 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
     @Override
     public boolean remove(Object o) {
         ValueFactory factory = getValueFactory();
-        boolean removed = getValues().remove(JcrPropertyUtil.asValue(factory, o));
+        boolean removed = getValues().remove(JcrPropertyUtil.asValue(factory, o, isWeakReferences()));
         
         if (removed) {
             synchProperty();
@@ -220,6 +224,10 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
     protected String getPropertyName() {
         return propertyName;
     }
+    
+    protected boolean isWeakReferences() {
+        return weakReferences;
+    }
 
     @SuppressWarnings("unchecked")
     protected E asElement(Value value) {
@@ -236,12 +244,12 @@ public abstract class MultiValuePropertyCollection<E> implements Collection<E> {
 
     protected boolean addElement(E e) {
         ValueFactory factory = getValueFactory();
-        return getValues().add(JcrPropertyUtil.asValue(factory, e));
+        return getValues().add(JcrPropertyUtil.asValue(factory, e, isWeakReferences()));
     }
 
     protected boolean removeElement(Object e) {
         ValueFactory factory = getValueFactory();
-        return getValues().remove(JcrPropertyUtil.asValue(factory, e));
+        return getValues().remove(JcrPropertyUtil.asValue(factory, e, isWeakReferences()));
     }
 
     protected void synchProperty() {

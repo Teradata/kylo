@@ -17,6 +17,7 @@ import {DefaultPaginationDataService} from "./PaginationDataService";
 import TabService from "./tab.service";
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
 import {KyloRouterService} from "./kylo-router.service";
+import {FormGroupUtil} from "./form-group-util";
 
 @NgModule({
     imports: [
@@ -36,7 +37,8 @@ import {KyloRouterService} from "./kylo-router.service";
         DefaultPaginationDataService,
         TabService,
         TemplateService,
-        utilsProvider
+        utilsProvider,
+        FormGroupUtil
     ]
 })
 export class KyloServicesModule {

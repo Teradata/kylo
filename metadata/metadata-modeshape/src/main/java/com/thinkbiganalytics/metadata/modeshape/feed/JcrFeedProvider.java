@@ -361,7 +361,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 JcrFeedSource jcrSrc = feed.ensureFeedSource(datasource);
 
-                save();
+//                save();
                 return jcrSrc;
             } else {
                 throw new DatasourceNotFoundException(dsId);
@@ -410,7 +410,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 JcrFeedDestination jcrDest = feed.ensureFeedDestination(datasource);
 
-                save();
+//                save();
                 return jcrDest;
             } else {
                 throw new DatasourceNotFoundException(dsId);

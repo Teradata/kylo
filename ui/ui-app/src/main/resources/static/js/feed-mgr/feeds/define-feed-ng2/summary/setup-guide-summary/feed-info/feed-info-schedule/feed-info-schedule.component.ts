@@ -7,6 +7,7 @@ import {FeedConstants} from "../../../../../../services/FeedConstants";
 import {SaveFeedResponse} from "../../../../model/save-feed-response.model";
 import {FeedItemInfoService} from "../feed-item-info.service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 
 @Component({
@@ -20,8 +21,8 @@ export class FeedInfoScheduleComponent extends AbstractFeedInfoItemComponent imp
 
     readonlySchedule:string = '';
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService){
-       super(defineFeedService,feedItemInfoService)
+    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+        super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
 
     ngOnInit(){
@@ -33,10 +34,12 @@ export class FeedInfoScheduleComponent extends AbstractFeedInfoItemComponent imp
     }
 
     save(){
+     this.showProgress();
      this.saveFeed(this.feedSchedule.updateModel())
     }
 
     onSaveSuccess(response:SaveFeedResponse){
+        this.hideProgress()
         this.feedSchedule.reset(response.feed);
         this.updateReadOnlySchedule()
     }

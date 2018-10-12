@@ -32,5 +32,5 @@
 <mat-dialog-actions  *ngIf="!deployingFeed">
   <span fxFlex></span>
   <button mat-button [mat-dialog-close]="true">Cancel</button>
-  <button mat-raised-button color="primary" [disabled]="formGroup.invalid" (click)="deployFeed()">Deploy</button>
+  <button mat-raised-button color="primary" [disabled]="formGroup.invalid || deployingFeed" (click)="deployFeed()">Deploy</button>
 </mat-dialog-actions>

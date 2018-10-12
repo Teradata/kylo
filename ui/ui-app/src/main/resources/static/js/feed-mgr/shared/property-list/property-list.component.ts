@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import {UserProperty} from "../../model/user-property.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
-import {Component, EventEmitter, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {FormControlValidation} from "../../../common/utils/form-control-validation";
 import {FieldPolicyProperty} from "../../model/field-policy";
@@ -45,6 +45,9 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
      */
     @Input()
     properties: UserProperty[] = [];
+
+    @Output()
+    propertiesChange = new EventEmitter<UserProperty[]>();
 
     @Input()
     parentFormGroup:FormGroup;
@@ -123,6 +126,7 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         let property = new UserProperty({order:this.properties.length});
         this.properties.push(property);
         this.registerFormControls(property);
+        this.propertiesChange.emit(this.properties)
 
     };
 
@@ -137,6 +141,7 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         //remove the form controls
         this.userPropertyForm.removeControl(this.formControlKey(property,"value"))
         this.userPropertyForm.removeControl(this.formControlKey(property,"systemName"))
+        this.propertiesChange.emit(this.properties)
     }
 
     /**
@@ -156,9 +161,6 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         let systemNameControl = new FormControl(property.systemName, [Validators.required, this.duplicatePropertyValidator(property)])
         this.userPropertyForm.addControl(this.formControlKey(property, "value"), valueControl);
         this.userPropertyForm.addControl(this.formControlKey(property, "systemName"), systemNameControl)
-        //touch them for validation check
-        valueControl.markAsTouched({onlySelf:true})
-        systemNameControl.markAsTouched({onlySelf:true})
 
     }
 

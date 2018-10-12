@@ -258,18 +258,8 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     // -=-=--=-=- Delegate AuditableMixin methods to summary -=-=-=-=-=-
 
     @Override
-    public DateTime getCreatedTime() {
-        return getFeedSummary().map(s -> s.getCreatedTime()).orElse(null);
-    }
-
-    @Override
     public DateTime getModifiedTime() {
         return getFeedSummary().map(s -> s.getModifiedTime()).orElse(null);
-    }
-
-    @Override
-    public String getCreatedBy() {
-        return getFeedSummary().map(s -> s.getCreatedBy()).orElse(null);
     }
 
     @Override
@@ -402,7 +392,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     }
 
     @Override
-    public FeedPrecondition getPrecondition() {
+    public Optional<FeedPrecondition> getPrecondition() {
         return getFeedDetails().map(d -> d.getPrecondition()).orElse(null);
     }
 

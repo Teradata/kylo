@@ -5,6 +5,7 @@ import {DefineFeedService} from "../../../../services/define-feed.service";
 import {SystemFeedNameComponent} from "../../../../shared/system-feed-name.component";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
 import {FeedItemInfoService} from "../feed-item-info.service";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 @Component({
     selector:"feed-info-name",
@@ -16,11 +17,12 @@ export class FeedInfoNameComponent  extends AbstractFeedInfoItemComponent {
     private systemFeedName:SystemFeedNameComponent;
 
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService){
-        super(defineFeedService,feedItemInfoService)
+    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+        super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
 
     save() {
+        this.showProgress();
         let values = this.formGroup.value;
         this.feed.feedName = values.feedName;
         this.feed.systemFeedName = values.systemFeedName;

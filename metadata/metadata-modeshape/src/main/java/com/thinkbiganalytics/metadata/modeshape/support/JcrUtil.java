@@ -36,7 +36,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.security.AccessControlException;
@@ -66,6 +68,25 @@ import javax.jcr.nodetype.NodeType;
 public class JcrUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
+    
+    /**
+     * Dereference the underlying node if the argument node is a Proxy delegating to
+     * a NodeModificationInvocationHandler.
+     * @param node the possible proxy node
+     * @return the dereferenced node if it was wrapped, otherwise the original node
+     */
+    public static Node dereference(Node node) {
+        if (Proxy.isProxyClass(node.getClass())) {
+            InvocationHandler handler = Proxy.getInvocationHandler(node);
+            
+            if (handler instanceof NodeModificationInvocationHandler) {
+                NodeModificationInvocationHandler modHandler = (NodeModificationInvocationHandler) handler;
+                return modHandler.getWrappedNode();
+            }
+        }
+        
+        return node;
+    }
     
     /**
      * Generates a name from some arbitrary text that is both a valid JCR node name

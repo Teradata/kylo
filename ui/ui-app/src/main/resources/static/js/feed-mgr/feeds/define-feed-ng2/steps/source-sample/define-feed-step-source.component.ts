@@ -19,6 +19,8 @@ import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.
 import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
 import {ShowCatalogCanceledEvent} from "./define-feed-step-source-sample.component";
 import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
+import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
+import {FormGroupUtil} from "../../../../../services/form-group-util";
 
 
 
@@ -99,13 +101,16 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
         let sourceSchemaDefined = this.feed.table.sourceTableSchema && this.feed.table.sourceTableSchema.isDefined();
         let userAcknowledgedContinueWithoutSource = this.step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
         //always show the catalog if no paths are available to preview
-        if (!userAcknowledgedContinueWithoutSource && !sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
+        if ( !sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
             this.showSkipSourceButton = true;
-            this.showCatalog = true;
+            this.showCatalog = !userAcknowledgedContinueWithoutSource;
         }
         if(this.feed.isDataTransformation()){
             this.showSourceSample = false;
             this.showCatalog = false;
+        }
+        else {
+            this.showSourceSample = true;
         }
 
     }
@@ -122,11 +127,22 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     }
 
-    public applyUpdatesToFeed(): (Observable<any> | null) {
-        if (this.feedPropertyNiFiComponent) {
-            this.feedPropertyNiFiComponent.applyUpdatesToFeed();
+    public applyUpdatesToFeed(): (Observable<any> | boolean | null) {
+        if(this.sourcePropertiesForm.invalid){
+            this.step.validator.hasFormErrors = true;
+            //show the errors
+            FormGroupUtil.touchFormControls(this.sourcePropertiesForm);
+            return false;
         }
-        return null;
+        else {
+            this.step.validator.hasFormErrors = false;
+            if (this.feedPropertyNiFiComponent) {
+                this.feedPropertyNiFiComponent.applyUpdatesToFeed();
+            }
+            return true;
+        }
+
+
     }
 
 
@@ -180,7 +196,11 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     }
 
     private _setSourceAndTargetAndSaveFeed(event: DatasetPreviewStepperSavedEvent) {
+        this.feedLoadingService.registerLoading();
+        // for file based we need to run through the schema parser to get the Hive serde
+        if(event.previews[0] instanceof PreviewFileDataSet) {
 
+        }
 
         /**
          * Save the feed
@@ -225,6 +245,14 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
             this.feed.setSourceDataSetAndUpdateTarget(null);
             saveFeed();
         }
+
+    }
+
+    cancelFeedEdit(){
+        //reassign the propertiesInitialized flag when canceling edit
+        let propertiesInitialized = this.feed.propertiesInitialized;
+        super.cancelFeedEdit();
+        this.feed.propertiesInitialized = propertiesInitialized;
 
     }
 

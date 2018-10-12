@@ -40,19 +40,19 @@ public interface AuditableMixin extends WrappedNodeMixin, Auditable {
 
     
     default DateTime getCreatedTime() {
-        return getProperty(CREATED_TIME, DateTime.class);
+        return getProperty(CREATED_TIME, DateTime.class, null);
     }
 
     default DateTime getModifiedTime() {
-        return getProperty(MODIFIED_TIME, DateTime.class);
+        return getProperty(MODIFIED_TIME, DateTime.class, null);
     }
 
     default String getCreatedBy() {
-        return getProperty(CREATED_BY, String.class);
+        return getProperty(CREATED_BY, String.class, null);
     }
 
     default String getModifiedBy() {
-        return getProperty(MODIFIED_BY, String.class);
+        return getProperty(MODIFIED_BY, String.class, null);
     }
 
 }

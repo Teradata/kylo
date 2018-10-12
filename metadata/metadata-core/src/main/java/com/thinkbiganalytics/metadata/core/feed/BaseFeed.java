@@ -278,8 +278,8 @@ public class BaseFeed implements Feed {
     }
 
     @Override
-    public FeedPrecondition getPrecondition() {
-        return this.precondition;
+    public Optional<FeedPrecondition> getPrecondition() {
+        return Optional.ofNullable(this.precondition);
     }
 
     public FeedSource addSource(Datasource ds) {

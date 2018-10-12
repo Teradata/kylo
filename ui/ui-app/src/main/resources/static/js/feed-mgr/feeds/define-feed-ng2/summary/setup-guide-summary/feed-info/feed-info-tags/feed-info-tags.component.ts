@@ -7,6 +7,7 @@ import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.componen
 import {FeedItemInfoService} from "../feed-item-info.service";
 import {Tag} from "../../../../../../model/schema-field";
 import {SaveFeedResponse} from "../../../../model/save-feed-response.model";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 
 @Component({
@@ -34,8 +35,8 @@ export class FeedInfoTagsComponent  extends AbstractFeedInfoItemComponent implem
      */
     tagNamesString: string;
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService){
-        super(defineFeedService,feedItemInfoService)
+    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+        super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
     initForm(){
         //no op.

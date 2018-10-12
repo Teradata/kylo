@@ -9,6 +9,7 @@ import * as _ from "underscore";
 import {ProcessorRef} from "../../../../../../lib/feed/processor/processor-ref";
 import {Step} from "../../../../model/feed/feed-step.model";
 import {Feed} from "../../../../model/feed/feed.model";
+import {FeedDetailsProcessorRenderingHelper} from "../../../../services/FeedDetailsProcessorRenderingHelper";
 import {RegisterTemplatePropertyService} from "../../../../services/RegisterTemplatePropertyService";
 import {RestUrlConstants} from "../../../../services/RestUrlConstants";
 import {Templates} from "../../../../services/TemplateTypes";
@@ -99,9 +100,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        // if(this.formGroup) {
-        //      this.formGroup.addControl("processors", this.form);
-        //   }
+         if(this.formGroup) {
+             this.formGroup.addControl("processors", this.form);
+         }
 
         if (this.mode == undefined) {
             this.mode = FeedDetailsMode.ALL;
@@ -203,12 +204,11 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                     } else {
                         //merge the properties back into this feed
                         feed.properties = updatedFeedResponse.properties;
-                        feed.inputProcessors = updatedFeedResponse.inputProcessors;
-                        feed.nonInputProcessors = updatedFeedResponse.nonInputProcessors;
+
                         feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
                         this.feedNifiPropertiesService.setupFeedProperties(feed, feed.registeredTemplate, 'edit');
                         feed.propertiesInitialized = true;
-                        this.buildInputProcessorRelationships(this.feed.registeredTemplate)
+                        this.buildInputProcessorRelationships(feed.registeredTemplate)
                         this.setProcessors(feed.inputProcessors, feed.nonInputProcessors, feed.inputProcessor, feed);
 
 
@@ -252,31 +252,32 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
         }
     }
 
-    private updateProcessors() {
-        let inputName = this.inputProcessor.name;
-        let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
-        let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
-        let commonProcessors = _.chain(inputProcessorRelationships)
-            .values()
-            .flatten(true)
-            .map(_ => _.id)
-            .countBy(_ => _)
-            .omit((_: any) => _ === 1)
-            .keys()
-            .value();
+    private getInputRenderProcessors(inputProcessor: Templates.Processor): Templates.Processor[] {
+        const renderingHelper = new FeedDetailsProcessorRenderingHelper();
+        if (renderingHelper.isRenderProcessorGetTableDataProcessor(inputProcessor) || renderingHelper.isRenderSqoopProcessor(inputProcessor)) {
+            const inputProcessorRelationships = (typeof this.feed.registeredTemplate.inputProcessorRelationships[inputProcessor.name] !== "undefined")
+                ? this.feed.registeredTemplate.inputProcessorRelationships[inputProcessor.name] : null;
+            return this.feed.nonInputProcessors
+                .filter(processor => processor.id.substring(0, 18) === inputProcessorRelationships[0].id.substring(0, 18))
+                .filter(processor => renderingHelper.isGetTableDataProcessor(processor) || renderingHelper.isSqoopProcessor(processor));
+        } else {
+            return [];
+        }
+    }
 
-        this.nonInputProcessors = this.feed.nonInputProcessors
-            .filter(processor => downstreamProcessors != undefined ? this.hasProcessor(downstreamProcessors, processor.id, processor.name) : true)
-            .filter(_ => commonProcessors.indexOf(_.id) === -1)
-            .map(_ => {
-                const ref = new ProcessorRef(_ as any, this.feed);
+    private updateProcessors() {
+        this.nonInputProcessors = this.getInputRenderProcessors(this.inputProcessor.processor as any)
+            .map(processor => {
+                const ref = new ProcessorRef(processor as any, this.feed);
                 this.form.push(ref.form);
                 return ref;
             });
 
-        let hasVisibleProcessors = this.inputProcessors
-            .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
-        hasVisibleProcessors = hasVisibleProcessors || this.nonInputProcessors.find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
+        let hasVisibleProcessors = _.chain([...this.inputProcessors, ...this.nonInputProcessors])
+            .map(ref => ref.processor.properties)
+            .flatten(true)
+            .find((property: Templates.Property) => property.userEditable)
+            .value() != null;
 
         if (!hasVisibleProcessors) {
             this.noPropertiesExist = true;
@@ -287,20 +288,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
 
     private setProcessors(inputProcessors: Templates.Processor[], nonInputProcessors: Templates.Processor[], selected?: Templates.Processor, feed?: Feed) {
         let hasVisibleProcessors = false;
-        let inputName = this.feed.inputProcessor.name;
-        let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
-        let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
-        let commonProcessors = _.chain(inputProcessorRelationships)
-            .values()
-            .flatten(true)
-            .map(_ => _.id)
-            .countBy(_ => _)
-            .omit((_: any) => _ === 1)
-            .keys()
-            .value();
 
         if (this.isShowInputProperties()) {
-            let selectedProcessorRef:ProcessorRef = null;
+            let selectedProcessorRef: ProcessorRef = null;
             //set the value after inputProcessors is defined so the valuechanges callback is called after this.inputProcessors is initialized
             this.inputProcessors = inputProcessors.map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
@@ -309,7 +299,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                 }
                 return ref;
             });
-            if(selectedProcessorRef != null){
+            if (selectedProcessorRef != null) {
                 this.inputProcessorControl.setValue(selectedProcessorRef);
                 this.form.setControl(0, selectedProcessorRef.form);
             }
@@ -318,10 +308,14 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                 .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
         }
         if (this.isShowAdditionalProperties()) {
+            let inputName = this.feed.inputProcessor.name;
+            let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
+            let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
+            const inputRenderProcessors = selected ? this.getInputRenderProcessors(selected) : null;
             //limit the downstream additional processors to only those that are available in the flow coming from the input processor
             this.nonInputProcessors = nonInputProcessors
+                .filter(processor => inputRenderProcessors.find(x => x.id === processor.id) == null)
                 .filter(processor => downstreamProcessors != undefined ? this.hasProcessor(downstreamProcessors, processor.id, processor.name) : true)
-                .filter(_ => commonProcessors.indexOf(_.id) !== -1)
                 .map(processor => {
                     const ref = new ProcessorRef(processor as any, feed);
                     this.form.push(ref.form);

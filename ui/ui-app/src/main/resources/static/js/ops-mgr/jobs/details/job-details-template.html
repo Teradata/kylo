@@ -24,7 +24,7 @@
     </header-section>
     <body-section transclude-to="body" transclude-replace="true">
       <md-content ng-if="vm.unableToFindJob == false">
-        <div layout="column" class="layout-padding-bottom layout-padding-left-16">
+        <div layout="column" class="layout-padding">
           <div layout="row">
 
             <div flex="40" layout="column">
@@ -53,8 +53,8 @@
             </div>
           </div>
 
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-          <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
+          <div class="item-title">{{'views.job-details-template.ED' | translate}}</div>
+          <div class="grey" style="white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
                ng-tt-chars-threshold="150">
           </div>
         </div>
@@ -141,7 +141,7 @@
               <md-divider></md-divider>
               <div flex layout="column" class="tab-content">
                   <md-list>
-                  <md-list-item ng-repeat="step in vm.allSteps" class="with-padding item-column">
+                  <md-list-item ng-repeat="step in vm.allSteps" class="with-padding layout-padding item-column">
                    <div  layout="column" layout-fill>
 
                     <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"

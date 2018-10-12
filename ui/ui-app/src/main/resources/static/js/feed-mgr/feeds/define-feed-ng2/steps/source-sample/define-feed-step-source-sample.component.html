@@ -8,8 +8,15 @@
     </mat-list-item>
     <mat-divider  *ngIf="!last"></mat-divider>
   </mat-list>
+</ng-container>
 
-
+  <ng-container *ngIf="!showCatalog && (!feed.sourceDataSets || feed.sourceDataSets.length ==0)">
+    <mat-list dense>
+      <mat-list-item >
+        <h4 mat-line >No sample selected</h4>
+        <button mat-icon-button color="accent" (click)="browseCatalog()" *ngIf="!feed.readonly" matTooltip="Choose a different sample"><mat-icon>edit</mat-icon></button>
+      </mat-list-item>
+    </mat-list>
 </ng-container>
 
 <div *ngIf="showCatalog && feed.readonly" fxLayout="column">

@@ -228,10 +228,9 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         if (feed != null) {
             // Remove the old one if any
-            FeedPreconditionImpl precond = (FeedPreconditionImpl) feed.getPrecondition();
-            if (precond != null) {
-                this.slaProvider.removeAgreement(precond.getAgreement().getId());
-            }
+            feed.getPrecondition()
+                .map(FeedPreconditionImpl.class::cast)
+                .ifPresent(precond -> slaProvider.removeAgreement(precond.getAgreement().getId()));
 
             ServiceLevelAgreement sla = this.slaProvider.builder()
                 .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")

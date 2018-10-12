@@ -852,7 +852,9 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
-                return this.metadataTransform.domainToFeedPrecond().apply(domain.getPrecondition());
+                return domain.getPrecondition()
+                    .map(this.metadataTransform.domainToFeedPrecond())
+                    .orElseThrow(() -> new WebApplicationException("Feed does not have a precondition", Status.NOT_FOUND));
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
             }
@@ -878,13 +880,9 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
-                com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond = domain.getPrecondition();
-
-                if (precond != null) {
-                    return generateModelAssessment(precond);
-                } else {
-                    throw new WebApplicationException("The feed with the given ID does not have a precondition: " + feedId, Status.BAD_REQUEST);
-                }
+                return domain.getPrecondition()
+                    .map(this::generateModelAssessment)
+                    .orElseThrow(() -> new WebApplicationException("The feed with the given ID does not have a precondition: " + feedId, Status.BAD_REQUEST));
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
             }
@@ -1303,9 +1301,11 @@ public class FeedsController {
                 feedDep.addDependecy(childDep);
             }
         }
-
-        if (assessPrecond && currentFeed.getPrecondition() != null) {
-            feedDep.setPreconditonResult(generateModelAssessment(currentFeed.getPrecondition()));
+        
+        if (assessPrecond) {
+            currentFeed.getPrecondition()
+                .map(this::generateModelAssessment)
+                .ifPresent(feedDep::setPreconditonResult);
         }
 
         return feedDep;

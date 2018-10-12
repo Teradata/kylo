@@ -52,7 +52,11 @@ public class MultiValuePropertySet<E> extends MultiValuePropertyCollection<E> im
     }
     
     public MultiValuePropertySet(Node parent, String propertyName) {
-        super(parent, propertyName, new HashSet<>());
+        this(parent, propertyName, false);
+    }
+    
+    public MultiValuePropertySet(Node parent, String propertyName, boolean weakRefs) {
+        super(parent, propertyName, weakRefs, new HashSet<>());
     }
     
     public MultiValuePropertySet(Property prop) {

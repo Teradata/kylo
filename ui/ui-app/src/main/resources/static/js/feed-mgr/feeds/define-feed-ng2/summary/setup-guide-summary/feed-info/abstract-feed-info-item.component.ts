@@ -7,6 +7,8 @@ import {FeedConstants} from "../../../../../services/FeedConstants";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {Observable} from "rxjs/Observable";
 import {FeedItemInfoService} from "./feed-item-info.service";
+import {TdLoadingService} from "@covalent/core";
+import {FeedLoadingService} from "../../../services/feed-loading-service";
 
 
 export abstract class AbstractFeedInfoItemComponent {
@@ -22,7 +24,7 @@ export abstract class AbstractFeedInfoItemComponent {
 
     formGroup:FormGroup;
 
-    protected  constructor(protected defineFeedService:DefineFeedService, protected feedItemInfoService:FeedItemInfoService){
+    protected  constructor(protected defineFeedService:DefineFeedService, protected feedItemInfoService:FeedItemInfoService, private feedLoadingService:FeedLoadingService){
     this.initForm();
 
     }
@@ -36,7 +38,7 @@ export abstract class AbstractFeedInfoItemComponent {
      * @param {SaveFeedResponse} response
      */
     onSaveSuccess(response:SaveFeedResponse){
-
+      this.hideProgress();
     }
 
     /**
@@ -45,8 +47,18 @@ export abstract class AbstractFeedInfoItemComponent {
      * @param {SaveFeedResponse} response
      */
     onSaveFail(response:SaveFeedResponse){
-
+        this.hideProgress();
     }
+
+    showProgress(){
+        this.feedLoadingService.registerLoading()
+    }
+
+    hideProgress(){
+        this.feedLoadingService.resolveLoading()
+    }
+
+
 
 
     /**

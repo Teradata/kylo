@@ -72,10 +72,11 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     kyloIcons = KyloIcons;
     columns: ITdDataTableColumn[] = [
+        { name: 'startTime', label: 'Start Time', sortable: true, filter: true },
         { name: 'jobName', label: 'Job Name', sortable: true, filter: true, hidden: true  },
         { name: 'state', label: 'State', sortable: false, filter: false },
         { name: 'feedName', label: 'Feed', sortable: true, filter: true, hidden:true },
-        { name: 'startTime', label: 'Start Time', sortable: true, filter: true },
+
         { name: 'runTimeStr', label: 'Run Time', sortable: false, filter: false },
         // { name: 'status', label: 'Status', sortable: true, filter: true },
         { name: 'action', label: 'Action', sortable: false, filter: false }
@@ -210,7 +211,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
             this.loadJobs();
         }, (err: any) => {
             dialog.close();
-            this.snackBar.open("Unable to abandonal all jobs for the feed.  A unexpected error occurred.", "OK", {
+            this.snackBar.open("Unable to abandon all jobs for the feed.  A unexpected error occurred.", "OK", {
                 duration: 3000
             });
         })

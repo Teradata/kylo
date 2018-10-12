@@ -1297,17 +1297,17 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             let fields = this.engine.getFields();
 
             if (fields !== null) {
-                this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
-            let valid =   this.feedModel.validateSchemaDidNotChange();
+                feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+            let valid =   feedModel.validateSchemaDidNotChange();
             if(!valid)
-                this.feedModel.table.syncTableFieldPolicyNames()
+                feedModel.table.syncTableFieldPolicyNames()
                 this.engine.save();
                 resolve(true);
             } else {
                 this.query().then(() => {
-                    this.feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
-                    this.feedModel.validateSchemaDidNotChange();
-                    this.feedModel.table.syncTableFieldPolicyNames()
+                    feedModel.table.setTableFields(fields,this.engine.getFieldPolicies());
+                    feedModel.validateSchemaDidNotChange();
+                    feedModel.table.syncTableFieldPolicyNames()
                     this.engine.save();
                     resolve(true);
                 });

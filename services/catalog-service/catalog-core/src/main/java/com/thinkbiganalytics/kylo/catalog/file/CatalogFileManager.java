@@ -146,6 +146,43 @@ public class CatalogFileManager {
     }
 
     /**
+     * Supply a function to act upon the input stream
+     *
+     * @param dataSet      the dataset to read
+     * @param readFunction the function to apply
+     * @param <R>          the result
+     * @return the result
+     */
+    public <R> R readDataSetInputStream(@Nonnull final DataSet dataSet, @Nonnull final FileSystemReadFunction<R> readFunction) throws IOException {
+        final Path path = new Path(dataSet.getPaths().get(0));
+        return readDataSet(dataSet, fs -> {
+            InputStream in = null;
+            try {
+                in = fs.open(path);
+                return readFunction.apply(in);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
+        });
+    }
+
+    /**
+     * Read a dataset
+     *
+     * @param dataSet  the dataset
+     * @param function the function to apply
+     * @param <R>      the result
+     */
+    public <R> R readDataSet(@Nonnull final DataSet dataSet, @Nonnull final FileSystemFunction<R> function) throws IOException {
+        final Path path = new Path(dataSet.getPaths().get(0));
+
+        return isolatedFunction(dataSet, path, fs -> {
+            return function.apply(fs);
+        });
+
+    }
+
+    /**
      * Creates a file in the specified dataset from an uploaded file.
      *
      * @param dataSet  the data set

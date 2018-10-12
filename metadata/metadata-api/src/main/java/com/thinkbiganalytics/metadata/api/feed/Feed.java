@@ -76,7 +76,7 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
 
     List<InitializationStatus> getInitHistory();
 
-    FeedPrecondition getPrecondition();
+    Optional<FeedPrecondition> getPrecondition();
 
     List<Feed> getDependentFeeds();
 

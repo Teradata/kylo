@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.jcr.Item;
@@ -81,10 +82,14 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
+import javax.jcr.version.VersionException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -275,12 +280,12 @@ public class DebugController {
                         Property property = (Property) item;
                         
                         if (value != null && "null".equals(value)) {
-                            property.setValue((Value) null); 
+                            setPropertyValue(property, null);
                             pw.println(" - " + property.getName() + " deleted");
                         } else {
                             // No-op if value not supplied
                             if (value != null) {
-                                property.setValue(value);
+                                setPropertyValue(property, value);
                             }
                             
                             printItem(item, pw);
@@ -317,7 +322,7 @@ public class DebugController {
         pw.flush();
         return sw.toString();
     }
-    
+
     /**
      * Prints the subgraph of the node in JCR with the specified ID.
      *
@@ -674,6 +679,28 @@ public class DebugController {
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus getReindex() {
         return reindex();
+    }
+
+    protected void setPropertyValue(Property property, final String value) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+        if (value == null) {
+            if (property.isMultiple()) {
+                property.setValue(new Value[0]);
+            } else {
+                property.remove();
+            }
+        } else {
+            if (property.isMultiple()) {
+                ValueFactory factory = property.getSession().getValueFactory();
+                Value[] values = Stream.concat(Arrays.stream(property.getValues()), 
+                                               Arrays.stream(value.split(","))
+                                                   .map(String::trim)
+                                                   .map(str -> factory.createValue(str)))
+                                .toArray(Value[]::new);  
+                property.setValue(values);
+            } else {
+                property.setValue(value);
+            }
+        }
     }
 
     private Item getItem(final String abspath, Session session) throws PathNotFoundException, RepositoryException {

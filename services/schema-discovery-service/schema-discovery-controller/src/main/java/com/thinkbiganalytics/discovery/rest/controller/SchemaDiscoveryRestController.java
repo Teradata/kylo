@@ -21,6 +21,7 @@ package com.thinkbiganalytics.discovery.rest.controller;
  */
 
 import com.thinkbiganalytics.discovery.FileParserFactory;
+import com.thinkbiganalytics.discovery.model.DataSetSchemaRequest;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
@@ -28,6 +29,8 @@ import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
@@ -78,6 +81,9 @@ public class SchemaDiscoveryRestController {
 
     @Autowired
     private Environment environment;
+
+    @Inject
+    CatalogFileManager catalogFileManager;
 
     /**
      * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
@@ -189,6 +195,34 @@ public class SchemaDiscoveryRestController {
             FileSchemaParser p = transformer.fromUiModel(descriptor);
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
+        } catch (IOException e) {
+            throw new WebApplicationException(e.getMessage());
+        } catch (PolicyTransformException e) {
+            log.warn("Failed to convert parser", e);
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
+        }
+        return Response.ok(schema).build();
+    }
+
+    @POST
+    @Path("/hive/dataset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Determines the schema of the provided file.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
+                      @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
+                  })
+    public Response uploadFile(DataSetSchemaRequest request) throws Exception {
+
+        Schema schema;
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        try {
+            FileSchemaParser p = transformer.fromUiModel(request.getSchemaParser());
+           schema = catalogFileManager.readDataSetInputStream(request.getDataSet(),inputStream -> {
+                return p.parse(inputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
+            });
+
         } catch (IOException e) {
             throw new WebApplicationException(e.getMessage());
         } catch (PolicyTransformException e) {

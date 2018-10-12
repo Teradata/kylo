@@ -56,15 +56,23 @@ public class MultiValuePropertyList<E> extends MultiValuePropertyCollection<E> i
     }
     
     public MultiValuePropertyList(Node parent, String propertyName) {
-        super(parent, propertyName, new ArrayList<>());
+        this(parent, propertyName, false);
+    }
+    
+    public MultiValuePropertyList(Node parent, String propertyName, boolean weakRefs) {
+        super(parent, propertyName, weakRefs, new ArrayList<>());
     }
     
     public MultiValuePropertyList(Node parent, String propertyName, List<Value> list) {
-        super(parent, propertyName, list);
+        this(parent, propertyName, false, list);
+    }
+    
+    public MultiValuePropertyList(Node parent, String propertyName, boolean weakRefs, List<Value> list) {
+        super(parent, propertyName, weakRefs, list);
     }
     
     public MultiValuePropertyList(Node parent, String propertyName, List<Value> list, MultiValuePropertyList<E> parentList) {
-        super(parent, propertyName, list);
+        super(parent, propertyName, parentList.isWeakReferences(), list);
         this.parentList = parentList;
     }
 

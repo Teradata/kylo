@@ -11,6 +11,7 @@ import {Feed} from "../../../../../model/feed/feed.model";
 import {FeedScheduleComponent} from "../feed-schedule/feed-schedule.component";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
+import {FeedLoadingService} from "../../../services/feed-loading-service";
 
 export class DeployFeedDialogComponentData{
     constructor(public feed:Feed){
@@ -74,6 +75,7 @@ this.deployErrorMessage = '';
 
 
         if(this.formGroup.dirty) {
+            this.deployingFeed = true;
             //if user chooses to upate the model save first
             let feed = this.feedSchedule.updateModel();
             feed.active = this.formGroup.get("enableFeed").value

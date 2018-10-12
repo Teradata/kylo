@@ -29,6 +29,10 @@
 
         <mat-form-field fxFlex *ngIf="property.locked">
           <input matInput [formControlName]="property.id+'_value'" [placeholder]="property.displayName">
+          <mat-error *ngIf="hasError(property,'value')">
+            {{getErrorMessage(property,'value')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
         </mat-form-field>
 
         <mat-form-field fxFlex="50" *ngIf="!property.locked">
@@ -47,7 +51,7 @@
           <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
         </mat-form-field>
 
-        <button mat-button class="primary" (click)="removeProperty($index)">
+        <button mat-button class="primary" (click)="removeProperty($index)" *ngIf="!property.locked">
           <mat-icon>delete</mat-icon>
         </button>
       </div>
@@ -55,12 +59,14 @@
   </div>
 
   <div *ngIf="properties.length ==0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
-    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-    <h2>No properties</h2>
-    <h3>You have not added any properties</h3>
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>No properties are defined</h2>
+    <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
   </div>
 
-  <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
+  <div class="pad-top">
+  <button mat-raised-button color="accent" (click)="addProperty()" *ngIf="properties.length > 0">Add Property</button>
+  </div>
 
 
 </ng-container>
@@ -68,25 +74,27 @@
 <ng-container *ngIf="!editable">
   <div *ngIf="properties.length >0;" fxLayout="column" fxFlex>
     <div class="section-header" *ngIf="title">{{title}}</div>
-    <div>
-      <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
-        <div fxLayout="row">
-          <div *ngIf="property.locked" fxLayout="column" fxFlex="25">
-            <span>{{property.displayName}}</span>
-            <span class="hint">{{property.description}}</span>
-          </div>
-          <div *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</div>
+      <mat-list>
 
-          <div fxFlex>{{property.value}}</div>
-        </div>
-      </ng-template>
-    </div>
+        <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
+          <mat-list-item>
+            <h2 mat-line fxLayout="row">
+              <span  *ngIf="property.locked" fxFlex="25">{{property.displayName}}</span>
+              <span *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</span>
+              <span fxFlex>{{property.value}}</span>
+            </h2>
+            <p mat-line *ngIf="property.description">{{property.description}}</p>
+
+          </mat-list-item>
+          <mat-divider></mat-divider>
+
+        </ng-template>
+      </mat-list>
   </div>
 
   <div *ngIf="properties.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
-    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-    <h2>No properties</h2>
-    <h3>You have not added any properties</h3>
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>No properties are defined</h2>
   </div>
 
 </ng-container>

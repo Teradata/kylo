@@ -1,4 +1,4 @@
-import {Directive, ElementRef, Input, OnDestroy, OnInit} from "@angular/core";
+import {Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
 import * as $ from "jquery";
 import "rxjs/add/observable/fromEvent";
 import {Observable} from "rxjs/Observable";
@@ -71,10 +71,18 @@ export class BrowserHeight implements OnDestroy, OnInit {
     }
 
     private calcHeight() {
+        if(this.offsetHeight == undefined || isNaN(this.offsetHeight)){
+            this.offsetHeight = 0;
+        }
         this.ele.css("height", `${$(window).height() - this.offsetHeight}px`);
         this.ele.css("overflow-x", (this.browserHeightScrollLeft || this.browserHeightScrollX) ? "scroll" : "hidden");
         if (this.scrollY || this.scrollY === null) {
             this.ele.css("overflow-y", "scroll");
         }
+        else if(this.scrollY == false){
+            this.ele.css("overflow-y", "hidden");
+        }
     }
+
+
 }

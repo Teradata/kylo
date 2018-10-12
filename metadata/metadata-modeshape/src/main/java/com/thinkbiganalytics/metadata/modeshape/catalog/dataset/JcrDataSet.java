@@ -142,19 +142,19 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     }
     
     public void addSourceNode(Node node) {
-        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES).add(node);
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES, true).add(node);
     }
     
     public void removeSourceNode(Node node) {
-        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES).remove(node);
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES, true).remove(node);
     }
     
     public void addTargetNode(Node node) {
-        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS).add(node);
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS, true).add(node);
     }
     
     public void removeTargetNode(Node node) {
-        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS).remove(node);
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS, true).remove(node);
     }
 
     public long generateHashCode() {
