@@ -260,17 +260,14 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.mergeStrategy = this.mergeStrategies.find((strategy: FeedServiceTypes.MergeStrategy) => strategy.type == this.feed.table.targetMergeStrategy)
         }
 
-        this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl());
-        this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl());
+        this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl({value:'',disabled:this.feed.readonly || this.tablePermissions.tableLocked}));
+        this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl({value:'',disabled:this.feed.readonly || this.tablePermissions.tableLocked}));
 
         //listen when the form is valid or invalid
         this.subscribeToFormChanges(this.parentForm);
         this.subscribeToFormDirtyCheck(this.defineTableForm);
-        //this.subscribeToFormChanges(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
-       // this.subscribeToFormChanges(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
-       // this.subscribeToFormChanges(this.targetFormatOptionsForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
     }
 
@@ -851,8 +848,8 @@ class TableFormControls {
 
         let index = field.fieldPolicy ? field.fieldPolicy.index : false;
         let profile = field.fieldPolicy ? field.fieldPolicy.profile: false;
-        controls[TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX+"_" + field._id] = new FormControl({value:index,disabled:field.isComplex() || field.deleted},[]);
-        controls[TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX+"_" + field._id] = new FormControl({value:profile,disabled:field.isComplex() || field.deleted},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX+"_" + field._id] = new FormControl({value:index,disabled:field.isComplex() || field.deleted || this.tablePermissions.tableLocked},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX+"_" + field._id] = new FormControl({value:profile,disabled:field.isComplex() || field.deleted || this.tablePermissions.tableLocked},[]);
         return controls;
     }
 
@@ -878,8 +875,8 @@ class TableFormControls {
 
     private buildPartitionFieldFormControl(partition: TableFieldPartition ) :Common.Map<FormControl> {
         let controls :Common.Map<FormControl> = {}
-        controls["partitionColumnRef_"+partition._id] = new FormControl('',[Validators.required]);
-        controls["partitionFormula_"+partition._id] = new FormControl(partition.formula,[Validators.required]);
+        controls["partitionColumnRef_"+partition._id] = new FormControl({value:'',disabled:this.tablePermissions.tableLocked},[Validators.required]);
+        controls["partitionFormula_"+partition._id] = new FormControl({value:partition.formula,disabled:this.tablePermissions.tableLocked},[Validators.required]);
         controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(!partition.allowPartitionNameChanges() || this.tablePermissions.tableLocked)},[Validators.required]);
         return controls;
     }

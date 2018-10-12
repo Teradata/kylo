@@ -65,17 +65,21 @@
                 <div fxFlex="30">Name</div>
                 <span fxFlex="5"></span>
                 <div fxFlex="25">Data Type</div>
-                <div fxFlex="10"><a href="" (click)="onIndexCheckAllChange()">Index</a>
+                <div fxFlex="10">
+                  <a href="" (click)="onIndexCheckAllChange()" *ngIf="!tablePermissions.tableLocked">Index</a>
+                  <span *ngIf="tablePermissions.tableLocked">Index</span>
                   <!-- <mat-checkbox formControlName="indexCheckAll" (change)="onIndexCheckAllChange()" [checked]="indexCheckAll.isChecked"
                                    [indeterminate]="indexCheckAll.isIndeterminate"></mat-checkbox> -->
                 </div>
-                <div fxFlex="10"><a href="" (click)="onProfileCheckAllChange()">Profile</a>
+                <div fxFlex="10">
+                  <a href="" (click)="onProfileCheckAllChange()" *ngIf="!tablePermissions.tableLocked">Profile</a>
+                  <span *ngIf="tablePermissions.tableLocked">Profile</span>
                   <!--
                   <mat-checkbox formControlName="profileCheckAll" (change)="onProfileCheckAllChange()" [checked]="profileCheckAll.isChecked"
                                 [indeterminate]="profileCheckAll.isIndeterminate"></mat-checkbox>
                                 -->
                 </div>
-                <div fxFlex="10">Remove</div>
+                <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">Remove</div>
                 <div fxFlex="10"></div>
                 <div class="scrollbar-width"></div>
               </div>
@@ -135,9 +139,9 @@
                       <mat-checkbox [formControlName]="'profile_'+row._id" (change)="onProfileChange(row)"></mat-checkbox>
                     </div>
 
-                    <div fxFlex="10">
+                    <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">
                       <button mat-icon-button style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted" (click)="removeColumn(index)">
-                        <mat-icon class="grey">delete</mat-icon>
+                        <mat-icon class="tc-grey-500">delete</mat-icon>
                       </button>
                     </div>
 
@@ -419,7 +423,7 @@
         <div fxLayout="column">
           <div fxLayout="row">
               <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex >
-                <mat-select formControlName="targetFormat" placeholder="Target Format" [(ngModel)]="feed.table.targetFormat" [disabled]="this.feed.readonly">
+                <mat-select formControlName="targetFormat" placeholder="Target Format" [(ngModel)]="feed.table.targetFormat" >
                   <mat-option *ngFor="let opt of targetFormatOptions" [value]="opt.value">
                     {{opt.label}}
                   </mat-option>
@@ -428,7 +432,7 @@
           </div>
           <div fxLayout="row">
               <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex >
-                <mat-select formControlName="compressionFormat" placeholder="Compression options" [(ngModel)]="feed.table.options.compressionFormat" [disabled]="this.feed.readonly">
+                <mat-select formControlName="compressionFormat" placeholder="Compression options" [(ngModel)]="feed.table.options.compressionFormat" >
                   <mat-option *ngFor="let opt of compressionOptions; let i = index" [value]="opt">
                     {{opt}}
                   </mat-option>
