@@ -47,15 +47,15 @@ class DefaultSource
 
     val path = checkPath(parameters)
     val mimeType = parameters.getOrElse("mimeType", "'mimeType' must be specified for data")
-    var rowType = ""
+    var rowTag = ""
     if (mimeType == "xml" || mimeType == "application/xml") {
-      rowType = parameters.getOrElse("rowType", "'rowType' must be specified for xml data")
+      rowTag = parameters.getOrElse("rowTag", "'rowTag' must be specified for xml data")
     }
 
     new FileMetadataSchemaRelation(
       Some(path),
       Some(mimeType),
-      Some(rowType),
+      Some(rowTag),
       schema
     )(sqlContext)
   }
