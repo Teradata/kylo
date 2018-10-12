@@ -23,9 +23,11 @@
     <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly"></feed-details-processor-field>
   </form>
 
-  <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
-    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
-    <h2>No properties exist</h2>
-    <h3>There are no properties to set</h3>
+  <!--
+  <div *ngIf="noPropertiesExist"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
+    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+    <h2>No properties to set</h2>
   </div>
+  -->
+
 </ng-template>

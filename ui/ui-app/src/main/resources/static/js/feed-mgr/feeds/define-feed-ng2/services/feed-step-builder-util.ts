@@ -49,12 +49,12 @@ export class FeedStepBuilderUtil {
 
     sourceStep(required:boolean = true):StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Source.Name")
-        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Browse catalog for a sample and define the source location").setSref("datasources").setRequired(required).setValidator(new DefineFeedStepSourceSampleValidator());
+        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Define source options").setSref("datasources").setRequired(required).setValidator(new DefineFeedStepSourceSampleValidator());
     }
 
     wranglerStep():StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Wrangler.Name")
-        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Data Wrangler").setSref("wrangler").setRequired(true).setFullscreen(true);
+        return  new StepBuilder().setName(name).setIcon("blur_linear").setSystemName(FeedStepConstants.STEP_WRANGLER).setDescription("Select data and apply transformations").setSref("wrangler").setRequired(true).setFullscreen(true);
     }
 
      defineTableFeedSteps() :Step[] {
