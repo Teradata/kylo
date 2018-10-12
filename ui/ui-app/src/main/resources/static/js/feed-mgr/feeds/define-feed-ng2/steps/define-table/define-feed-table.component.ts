@@ -323,7 +323,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
-        this.virtualScroll.refresh();
+        if(this.virtualScroll) {
+            this.virtualScroll.refresh();
+        }
         this.defineTableForm.markAsDirty();
         if(this.virtualScroll){
             setTimeout(()=>{this.virtualScroll.scrollToEnd()}, 50);

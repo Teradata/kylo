@@ -17,7 +17,7 @@
 
     <div fxLayout="row">
 
-      <mat-card class="feed-card" fxFlex="80">
+      <mat-card class="feed-card" fxFlex="{{feed.table.tableSchema.fields.length >0 ? 80 : 100}}">
         <mat-card-header>
           <mat-card-title>{{step.name}}</mat-card-title>
           <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
@@ -25,7 +25,7 @@
         </mat-card-header>
         <mat-card-content>
           <ng-container *ngIf="feed.readonly">
-            <div fxLayout="row" fxFlex="100">
+            <div fxLayout="row" fxFlex="100" *ngIf="feed.table.tableSchema.fields.length >0">
               <div fxLayout="column" fxFlex="100">
                 <div fxLayout="row" class="push-bottom-md">
                   <div fxFlex="30">Name</div>
@@ -71,10 +71,16 @@
 
 
             </div>
+
+            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
+              <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+              <h2>Target Schema Incomplete</h2>
+            </div>
+
           </ng-container>
 
           <ng-container *ngIf="!feed.readonly">
-
+<div *ngIf="feed.table.tableSchema.fields.length >0">
             <form [formGroup]="defineTableForm">
               <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
                 <div fxFlex="30">Name</div>
@@ -172,6 +178,15 @@
               </td-virtual-scroll-container>
               <button mat-button (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
             </form>
+</div>
+
+            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
+              <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+              <h2>Target Schema Incomplete</h2>
+              <p  *ngIf="!tablePermissions.tableLocked">Upload a sample add a column to build your schema<br/>
+                <button mat-raised-button (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
+              </p>
+            </div>
 
           </ng-container>
         </mat-card-content>
@@ -333,7 +348,7 @@
           </div>
           <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
             <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-            <h2>No partitions defined</h2>
+            <h2>No Partitions Defined</h2>
           </div>
         </div>
         <div *ngIf="!feed.readonly">
