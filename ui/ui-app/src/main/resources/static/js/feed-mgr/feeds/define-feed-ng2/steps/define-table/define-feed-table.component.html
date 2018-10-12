@@ -1,6 +1,7 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="false">
   <feed-step-custom-content>
 
+    <ng-container *ngIf="showSourceSample">
     <form class="source-sample-container" [formGroup]="sourceSampleForm" >
       <mat-card class="feed-card source-sample-card" fxFlex>
         <mat-card-header>
@@ -13,6 +14,7 @@
         </mat-card-content>
       </mat-card>
     </form>
+    </ng-container>
 
 
     <div fxLayout="row">
@@ -74,7 +76,7 @@
 
             <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
               <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-              <h2>Target Schema Incomplete</h2>
+              <h2>Target schema incomplete</h2>
             </div>
 
           </ng-container>
@@ -182,9 +184,9 @@
 
             <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
               <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-              <h2>Target Schema Incomplete</h2>
+              <h2>Target schema incomplete</h2>
               <p  *ngIf="!tablePermissions.tableLocked">Upload a sample add a column to build your schema<br/>
-                <button mat-raised-button (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
+                <button mat-raised-button (click)="addColumn()">Add Column</button>
               </p>
             </div>
 
@@ -329,7 +331,7 @@
       </mat-card>
     </div>
 
-    <mat-card class="feed-card">
+    <mat-card class="feed-card" [hidden]="feed.table.tableSchema.fields.length ==0">
       <mat-card-header>
         <mat-card-title>Table Partitions</mat-card-title>
         <mat-card-subtitle>Define partitions on the target table</mat-card-subtitle>
@@ -348,7 +350,7 @@
           </div>
           <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
             <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-            <h2>No Partitions Defined</h2>
+            <h2>No partitions defined</h2>
           </div>
         </div>
         <div *ngIf="!feed.readonly">
@@ -399,16 +401,20 @@
               <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
                 <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
                 <h2>No partitions defined</h2>
+                <p *ngIf="!tablePermissions.tableLocked">
+                  <button mat-raised-button (click)="addPartitionField()" >Add Partition</button>
+                </p>
+
               </div>
 
             </div>
-            <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.tableLocked">Add Partition</button>
+            <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.tableLocked && feed.table.partitions.length > 0">Add Partition</button>
           </form>
         </div>
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="feed-card">
+    <mat-card class="feed-card"  [hidden]="feed.table.tableSchema.fields.length ==0">
       <mat-card-header>
         <mat-card-title>Merge Strategy</mat-card-title>
         <mat-card-subtitle>Define how new data is inserted into the target</mat-card-subtitle>
@@ -443,7 +449,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="feed-card">
+    <mat-card class="feed-card"  [hidden]="feed.table.tableSchema.fields.length ==0">
       <mat-card-header>
         <mat-card-title>Target Format</mat-card-title>
         <mat-card-subtitle>Define data format of the target</mat-card-subtitle>

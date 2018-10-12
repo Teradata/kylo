@@ -77,11 +77,11 @@ this.deployErrorMessage = '';
 
         //if we are not showing the source
 
-        if(this.feed.inputProcessor == undefined || this.feed.inputProcessorType) {
+        if(this.isUndefined(this.feed.inputProcessor) || this.isUndefined(this.feed.inputProcessorType)) {
             //get the first input processor and select it
             let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
             if(inputProcessors.length >0) {
-                let input: Templates.Processor = inputProcessors;
+                let input: Templates.Processor = inputProcessors[0];
                 this.feed.inputProcessor = input;
                 this.feed.inputProcessorName = input.name;
                 this.feed.inputProcessorType = input.type;
@@ -111,6 +111,10 @@ this.deployErrorMessage = '';
         }
 
 
+    }
+
+    private isUndefined(obj:any){
+     return   obj == undefined || obj == null || obj == ""
     }
 
 
