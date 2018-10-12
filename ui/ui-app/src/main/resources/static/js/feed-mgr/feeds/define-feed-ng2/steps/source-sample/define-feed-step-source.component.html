@@ -11,7 +11,7 @@
           <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT"  ></feed-nifi-properties>
         </form>
       </mat-card-content>
-      <mat-card-actions *ngIf="!feed.readonly && !showCatalog">
+      <mat-card-actions *ngIf="!feed.readonly">
         <button mat-button (click)="onCancelEdit()">Cancel</button>
         <button mat-raised-button color="accent" (click)="onSave()">Save</button>
       </mat-card-actions>
