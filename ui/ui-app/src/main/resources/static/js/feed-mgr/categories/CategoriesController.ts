@@ -3,7 +3,6 @@ import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
-
 export class CategoriesController {
 
     /**

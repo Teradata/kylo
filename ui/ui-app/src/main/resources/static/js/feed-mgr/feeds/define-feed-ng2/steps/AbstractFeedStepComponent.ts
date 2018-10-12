@@ -14,6 +14,7 @@ import {ISubscription} from "rxjs/Subscription";
 import 'rxjs/add/operator/distinctUntilChanged';
 import * as _ from "underscore"
 import {CloneUtil} from "../../../../common/utils/clone-util";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 
 export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
@@ -105,7 +106,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
-console.log("FORM CHANGED ",changes)
+            console.log("FORM CHANGED ",changes)
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;

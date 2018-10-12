@@ -7,6 +7,7 @@ import AccessControlService from '../../../services/AccessControlService';
 import BroadcastService from '../../../services/broadcast-service';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import '../../../../assets/images/75_arrow.svg'
+import '../module-require';
 
 export class RegisterTemplateController {
 

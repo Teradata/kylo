@@ -721,7 +721,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
     }
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
     .component('importTemplateController', {
         templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
         controller: ImportTemplateController,
@@ -734,3 +734,4 @@ angular.module(moduleName)
         controller: ImportTemplateController,
         controllerAs: 'vm'
 });
+export default module;

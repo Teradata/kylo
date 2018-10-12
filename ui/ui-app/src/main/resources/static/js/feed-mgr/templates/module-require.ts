@@ -5,6 +5,7 @@ import "ment-io";
 import "../services/RegisterTemplateServiceFactory";
 import "./RegisteredTemplatesController";
 import "./new-template/RegisterNewTemplateController";
+import "./import-template/ImportTemplateController";
 import "./template-order/template-order";
 import "./template-stepper/processor-properties/processor-properties";
 import "./template-stepper/processor-properties/derived-expression";

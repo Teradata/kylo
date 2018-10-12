@@ -7,6 +7,17 @@ import './main/AccessDeniedController';
 import AccessControlService from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
 import {KyloRouterService} from "./services/kylo-router.service";
+import {Lazy} from './kylo-utils/LazyLoadUtil';
+
+// require('./services/module');
+// require('./common/module');
+// require('./feed-mgr/module');
+// require('./feed-mgr/module-require');
+
+// import './services/module';
+// import './common/module';
+// import './feed-mgr/module';
+// import './feed-mgr/module-require';
 
 'use strict';
 
@@ -23,6 +34,12 @@ class Route {
 
 //var app = angular.module("", ["ngRoute"]);
     configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any) {
+        // require('./services/module');
+        // require('./common/module');
+        // require('./feed-mgr/module');
+        // require('./feed-mgr/module-require');
+
+
         function onOtherwise(AngularModuleExtensionService: any, $state: any, url: any) {
             var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
             if (stateData.valid) {
@@ -83,21 +100,13 @@ class Route {
             name: 'feeds.**',
             url: '/feeds',
             lazyLoad: ($transition$: any) => {
-                const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+                const $ocLazyLoad = $transition$.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.feeds.module" */ "./feed-mgr/feeds/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "feeds"));
+                };
 
-                return import(/* webpackChunkName: "feedmgr.feeds.module" */ "./feed-mgr/feeds/module")
-                    .then(mod => {
-                        console.log('imported feeds module', mod);
-                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            $stateProvider.stateService.go('feeds');
-                        }, function error(err: any) {
-                            console.log("Error loading feeds", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load feed-mgr/feeds/feeds.module, " + err);
-                    });
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
         $stateProvider.state({
@@ -264,20 +273,12 @@ class Route {
             url: '/business-metadata',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.business-metadata.module" */ "./feed-mgr/business-metadata/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('business-metadata')
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading business-metadata ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.business-metadata.module" */ "./feed-mgr/business-metadata/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "business-metadata"));
+                };
+
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -495,20 +496,12 @@ class Route {
             url: "/domain-types",
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.domain-types.module" */ "./feed-mgr/domain-types/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name})
-                        .then(function (args: any) {
-                            $stateProvider.stateService.go("domain-types", transition.params());
-                            return args;
-                        }, function (err: any) {
-                            console.log("Error loading domain-types.", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load feed-mgr/domain-types/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "admin.domain-types.module" */ "./feed-mgr/domain-types/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "domain-types", transition.params()));
+                };
+
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -684,6 +677,13 @@ class Route {
           $uiRouter: any, accessControlService: AccessControlService, AngularModuleExtensionService: any,
           loginNotificationService: LoginNotificationService,
           kyloRouterService:KyloRouterService, $ocLazyLoad: any) {
+
+        require('./services/module');
+        require('./common/module');
+        require('./feed-mgr/module');
+        require('./feed-mgr/module-require');
+
+
         //initialize the access control
         accessControlService.init();
         loginNotificationService.initNotifications();
@@ -748,36 +748,6 @@ class Route {
             }
 
         });
-
-        import(/* webpackChunkName: "services.module" */ './services/module')
-            .then(mod => {
-                $ocLazyLoad.load(mod.default)
-            })
-            .catch(err => {
-                throw new Error("Failed to load services module, " + err);
-            });
-        import(/* webpackChunkName: "common.module" */ './common/module')
-            .then(mod => {
-                $ocLazyLoad.load(mod.default)
-            })
-            .catch(err => {
-                throw new Error("Failed to load common module, " + err);
-            });
-        import(/* webpackChunkName: "feedmgr.module" */ './feed-mgr/module')
-            .then(mod => {
-                $ocLazyLoad.load(mod.default)
-            })
-            .catch(err => {
-                throw new Error("Failed to load feed-mgr module, " + err);
-            });
-        import(/* webpackChunkName: "feedmgr.module-require" */ './feed-mgr/module-require')
-            .then(mod => {
-                console.log('imported feed-mgr/module-require', mod);
-                $ocLazyLoad.load(mod)
-            })
-            .catch(err => {
-                throw new Error("Failed to load feed-mgr module-require, " + err);
-            });
     }
 }
 

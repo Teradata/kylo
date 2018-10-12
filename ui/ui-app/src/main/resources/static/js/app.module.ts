@@ -17,6 +17,11 @@ import {KyloCommonModule} from "./common/common.module";
 import {AngularHttpInterceptor} from "./services/AngularHttpInterceptor";
 import {KyloServicesModule} from "./services/services.module";
 
+import '../node_modules/@fortawesome/fontawesome-free/sprites/brands.svg';
+import '../node_modules/@fortawesome/fontawesome-free/sprites/regular.svg';
+import '../node_modules/@fortawesome/fontawesome-free/sprites/solid.svg';
+import '../node_modules/@fortawesome/fontawesome-free/sprites/brands.svg';
+import '../node_modules/@mdi/font/fonts/materialdesignicons-webfont.svg';
 
 /**
  * Overrides {@link MatIconRegistry} to include the viewBox when building SVG elements.
@@ -80,18 +85,18 @@ export class KyloModule {
 
     private initIcons(): void {
         // "Font Awesome Free" icons by @fontawesome (https://fontawesome.com) are licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
-        const fabUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/brands.svg");
+        const fabUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@fortawesome/fontawesome-free/sprites/brands.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fab", fabUrl);
 
-        const farUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/regular.svg");
+        const farUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@fortawesome/fontawesome-free/sprites/regular.svg");
         this.iconRegistry.addSvgIconSetInNamespace("far", farUrl);
 
-        const fasUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/solid.svg");
+        const fasUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@fortawesome/fontawesome-free/sprites/solid.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fas", fasUrl);
 
         this.iconRegistry.registerFontClassAlias("mdi","mdi-set")
 
-        const mdiSvgUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@mdi/fonts/materialdesignicons-webfont.svg");
+        const mdiSvgUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@mdi/font/fonts/materialdesignicons-webfont.svg");
         this.iconRegistry.addSvgIconSetInNamespace("mdi", mdiSvgUrl);
     }
 

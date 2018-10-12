@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 const moduleName = require('./module-name');
 import AccessConstants from "../../constants/AccessConstants";
+import {Lazy} from '../../kylo-utils/LazyLoadUtil';
 
 class ModuleFactory {
 
@@ -28,14 +29,11 @@ class ModuleFactory {
             },
             resolve: {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    return import(/* webpackChunkName: "feeds.categories.controller" */ './CategoriesController')
-                        .then(mod => {
-                            console.log('imported ./CategoriesController mod', mod);
-                            return $ocLazyLoad.load(mod.default)
-                        })
-                        .catch(err => {
-                            throw new Error("Failed to load CategoriesController, " + err);
-                        });
+                    const onModuleLoad = () => {
+                        return import(/* webpackChunkName: "feeds.categories.controller" */ './CategoriesController')
+                            .then(Lazy.onModuleImport($ocLazyLoad));
+                    };
+                    return import(/* webpackChunkName: "feed-mgr.module-require" */ "../module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
                 }]
             },
             data: {
@@ -55,16 +53,12 @@ class ModuleFactory {
                 }
             },
             resolve: {
-                // loadMyCtrl: lazyLoadController(['feed-mgr/categories/category-details'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    return import(/* webpackChunkName: "feeds.category-details" */ './category-details')
-                        .then(mod => {
-                            console.log('imported feed-mgr/categories/category-details mod', mod);
-                            return $ocLazyLoad.load(mod.default)
-                        })
-                        .catch(err => {
-                            throw new Error("Failed to load CategoriesController, " + err);
-                        });
+                    const onModuleLoad = () => {
+                        return import(/* webpackChunkName: "feeds.category-details" */ './category-details')
+                            .then(Lazy.onModuleImport($ocLazyLoad));
+                    };
+                    return import(/* webpackChunkName: "feed-mgr.module-require" */ "../module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
                 }]
             },
             data: {

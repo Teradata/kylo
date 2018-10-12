@@ -6,6 +6,7 @@ import PaginationData = ListTableView.PaginationData;
 import SortOption = ListTableView.SortOption;
 import {StateService} from '../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../services/RegisterTemplateServiceFactory';
+import './module-require';
 
 export class RegisteredTemplatesController {
 

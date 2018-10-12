@@ -6,6 +6,7 @@ import LabelValue = Common.LabelValue;
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import {StateService} from '../../../../services/StateService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import '../../module-require';
 
 
 export class RegisterCompleteRegistrationController {
@@ -446,8 +447,9 @@ export class RegisterTemplateCompleteController {
     }
 }
 
-angular.module(moduleName).component("registerTemplateCompleteController", {
+const module = angular.module(moduleName).component("registerTemplateCompleteController", {
     templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
     controller: RegisterTemplateCompleteController,
     controllerAs: 'vm'
 });
+export default module;

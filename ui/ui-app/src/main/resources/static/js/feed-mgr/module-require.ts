@@ -87,4 +87,5 @@ angular.module(moduleName).service('HiveService', HiveService);
 angular.module(moduleName)
     .service("VisualQueryService", VisualQueryService);
 
-angular.module(moduleName).service("DatasourcesService",DatasourcesService);
+const module = angular.module(moduleName).service("DatasourcesService",DatasourcesService);
+export default module;

@@ -105,6 +105,6 @@ export class RepositoryModule {
         require("feed-mgr/templates/module");
         injector.get("$ocLazyLoad").inject(moduleName);
         require("feed-mgr/templates/module-require");
-        // require("feed-mgr/templates/import-template/ImportTemplateController");
+        require("feed-mgr/templates/import-template/ImportTemplateController");
     }
 }

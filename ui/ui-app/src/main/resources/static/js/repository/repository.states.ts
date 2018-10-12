@@ -4,6 +4,7 @@ import {TemplateService} from "./services/template.service";
 import {TemplateInfoComponent} from "./template-info/template-info.component";
 import AccessConstants from "../constants/AccessConstants";
 import {ImportTemplateComponent} from "./ng5-import-template.component";
+import {Lazy} from '../kylo-utils/LazyLoadUtil';
 
 export const repositoryStates: Ng2StateDeclaration[] = [
     {
@@ -29,6 +30,16 @@ export const repositoryStates: Ng2StateDeclaration[] = [
             "content": {
                 component: ImportTemplateComponent
             }
+        },
+        resolve: {
+            loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "feeds.import-template.controller" */ '../feed-mgr/templates/import-template/ImportTemplateController')
+                        .then(Lazy.onModuleImport($ocLazyLoad));
+                };
+
+                return import(/* webpackChunkName: "feed-mgr.module-require" */ "../feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }]
         },
         data: {
             breadcrumbRoot: false,

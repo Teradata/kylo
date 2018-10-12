@@ -27,20 +27,10 @@ class ModuleFactory  {
             },
             lazyLoad: ($transition$: any) => {
                 const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
-
-                return import(/* webpackChunkName: "feedmgr.module-require" */ '../module-require')
-                    .then(mod => {
-                        console.log('imported feed-mgr/module-require', mod);
-                        $ocLazyLoad.load(mod);
-
-                        return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
-                            .then(mod => $ocLazyLoad.load(mod.default))
-                            .catch(err => {
-                                throw new Error("Failed to load FeedsTableController, " + err);
-                            });
-                    })
+                return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
+                    .then(mod => $ocLazyLoad.load(mod.default))
                     .catch(err => {
-                        throw new Error("Failed to load feed-mgr module-require, " + err);
+                        throw new Error("Failed to load FeedsTableController, " + err);
                     });
             },
             data: {
