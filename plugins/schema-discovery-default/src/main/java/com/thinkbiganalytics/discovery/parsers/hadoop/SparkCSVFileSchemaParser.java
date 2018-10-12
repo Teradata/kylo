@@ -85,6 +85,7 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
                 HiveTableSettings tableSettings = new DefaultHaveTableSettings();
                 tableSettings.setHiveFormat(deriveHiveRecordFormat());
                 tableSettings.setStructured(false);
+                return tableSettings;
             default:
                 return new DefaultTableSettings();
         }
