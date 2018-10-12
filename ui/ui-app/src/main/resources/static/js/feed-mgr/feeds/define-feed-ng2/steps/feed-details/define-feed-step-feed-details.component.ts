@@ -39,6 +39,7 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedNifiPropertiesComponent, NiFiPropertiesProcessorsChangeEvent} from "./feed-nifi-properties.component";
+import {FormGroupUtil} from "../../../../../services/form-group-util";
 
 
 
@@ -103,9 +104,22 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     /**
      * called before saving
      */
-    protected applyUpdatesToFeed():(Observable<any>| null){
-        this.feedPropertyNiFiComponent.applyUpdatesToFeed()
-        return null;
+    protected applyUpdatesToFeed():(Observable<any>| boolean | null){
+
+
+        if(this.form.invalid){
+            this.step.validator.hasFormErrors = true;
+            //show the errors
+            FormGroupUtil.touchFormControls(this.form);
+            return false;
+        }
+        else {
+            this.step.validator.hasFormErrors = false;
+            this.feedPropertyNiFiComponent.applyUpdatesToFeed()
+            return true;
+        }
+
+
     }
 
 

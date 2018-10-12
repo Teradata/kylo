@@ -100,9 +100,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        // if(this.formGroup) {
-        //      this.formGroup.addControl("processors", this.form);
-        //   }
+         if(this.formGroup) {
+             this.formGroup.addControl("processors", this.form);
+         }
 
         if (this.mode == undefined) {
             this.mode = FeedDetailsMode.ALL;
@@ -204,12 +204,11 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                     } else {
                         //merge the properties back into this feed
                         feed.properties = updatedFeedResponse.properties;
-                        feed.inputProcessors = updatedFeedResponse.inputProcessors;
-                        feed.nonInputProcessors = updatedFeedResponse.nonInputProcessors;
+
                         feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
                         this.feedNifiPropertiesService.setupFeedProperties(feed, feed.registeredTemplate, 'edit');
                         feed.propertiesInitialized = true;
-                        this.buildInputProcessorRelationships(this.feed.registeredTemplate)
+                        this.buildInputProcessorRelationships(feed.registeredTemplate)
                         this.setProcessors(feed.inputProcessors, feed.nonInputProcessors, feed.inputProcessor, feed);
 
 

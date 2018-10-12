@@ -20,6 +20,7 @@ import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service
 import {ShowCatalogCanceledEvent} from "./define-feed-step-source-sample.component";
 import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
+import {FormGroupUtil} from "../../../../../services/form-group-util";
 
 
 
@@ -126,11 +127,22 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     }
 
-    public applyUpdatesToFeed(): (Observable<any> | null) {
-        if (this.feedPropertyNiFiComponent) {
-            this.feedPropertyNiFiComponent.applyUpdatesToFeed();
+    public applyUpdatesToFeed(): (Observable<any> | boolean | null) {
+        if(this.sourcePropertiesForm.invalid){
+            this.step.validator.hasFormErrors = true;
+            //show the errors
+            FormGroupUtil.touchFormControls(this.sourcePropertiesForm);
+            return false;
         }
-        return null;
+        else {
+            this.step.validator.hasFormErrors = false;
+            if (this.feedPropertyNiFiComponent) {
+                this.feedPropertyNiFiComponent.applyUpdatesToFeed();
+            }
+            return true;
+        }
+
+
     }
 
 
@@ -233,6 +245,14 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
             this.feed.setSourceDataSetAndUpdateTarget(null);
             saveFeed();
         }
+
+    }
+
+    cancelFeedEdit(){
+        //reassign the propertiesInitialized flag when canceling edit
+        let propertiesInitialized = this.feed.propertiesInitialized;
+        super.cancelFeedEdit();
+        this.feed.propertiesInitialized = propertiesInitialized;
 
     }
 
