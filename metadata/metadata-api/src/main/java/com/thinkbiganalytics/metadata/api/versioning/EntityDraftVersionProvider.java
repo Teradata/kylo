@@ -41,4 +41,7 @@ public interface EntityDraftVersionProvider<T, PK extends Serializable> extends 
     EntityVersion<PK, T> createDraftVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
     EntityVersion<PK, T> createVersion(PK entityId, String comment, boolean includeContent);
+    
+    Optional<EntityVersion<PK, T>> revertDraftVersion(PK entityId, boolean includeContent);
+    
 }

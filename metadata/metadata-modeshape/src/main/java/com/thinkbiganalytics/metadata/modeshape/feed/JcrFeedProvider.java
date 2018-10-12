@@ -54,6 +54,7 @@ import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.VersionAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -78,7 +79,6 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrChangeComment;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -211,8 +211,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Node createDraftEntity(ID entityId) {
-        Node versionable = findVersionableNode(entityId)
-                .orElseThrow(() -> new AccessControlException("You do not have the rights to create a draft version of this feed: " + entityId));
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
         
         if (JcrVersionUtil.isCheckedOut(versionable)) {
             throw new VersionAlreadyExistsException("A draft verion of this feed already exists: " + entityId);
@@ -233,11 +232,22 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Node draft = createDraftEntity(entityId);
         return draft;
     }
+    
+    @Override
+    public Version revertDraftEntity(ID entityId) {
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
+        Version baseVersion = JcrVersionUtil.getBaseVersion(versionable);
+        
+        if (JcrVersionUtil.isCheckedOut(versionable)) {
+            JcrVersionUtil.restore(baseVersion);
+        }
+        
+        return baseVersion;
+    }
 
     @Override
     public Version createVersionedEntity(ID entityId, String comment) {
-        Node versionable = findVersionableNode(entityId)
-                        .orElseThrow(() -> new AccessControlException("You do not have the rights to create a draft version of this feed: " + entityId));
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
         
         FeedSummary summary = new FeedSummary(versionable, null);
         summary.setVersionComment(comment != null ? comment : "");

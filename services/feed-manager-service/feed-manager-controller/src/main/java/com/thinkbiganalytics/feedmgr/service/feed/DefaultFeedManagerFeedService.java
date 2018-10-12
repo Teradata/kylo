@@ -327,10 +327,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID deployedId = feedProvider.findDeployedVersion(domainFeedId, false)
                                 .map(ver -> ver.getId())
                                 .orElse(null);
+                List<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> versions = feedProvider.findVersions(domainFeedId, includeContent);
                 
-                return feedProvider.findVersions(domainFeedId, includeContent)
-                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId, deployedId))
-                    .orElse((FeedVersions) null);
+                return feedModelTransform.domainToFeedVersions(versions, domainFeedId, deployedId);
             }, MetadataAccess.SERVICE);
         }).orElse((FeedVersions) null);
     }
@@ -344,7 +343,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
 
                 return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    .map(feedModelTransform::domainToFeedVersion);
             }, MetadataAccess.SERVICE);
         });
     }
@@ -765,6 +764,20 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         else {
             return metadata;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#removeFeedDraftVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent) {
+        return metadataAccess.commit(() -> {
+            // Check services access to be able to create a feed
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+            
+            Feed.ID domainId = feedProvider.resolveId(feedId);
+            return feedProvider.revertDraftVersion(domainId, includeContent).map(feedModelTransform::domainToFeedVersion);
+        });
     }
 
     /**

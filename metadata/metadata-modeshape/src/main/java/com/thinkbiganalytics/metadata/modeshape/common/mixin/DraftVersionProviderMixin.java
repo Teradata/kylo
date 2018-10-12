@@ -27,15 +27,18 @@ import com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.NoDraftVersionException;
 import com.thinkbiganalytics.metadata.api.versioning.VersionAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionableEntityNotFoundException;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityDraftVersion;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.version.Version;
@@ -45,47 +48,55 @@ import javax.jcr.version.Version;
  * may have draft versions.
  */
 public interface DraftVersionProviderMixin<T, PK extends Serializable> extends VersionProviderMixin<T, PK>, EntityDraftVersionProvider<T, PK> {
-
     
     @Override
-    default Optional<List<EntityVersion<PK, T>>> findVersions(PK entityId, boolean includeContent) {
-        List<EntityVersion<PK, T>> result = new ArrayList<>();
+    default List<EntityVersion<PK, T>> findVersions(PK entityId, boolean includeContent) {
+        Optional<EntityVersion<PK, T>> draftVersion = findVersionableNode(entityId)
+            .map(versionable -> {
+                if (JcrVersionUtil.isCheckedOut(versionable)) {
+                    T entity = includeContent ? asEntity(entityId, versionable) : null;
+                    return Optional.<EntityVersion<PK, T>>of(new JcrEntityDraftVersion<PK, T>(versionable, entityId, entity));
+                } else {
+                    return Optional.<EntityVersion<PK, T>>empty();
+                }
+            })
+            .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
         
-        findVersionableNode(entityId)
-            .filter(node -> JcrVersionUtil.isCheckedOut(node))
-            .ifPresent(draft -> {
-                T entity = includeContent ? asEntity(entityId, draft) : null;
-                result.add(new JcrEntityDraftVersion<PK, T>(draft, entityId, entity));
-            });
-        
-        VersionProviderMixin.super.findVersions(entityId, includeContent)
-            .ifPresent(result::addAll);
-        
-        return result.size() != 0 ? Optional.of(result) : Optional.empty();
+        return draftVersion
+            .map(draft -> Stream.concat(Stream.of(draft), VersionProviderMixin.super.findVersions(entityId, includeContent).stream())
+                 .collect(Collectors.toList()))
+            .orElseGet(() -> VersionProviderMixin.super.findVersions(entityId, includeContent));
     }
     
     @Override
     default Optional<EntityVersion<PK, T>> findDraftVersion(PK entityId, boolean includeContent) {
         return findVersionableNode(entityId)
-            .filter(node -> JcrVersionUtil.isCheckedOut(node))
-            .map(draft -> {
-                T entity = includeContent ? asEntity(entityId, draft) : null;
-                return (EntityVersion<PK, T>) new JcrEntityDraftVersion<PK, T>(draft, entityId, entity);
-            });
-
+            .map(versionable -> {
+                if (JcrVersionUtil.isCheckedOut(versionable)) {
+                    T entity = includeContent ? asEntity(entityId, versionable) : null;
+                    return Optional.<EntityVersion<PK, T>>of(new JcrEntityDraftVersion<PK, T>(versionable, entityId, entity));
+                } else {
+                    return Optional.<EntityVersion<PK, T>>empty();
+                }
+            })
+            .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
 
     @Override
     default Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent) {
-        Optional<EntityVersion<PK, T>> draftOption = findVersionableNode(entityId)
-            .filter(node -> JcrVersionUtil.isCheckedOut(node))
-            .map(draft -> {
-                T entity = includeContent ? asEntity(entityId, draft) : null;
-                return (EntityVersion<PK, T>) new JcrEntityDraftVersion<PK, T>(draft, entityId, entity);
-            });
+        Optional<EntityVersion<PK, T>> draftVersion = findVersionableNode(entityId)
+            .map(versionable -> {
+                if (JcrVersionUtil.isCheckedOut(versionable)) {
+                    T entity = includeContent ? asEntity(entityId, versionable) : null;
+                    return Optional.<EntityVersion<PK, T>>of(new JcrEntityDraftVersion<PK, T>(versionable, entityId, entity));
+                } else {
+                    return Optional.<EntityVersion<PK, T>>empty();
+                }
+            })
+            .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
         
-        if (draftOption.isPresent()) {
-            return draftOption;
+        if (draftVersion.isPresent()) {
+            return draftVersion;
         } else {
             return VersionProviderMixin.super.findLatestVersion(entityId, includeContent);
         }
@@ -118,8 +129,25 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
         return new JcrEntityVersion<>(version, getChangeComment(entityId, versionable), entityId, entity);
     }
     
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#revertDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    default Optional<EntityVersion<PK, T>> revertDraftVersion(PK entityId, boolean includeContent) {
+        return findDraftVersion(entityId, includeContent)
+            .map(draft -> {
+                Version version = revertDraftEntity(entityId);
+                Node versionable = JcrVersionUtil.getFrozenNode(version);
+                T entity = includeContent ? asEntity(entityId, versionable) : null;
+                EntityVersion<PK, T> entVer = new JcrEntityVersion<>(version, getChangeComment(entityId, versionable), entityId, entity);
+                return Optional.of(entVer);
+            })
+            .orElseGet(() -> findLatestVersion(entityId, includeContent));
+    }
+    
     /**
-     * Implementors should create a draft version of the entity and return the node
+     * Implementors should create a draft version of the entity based
+     * off the latest entity version, and return the node
      * that is the root of the versionable hierarchy of the entity.
      * @param id the entity ID
      * @return the versionable node
@@ -147,4 +175,13 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
      * @throws NoDraftVersionException thrown if the no draft version of the entity exists
      */
     Version createVersionedEntity(PK entityId, String comment);
+
+    /**
+     * Implementors should revert the draft version of the entity back to the version state it came from,
+     * and return that verion's node.  Reverting an entity that has no draft state should have no effect
+     * and the latest version should be returned.
+     * @param entityId the entity ID
+     * @return the current version node the entity after the revert
+     */
+    Version revertDraftEntity(PK entityId);
 }

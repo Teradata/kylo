@@ -28,12 +28,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.VersionableEntityNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
@@ -49,26 +51,23 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
     }
 
     @Override
-    default Optional<List<EntityVersion<PK, T>>> findVersions(PK entityId, boolean includeContent) {
+    default List<EntityVersion<PK, T>> findVersions(PK entityId, boolean includeContent) {
         BiFunction<EntityVersion<PK, T>, EntityVersion<PK, T>, Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
         
         return findVersionableNode(entityId)
-                .map(node -> JcrVersionUtil.getVersions(node).stream()
-                    .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                    .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
-                                                                              getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
-                                                                              entityId, 
-                                                                              includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                .map(node -> streamVersions(node, entityId, includeContent)
                     .sorted(desc::apply)
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList()))
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
     
     @Override
-    default Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includedContent) {
-        return findVersions(entityId, includedContent)
-                .flatMap(list -> list.stream()
-                             .filter(ver -> ver.getId().equals(versionId))
-                             .findFirst());
+    default Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent) {
+        return findVersionableNode(entityId)
+                .map(node -> streamVersions(node, entityId, includeContent)
+                    .filter(ver -> ver.getId().equals(versionId))
+                    .findFirst())
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
 
     @Override
@@ -76,14 +75,19 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
         BiFunction<EntityVersion<PK, T>, EntityVersion<PK, T>, Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
         
         return findVersionableNode(entityId)
-                .flatMap(node -> JcrVersionUtil.getVersions(node).stream()
-                    .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                    .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
-                                                                              getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
-                                                                              entityId, 
-                                                                              includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
+                .map(node -> streamVersions(node, entityId, includeContent)
                     .sorted(desc::apply)
-                    .findFirst());
+                    .findFirst())
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
+    }
+    
+    default Stream<EntityVersion<PK, T>> streamVersions(Node versionable, PK entityId, boolean includeContent) {
+        return JcrVersionUtil.getVersions(versionable).stream()
+                .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
+                .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
+                                                                          getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
+                                                                          entityId, 
+                                                                          includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null));
     }
     
     /**

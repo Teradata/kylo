@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.versioning;
+package com.thinkbiganalytics.metadata.api.versioning;
 
 /*-
  * #%L
@@ -24,7 +24,6 @@ package com.thinkbiganalytics.metadata.modeshape.versioning;
  */
 
 import com.google.common.base.Strings;
-import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 
 /**
  *

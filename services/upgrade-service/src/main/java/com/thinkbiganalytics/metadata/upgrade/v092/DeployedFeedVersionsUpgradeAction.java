@@ -59,19 +59,16 @@ public class DeployedFeedVersionsUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion targetVersion) {
-        log.info("Set the initialize JcrFeed.mode value to 'COMPLETE' for all existing feeds: {}", targetVersion);
+        log.info("Marking all existing feeds as deployed: {}", targetVersion);
         
         this.feedProvider.getFeeds().stream()
             .map(JcrFeed.class::cast)
             .forEach(feed -> {
-                feedProvider.findVersions(feed.getId(), false)
-                    .ifPresent(list -> {
-                        list.stream()
-                            .filter(ver -> ! ver.getName().equals(EntityVersion.DRAFT_NAME))
-                            .findFirst()
-                            .map(JcrEntityVersion.class::cast)
-                            .ifPresent(ver -> feed.setDeployedVersion(ver.getVersion()));
-                    });
+                feedProvider.findVersions(feed.getId(), false).stream()
+                    .filter(ver -> ! ver.getName().equals(EntityVersion.DRAFT_NAME))
+                    .findFirst()
+                    .map(JcrEntityVersion.class::cast)
+                    .ifPresent(ver -> feed.setDeployedVersion(ver.getVersion()));
             });
     }
 }

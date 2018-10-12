@@ -32,7 +32,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.action.Action;
@@ -355,6 +355,13 @@ public interface MetadataService {
      * @return the current state of feed versions (no feed content)
      */
     EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param b
+     * @return
+     */
+    Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent);
 
     /**
      * @param feedId1

@@ -276,22 +276,6 @@ public class JcrVersionUtil {
         }
 
     }
-    
-    public static Version getLatestVersion(Node node) {
-        String nodeName = null;
-        if (! isVersionable(node)) {
-            return null;
-        }
-        try {
-            nodeName = node.getName();
-            VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
-            
-            return history.getRootVersion();
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to find Version History for " + nodeName, e);
-        }
-        
-    }
 
     public static <T extends JcrObject> T getVersionedNode(Version version, Class<T> type, Object[] constructorArgs) {
         String nodeName = null;
