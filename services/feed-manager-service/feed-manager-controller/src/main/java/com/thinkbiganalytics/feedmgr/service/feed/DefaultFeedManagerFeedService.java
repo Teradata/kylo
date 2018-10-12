@@ -1474,8 +1474,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         sourceDatasources.stream()
             .forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
         previousDestIds.stream()
-            .filter(id -> ! sourceDatasources.contains(id))
-            .forEach(id -> feedProvider.removeFeedSource(domainFeedId, id));
+            .filter(id -> ! destinationDatasources.contains(id))
+            .forEach(id -> feedProvider.removeFeedDestination(domainFeedId, id));
         destinationDatasources.stream()
             .forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
         

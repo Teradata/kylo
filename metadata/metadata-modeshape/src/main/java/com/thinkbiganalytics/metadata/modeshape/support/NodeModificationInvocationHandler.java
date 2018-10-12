@@ -103,7 +103,7 @@ public abstract class NodeModificationInvocationHandler implements InvocationHan
     /**
      * @return the wrappedNode
      */
-    public Node getWrappedNode() {
+    protected Node getWrappedNode() {
         return wrappedNode;
     }
     

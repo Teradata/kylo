@@ -560,7 +560,7 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
 
-            Value weakRef = node.getSession().getValueFactory().createValue(ref, true);
+            Value weakRef = createValue(node.getSession(), true);
             node.setProperty(name, weakRef);
 
         } catch (AccessDeniedException e) {
@@ -672,8 +672,12 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to get the node property set: " + propName, e);
         }
     }
-
+    
     public static <E> List<E> getPropertyValuesList(Node node, String propName) {
+        return getPropertyValuesList(node, propName, false);
+    }
+
+    public static <E> List<E> getPropertyValuesList(Node node, String propName, boolean weakRefs) {
         try {
             Property prop;
             try {
@@ -691,6 +695,10 @@ public class JcrPropertyUtil {
     }
     
     public static <E> Set<E> getPropertyValuesSet(Node node, String propName) {
+        return getPropertyValuesSet(node, propName, false);
+    }
+    
+    public static <E> Set<E> getPropertyValuesSet(Node node, String propName, boolean weakRefs) {
         try {
             Property prop;
             try {
@@ -760,7 +768,7 @@ public class JcrPropertyUtil {
                                     if (PropertyType.REFERENCE == v.getType() && weakReference) {
                                         try {
                                             Node n = JcrPropertyUtil.asValue(v, node.getSession());
-                                            return n.getSession().getValueFactory().createValue(n, true);
+                                            return n.getSession().getValueFactory().createValue(JcrUtil.dereference(n), true);
                                         } catch (AccessDeniedException e) {
                                             log.debug("Access denied", e);
                                             throw new AccessControlException(e.getMessage());
@@ -867,7 +875,8 @@ public class JcrPropertyUtil {
             } else if (value instanceof Enum) {
                 return factory.createValue(((Enum) value).name());
             } else if (value instanceof JcrObject) {
-                return factory.createValue(((JcrObject) value).getNode(), weakRef);
+                Node node = ((JcrObject) value).getNode();
+                return factory.createValue(JcrUtil.dereference(node), weakRef);
 //                return factory.createValue(((JcrObject) value).getNode().getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Value) {
                 return (Value) value;
@@ -916,6 +925,10 @@ public class JcrPropertyUtil {
     }
 
     public static int getJCRPropertyType(Object obj) {
+        return getJCRPropertyType(obj, false);
+    }
+    
+    public static int getJCRPropertyType(Object obj, boolean weakReference) {
         if (obj instanceof String) {
             return PropertyType.STRING;
         }
@@ -947,12 +960,18 @@ public class JcrPropertyUtil {
             return JcrExtensiblePropertyCollection.COLLECTION_TYPE;
         }
         if (obj instanceof Node) {
-            return PropertyType.REFERENCE;
+            return weakReference ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE;
         }
         return PropertyType.UNDEFINED;
     }
 
     public static Value asValue(ValueFactory factory, Object obj) {
+        return asValue(factory, obj, false);
+    }
+    
+    public static Value asValue(ValueFactory factory, Object obj, boolean weakReference) {
+        boolean useWeak = weakReference;
+        
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
             switch (getJCRPropertyType(obj)) {
@@ -968,8 +987,11 @@ public class JcrPropertyUtil {
                     return obj instanceof Double ? factory.createValue((Double) obj) : factory.createValue(((Float) obj).doubleValue());
                 case PropertyType.BINARY:
                     return factory.createValue((InputStream) obj);
+                case PropertyType.WEAKREFERENCE:
+                    useWeak = true;
                 case PropertyType.REFERENCE:
-                    return factory.createValue((Node) obj);
+                    Node node = (Node) obj;
+                    return factory.createValue(JcrUtil.dereference(node), useWeak);
                 default:
                     return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
             }

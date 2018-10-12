@@ -49,6 +49,17 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
         super(node, dataSet);
         dataSet.addSourceNode(getNode());
     }
+
+    public void remove() {
+        getDatasource()
+            .map(JcrDatasource.class::cast)
+            .ifPresent(src -> src.removeSourceNode(getNode()));
+        getDataSet()
+            .map(JcrDataSet.class::cast)
+            .ifPresent(src -> src.removeSourceNode(getNode()));
+        
+        super.remove();
+    }
     
     
 }

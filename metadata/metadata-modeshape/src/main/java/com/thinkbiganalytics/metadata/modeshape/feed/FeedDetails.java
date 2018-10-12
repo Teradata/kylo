@@ -291,7 +291,7 @@ public class FeedDetails extends JcrObject implements PropertiedMixin, Auditable
             Set<Value> updatedSet = new HashSet<>();
             for (Node node : nodes) {
                 if (!node.getIdentifier().equalsIgnoreCase(id.toString())) {
-                    Value value = getNode().getSession().getValueFactory().createValue(node, true);
+                    Value value = JcrPropertyUtil.createValue(getNode().getSession(), node, true); 
                     updatedSet.add(value);
                 }
             }
@@ -346,19 +346,11 @@ public class FeedDetails extends JcrObject implements PropertiedMixin, Auditable
     }
 
     protected void removeFeedSource(JcrFeedSource source) {
-        try {
-            source.getNode().remove();
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("nable to remove feed source for feed " + getParentSummary().getSystemName(), e);
-        }
+        source.remove();
     }
 
     protected void removeFeedDestination(JcrFeedDestination dest) {
-        try {
-            dest.getNode().remove();
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("nable to remove feed destination for feed " + getParentSummary().getSystemName(), e);
-        }
+        dest.remove();
     }
 
     protected void removeFeedSources() {
@@ -368,30 +360,7 @@ public class FeedDetails extends JcrObject implements PropertiedMixin, Auditable
             sources.stream()
                 .map(JcrFeedSource.class::cast)
                 .forEach(source -> {
-                    try {
-                        // TODO: Find out why unwrapping of the proxy is necessary and fix it, otherwise see if this unwrapping can be handled in JcrPropertyUtils
-                        Node sourceNode = source.getNode();
-                        if (Proxy.isProxyClass(sourceNode.getClass())) {
-                            InvocationHandler invocationHandler = Proxy.getInvocationHandler(sourceNode);
-                            if (invocationHandler instanceof NodeModificationInvocationHandler) {
-                                sourceNode = ((NodeModificationInvocationHandler) invocationHandler).getWrappedNode();
-                            }
-                        }
-                        final Node actualSourceNode = sourceNode;
-                        
-                        // Either the datasource or dataSet will be present.
-                        source.getDatasource()
-                            .map(JcrDatasource.class::cast)
-                            .ifPresent(dataSrc -> dataSrc.removeSourceNode(actualSourceNode));
-                        
-                        source.getDataSet()
-                            .map(JcrDataSet.class::cast)
-                            .ifPresent(dataSet -> dataSet.removeSourceNode(actualSourceNode));
-                        
-                        sourceNode.remove();
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
-                    }
+                    removeFeedSource(source);
                 });
         }
     }
@@ -403,29 +372,15 @@ public class FeedDetails extends JcrObject implements PropertiedMixin, Auditable
             destinations.stream()
                 .map(JcrFeedDestination.class::cast)
                 .forEach(dest -> {
-                    try {
-                        Node destNode = dest.getNode();
-                        
-                        // Either the datasource or dataSet will be present.
-                        dest.getDatasource()
-                            .map(JcrDatasource.class::cast)
-                            .ifPresent(datasource -> {
-                                datasource.removeSourceNode(destNode);
-                                
-                                // Remove the datasource if there are no referencing feeds
-                                if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
-                                    datasource.remove();
-                                }
-                           });
-                        
-                        dest.getDataSet()
-                            .map(JcrDataSet.class::cast)
-                            .ifPresent(dataSet -> dataSet.removeSourceNode(destNode));
-                        
-                        destNode.remove();
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
-                    }
+                    Optional<Datasource> datasource = dest.getDatasource();
+                    
+                    removeFeedDestination(dest);
+                    // Remove the datasource if there are no referencing feeds
+                    datasource
+                        .filter(dsrc -> dsrc.getFeedSources().isEmpty())
+                        .filter(dsrc -> dsrc.getFeedDestinations().isEmpty())
+                        .map(JcrDatasource.class::cast)
+                        .ifPresent(dsrc -> dsrc.remove());
                 });
         }
     }

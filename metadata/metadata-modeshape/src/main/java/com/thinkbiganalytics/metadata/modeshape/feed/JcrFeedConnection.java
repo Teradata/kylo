@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import com.thinkbiganalytics.metadata.api.catalog.DataSet;
-
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -22,6 +20,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSet;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
@@ -75,8 +74,7 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
             return Optional.empty();
         }
     }
-
-
+    
     @Override
     public Feed getFeed() {
         try {
@@ -88,4 +86,9 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
             throw new MetadataRepositoryException("Failed to access feed", e);
         }
     }
+
+    public void remove() {
+        JcrUtil.removeNode(getNode());
+    }
+
 }
