@@ -128,10 +128,11 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     }
 
     public applyUpdatesToFeed(): (Observable<any> | boolean | null) {
-        if(this.sourcePropertiesForm.invalid){
+        let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
+        if(inputControl.invalid){
             this.step.validator.hasFormErrors = true;
             //show the errors
-            FormGroupUtil.touchFormControls(this.sourcePropertiesForm);
+            inputControl.markAsTouched()
             return false;
         }
         else {
