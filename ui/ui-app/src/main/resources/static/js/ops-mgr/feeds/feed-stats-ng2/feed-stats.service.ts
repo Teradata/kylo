@@ -300,7 +300,7 @@ export class FeedStatsServiceNg2 {
     buildProcessorDurationChartData() {
         var chartData = this.processorStatistics.chartData;
         var values = chartData.data;
-        var data = [{ key: "Processor", "color": "#00b2b1", values: values }];
+        var data = [{ key: "Processor", "color": "#3483BA", values: values }];
         return data;
 
     }

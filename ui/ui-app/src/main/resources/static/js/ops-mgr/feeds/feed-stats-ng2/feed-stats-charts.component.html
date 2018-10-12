@@ -69,7 +69,7 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <h1 class="kpi-stat tc-grey-600">{{eventSuccessKpi.value}}%</h1>
+              <h1 class="kpi-stat tc-neutral">{{eventSuccessKpi.value}}%</h1>
               <mat-icon  class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}">{{eventSuccessKpi.icon}}</mat-icon>
               <span class="kpi-title" matTooltip="{{'views.feed-stats-charts.SR' | translate}}">{{"views.feed-stats-charts.SR" | translate}}</span>
             </mat-card-content>
@@ -77,7 +77,7 @@
 
             <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
               <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-                <h1 class="kpi-stat  tc-grey-600">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
+                <h1 class="kpi-stat tc-neutral">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
                 <mat-icon class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}"  >{{flowRateKpi.icon}}</mat-icon>
                 <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.IFR' | translate}}">{{"views.feed-stats-charts.FR" | translate}}</span>
               </mat-card-content>
@@ -86,7 +86,7 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <h1 class="kpi-stat tc-grey-600">{{avgDurationKpi.value}}</h1>
+              <h1 class="kpi-stat tc-neutral">{{avgDurationKpi.value}}</h1>
               <mat-icon class="kpi_icon" [ngStyle]="{'color':avgDurationKpi.color}"  >{{avgDurationKpi.icon}}</mat-icon>
               <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.FD' | translate}}">{{"views.feed-stats-charts.FD" | translate}}</span>
             </mat-card-content>
