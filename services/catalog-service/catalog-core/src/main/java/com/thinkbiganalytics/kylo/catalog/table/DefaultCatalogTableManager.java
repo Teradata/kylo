@@ -27,6 +27,7 @@ import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
 import com.thinkbiganalytics.discovery.schema.JdbcSchema;
 import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
 import com.thinkbiganalytics.discovery.schema.JdbcTable;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.hive.service.HiveMetastoreService;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
+import com.thinkbiganalytics.schema.DBSchemaParser;
 import com.thinkbiganalytics.schema.JdbcSchemaParserProvider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -61,9 +64,9 @@ import javax.annotation.Nullable;
  * Manages listing catalogs, schemas, and tables for data sets.
  */
 @Component
-public class CatalogTableManager {
+public class DefaultCatalogTableManager implements CatalogTableManager {
 
-    private static final Logger log = LoggerFactory.getLogger(CatalogTableManager.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultCatalogTableManager.class);
 
     /**
      * Hadoop configuration with default values
@@ -87,7 +90,7 @@ public class CatalogTableManager {
      * Constructs a {@code CatalogTableManager}.
      */
     @Autowired
-    public CatalogTableManager(@Nonnull @Qualifier("hiveMetastoreService") final HiveMetastoreService hiveMetastoreService, @Nonnull final JdbcSchemaParserProvider schemaParserProvider) {
+    public DefaultCatalogTableManager(@Nonnull @Qualifier("hiveMetastoreService") final HiveMetastoreService hiveMetastoreService, @Nonnull final JdbcSchemaParserProvider schemaParserProvider) {
         this.hiveMetastoreService = hiveMetastoreService;
         this.schemaParserProvider = schemaParserProvider;
 
@@ -95,12 +98,30 @@ public class CatalogTableManager {
         defaultConf.size();  // causes defaults to be loaded
     }
 
-    /**
-     * Lists the catalogs, schemas, or tables for the specified data source.
-     *
-     * <p>First looks for catalogs, and if there are none then looks for schemas, and if both are empty then looks for tables.</p>
-     */
     @Nonnull
+    @Override
+    public TableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException {
+        final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
+        return isolatedFunction(template, schemaName, (connection, schemaParser) -> {
+            final javax.sql.DataSource ds = new SingleConnectionDataSource(connection, true);
+            final DBSchemaParser tableSchemaParser = new DBSchemaParser(ds, new KerberosTicketConfiguration());
+            return tableSchemaParser.describeTable(schemaName, tableName);
+        });
+    }
+
+    @Nonnull
+    @Override
+    public List<String> getTableNames(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException {
+        final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
+        return isolatedFunction(template, schemaName, (connection, schemaParser) -> {
+            final javax.sql.DataSource ds = new SingleConnectionDataSource(connection, true);
+            final DBSchemaParser tableSchemaParser = new DBSchemaParser(ds, new KerberosTicketConfiguration());
+            return tableSchemaParser.listTables(schemaName, tableName);
+        });
+    }
+
+    @Nonnull
+    @Override
     public List<DataSetTable> listCatalogsOrTables(@Nonnull final DataSource dataSource, @Nullable final String catalogName, @Nullable final String schemaName)
         throws SQLException {
         final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);

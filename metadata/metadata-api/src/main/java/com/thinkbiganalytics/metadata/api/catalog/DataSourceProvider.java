@@ -1,12 +1,4 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.api.catalog;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.io.Serializable;
 
 /*-
  * #%L
@@ -17,9 +9,9 @@ import java.io.Serializable;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,28 +20,31 @@ import java.io.Serializable;
  * #L%
  */
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-/**
- *
- */
 public interface DataSourceProvider {
-    
+
     DataSource.ID resolveId(Serializable id);
-    
+
     DataSource create(Connector.ID connId, String title);
 
     List<DataSource> findByConnector(Connector.ID connId, Connector.ID... moreIds);
-    
+
     List<DataSource> findByConnector(Collection<Connector.ID> connIds);
-    
+
     List<DataSource> findAll();
-    
+
     Page<DataSource> findPage(Pageable page, String filter);
 
     Optional<DataSource> find(DataSource.ID id);
-    
+
     void deleteById(DataSource.ID id);
+
+    Optional<DataSource> findByNifiControlerServiceId(String serviceId);
 }

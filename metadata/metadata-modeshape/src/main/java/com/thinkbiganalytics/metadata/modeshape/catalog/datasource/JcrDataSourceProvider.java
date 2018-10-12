@@ -173,4 +173,11 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
         return title.replaceAll("\\s+", "_").toLowerCase();
     }
 
+    @Override
+    public Optional<DataSource> findByNifiControlerServiceId(final String serviceId) {
+        final String query = startBaseQuery()
+            .append(" WHERE e.[tba:nifiControllerServiceId] = '").append(serviceId.replaceAll("'", "''")).append("'")
+            .toString();
+        return Optional.ofNullable(findFirst(query));
+    }
 }
