@@ -48,7 +48,7 @@ import javax.xml.namespace.QName;
  */
 public class FileMetadataService {
 
-    static int bytesToTest = 512;
+    static int bytesToTest = 512000;
 
     /**
      * Detect file format and metadata/mimetype from the incoming input sream
