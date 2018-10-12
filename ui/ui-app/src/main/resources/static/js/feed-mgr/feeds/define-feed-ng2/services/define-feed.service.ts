@@ -47,6 +47,7 @@ import {TdLoadingService} from "@covalent/core/loading";
 import {Category} from "../../../model/category/category.model";
 import {FeedAccessControlService} from "../services/feed-access-control.service";
 import {ObjectChanged, RestResponseStatus} from "../../../../common/common.model";
+import {catchError} from "rxjs/operators/catchError";
 
 
 export class FeedEditStateChangeEvent{
@@ -226,7 +227,11 @@ export class DefineFeedService {
                 return this.loadLatestFeed(id);
             }
             else if(LoadMode.DEPLOYED == loadMode){
-                return this.loadDeployedFeed(id)
+                return this.loadDeployedFeed(id).pipe(
+                    catchError((error1: any) => {
+                        console.log("unable to load deployed feed... retry against latest",id);
+                        return this.loadLatestFeed(id)
+                    }));
             }
             else if(LoadMode.DRAFT == loadMode){
                 return this.loadDraftFeed(id)
