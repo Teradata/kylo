@@ -327,7 +327,7 @@
               <ng-template let-partition let-last="last" let-index="index" ngFor [ngForOf]="feed.table.partitions">
                 <div fxLayout="row" fxLayoutGap="10px">
                   <mat-form-field fxFlex="20">
-                    <mat-select required placeholder="Partition volumn" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
+                    <mat-select required placeholder="Partition column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
                                 (change)="onPartitionSourceFieldChange(partition, feed)">
                       <mat-option *ngFor="let field of feed.table.tableSchema.fields" [value]="field">
                         {{field.name}}
