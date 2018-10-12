@@ -88,11 +88,6 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
         this.step.visited = true;
 
 
-
-        this.defineFeedSourceSampleService.viewingConnectors();
-        this.defineFeedSourceSampleService.setFeed(this.feed);
-        this.defineFeedSourceSampleService.setStep(this.step)
-
         if(this.showCatalog && this.feed.sourceDataSets && this.feed.sourceDataSets.length){
             this.showCancel = true;
         }else {

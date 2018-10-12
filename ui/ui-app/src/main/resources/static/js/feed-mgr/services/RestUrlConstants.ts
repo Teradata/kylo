@@ -410,6 +410,8 @@ export class RestUrlConstants {
      */
     static PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
 
+    static SCHEMA_DISCOVERY_PARSE_DATA_SET = "/proxy/v1/schema-discovery//hive/dataset"
+
 
     constructor(){}
 }
