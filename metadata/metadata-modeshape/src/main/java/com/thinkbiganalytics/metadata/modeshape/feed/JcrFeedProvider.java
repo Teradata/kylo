@@ -242,15 +242,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             List<Version> versions = JcrVersionUtil.getVersions(versionable);
             
             if (versions.size() == 0 || (versions.size() == 1 && versions.get(0).equals(baseVersion))) {
-                // Only a draft version to revert so delete instead.
-                Feed feed = asEntity(entityId, baseVersion);
-                delete(feed);
+                // Only a draft version exists so return an empty revert version.
                 return Optional.empty();
             } else {
                 JcrVersionUtil.restore(baseVersion);
                 return Optional.of(baseVersion);
             }
         } else {
+            // There is no draft version so so nothing.
             return Optional.of(baseVersion);
         }
     }
