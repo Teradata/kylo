@@ -1,6 +1,7 @@
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
+import {CloneUtil} from "../../../../common/utils/clone-util";
 
 import {Connector} from '../models/connector';
 import {ConnectorPlugin} from '../models/connector-plugin';
@@ -84,6 +85,9 @@ export class CatalogService {
         return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
     }
     createDataSet(dataSet: SparkDataSet): Observable<SparkDataSet> {
-        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", dataSet);
+        // Ensure data sets are uploaded with no title. Titles must be unique if set.
+        const body = CloneUtil.deepCopy(dataSet);
+        body.title = null;
+        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
     }
 }
