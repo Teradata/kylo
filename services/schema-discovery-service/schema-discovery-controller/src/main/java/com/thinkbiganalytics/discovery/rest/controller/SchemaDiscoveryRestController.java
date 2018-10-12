@@ -31,7 +31,6 @@ import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
@@ -46,7 +45,6 @@ import org.springframework.core.env.Environment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -138,11 +136,6 @@ public class SchemaDiscoveryRestController {
     /**
      * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
      *
-     * @param parserDescriptor  metadata about how the file should be parsed
-     * @param dataFrameVariable the name of the dataframe variable in the generate spark code
-     * @param limit             a number indicating how many rows the script should limit the output
-     * @param fileInputStream   the file
-     * @param fileMetaData      metadata about the file
      * @return an object including the name of the file on disk and the generated spark script
      */
     @POST
@@ -165,7 +158,7 @@ public class SchemaDiscoveryRestController {
             sparkFileSchemaParser.setDataFrameVariable(sparkFilesScript.getDataFrameVariable());
             sparkFileSchemaParser.setLimit(-1);
             sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(sparkFilesScript.getFiles());
-        }  catch (PolicyTransformException e) {
+        } catch (PolicyTransformException e) {
             log.warn("Failed to convert parser", e);
             throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
         }
@@ -221,7 +214,7 @@ public class SchemaDiscoveryRestController {
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
         try {
             FileSchemaParser p = transformer.fromUiModel(request.getSchemaParser());
-           schema = catalogFileManager.readDataSetInputStream(request.getDataSet(),inputStream -> {
+            schema = catalogFileManager.readDataSetInputStream(request.getDataSet(), inputStream -> {
                 return p.parse(inputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
             });
 
@@ -252,21 +245,20 @@ public class SchemaDiscoveryRestController {
             FileSchemaParser p = transformer.fromUiModel(request.getSchemaParser());
             String type = request.getTableSchemaType();
             TableSchemaType targetType = TableSchemaType.HIVE;
-            if(StringUtils.isNotBlank(type)){
+            if (StringUtils.isNotBlank(type)) {
                 try {
                     targetType = TableSchemaType.valueOf(type);
-                }catch (IllegalArgumentException e){
+                } catch (IllegalArgumentException e) {
                     targetType = TableSchemaType.HIVE;
                 }
             }
             final TableSchemaType finalType = targetType;
 
-            if(p.tableSettingsRequireFileInspection()) {
+            if (p.tableSettingsRequireFileInspection()) {
                 tableSettings = catalogFileManager.readDataSetInputStream(request.getDataSet(), inputStream -> {
                     return p.parseTableSettings(inputStream, Charset.defaultCharset(), finalType);
                 });
-            }
-            else {
+            } else {
                 tableSettings = p.deriveTableSettings(finalType);
             }
 
@@ -278,7 +270,6 @@ public class SchemaDiscoveryRestController {
         }
         return Response.ok(tableSettings).build();
     }
-
 
 
     @GET

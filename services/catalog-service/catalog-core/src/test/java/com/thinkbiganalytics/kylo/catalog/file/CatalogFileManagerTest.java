@@ -174,7 +174,7 @@ public class CatalogFileManagerTest {
     /**
      * Mock {@link CatalogFileManager} for testing.
      */
-    private class MockCatalogFileManager extends CatalogFileManager {
+    private class MockCatalogFileManager extends DefaultCatalogFileManager {
 
         /**
          * Construct a {@code MockCatalogFileManager}.
