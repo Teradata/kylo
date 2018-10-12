@@ -87,7 +87,7 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
         else {
             this.selectionService.singleSelectionStrategy();
         }
-        this.step = this.feed.steps.find(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE);
+        this.step = this.feed.steps.find(step => step.systemName == FeedStepConstants.STEP_FEED_TARGET);
         this.step.visited = true;
 
 
