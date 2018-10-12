@@ -179,6 +179,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     showSourceSampleCatalog:boolean;
 
+    showSourceSample:boolean = true;
+
 
 
     @ViewChild('virtualScroll')
@@ -283,6 +285,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
+
+        if(this.feed.isDataTransformation()){
+            this.showSourceSample = false;
+        }
     }
 
 
