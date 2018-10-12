@@ -201,35 +201,37 @@ public class DataSourceProvider {
     @Nonnull
     @SuppressWarnings("squid:S2259")
     public Optional<DataSource> findDataSource(@Nonnull final String id, final boolean includeCredentials) {
-        // Find the data source
-        DataSource dataSource = metadataProvider.find(metadataProvider.resolveId(id)).map(modelTransform.dataSourceToRestModel()).orElse(null);
-        if (dataSource != null) {
-            dataSource = new DataSource(dataSource);
-        } else {
-            try {
-                final Datasource feedDataSource = feedDataSourceProvider.getDatasource(feedDataSourceProvider.resolve(id));
-                DatasourceModelTransform.Level level = DatasourceModelTransform.Level.FULL;
-                if (includeCredentials) {
-                    level = DatasourceModelTransform.Level.ADMIN;
-                }
-                dataSource = toDataSource(feedDataSource, level);
-            } catch (final IllegalArgumentException e) {
-                log.debug("Failed to resolve data source {}: {}", id, e, e);
-            }
-        }
-
-        // Set connector
-        final Optional<Connector> connector = Optional.ofNullable(dataSource).map(DataSource::getConnector).map(Connector::getId).map(connectorProvider::resolveId).flatMap(connectorProvider::find)
-            .map(modelTransform.connectorToRestModel());
-        if (connector.isPresent()) {
-            dataSource.setConnector(connector.get());
-            return Optional.of(dataSource);
-        } else {
+        return metadataService.read(() -> {
+            // Find the data source
+            DataSource dataSource = metadataProvider.find(metadataProvider.resolveId(id)).map(modelTransform.dataSourceToRestModel()).orElse(null);
             if (dataSource != null) {
-                log.error("Unable to find connector for data source: {}", dataSource);
+                dataSource = new DataSource(dataSource);
+            } else {
+                try {
+                    final Datasource feedDataSource = feedDataSourceProvider.getDatasource(feedDataSourceProvider.resolve(id));
+                    DatasourceModelTransform.Level level = DatasourceModelTransform.Level.FULL;
+                    if (includeCredentials) {
+                        level = DatasourceModelTransform.Level.ADMIN;
+                    }
+                    dataSource = toDataSource(feedDataSource, level);
+                } catch (final IllegalArgumentException e) {
+                    log.debug("Failed to resolve data source {}: {}", id, e, e);
+                }
             }
-            return Optional.empty();
-        }
+
+            // Set connector
+            final Optional<Connector> connector = Optional.ofNullable(dataSource).map(DataSource::getConnector).map(Connector::getId).map(connectorProvider::resolveId).flatMap(connectorProvider::find)
+                .map(modelTransform.connectorToRestModel());
+            if (connector.isPresent()) {
+                dataSource.setConnector(connector.get());
+                return Optional.of(dataSource);
+            } else {
+                if (dataSource != null) {
+                    log.error("Unable to find connector for data source: {}", dataSource);
+                }
+                return Optional.empty();
+            }
+        });
     }
 
     /**
