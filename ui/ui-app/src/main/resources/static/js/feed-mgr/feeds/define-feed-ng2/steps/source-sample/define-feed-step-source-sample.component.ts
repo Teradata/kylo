@@ -129,6 +129,10 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
                 }
             });
         }
+        else {
+            this.showCatalog = true;
+            this.showCatalogChange.emit(this.showCatalog);
+        }
     }
 
     onSave(previewEvent:DatasetPreviewStepperSavedEvent) {
