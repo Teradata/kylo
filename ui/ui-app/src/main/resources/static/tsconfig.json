@@ -18,7 +18,7 @@
     "typeRoots": [
       "../../../../node_modules/@types"
     ],
-    "outDir": "../../../../target/classes",
+    "outDir": "../../../../target/typescript",
     "sourceMap": true,
     "allowJs": true,
     "sourceRoot": ".",

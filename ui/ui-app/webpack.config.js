@@ -10,13 +10,22 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const sass = require('sass');
 const CompressionPlugin = require("compression-webpack-plugin");
-const ShakePlugin = require('webpack-common-shake').Plugin;
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const ProgressPlugin = require('webpack/lib/ProgressPlugin');
+const AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
+
+const outputDir = path.resolve(__dirname, 'target/classes/static');
+const nodeModulesDir = path.resolve(__dirname, 'node_modules');
+const staticDir = path.resolve('./src/main/resources/static');
+const staticJsDir = path.join(staticDir, 'js');
+const staticNodeModules = path.join(staticDir, 'node_modules');
+const staticBower = path.join(staticDir, 'bower_components');
+const staticJsVendorDir = path.join(staticJsDir, 'vendor');
+const tsConfigFile = path.join(staticDir, 'tsconfig.json');
+const mainTsFile = path.join(staticJsDir, 'main.ts');
 
 const devServer = {
-    contentBase: path.resolve("dist"),
+    contentBase: outputDir,
     hot: true,
     host: process.env.host || "localhost",
     port: process.env.PORT || 3000,
@@ -35,14 +44,6 @@ const devServer = {
     }]
 };
 
-const tsCompilerOutput = path.resolve(__dirname, 'target/classes/static');
-const nodeModulesDir = path.resolve(__dirname, 'node_modules');
-const staticDir = path.resolve('./src/main/resources/static');
-const staticJsDir = path.join(staticDir, 'js');
-const staticNodeModules = path.join(staticDir, 'node_modules');
-const staticBower = path.join(staticDir, 'bower_components');
-const staticJsVendorDir = path.join(staticJsDir, 'vendor');
-const tsConfigFile = path.join(staticDir, 'tsconfig.json');
 
 const webpackConfig = (env) => {
     const config = {
@@ -98,7 +99,6 @@ const webpackConfig = (env) => {
                 'gsap': path.join(staticBower, 'gsap/src/uncompressed/TweenMax'),
                 'vis': path.join(staticBower, 'vis/dist/vis.min'),
                 'angular-visjs': path.join(staticBower, 'angular-visjs/angular-vis'),
-                // 'SVGMorpheus': path.join(staticBower, 'svg-morpheus/compile/minified/svg-morpheus'),
                 'ocLazyLoad': path.join(staticBower, 'oclazyload/dist/ocLazyLoad'), //System.amdRequire with ocLazyLoad.require
                 'jquery-ui': path.join(staticBower, 'jquery-ui/jquery-ui.min'),
                 'pivottable': path.join(staticBower, 'pivottable/dist/pivot.min'),
@@ -109,11 +109,9 @@ const webpackConfig = (env) => {
                 'dirPagination': path.join(staticJsVendorDir, 'dirPagination/dirPagination'),
                 'ng-text-truncate': path.join(staticJsVendorDir, 'ng-text-truncate/ng-text-truncate'),
                 'ment-io': path.join(staticJsVendorDir, 'ment.io/mentio'),
-                // 'tern': path.join(staticJsVendorDir, 'tern/angular-tern'),
 
                 'ng2-nvd3': path.join(staticNodeModules, 'ng2-nvd3/build/index'),
                 'ng2-codemirror': path.join(staticNodeModules, 'ng2-codemirror/lib/index'),
-                // 'moment': path.join(staticNodeModules, 'moment/min/moment.min'), //loaded from root node_modules
 
                 'urlParams': path.join(staticDir, 'login/jquery.urlParam.js'),
             }
@@ -121,12 +119,12 @@ const webpackConfig = (env) => {
         entry: {
             entryPolyfills: path.resolve('./src/main/resources/static/polyfills'),
             global: path.resolve('./src/main/resources/static/assets/global.scss'),
-            app: path.resolve('./src/main/resources/static/js/main.ts'),
+            app: mainTsFile,
         },
         output: {
             filename: '[name].bundle.js',
             chunkFilename: '[name].chunk.js',
-            path: path.join(__dirname, "dist")
+            path: outputDir
         },
         module: {
             loaders: [
@@ -141,8 +139,6 @@ const webpackConfig = (env) => {
                         loader: 'file-loader',
                         options: {
                             name: '[path][name].[ext]',
-                            // outputPath: 'fonts/',
-                            // publicPath: '../'
                         }
                     }]
                 }, {
@@ -155,18 +151,31 @@ const webpackConfig = (env) => {
                 },
                 {
                     test: /\.scss$/,
-                    use: ['to-string-loader', 'css-loader', {
-                        loader: 'sass-loader',
-                        options: {implementation: sass}
-                    }],
+                    use: ['to-string-loader',
+                        {
+                            loader: 'css-loader',
+                            options: {minimize: true}
+                        },
+                        {
+                            loader: 'sass-loader',
+                            options: {implementation: sass}
+                        }
+                    ],
                     exclude: /(theme\.scss|global\.scss)/
                 },
                 {
                     test: /(theme\.scss|global\.scss)/,
-                    use: ['style-loader', 'css-loader', 'postcss-loader', {
-                        loader: 'sass-loader',
-                        options: {implementation: sass}
-                    }]
+                    use: ['style-loader',
+                        {
+                            loader: 'css-loader',
+                            options: {minimize: true}
+                        },
+                          'postcss-loader',
+                        {
+                            loader: 'sass-loader',
+                            options: {implementation: sass}
+                        }
+                    ]
                 },
                 {
                     test: /\.css$/,
@@ -175,20 +184,7 @@ const webpackConfig = (env) => {
                 {
                     test: /\.js$/,
                     use: [
-                        // {
-                        //     loader: 'cache-loader',
-                        //     options: {
-                        //         cacheDirectory: path.resolve('dist/cache-loader')
-                        //     }
-                        // },
-                        // {
-                        //     loader: 'thread-loader',
-                        //     options: {
-                        //         workers: require('os').cpus().length
-                        //     }
-                        // },
                         'babel-loader',
-                        // "source-map-loader",
                         {
                             loader: path.resolve('./webpack.angular.module.loader.js'),
                             options: {
@@ -209,10 +205,9 @@ const webpackConfig = (env) => {
                                 baseUrl: "src/main/resources/static"
                             }
                         }],
-                    // include: [
-                    // tsCompilerOutput,
-                    // staticDir
-                    // ],
+                    include: [
+                        staticDir
+                    ],
                     exclude: [
                         nodeModulesDir,
                         staticNodeModules,
@@ -226,17 +221,16 @@ const webpackConfig = (env) => {
                         {
                             loader: 'cache-loader',
                             options: {
-                                cacheDirectory: path.resolve('dist/cache-loader')
+                                cacheDirectory: path.resolve('target/cache/cache-loader')
                             }
                         },
                         {
                             loader: 'thread-loader',
                             options: {
-                                // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-                                // workers: require('os').cpus().length - 1
                                 workers: require('os').cpus().length
                             }
                         },
+                        // '@ngtools/webpack',
                         {
                             loader: 'ts-loader',
                             options: {
@@ -274,12 +268,6 @@ const webpackConfig = (env) => {
                         staticJsVendorDir
                     ]
                 },
-                // {
-                //     enforce: "pre",
-                //     test: /\.js$/,
-                //     exclude: /(node_modules|bower_components|vendor)/,
-                //     loader: "eslint-loader",
-                // },
             ]
         },
         plugins: [
@@ -288,7 +276,7 @@ const webpackConfig = (env) => {
                 {from: './src/main/resources/static/locales/', to: 'locales'},
                 ...loginPageDependencies,
                 ...templates,
-                ...wranlgerDeps,
+                ...wranlgerDependencies,
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -307,7 +295,7 @@ const webpackConfig = (env) => {
                 }
             }),
 
-            new CleanWebpackPlugin(["dist"]),
+            new CleanWebpackPlugin(["target/classes/static", "target/cache"]),
 
             new webpack.ContextReplacementPlugin(
                 //https://github.com/angular/angular/issues/20357
@@ -319,42 +307,37 @@ const webpackConfig = (env) => {
                 "window.jQuery": "jquery", //https://webpack.js.org/plugins/provide-plugin/#usage-jquery-with-angular-1
                 "$": "jquery",
                 "d3": "d3",
-                // "window.moment": "moment", //Can't resolve './locale' in '.../ui-app/src/main/resources/static/node_modules/moment/min'
-                // "window.SVGMorpheus": "SVGMorpheus",
                 "window.vis": "vis",
-                // "tern": "tern",
-                // "window.tern": "tern"
             }),
 
             new FriendlyErrorsWebpackPlugin(),
             new ProgressPlugin(),
-            // new ForkTsCheckerWebpackPlugin(),
-            // new ForkTsCheckerWebpackPlugin({
-            //     tsconfig: tsConfigFile
-            // }),
-            // new writeFilePlugin(),
 
-            // new BundleAnalyzerPlugin()
+            // new BundleAnalyzerPlugin(),
+
+            // new AngularCompilerPlugin({
+            //     tsConfigPath: tsConfigFile,
+            //     entryModule: path.resolve(__dirname, 'src/main/resources/static/js/app.module#KyloModule'),
+            //     sourceMap: true
+            // }),
+            // new AotPlugin({
+            //     tsConfigPath: tsConfigFile,
+            //     entryModule: path.resolve(__dirname, 'src/main/resources/static/js/app.module#KyloModule'),
+            //     sourceMap: true
+            // }),
         ]
     };
 
-    config.devServer = devServer;
-    // config.devtool = "eval";
-    config.plugins.push(
-        new webpack.NamedModulesPlugin(),
-        new webpack.HotModuleReplacementPlugin()
-    );
-
     if (env && env.production) {
-        config.devtool = "source-map";
         config.plugins.push(
+            new writeFilePlugin(),
             new CompressionPlugin({
-                cache: true
+                cache: true,
+                deleteOriginalAssets: true
             }),
-            // new ShakePlugin(), //CommonJS shaking
             new UglifyJSPlugin({
-                cache: path.resolve(__dirname, './dist/cache-uglifyjs-plugin'),
-                parallel: 4,
+                cache: path.resolve(__dirname, './target/cache/uglifyjs-plugin'),
+                parallel: require('os').cpus().length,
                 sourceMap: false,
                 uglifyOptions: {
                     compress: true,
@@ -364,7 +347,13 @@ const webpackConfig = (env) => {
             }),
             new webpack.DefinePlugin({
                 "process.env.NODE_ENV": JSON.stringify("production")
-            })
+            }),
+        );
+    } else {
+        config.devServer = devServer;
+        config.plugins.push(
+            new webpack.NamedModulesPlugin(),
+            new webpack.HotModuleReplacementPlugin()
         );
     }
 
@@ -374,7 +363,7 @@ const webpackConfig = (env) => {
 module.exports = webpackConfig;
 
 
-const wranlgerDeps = [
+const wranlgerDependencies = [
     {
         context: './src/main/resources/static',
         from: 'js/vendor/**/*.js',

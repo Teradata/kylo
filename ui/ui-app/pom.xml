@@ -223,47 +223,7 @@
         </configuration>
       </plugin>
 
-      <!--plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <configuration>
-              <mainClass>com.thinkbiganalytics.ThinkbigDataLakeUiApplication</mainClass>
-              <layout>ZIP</layout>
-              <requiresUnpack>
-                <dependency>
-                  <artifactId>kylo-ui-common</artifactId>
-                  <groupId>com.thinkbiganalytics.kylo</groupId>
-                </dependency>
-
-                <dependency>
-                  <artifactId>swagger-jaxrs</artifactId>
-                  <groupId>io.swagger</groupId>
-                </dependency>
-
-                  <dependency>
-                      <groupId>org.glassfish.jersey</groupId>
-                      <artifactId>jersey-server</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.glassfish.jersey</groupId>
-                      <artifactId>jersey-core</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.glassfish.jersey</groupId>
-                      <artifactId>jersey-servlet</artifactId>
-                  </dependency>
-              </requiresUnpack>
-          </configuration>
-          <version>1.3.3.RELEASE</version>
-          <executions>
-              <execution>
-                  <goals>
-                      <goal>repackage</goal>
-                  </goals>
-              </execution>
-          </executions>
-      </plugin-->
-      <!-- create single distribution file -->
+    <!-- create single distribution file -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
