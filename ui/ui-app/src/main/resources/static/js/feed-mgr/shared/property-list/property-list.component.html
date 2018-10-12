@@ -46,7 +46,7 @@
         <mat-form-field fxFlex="50" *ngIf="!property.locked" class="pad-left">
           <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
           <mat-error *ngIf="hasError(property,'value')">
-            {{getErrorMessage(property,'value')}}bbbbb
+            {{getErrorMessage(property,'value')}}
           </mat-error>
           <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
         </mat-form-field>
