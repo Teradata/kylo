@@ -4,6 +4,7 @@ import {Feed} from "../../../../../../model/feed/feed.model";
 import {DefineFeedService} from "../../../../services/define-feed.service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
 import {FeedItemInfoService} from "../feed-item-info.service";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 
 @Component({
@@ -12,8 +13,8 @@ import {FeedItemInfoService} from "../feed-item-info.service";
 })
 export class FeedInfoDescriptionComponent  extends AbstractFeedInfoItemComponent implements OnInit{
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService){
-        super(defineFeedService,feedItemInfoService)
+    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+        super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
 
     ngOnInit(){
@@ -21,6 +22,7 @@ export class FeedInfoDescriptionComponent  extends AbstractFeedInfoItemComponent
     }
 
     save(){
+        this.showProgress();
         let values = this.formGroup.value;
         this.feed.description = values.description;
         this.saveFeed(this.feed);
