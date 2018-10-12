@@ -6,16 +6,18 @@ import {FormGroup} from "@angular/forms";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {Component, ViewChild} from "@angular/core";
+import {Component, OnChanges, SimpleChanges, ViewChild} from "@angular/core";
 import {PropertyListComponent} from "../../../../shared/property-list/property-list.component";
 import {Observable} from "rxjs/Observable";
+import {UserProperty} from "../../../../model/user-property.model";
+import {FormGroupUtil} from "../../../../../services/form-group-util";
 
 @Component({
     selector: "define-feed-properties",
     styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.css"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.html"
 })
-export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
+export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
 
     displayEditActions:boolean
 
@@ -44,9 +46,16 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
 
     }
 
+      onPropertiesChanged($event:UserProperty[]){
+            this.displayEditActions = true;
+      }
+
     private initEditActions(){
         if(!this.feed.readonly && this.feed.userProperties.length >0){
             this.displayEditActions = true;
+        }
+        else {
+            this.displayEditActions = false;
         }
     }
 
@@ -77,7 +86,9 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
 
 
     cancelFeedEdit(){
-        this.propertyList.reset(this.feed.userProperties);
+        let oldFeed = this.defineFeedService.getFeed();
+        this.propertyList.reset(oldFeed.userProperties);
+        this.initEditActions();
     }
 
     /**
@@ -89,6 +100,8 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent {
                 title:"Validation error",
                 message:"Unable to save the feed properties.  Please fix all form validation errors and try again."
             });
+
+            FormGroupUtil.touchFormControls(this.formGroup);
             return false;
         }
         else {

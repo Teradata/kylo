@@ -12,7 +12,7 @@
   <feed-step-edit-content>
    <form [formGroup]="formGroup" *ngIf="!feed.readonly">
      <!-- feed properties -->
-     <property-list #propertyList  [editable]="true" [parentFormGroup]="formGroup" [(properties)]="feed.userProperties"></property-list>
+     <property-list #propertyList  [editable]="true" [parentFormGroup]="formGroup" [(properties)]="feed.userProperties" (propertiesChange)="onPropertiesChanged($event)"></property-list>
 
    </form>
 
