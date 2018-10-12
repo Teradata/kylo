@@ -496,7 +496,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 }
                 return Optional.of(domainFeedId);
             } else {
-                return Optional.empty();
+                throw new FeedNotFoundException(domainFeedId);
             }
         });
     }

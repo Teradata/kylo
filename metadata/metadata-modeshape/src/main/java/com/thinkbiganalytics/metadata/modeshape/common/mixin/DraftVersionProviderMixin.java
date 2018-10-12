@@ -136,11 +136,12 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
     default Optional<EntityVersion<PK, T>> revertDraftVersion(PK entityId, boolean includeContent) {
         return findDraftVersion(entityId, includeContent)
             .map(draft -> {
-                Version version = revertDraftEntity(entityId);
-                Node versionable = JcrVersionUtil.getFrozenNode(version);
-                T entity = includeContent ? asEntity(entityId, versionable) : null;
-                EntityVersion<PK, T> entVer = new JcrEntityVersion<>(version, getChangeComment(entityId, versionable), entityId, entity);
-                return Optional.of(entVer);
+                return revertDraftEntity(entityId).map(version -> {
+                    Node versionable = JcrVersionUtil.getFrozenNode(version);
+                    T entity = includeContent ? asEntity(entityId, versionable) : null;
+                    EntityVersion<PK, T> entVer = new JcrEntityVersion<>(version, getChangeComment(entityId, versionable), entityId, entity);
+                    return entVer;
+                });
             })
             .orElseGet(() -> findLatestVersion(entityId, includeContent));
     }
@@ -171,17 +172,18 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
      * with the version.
      * @param entityId the entity ID
      * @param comment a comment message that an implementation may use choose to use to attach to the version
-     * @return the new version node
+     * @return An optional of the new version node, empty if there are no more versions remaining
      * @throws NoDraftVersionException thrown if the no draft version of the entity exists
      */
     Version createVersionedEntity(PK entityId, String comment);
 
     /**
      * Implementors should revert the draft version of the entity back to the version state it came from,
-     * and return that verion's node.  Reverting an entity that has no draft state should have no effect
-     * and the latest version should be returned.
+     * and return an optional of that version.  Reverting an entity that has no draft state should have no effect
+     * and the latest version should be returned.  If there are no more versions (i.e. there was only a draft
+     * version) then return and empty optional.
      * @param entityId the entity ID
      * @return the current version node the entity after the revert
      */
-    Version revertDraftEntity(PK entityId);
+    Optional<Version> revertDraftEntity(PK entityId);
 }
