@@ -80,6 +80,11 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
     }
 
     public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+       return deriveTableSettings(target);
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
         switch (target){
             case HIVE:
                 HiveTableSettings tableSettings = new DefaultHaveTableSettings();
@@ -90,7 +95,6 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
                 return new DefaultTableSettings();
         }
     }
-
 
 
     public String deriveHiveRecordFormat() {
