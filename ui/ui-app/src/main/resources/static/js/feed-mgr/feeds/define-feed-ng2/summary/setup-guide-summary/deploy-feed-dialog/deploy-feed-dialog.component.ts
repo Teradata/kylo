@@ -76,25 +76,30 @@ this.deployErrorMessage = '';
         }
 
         //if we are not showing the source
-
-        if(this.isUndefined(this.feed.inputProcessor) || this.isUndefined(this.feed.inputProcessorType)) {
-            //get the first input processor and select it
-            let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
-            if(inputProcessors.length >0) {
-                let input: Templates.Processor = inputProcessors[0];
-                this.feed.inputProcessor = input;
-                this.feed.inputProcessorName = input.name;
-                this.feed.inputProcessorType = input.type;
-                console.log("set default input processor to be ", input.name)
-            }
-        }
+        let dirtyForm = this.formGroup.dirty
+        let inputProcessorAssignmentNeeded = this.isUndefined(this.feed.inputProcessorName) || this.isUndefined(this.feed.inputProcessorType);
 
 
-        if(this.formGroup.dirty) {
+
+
+        if(dirtyForm || inputProcessorAssignmentNeeded) {
             this.deployingFeed = true;
             //if user chooses to upate the model save first
             let feed = this.feedSchedule.updateModel();
             feed.active = this.formGroup.get("enableFeed").value
+
+            if(inputProcessorAssignmentNeeded) {
+                //get the first input processor and select it
+                let inputProcessors = feed.inputProcessors && feed.inputProcessors.length >0 ? feed.inputProcessors : feed.registeredTemplate && feed.registeredTemplate.inputProcessors && feed.registeredTemplate.inputProcessors.length >0 ? feed.registeredTemplate.inputProcessors : []
+                if(inputProcessors.length >0) {
+                    let input: Templates.Processor = inputProcessors[0];
+                    feed.inputProcessor = input;
+                    feed.inputProcessorName = input.name;
+                    feed.inputProcessorType = input.type;
+                    console.log("set default input processor to be ", input.name)
+                }
+            }
+
             this.defineFeedService.saveFeed(feed).subscribe((response:SaveFeedResponse) => {
                 if(response.success) {
                     deploy();
