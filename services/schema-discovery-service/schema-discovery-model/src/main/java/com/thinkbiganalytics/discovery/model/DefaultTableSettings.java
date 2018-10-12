@@ -1,8 +1,7 @@
-package com.thinkbiganalytics.discovery.parsers.hadoop;
-
+package com.thinkbiganalytics.discovery.model;
 /*-
  * #%L
- * thinkbig-schema-discovery-default
+ * thinkbig-schema-discovery-model2
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,19 +18,8 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * limitations under the License.
  * #L%
  */
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 
-import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
-import com.thinkbiganalytics.discovery.parser.SchemaParser;
-
-@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"}, usesSpark = true,mimeTypes = "application/parquet", sparkFormat = "parquet")
-public class ParquetFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
-
-    @Override
-    public SparkFileType getSparkFileType() {
-        return SparkFileType.PARQUET;
-    }
-
-
-
+public class DefaultTableSettings implements TableSettings {
 
 }

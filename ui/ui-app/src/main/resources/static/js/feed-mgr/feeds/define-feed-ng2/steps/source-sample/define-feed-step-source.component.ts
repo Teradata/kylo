@@ -16,11 +16,11 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.component";
-import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
 import {ShowCatalogCanceledEvent} from "./define-feed-step-source-sample.component";
 import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {FormGroupUtil} from "../../../../../services/form-group-util";
+import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
 
 
 
@@ -70,8 +70,8 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
                 feedLoadingService: FeedLoadingService,
                 feedSideNavService: FeedSideNavService,
                 private previewSchemaService: PreviewSchemaService,
-                private defineFeedSourceSampleService: DefineFeedSourceSampleService,
-                private catalogService: CatalogService) {
+                private catalogService: CatalogService,
+                private defineFeedSourceSampleService:DefineFeedSourceSampleService) {
         super(defineFeedService, stateService, feedLoadingService, dialogService, feedSideNavService);
         this.sourceForm = new FormGroup({});
         this.sourcePropertiesForm = new FormGroup({})
@@ -197,15 +197,9 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     private _setSourceAndTargetAndSaveFeed(event: DatasetPreviewStepperSavedEvent) {
         this.feedLoadingService.registerLoading();
-        // for file based we need to run through the schema parser to get the Hive serde
-        if(event.previews[0] instanceof PreviewFileDataSet) {
 
-        }
 
-        /**
-         * Save the feed
-         */
-        let saveFeed = () => {
+        let _save = () => {
             //TODO validate and mark completion as needed
 
             this.step.setComplete(true)
@@ -221,6 +215,27 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
                 });
             });
         }
+
+        /**
+         * Save the feed
+         */
+        let saveFeed = () => {
+            if(event.previews[0] instanceof PreviewFileDataSet) {
+
+              this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
+                    console.log("SCHEMA RESPONSE ",response)
+                    this.feed.table.feedFormat = response.hiveFormat;
+                    this.feed.table.structured = response.structured;
+                    this.feed.table.feedTblProperties = response.serdeTableProperties;
+                    _save();
+                });
+            }
+            else {
+            _save();
+            }
+        }
+
+
 
 
         let previews = event.previews;
