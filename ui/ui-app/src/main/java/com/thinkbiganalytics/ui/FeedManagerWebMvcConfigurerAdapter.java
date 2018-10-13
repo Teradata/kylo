@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.resource.GzipResourceResolver;
 
 /**
  * Created by sr186054 on 2/24/17.
@@ -41,13 +42,14 @@ public class FeedManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/feed-mgr/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/feed-mgr/**").addResourceLocations("classpath:/static/").resourceChain(true).addResolver(new GzipResourceResolver());;
+        registry.addResourceHandler("/**").addResourceLocations("classpath:/static/").resourceChain(true).addResolver(new GzipResourceResolver());;
 
         if (StringUtils.isNotBlank(staticPath)) {
             //static path will not be defined when running from source
             LOG.info("Setting up static resources to be at '{}'", staticPath);
-            registry.addResourceHandler("/feed-mgr/assets/**").addResourceLocations("file:" + staticPath);
-            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/feed-mgr/assets/**").addResourceLocations("file:" + staticPath).resourceChain(true).addResolver(new GzipResourceResolver());;
+            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath).resourceChain(true).addResolver(new GzipResourceResolver());;
         }
     }
 }

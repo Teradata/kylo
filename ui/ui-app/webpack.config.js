@@ -333,7 +333,7 @@ const webpackConfig = (env) => {
             new writeFilePlugin(),
             new CompressionPlugin({
                 cache: true,
-                deleteOriginalAssets: true
+                deleteOriginalAssets: false //false, otherwise resources are not found even though gzipped resources with the same name exist
             }),
             new UglifyJSPlugin({
                 cache: path.resolve(__dirname, './target/cache/uglifyjs-plugin'),

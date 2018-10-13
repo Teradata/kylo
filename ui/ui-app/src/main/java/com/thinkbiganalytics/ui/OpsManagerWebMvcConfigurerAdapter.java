@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.resource.GzipResourceResolver;
 
 /**
  * Created by sr186054 on 2/24/17.
@@ -41,15 +42,15 @@ public class OpsManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/ops-mgr/**").addResourceLocations("classpath:/static/");
-        registry.addResourceHandler("/kylo/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/ops-mgr/**").addResourceLocations("classpath:/static/").resourceChain(true).addResolver(new GzipResourceResolver());
+        registry.addResourceHandler("/kylo/**").addResourceLocations("classpath:/static/").resourceChain(true).addResolver(new GzipResourceResolver());
 
         if (StringUtils.isNotBlank(staticPath)) {
             //static path will not be defined when running from source
             LOG.info("Setting up static resources to be at '{}'", staticPath);
-            registry.addResourceHandler("/ops-mgr/assets/**").addResourceLocations("file:" + staticPath);
-            registry.addResourceHandler("/kylo/assets/**").addResourceLocations("file:" + staticPath);
-            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/ops-mgr/assets/**").addResourceLocations("file:" + staticPath).resourceChain(true).addResolver(new GzipResourceResolver());
+            registry.addResourceHandler("/kylo/assets/**").addResourceLocations("file:" + staticPath).resourceChain(true).addResolver(new GzipResourceResolver());
+            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath).resourceChain(true).addResolver(new GzipResourceResolver());
         }
     }
 
