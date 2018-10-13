@@ -1,10 +1,9 @@
-package com.thinkbiganalytics.kylo.catalog.file;
-
+package com.thinkbiganalytics.discovery.model;
 /*-
  * #%L
- * kylo-catalog-core
+ * thinkbig-schema-discovery-model2
  * %%
- * Copyright (C) 2017 - 2018 ThinkBig Analytics
+ * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +18,8 @@ package com.thinkbiganalytics.kylo.catalog.file;
  * limitations under the License.
  * #L%
  */
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 
-import org.apache.hadoop.fs.FileSystem;
+public class DefaultTableSettings implements TableSettings {
 
-import java.io.IOException;
-
-import javax.annotation.Nonnull;
-
-/**
- * Represents a function that performs an action on a {@link FileSystem} and returns a result.
- *
- * @param <R> type of result
- */
-@FunctionalInterface
-public interface FileSystemFunction<R> {
-
-    R apply(@Nonnull FileSystem fileSystem) throws IOException;
 }

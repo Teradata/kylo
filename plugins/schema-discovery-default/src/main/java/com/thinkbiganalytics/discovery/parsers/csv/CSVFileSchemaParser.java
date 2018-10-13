@@ -22,12 +22,16 @@ package com.thinkbiganalytics.discovery.parsers.csv;
 
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultFileSchema;
+import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
@@ -123,6 +127,26 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             // Convert to target schema with proper derived types
             Schema targetSchema = convertToTarget(target, fileSchema);
             return targetSchema;
+        }
+    }
+
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+       return deriveTableSettings(target);
+    }
+
+    public boolean tableSettingsRequireFileInspection(){
+        return false;
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        switch (target){
+            case HIVE:
+                HiveTableSettings tableSettings = new DefaultHaveTableSettings();
+                tableSettings.setHiveFormat(deriveHiveRecordFormat());
+                tableSettings.setStructured(false);
+            default:
+                return new DefaultTableSettings();
         }
     }
 

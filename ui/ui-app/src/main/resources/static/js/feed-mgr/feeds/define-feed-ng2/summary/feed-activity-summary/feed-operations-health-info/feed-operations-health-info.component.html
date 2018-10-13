@@ -24,14 +24,18 @@
           <mat-icon>{{kyloIcons.Feed.Actions.startNow}}</mat-icon>
           <span >Start Now</span>
         </button>
-        <button mat-menu-item mat-menu-item [disabled]="!accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
+        <button mat-menu-item *ngIf="accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
+          <mat-icon>{{kyloIcons.Feed.Actions.delete}}</mat-icon>
+          <span>{{"views.feed-details.Delete" | translate}}</span>
+        </button>
+        <button mat-menu-item [disabled]="!accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
           <span>Upload File</span>
         </button>
       </mat-menu>
     </div>
   </mat-card-header>
-  <mat-card-content class="pull-top pull-left">
+  <mat-card-content class="pull-top">
     <mat-divider></mat-divider>
     <mat-list role="list" >
 

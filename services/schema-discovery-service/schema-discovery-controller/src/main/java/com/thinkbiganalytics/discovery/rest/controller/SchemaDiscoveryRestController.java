@@ -27,13 +27,14 @@ import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -44,7 +45,6 @@ import org.springframework.core.env.Environment;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -136,11 +136,6 @@ public class SchemaDiscoveryRestController {
     /**
      * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
      *
-     * @param parserDescriptor  metadata about how the file should be parsed
-     * @param dataFrameVariable the name of the dataframe variable in the generate spark code
-     * @param limit             a number indicating how many rows the script should limit the output
-     * @param fileInputStream   the file
-     * @param fileMetaData      metadata about the file
      * @return an object including the name of the file on disk and the generated spark script
      */
     @POST
@@ -163,7 +158,7 @@ public class SchemaDiscoveryRestController {
             sparkFileSchemaParser.setDataFrameVariable(sparkFilesScript.getDataFrameVariable());
             sparkFileSchemaParser.setLimit(-1);
             sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(sparkFilesScript.getFiles());
-        }  catch (PolicyTransformException e) {
+        } catch (PolicyTransformException e) {
             log.warn("Failed to convert parser", e);
             throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
         }
@@ -213,13 +208,13 @@ public class SchemaDiscoveryRestController {
                       @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
                       @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
                   })
-    public Response uploadFile(DataSetSchemaRequest request) throws Exception {
+    public Response hiveDataSetSchema(DataSetSchemaRequest request) throws Exception {
 
         Schema schema;
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
         try {
             FileSchemaParser p = transformer.fromUiModel(request.getSchemaParser());
-           schema = catalogFileManager.readDataSetInputStream(request.getDataSet(),inputStream -> {
+            schema = catalogFileManager.readDataSetInputStream(request.getDataSet(), inputStream -> {
                 return p.parse(inputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
             });
 
@@ -230,6 +225,50 @@ public class SchemaDiscoveryRestController {
             throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
         }
         return Response.ok(schema).build();
+    }
+
+
+    @POST
+    @Path("/table-settings/dataset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Determines the schema of the provided file.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the table settings.", response = Schema.class),
+                      @ApiResponse(code = 500, message = "The table settings could not be determined.", response = RestResponseStatus.class)
+                  })
+    public Response hiveTableSettings(DataSetSchemaRequest request) throws Exception {
+
+        TableSettings tableSettings;
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        try {
+            FileSchemaParser p = transformer.fromUiModel(request.getSchemaParser());
+            String type = request.getTableSchemaType();
+            TableSchemaType targetType = TableSchemaType.HIVE;
+            if (StringUtils.isNotBlank(type)) {
+                try {
+                    targetType = TableSchemaType.valueOf(type);
+                } catch (IllegalArgumentException e) {
+                    targetType = TableSchemaType.HIVE;
+                }
+            }
+            final TableSchemaType finalType = targetType;
+
+            if (p.tableSettingsRequireFileInspection()) {
+                tableSettings = catalogFileManager.readDataSetInputStream(request.getDataSet(), inputStream -> {
+                    return p.parseTableSettings(inputStream, Charset.defaultCharset(), finalType);
+                });
+            } else {
+                tableSettings = p.deriveTableSettings(finalType);
+            }
+
+        } catch (IOException e) {
+            throw new WebApplicationException(e.getMessage());
+        } catch (PolicyTransformException e) {
+            log.warn("Failed to convert parser", e);
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
+        }
+        return Response.ok(tableSettings).build();
     }
 
 

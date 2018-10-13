@@ -97,7 +97,7 @@ public class FileMetadataScalaScriptGenerator {
 
     public static void main(String[] args) {
 
-        String str = FileMetadataScalaScriptGenerator.getScript(new String[]{"file:///var/kylo/application.properties", "file:///var/kylo/"});
+        String str = FileMetadataScalaScriptGenerator.getScript(new String[]{"file:///var/kylo/cd_catalog.xml"});
         int i = 0;
 
     }

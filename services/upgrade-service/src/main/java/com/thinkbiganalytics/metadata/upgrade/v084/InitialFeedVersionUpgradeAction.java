@@ -36,7 +36,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -64,14 +63,12 @@ public class InitialFeedVersionUpgradeAction implements UpgradeState {
 
         feedProvider.getFeeds().forEach(feed -> {
             JcrFeed jcrFeed = (JcrFeed) feed;
-            Optional<List<EntityVersion<Feed.ID, Feed>>> versions = feedProvider.findVersions(jcrFeed.getId(), false);
+            List<EntityVersion<Feed.ID, Feed>> versions = feedProvider.findVersions(jcrFeed.getId(), false);
             
-            versions.ifPresent(list -> {
-                if (list.size() <= 1) {
-                    jcrFeed.setDescription(jcrFeed.getDescription());
-                    feedProvider.update(jcrFeed);
-                }
-            });
+            if (versions.size() <= 1) {
+                jcrFeed.setDescription(jcrFeed.getDescription());
+                feedProvider.update(jcrFeed);
+            }
         });
     }
 }

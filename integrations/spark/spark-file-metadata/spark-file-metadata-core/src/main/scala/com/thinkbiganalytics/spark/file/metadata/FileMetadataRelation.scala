@@ -60,7 +60,6 @@ class FileMetadataRelation protected[metadata](path: Option[String],
     val mimeType = extractedData.getMimeType;
 
 
-
     val propertyMap = SparkUtil.toScalaMap(extractedData.getProperties)
 
     return RowFactory.create(resourceName, extractedData.getMimeType, extractedData.getSubType, extractedData.getEncoding, propertyMap)

@@ -9,6 +9,8 @@ export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
     }
 
     public validate(feed:Feed, step:Step) : boolean {
+      return  super.validate(feed,step);
+        /*
         let userAcknowledgedContinueWithoutSource = step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
         if(userAcknowledgedContinueWithoutSource || (feed.sourceDataSets && feed.sourceDataSets.length>0) || (feed.table.sourceTableSchema && feed.table.sourceTableSchema.isDefined() )){
             step.valid = true;
@@ -19,5 +21,6 @@ export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
             step.setComplete(false)
         }
         return step.valid;
+        */
     }
 }

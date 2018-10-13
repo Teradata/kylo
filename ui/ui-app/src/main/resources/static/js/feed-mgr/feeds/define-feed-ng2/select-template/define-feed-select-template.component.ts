@@ -22,6 +22,7 @@ import {Template} from "../../../model/template-models";
 import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {LocalStorageService} from "../../../../common/local-storage/local-storage.service";
 import {FeedLoadingService} from "../services/feed-loading-service";
+import {finalize} from 'rxjs/operators/finalize';
 
 
 @Component({
@@ -301,8 +302,10 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * initialize the controller
          */
         ngOnInit() {
-
-            this.getRegisteredTemplates().subscribe((response:any) =>{
+            this.feedLoadingService.registerLoading();
+            this.getRegisteredTemplates().pipe(
+                finalize(() => this.feedLoadingService.resolveLoading())
+            ).subscribe((response:any) =>{
                 if(angular.isDefined(this.templateName) && this.templateName != ''){
                     var match = _.find(this.allTemplates,(template:any) => {
                         return template.templateName == this.templateName || template.id == this.templateId;

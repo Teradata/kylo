@@ -433,4 +433,13 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#revertFeedDraftVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

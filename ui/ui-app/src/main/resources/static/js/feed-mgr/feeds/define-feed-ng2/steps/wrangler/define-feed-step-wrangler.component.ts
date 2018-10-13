@@ -46,6 +46,13 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         return this.toolbarActionTemplate;
     }
 
+    protected cancelFeedEdit() {
+        //get the old feed
+        //
+        super.cancelFeedEdit();
+        this.goToSetupGuideSummary();
+    }
+
 
     protected applyUpdatesToFeed():(Observable<any> | boolean | null) {
         super.applyUpdatesToFeed();

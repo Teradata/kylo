@@ -301,13 +301,13 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     flowRateKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.flowRateKpi,
-        color: '#1f77b4'
+        color: '#00b2b1'
     };
 
     avgDurationKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.averageDurationKpi,
-        color: '#1f77b4'
+        color: '#00b2b1'
     };
 
     /**

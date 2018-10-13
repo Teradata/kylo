@@ -53,7 +53,7 @@ import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
@@ -833,8 +833,9 @@ public class FeedRestController {
                         version = getMetadataService().deployFeedVersion(feedId, version.getId(), true);
                         break;
                     case REMOVE:
-//                        versions = getMetadataService().removeFeedDraftVersion(feedId, true);
-//                        break;
+                        return getMetadataService().revertFeedDraftVersion(feedId, true)
+                            .map(oldVersion -> Response.ok(oldVersion).build())
+                            .orElseGet(() -> Response.noContent().build());
                     default:
                         return Response.status(Status.BAD_REQUEST).entity("Unsupported action for feed version: " + actionStr).build();
                 }

@@ -20,45 +20,6 @@
 <div class="feed-stats">
   <div fxLayout="column" *ngIf="dataLoaded">
 
-
-    <mat-card class="feed-card">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>{{kyloIcons.Links.feedActivity}}</mat-icon>
-          <span translate>FeedStats.Name</span>
-        </mat-card-title>
-        <mat-card-subtitle >Feed activity for the <span class="text-lower">{{timeFrameOptions[timeFrameOptionIndex].label}}</span> <span class="pad-left">{{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span> </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content  >
-        <div fxLayout="row" fxLayoutAlign="start" fxFlex>
-            <div fxLayout="column" fxLayoutAlign="start" fxFlex >
-<!--
-              <div fxLayout="row" fxLayoutAlign="start" >
-                <span class="pad-left">Date Range: </span>
-                <span fxFlex ></span>
-              </div>
-              -->
-
-              <div fxFlex fxLayout="row" fxLayoutAlign="start center">
-                <span class="hint pad-right-sm">{{timeFrameOptions[0].label}}</span>
-                <mat-slider  (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
-                <span class="hint pad-left-sm">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
-              </div>
-            </div>
-              <div fxLayout="column" class="pad-left">
-                 <div fxLayout="column" fxLayoutAlign="start center">
-                    <mat-slide-toggle color="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
-                      Auto Refresh
-                    </mat-slide-toggle>
-                   <button mat-button color="primary" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()" >Refresh</button>
-                 </div>
-                 <div *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</div>
-              </div>
-
-            </div>
-      </mat-card-content>
-    </mat-card>
-
     <mat-card *ngIf="feedProcessorErrors.visibleData.length >0" class="feed-card">
       <mat-card-content>
         <div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
@@ -77,7 +38,7 @@
                 <mat-icon>refresh</mat-icon>
               </button>
             </div>
-            <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
+            <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin-top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
           </div>
         </div>
         <mat-divider></mat-divider>
@@ -108,15 +69,15 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <div class="kpi-stat">{{eventSuccessKpi.value}}%</div>
-              <mat-icon  class="kpi_icon"[ngStyle]="{'color':eventSuccessKpi.color}" >{{eventSuccessKpi.icon}}</mat-icon>
+              <h1 class="kpi-stat tc-neutral">{{eventSuccessKpi.value}}%</h1>
+              <mat-icon  class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}">{{eventSuccessKpi.icon}}</mat-icon>
               <span class="kpi-title" matTooltip="{{'views.feed-stats-charts.SR' | translate}}">{{"views.feed-stats-charts.SR" | translate}}</span>
             </mat-card-content>
           </mat-card>
 
             <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
               <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-                <div class="kpi-stat">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</div>
+                <h1 class="kpi-stat tc-neutral">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
                 <mat-icon class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}"  >{{flowRateKpi.icon}}</mat-icon>
                 <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.IFR' | translate}}">{{"views.feed-stats-charts.FR" | translate}}</span>
               </mat-card-content>
@@ -125,7 +86,7 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <h1 class="kpi-stat">{{avgDurationKpi.value}}</h1>
+              <h1 class="kpi-stat tc-neutral">{{avgDurationKpi.value}}</h1>
               <mat-icon class="kpi_icon" [ngStyle]="{'color':avgDurationKpi.color}"  >{{avgDurationKpi.icon}}</mat-icon>
               <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.FD' | translate}}">{{"views.feed-stats-charts.FD" | translate}}</span>
             </mat-card-content>
@@ -140,9 +101,32 @@
               <mat-card-title fxFlex>
                 <span translate>views.feed-stats-charts.AFR</span>
                 <span fxFlex></span>
-               <button mat-button (click)="onResetZoom()" *ngIf="!zoomEnabled">Reset Zoom</button>
               </mat-card-title>
-              <mat-card-subtitle >View how many flows start and stop over time</mat-card-subtitle>
+              <!-- <button mat-button (click)="onResetZoom()" *ngIf="!zoomEnabled">Reset Zoom</button> -->
+              <mat-card-subtitle >Flow activity over time</mat-card-subtitle>
+              <div fxLayout="row" fxLayoutAlign="start" fxFlex>
+                <div fxLayout="column" fxLayoutAlign="start" fxFlex >
+                  <div fxFlex fxLayout="row" fxLayoutAlign="start center">
+                    <span class="hint pad-right-sm">{{timeFrameOptions[0].label}}</span>
+                    <mat-slider  (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                    <span class="hint pad-left-sm pad-right-md">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
+                  </div>
+                </div>
+
+<!--
+                <div fxLayout="column" class="pad-left">
+                  <div fxLayout="column" fxLayoutAlign="start center">
+                    <mat-slide-toggle color="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
+                      Auto Refresh
+                    </mat-slide-toggle>
+                    <button mat-button color="primary" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()" >Refresh</button>
+                  </div>
+                  <div *ngIf="isZoomed" class="hint">At custom zoom level, refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</div>
+                </div>
+                -->
+
+              </div>
+
             </mat-card-header>
             <mat-card-content fxFlex="100" style="width: 100%; padding: 0">
               <div flex fxLayout="row" fxLayoutAlign="start end">
@@ -168,9 +152,9 @@
               <mat-card-title>
                 <span translate>views.feed-stats-charts.FPM</span>
               </mat-card-title>
-              <mat-card-subtitle >View various metics about each processor in the feed</mat-card-subtitle>
+              <mat-card-subtitle >Processor performance metrics</mat-card-subtitle>
             </mat-card-header>
-            <mat-card-content fxFlex="100" style="width: 100%;" fxLayoutAlign="start" fxLayout="column">
+            <mat-card-content fxFlex="100" style="width: 100%;" fxLayoutAlign="start" fxLayout="column" ngClass="pull-top-lg">
 
               <mat-input-container >
                 <label class="md-container-ignore label-small layout-padding-top">{{"views.feed-stats-charts.PM" | translate}}</label>

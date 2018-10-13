@@ -20,6 +20,7 @@ package com.thinkbiganalytics.discovery.model;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 
 /**
@@ -31,6 +32,8 @@ public class DataSetSchemaRequest {
     private DataSet dataSet;
 
     private SchemaParserDescriptor schemaParser;
+
+    private String tableSchemaType;
 
     public DataSetSchemaRequest(){
 
@@ -50,5 +53,13 @@ public class DataSetSchemaRequest {
 
     public void setSchemaParser(SchemaParserDescriptor schemaParser) {
         this.schemaParser = schemaParser;
+    }
+
+    public String getTableSchemaType() {
+        return tableSchemaType;
+    }
+
+    public void setTableSchemaType(String tableSchemaType) {
+        this.tableSchemaType = tableSchemaType;
     }
 }

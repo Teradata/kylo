@@ -893,8 +893,8 @@
              "Name":"Target"
             },
             "AdditionalOptions":{
-             "Name":"Additional Options",
-             "Description":"Update NiFi processor settings"
+             "Name":"Additional options",
+             "Description":"Required settings for this feed"
             },
             "Properties": {
                 "Name":"Properties"
@@ -903,7 +903,7 @@
                 "Name":"Permissions"
             },
             "Wrangler":{
-                "Name":"Wrangler"
+                "Name":"Transformation"
             }
         },
         "Links":{"Summary":{"Name":"Summary"},

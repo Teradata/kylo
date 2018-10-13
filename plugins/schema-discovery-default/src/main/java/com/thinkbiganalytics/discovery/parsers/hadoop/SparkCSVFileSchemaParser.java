@@ -20,14 +20,23 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
+import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +77,75 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
     @Override
     public SparkFileType getSparkFileType() {
         return SparkFileType.CSV;
+    }
+
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+       return deriveTableSettings(target);
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        switch (target){
+            case HIVE:
+                HiveTableSettings tableSettings = new DefaultHaveTableSettings();
+                tableSettings.setHiveFormat(deriveHiveRecordFormat());
+                tableSettings.setStructured(false);
+                return tableSettings;
+            default:
+                return new DefaultTableSettings();
+        }
+    }
+
+
+    public String deriveHiveRecordFormat() {
+        String template = "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n" +
+                          " WITH SERDEPROPERTIES (" +
+                          deriveSeparatorRecordFormat() +
+                          deriveEscapeCharRecordFormat() +
+                          deriveQuoteRecordFormat() +
+                          ") STORED AS TEXTFILE";
+        return String.format(template, separatorChar, escapeChar, quoteChar);
+    }
+
+    private String deriveSeparatorRecordFormat() {
+        String template = " 'separatorChar' = '%s'";
+        return String.format(template, stringForCharacter(separatorChar));
+    }
+
+    private String deriveQuoteRecordFormat() {
+        if (StringUtils.isEmpty(quoteChar)) {
+            return "";
+        }
+        String template = " ,'quoteChar' = '%s'";
+        return String.format(template, stringForCharacter(quoteChar));
+    }
+
+    private String deriveEscapeCharRecordFormat() {
+        if (StringUtils.isEmpty(escapeChar)) {
+            return "";
+        }
+        String template = " ,'escapeChar' = '%s'";
+        return String.format(template, stringForCharacter(escapeChar));
+    }
+
+    private String stringForCharacter(String s) {
+        if (StringUtils.isEmpty(s)) {
+            return null;
+        }
+        Character c = s.charAt(0);
+
+        switch (c) {
+            case ';':
+                return "\\;";
+            case '\t':
+                return "\\t";
+            case '\'':
+                return "\\\'";
+            case '\\':
+                return "\\\\";
+            default:
+                return StringEscapeUtils.escapeJava(c.toString());
+        }
     }
 
 

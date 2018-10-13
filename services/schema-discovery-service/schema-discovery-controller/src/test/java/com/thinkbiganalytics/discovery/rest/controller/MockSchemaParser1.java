@@ -20,9 +20,11 @@ package com.thinkbiganalytics.discovery.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
 
@@ -42,5 +44,20 @@ public class MockSchemaParser1 implements FileSchemaParser {
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
         return null;
+    }
+
+    @Override
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+        return new DefaultTableSettings();
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        return new DefaultTableSettings();
+    }
+
+    @Override
+    public boolean tableSettingsRequireFileInspection() {
+        return false;
     }
 }

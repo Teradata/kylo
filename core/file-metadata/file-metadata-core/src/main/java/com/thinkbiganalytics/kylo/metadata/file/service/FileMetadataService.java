@@ -48,7 +48,7 @@ import javax.xml.namespace.QName;
  */
 public class FileMetadataService {
 
-    static int bytesToTest = 512;
+    static int bytesToTest = 512000;
 
     /**
      * Detect file format and metadata/mimetype from the incoming input sream
@@ -84,9 +84,13 @@ public class FileMetadataService {
                 mediaType = detectCsv(InputStreamUtil.asStream(header), md);
             } else if (mediaType.equals(MediaType.APPLICATION_XML)) {
                 XmlRootExtractor rowTagExtractor = new XmlRootExtractor();
-                QName root = rowTagExtractor.extractRootElement(is);
+                QName root = rowTagExtractor.extractRootElement(InputStreamUtil.asStream(header));
                 if (root != null) {
-                    md.set("rowTag", root.toString());
+                    String rowTag = root.toString();
+                    md.set("rowTag", rowTag);
+                }
+                else {
+                   //unable to detect RowTag from XML!!
                 }
             }
         }

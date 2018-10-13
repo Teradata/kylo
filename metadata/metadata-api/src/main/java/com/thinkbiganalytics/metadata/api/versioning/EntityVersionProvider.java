@@ -32,27 +32,42 @@ import java.util.Optional;
  */
 public interface EntityVersionProvider<T, PK extends Serializable> {
     
+    /**
+     * @param ser some serialized form of the version ID
+     * @return a version ID instance
+     */
     EntityVersion.ID resolveVersion(Serializable ser);
 
     /**
-     * @param id
-     * @param includedContent
-     * @return
+     * Find all versions of an entity.
+     * @param id the ID of the entity
+     * @param includedContent true if the entities should be included in the versions returned
+     * @return An optional list of versions, empty if the entity does not exist
+     * @throws VersionableEntityNotFound if an entity with the ID does not exist
      */
-    Optional<List<EntityVersion<PK, T>>> findVersions(PK id, boolean includeContent);
+    List<EntityVersion<PK, T>> findVersions(PK id, boolean includeContent);
     
     /**
-     * @param entityId
-     * @param versionId
-     * @param includedContent
-     * @return
+     * Find a particular version of an entity.
+     * @param id the ID of the entity
+     * @param includedContent true if the entity should be included in the version returned
+     * @return An optional version of the entity, empty if the version does not exist
      */
     Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
     
     /**
-     * @param entityId
-     * @param includedContent
-     * @return
+     * Find the most recent version of an entity.
+     * @param id the ID of the entity
+     * @param includedContent true if the entity should be included in the version returned
+     * @return An optional latest version of the entity, empty if a version does not exist
      */
     Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent);
+//    
+//    /**
+//     * Removes a specific version of an entity and returns the prior version if it exists.
+//     * @param id the ID of the entity
+//     * @param includedContent true if the entity should be included in the version returned
+//     * @return An optional earlier version of the entity, empty if no earlier version exists
+//     */
+//    Optional<EntityVersion<PK, T>> removeVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent);
 }

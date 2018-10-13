@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.spring.SpringApplicationContext;
 
@@ -71,6 +72,18 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
 
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
         return getSparkParserService().doParse(is, getSparkFileType(), target, getSparkCommandBuilder());
+    }
+
+    public boolean tableSettingsRequireFileInspection(){
+        return false;
+    }
+
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        return getSparkParserService().deriveTableSettings(getSparkFileType(),target);
+    }
+
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+        return getSparkParserService().toTableSettings(is,getSparkFileType(),target);
     }
 
     /**

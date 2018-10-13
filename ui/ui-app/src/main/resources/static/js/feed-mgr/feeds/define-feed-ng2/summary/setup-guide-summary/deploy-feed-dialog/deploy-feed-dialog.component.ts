@@ -12,6 +12,8 @@ import {FeedScheduleComponent} from "../feed-schedule/feed-schedule.component";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
+import {Templates} from "../../../../../services/TemplateTypes";
+import {FeedStepConstants} from "../../../../../model/feed/feed-step-constants";
 
 export class DeployFeedDialogComponentData{
     constructor(public feed:Feed){
@@ -73,12 +75,31 @@ this.deployErrorMessage = '';
             })
         }
 
+        //if we are not showing the source
+        let dirtyForm = this.formGroup.dirty
+        let inputProcessorAssignmentNeeded = this.isUndefined(this.feed.inputProcessorName) || this.isUndefined(this.feed.inputProcessorType);
 
-        if(this.formGroup.dirty) {
+
+
+
+        if(dirtyForm || inputProcessorAssignmentNeeded) {
             this.deployingFeed = true;
             //if user chooses to upate the model save first
             let feed = this.feedSchedule.updateModel();
             feed.active = this.formGroup.get("enableFeed").value
+
+            if(inputProcessorAssignmentNeeded) {
+                //get the first input processor and select it
+                let inputProcessors = feed.inputProcessors && feed.inputProcessors.length >0 ? feed.inputProcessors : feed.registeredTemplate && feed.registeredTemplate.inputProcessors && feed.registeredTemplate.inputProcessors.length >0 ? feed.registeredTemplate.inputProcessors : []
+                if(inputProcessors.length >0) {
+                    let input: Templates.Processor = inputProcessors[0];
+                    feed.inputProcessor = input;
+                    feed.inputProcessorName = input.name;
+                    feed.inputProcessorType = input.type;
+                    console.log("set default input processor to be ", input.name)
+                }
+            }
+
             this.defineFeedService.saveFeed(feed).subscribe((response:SaveFeedResponse) => {
                 if(response.success) {
                     deploy();
@@ -95,6 +116,10 @@ this.deployErrorMessage = '';
         }
 
 
+    }
+
+    private isUndefined(obj:any){
+     return   obj == undefined || obj == null || obj == ""
     }
 
 

@@ -630,9 +630,8 @@ public class InMemoryFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersions(java.io.Serializable, boolean)
      */
     @Override
-    public Optional<List<EntityVersion<Feed.ID, Feed>>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id, boolean includeEntity) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<EntityVersion<Feed.ID, Feed>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id, boolean includeEntity) {
+        return Collections.emptyList();
     }
 
     /* (non-Javadoc)
@@ -662,7 +661,16 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#revertDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<com.thinkbiganalytics.metadata.api.feed.Feed.ID, Feed>> revertDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#hasDraftVersion(java.io.Serializable)
      */

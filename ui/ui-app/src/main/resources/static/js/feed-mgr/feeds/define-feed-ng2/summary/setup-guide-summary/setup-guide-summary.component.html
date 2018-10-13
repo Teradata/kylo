@@ -73,6 +73,10 @@
                   <mat-icon>content_copy</mat-icon>
                   <span>Clone</span>
                 </button>
+                <button mat-menu-item *ngIf="feed.accessControl.allowAdmin" (click)="onDelete()">
+                  <mat-icon>delete</mat-icon>
+                  <span>{{"views.feed-details.Delete" | translate}}</span>
+                </button>
                 <mat-divider *ngIf="showSetPermissions()"></mat-divider>
                 <button *ngIf="showSetPermissions()" mat-menu-item (click)="setPermissions()">
                   <mat-icon>person</mat-icon>

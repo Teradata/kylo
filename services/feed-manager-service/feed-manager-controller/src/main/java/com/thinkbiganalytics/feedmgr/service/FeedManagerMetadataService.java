@@ -574,6 +574,11 @@ public class FeedManagerMetadataService implements MetadataService {
         return feedProvider.createDraftFromFeedVersion(feedId, versionId, includeContent);
     }
 
+    @Override
+    public Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent) {
+        return feedProvider.revertFeedDraftVersion(feedId, includeContent);
+    }
+    
     @Nonnull
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {

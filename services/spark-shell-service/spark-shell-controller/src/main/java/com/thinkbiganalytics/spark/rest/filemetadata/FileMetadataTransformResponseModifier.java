@@ -121,12 +121,14 @@ public class FileMetadataTransformResponseModifier extends AbstractTransformResp
                 schemaParserDescriptor.getProperties().stream().filter(property -> property.getObjectProperty().equals("separatorChar")).findFirst().ifPresent(property -> {
                     property.setValue(firstFile.getDelimiter());
                 });
+                schemaParserDescriptor.getProperties().stream().filter(property -> property.getObjectProperty().equals("rowTag")).findFirst().ifPresent(property -> {
+                    property.setValue(firstFile.getRowTag());
+                });
                 Optional<FileSchemaParser> fileSchemaParser = fileSchemaParser(schemaParserDescriptor);
                 if (fileSchemaParser.isPresent() && fileSchemaParser.get() instanceof SparkFileSchemaParser) {
                     List<String> paths = files.stream().map(parsedFileMetadata -> parsedFileMetadata.getFilePath()).collect(Collectors.toList());
                     SampleFileSparkScript sparkScript = ((SparkFileSchemaParser) fileSchemaParser.get()).getSparkScript(paths);
                     dataSet.setSparkScript(sparkScript);
-
                 }
             });
 

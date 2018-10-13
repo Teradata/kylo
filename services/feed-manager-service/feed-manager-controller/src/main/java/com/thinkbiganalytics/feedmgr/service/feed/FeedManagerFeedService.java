@@ -31,7 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -232,6 +232,13 @@ public interface FeedManagerFeedService {
      * @return
      */
     FeedMetadata saveDraftFeed(FeedMetadata feedMetadata);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent);
 
     /**
      * Deletes the specified feed.

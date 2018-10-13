@@ -20,12 +20,16 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parsers.csv.CSVFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
@@ -65,6 +69,20 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     @PolicyProperty(name = "Value Tag", required = true, hint = "The tag used for the value when there are attributes in the element having no child", value = "_",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "valueTag")})
     private String valueTag = "_VALUE";
 
+    @Override
+    public boolean tableSettingsRequireFileInspection(){
+        return true;
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        throw new UnsupportedOperationException(" XML table settings requires  the file to be inspected.  Please set the tableSettingsRequireFileInspection = true");
+    }
+    @Override
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+        return toTableSettings(is,getSparkFileType(),target);
+    }
+
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
@@ -80,10 +98,8 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             // Now build the serde and properties for the Hive schema
             HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
-            String paths = StringUtils.join(hiveParse.columnPaths.values(), ",");
-            String serde = String.format("row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (%s) stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' "
-                                         + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'", paths);
-
+            HiveTableSettings tableSettings = toHiveTableSettings(hiveParse);
+            String serde = tableSettings.getHiveFormat();
             // Set rowTag if it was derived by the SAX parse
             this.rowTag = hiveParse.getStartTag();
             LOG.debug("XML serde {}", serde);
@@ -122,6 +138,53 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     public SparkFileType getSparkFileType() {
         return SparkFileType.XML;
     }
+
+
+    private TableSettings toTableSettings(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+        switch (tableSchemaType) {
+            case HIVE:
+               return toHiveTableSettings(inputStream);
+            default:
+                return new DefaultTableSettings();
+        }
+    }
+
+
+    private HiveTableSettings toHiveTableSettings(InputStream is) throws IOException{
+        File tempFile = null;
+        try {
+            tempFile = streamToFile(is);
+            // Now build the serde and properties for the Hive schema
+            HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
+            return toHiveTableSettings(hiveParse);
+        } catch (Exception e) {
+            LOG.error("Failed to parse XML", e);
+            if (e instanceof IOException) {
+                throw (IOException) e;
+            } else {
+                throw new IOException("Failed to generate schema for XML", e);
+            }
+        } finally {
+            if (tempFile != null) {
+                tempFile.delete();
+            }
+        }
+
+    }
+
+    private HiveTableSettings toHiveTableSettings(HiveXMLSchemaHandler hiveXMLSchemaHandler){
+        String paths = StringUtils.join(hiveXMLSchemaHandler.columnPaths.values(), ",");
+        String serde = String.format("row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (%s) stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' "
+                                     + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'", paths);
+
+        LOG.debug("XML serde {}", serde);
+        HiveTableSettings hiveTableSettings = new DefaultHaveTableSettings();
+        hiveTableSettings.setHiveFormat(serde);
+        hiveTableSettings.setStructured(true);
+        return hiveTableSettings;
+    }
+
+
 
     @Override
     public SampleFileSparkScript getSparkScript(InputStream is) throws IOException {

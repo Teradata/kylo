@@ -25,7 +25,7 @@ import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {TdVirtualScrollContainerComponent} from "@covalent/core/virtual-scroll";
 import {FeedFieldPolicyRulesDialogService} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.service";
 import {SelectedColumn} from "./feed-table-selected-column.model";
-import {Feed} from "../../../../model/feed/feed.model";
+import {Feed, SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {FeedConstants} from "../../../../services/FeedConstants";
 import {FeedFieldPolicyRulesDialogComponent} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.component";
 import {FeedFieldPolicyDialogData} from "../../../../shared/feed-field-policy-rules/feed-field-policy-dialog-data";
@@ -43,6 +43,12 @@ import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedServiceTypes} from "../../../../services/FeedServiceTypes";
+import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {ShowCatalogCanceledEvent} from "../source-sample/define-feed-step-source-sample.component";
+import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
+import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {DefineFeedSourceSampleService} from "../source-sample/define-feed-source-sample.service";
+import {CatalogService} from "../../../../catalog/api/services/catalog.service";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -169,6 +175,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     targetFormatOptionsForm : FormGroup;
 
+    sourceSampleForm:FormGroup;
+
+    showSourceSampleCatalog:boolean;
+
+    showSourceSample:boolean = true;
+
 
 
     @ViewChild('virtualScroll')
@@ -187,7 +199,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 public dialog:MatDialog,
-                private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService, feedSideNavService:FeedSideNavService) {
+                private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService, feedSideNavService:FeedSideNavService,
+                private defineFeedSourceSampleService: DefineFeedSourceSampleService,
+                private catalogService: CatalogService) {
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
@@ -203,6 +217,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.definePartitionForm = new FormGroup({});
         this.mergeStrategiesForm = new FormGroup({});
         this.targetFormatOptionsForm = new FormGroup({});
+
+        this.sourceSampleForm = new FormGroup({})
 
         this.parentForm.addControl("defineTableForm",this.defineTableForm)
         this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
@@ -269,6 +285,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
+
+        if(this.feed.isDataTransformation()){
+            this.showSourceSample = false;
+        }
     }
 
 
@@ -309,7 +329,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
-        this.virtualScroll.refresh();
+        if(this.virtualScroll) {
+            this.virtualScroll.refresh();
+        }
         this.defineTableForm.markAsDirty();
         if(this.virtualScroll){
             setTimeout(()=>{this.virtualScroll.scrollToEnd()}, 50);
@@ -768,6 +790,119 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
+
+
+    onCatalogCanceled($event:ShowCatalogCanceledEvent){
+        if($event.skip){
+            //mark it in the metadata
+            this.step.addProperty(SKIP_SOURCE_CATALOG_KEY,true);
+        }
+    }
+
+    onSampleSourceSaved(previewEvent: DatasetPreviewStepperSavedEvent) {
+        console.log("SAVE SAMPLE ",previewEvent)
+        let previews: PreviewDataSet[] = previewEvent.previews;
+        if (previews && previews.length) {
+            let feedDataSets = this.feed.sourceDataSets;
+            //check to see if schema differs
+            if (feedDataSets && feedDataSets.length > 0) {
+                let feedDatasetKeys = feedDataSets.map(ds => ds.id).sort().toString();
+                let newDatasetKeys = previews.map(ds => ds.key).sort().toString();
+                if (feedDatasetKeys != "" && feedDatasetKeys != newDatasetKeys) {
+                    //WARN different datasets
+                    this.dialogService.openConfirm({
+                        message: 'The dataset you have selected differs from the one existing on this feed. Switching the source will result in a new target schema.  Are you sure you want to do this?',
+                        disableClose: true,
+                        title: 'Confirm source dataset change',
+                    }).afterClosed().subscribe((accept: boolean) => {
+                        if (accept) {
+                            this._setSourceAndTarget(previewEvent);
+                        } else {
+                            // no op
+                        }
+                    });
+                }
+                else {
+                    this._setSourceAndTarget(previewEvent);
+                }
+            }
+            else {
+                this._setSourceAndTarget(previewEvent);
+            }
+        }
+        else {
+            this._setSourceAndTarget(previewEvent)
+        }
+
+
+    }
+
+    private _setSourceAndTarget(event: DatasetPreviewStepperSavedEvent) {
+        this.feedLoadingService.registerLoading();
+
+
+        let _save = () => {
+           //apply the updates to this form
+
+            this.tableFormControls.resetFormFields();
+            this.ensureTableFields();
+            this.ensurePartitionData();
+            this.showSourceSampleCatalog = false;
+            this.feedLoadingService.resolveLoading();
+        }
+
+        /**
+         * Save the feed
+         */
+        let saveFeed = () => {
+            if(event.previews[0] instanceof PreviewFileDataSet) {
+
+                this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
+                    console.log("SCHEMA RESPONSE ",response)
+                    this.feed.table.feedFormat = response.hiveFormat;
+                    this.feed.table.structured = response.structured;
+                    this.feed.table.feedTblProperties = response.serdeTableProperties;
+                    _save();
+                });
+            }
+            else {
+                _save();
+            }
+        }
+
+
+
+
+        let previews = event.previews;
+        let singleSelection = event.singleSelection;
+        if (previews && previews.length) {
+            if (singleSelection) {
+                const sourceDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
+                if (sourceDataSet.dataSource && sourceDataSet.dataSource.connector && sourceDataSet.dataSource.connector.pluginId) {
+                    this.catalogService.getConnectorPlugin(sourceDataSet.dataSource.connector.pluginId)
+                        .subscribe(plugin => {
+                            this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin)
+                            saveFeed();
+                        });
+                } else {
+                    this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet);
+                    saveFeed();
+                }
+            }
+        }
+        else {
+            //set the source and target to empty
+            this.feed.setSourceDataSetAndUpdateTarget(null);
+            saveFeed();
+        }
+
+    }
+
+
+
+
+
+
 }
 @Pipe({name: 'filterPartitionFormula'})
 export class FilterPartitionFormulaPipe implements PipeTransform{
@@ -857,6 +992,14 @@ class TableFormControls {
         return this.getFormControl(this.defineTableForm,prefix,field);
     }
 
+    resetFormFields() {
+        Object.keys(this.defineTableForm.controls).forEach((key: string) => {
+            if(key != "indexCheckAll" && key != "profileCheckAll") {
+                this.defineTableForm.removeControl(key)
+            }
+        });
+        Object.keys(this.definePartitionForm.controls).forEach((key: string) => this.defineTableForm.removeControl(key));
+    }
 
 
     addTableFieldFormControl(columnDef:TableColumnDefinition,touch:boolean =false){

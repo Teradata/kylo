@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.file;
 /*-
  * #%L
- * kylo-catalog-core
+ * kylo-catalog-api
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics
  * %%

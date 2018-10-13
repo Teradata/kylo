@@ -238,7 +238,7 @@
       }
     ],
     "nifiControllerService": {
-      "type": "AWSCredentialsProviderControllerService",
+      "type": "org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService",
       "properties": {
         "Access Key": "${spark.hadoop.fs.s3a.access.key}",
         "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"

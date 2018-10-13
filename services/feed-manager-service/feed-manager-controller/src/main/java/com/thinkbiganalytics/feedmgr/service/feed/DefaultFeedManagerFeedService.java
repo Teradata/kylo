@@ -327,10 +327,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID deployedId = feedProvider.findDeployedVersion(domainFeedId, false)
                                 .map(ver -> ver.getId())
                                 .orElse(null);
+                List<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> versions = feedProvider.findVersions(domainFeedId, includeContent);
                 
-                return feedProvider.findVersions(domainFeedId, includeContent)
-                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId, deployedId))
-                    .orElse((FeedVersions) null);
+                return feedModelTransform.domainToFeedVersions(versions, domainFeedId, deployedId);
             }, MetadataAccess.SERVICE);
         }).orElse((FeedVersions) null);
     }
@@ -344,7 +343,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
 
                 return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                    .map(version -> feedModelTransform.domainToFeedVersion(version));
+                    .map(feedModelTransform::domainToFeedVersion);
             }, MetadataAccess.SERVICE);
         });
     }
@@ -497,7 +496,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 }
                 return Optional.of(domainFeedId);
             } else {
-                return Optional.empty();
+                throw new FeedNotFoundException(domainFeedId);
             }
         });
     }
@@ -765,6 +764,30 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         else {
             return metadata;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#removeFeedDraftVersion(java.lang.String, boolean)
+     */
+    @Override
+    public Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent) {
+        return metadataAccess.commit(() -> {
+            // Check services access to be able  to create a feed
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+            checkFeedPermission(feedId, FeedAccessControl.EDIT_DETAILS);
+            
+            Feed.ID domainId = feedProvider.resolveId(feedId);
+            Feed feed = feedProvider.getFeed(domainId);
+            
+            Optional<EntityVersion> currentVersion = feedProvider.revertDraftVersion(domainId, includeContent).map(feedModelTransform::domainToFeedVersion);
+            
+            // If there is not subsequent version then this was a draft feed and should be deleted.
+            if (! currentVersion.isPresent()) {
+                deleteFeed(feed);
+            }
+            
+            return currentVersion;
+        });
     }
 
     /**
@@ -1523,16 +1546,21 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
 
-            String feedCategorySystemName = feed.getCategory().getSystemName();
-            String feedSystemName = feed.getName();
-
-            //unschedule any SLAs
-            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier, feed.getQualifiedName());
-            feedProvider.deleteFeed(feed.getId());
-            opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
-            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
+            deleteFeed(feed);
             return true;
         });
+    }
+
+    protected void deleteFeed(Feed feed) {
+        String feedCategorySystemName = feed.getCategory().getSystemName();
+        String feedSystemName = feed.getName();
+        Feed.ID feedId = feed.getId();
+        
+        //unschedule any SLAs
+        serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feed.getId(), feed.getQualifiedName());
+        feedProvider.deleteFeed(feedId);
+        opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId.toString()));
+        feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
     }
 
     @Override

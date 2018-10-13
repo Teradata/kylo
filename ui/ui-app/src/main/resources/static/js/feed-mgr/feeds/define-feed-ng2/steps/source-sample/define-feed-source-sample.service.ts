@@ -32,4 +32,17 @@ export class DefineFeedSourceSampleService {
             }});
     }
 
+    public parseTableSettings(previewDataSet:PreviewFileDataSet) : Observable<any>{
+
+        let ds:SparkDataSet = previewDataSet.toSparkDataSet();
+        let schemaParser = previewDataSet.schemaParser;
+        let request = {dataSet:ds,schemaParser:schemaParser};
+        let url = RestUrlConstants.SCHEMA_DISCOVERY_TABLE_SETTINGS_DATA_SET;
+        return <Observable<any>> this.http.post(url,request,{ headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            }});
+    }
+
+
+
 }
