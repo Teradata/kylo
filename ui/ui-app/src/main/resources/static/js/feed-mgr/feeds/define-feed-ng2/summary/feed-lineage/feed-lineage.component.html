@@ -3,7 +3,7 @@
     <div *ngIf="feed != undefined">Feed Lineage - {{feed.feedName}} </div>
     <span fxFlex="100"></span>
   </div>
-      <mat-card class="feed-card">
+      <mat-card class="feed-card" style="position: relative">
         <mat-card-header >
           <mat-card-title>
             <mat-icon>{{kyloIcons.Links.lineage}}</mat-icon>
@@ -21,16 +21,18 @@
             <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
           </mat-button-toggle-group>
         </div>
-        <div>
-          <select-network-node [selectedNode]="selectedNode"></select-network-node>
-          <kylo-vis-network *ngIf="!loading"
+        <div kyloDraggable style="position: absolute; z-index: 1">
+          <div fxLayout="row">
+              <select-network-node [selectedNode]="selectedNode"></select-network-node>
+          </div>
+        </div>
+        <kylo-vis-network *ngIf="!loading"
                             [data]="data"
                             [options]="options"
                             (onLoad)="onLoad($event)"
                             (onSelect)="onSelect($event)"
                             (stabilized)="stabilized($event)"
                             [heightPx]="550"></kylo-vis-network>
-        </div>
       </mat-card-content>
     </mat-card>
 </td-layout-nav>
