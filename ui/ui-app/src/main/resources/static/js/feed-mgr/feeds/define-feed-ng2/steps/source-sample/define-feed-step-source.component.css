@@ -14,3 +14,6 @@
 .mat-form-field-width {
   width:800px;
 }
+.property-heading{
+  padding-left:0px !important;
+}

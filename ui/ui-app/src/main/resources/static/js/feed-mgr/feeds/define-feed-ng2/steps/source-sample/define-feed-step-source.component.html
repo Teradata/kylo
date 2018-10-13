@@ -10,35 +10,42 @@
         <form [formGroup]="sourcePropertiesForm">
           <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT"  ></feed-nifi-properties>
         </form>
+
+
+        <div fxLayout="column">
+          <h3 mat-subheader translate class="property-heading">views.define-feed-general-info.AdditionalFeedOptions</h3>
+          <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="feed.readonly" [ngModelOptions]="{standalone: true}">{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
+        </div>
+
       </mat-card-content>
       <mat-card-actions *ngIf="!feed.readonly">
         <button mat-button (click)="onCancelEdit()">Cancel</button>
         <button mat-raised-button color="accent" (click)="onSave()">Save</button>
       </mat-card-actions>
     </mat-card>
+    <!--
+        <skip-header *ngIf="allowSkipHeaderOption()" [formGroup]="sourceForm" [feed]="feed" [readonly]="feed.readonly"
+                     [title]="'views.define-feed-general-info.FeedOptions' | translate" [subtitle]="'views.define-feed-general-info.AdditionalFeedOptions' | translate">
 
-    <skip-header *ngIf="allowSkipHeaderOption()" [formGroup]="sourceForm" [feed]="feed" [readonly]="feed.readonly"
-                 [title]="'views.define-feed-general-info.FeedOptions' | translate" [subtitle]="'views.define-feed-general-info.AdditionalFeedOptions' | translate">
+        </skip-header>
 
-    </skip-header>
-<!--
-    <mat-card class="feed-card">
-      <mat-card-header>
-        <mat-card-title>Advanced Options</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="layout-padding-indent-20">
-          <div fxLayout="row">
-            <mat-form-field class="mat-form-field-width" fxFlex>
-              <textarea matInput placeholder="Raw Storage Format" [(ngModel)]="feed.table.feedFormat" [disabled]="feed.readonly"></textarea>
-            </mat-form-field>
-          </div>
-          <div class="hint">Specify the storage format clause for feed Hive table</div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+        <mat-card class="feed-card">
+          <mat-card-header>
+            <mat-card-title>Advanced Options</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="layout-padding-indent-20">
+              <div fxLayout="row">
+                <mat-form-field class="mat-form-field-width" fxFlex>
+                  <textarea matInput placeholder="Raw Storage Format" [(ngModel)]="feed.table.feedFormat" [disabled]="feed.readonly"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="hint">Specify the storage format clause for feed Hive table</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
 
--->
+    -->
 
 
   </feed-step-custom-content>

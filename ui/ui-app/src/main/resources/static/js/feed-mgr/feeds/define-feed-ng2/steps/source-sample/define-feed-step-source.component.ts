@@ -120,7 +120,7 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
      * @returns {boolean}
      */
     allowSkipHeaderOption(): boolean {
-        return this.feed.schemaParser && this.feed.schemaParser.allowSkipHeader;
+        return true;
     }
 
     destroy() {
