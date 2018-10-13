@@ -274,6 +274,7 @@ const webpackConfig = (env) => {
             new CopyWebpackPlugin([
                 {from: './src/main/resources/static/assets/images/favicons', to: 'assets/images/favicons'},
                 {from: './src/main/resources/static/locales/', to: 'locales'},
+                ...indexPageDependencies,
                 ...loginPageDependencies,
                 ...templates,
                 ...wranlgerDependencies,
@@ -421,6 +422,19 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html',
         to: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html'
+    },
+];
+
+const indexPageDependencies = [
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/ment.io/styles.css',
+        to: 'js/vendor/ment.io/styles.css'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/css/font-awesome.min.css',
+        to: 'js/vendor/font-awesome/css/font-awesome.min.css'
     },
 ];
 
