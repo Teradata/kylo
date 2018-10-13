@@ -8,7 +8,7 @@
           <div fxLayout="column" class="mat-card-header" fxLayoutAlign="start start" fxFlex="50">
           <mat-card-title>
             <mat-icon>{{kyloIcons.Links.lineage}}</mat-icon>
-            <span translate>Lineage.Name</span>
+            <span class="feed-card-header" translate>Lineage.Name</span>
           </mat-card-title>
           <mat-card-subtitle translate>Lineage.Description</mat-card-subtitle>
           </div>
@@ -30,13 +30,13 @@
               <select-network-node [selectedNode]="selectedNode"></select-network-node>
           </div>
         </div>
-        <kylo-vis-network *ngIf="!loading"
+        <kylo-vis-network #lineageGraph *ngIf="!loading"
                             [data]="data"
                             [options]="options"
                             (onLoad)="onLoad($event)"
                             (onSelect)="onSelect($event)"
-                            (stabilized)="stabilized($event)"
-                            [heightPx]="550"></kylo-vis-network>
+                            (stabilized)="stabilized($event)"  browser-height browser-height-scroll-y="false" [browser-height-offset]="300" (heightChange)="onHeightChange($event)"
+                             style="width: 100%; height: 550px;"></kylo-vis-network>
       </mat-card-content>
     </mat-card>
 </td-layout-nav>

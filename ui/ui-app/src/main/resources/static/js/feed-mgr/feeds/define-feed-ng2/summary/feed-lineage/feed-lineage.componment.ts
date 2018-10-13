@@ -1,4 +1,4 @@
-import {Component, Injector, Input, OnInit} from "@angular/core";
+import {Component, Injector, Input, OnInit, ViewChild} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
@@ -9,6 +9,7 @@ import * as angular from 'angular';
 import {HttpClient} from "@angular/common/http";
 import {LINEAGE_LINK} from "../../model/feed-link-constants";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
+import {KyloVisNetworkComponent} from "../../../../../common/kylo-vis-network/kylo-vis-network.component";
 
 @Component({
     selector: "feed-lineage",
@@ -55,6 +56,9 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     graphMode: any = this.graphModes.DETAILED;
 
     data: any = {nodes: null, edges: null};
+
+    @ViewChild("lineageGraph")
+    lineageGraph:KyloVisNetworkComponent
 
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService: FeedSideNavService,
@@ -118,6 +122,12 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     navigateToFeed() {
         if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
             this.StateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
+        }
+    }
+
+    onHeightChange(height:number){
+        if(this.lineageGraph){
+            this.lineageGraph.setHeight(height);
         }
     }
 
