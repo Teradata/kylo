@@ -1,0 +1,46 @@
+<div layout="row" flex layout-fill>
+  <div layout="row">
+    <kylo-side-nav layout="row"></kylo-side-nav>
+  </div>
+  <div flex layout="column" tabIndex="-1" role="main" layout-fill style="background-color:#F9F9F9; height: auto; overflow-x: hidden;">
+    <add-button></add-button>
+    <mat-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center" 
+                 style="background-color: rgb(52,131,186); color: rgb(255,255,255);">
+      <div class="md-toolbar-tools">
+        <button class="menu toggle-side-nav" [hidden]="isSideNavHidden()" (click)="toggleSideNavList()" aria-label="Show Menu">
+          <ng-md-icon icon="menu"></ng-md-icon>
+        </button>
+
+        <ui-router-breadcrumbs style="padding-left:25px;" [displaynameProperty]="data ? data.displayName: ''" 
+                               flex>
+        </ui-router-breadcrumbs>
+
+        <div *ngIf="showSearchBar() && allowSearch" layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container">
+          <ng-md-icon icon="search"></ng-md-icon>
+          <mat-input-container class="searchBar condensed-no-float md-block global-search" md-no-float 
+                               style="text-align: center;" flex>
+            <input matInput #search id="search-input" [(ngModel)]="searchQuery" (keydown)="onSearchKeypress($event)" 
+                   class="global-search-input" placeholder='{{"views.main.search-input" | translate}}'
+                   style="color:white; font-size: 14px; padding: 0px 0px 5px 2px;">
+          </mat-input-container>
+          <button class="md-button md-kylo-theme md-ink-ripple" [disabled]="searchQuery == '' || searchQuery == null" (click)="search()">{{"views.main.search-btn" | translate}}</button>
+          <ng-md-icon (click)="endSearch()" icon="close"></ng-md-icon>
+        </div>
+
+        <span flex></span>
+
+        <div layout="row" layout-align="start start">
+
+          <ng-md-icon id="search-bar" style="padding-right:20px" *ngIf="showPreSearchBar() && allowSearch" (click)="initiateSearch()" icon="search"></ng-md-icon>
+
+          <notification-menu></notification-menu>
+          <kylo-options class="ng-isolate-scope"></kylo-options>
+        </div>
+      </div>
+    </mat-toolbar>
+
+    <div flex id="content" style="overflow-y: auto;" *ngIf="currentState != null" class="{{currentState.name}}">
+      <div ui-view="content" class="main-content"></div>
+    </div>
+  </div>
+</div>
