@@ -79,6 +79,8 @@ export class KyloModule {
     }
 
     private initIcons(): void {
+        this.iconRegistry.addSvgIconInNamespace('assets', 'teradata', this.domSanitizer.bypassSecurityTrustResourceUrl('assets/images/teradata.svg'));
+
         // "Font Awesome Free" icons by @fontawesome (https://fontawesome.com) are licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
         const fabUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/brands.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fab", fabUrl);
@@ -89,7 +91,9 @@ export class KyloModule {
         const fasUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@fortawesome/fontawesome-free/sprites/solid.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fas", fasUrl);
 
-        this.iconRegistry.registerFontClassAlias("mdi","mdi-set")
+        // "Material Design Icons" by Austin Andrews and Google (https://materialdesignicons.com/) are licensed under SIL Open Fornt License 1.1
+        // (https://github.com/Templarian/MaterialDesign/blob/master/LICENSE)
+        this.iconRegistry.registerFontClassAlias("mdi", "mdi-set");
 
         const mdiSvgUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("node_modules/@mdi/fonts/materialdesignicons-webfont.svg");
         this.iconRegistry.addSvgIconSetInNamespace("mdi", mdiSvgUrl);

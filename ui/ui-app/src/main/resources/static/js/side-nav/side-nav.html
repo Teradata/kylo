@@ -5,10 +5,10 @@
             layout="column" >
 
   <md-toolbar class="layout-column bgc-grey-200" style="" layout="column">
-    <div layout="column" layout-align="center center" class="kylo-logo">
-      <a href="/index.html" title="{{'views.main.Kylo' | translate}}"  >
-      <img src="assets/images/kylo-logo-orange-200.png" height="50px" ng-if="!collapsed">
-      <img src="assets/images/k_logo.png"  width="20px" ng-if="collapsed" style="padding-top: 5px;">
+    <div layout="column" layout-align="center start" class="kylo-logo" flex style="padding:16px">
+      <a href="/index.html" title="{{'views.main.Kylo' | translate}}" style="text-decoration:none">
+        <ng-md-icon icon="teradata-dark" size="100%" style="height:24px;width:100px;margin-right:14px"></ng-md-icon>
+        <span style="text-transform:uppercase;color:rgba(0,0,0,0.87);position:relative;top:4px">Kylo</span>
       </a>
     </div>
   </md-toolbar>

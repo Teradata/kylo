@@ -6,11 +6,15 @@
     <add-button></add-button>
     <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
       <div class="md-toolbar-tools">
-        <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
+        <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu"
+                   style="margin-right:6px;margin-left:0;width:40px;padding:0;min-width:40px">
           <ng-md-icon icon="menu"></ng-md-icon>
         </md-button>
 
-        <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
+        <ng-md-icon ng-hide="mc.isSideNavHidden()" icon="teradata" size="100%" style="margin-left:10px;margin-right:16px;height:24px;width:100px;position:relative"></ng-md-icon>
+        <span ng-hide="mc.isSideNavHidden()" style="position:relative;top:2px;text-transform:uppercase;font-weight:bold;color:#fff">Kylo</span>
+
+        <ui-router-breadcrumbs ng-show="mc.isSideNavHidden()" displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
                                md-truncate></ui-router-breadcrumbs>
 
         <div ng-show="mc.showSearchBar() && mc.allowSearch" layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container">
