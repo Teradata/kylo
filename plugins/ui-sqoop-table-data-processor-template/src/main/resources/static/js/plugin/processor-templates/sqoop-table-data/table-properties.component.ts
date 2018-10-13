@@ -523,9 +523,13 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.filteredFieldDates = this.tableFields.filter(this.filterFieldDates);
                     this.tableFieldsDirty = false;
 
+
+
                     this.model.table.sourceTableSchema.fields = this.originalTableFields;
 
-                    this.feedService.setTableFields(this.tableSchema.fields);
+                    this.model.table.setTableFields(this.tableSchema.fields)
+
+                    //this.feedService.setTableFields(this.tableSchema.fields);
                     this.model.table.method = 'EXISTING_TABLE';
 
                     if (this.tableSchema.schemaName != null) {
