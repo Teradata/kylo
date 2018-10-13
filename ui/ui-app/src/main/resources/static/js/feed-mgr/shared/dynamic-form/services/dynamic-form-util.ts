@@ -3,6 +3,7 @@ import {FieldConfig} from "../model/FieldConfig";
 import {TranslateService} from "@ngx-translate/core";
 import {SectionHeader} from "../model/SectionHeader";
 import {StaticText} from "../model/StaticText";
+import {Checkbox} from "../model/Checkbox";
 
 export class DynamicFormUtil {
 
@@ -76,8 +77,12 @@ export class DynamicFormUtil {
             }
             validatorOpts.push(Validators.required)
         }
+        let value:any = field.value || ''
+        if(field.controlType == "checkbox"){
+            value = (field as Checkbox).checked;
+        }
 
-        return new FormControl(field.value || '', validatorOpts)
+        return new FormControl(value, validatorOpts)
 
 
     }

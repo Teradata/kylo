@@ -13,7 +13,7 @@
       </ng-container>
 
       <ng-container *ngIf="feed.readonly && inputProcessor">
-        <h3 mat-subheader> {{inputProcessor.name}}</h3>
+        <h3 mat-subheader class="property-heading"> {{inputProcessor.name}}</h3>
       </ng-container>
 
       <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>

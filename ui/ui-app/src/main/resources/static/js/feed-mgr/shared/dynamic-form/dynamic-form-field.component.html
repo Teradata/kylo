@@ -66,7 +66,7 @@
 
     <div *ngSwitchCase="'checkbox'" class="pad-top-sm" fxLayout="column">
       <mat-checkbox
-          [id]="field.key"  [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
+          [id]="field.key" [checked]="field.checked"   [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
       </mat-checkbox>
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}

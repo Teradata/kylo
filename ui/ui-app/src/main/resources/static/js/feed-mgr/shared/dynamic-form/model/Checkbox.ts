@@ -13,7 +13,7 @@ export class Checkbox extends FieldConfig<string> {
     constructor(options: {} = {}) {
         super(options);
         this.trueValue = options['trueValue'] || 'true';
-        this.falseValue = options['falseValue'] || 'falseValue';
+        this.falseValue = options['falseValue'] || 'false';
         this.initCheckedValue();
     }
 
