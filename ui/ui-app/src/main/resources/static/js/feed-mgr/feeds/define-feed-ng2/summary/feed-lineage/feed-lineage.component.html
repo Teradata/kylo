@@ -3,24 +3,28 @@
     <div *ngIf="feed != undefined">Feed Lineage - {{feed.feedName}} </div>
     <span fxFlex="100"></span>
   </div>
-      <mat-card class="feed-card" style="position: relative">
-        <mat-card-header >
+      <mat-card class="feed-card" >
+       <div fxLayout="row" >
+          <div fxLayout="column" class="mat-card-header" fxLayoutAlign="start start" fxFlex="50">
           <mat-card-title>
             <mat-icon>{{kyloIcons.Links.lineage}}</mat-icon>
             <span translate>Lineage.Name</span>
           </mat-card-title>
           <mat-card-subtitle translate>Lineage.Description</mat-card-subtitle>
-        </mat-card-header>
+          </div>
+
+          <div fxLayout="row" fxFlex="" fxLayoutAlign="end center" class="pad-right">
+            <mat-button-toggle-group aria-label="Graph mode"
+                                     #group="matButtonToggleGroup"
+                                     (change)="networkView(group.value)"
+                                     [value]="graphMode">
+              <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
+              <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+       </div>
       <mat-card-content>
-        <div fxLayout="row" fxLayoutAlign="end center" class="layout-padding-top layout-padding-left">
-          <mat-button-toggle-group aria-label="Graph mode"
-                                   #group="matButtonToggleGroup"
-                                   (change)="networkView(group.value)"
-                                   [value]="graphMode">
-            <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
-            <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
-          </mat-button-toggle-group>
-        </div>
+
         <div kyloDraggable style="position: absolute; z-index: 1">
           <div fxLayout="row">
               <select-network-node [selectedNode]="selectedNode"></select-network-node>
