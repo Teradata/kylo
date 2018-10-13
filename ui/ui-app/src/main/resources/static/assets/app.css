@@ -1363,3 +1363,26 @@ mat-nav-list a[mat-list-item] .mat-list-item-content {
 md-content.visual-query {
   overflow-y:hidden;
 }
+
+
+
+.alert-heading {
+  font-size:16px;
+  font-weight:400;
+  color:rgba(0, 0, 0, 0.87);
+}
+
+.alert-description {
+  font-size:14px;
+  font-weight:400;
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.alert-avatar {
+  color: rgb(216,67,21) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.alert-list-item {
+  padding: 8px 0px 8px 0px;
+}
