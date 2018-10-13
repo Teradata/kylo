@@ -18,7 +18,7 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
     @Input()
     widthPx: string = '';
     @Input()
-    heightPx: string = '700px';
+    heightPx: string = '550px';
 
     @Output()
     onSelect = new EventEmitter<any>();
@@ -56,6 +56,10 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
         this.network.on('stabilized', (param:any) => {
             this.stabilized.emit(param);
         });
+    }
+
+    setHeight(height:number){
+        this.network.setSize(this.widthPx, height+"px");
     }
 }
 

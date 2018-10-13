@@ -1339,7 +1339,7 @@ mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container
 
 /** feed-definition **/
 
-.feed-card .mat-card-title  {
+.feed-card .mat-card-title, .feed-card-header {
   font-size: 20px;
 }
 

@@ -27,6 +27,10 @@ export default class AlertsServiceV2{
         let transformAlertSummaryResponse = (alertSummaries: any)=>{
             _.each(alertSummaries,(summary: any)=>{
             summary.since =  moment(summary.lastAlertTimestamp).fromNow();
+            summary.groupDisplayNameTruncated = summary.groupDisplayName;
+            if(summary.groupDisplayName && summary.groupDisplayName.length > 20){
+                summary.groupDisplayNameTruncated = summary.groupDisplayName.substr(0,20);
+            }
 
             });
         }

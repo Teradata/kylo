@@ -1,4 +1,4 @@
-import {Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
+import {Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges,EventEmitter} from "@angular/core";
 import * as $ from "jquery";
 import "rxjs/add/observable/fromEvent";
 import {Observable} from "rxjs/Observable";
@@ -42,6 +42,9 @@ export class BrowserHeight implements OnDestroy, OnInit {
     @Input("browser-height-offset")
     offsetHeight: number = 0;
 
+    @Output()
+    heightChange = new EventEmitter<any>();
+
     private ele: JQuery;
 
     private resizeSubscription: Subscription;
@@ -74,7 +77,9 @@ export class BrowserHeight implements OnDestroy, OnInit {
         if(this.offsetHeight == undefined || isNaN(this.offsetHeight)){
             this.offsetHeight = 0;
         }
-        this.ele.css("height", `${$(window).height() - this.offsetHeight}px`);
+        let height = $(window).height() - this.offsetHeight;
+
+        this.ele.css("height", height+'px');
         this.ele.css("overflow-x", (this.browserHeightScrollLeft || this.browserHeightScrollX) ? "scroll" : "hidden");
         if (this.scrollY || this.scrollY === null) {
             this.ele.css("overflow-y", "scroll");
@@ -82,6 +87,7 @@ export class BrowserHeight implements OnDestroy, OnInit {
         else if(this.scrollY == false){
             this.ele.css("overflow-y", "hidden");
         }
+        this.heightChange.emit(height);
     }
 
 

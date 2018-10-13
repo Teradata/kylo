@@ -27,19 +27,21 @@
     <body-section>
         <md-divider></md-divider>
         <md-list layout="column" flex class="md-2-line">
-            <md-list-item layout-row layout-align="start start" ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)" ng-init="vDN = 'views.alerts-template.' + alert.typeDisplayName">
+            <md-list-item layout-row layout-align="start end" ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)" ng-init="vDN = 'views.alerts-template.' + alert.typeDisplayName">
                 <md-icon class="md-avatar-icon alert-avatar push">warning</md-icon>
-                <div class="md-list-item-text  pad-right pad-bottom-sm" flex >
-
-                <div  layout="row" flex="100" class="alert-heading" layout-align="start end">
-                    <span flex="100" class="text-truncate">{{alert.groupDisplayName}}</span>
-                </div>
-                <div  layout="row" fxFlex="100" class="alert-description" layout-align="start-end">
-                    <span layout="row" class="text-truncate" layout-align="start" flex="50">{{vDN | translate}}</span>
-                    <span layout="row"  layout-align="end"  ng-if="alert.count ==1" flex="50" >{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
-                    <span layout="row" layout-align="end"  ng-if="alert.count > 1 && alert.count < 5" flex="50" >{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
-                    <span layout="row" layout="row" layout-align="end"  ng-if="alert.count > 4" flex="50" >{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
-                </div>
+                <div class="md-list-item-text  pad" flex >
+                    <div layout="row" flex="100" layout-align="start space-between">
+                    <div layout="column" flex="50" layout-align="start">
+                        <span class="text-truncate alert-heading">{{alert.groupDisplayNameTruncated}}</span>
+                        <span class="text-truncate alert-description" >{{vDN | translate}}</span>
+                    </div>
+                    <div layout="column" flex layout-align="end end">
+                        <span class="alert-heading"> {{alert.since}}</span>
+                        <span class="alert-description" ng-if="alert.count ==1"  >{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
+                        <span class="alert-description"   ng-if="alert.count > 1 && alert.count < 5"  >{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
+                        <span class="alert-description"  ng-if="alert.count > 4"  >{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
+                    </div>
+                    </div>
                 </div>
                 <md-divider *ngIf="!$last"></md-divider>
             </md-list-item>
