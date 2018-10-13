@@ -40,7 +40,8 @@ export class KyloIcons {
             filterHelp:"help",
             uploadFile:"cloud_upload",
             startNow:"play_arrow",
-            delete: "delete"
+            delete: "delete",
+            export: "launch"
         }
     };
 

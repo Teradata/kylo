@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 
 import {RestResponseStatus, RestResponseStatusType} from "../../../../../../common/common.model";
@@ -10,6 +10,7 @@ import {FeedSummary} from "../../../../../model/feed/feed-summary.model";
 import {Feed, FeedAccessControl} from "../../../../../model/feed/feed.model";
 import {DefineFeedService} from "../../../services/define-feed.service";
 import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
+import {RestUrlService} from "../../../../../services/RestUrlService";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -43,8 +44,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     constructor(private opsManagerFeedService: OpsManagerFeedService,
                 private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
-                private defineFeedService: DefineFeedService) {
+                private defineFeedService: DefineFeedService,
+                @Inject("RestUrlService") restUrlService: RestUrlService) {
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
+        this.restUrlService = restUrlService;
     }
 
     feedStateChanging: boolean;
@@ -56,6 +59,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     accessControl: FeedAccessControl = FeedAccessControl.NO_ACCESS;
 
     uploadFileAllowed: boolean;
+
+    exportFeedUrl: string;
+
+    restUrlService: RestUrlService;
 
     getFeedHealth() {
 
@@ -69,6 +76,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.exportFeedUrl = this.restUrlService.ADMIN_EXPORT_FEED_URL + "/" + this.feed.id;
         this.accessControl = this.feed.accessControl;
         this.getFeedHealth();
         this.refreshInterval = setInterval(this.getFeedHealth.bind(this), this.refreshTime)
@@ -93,7 +101,6 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
             this._dialogService.open(FeedUploadFileDialogComponent, config);
         }
     }
-
 
     initMenu() {
         this.uploadFileAllowed = false;
