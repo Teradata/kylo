@@ -384,7 +384,7 @@ const wranlgerDependencies = [
         context: './src/main/resources/static',
         from: './bower_components/angular-ui-grid/ui-grid.ttf',
         to: './bower_components/angular-ui-grid/ui-grid.ttf'
-    },
+    }
 ]
 
 const templates = [
@@ -422,7 +422,7 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html',
         to: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html'
-    },
+    }
 ];
 
 const indexPageDependencies = [
@@ -436,6 +436,36 @@ const indexPageDependencies = [
         from: 'js/vendor/font-awesome/css/font-awesome.min.css',
         to: 'js/vendor/font-awesome/css/font-awesome.min.css'
     },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/fontawesome-webfont.woff',
+        to: 'js/vendor/font-awesome/fonts/fontawesome-webfont.woff'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/fontawesome-webfont.woff2',
+        to: 'js/vendor/font-awesome/fonts/fontawesome-webfont.woff2'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/fontawesome-webfont.eot',
+        to: 'js/vendor/font-awesome/fonts/fontawesome-webfont.eot'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/fontawesome-webfont.ttf',
+        to: 'js/vendor/font-awesome/fonts/fontawesome-webfont.ttf'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/FontAwesome.otf',
+        to: 'js/vendor/font-awesome/fonts/FontAwesome.otf'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/vendor/font-awesome/fonts/fontawesome-webfont.svg',
+        to: 'js/vendor/font-awesome/fonts/fontawesome-webfont.svg'
+    }
 ];
 
 const loginPageDependencies = [

@@ -133,7 +133,9 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         //Track those Jobs who are refreshing because they are running
         this.timeoutMap = {};
         //Pagination and view Type (list or table)
-        this.paginationData = this.paginationDataService.paginationData(this.pageName);
+        this.paginationData = this.paginationDataService.paginationData(this.pageName);'' +
+
+        this.paginationDataService.sort(this.pageName,"-startTime")
         //Setup the Tabs
         var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned'] //, 'Stopped'];
         this.tabs = this.tabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
