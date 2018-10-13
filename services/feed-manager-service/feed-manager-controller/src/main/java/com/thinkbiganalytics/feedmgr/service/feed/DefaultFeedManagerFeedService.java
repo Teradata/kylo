@@ -1554,11 +1554,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     protected void deleteFeed(Feed feed) {
         String feedCategorySystemName = feed.getCategory().getSystemName();
         String feedSystemName = feed.getName();
-
+        Feed.ID feedId = feed.getId();
+        
         //unschedule any SLAs
         serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feed.getId(), feed.getQualifiedName());
-        feedProvider.deleteFeed(feed.getId());
-        opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feed.getId().toString()));
+        feedProvider.deleteFeed(feedId);
+        opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId.toString()));
         feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
     }
 
