@@ -1,9 +1,8 @@
 import {Component, EventEmitter, Input, Output, OnInit} from "@angular/core";
 import {Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
-import {FormGroup} from "@angular/forms";
 import {DefineFeedService} from "../../services/define-feed.service";
-import {FormsModule} from '@angular/forms'
+import {FormsModule, FormGroup} from '@angular/forms'
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
@@ -50,7 +49,10 @@ export class DefineFeedStepCardComponent implements OnInit {
         if(this.mode == undefined){
             this.mode = 'normal'
         }
-        this.disabledDependsUponStep = this.step.findFirstIncompleteDependentStep();
+        //only make it dependent upon another step if it hasnt been deployed yet
+        if(this.feed && !this.feed.isDeployed()) {
+            this.disabledDependsUponStep = this.step.findFirstIncompleteDependentStep();
+        }
     }
 
     onSave(){
