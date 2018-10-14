@@ -1397,3 +1397,7 @@ md-content.visual-query {
 .alert-list-item {
   padding: 8px 0px 8px 0px;
 }
+
+.kylo-toolbar {
+  font-weight: 900;
+}
