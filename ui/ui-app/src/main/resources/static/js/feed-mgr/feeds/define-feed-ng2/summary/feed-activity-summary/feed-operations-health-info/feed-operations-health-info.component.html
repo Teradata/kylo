@@ -32,6 +32,10 @@
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
           <span>Upload File</span>
         </button>
+        <a href="{{exportFeedUrl}}" mat-menu-item download [disabled]="!accessControl.allowExport">
+          <mat-icon>{{kyloIcons.Feed.Actions.export}}</mat-icon>
+          <span>Export</span>
+        </a>
       </mat-menu>
     </div>
   </mat-card-header>
