@@ -1,7 +1,11 @@
-<h2 mat-dialog-title>Apply Domain Types</h2>
+<h2>
+  <span>Domain Types</span>
+  <span fxFlex="1 1 auto"></span>
+</h2>
 
-<mat-dialog-content class="mat-typography">
-    <div style="padding-bottom: 12px;">The detected domain type will overwrite the name or data type of one or more columns. Please deselect any column that should be not changed:</div>
+<mat-dialog-content ngClass="tc-gray-600">
+
+  <div class="push-pad-bottom">Apply the following domain types:</div>
 
     <td-data-table
         #dataTable
@@ -10,7 +14,7 @@
         [selectable]="true"
         [clickable]="false"
         [(value)]="selectedRows"
-        [multiple]="false"
+        [multiple]="true"
         [sortable]="true"
         [sortBy]="sortBy"
         [sortOrder]="sortOrder"
