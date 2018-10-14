@@ -1391,6 +1391,7 @@ md-content.visual-query {
   padding: 8px 0px 8px 0px;
 }
 
-.kylo-toolbar {
+.kylo-text-toolbar {
   font-weight: 900;
+  color:#FFFFFF !important;
 }
