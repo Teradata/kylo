@@ -252,6 +252,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
                 //remove it
                 this.favorites.splice(idx,1)
             }
+            this.localStorageService.setItem(this.LOCAL_STORAGE_KEY, this.favoriteTemplateNames);
 
         }
 
