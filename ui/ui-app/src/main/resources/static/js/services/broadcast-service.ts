@@ -74,7 +74,7 @@ export default class BroadcastService {
      */
     subscribeOnce (event: any, callback: any) {
         if(!this.eventsMap.has(event)){
-            return;
+            this.eventsMap.set(event, new Subject<any>());;
         }
         var subs  = this.eventsMap.get(event).subscribe((nextValue : any) => {
             try{
