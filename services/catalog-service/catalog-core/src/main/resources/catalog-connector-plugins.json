@@ -112,18 +112,28 @@
     ],
     "options": [
       {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
         "key": "url",
-        "label": "Url",
+        "label": "Connection URL",
         "validators": [
           {
             "type": "url",
             "params": {
               "protocol": "jdbc:"
             }
+          }
+        ]
+      },
+      {
+        "key": "driver",
+        "label": "Driver Class Name"
+      },
+      {
+        "key": "jars",
+        "label": "Driver Location(s)",
+        "required": false,
+        "validators": [
+          {
+            "type": "jars"
           }
         ]
       },

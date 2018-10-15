@@ -36,6 +36,8 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
+            } else if (key === "jars") {
+                ds.template.jars = (control.value.length !== 0) ? control.value.split(",") : null;
             } else {
                 ds.template.options[key] = control.value;
             }
@@ -55,8 +57,17 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
     mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
-        ds.template.paths.push(controls.get("path").value);
-        ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
+        controls.forEach((control: FormControl, key: string) => {
+            if (key === "path") {
+                ds.template.paths.push(control.value);
+            } else if (key === "jars") {
+                ds.template.jars = (control.value.length !== 0) ? control.value.split(",") : null;
+            } else if (key === "account-name" || key == "account-key") {
+                ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
+            } else {
+                ds.template.options[key] = control.value;
+            }
+        });
     }
 
     mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
@@ -99,6 +110,32 @@ export class ConnectorComponent {
     private isLoading: boolean = false;
     private testError: String;
     private testStatus: boolean = false;
+
+    // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
+    private jars = (params: any): ValidatorFn => {
+        return (control: AbstractControl): { [key: string]: any } => {
+            return (control.value as string || "").split(",")
+                .map(value => {
+                    if (value.trim().length > 0) {
+                        try {
+                            const url = new URL(value);
+                            if (params && params.protocol && url.protocol !== params.protocol) {
+                                return 'url-protocol';
+                            }
+                        } catch (e) {
+                            return 'url';
+                        }
+                    }
+                    return null;
+                })
+                .reduce((accumulator, value) => {
+                    if (value !== null) {
+                        accumulator[value] = true;
+                    }
+                    return accumulator;
+                }, {});
+        }
+    };
 
     // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
     private url = (params: any): ValidatorFn => {

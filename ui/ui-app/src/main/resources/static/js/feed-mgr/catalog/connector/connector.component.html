@@ -32,14 +32,14 @@
                   *ngIf="isInputType(element)"
                   matInput type="{{element.type}}"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : 'required'}}"
+                  [required]="element.required !== false"
                   autocomplete="new-password"
                   [formControl]="getControl(element)"/>
 
               <mat-select
                   *ngIf="isSelectType(element)"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : 'required'}}"
+                  [required]="element.required !== false"
                   [formControl]="getControl(element)">
                 <ng-template let-option ngFor [ngForOf]="element.selections">
                   <mat-option value="{{option.value}}">{{option.label}}</mat-option>
