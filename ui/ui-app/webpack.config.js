@@ -422,6 +422,11 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html',
         to: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html',
+        to: 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html'
     }
 ];
 
