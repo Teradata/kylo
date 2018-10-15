@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import {ListTableView} from "./ListTableViewTypes";
 import {Common} from "../common/CommonTypes";
@@ -6,15 +5,14 @@ import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
 
-import {moduleName} from './module-name';
-import "./module"; // ensure module is loaded first
+import { Injectable } from "@angular/core";
 
 
 export enum ViewType {
     TABLE,
     LIST
 }
-
+@Injectable()
 export class DefaultPaginationDataService implements PaginationDataService{
     data:Common.Map<PaginationData> = {};
     constructor() {
@@ -95,7 +93,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
         var pageData = this.paginationData(pageName, tabName);
 
         //deactivate the tab
-        angular.forEach(pageData.tabs, (tabData, name) => {
+        _.forEach(pageData.tabs, (tabData, name) => {
             tabData.active = false;
             if (name == tabName) {
                 tabData.active = true;
@@ -112,7 +110,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
     getActiveTabData(pageName:string) :Tab{
         var activeTabData:Tab = {paginationId:'',currentPage:0,active:false,title:''};
         var pageData = this.paginationData(pageName);
-        angular.forEach(pageData.tabs,  (tabData:Tab, name:string) =>{
+        _.forEach(pageData.tabs,  (tabData:Tab, name:string) =>{
             if (tabData.active) {
                 activeTabData = tabData;
                 return false;
@@ -205,5 +203,3 @@ export class DefaultPaginationDataService implements PaginationDataService{
         return this.paginationData(pageName, tabName).tabs[tabName].currentPage;
     }
 }
-
-angular.module(moduleName).service('DefaultPaginationDataService', DefaultPaginationDataService);

@@ -1,10 +1,17 @@
-import * as angular from 'angular';
-import {moduleName} from "../module-name";
 import * as _ from 'underscore';
-import AccessControlService from "../../services/AccessControlService";
+import { OnInit, Component } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TdDialogService } from '@covalent/core/dialogs';
+import { ObjectUtils } from '../../common/utils/object-utils';
 
-export class JcrQueryController implements ng.IComponentController{
+@Component({
+    templateUrl: "js/admin/jcr/jcr-query.html",
+    selector : 'jcr-query-controller'
+})
+export class JcrQueryComponent implements OnInit {
     sql: string = "";
+    headers = new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'});
     ngOnInit(){
            this.sql = 'SELECT fs.[jcr:title], fd.[tba:state], c.[tba:systemName] \n'
                        + 'FROM [tba:feed] as e \n'
@@ -14,14 +21,10 @@ export class JcrQueryController implements ng.IComponentController{
                        + 'JOIN [tba:category] as c on ISCHILDNODE(cd,c)';
             this.getIndexes();
         }
-    static readonly $inject = ["$scope", "$http","$mdDialog", "$mdToast","AccessControlService"];
-    constructor(private $scope: angular.IScope,
-            private $http: angular.IHttpService, 
-            private $mdDialog: angular.material.IDialogService,
-            private $mdToast: angular.material.IToastService,
-            private AccessControlService:AccessControlService)
+    constructor(private http: HttpClient, 
+            private snackBar: MatSnackBar,
+            private _tdDialogService : TdDialogService)
             {
-               this.ngOnInit();
              }
 
         loading: boolean = false;
@@ -86,55 +89,36 @@ export class JcrQueryController implements ng.IComponentController{
         registerIndex(){
             this.showDialog("Adding Index", "Adding index. Please wait...");
             var successFn =(response: any)=> {
-                if (response.data) {
+                if (response) {
                     this.hideDialog();
                     this.getIndexes();
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Added the index')
-                            .hideDelay(3000)
-                    );
+                    this.snackBar.open('Added the index','OK',{duration : 3000});
                 }
             }
             var errorFn = (err: any)=> {
                 this.hideDialog();
             }
 
-            var indexCopy = angular.extend({},this.index);
-            var promise = this.$http({
-                url: "/proxy/v1/metadata/debug/jcr-index/register",
-                method: "POST",
-                data: angular.toJson(indexCopy),
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
-            }).then(successFn, errorFn);
+            var indexCopy = _.extend({},this.index);
+            var promise = this.http.post('/proxy/v1/metadata/debug/jcr-index/register',
+                            ObjectUtils.toJson(indexCopy),{headers : this.headers}).toPromise().then(successFn, errorFn)
         }
 
         unregisterIndex(indexName: any){
 
-            if(angular.isDefined(indexName)) {
+            if(ObjectUtils.isDefined(indexName)) {
                 var successFn = (response: any)=> {
-                    if (response.data) {
+                    if (response) {
                        this.getIndexes();
-                        this.$mdToast.show(
-                            this.$mdToast.simple()
-                                .textContent('Removed the index '+indexName)
-                                .hideDelay(3000)
-                        );
+                       this.snackBar.open('Removed the index '+indexName,'OK',{duration : 3000})
                     }
                 }
                 var errorFn =(err: any)=> {
 
                 }
 
-                var promise = this.$http({
-                    url: "/proxy/v1/metadata/debug/jcr-index/" + indexName + "/unregister",
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    }
-                }).then(successFn, errorFn);
+                var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/" + indexName + "/unregister", 
+                              {},{headers: this.headers}).toPromise().then(successFn, errorFn);
             }
         }
 
@@ -143,48 +127,33 @@ export class JcrQueryController implements ng.IComponentController{
         }
 
         showDialog(title: string,message: string){
-            this.$mdDialog.show(
-                this.$mdDialog.alert()
-                    .parent(angular.element(document.body))
-                    .clickOutsideToClose(false)
-                    .title(title)
-                    .textContent(message)
-                    .ariaLabel(title)
-            );
+            this._tdDialogService.openAlert({
+                message : message,
+                disableClose : true,
+                title : title,
+                ariaLabel : title
+            });
         }
 
         hideDialog(){
-            this.$mdDialog.hide();
+            this._tdDialogService.closeAll();
         }
 
         reindex(){
                 this.showDialog("Reindexing", "Reindexing. Please wait...");
                 var successFn = (response: any)=> {
                     this.hideDialog();
-                    if (response.data) {
-                        this.$mdToast.show(
-                            this.$mdToast.simple()
-                                .textContent('Successfully reindexed')
-                                .hideDelay(3000)
-                        );
+                    if (response) {
+                        this.snackBar.open('Successfully reindexed','',{duration : 3000});
                     }
                 }
                 var errorFn = (err: any)=> {
                     this.hideDialog();
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Error reindexing ')
-                            .hideDelay(3000)
-                    );
+                    this.snackBar.open('Error reindexing ','',{duration : 3000});
                 }
 
-                var promise = this.$http({
-                    url: "/proxy/v1/metadata/debug/jcr-index/reindex",
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    }
-                }).then(successFn, errorFn);
+                var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/reindex",{},{headers : this.headers})
+                                            .toPromise().then(successFn, errorFn);
         }
 
         query() {
@@ -197,32 +166,32 @@ export class JcrQueryController implements ng.IComponentController{
                     this.previousQueries.push(sql);
                 }
                 this.loading = false;
-                this.transformResults(response.data);
+                this.transformResults(response);
             };
             var errorFn = (err: any)=> {
                 this.resultSize = 0;
                 this.loading = false;
-                if(err && err.data && err.data.developerMessage){
-                    this.errorMessage = err.data.developerMessage;
+                if(err && err.developerMessage){
+                    this.errorMessage = err.developerMessage;
                 }
                 else {
                     this.errorMessage = 'Error performing query ';
                 }
             };
-            var promise = this.$http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}});
+            var promise = this.http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}}).toPromise();
             promise.then(successFn, errorFn);
             return promise;
         }
 
         getIndexes(){
             var successFn = (response: any)=> {
-                this.indexes = response.data;
+                this.indexes = response;
             };
             var errorFn = (err: any)=> {
                 this.indexes = [];
                 this.indexesErrorMessage = 'Error getting indexes '+err
             };
-            var promise = this.$http.get('/proxy/v1/metadata/debug/jcr-index');
+            var promise = this.http.get('/proxy/v1/metadata/debug/jcr-index').toPromise();
             promise.then(successFn, errorFn);
             return promise;
         }
@@ -234,7 +203,7 @@ export class JcrQueryController implements ng.IComponentController{
            var columns: any = [];
            this.queryTime = result.queryTime;
            this.explainPlan = result.explainPlan;
-           angular.forEach(result.columns,(col,i)=>{
+           _.forEach(result.columns,(col : any,i : number)=>{
                         columns.push({
                             displayName: col.name,
                             headerTooltip: col.name,
@@ -243,7 +212,7 @@ export class JcrQueryController implements ng.IComponentController{
                         });
             });
 
-            angular.forEach(result.rows,(row: any,i: any)=>{
+            _.forEach(result.rows,(row: any,i: any)=>{
 
               var rowObj = {}
                _.each(row.columnValues,(col:any,i:any)=>{
@@ -260,11 +229,3 @@ export class JcrQueryController implements ng.IComponentController{
             return data;
         };
 }
-
- angular.module(moduleName)
- .component("jcrQueryController", {
-        controller: JcrQueryController,
-        controllerAs: "vm",
-        templateUrl: "js/admin/jcr/jcr-query.html"
-    });
- //.controller("JcrQueryController", [JcrQueryController]);

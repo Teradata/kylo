@@ -1,4 +1,3 @@
-import * as angular from "angular";
 declare namespace AccessControl {
 
     export interface EntityAccessCheck{

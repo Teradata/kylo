@@ -8,7 +8,6 @@ import {OpsManagerFeedService} from "../../services/OpsManagerFeedService";
 import { Component, Input } from "@angular/core";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import BroadcastService from "../../../services/broadcast-service";
-import HttpService from "../../../services/HttpService";
 import { ObjectUtils } from "../../../common/utils/object-utils";
 import { ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent, TdDataTableSortingOrder } from "@covalent/core/data-table";
 import { BaseFilteredPaginatedTableView } from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
@@ -252,7 +251,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             this.BroadcastService.subscribe(null,
                                             this.opsManagerDashboardService.FEED_SUMMARY_UPDATED,
                                             (event: any,updatedFeeds: any)=> {
-                if (ObjectUtils.isDefined(updatedFeeds) && ObjectUtils.isArray(updatedFeeds) && updatedFeeds.length > 0) {
+                if (ObjectUtils.isDefined(updatedFeeds) && Array.isArray(updatedFeeds) && updatedFeeds.length > 0) {
                     this.mergeUpdatedFeeds(updatedFeeds);
                 }
                 else {

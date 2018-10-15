@@ -1,7 +1,4 @@
-import * as angular from "angular";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
-import HttpService from "../../services/HttpService";
 import { Component, ViewContainerRef } from "@angular/core";
 import { TdDialogService } from "@covalent/core/dialogs";
 import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
@@ -109,7 +106,6 @@ export default class OverviewComponent {
     }
 
     ngOnDestroy() {
-        this.httpService.cancelPendingHttpRequests();
         if(this.interval != null){
             clearInterval(this.interval);
             this.interval = null;
@@ -119,7 +115,6 @@ export default class OverviewComponent {
     constructor(private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 private accessControlService: AccessControlService,
-                private httpService: HttpService,
                 private OpsManagerDashboardService: OpsManagerDashboardService){
         
     }// end of constructor

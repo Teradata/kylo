@@ -1,7 +1,6 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import ChartJobStatusService from "../../services/ChartJobStatusService";
-import HttpService from "../../../services/HttpService";
 import { HttpClient } from "@angular/common/http";
 import BroadcastService from "../../../services/broadcast-service";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
@@ -92,7 +91,6 @@ export default class JobStatusIndicatorComponent {
         private StateService: StateService,
         private OpsManagerJobService: OpsManagerJobService,
         private OpsManagerDashboardService: OpsManagerDashboardService,
-        private httpService: HttpService,
         private chartJobStatusService: ChartJobStatusService,
         private BroadcastService: BroadcastService) {}// end of constructor
      

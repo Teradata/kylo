@@ -43,7 +43,7 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
 import { AccordianMenuComponent } from "./accordion-menu/accordionMenuComponent";
 import { MenuToggleComponent } from "./accordion-menu/menuToggleComponent";
 import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
-import { IfPermissionDirective } from "./ng-if-permission/ng-if-permission.directive";
+// import { IfPermissionDirective } from "./ng-if-permission/ng-if-permission.directive";
 import { AccordionMenuService } from "./accordion-menu/AccordionMenuService";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { UIRouterModule } from "@uirouter/angular";
@@ -65,7 +65,7 @@ import { UIRouterModule } from "@uirouter/angular";
         AboutKyloDialogController,
         FilteredPaginatedTableViewComponent,
         KyloTimerDirective,
-        IfPermissionDirective,
+        // IfPermissionDirective,
         AccordianMenuComponent,
         MenuToggleComponent,
         menuLinkComponent
@@ -126,7 +126,7 @@ import { UIRouterModule } from "@uirouter/angular";
         UploadFileComponent,
         CovalentDataTableModule,
         KyloTimerDirective,
-        IfPermissionDirective,
+        // IfPermissionDirective,
         AccordianMenuComponent,
         MenuToggleComponent,
         AddButtonComponent,

@@ -1,3 +1,5 @@
+import { Injectable } from "@angular/core";
+
 /*-
  * #%L
  * thinkbig-ui-common
@@ -17,14 +19,10 @@
  * limitations under the License.
  * #L%
  */
-import * as angular from 'angular';
-import {moduleName} from './module-name';
-
+@Injectable()
 export default class ConfigurationService {
 MODULE_URLS: any;
 constructor(){
        this.MODULE_URLS= "/proxy/v1/configuration/module-urls";
     }
 }
-
-angular.module(moduleName).service('ConfigurationService',ConfigurationService);

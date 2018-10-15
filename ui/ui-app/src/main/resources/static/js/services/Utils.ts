@@ -17,22 +17,23 @@
  * limitations under the License.
  * #L%
  */
-import * as angular from 'angular';
-import { moduleName } from './module-name';
 import "pascalprecht.translate";
 import * as moment from "moment";
+import * as $ from "jquery";
+import { Injectable } from "@angular/core";
+import { TranslateService } from "@ngx-translate/core";
 
+@Injectable()
 export default class Utils {
     waitForDomRetryCounts: any = {};
-    constructor(private $timeout: any,
-        private $filter: any) {
+    constructor(private translate: TranslateService) {
     }
     stickTabHeader($element: any) {
         var tabsWrapper: any = $element.find('md-tabs-wrapper');
         this.stickTabHeader2($element, tabsWrapper);
     };
     stickTabHeader2($element: any, $tabsWrapper: any) {
-        var header: any = angular.element('.page-header');
+        var header: any = $('.page-header');
         var headerHeight: any = header.height();
 
         var window_top: any = 0;
@@ -61,7 +62,7 @@ export default class Utils {
         if (this.waitForDomRetryCounts[selector] == undefined) {
             this.waitForDomRetryCounts[selector] = 0;
         }
-        var $ele: any = angular.element(selector);
+        var $ele: any = $(selector);
         if ($ele.length > 0) {
             delete this.waitForDomRetryCounts[selector];
             callbackFn();
@@ -70,7 +71,7 @@ export default class Utils {
 
             this.waitForDomRetryCounts[selector] += 1;
             if (this.waitForDomRetryCounts[selector] <= 50) {
-                this.$timeout(() => {this.waitForDomElementReady}, 5, false, selector, callbackFn);
+                setTimeout(() => {this.waitForDomElementReady}, 5, false, selector, callbackFn);
             }
         }
     };
@@ -134,14 +135,14 @@ export default class Utils {
             var minutes: any = Math.floor((sec_num - (hours * 3600)) / 60);
             var seconds: any = sec_num - (hours * 3600) - (minutes * 60);
 
-            var str: any = seconds + " " + this.$filter('translate')('views.Utils.sec');
+            var str: any = seconds + " " + this.translate.instant('views.Utils.sec');
             if (hours == 0) {
                 if (minutes != 0) {
-                    str = minutes + " " + this.$filter('translate')('views.Utils.min') + " " + str;
+                    str = minutes + " " + this.translate.instant('views.Utils.min') + " " + str;
                 }
             }
             else {
-                str = hours + " " + this.$filter('translate')('views.Utils.hrs') + " " + minutes + " " + this.$filter('translate')('views.Utils.min') + " " + str;
+                str = hours + " " + this.translate.instant('views.Utils.hrs') + " " + minutes + " " + this.translate.instant('views.Utils.min') + " " + str;
             }
             return str;
         }
@@ -213,5 +214,3 @@ export default class Utils {
         return statusClass;
     };
 }
-
-angular.module(moduleName).service('Utils', ["$timeout", "$filter", Utils]);
