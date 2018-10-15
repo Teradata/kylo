@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -58,13 +59,13 @@ public class ConnectorPluginDescriptor {
     /**
      * UI tab plugins for setting data set properties
      */
-    private List<ConnectorTab> tabs;
+    private List<ConnectorTab> tabs = Collections.emptyList();
 
     /**
      * A list of options which describe how UI should be displayed for each option
      * a data source would need
      */
-    private List<UiOption> options;
+    private List<UiOption> options = Collections.emptyList();
 
     /**
      * Optional identifier for an object which knows how to map Connector UiOptions to Datasource options
@@ -79,7 +80,7 @@ public class ConnectorPluginDescriptor {
     /**
      * List of NiFi properties that can be overridden by a data set
      */
-    private List<ConnectorPluginNiFiProperties> nifiProperties;
+    private List<ConnectorPluginNiFiProperties> nifiProperties = Collections.emptyList();
 
     /**
      * Color of the icon

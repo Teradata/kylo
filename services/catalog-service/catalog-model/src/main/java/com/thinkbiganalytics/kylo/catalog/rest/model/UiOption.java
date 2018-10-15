@@ -50,6 +50,7 @@ public class UiOption {
         key = other.key;
         type = other.type;
         required = other.required;
+        sensitive = other.sensitive;
         label = other.label;
         flex = other.flex;
         if(other.selections != null){
