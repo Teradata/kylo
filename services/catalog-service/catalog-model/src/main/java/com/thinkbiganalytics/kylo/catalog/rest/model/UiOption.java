@@ -36,6 +36,7 @@ public class UiOption {
     private String key;
     private String type;
     private Boolean required;
+    private boolean sensitive = false;
     private String label;
     private Integer flex;
     private List<UiSelectOption> selections;
@@ -83,6 +84,14 @@ public class UiOption {
 
     public void setValue(String value) {
         this.value = value;
+    }
+    
+    public boolean isSensitive() {
+        return sensitive;
+    }
+    
+    public void setSensitive(boolean sensitive) {
+        this.sensitive = sensitive;
     }
 
     public List<UiSelectOption> getSelections() {

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
+import com.thinkbiganalytics.kylo.catalog.rest.model.UiOption;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 
 import org.apache.commons.io.IOUtils;
@@ -117,6 +118,17 @@ public class TemporaryConnectorPluginConfig {
             return "0.0";
         }
         
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin#isSensitiveOption(java.lang.String)
+         */
+        @Override
+        public boolean isSensitiveOption(String name) {
+            return getDescriptor().getOptions().stream()
+                .filter(option -> option.getKey().equals(name))
+                .map(UiOption::isSensitive)
+                .findFirst()
+                .orElse(false);
+        }
     }
     
     /**

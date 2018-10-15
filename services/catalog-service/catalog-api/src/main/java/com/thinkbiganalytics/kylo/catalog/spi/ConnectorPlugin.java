@@ -36,7 +36,18 @@ public interface ConnectorPlugin {
     
     String getVersion();
 
+    /**
+     * @return a descriptor of the settings supported by this plugin that can aid a UI
+     */
     ConnectorPluginDescriptor getDescriptor();
+    
+    /**
+     * A convenience method that indicates whether a named option is concidered sensitive
+     * and likely requires encryption when stored.
+     * @param name the name of the option
+     * @return true if values of the named option are sensitive
+     */
+    boolean isSensitiveOption(String name);
     
     // TODO: Would we benefit from a connector factory concept, or at least
     // a means by  which a plugin can participate in connector creation, so that

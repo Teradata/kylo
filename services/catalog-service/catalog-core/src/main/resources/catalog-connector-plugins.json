@@ -144,7 +144,8 @@
       {
         "key": "password",
         "type": "password",
-        "label": "Password"
+        "label": "Password",
+        "sensitive": true
       }
     ],
     "nifiControllerService": {
@@ -244,7 +245,8 @@
       {
         "key": "spark.hadoop.fs.s3a.secret.key",
         "type": "password",
-        "label": "Secret Access Key"
+        "label": "Secret Access Key",
+        "sensitive": true
       }
     ],
     "nifiControllerService": {
@@ -340,7 +342,8 @@
       {
         "key": "account-key",
         "type": "password",
-        "label": "Account Key"
+        "label": "Account Key",
+        "sensitive": true
       }
     ],
     "nifiProperties": [
