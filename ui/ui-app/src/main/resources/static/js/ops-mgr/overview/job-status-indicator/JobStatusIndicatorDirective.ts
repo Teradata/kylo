@@ -73,7 +73,7 @@ ngOnInit() {
             }
         }
     };
-if(this.refreshIntervalTime == undefine) {
+if(this.refreshIntervalTime == undefined) {
     this.refreshIntervalTime = 1000;
 }
     this.refresh();
