@@ -30,6 +30,7 @@ export class IndexComponent {
     sideNavService: any = this.SideNavService;
     searchQuery: string = null;
     allowSearch: boolean = false;
+    currentState: any = null;
 
     @ViewChild('search') searchElement: ElementRef;
 

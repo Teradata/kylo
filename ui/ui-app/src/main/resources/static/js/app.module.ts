@@ -24,6 +24,12 @@ import { SideNavModule } from "./side-nav/side-nav.module";
 import {HomeComponent} from "./main/HomeComponent";
 import {IndexComponent, LoadingDialogComponent} from "./main/index-ng2.component";
 
+import { HomeComponent } from "./main/HomeComponent";
+import { AccessDeniedComponent } from "./main/AccessDeniedComponent";
+
+import { MatProgressBarModule } from "@angular/material/progress-bar";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+
 export function translateHttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(http, "locales/", ".json");
 }
@@ -40,11 +46,13 @@ const translateConfig: TranslateModuleConfig = {
     declarations: [
         HomeComponent,
         IndexComponent,
+        AccessDeniedComponent,
         LoadingDialogComponent
     ],
     entryComponents: [
         HomeComponent,
         IndexComponent,
+        AccessDeniedComponent,
         LoadingDialogComponent
     ],
     imports: [
@@ -67,6 +75,7 @@ const translateConfig: TranslateModuleConfig = {
         UIRouterModule,
         UIRouterUpgradeModule,
         UpgradeModule,
+        MatProgressBarModule,
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,
