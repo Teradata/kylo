@@ -295,19 +295,19 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     eventSuccessKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.eventSuccesUndefinedKpi,
-        color: ''
+        color: '#3483BA'
     };
 
     flowRateKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.flowRateKpi,
-        color: '#00b2b1'
+        color: '#3483BA'
     };
 
     avgDurationKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.averageDurationKpi,
-        color: '#00b2b1'
+        color: '#3483BA'
     };
 
     /**

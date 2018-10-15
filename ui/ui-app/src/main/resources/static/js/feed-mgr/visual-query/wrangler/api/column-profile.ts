@@ -4,7 +4,9 @@ export class ColumnProfileHelper {
 
     static createColumnProfiles(profileData: ProfileOutputRow[]): ColumnProfile[] {
         let result: ColumnProfile[] = [];
-
+        profileData = profileData.sort((a:ProfileOutputRow,b:ProfileOutputRow)=>{
+           return a.columnName.localeCompare(b.columnName);
+        });
         let i = 0;
         let firstRow;
         let lastField = null;
