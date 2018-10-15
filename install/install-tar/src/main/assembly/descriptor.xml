@@ -463,6 +463,33 @@
       </includes>
     </fileSet>
 
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/catalog-filesystem-aws-hadoop-v2/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-catalog-filesystem-aws-hadoop-v2-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/catalog-filesystem-aws-hadoop-v3/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-catalog-filesystem-aws-hadoop-v3-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/catalog-filesystem-azure/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-catalog-filesystem-azure-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
 
     <fileSet>
       <directory>${project.parent.basedir}/setup</directory>

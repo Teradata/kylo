@@ -153,11 +153,6 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-ui-app</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-spark-shell-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -181,6 +176,21 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-sla-jira</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-catalog-filesystem-aws-hadoop-v2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-catalog-filesystem-aws-hadoop-v3</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-catalog-filesystem-azure</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
