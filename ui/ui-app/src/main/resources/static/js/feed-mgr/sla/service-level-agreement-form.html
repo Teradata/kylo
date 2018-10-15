@@ -21,7 +21,7 @@
 <div *ngIf="editSla != null"  >
   <div layout="row" layout-align="start start">
     <div flex></div>
-    <button (click)="viewSlaAssessments($event)"  class="md-primary" *ngIf="feed && mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</button>
+    <button (click)="onViewSlaAssessments($event)"  class="md-primary" *ngIf="feed && mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</button>
   </div>
 
   <form #slaForm="ngForm" (change)="onChange(slaForm)">
@@ -44,14 +44,14 @@
             </div>
           </div>
         </div>
-        <thinkbig-policy-input-form class="layout-padding-top" [theForm]="slaForm" [rule]="rule" [mode]="mode" [feed]="feed" [onPropertyChange]="onPropertyChange"></thinkbig-policy-input-form>
+        <thinkbig-policy-input-form class="layout-padding-top" [theForm]="slaForm" [rule]="rule" [mode]="mode" [feed]="feed" (propertyChanged)="onPropertyChange($event)"></thinkbig-policy-input-form>
 
         <mat-divider *ngIf="!last" style="position: relative;"></mat-divider>
 
       </div>
 
       <div *ngIf="addingSlaCondition == false" layout="row">
-        <button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="addNewCondition()">Add Condition</button>
+        <button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="onAddNewCondition()">Add Condition</button>
         <span flex></span>
       </div>
 
@@ -59,12 +59,12 @@
 
         <mat-form-field class="md-block layout-padding-top-bottom">
           <mat-label class="md-container-ignore mat-label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SNC" | translate}}</mat-label>
-          <mat-select name="slaCondition" [ngModel]="ruleType" (ngModelChange)="onRuleTypeChange($event)" [ngModelOptions]="{trackBy: 'value.name'}" (change)="onAddConditionRuleTypeChange()" aria-mat-label="Rule Type">
+          <mat-select name="slaCondition" [ngModel]="ruleType" [ngModelOptions]="{trackBy: 'value.name'}" (ngModelChange)="onAddConditionRuleTypeChange($event)" aria-mat-label="Rule Type">
             <mat-option [value]="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
           </mat-select>
         </mat-form-field>
         <span flex></span>
-        <button class="icon-btn md-icon-button auto-height md-kylo-theme md-ink-ripple" (click)="addingSlaCondition = false" *ngIf="editSla != null && editSla.rules.length >0">
+        <button class="icon-btn md-icon-button auto-height md-kylo-theme md-ink-ripple md-button" (click)="addingSlaCondition = false" *ngIf="editSla != null && editSla.rules.length >0">
           <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
         </button>
       </div>
@@ -102,15 +102,14 @@
             </div>
             <div>
               <div>
-                <button class="icon-btn md-icon-button auto-height" (click)="onDeleteSlaAction(i)" *ngIf="rule.editable">
+                <button class="icon-btn md-icon-button auto-height md-button md-kylo-theme md-ink-ripple" (click)="onDeleteSlaAction(i)" *ngIf="rule.editable">
                   <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
                 </button>
               </div>
             </div>
           </div>
 
-
-          <thinkbig-policy-input-form [theForm]="slaForm" [rule]="rule" [allowdit]="allowEdit" [onPropertyChange]="onPropertyChange"></thinkbig-policy-input-form>
+          <thinkbig-policy-input-form [theForm]="slaForm" [rule]="rule" [allowdit]="allowEdit" (propertyChanged)="onPropertyChange($event)"></thinkbig-policy-input-form>
           <mat-divider *ngIf="!last" style="position: relative;"></mat-divider>
         </div>
 
@@ -122,7 +121,7 @@
               <mat-option [value]="opt" *ngFor="let opt of slaActionOptions">{{ opt.name }}</mat-option>
             </mat-select>
           </mat-form-field>
-          <button class="icon-btn md-icon-button auto-height" (click)="addingSlaAction = false">
+          <button class="icon-btn md-icon-button auto-height md-button md-kylo-theme md-ink-ripple" (click)="addingSlaAction = false">
             <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
           </button>
         </div>
@@ -166,8 +165,8 @@
       <div class="layout-padding-top-bottom" flex layout="row">
         <button class="md-button md-kylo-theme md-ink-ripple" (click)="onDeleteSla($event)" *ngIf="editSla != null && editSlaIndex != null && allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</button>
         <span flex></span>
-        <button  class="md-button md-kylo-theme md-ink-ripple" (click)="cancelEditSla()" *ngIf="editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</button>
-        <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="saveSla()" *ngIf="editSla != null && allowEdit" [disabled]="editSla.rules.length == 0 || slaForm.form.invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</button>
+        <button  class="md-button md-kylo-theme md-ink-ripple" (click)="onCancelEditSla()" *ngIf="editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</button>
+        <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="onSaveSla()" *ngIf="editSla != null && allowEdit" [disabled]="editSla.rules.length == 0 || slaForm.form.invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</button>
       </div>
 
     </div>

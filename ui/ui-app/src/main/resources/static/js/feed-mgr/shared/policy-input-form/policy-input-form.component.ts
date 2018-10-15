@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormService';
 import {FormControl, Validators, FormGroupDirective, NgForm, FormGroup} from '@angular/forms';
 
@@ -25,7 +25,7 @@ export class PolicyInputFormController {
     transformChip:any;
 
     @Input() theForm:any;
-    @Input() onPropertyChange:any;
+    @Output() propertyChanged:EventEmitter<any> = new EventEmitter<any>();
     @Input() rule:any;
     @Input() feed:any;
     @Input() mode:any;
@@ -51,10 +51,10 @@ export class PolicyInputFormController {
         this.transformChip = this.PolicyInputFormService.transformChip;
 
         //call the onChange if the form initially sets the value
-        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)) {
+        if(this.propertyChanged != undefined) {
             _.each(this.rule.properties, (property:any) => {
                 if ((property.type == 'select' || property.type =='feedSelect' || property.type == 'currentFeed') && property.value != null) {
-                    this.onPropertyChange(property);
+                    this.propertyChanged.emit(property);
                 }
             });
         }
@@ -101,8 +101,8 @@ export class PolicyInputFormController {
     }
 
     onPropertyChanged = (property:any) => {
-        if(this.onPropertyChange != undefined && angular.isFunction(this.onPropertyChange)){
-            this.onPropertyChange(property);
+        if(this.propertyChanged != undefined){
+            this.propertyChanged.emit(property);
         }
     }
     validateRequiredChips = (property:any) => {

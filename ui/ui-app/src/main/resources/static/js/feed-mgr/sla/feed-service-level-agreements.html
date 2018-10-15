@@ -53,13 +53,14 @@
   </div>
   
   <div *ngIf="editSla != null  && !loading">
-      <service-level-agreement-form [editSla]="editSla" [allowEdit]= "allowEdit" [onEditSla]= "onEditSla"
-      [editSlaIndex]= "editSlaIndex" [viewSlaAssessments]= "viewSlaAssessments" 
-      [feed]= "feed" [mode]= "mode" [onPropertyChange]= "onPropertyChange" 
-      [addingSlaCondition]= "addingSlaCondition" [addNewCondition]= "addNewCondition"
-      [ruleType]= "ruleType" [onDeleteSla]= "onDeleteSla" [cancelEditSla]= "cancelEditSla"
-      [saveSla]= "saveSla">
+    <service-level-agreement-form [(editSla)]="editSla" [allowEdit]= "allowEdit" (editedSla)= "onEditSla()"
+      [editSlaIndex]= "editSlaIndex" (viewSlaAssessments)= "viewSlaAssessments()" [feed]= "feed" [mode]= "mode" 
+      (propertyChange)= "onPropertyChange($event)" [addingSlaCondition]= "addingSlaCondition" (addNewCondition)= "addNewCondition()"
+      (deleteSla)= "onDeleteSla()" (cancelEditSla)= "cancelEditSla()" (saveSla)= "saveSla()" 
+      (addConditionRuleTypeChange)="onAddConditionRuleTypeChange($event)"
+    >
     </service-level-agreement-form>
+
     <div>
 
     </div>

@@ -649,7 +649,8 @@ onDeleteSlaAction(index: any) {
     }
 }
 
-onAddConditionRuleTypeChange() {
+onAddConditionRuleTypeChange(ruleType: any) {
+    this.ruleType = ruleType;
     if (this.ruleType != this.EMPTY_RULE_TYPE) {
         //replace current sla rule if already editing
         var newRule = angular.copy(this.ruleType);

@@ -9,44 +9,84 @@ export default class ServiceLevelAgreementForm {
 
     @Input() allowEdit: any;
     @Input() editSla: any;
-    @Input() onEditSla: any;
     @Input() editSlaIndex: any;
-
-    @Input() viewSlaAssessments: any;
     @Input() feed: any;
     @Input() mode: any;
-    @Input() onPropertyChange: any;
     @Input() addingSlaCondition: any;
-    @Input() addNewCondition: any;
     @Input() ruleType: any;
-    @Input() onDeleteSla: any;
-    @Input() cancelEditSla: any;
-    @Input() saveSla: any;
-
-    @Input() onNameChange: any;
-    @Input() onDescriptionChange: any;
-
     @Input() slaForm: any;
     @Input() options: any;
-    @Input() onAddConditionRuleTypeChange: any;
 
-    @Input() onDeleteSlaMetric: any;
-    @Input() onDeleteSlaAction: any;
-
-    @Output() ruleTypeChange: EventEmitter<any> = new EventEmitter<any>();
     @Output() slaFormChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() editedSla: EventEmitter<any> = new EventEmitter<any>();
+    @Output() viewSlaAssessments: EventEmitter<any> = new EventEmitter<any>();
+    @Output() propertyChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() addNewCondition: EventEmitter<any> = new EventEmitter<any>();
+    @Output() deleteSla: EventEmitter<any> = new EventEmitter<any>();
+    @Output() cancelEditSla: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveSla: EventEmitter<any> = new EventEmitter<any>();
+    @Output() nameChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() descriptionChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() addConditionRuleTypeChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() deleteSlaMetric: EventEmitter<any> = new EventEmitter<any>();
+    @Output() deleteSlaAction: EventEmitter<any> = new EventEmitter<any>();
 
     @ViewChild("slaForm")
     set childForm(slaForm: NgForm) {
         this.onChange(slaForm);
     }
 
-    onRuleTypeChange(ruleType: any) {
-        this.ruleTypeChange.emit(ruleType);
-    }
-
     onChange(slaForm: NgForm) {
         this.slaFormChange.emit(slaForm);
     }
+
+    onEditSla() {
+        this.editedSla.emit();
+    }
+
+    onViewSlaAssessments() {
+        this.viewSlaAssessments.emit();
+    }
+
+    onPropertyChange(property: any) {
+        this.propertyChange.emit(property);
+    }
+
+    onAddNewCondition() {
+        this.addNewCondition.emit();
+    }
+
+    onDeleteSla() {
+        this.deleteSla.emit();
+    }
+
+    onCancelEditSla() {
+        this.cancelEditSla.emit();
+    }
+
+    onNameChange() {
+        this.nameChange.emit();
+    }
+
+    onDescriptionChange() {
+        this.descriptionChange.emit();
+    }
+
+    onAddConditionRuleTypeChange(ruleType: any) {
+        this.addConditionRuleTypeChange.emit(ruleType);
+    }
+
+    onDeleteSlaMetric() {
+        this.deleteSlaMetric.emit();
+    }
+
+    onDeleteSlaAction() {
+        this.deleteSlaAction.emit();
+    }
+
+    onSaveSla() {
+        this.saveSla.emit();
+    }
+
 }
 
