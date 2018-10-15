@@ -13,7 +13,6 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {FormsModule} from "@angular/forms";
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatDialogModule} from "@angular/material/dialog";
 
 import "routes"; // load AngularJS application
@@ -24,10 +23,8 @@ import { SideNavModule } from "./side-nav/side-nav.module";
 import {HomeComponent} from "./main/HomeComponent";
 import {IndexComponent, LoadingDialogComponent} from "./main/index-ng2.component";
 
-import { HomeComponent } from "./main/HomeComponent";
 import { AccessDeniedComponent } from "./main/AccessDeniedComponent";
 
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 export function translateHttpLoaderFactory(http: HttpClient) {
@@ -74,8 +71,7 @@ const translateConfig: TranslateModuleConfig = {
         TranslateModule.forRoot(translateConfig),
         UIRouterModule,
         UIRouterUpgradeModule,
-        UpgradeModule,
-        MatProgressBarModule,
+        UpgradeModule
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,
