@@ -23,6 +23,5 @@
     <module>spark-shell-rest-model</module>
     <module>spark-shell-api</module>
     <module>spark-shell-core</module>
-    <module>spark-livy-core</module>
   </modules>
 </project>

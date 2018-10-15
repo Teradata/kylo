@@ -38,5 +38,7 @@
     <module>catalog-filesystem-azure</module>
     <module>catalog-credential-simple</module>
     <module>catalog-credential-vault</module>
+    <module>spark-shell-server</module>
+    <module>spark-livy-server</module>
   </modules>
 </project>

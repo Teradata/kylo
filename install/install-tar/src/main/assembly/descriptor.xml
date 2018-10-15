@@ -419,29 +419,20 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.parent.basedir}/services/spark-shell-service/spark-shell-core/target/lib</directory>
+      <directory>${project.parent.parent.basedir}/plugins/spark-shell-server/target</directory>
       <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
-        <include>spark-launcher_${scala.binary.version}-${spark.version}.jar</include>
+        <include>kylo-spark-shell-server-${project.version}.jar</include>
       </includes>
     </fileSet>
 
     <fileSet>
-      <directory>${project.parent.parent.basedir}/services/spark-shell-service/spark-shell-core/target</directory>
-      <outputDirectory>kylo-services/plugin</outputDirectory>
+      <directory>${project.parent.parent.basedir}/plugins/spark-livy-server/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
-        <include>kylo-spark-shell-core-${project.version}.jar</include>
-      </includes>
-    </fileSet>
-
-    <fileSet>
-      <directory>${project.parent.parent.basedir}/services/spark-shell-service/spark-livy-core/target</directory>
-      <outputDirectory>kylo-services/plugin</outputDirectory>
-      <fileMode>755</fileMode>
-      <includes>
-        <include>kylo-spark-livy-core-${project.version}.jar</include>
+        <include>kylo-spark-livy-server-${project.version}.jar</include>
       </includes>
     </fileSet>
 
