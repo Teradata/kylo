@@ -83,7 +83,7 @@ export class MenuToggleComponent {
             var permissionStr = item.permission;
             if(permissionStr != undefined) {
                 var arr = [];
-                if(ObjectUtils.isArray(permissionStr)) {
+                if(Array.isArray(permissionStr)) {
                     arr = permissionStr;
                     //the directive template uses the permission key to check.  it needs to be a string.
                     item.permission = arr.join(",")

@@ -1,7 +1,6 @@
 import * as _ from 'underscore';
 import * as moment from "moment";
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import HttpService from '../../services/HttpService';
 import Utils from '../../services/Utils';
 import AccessControlService from '../../services/AccessControlService';
 import AccessConstants from '../../constants/AccessConstants';
@@ -93,10 +92,7 @@ export class SchedulerComponent implements OnInit, OnDestroy{
      */
     allowAdmin: boolean = false;
     
-    static readonly $inject =["$scope","$interval","$timeout","$http","$location", "HttpService","Utils","AccessControlService"];
-
     constructor(private http: HttpClient,
-                private HttpService: HttpService,
                 private utils: Utils,
                 private AccessControlService: AccessControlService) {
 

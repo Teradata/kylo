@@ -129,7 +129,7 @@ export class AlertDetailsTemplateComponent {
                 }
                 var isStream = false;
 
-                if (ObjectUtils.isArray(this.alertData.events)) {
+                if (Array.isArray(this.alertData.events)) {
                     this.alertData.events.forEach((event: any)=> {
                         event.stateClass = this.getStateClass(event.state);
                         event.stateIcon = this.getStateIcon(event.state);

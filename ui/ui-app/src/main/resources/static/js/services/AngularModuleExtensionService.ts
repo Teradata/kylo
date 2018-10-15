@@ -1,22 +1,16 @@
-import * as angular from 'angular';
-import {moduleName} from './module-name';
-import AccessConstants from '../constants/AccessConstants';
-import 'kylo-services-module';
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import BroadcastService from "./broadcast-service";
-import "./module"; // ensure module is loaded first
+import { HttpClient } from '@angular/common/http';
+import { ObjectUtils } from "../common/utils/object-utils";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export default class AngularModuleExtensionService{
 
-static readonly $inject = ["$http", "$q", "$timeout", "$uiRouter", "CommonRestUrlService","BroadcastService","$urlMatcherFactory"];
-constructor (private $http: any,
-             private $q: any,
-             private $timeout: any,
-             private $uiRouter: any,
-             private CommonRestUrlService: CommonRestUrlService,
-             private BroadcastService: BroadcastService,
-             private $urlMatcherFactory: any) {}
+constructor (private http: HttpClient,
+             private commonRestUrlService: CommonRestUrlService,
+             private broadcastService: BroadcastService) {}
 
     EXTENSION_MODULES_INITIALIZED_EVENT = 'extensionModulesInitialized'
     /**
@@ -56,6 +50,7 @@ constructor (private $http: any,
     }
 
     buildLazyRoute(state: any,extensionModule: any) {
+
         let lazyState = {
             name:this.lazyStateName(state),
             url:state.url,
@@ -76,6 +71,7 @@ constructor (private $http: any,
     }
 
     buildModuleNavigationLinks(extensionModule: any){
+
         if(extensionModule.navigation && extensionModule.navigation.length >0){
 
             _.each(extensionModule.navigation,function(menu: any) {
@@ -114,8 +110,8 @@ constructor (private $http: any,
 
 
     registerStates(extensionModule: any){
-        let lazyStates: any[] = [];
-        if(angular.isDefined(extensionModule.states)) {
+
+        if(ObjectUtils.isDefined(extensionModule.states)) {
             _.each(extensionModule.states, function(state: any) {
                 this.stateNames.push(state.state);
                 this.urlMatcher = this.$urlMatcherFactory.compile(state.url);
@@ -138,7 +134,7 @@ constructor (private $http: any,
     INITIALIZED_EVENT = this.EXTENSION_MODULES_INITIALIZED_EVENT;
 
     onInitialized(callback: any){
-        this.BroadcastService.subscribeOnce(this.INITIALIZED_EVENT, callback);
+        this.broadcastService.subscribeOnce(this.INITIALIZED_EVENT, callback);
     }
     isInitialized(){
         return this.initialized;
@@ -155,7 +151,7 @@ constructor (private $http: any,
     urlExists(url: any) {
         let urlMatcher : any= _.find(this.urlMatchers,function(matcher: any){
             let params = matcher.exec(url);
-            return angular.isObject(params);
+            return ObjectUtils.isObject(params);
 
         });
         return urlMatcher != undefined;
@@ -177,7 +173,7 @@ constructor (private $http: any,
 
         let urlMatcher = _.find(this.urlMatchers,function(matcher: any){
             let params = matcher.exec(url);
-            if(angular.isObject(params)){
+            if(ObjectUtils.isObject(params)){
                 data.params=params;
                 return true;
             }
@@ -196,21 +192,18 @@ constructor (private $http: any,
     * Returns the promise
     */
     registerModules(){
-        let promise = this.$http.get(this.CommonRestUrlService.ANGULAR_EXTENSION_MODULES_URL);
+        let promise = this.http.get(this.commonRestUrlService.ANGULAR_EXTENSION_MODULES_URL).toPromise();
         promise.then( (response: any) => {
-            if(response.data){
-                _.each(response.data,(extensionModule)=> {
+            if(response){
+                _.each(response,(extensionModule)=> {
                     this.registerStates(extensionModule);
                 });
                 this.initialized=true;
             }
-            this.BroadcastService.notify(this.EXTENSION_MODULES_INITIALIZED_EVENT);
+            this.broadcastService.notify(this.EXTENSION_MODULES_INITIALIZED_EVENT);
         },(err: any)=>{
             console.log('err',err)
         });
         return promise;
     }
 }
-
-
-angular.module(moduleName).service("AngularModuleExtensionService",AngularModuleExtensionService);

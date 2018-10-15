@@ -1,9 +1,6 @@
-import * as angular from 'angular';
 import "jquery";
-
-import {moduleName} from './module-name';
-
-import "./module"; // ensure module is loaded first
+import { Injectable } from "@angular/core";
+import {Subject} from 'rxjs/Subject';
 
 /**
  * Allow different controllers/services to subscribe and notify each other
@@ -14,9 +11,8 @@ import "./module"; // ensure module is loaded first
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
+@Injectable()
 export default class BroadcastService {
-
-    static readonly $inject = ["$rootScope", "$timeout"];
 
     /**
     * map to check if multiple events come in for those that {@code data.notifyAfterTime}
@@ -26,9 +22,9 @@ export default class BroadcastService {
     waitingEvents: any = {};
 
     subscribers = {};
+    eventsMap : Map<String, Subject<any>> = new Map<String,Subject<any>>();
 
-    constructor(private $rootScope: any,
-        private $timeout: angular.ITimeoutService) {
+    constructor() {
 
     }
     /**
@@ -37,14 +33,18 @@ export default class BroadcastService {
     * @param data
     * @param waitTime
     */
-    notify = (event: any, data?: any, waitTime?: any) => {
+    notify (event: any, data?: any, waitTime?: any) {
         if (waitTime == undefined) {
             waitTime = 0;
         }
         if (this.waitingEvents[event] == undefined) {
             this.waitingEvents[event] = event;
-            this.$timeout(() => {
-                this.$rootScope.$emit(event, data);
+            setTimeout(() => {
+                if(!this.eventsMap.has(event)){
+                    this.eventsMap.set(event, new Subject<any>());
+                }
+                this.eventsMap.get(event).next(data);
+                // this.$rootScope.$emit(event, data);
                 delete this.waitingEvents[event];
             }, waitTime);
         }
@@ -52,15 +52,19 @@ export default class BroadcastService {
     /**
      * Subscribe to some event
      */
-    subscribe = (scope: any, event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, callback);
+    subscribe (scope: any, event: any, callback: any) {
+        // const handler: any = this.$rootScope.$on(event, callback);
+        if(!this.eventsMap.has(event)){
+            this.eventsMap.set(event, new Subject<any>());
+        }
+        var subs  = this.eventsMap.get(event).subscribe(callback);
         if(this.subscribers[event] == undefined){
             this.subscribers[event] = 0;
         }
         this.subscribers[event] +=1;
         if (scope != null) {
             scope.$on('$destroy', ()=>{
-                handler();
+                subs.unsubscribe();
                 this.subscribers[event] -= 1;
             });
         }
@@ -68,18 +72,26 @@ export default class BroadcastService {
     /**
      * Subscribe to some event
      */
-    subscribeOnce = (event: any, callback: any) => {
-        const handler: any = this.$rootScope.$on(event, () => {
-            try {
+    subscribeOnce (event: any, callback: any) {
+        if(!this.eventsMap.has(event)){
+            this.eventsMap.set(event, new Subject<any>());;
+        }
+        var subs  = this.eventsMap.get(event).subscribe((nextValue : any) => {
+            try{
                 callback();
-            } catch (err) {
+            }catch(err){
                 console.error("error calling callback for ", event);
             }
-            //deregister the listener
-            handler();
+            subs.unsubscribe();
         });
+    //     const handler: any = this.$rootScope.$on(event, () => {
+    //         try {
+    //             callback();
+    //         } catch (err) {
+    //             console.error("error calling callback for ", event);
+    //         }
+    //         //deregister the listener
+    //         handler();
+    //     });
     }
 }
-
-
-angular.module(moduleName).service('BroadcastService', BroadcastService);

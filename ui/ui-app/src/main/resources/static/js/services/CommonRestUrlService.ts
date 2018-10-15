@@ -17,8 +17,6 @@
  * limitations under the License.
  * #L%
  */
-// import * as angular from 'angular';
-// import {moduleName} from './module-name';
 import { Injectable } from '@angular/core';
 @Injectable()
 export default class CommonRestUrlService{
@@ -59,5 +57,3 @@ export default class CommonRestUrlService{
         this.ANGULAR_EXTENSION_MODULES_URL = "/api/v1/ui/extension-modules"
    }
 }
-
-// angular.module(moduleName).service('CommonRestUrlService',CommonRestUrlService);

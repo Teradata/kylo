@@ -1,4 +1,3 @@
-import {AccessControl} from "../../services/AccessControl";
 import {Templates} from "./TemplateTypes";
 
 import Processor = Templates.Processor;

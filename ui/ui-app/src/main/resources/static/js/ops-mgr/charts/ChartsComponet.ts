@@ -3,10 +3,9 @@ import * as _ from "underscore";
 import * as moment from "moment";
 import * as $ from "jquery";
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
-import HttpService from '../../services/HttpService';
 import OpsManagerJobService from '../services/OpsManagerJobService';
 import { OpsManagerFeedService } from '../services/OpsManagerFeedService';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
 import "jquery";
 import "jquery-ui";
@@ -42,13 +41,11 @@ export class ChartsComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     pivotConfig: any;
     responseData: any;
-    currentRequest: any;
     feedNames: any;
     lastRefreshed: any;
 
     constructor(
         private http: HttpClient,
-        private httpService: HttpService,
         private OpsManagerJobService: OpsManagerJobService,
         private opsManagerURLService: OpsManagerRestUrlService) {
 
@@ -84,17 +81,16 @@ export class ChartsComponent implements OnInit, OnDestroy {
 
     refreshPivotTable() {
         var successFn = (response: any) => {
-            this.responseData = response.data;
-            var data = response.data;
+            this.responseData = response;
             if (this.responseData.length >= this.limitRows && this.filtered == true) {
                 this.message = "Warning. Only returned the first " + this.limitRows + " records. Either increase the limit or modify the filter."
                 this.isWarning = true;
             }
             else {
-                this.message = 'Showing ' + data.length + ' jobs';
+                this.message = 'Showing ' + this.responseData.length + ' jobs';
             }
             this.loading = false;
-            this.renderPivotTable(data);
+            this.renderPivotTable(this.responseData);
 
         };
         var errorFn = (err: any) => {
@@ -112,12 +108,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
             return filterStr;
         }
 
-        var formParams = {};
+        var formParams = new HttpParams();
         var startDateSet = false;
         var endDateSet = false;
         this.filtered = false;
-        formParams['limit'] = this.limitRows;
-        formParams['sort'] = '-executionid';
+        formParams.append('limit',this.limitRows.toString());
+        formParams.append('sort','-executionid');
         var filter = "";
         if (!_.includes(this.selectedFeedNames, 'ALL') && this.selectedFeedNames.length > 0) {
             filter = addToFilter(filter, "feedName==\"" + this.selectedFeedNames.join(',') + "\"");
@@ -138,15 +134,14 @@ export class ChartsComponent implements OnInit, OnDestroy {
             endDateSet = true;
         }
         if (startDateSet && !endDateSet || startDateSet && endDateSet) {
-            formParams['sort'] = 'executionid';
+            formParams.append('sort','executionid');
         }
-        formParams['filter'] = filter;
+        formParams.append('filter',filter);
 
 
         $("#charts_tab_pivot_chart").html('<div class="bg-info"><i class="fa fa-refresh fa-spin"></i> Rendering Pivot Table...</div>')
-        var rqst = this.httpService.newRequestBuilder(this.OpsManagerJobService.JOBS_CHARTS_QUERY_URL).params(formParams).success(successFn).error(errorFn).finally(finallyFn).build();
-        this.currentRequest = rqst;
         this.loading = true;
+        this.http.get(this.OpsManagerJobService.JOBS_CHARTS_QUERY_URL, {params : formParams}).subscribe(successFn,errorFn,finallyFn);
     }
 
 

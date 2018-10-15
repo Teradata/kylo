@@ -35,8 +35,8 @@ import {ListTemplatesComponent} from "./list/list.component";
 import {ImportTemplateComponent, ImportTemplateDirective} from "./ng5-import-template.component";
 import {RepositoryComponent} from "./repository.component";
 import {repositoryStates} from "./repository.states";
-import {TemplateService} from "./services/template.service";
 import {TemplateInfoComponent} from "./template-info/template-info.component";
+import { TemplateService } from "../services/template.service";
 
 @NgModule({
     declarations: [

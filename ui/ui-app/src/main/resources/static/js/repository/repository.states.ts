@@ -1,6 +1,5 @@
 import {Ng2StateDeclaration} from "@uirouter/angular";
 import {RepositoryComponent} from "./repository.component";
-import {TemplateService} from "./services/template.service";
 import {TemplateInfoComponent} from "./template-info/template-info.component";
 import AccessConstants from "../constants/AccessConstants";
 import {ImportTemplateComponent} from "./ng5-import-template.component";

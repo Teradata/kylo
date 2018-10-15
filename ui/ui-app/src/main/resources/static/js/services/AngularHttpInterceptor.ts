@@ -1,7 +1,10 @@
+import { ObjectUtils } from "../common/utils/object-utils";
 import * as angular from 'angular';
-import {moduleName} from './module-name';
+
+let moduleName = "kylo.services";
 
 export default class httpInterceptor {
+    
      constructor($provide: any,
                  $httpProvider: any) {
         $provide.factory('httpInterceptor', ["$q","$location","$window","$injector","Utils",
@@ -14,7 +17,7 @@ export default class httpInterceptor {
                  */
                 request: function(request: any) {
                     // Add X-Requested-With header to disable basic auth
-                    if (angular.isUndefined(request.headers)) {
+                    if (ObjectUtils.isUndefined(request.headers)) {
                         request.headers = {};
                     }
                     request.headers["X-Requested-With"] = "XMLHttpRequest";
@@ -42,7 +45,7 @@ export default class httpInterceptor {
                         }
                     }
 
-                    if (angular.isDefined(redirectLocation)) {
+                    if (ObjectUtils.isDefined(redirectLocation)) {
                         NotificationService.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
                         if (redirectLocation !== null) {
                             $window.location.href = redirectLocation;
