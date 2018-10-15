@@ -94,6 +94,15 @@ public class ConnectorPluginDescriptor {
 
     public ConnectorPluginDescriptor() {
     }
+    
+    /**
+     *
+     */
+    public ConnectorPluginDescriptor(@Nonnull final String id, @Nonnull final String title, @Nonnull final String format) {
+        this.pluginId =id;
+        this.title = title;
+        this.format = format;
+    }
 
     /**
      *
