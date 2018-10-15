@@ -19,59 +19,64 @@
  */
 
 
+export class ArrayUtils {
+    constructor() {
+    }
 
-var ArrayUtils: any = (function () {
-    function ArrayUtils() {
+    static sum(arr: any) {
+        return [].reduce.call(arr,
+            function (total: any, num: any) {
+                return total + num;
+            }
+            , 0);
     }
-    (ArrayUtils as any).sum = (arr: any)=>{
-      return [].reduce.call(arr,
-          function(total: any, num: any){ return total + num; }
-          , 0);
-    }
-    (ArrayUtils as any).avg =(arr: any)=>{
-        var sum = (ArrayUtils as any).sum(arr);
+
+    static avg(arr: any) {
+        const sum = ArrayUtils.sum(arr);
         return sum / arr.length;
     }
-    (ArrayUtils as any).min = (arr: any)=>{
-        return Math.min.apply(null,arr);
+
+    static min(arr: any) {
+        return Math.min.apply(null, arr);
     }
-    (ArrayUtils as any).max = (arr: any)=>{
-        return Math.max.apply(null,arr);
+
+    static max(arr: any) {
+        return Math.max.apply(null, arr);
     }
-    (ArrayUtils as any).first = (arr: any)=>{
+
+    static first(arr: any) {
         return arr[0];
     }
-    (ArrayUtils as any).last = (arr: any) =>{
-        return arr[arr.length-1];
+
+    static last(arr: any) {
+        return arr[arr.length - 1];
     }
-    (ArrayUtils as any).aggregrate = (arr: any,fn: any) =>{
-        if(arr === undefined){
+
+    static aggregrate(arr: any, fn: any) {
+        if (arr === undefined) {
             arr = [];
         }
-         fn = fn.toLowerCase();
-        if(fn == 'max'){
-            return (ArrayUtils as any).max(arr);
+        fn = fn.toLowerCase();
+        if (fn == 'max') {
+            return ArrayUtils.max(arr);
         }
-        else  if(fn == 'min'){
-            return (ArrayUtils as any).min(arr);
+        else if (fn == 'min') {
+            return ArrayUtils.min(arr);
         }
-        else if(fn == 'sum'){
-            return (ArrayUtils as any).sum(arr);
+        else if (fn == 'sum') {
+            return ArrayUtils.sum(arr);
         }
-        else if(fn == 'avg'){
-            return (ArrayUtils as any).avg(arr);
+        else if (fn == 'avg') {
+            return ArrayUtils.avg(arr);
         }
-        else  if(fn == 'first'){
-            return (ArrayUtils as any).first(arr);
+        else if (fn == 'first') {
+            return ArrayUtils.first(arr);
         }
-        else  if(fn == 'last'){
-            return (ArrayUtils as any).last(arr);
+        else if (fn == 'last') {
+            return ArrayUtils.last(arr);
         }
         else {
             return undefined;
         }
     }
-
-
-    return ArrayUtils;
-})();
+}

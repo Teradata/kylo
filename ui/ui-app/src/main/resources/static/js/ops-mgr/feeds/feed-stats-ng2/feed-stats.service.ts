@@ -4,6 +4,7 @@ import { CloneUtil } from "../../../common/utils/clone-util";
 import {  Injectable } from "@angular/core";
 import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";
 import {FeedStats} from "../../../feed-mgr/model/feed/feed-stats.model";
+import {ArrayUtils} from '../../../common/utils/ArrayUtils';
 const d3 = require('d3');
 
 @Injectable()

@@ -4,6 +4,7 @@ import {moduleName} from "./module-name";
 import "pascalprecht.translate";
 import ProvenanceEventStatsService from "../../services/ProvenanceEventStatsService";
 import * as _ from "underscore";
+import {ArrayUtils} from '../../../common/utils/ArrayUtils';
 const d3 = require('d3');
 
 export class FeedStatsService {
