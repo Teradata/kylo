@@ -4,12 +4,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { ObjectUtils } from '../../common/utils/object-utils';
+import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
+import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 
 @Component({
     templateUrl: "js/admin/jcr/jcr-query.html",
     selector : 'jcr-query-controller'
 })
-export class JcrQueryComponent implements OnInit {
+export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements OnInit {
     sql: string = "";
     headers = new HttpHeaders({'Content-Type': 'application/json; charset=UTF-8'});
     ngOnInit(){
@@ -23,11 +25,14 @@ export class JcrQueryComponent implements OnInit {
         }
     constructor(private http: HttpClient, 
             private snackBar: MatSnackBar,
-            private _tdDialogService : TdDialogService)
+            private _tdDialogService : TdDialogService,
+            public _dataTableService: TdDataTableService)
             {
-             }
+                super(_dataTableService);
+            }
 
         loading: boolean = false;
+        queryExecuted: boolean = false;
         errorMessage: string = null;
         queryTime: any = null;
         indexesErrorMessage: string = "";
@@ -41,13 +46,16 @@ export class JcrQueryComponent implements OnInit {
                         mode: 'text/x-hive'
         };
   
-        gridOptions: any = {
-            columnDefs: [],
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true,
-            flatEntityAccess: true
-        };
+        gridOptions: ITdDataTableColumn[] = [];
+        tableData : any []= [];
+        public indexColumns: ITdDataTableColumn[] = [
+            { name: 'indexName', label: 'Name', sortable: true },
+            { name: 'indexKind', label: 'Kind', sortable: true},
+            { name: 'nodeType', label: 'Node Type', sortable: true },
+            { name: 'propertyName', label: 'Property Name(s)', sortable: true},
+            { name: 'propertyTypes', label: 'Property Type', sortable: true},
+            { name: 'action', label: ''},
+        ];
 
         resultSize: any = 0;
         indexes:any = [];
@@ -186,6 +194,8 @@ export class JcrQueryComponent implements OnInit {
         getIndexes(){
             var successFn = (response: any)=> {
                 this.indexes = response;
+                super.setSortBy('indexName');
+                super.setDataAndColumnSchema(this.indexes,this.indexColumns);
             };
             var errorFn = (err: any)=> {
                 this.indexes = [];
@@ -205,10 +215,10 @@ export class JcrQueryComponent implements OnInit {
            this.explainPlan = result.explainPlan;
            _.forEach(result.columns,(col : any,i : number)=>{
                         columns.push({
-                            displayName: col.name,
-                            headerTooltip: col.name,
-                            minWidth: 150,
-                            name: 'col_'+i
+                            label: col.name,
+                            tooltip: col.name,
+                            name: 'col_'+i,
+                            sortable : true
                         });
             });
 
@@ -223,9 +233,10 @@ export class JcrQueryComponent implements OnInit {
 
             data.columns = columns;
             data.rows = rows;
-            this.gridOptions.columnDefs = columns;
-            this.gridOptions.data = rows;
+            this.gridOptions = columns;
+            this.tableData = rows;
             this.resultSize = data.rows.length;
+            this.queryExecuted = true;
             return data;
         };
 }
