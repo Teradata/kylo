@@ -997,8 +997,8 @@ class TableFormControls {
 
         let index = field.fieldPolicy ? field.fieldPolicy.index : false;
         let profile = field.fieldPolicy ? field.fieldPolicy.profile: false;
-        controls[TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX+"_" + field._id] = new FormControl({value:index,disabled:field.isComplex() || field.deleted || this.tablePermissions.tableLocked},[]);
-        controls[TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX+"_" + field._id] = new FormControl({value:profile,disabled:field.isComplex() || field.deleted || this.tablePermissions.tableLocked},[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_INDEX_PREFIX+"_" + field._id] = new FormControl({value:index,disabled:field.isComplex() || field.deleted },[]);
+        controls[TableFormControls.TABLE_COLUMN_DEF_PROFILE_PREFIX+"_" + field._id] = new FormControl({value:profile,disabled:field.isComplex() || field.deleted },[]);
         return controls;
     }
 
