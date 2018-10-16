@@ -671,11 +671,15 @@ public class ExecuteSparkJob extends BaseProcessor {
         }
 
         if (StringUtils.isNotEmpty(sparkYarnDeployMode)) {
-            if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
+            if ((!sparkMaster.contains("local"))
+                    && (!sparkMaster.equals("yarn"))
+                    && (!sparkMaster.contains("mesos"))
+                    && (!sparkMaster.contains("spark"))
+                    && (!sparkMaster.contains("k8s"))) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())
                                 .valid(false)
-                                .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
+                                .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark, k8s")
                                 .build());
 
             }
