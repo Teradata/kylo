@@ -76,6 +76,7 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
             if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
                 const accountName = option.substring("spark.hadoop.fs.azure.account.key.".length);
                 controls.get("account-name").setValue(accountName);
+                controls.get("account-key").setValue(ds.template.options[option]);
             }
         });
     }
