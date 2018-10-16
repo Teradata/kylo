@@ -75,9 +75,7 @@ export class PreviewDataSetResultEvent {
 @Injectable()
 export class DatasetPreviewService {
 
-    static PREVIEW_LOADING = "DatasetPreviewComponent.previewLoading"
-
-    static RAW_LOADING = "DatasetPreviewComponent.rawLoading"
+    static PREVIEW_LOADING = "CatalogPreviewDatasetComponent.LOADER"
 
     public dataSource$ = new Subject<DataSourceChangedEvent>();
     public dataSource: DataSource;
@@ -114,7 +112,6 @@ export class DatasetPreviewService {
     }
 
     public notifyToUpdateView() {
-        console.log("NOTIFY OF UPDATE!!!!")
         this.updateViewEvent$.next();
     }
 
@@ -356,7 +353,6 @@ export class DatasetPreviewService {
         });
 
         return dialogRef.afterClosed().filter(result => {
-            console.log('filter result ', result);
             return result != undefined
         }).pipe(switchMap((result: SchemaParser) => {
             return this._previewWithSchemaParser(copy, result);
@@ -389,7 +385,6 @@ export class DatasetPreviewService {
         return this.previewSchemaService.preview(dataset, previewRequest, false, false)
             .pipe(
                 catchError((error: any, o: Observable<PreviewDataSet>) => {
-                    console.log('error', error, o);
                     if (error instanceof PreviewDataSet) {
                         return Observable.throw(error);
                     }
@@ -398,7 +393,6 @@ export class DatasetPreviewService {
                     }
                 }),
                 tap((result: PreviewDataSet) => {
-                    console.log('FINISHED PREVIEW!!!', result)
                     this._loadingService.resolve(DatasetPreviewService.PREVIEW_LOADING)
                     this.notifyToUpdateView();
                     return result;

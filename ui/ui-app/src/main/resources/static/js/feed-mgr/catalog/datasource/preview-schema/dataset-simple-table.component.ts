@@ -15,54 +15,8 @@ import {TableColumn} from "./model/table-view-model";
           [sortBy]="sortBy"
           [sortOrder]="sortOrder"
           (sortChange)="sort($event)"
-          [style.height.px]="325" class="dataset-simple-table">
-      </td-data-table>
-     <!--  <div class="dataset-simple-table">
-    <table td-data-table >
-      <thead>
-      <tr td-data-table-column-row>
-        <th td-data-table-column
-            *ngFor="let column of columns"
-            [name]="column.name"
-            [sortable]="false"
-            [numeric]="column.numeric"
-            (sortChange)="sort($event)"
-            [sortOrder]="sortOrder">
-          {{column.label}} <br/>
-          ({{column.dataType}})
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr td-data-table-row *ngFor="let row of filteredData">
-        <td td-data-table-cell *ngFor="let column of columns"
-            [numeric]="column.numeric">
-          {{row[column.name]}}
-        </td>
-      </tr>
-      </tbody>
-    </table>
-   </div>
--->
-    <!--
-          <td-data-table
-          [data]="filteredData"
-          [columns]="columns"
-          [selectable]="false"
-          [clickable]="true"
-          [multiple]="multiple"
-          [sortable]="false"
-          [sortBy]="sortBy"
-          [(ngModel)]="selected"
-          [sortOrder]="sortOrder"
-          (rowClick)="rowSelected($event)"
-          (sortChange)="sort($event)"
-          [style.height.px]="325" class="dataset-simple-table">
-      </td-data-table>     
-      -->
-    
-    
-    
+          [style.height.px]="325" class="dataset-simple-table">      
+      </td-data-table>   
     <div  *ngIf="!filteredData.length ===0" fxLayout="row" fxLayoutAlign="center center">
       <h3>No results to display.</h3>
     </div>`
@@ -92,6 +46,12 @@ export class DatasetSimpleTableComponent {
      */
     filteredData:any[] = [];
 
+    /**
+     * Calc the column width based upon data?
+     */
+    @Input()
+    calcColumnWidth:boolean = true;
+
 
     sortBy: string = '';
 
@@ -101,7 +61,7 @@ export class DatasetSimpleTableComponent {
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
         this.sortBy = sortEvent.name;
-        this.sortOrder = sortEvent.order === TdDataTableSortingOrder.Descending ? TdDataTableSortingOrder.Ascending : TdDataTableSortingOrder.Descending;
+        this.sortOrder = sortEvent.order;
         this.filter();
     }
 
@@ -125,6 +85,7 @@ export class DatasetSimpleTableComponent {
 
     }
 
+
     initTable(){
         if(this.columns) {
             this.sortBy = this.columns[0].name;
@@ -132,10 +93,58 @@ export class DatasetSimpleTableComponent {
         else {
             this.columns = [];
         }
+        //determine width from data
+        if(this.calcColumnWidth && this.columns.length >3) {
+            let colWidths = this.calculateMaxColumnWidth();
+            this.columns.forEach(col => {
+                let width = colWidths[col.name]
+                let pixels = 0;
+                if (width == 0) {
+                    pixels = 100;
+                }
+                else {
+                    pixels = width * 11;
+                }
+                if (pixels > 300) {
+                    pixels = 300;
+                }
+                if (pixels < 150) {
+                    pixels = 150;
+                }
+                col.width = pixels;
+            });
+        }
 
         // Add table data
         this.data = this.rows;
         this.filter();
+    }
+
+    /**
+     * Calc the max width based upon data
+     * @return {any}
+     */
+    calculateMaxColumnWidth():any{
+        let widthMap = {};
+        this.rows.map(row => {
+            this.columns.forEach(col => {
+                let columnValue = row[col.name];
+                let max = widthMap[col.name];
+                let currWidth = 0
+                if (max == undefined) {
+                    max = 0;
+                    widthMap[col.name] = 0;
+                }
+                if (columnValue != undefined && columnValue != null) {
+                    currWidth = (columnValue+"").length;
+                }
+                if (currWidth > max) {
+                    widthMap[col.name] = currWidth;
+                }
+            });
+        });
+           return widthMap;
+
     }
 
 
