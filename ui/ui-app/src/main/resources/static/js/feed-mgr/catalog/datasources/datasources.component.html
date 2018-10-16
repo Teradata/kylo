@@ -3,7 +3,7 @@
     <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
       <span>{{'CATALOG.DATA_SOURCES.TITLE' | translate}}</span>
       <span fxFlex="100%"></span>
-      <button mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
+      <button *ngIf="allowEdit && !readOnly" mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
@@ -41,7 +41,7 @@
                       [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'datasource-icon'"></ng-md-icon>
           <h4 matLine>{{datasource.title}}</h4>
           <span></span>
-          <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
+          <div *ngIf="allowEdit && !readOnly" class="action-icons" fxLayout="row" style="visibility: hidden;">
             <mat-icon (click)="editDatasource($event, datasource)" title="Edit">mode_edit</mat-icon>
             <mat-icon (click)="deleteDatasource($event, datasource)" title="Delete">delete</mat-icon>
           </div>

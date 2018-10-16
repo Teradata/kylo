@@ -313,7 +313,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         return metadataService.read(() -> {
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
-            final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel());
+            final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel(false));
 
             // Return results
             final SearchResult<DataSource> searchResult = new SearchResultImpl<>();

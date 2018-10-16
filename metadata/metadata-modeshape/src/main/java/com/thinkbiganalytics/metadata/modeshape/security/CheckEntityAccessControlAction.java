@@ -204,7 +204,9 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
                                                                 DatasourceAccessControl.DELETE);
         createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions", datasourceEditor,
                           DatasourceAccessControl.CHANGE_PERMS);
-        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Allows a user to view the datasource", DatasourceAccessControl.ACCESS_DATASOURCE);
+        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Allows a user to view the datasource",
+                          DatasourceAccessControl.ACCESS_DATASOURCE,
+                          DatasourceAccessControl.ACCESS_DETAILS);
 
         final SecurityRole projectEditor = createDefaultRole(SecurityRole.PROJECT, ProjectAccessControl.ROLE_EDITOR, "Editor", "Allows a user to edit, delete projects",
                                                              ProjectAccessControl.ACCESS_PROJECT,
