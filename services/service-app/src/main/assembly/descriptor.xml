@@ -26,6 +26,8 @@
   <dependencySets>
     <dependencySet>
       <excludes>
+        <exclude>com.thinkbiganalytics.kylo.plugins:kylo-spark-livy-server</exclude>
+        <exclude>com.thinkbiganalytics.kylo.plugins:kylo-spark-shell-server</exclude>
         <exclude>org.apache.nifi:*</exclude>
         <!-- these will get placed in the plugin directory -->
         <exclude>com.thinkbiganalytics.kylo:kylo-spark-livy-core</exclude>
