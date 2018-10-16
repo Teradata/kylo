@@ -1,4 +1,4 @@
-import {Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
+import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../../common/CommonTypes";
@@ -11,7 +11,7 @@ import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {TableCreateMethod} from "../../../../model/feed/feed-table";
 import {FeedTableColumnDefinitionValidation} from "../../../../model/feed/feed-table-column-definition-validation";
-import {FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
+import {FormArray, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {AbstractControl} from "@angular/forms/src/model";
 import { interval } from 'rxjs/observable/interval';
 import { distinctUntilChanged, map, merge } from 'rxjs/operators';
@@ -201,7 +201,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 public dialog:MatDialog,
                 private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService, feedSideNavService:FeedSideNavService,
                 private defineFeedSourceSampleService: DefineFeedSourceSampleService,
-                private catalogService: CatalogService) {
+                private catalogService: CatalogService,
+                private cd:ChangeDetectorRef) {
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.domainTypesService = $$angularInjector.get("DomainTypesService");
         this.feedService = $$angularInjector.get("FeedService");
@@ -211,7 +212,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
-        this.parentForm = new FormGroup({})
+      //  this.parentForm = new FormGroup({})
 
         this.defineTableForm = new FormGroup({});
         this.definePartitionForm = new FormGroup({});
@@ -220,10 +221,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         this.sourceSampleForm = new FormGroup({})
 
-        this.parentForm.addControl("defineTableForm",this.defineTableForm)
-        this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
-        this.parentForm.addControl("mergeStrategiesForm",this.mergeStrategiesForm)
-        this.parentForm.addControl("targetFormatOptionsForm",this.targetFormatOptionsForm)
+      //  this.parentForm.addControl("defineTableForm",this.defineTableForm)
+     //   this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
+     //   this.parentForm.addControl("mergeStrategiesForm",this.mergeStrategiesForm)
+     //   this.parentForm.addControl("targetFormatOptionsForm",this.targetFormatOptionsForm)
 
         this.mergeStrategiesForm.registerControl("targetMergeStrategy", new FormControl());
         this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
@@ -280,7 +281,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl({value:'',disabled:this.feed.readonly || this.tablePermissions.tableLocked}));
 
         //listen when the form is valid or invalid
-        this.subscribeToFormChanges(this.parentForm);
+      //  this.subscribeToFormChanges(this.parentForm);
         this.subscribeToFormDirtyCheck(this.defineTableForm);
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
@@ -464,6 +465,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * @param columnDef
      */
     onNameFieldChange(columnDef: TableColumnDefinition, index: number) {
+        console.log("Field name change", columnDef, index)
         columnDef.replaceNameSpaces();
         this.onFieldChange(columnDef);
 
@@ -757,7 +759,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 }
                 columnDef.initFeedColumn()
                 //add the form control
-                this.tableFormControls.addTableFieldFormControl(columnDef,true);
+                this.tableFormControls.addTableFieldFormControl(columnDef,false);
             });
 
             this.defineTableForm.get("indexCheckAll").setValue(this.indexCheckAll.isChecked)
@@ -787,6 +789,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         _.each(this.feed.table.tableSchema.fields, (columnDef: TableColumnDefinition) => {
             columnDef.initFeedColumn()
         });
+    }
+
+    tableSchemaTrackByFn(index:number,field:TableColumnDefinition) {
+        return field._id;
     }
 
 
@@ -839,22 +845,25 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     private _setSourceAndTarget(event: DatasetPreviewStepperSavedEvent) {
         this.feedLoadingService.registerLoading();
+        //detach the change detector so we can make the updates without angular
+        this.cd.detach()
 
-
-        let _save = () => {
+        let _updateFormControls = () => {
            //apply the updates to this form
-
-            this.tableFormControls.resetFormFields();
             this.ensureTableFields();
             this.ensurePartitionData();
             this.showSourceSampleCatalog = false;
+            if(this.virtualScroll) {
+               this.virtualScroll.refresh();
+            }
             this.feedLoadingService.resolveLoading();
+            this.cd.reattach();
         }
 
         /**
-         * Save the feed
+         * Applies the Serde if necessary and then update the form controls
          */
-        let saveFeed = () => {
+        let applySerdeAndUpdateFormControls = () => {
             if(event.previews[0] instanceof PreviewFileDataSet) {
 
                 this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
@@ -862,15 +871,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                     this.feed.table.feedFormat = response.hiveFormat;
                     this.feed.table.structured = response.structured;
                     this.feed.table.feedTblProperties = response.serdeTableProperties;
-                    _save();
-                });
+                    _updateFormControls();
+                }, (error1:any) =>  this.cd.reattach());
             }
             else {
-                _save();
+                _updateFormControls();
             }
         }
 
-
+        // reset the feed fields
+        this.selectedColumn = undefined;
+        this.tableFormControls.resetFormFields();
 
 
         let previews = event.previews;
@@ -882,18 +893,18 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                     this.catalogService.getConnectorPlugin(sourceDataSet.dataSource.connector.pluginId)
                         .subscribe(plugin => {
                             this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin)
-                            saveFeed();
-                        });
+                            applySerdeAndUpdateFormControls();
+                        }, (error1:any) =>  this.cd.reattach());
                 } else {
                     this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet);
-                    saveFeed();
+                    applySerdeAndUpdateFormControls();
                 }
             }
         }
         else {
             //set the source and target to empty
             this.feed.setSourceDataSetAndUpdateTarget(null);
-            saveFeed();
+            applySerdeAndUpdateFormControls();
         }
 
     }
@@ -977,7 +988,10 @@ class TableFormControls {
 
     private buildTableFieldFormControl(field: TableColumnDefinition ) :Common.Map<FormControl> {
         let controls :Common.Map<FormControl> = {}
-        controls[TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX+"_"+field._id] = new FormControl({value:field.name,disabled:field.deleted|| this.tablePermissions.tableLocked },[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
+        let nameControl = new FormControl({value:field.name,disabled:field.deleted|| this.tablePermissions.tableLocked },[Validators.required, this.feedNameValidator(this.feedTableColumnDefinitionValidation,field)]);
+       // nameControl.valueChanges.subscribe()
+        //(change)="onNameFieldChange(row,index)">
+        controls[TableFormControls.TABLE_COLUMN_DEF_NAME_PREFIX+"_"+field._id] = nameControl;
         controls[TableFormControls.TABLE_COLUMN_DEF_DATA_TYPE_PREFIX+"_"+field._id] = new FormControl({value:field.derivedDataType,disabled:field.deleted|| this.tablePermissions.dataTypeLocked|| this.tablePermissions.tableLocked },[Validators.required]);
         controls[TableFormControls.TABLE_COLUMN_DEF_PRECISION_SCALE_PREFIX+"_" + field._id] = new FormControl({value:field.precisionScale,disabled:this.tablePermissions.dataTypeLocked || field.deleted},[TableFormControls.precisionScale]);
 
@@ -996,9 +1010,14 @@ class TableFormControls {
         Object.keys(this.defineTableForm.controls).forEach((key: string) => {
             if(key != "indexCheckAll" && key != "profileCheckAll") {
                 this.defineTableForm.removeControl(key)
+                console.log("REMOVE field ",key)
             }
         });
-        Object.keys(this.definePartitionForm.controls).forEach((key: string) => this.defineTableForm.removeControl(key));
+        Object.keys(this.definePartitionForm.controls).forEach((key: string) => {
+
+         this.definePartitionForm.removeControl(key);
+        console.log("REMOVE partition ",key)
+        });
     }
 
 
