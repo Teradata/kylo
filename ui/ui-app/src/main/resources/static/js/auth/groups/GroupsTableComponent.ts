@@ -11,6 +11,7 @@ import StateService from '../../services/StateService';
 import { TdDataTableSortingOrder, ITdDataTableSortChangeEvent, ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
+import { ObjectUtils } from '../../common/utils/object-utils';
 /**
  * Identifier for this page.
  * @type {string}
@@ -49,8 +50,8 @@ export default class GroupsTableComponent extends BaseFilteredPaginatedTableView
      * @returns {string} the title
      */
     getTitle = function(group: any) {
-            return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
-        };
+        return (ObjectUtils.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
+    };
      /**
      * Navigates to the details page for the specified user.
      *

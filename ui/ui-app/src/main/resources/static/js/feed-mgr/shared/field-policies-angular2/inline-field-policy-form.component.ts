@@ -5,6 +5,8 @@ import {FieldPolicyOptionsService} from "./field-policy-options.service";
 import {PolicyInputFormService} from "./policy-input-form.service"
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 import {FormGroup} from "@angular/forms";
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: "inline-field-policy-form",
@@ -66,14 +68,14 @@ export class InlinePolicyInputFormComponent implements OnInit {
             this.ruleTypesAvailable();
 
 
-            if ((this.defaultValue && (angular.isUndefined(this.selectedPolicyRule) )|| this.selectedPolicyRule== null)) {
+            if ((this.defaultValue && (ObjectUtils.isUndefined(this.selectedPolicyRule) )|| this.selectedPolicyRule== null)) {
                 var defaultOption = this.ruleTypes.filter((v:any) =>{ return (v.name == this.defaultValue); })
                 if (defaultOption.length > 0) {
                     this.ruleType = this.selectedPolicyRule = defaultOption[0];
                     this.onRuleTypeChange();
                 }
             }
-            else if(angular.isDefined(this.selectedPolicyRule)){
+            else if(ObjectUtils.isDefined(this.selectedPolicyRule)){
                 this.skipChangeHandler = true;
                 //this.ruleType = this.selectedPolicyRule
                 this.ruleType = this.findRuleType(this.selectedPolicyRule.name)
@@ -109,7 +111,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
         this.showAdvancedOptions = false;
         if (this.ruleType != null) {
             if( !this.skipChangeHandler) {
-                var rule = angular.copy(this.ruleType);
+                var rule = CloneUtil.deepCopy(this.ruleType);
                 rule.groups = this.policyInputFormService.groupProperties(rule);
                 this.policyInputFormService.updatePropertyIndex(rule);
                 //make all rules editable

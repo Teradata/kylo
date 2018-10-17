@@ -2,6 +2,7 @@ import * as angular from "angular";
 import { Component, Input, Output, EventEmitter, ElementRef, SimpleChanges } from '@angular/core';
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import * as $ from "jquery";
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: 'tba-card-filter-header',
@@ -39,9 +40,9 @@ export class CardFilterHeaderComponent {
     ngOnInit() {
 
         this.filterModelOptions = this.filterModelOptions || {};
-        this.renderFilter = angular.isUndefined(this.renderFilter) ? true : this.renderFilter;
-        this.renderHelp = angular.isDefined(this.onShowFilterHelp);
-        this.customFilterTemplate = angular.isUndefined(this.customFilterTemplate) ? '' : this.customFilterTemplate;
+        this.renderFilter = ObjectUtils.isUndefined(this.renderFilter) ? true : this.renderFilter;
+        this.renderHelp = ObjectUtils.isDefined(this.onShowFilterHelp);
+        this.customFilterTemplate = ObjectUtils.isUndefined(this.customFilterTemplate) ? '' : this.customFilterTemplate;
     
     }
 

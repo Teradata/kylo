@@ -58,7 +58,7 @@ class Indicator {
         this.percent = 0;
         this.dateTime = null;
         this.allServices = [];
-        angular.forEach(this.grouped, (groupData, status) => {
+        _.forEach(this.grouped, (groupData: any, status: any) => {
             groupData.data = [];
             groupData.count = 0;
         })
@@ -95,7 +95,7 @@ class Indicator {
         if (this.openAlerts.length == 0) {
             this.reset();
             this.allServices = services;
-            angular.forEach(services, (service: any, i: any) => {
+            _.forEach(services, (service: any, i: any) => {
                 this.addService(service);
                 service.componentCount = service.components.length;
                 service.healthyComponentCount = service.healthyComponents.length;
@@ -115,7 +115,7 @@ class Indicator {
         this.counts.downCount = this.grouped["UNHEALTHY"].count;
         this.counts.warningCount = this.grouped["WARNING"].count;
         this.counts.errorCount = this.counts.downCount + this.counts.warningCount;
-        angular.forEach(this.chartData, (item, i) => {
+        _.forEach(this.chartData, (item: any, i: any) => {
             item.value = this.grouped[item.key].count;
         })
         this.chartOptions.chart.title = this.counts.allCount + " " + this.translate.instant('Total');
@@ -299,7 +299,7 @@ export class ServiceDetailsDialogComponent {
         this.status = this.data.status;
         this.services = this.data.selectedStatusData.data;
 
-        this.services.forEach((service: any) => {
+        _.forEach(this.services, (service: any) => {
             service.componentMessage = null;
             if (service.components.length == 1) {
                 service.componentName = service.components[0].name;

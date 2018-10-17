@@ -1,5 +1,6 @@
 import * as angular from "angular";
 import { Component, Input } from '@angular/core';
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: 'card-layout',
@@ -14,7 +15,7 @@ export class CardLayoutComponent {
 
     ngOnInit() {
 
-        if(angular.isUndefined(this.cardToolbar)){
+        if(ObjectUtils.isUndefined(this.cardToolbar)){
             this.cardToolbar = true;
         }
     }

@@ -5,6 +5,7 @@ import { Component, Inject, Input } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Component({
     selector: 'thinkbig-template-order',
@@ -73,7 +74,7 @@ export class TemplateOrderController {
 
         var obj = { templateIds: order };
         var promise = this.http.post(this.RestUrlService.SAVE_TEMPLATE_ORDER_URL,
-            angular.toJson(obj),
+            ObjectUtils.toJson(obj),
             {headers :  new HttpHeaders({'Content-Type':'application/json; charset=UTF-8'})
         }).toPromise().then(successFn, errorFn);
 

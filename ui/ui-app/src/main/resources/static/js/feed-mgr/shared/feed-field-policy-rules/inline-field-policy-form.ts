@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 
 
@@ -33,14 +34,14 @@ class InlineFieldPolicyFormController {
             this.options = this.PolicyInputFormService.groupPolicyOptions(results, currentFeedValue);
             this.ruleTypesAvailable();
 
-            if (this.defaultValue && (angular.isUndefined(this.field) || this.field == null)) {
+            if (this.defaultValue && (ObjectUtils.isUndefined(this.field) || this.field == null)) {
                 var defaultOption = this.options.filter((v: any) => { return (v.name == this.defaultValue); })
                 if (defaultOption.length > 0) {
                     this.ruleType = this.field = defaultOption[0];
                     this.onRuleTypeChange();
                 }
             }
-            else if(angular.isDefined(this.field)){
+            else if(ObjectUtils.isDefined(this.field)){
                 this.skipChangeHandler = true;
                 this.ruleType = this.field
                 //    PolicyInputFormService.updatePropertyIndex(rule);

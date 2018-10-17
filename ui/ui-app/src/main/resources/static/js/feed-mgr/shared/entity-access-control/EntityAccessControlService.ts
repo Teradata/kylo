@@ -4,6 +4,7 @@ import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Injectable()
 export class EntityAccessControlService extends AccessConstants{
@@ -25,7 +26,7 @@ export class EntityAccessControlService extends AccessConstants{
     }
     augmentRoleWithUiModel(roleMembership: any) {
         roleMembership.ui = { members: { selectedItem: '', searchText: '' } };
-        if (angular.isUndefined(roleMembership.members)) {
+        if (ObjectUtils.isUndefined(roleMembership.members)) {
             roleMembership.members = [];
         }
     }
@@ -63,7 +64,7 @@ export class EntityAccessControlService extends AccessConstants{
                     //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
                     var update = roleMembership.members.length == 0;
                     _.each(roleMembership.members, (member: any) => {
-                        if (angular.isDefined(member.type) && member.editable != false) {
+                        if (ObjectUtils.isDefined(member.type) && member.editable != false) {
                             if (member.type == 'user') {
                                 users.push(member.systemName);
                             }
@@ -101,7 +102,7 @@ export class EntityAccessControlService extends AccessConstants{
                 _.each(roleMembership.groups, (group: any) => {
                     group.editable = false;
                     group.type = 'group';
-                    group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
+                    group.title = (group.title == null || ObjectUtils.isUndefined(group.title)) ? group.systemName : group.title;
                     roleMembership.members.push(group)
                 });
                 _.each(roleMembership.users, (user: any) => {
@@ -112,7 +113,7 @@ export class EntityAccessControlService extends AccessConstants{
                 })
             });
             _.each(response.data.assigned, (roleMembership: any, roleName: any) => {
-                if (angular.isUndefined(existingModelRoleAssignments[roleMembership.role.systemName])) {
+                if (ObjectUtils.isUndefined(existingModelRoleAssignments[roleMembership.role.systemName])) {
                     existingModelRoleAssignments[roleMembership.role.systemName] = roleMembership;
                     entityRoleMemberships.push(roleMembership);
                 }
@@ -123,7 +124,7 @@ export class EntityAccessControlService extends AccessConstants{
                 _.each(roleMembership.groups, (group: any) => {
                     group.editable = true;
                     group.type = 'group';
-                    group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
+                    group.title = (group.title == null || ObjectUtils.isUndefined(group.title)) ? group.systemName : group.title;
                     existingMembership.members.push(group)
                 });
                 _.each(roleMembership.users, (user: any) => {
@@ -137,7 +138,7 @@ export class EntityAccessControlService extends AccessConstants{
             //get the available roles for this entity (might need to add a method to AccessControlService to getRolesForEntityType()
             this.accessControlService.getEntityRoles(membershipType).then((roles: any) => {
                 _.each(roles, (role: any) => {
-                    if (angular.isUndefined(existingModelRoleAssignments[role.systemName])) {
+                    if (ObjectUtils.isUndefined(existingModelRoleAssignments[role.systemName])) {
                         var membership = { role: role };
                         this.augmentRoleWithUiModel(membership);
                         entityRoleMemberships.push(membership);
@@ -200,7 +201,7 @@ export class EntityAccessControlService extends AccessConstants{
             var promise = this.$injector.get("$http")({
                 url: url,
                 method: "POST",
-                data: angular.toJson(roleMembershipChange),
+                data: ObjectUtils.toJson(roleMembershipChange),
                 headers: {
                     'Content-Type': 'application/json; charset=UTF-8'
                 }
@@ -213,7 +214,7 @@ export class EntityAccessControlService extends AccessConstants{
             _.each(resolvedResponses, (response: any) => {
                 responses.push(response.data);
             })
-            if (angular.isFunction(callbackFn)) {
+            if (ObjectUtils.isFunction(callbackFn)) {
                 callbackFn(responses);
             }
             defer.resolve(responses);

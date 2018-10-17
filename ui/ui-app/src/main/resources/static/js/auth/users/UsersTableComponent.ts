@@ -8,6 +8,7 @@ import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { Component } from '@angular/core';
 import { ITdDataTableColumn,  TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
+import { ObjectUtils } from '../../common/utils/object-utils';
 const PAGE_NAME: string = "users";
 
 
@@ -43,7 +44,7 @@ export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
         // Get the list of users and groups
         this.UserService.getGroups().then((groups: any) => {
             this.groups = {};
-            angular.forEach(groups, (group: any) => {
+            _.forEach(groups, (group: any) => {
                 this.groups[group.systemName] = group;
             });
         });
@@ -83,7 +84,7 @@ export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
      * @returns {string} the display name
      */
     getDisplayName(user: any) {
-        return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
+        return (ObjectUtils.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
     };
 
     /**
@@ -94,7 +95,7 @@ export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
      */
     getGroupTitles(user: any) {
         return _.map(user.groups, (group: any) => {
-            if (angular.isDefined(this.groups[group]) && angular.isString(this.groups[group].title)) {
+            if (ObjectUtils.isDefined(this.groups[group]) && ObjectUtils.isString(this.groups[group].title)) {
                 return this.groups[group].title;
             } else {
                 return group;

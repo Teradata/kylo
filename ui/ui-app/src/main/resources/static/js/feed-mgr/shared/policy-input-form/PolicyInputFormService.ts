@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { Injectable, Inject } from '@angular/core';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Injectable()
 export class PolicyInputFormService {
@@ -59,9 +60,9 @@ export class PolicyInputFormService {
     }
 
     createFilterFor=(query: any) =>{
-        var lowercaseQuery = angular.lowercase(query);
+        var lowercaseQuery = query.lowercaseQuery();
         return function filterFn(option: any) {
-            return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
+            return (((option.value).lowercase()).indexOf(lowercaseQuery) >= 0);
         };
     }
     attachCurrentFeedValueToProperty = (prop: any, feedName: any) => {
@@ -97,7 +98,7 @@ export class PolicyInputFormService {
         }
 
         var optionsArr: any = [];
-        angular.forEach(options, (opt: any) => {
+        _.forEach(options, (opt: any) => {
             opt.groups = this.groupProperties(opt);
             optionsArr.push(opt);
         });
@@ -230,7 +231,7 @@ export class PolicyInputFormService {
     };
     transformChip = (chip: any) => {
         // If it is an object, it's already a known chip
-        if (angular.isObject(chip)) {
+        if (ObjectUtils.isObject(chip)) {
             return chip;
         }
         // Otherwise, create a new one

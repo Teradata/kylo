@@ -4,7 +4,7 @@ import * as _ from 'underscore';
 import OpsManagerJobService from "../../services/OpsManagerJobService";
 import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
-
+import * as $ from "jquery";
 import {Common} from "../../../common/CommonTypes";
 import { Component, Input, Inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
@@ -14,6 +14,7 @@ import AccessControlService from "../../../services/AccessControlService";
 import AngularModuleExtensionService from "../../../services/AngularModuleExtensionService";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
+import { ObjectUtils } from "../../../common/utils/object-utils";
 
 
 class PageState {
@@ -134,7 +135,7 @@ class TabAnimationControl {
      * Might not be needed
      */
     disableTabAnimation() {
-        angular.element('.job-details-tabs').addClass('no-animation');
+        $('.job-details-tabs').addClass('no-animation');
     }
 
 
@@ -143,7 +144,7 @@ class TabAnimationControl {
             clearTimeout(this.enableTabAnimationTimeout);
         }
         this.enableTabAnimationTimeout = setTimeout(()=>{
-            angular.element('.job-details-tabs').removeClass('no-animation');
+            $('.job-details-tabs').removeClass('no-animation');
         }, 1000);
     }
 }
@@ -338,7 +339,7 @@ export class JobDetailsDirectiveController {
     };
 
     triggerSavepointRetry() {
-        if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+        if (ObjectUtils.isDefined(this.jobData.triggerRetryFlowfile)) {
             this.jobData.renderTriggerRetry = false;
             this.http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).toPromise().then(() => {
 
@@ -351,13 +352,13 @@ export class JobDetailsDirectiveController {
     }
 
     triggerSavepointReleaseFailure(callbackFn: any) {
-        if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+        if (ObjectUtils.isDefined(this.jobData.triggerRetryFlowfile)) {
             this.http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).toPromise().then((response: any) => {
 
                 this.snackBar.open("Triggered the release and failure","OK",{
                     duration : 3000
                 });
-                if (angular.isDefined(callbackFn)) {
+                if (ObjectUtils.isDefined(callbackFn)) {
                     callbackFn();
                 }
                 this.loadJobData(true);
@@ -500,7 +501,7 @@ export class JobDetailsDirectiveController {
     }
 
     private checkTriggerSavepoint(job:Job,key:string,value:any){
-        if(key == 'savepoint.trigger.flowfile' && angular.isDefined(value)) {
+        if(key == 'savepoint.trigger.flowfile' && ObjectUtils.isDefined(value)) {
             {
                 job.renderTriggerRetry = true;
                 job.triggerRetryFlowfile = value;
@@ -560,20 +561,20 @@ export class JobDetailsDirectiveController {
         job.statusIcon = icon;
         job.tabIconStyle = iconStyle;
 
-        angular.extend(this.jobData, job);
+        _.extend(this.jobData, job);
 
 
         if (job.executedSteps) {
             //sort by start time then eventId
             job.executedSteps = _.chain(job.executedSteps).sortBy('nifiEventId').sortBy('startTime').value();
 
-            angular.forEach(job.executedSteps, (step: any, i: any) => {
+            _.forEach(job.executedSteps, (step: any, i: any) => {
                 var stepName = "Step " + (i + 1);
                 if (this.stepData[stepName] == undefined) {
                     this.stepData[stepName] = new Step();
                     this.allSteps.push({title: stepName, content: this.stepData[stepName]})
                 }
-                angular.extend(this.stepData[stepName], this.transformStep(step));
+                _.extend(this.stepData[stepName], this.transformStep(step));
 
             });
         }
@@ -641,7 +642,7 @@ export class JobDetailsDirectiveController {
             len = this.allSteps.length;
         }
         //clear out all the steps
-        angular.forEach(Object.keys(this.stepData), (stepName: string, i: number) => {
+        _.forEach(Object.keys(this.stepData), (stepName: string, i: number) => {
             delete this.stepData[stepName];
         });
 

@@ -4,6 +4,7 @@ import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from './EntityAccessControlService';
 import { Component, Input, Inject, OnInit, SimpleChanges } from '@angular/core';
 import UserGroupService from '../../../services/UserGroupService';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Component({
     selector: 'entity-access-control',
@@ -43,19 +44,19 @@ export class EntityAccessControlComponent implements OnInit {
 
     ngOnInit() {
         
-        if(angular.isUndefined(this.readOnly)){
+        if(ObjectUtils.isUndefined(this.readOnly)){
             this.readOnly = false;
         }
 
-        if(angular.isUndefined(this.theForm)){
+        if(ObjectUtils.isUndefined(this.theForm)){
             this.theForm = {};
         }
 
-        if(angular.isUndefined(this.roleMembershipsProperty)){
+        if(ObjectUtils.isUndefined(this.roleMembershipsProperty)){
             this.roleMembershipsProperty = "roleMemberships";
         }
 
-        if(angular.isUndefined(this.allowOwnerChange)){
+        if(ObjectUtils.isUndefined(this.allowOwnerChange)){
             this.allowOwnerChange = true;
         }
 
@@ -64,18 +65,18 @@ export class EntityAccessControlComponent implements OnInit {
         });
 
 
-        if (angular.isUndefined(this.entity[this.roleMembershipsProperty])) {
+        if (ObjectUtils.isUndefined(this.entity[this.roleMembershipsProperty])) {
             this.entity[this.roleMembershipsProperty] = [];
         }
 
         this.entityRoleMemberships = this.entity[this.roleMembershipsProperty];
 
 
-        if (angular.isUndefined(this.queryForEntityAccess)) {
+        if (ObjectUtils.isUndefined(this.queryForEntityAccess)) {
             this.queryForEntityAccess = false;
         }
 
-        if (angular.isUndefined(this.entity.owner) || this.entity.owner == null) {
+        if (ObjectUtils.isUndefined(this.entity.owner) || this.entity.owner == null) {
             this.entity.owner = null;
             //assign it the current user
             var requests = { currentUser: this.UserGroupService.getCurrentUser(), allUsers: this.getAllUsers() };
@@ -91,7 +92,7 @@ export class EntityAccessControlComponent implements OnInit {
          * Flag that the user has updated the role memberships
          * @type {boolean}
          */
-        this.entity.roleMembershipsUpdated = angular.isUndefined(this.entity.roleMembershipsUpdated) ? false : this.entity.roleMembershipsUpdated;
+        this.entity.roleMembershipsUpdated = ObjectUtils.isUndefined(this.entity.roleMembershipsUpdated) ? false : this.entity.roleMembershipsUpdated;
 
         /**
          * Flag to indicate we should query for the roles from the server.
@@ -134,7 +135,7 @@ export class EntityAccessControlComponent implements OnInit {
      */
     filterCollection = (collection: any, query: any, keys: any) => {
         return query ? _.filter(collection, (item) => {
-            var lowercaseQuery = angular.lowercase(query);
+            var lowercaseQuery = query.toLowerCase();
             var found = _.find(keys, (key: any) => {
                 return (item[key].indexOf(lowercaseQuery) === 0);
             });
@@ -197,7 +198,7 @@ export class EntityAccessControlComponent implements OnInit {
             this.UserGroupService.getGroups()
                 .then((groups: any) => {
                     this.allGroups = _.map(groups, (item: any) => {
-                        item._lowername = (item.title == null || angular.isUndefined(item.title)) ? item.systemName.toLowerCase() : item.title.toLowerCase();
+                        item._lowername = (item.title == null || ObjectUtils.isUndefined(item.title)) ? item.systemName.toLowerCase() : item.title.toLowerCase();
                         item.type = 'group'
                         return item;
                     });
@@ -217,14 +218,14 @@ export class EntityAccessControlComponent implements OnInit {
             this.UserGroupService.getUsers()
                 .then((users: any) => {
                     this.allUsers = _.map(users, (user: any) => {
-                        var name = (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
+                        var name = (ObjectUtils.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
                         user.name = name;
                         user.displayName = name;
                         user.title = name;
                         user.type = 'user';
                         user._lowername = name.toLowerCase();
                         user._lowerSystemName = user.systemName.toLowerCase()
-                        user._lowerDisplayName = angular.isString(user.displayName) ? user.displayName.toLowerCase() : '';
+                        user._lowerDisplayName = ObjectUtils.isString(user.displayName) ? user.displayName.toLowerCase() : '';
                         return user;
                     });
                     //     var result = filterCollection(allUserNamesLowerCase,query,['_lowerDisplayName','_lowerSystemName']);

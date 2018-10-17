@@ -40,6 +40,7 @@ import {
     ApplyDomainTypesRow
 } from "../../../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import { ObjectUtils } from '../../../../../common/utils/object-utils';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -622,7 +623,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     private onDataTransformSchemaLoaded() {
         this.ensureTableFields();
 
-        if (angular.isDefined(this.feed.schemaChanged) && this.feed.schemaChanged == true) {
+        if (ObjectUtils.isDefined(this.feed.schemaChanged) && this.feed.schemaChanged == true) {
             this.isValid = false;
             /*
             this.$mdDialog.show(
@@ -667,9 +668,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * Set the table states for locks
      */
     private calcTableState() {
-        this.tablePermissions.tableLocked = angular.isDefined(this.tablePermissions.tableLocked) && (this.tablePermissions.tableLocked == true );
-        this.tablePermissions.dataTypeLocked = angular.isDefined(this.tablePermissions.dataTypeLocked) && (this.tablePermissions.dataTypeLocked == true );
-        this.tablePermissions.canRemoveFields = angular.isUndefined(this.tablePermissions.canRemoveFields) || this.tablePermissions.canRemoveFields === true ;
+        this.tablePermissions.tableLocked = ObjectUtils.isDefined(this.tablePermissions.tableLocked) && (this.tablePermissions.tableLocked == true );
+        this.tablePermissions.dataTypeLocked = ObjectUtils.isDefined(this.tablePermissions.dataTypeLocked) && (this.tablePermissions.dataTypeLocked == true );
+        this.tablePermissions.canRemoveFields = ObjectUtils.isUndefined(this.tablePermissions.canRemoveFields) || this.tablePermissions.canRemoveFields === true ;
     }
 
     /*

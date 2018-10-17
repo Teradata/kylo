@@ -1,4 +1,4 @@
-import * as angular from 'angular';
+import * as _ from 'underscore';
 import AccessControlService from "../../services/AccessControlService";
 import { ListTableView } from "../../services/ListTableViewTypes";
 import StateService from '../../services/StateService';
@@ -118,7 +118,7 @@ export class RegisteredTemplatesController extends BaseFilteredPaginatedTableVie
             this.loading = false;
             if (response) {
                 var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
-                angular.forEach(response, (template) => {
+                _.forEach(response, (template: any) => {
                     template.allowExport = !entityAccessControlled || this.RegisterTemplateService.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
                     template.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                 });
@@ -139,7 +139,7 @@ export class RegisteredTemplatesController extends BaseFilteredPaginatedTableVie
 
     }
 
-    exportTemplate = (event: angular.IAngularEvent, template: any) => {
+    exportTemplate = (event: any, template: any) => {
         var promise = this.http.get(this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id);
     }
 }

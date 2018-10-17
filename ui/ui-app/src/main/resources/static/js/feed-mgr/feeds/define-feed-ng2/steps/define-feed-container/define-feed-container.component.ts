@@ -13,6 +13,7 @@ import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent"
 import {TdDialogService} from "@covalent/core/dialogs";
 import * as angular from "angular";
 import {FEED_DEFINITION_STATE_NAME} from "../../../../model/feed/feed-constants";
+import * as _ from "underscore";
 
 @Component({
     selector: "define-feed-step-container",
@@ -157,7 +158,7 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
         let message = response.message;
         this.openSnackBar(message)
         if(response.success){
-            angular.extend(this.feed,response.feed);
+            _.extend(this.feed,response.feed);
           //  this.feed = response.feed;
             this.feedName = this.feed.feedName;
         }

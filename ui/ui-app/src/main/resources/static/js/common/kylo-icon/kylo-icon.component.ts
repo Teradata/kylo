@@ -1,6 +1,7 @@
 import {Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
+import * as $ from "jquery";
 
 /**
  * Displays an SVG icon using AngularJS's ng-md-icon.
@@ -31,8 +32,8 @@ export class KyloIconComponent implements OnChanges, OnInit {
     }
 
     public ngOnInit(): void {
-        const $element = angular.element(this.element.nativeElement);
-        angular.element(document.body).injector().get("ngMdIconDirective")[0].link(this, $element, this);
+        const $element = $(this.element.nativeElement);
+        $(document.body).injector().get("ngMdIconDirective")[0].link(this, $element, this);
     }
 
     public ngOnChanges(changes: SimpleChanges): void {

@@ -5,6 +5,8 @@ import {FormGroup} from "@angular/forms";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
 import * as angular from 'angular';
 import * as _ from "underscore";
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { CloneUtil } from "../../../common/utils/clone-util";
 
 interface ViewText {
     modeText:string;
@@ -138,7 +140,7 @@ export class FeedPreconditionDialogComponent implements OnInit{
 
     onRuleTypeChange(selectedValue:any) {
         if (this.ruleType != null) {
-            var rule = angular.copy(this.ruleType);
+            var rule = CloneUtil.deepCopy(this.ruleType);
             rule.groups = this.policyInputFormService.groupProperties(rule);
             this.policyInputFormService.updatePropertyIndex(rule);
             //make all rules editable

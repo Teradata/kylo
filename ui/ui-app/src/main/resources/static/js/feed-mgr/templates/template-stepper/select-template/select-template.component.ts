@@ -16,6 +16,7 @@ import {RestUrlService} from '../../../services/RestUrlService';
 import {UiComponentsService} from '../../../services/UiComponentsService';
 import {EntityAccessControlService} from '../../../shared/entity-access-control/EntityAccessControlService';
 import {TemplateDeleteDialog} from './template-delete-dialog.component';
+import { ObjectUtils } from "../../../../common/utils/object-utils";
 
 @Component({
     selector: 'thinkbig-register-select-template',
@@ -191,7 +192,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
         }, (err: any) => {
             this.registerTemplateService.resetModel();
-            this.errorMessage = (angular.isDefined(err.data) && angular.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
+            this.errorMessage = (ObjectUtils.isDefined(err.data) && ObjectUtils.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
             this.loadingTemplate = false;
             this.hideProgress();
         });
@@ -212,7 +213,7 @@ export class RegisterSelectTemplateController implements OnInit {
     deleteTemplateError = (errorMsg: any) => {
         // Display error message
         var msg = "<p>The template cannot be deleted at this time.</p><p>";
-        msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
+        msg += ObjectUtils.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
         msg += "</p>";
 
         this._dialogService.closeAll();
@@ -281,7 +282,7 @@ export class RegisterSelectTemplateController implements OnInit {
     publishTemplateError = (errorMsg: any) => {
         // Display error message
         var msg = "Template could not be published. ";
-        msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
+        msg += ObjectUtils.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
 
         this._dialogService.openAlert({
             ariaLabel: "Error publishing the template to repository",
@@ -367,14 +368,14 @@ export class RegisterSelectTemplateController implements OnInit {
     matchNiFiTemplateIdWithModel() {
         if (!this.isLoading() && this.model.nifiTemplateId != this.nifiTemplateId) {
             var matchingTemplate = this.templates.find(function (template: any) {
-                var found = angular.isDefined(template.templateDto) ? template.templateDto.id == this.model.nifiTemplateId : template.id == this.model.nifiTemplateId;
+                var found = ObjectUtils.isDefined(template.templateDto) ? template.templateDto.id == this.model.nifiTemplateId : template.id == this.model.nifiTemplateId;
                 if (!found) {
                     //check on template name
                     found = this.model.templateName == template.name;
                 }
                 return found;
             });
-            if (angular.isDefined(matchingTemplate)) {
+            if (ObjectUtils.isDefined(matchingTemplate)) {
                 this.nifiTemplateId = matchingTemplate.templateDto.id;
             }
         }

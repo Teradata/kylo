@@ -2,6 +2,7 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {Component, Input, Output, EventEmitter, ElementRef} from "@angular/core";
 import * as $ from "jquery";
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: "upload-file",
@@ -46,7 +47,7 @@ export class UploadFileComponent {
             } catch (e) {
             }
         }
-        if(angular.isDefined(this.uploadFileModel) && this.uploadFileModel != null){
+        if(ObjectUtils.isDefined(this.uploadFileModel) && this.uploadFileModel != null){
             if(_.isArray(this.uploadFileModel)){
                 this.fileNames = this.uploadFileModel.map((f :any) => f.name).join(', ');
             }

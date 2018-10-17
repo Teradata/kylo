@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import * as $ from "jquery";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { UiComponentsService } from '../../../services/UiComponentsService';
 import { FeedService } from '../../../services/FeedService';
@@ -8,6 +9,7 @@ import { RestUrlService } from '../../../services/RestUrlService';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
 import { TdDataTableService, TdDataTableSortingOrder } from '@covalent/core/data-table';
+import { ObjectUtils } from '../../../../common/utils/object-utils';
 
 @Component({
     selector: 'thinkbig-register-processor-properties',
@@ -77,7 +79,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
         })
 
         this.registerTemplateService.modelTemplateTableOptionObserver.subscribe((model)=>{
-            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplatePropertyService.propertyList)) {
+            if (this.model.templateTableOption !== "NO_TABLE" && ObjectUtils.isArray(this.registerTemplatePropertyService.propertyList)) {
                 this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
                     .then((tableOptionMetadataProperties: any) => {
                         this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList.concat(tableOptionMetadataProperties);
@@ -121,7 +123,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
     }
 
     minProcessorItems = () => {
-        var windowHeight = angular.element(window).height();
+        var windowHeight = $(window).height();
         var newHeight = windowHeight - 450;
         var processorHeight = 48;
         var minItems = Math.round(newHeight / processorHeight);
@@ -156,14 +158,14 @@ export class RegisterProcessorPropertiesController implements OnInit {
         });
         // Find controller services
         _.chain(this.allProperties).filter((property: any) => {
-            return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+            return ObjectUtils.isObject(property.propertyDescriptor) && ObjectUtils.isString(property.propertyDescriptor.identifiesControllerService);
         }).each((property : any) => {this.feedService.findControllerServicesForProperty(property)});
 
     }
 
     showSelected = () => {
         var selectedProperties: any = [];
-        angular.forEach(this.allProperties, (property: any) => {
+        _.forEach(this.allProperties, (property: any) => {
             if (property.selected) {
                 selectedProperties.push(property);
             }
@@ -221,7 +223,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
     }
 
     initializeRenderTypes = () => {
-        angular.forEach(this.registerTemplatePropertyService.codemirrorTypes, (label: any, type: any) => {
+        _.each(this.registerTemplatePropertyService.codemirrorTypes, (label: any, type: any) => {
             this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
         });
     }

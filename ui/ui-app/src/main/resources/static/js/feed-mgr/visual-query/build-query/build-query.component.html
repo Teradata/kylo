@@ -58,7 +58,7 @@
       <md-button ng-click="$bq.toggleAdvancedMode()" class="md-raised" ng-disabled="$bq.error != null">Edit SQL</md-button>
       </div>
       <kylo-upload-sample-file model="$bq.model" engine="$bq.engine" is-valid="$bq.isValid" on-file-uploaded="$bq.onFileUploaded()" ng-if="$bq.model.$selectedDatasourceId == 'FILE'"></kylo-upload-sample-file>
-      <span flex-auto layout-align="end center">
+      <span layout-align="end center">
       <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}" style="margin-top:-8px"></thinkbig-step-buttons>
     </span>
     </div>

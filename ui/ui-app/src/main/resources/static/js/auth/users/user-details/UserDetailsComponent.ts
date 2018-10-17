@@ -9,6 +9,8 @@ import { ViewContainerRef } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 
 
@@ -110,7 +112,7 @@ export default class UserDetailsComponent {
         // Update $error.missingGroup when the edit model changes
         // $scope.$watch(
         //         () => {return this.editModel.groups},
-        //         () => {this.$error.missingGroup = (angular.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0)},
+        //         () => {this.$error.missingGroup = (ObjectUtils.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0)},
         //         true
         // );
 
@@ -118,8 +120,8 @@ export default class UserDetailsComponent {
         // $scope.$watch(
         //         () => {return this.editModel.systemName},
         //         () => {
-        //             this.$error.duplicateUser = (angular.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName]);
-        //             this.$error.missingUser = (!angular.isString(this.editModel.systemName) || this.editModel.systemName.length === 0);
+        //             this.$error.duplicateUser = (ObjectUtils.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName]);
+        //             this.$error.missingUser = (!ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0);
         //         }
         // );
         this.onLoad();
@@ -140,7 +142,7 @@ export default class UserDetailsComponent {
     */
     findGroupSearchText = (group: any) => {
         var safeQuery = this.groupSearchText.toLocaleUpperCase();
-        if (angular.isString(this.groupMap[group].title)) {
+        if (ObjectUtils.isString(this.groupMap[group].title)) {
             var titleIndex = this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
             return (titleIndex > -1) ? this.groupMap[group].title.substr(titleIndex, safeQuery.length) : this.groupSearchText;
         } else {
@@ -150,15 +152,15 @@ export default class UserDetailsComponent {
     };
 
     isUserNameEmpty = () => {
-       return !angular.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
+       return !ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
     }
 
     isUserNameDuplicate = () => {
-        return angular.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName];
+        return ObjectUtils.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName];
     }
 
     isMissingGroup = () => {
-        return angular.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0;
+        return ObjectUtils.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0;
     }
 
     isFormValid = () => {
@@ -172,7 +174,7 @@ export default class UserDetailsComponent {
      * @returns {string} the group title
      */
     getGroupTitle = (group: any) => {
-        if (angular.isDefined(this.groupMap[group]) && angular.isString(this.groupMap[group].title)) {
+        if (ObjectUtils.isDefined(this.groupMap[group]) && ObjectUtils.isString(this.groupMap[group].title)) {
             return this.groupMap[group].title;
         } else {
             return group;
@@ -202,7 +204,7 @@ export default class UserDetailsComponent {
      * Deletes the current user.
      */
     onDelete () {
-        var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
+        var name = (ObjectUtils.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
         this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
             .then(() => {
                 this.snackBar.open("Successfully deleted the group " + name,"OK",{
@@ -230,7 +232,7 @@ export default class UserDetailsComponent {
      */
     onEdit () {
         this.enableEdit = true;
-        this.editModel = angular.copy(this.model);
+        this.editModel = CloneUtil.deepCopy(this.model);
     };
 
     /**
@@ -242,7 +244,7 @@ export default class UserDetailsComponent {
             .then((groups: any) => {
                 this.groupList = [];
                 this.groupMap = {};
-                angular.forEach(groups, (group) => {
+                _.forEach(groups, (group: any) => {
                     this.groupList.push(group.systemName);
                     this.groupMap[group.systemName] = group;
                 });
@@ -255,7 +257,7 @@ export default class UserDetailsComponent {
             });
 
         // Load the user details
-        if (angular.isString(this.stateService.params.userId)) {
+        if (ObjectUtils.isString(this.stateService.params.userId)) {
             this.UserService.getUser(this.stateService.params.userId)
                 .then((user: any) => {
                     this.model = user;
@@ -270,7 +272,7 @@ export default class UserDetailsComponent {
             this.UserService.getUsers()
                 .then((users: any) => {
                     this.userMap = {};
-                    angular.forEach(users, (user: any) => {
+                    _.each(users, (user: any) => {
                         this.userMap[user.systemName] = true;
                     });
                 });
@@ -283,7 +285,7 @@ export default class UserDetailsComponent {
      * Saves the current user.
      */
     onSave = () => {
-        var model = angular.copy(this.editModel);
+        var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveUser(model)
             .then(() => {
                 this.model = model;
@@ -322,7 +324,7 @@ export default class UserDetailsComponent {
             // Find position of query term
             .map((group) => {
                 var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
-                var titleIndex = angular.isString(this.groupMap[group].title) ? this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) : -1;
+                var titleIndex = ObjectUtils.isString(this.groupMap[group].title) ? this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) : -1;
                 var index = (titleIndex > -1 && (nameIndex === -1 || nameIndex > titleIndex)) ? titleIndex : nameIndex;
                 return { name: group, index: index };
             })

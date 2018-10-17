@@ -4,6 +4,7 @@ import {moduleName} from "../module-name";
 import "@uirouter/angularjs";
 import * as _ from 'underscore';
 import {StateService, TransitionService} from "@uirouter/core";
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: "ui-router-breadcrumbs",
@@ -60,7 +61,7 @@ export class RouterBreadcrumbsComponent {
         var breadcrumbKey = this.getBreadcrumbKey(state);
         var copyParams = {}
         if(params ) {
-            angular.extend(copyParams, params);
+            _.extend(copyParams, params);
         }
 
         copyParams = _.omit(copyParams, (value: any, key: any, object: any)=> {
@@ -147,7 +148,7 @@ export class RouterBreadcrumbsComponent {
         var propertyReference = context;
 
         for (i = 0; i < propertyArray.length; i ++) {
-            if (angular.isDefined(propertyReference[propertyArray[i]])) {
+            if (ObjectUtils.isDefined(propertyReference[propertyArray[i]])) {
                 propertyReference = propertyReference[propertyArray[i]];
             } else {
                 // if the specified property was not found, default to the state's name

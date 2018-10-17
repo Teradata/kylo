@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
+import { ObjectUtils } from '../../common/utils/object-utils';
 
 /**
  * Identifier for this page.
@@ -94,6 +95,6 @@ export class DatasourcesTableComponent extends BaseFilteredPaginatedTableView{
      * @returns {number} the number of related feeds
      */
     getRelatedFeedsCount = (datasource: any) => {
-        return angular.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
+        return ObjectUtils.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
     };
 }

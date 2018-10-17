@@ -74,7 +74,7 @@ export class IconPickerDialog implements ng.IComponentController{
         this.http.get(this.RestUrlService.ICONS_URL).toPromise().then((response: any) =>{
 
             var icons = response;
-            angular.forEach(icons,  (icon: any) =>{
+            _.forEach(icons, (icon: any) =>{
                 var tile = {title: icon};
                 this.iconTiles.push(tile);
                 if (this.iconModel.icon !== null && this.iconModel.icon === icon) {
@@ -89,7 +89,7 @@ export class IconPickerDialog implements ng.IComponentController{
         this.loadingColors = true;
         this.http.get(this.RestUrlService.ICON_COLORS_URL).toPromise().then( (response: any) =>{
             var colors = response;
-            angular.forEach(colors, (color: any)=>{
+            _.forEach(colors, (color: any)=>{
 
                 var tile = {title: color.name, background: color.color};
                 this.colorTiles.push(tile);

@@ -3,6 +3,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import { AboutKyloService } from "../about-kylo/AboutKyloService";
 import { HttpClient } from '@angular/common/http';
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: "kylo-options",
@@ -19,7 +20,7 @@ export class KyloOptionsComponent {
     ngOnInit() {
 
         //default the icon to be more_vert
-        if (!angular.isDefined(this.menuIcon)) {
+        if (!ObjectUtils.isDefined(this.menuIcon)) {
             this.menuIcon = 'more_vert';
         }
 

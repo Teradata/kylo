@@ -18,11 +18,12 @@ import ImportComponentOption = Import.ImportComponentOption;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
+import { ObjectUtils } from "../../../common/utils/object-utils";
 
 export function invalidConnection(connectionMap: any, connection: any): ValidatorFn {
 
     return (control: AbstractControl): { [key: string]: any } | null => {
-        if (!angular.isDefined(connectionMap[connection.inputPortDisplayName])) {
+        if (!ObjectUtils.isDefined(connectionMap[connection.inputPortDisplayName])) {
             connection.inputPortDisplayName = null;
             //mark as invalid
             return {invalidConnection: true};
@@ -304,7 +305,7 @@ export class ImportTemplateController {
         let file = this.templateFile;
         let uploadUrl = this.RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
 
-        let successFn = (response: angular.IHttpResponse<ImportTemplateResult>) => {
+        let successFn = (response: any) => {
             var responseData = response.data;
             this.xmlType = !responseData.zipFile;
 
@@ -348,8 +349,8 @@ export class ImportTemplateController {
                         //Update connectionMap and inputPortList
                         this.inputPortList = [];
                         if (inputPortsResponse.data) {
-                            angular.forEach(inputPortsResponse.data, (port, i) => {
-                                var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
+                            _.forEach(inputPortsResponse.data, (port: any, i: any) => {
+                                var disabled = ObjectUtils.isUndefined(port.destinationProcessGroupName) || (ObjectUtils.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
                                 this.inputPortList.push({label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled});
                                 this.connectionMap[port.name] = port;
                             });
@@ -377,7 +378,7 @@ export class ImportTemplateController {
 
             }
 
-            angular.forEach(this.importResult.reusableTemplateConnections, (connection) => {
+            _.forEach(this.importResult.reusableTemplateConnections, (connection: any) => {
                 //initially mark as valid
                 this.importTemplateForm.addControl("port-" + connection.feedOutputPortName,
                     new FormControl(null, [Validators.required, invalidConnection(this.connectionMap, connection)]));
@@ -385,12 +386,12 @@ export class ImportTemplateController {
             });
 
             if (responseData.templateResults.errors) {
-                angular.forEach(responseData.templateResults.errors, (processor) => {
+                _.forEach(responseData.templateResults.errors, (processor: any) => {
                     if (processor.validationErrors) {
-                        angular.forEach(processor.validationErrors, (error: any) => {
+                        _.forEach(processor.validationErrors, (error: any) => {
                             var copy: any = {};
-                            angular.extend(copy, error);
-                            angular.extend(copy, processor);
+                            _.extend(copy, error);
+                            _.extend(copy, processor);
                             copy.validationErrors = null;
                             errorMap[error.severity].push(copy);
                             count++;
@@ -436,7 +437,7 @@ export class ImportTemplateController {
 
 
         }
-        let errorFn = (response: angular.IHttpResponse<any>) => {
+        let errorFn = (response: any) => {
             this.importResult = response.data;
             this.uploadInProgress = false;
             this.importResultIcon = "error";
@@ -455,7 +456,7 @@ export class ImportTemplateController {
 
         var params = {
             uploadKey: this.uploadKey,
-            importComponents: angular.toJson(importComponentOptions)
+            importComponents: ObjectUtils.toJson(importComponentOptions)
         };
 
         this.additionalInputNeeded = false;
@@ -494,7 +495,7 @@ export class ImportTemplateController {
 
         let stopStatusCheck = () => {
             this.uploadProgress = 0;
-            if (angular.isDefined(this.uploadStatusCheck)) {
+            if (ObjectUtils.isDefined(this.uploadStatusCheck)) {
                 clearInterval(this.uploadStatusCheck);
                 this.uploadStatusCheck = undefined;
             }
@@ -519,7 +520,7 @@ export class ImportTemplateController {
         this.uploadStatusMessages = [];
         this.uploadStatusCheck = setInterval(() => {
             //poll for status
-            this.http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).toPromise().then((response: angular.IHttpResponse<any>) => {
+            this.http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).toPromise().then((response: any) => {
                 if (response && response.data && response.data != null) {
                     this.uploadStatusMessages = response.data.messages;
                     this.uploadProgress = response.data.percentComplete;
@@ -604,7 +605,7 @@ export class ImportTemplateController {
             inputPort.selected = true;
             //find the matching in the complete set and mark it as selected
             var matchingPort = inputPortMap[inputPort.inputPortName];
-            if (angular.isDefined(matchingPort)) {
+            if (ObjectUtils.isDefined(matchingPort)) {
                 matchingPort.selected = true;
             }
         });
@@ -701,7 +702,7 @@ export class ImportTemplateController {
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
     private checkRemoteProcessGroupAware(): void {
-        this.http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).toPromise().then((response: angular.IHttpResponse<any>) => {
+        this.http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).toPromise().then((response: any) => {
             this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
         });
     }

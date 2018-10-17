@@ -10,6 +10,7 @@ import {CatalogService} from "../api/services/catalog.service";
 import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import * as _ from "underscore";
 
 /**
  * Displays available datasources
@@ -93,7 +94,7 @@ export class DataSourcesComponent implements OnInit {
         }
         let params = {datasourceId: datasource.id};
         if(this.stateParams){
-            angular.extend(params,this.stateParams);
+            _.extend(params,this.stateParams);
         }
         this.state.go(stateRef, params);
     }

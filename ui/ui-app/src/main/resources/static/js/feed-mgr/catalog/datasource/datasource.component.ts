@@ -11,6 +11,7 @@ import {Node} from '../api/models/node'
 import {PreviewDatasetCollectionService} from "../api/services/preview-dataset-collection.service";
 import {PreviewDataSet} from "./preview-schema/model/preview-data-set";
 import {ISubscription} from "rxjs/Subscription";
+import { CloneUtil } from "../../../common/utils/clone-util";
 
 /**
  * Displays tabs for configuring a data set (or connection).
@@ -67,7 +68,7 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     protected initTabs(statePrefix?:string ) {
         // Add tabs and register router states
         if (this.plugin.tabs) {
-            this.tabs = angular.copy(this.plugin.tabs);
+            this.tabs = CloneUtil.deepCopy(this.plugin.tabs);
             for (let tab of this.tabs) {
                 if (tab.state) {
                     this.stateRegistry.register(tab.state);

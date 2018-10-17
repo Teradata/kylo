@@ -1,4 +1,4 @@
-import * as angular from "angular";
+import * as _ from "underscore";
 import { Injectable } from "@angular/core";
 
 @Injectable()
@@ -18,7 +18,7 @@ export class AccordionMenuService{
         accordionElement.parent().css('overflow-y','hidden');
 
         if (!allowMultipleOpen) {
-            angular.forEach(toggleSections, function (openSection) {
+            _.forEach(toggleSections, (openSection: any)=> {
                 openSection.expanded = false;
                 openSection.expandIcon = 'expand_more';
             });

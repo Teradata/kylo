@@ -4,7 +4,9 @@ import {Subscription} from "rxjs/Subscription";
 
 import {DomainType} from "../../services/DomainTypesService.d";
 import {DomainTypeDetailsService} from "../services/details.service";
-
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { CloneUtil } from "../../../common/utils/clone-util";
+import * as _ from "underscore";
 /**
  * Base class for individual sections of the {@link DomainTypeDetailsComponent}.
  */
@@ -50,7 +52,7 @@ export abstract class AbstractSectionComponent implements OnDestroy, OnInit {
      * Indicates if this domain type is newly created.
      */
     get isNew() {
-        return (!angular.isString(this.model.id) || this.model.id.length === 0);
+        return (!ObjectUtils.isString(this.model.id) || this.model.id.length === 0);
     }
 
     $onDestroy() {
@@ -90,7 +92,7 @@ export abstract class AbstractSectionComponent implements OnDestroy, OnInit {
      * Creates a copy of the domain type model for editing.
      */
     onEdit() {
-        this.editModel = angular.copy(this.model);
+        this.editModel = CloneUtil.deepCopy(this.model);
     }
 
     /**
@@ -106,7 +108,7 @@ export abstract class AbstractSectionComponent implements OnDestroy, OnInit {
      * Updates the domain type with the specified properties.
      */
     onUpdate(properties: object) {
-        const saveModel = angular.extend(angular.copy(this.model), properties);
+        const saveModel = _.extend(CloneUtil.deepCopy(this.model), properties);
         this.lastSaveId = saveModel.$$saveId = new Date().getTime();
         this.DomainTypeDetailsService.saveEdit(saveModel);
     }

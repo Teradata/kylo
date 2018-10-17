@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import { Templates } from "../../../../services/TemplateTypes";
@@ -31,6 +30,7 @@ import {UiComponentsService} from "../../../../services/UiComponentsService";
 import {RadioButton} from "../../../../shared/dynamic-form/model/RadioButton";
 import {Textarea} from "../../../../shared/dynamic-form/model/Textarea";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
+import { ObjectUtils } from '../../../../../common/utils/object-utils';
 
 @Component({
     selector: "define-feed-step-feed-details",
@@ -187,7 +187,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             promise.subscribe( (template: any) => {
 
 
-                if (angular.isDefined(this.feed.cloned) && this.feed.cloned == true) {
+                if (ObjectUtils.isDefined(this.feed.cloned) && this.feed.cloned == true) {
                     this.registerTemplatePropertyService.setProcessorRenderTemplateUrl(this.feed, 'create');
                     this.defineFeedService.sortAndSetupFeedProperties(this.feed);
 

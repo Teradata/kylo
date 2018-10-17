@@ -1,7 +1,7 @@
 import {Component, Input} from "@angular/core";
-import * as angular from "angular";
-
+import * as _ from "underscore";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
+import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: "tba-options-menu",
@@ -58,9 +58,9 @@ export class OptionsMenuComponent {
     openMenu($mdOpenMenu: any, ev: any) {
 
         this.originatorEv = ev;
-        if (angular.isFunction(this.openedMenu)) {
+        if (ObjectUtils.isFunction(this.openedMenu)) {
             let openedMenuFn = this.openedMenu();
-            if (angular.isFunction(openedMenuFn)) {
+            if (ObjectUtils.isFunction(openedMenuFn)) {
                 openedMenuFn({sortOptions: this.sortOptions, additionalOptions: this.additionalOptions});
             }
         }
@@ -91,7 +91,7 @@ export class OptionsMenuComponent {
     selectOption(item: any) {
         event.stopPropagation();
         let itemCopy = {};
-        angular.extend(itemCopy, item);
+        _.extend(itemCopy, item);
         if (item.type === 'viewType') {
             this.paginationDataService.toggleViewType(this.menuKey);
             this.setViewTypeOption(true);

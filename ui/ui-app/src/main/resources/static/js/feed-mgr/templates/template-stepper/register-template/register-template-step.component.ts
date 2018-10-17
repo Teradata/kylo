@@ -14,11 +14,12 @@ import {IconPickerDialog} from '../../../../common/icon-picker-dialog/icon-picke
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
+import { ObjectUtils } from '../../../../common/utils/object-utils';
 
 export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
 
     return (control: AbstractControl): {[key: string]: any} | null => {
-        if (!angular.isDefined(connectionMap[connection.inputPortDisplayName])) {
+        if (!ObjectUtils.isDefined(connectionMap[connection.inputPortDisplayName])) {
             connection.inputPortDisplayName = null;
             //mark as invalid
             return {invalidConnection: true};
@@ -264,14 +265,14 @@ export class RegisterCompleteRegistrationController {
                 // Update connectionMap and inputPortList
                 this.inputPortList = [];
                 if (response) {
-                    angular.forEach(response, (port, i) => {
+                    _.forEach(response, (port: any, i: any) => {
                         this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName });
                         this.connectionMap[port.name] = port;
                     });
                 }
 
                 // Check for invalid and required connections
-                angular.forEach(this.model.reusableTemplateConnections, (connection) => {
+                _.forEach(this.model.reusableTemplateConnections, (connection: any) => {
                     //initially mark as valid
                     this.formGroup.addControl("port-" + connection.feedOutputPortName,
                                 new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
@@ -375,7 +376,7 @@ export class RegisterCompleteRegistrationController {
         savedTemplate.registeredDatasourceDefinitions = selectedDatasourceDefinitions;
 
         var promise = this.http.post(this.RestUrlService.REGISTER_TEMPLATE_URL(),
-            angular.toJson(savedTemplate),
+            ObjectUtils.toJson(savedTemplate),
             {headers :new HttpHeaders({'Content-Type':'application/json; charset=utf-8'}) })
             .toPromise().then(successFn, errorFn);
 

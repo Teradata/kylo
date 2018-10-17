@@ -70,4 +70,8 @@ export class ObjectUtils {
         return value !== null && typeof value === 'object';
     }
 
+    static isArray(value: any): boolean {
+        return Array.isArray(value);
+    }
+
 }

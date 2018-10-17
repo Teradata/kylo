@@ -12,6 +12,7 @@ import {SparkDataSet} from "../../../../model/spark-data-set.model";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
+import * as _ from "underscore";
 
 @Component({
     selector: "define-feed-step-source-sample",
@@ -82,7 +83,7 @@ export class DefineFeedStepSourceSampleComponent extends AbstractFeedStepCompone
     }
 
     goToDataSet(dataSet:SparkDataSet){
-        let params = angular.extend({},this.stateParams);
+        let params = _.extend({},this.stateParams);
         params["dataSource"]=dataSet.dataSource;
         params["resetSelectionService"] = false;
         params["datasourceId"]= dataSet.dataSource.id;

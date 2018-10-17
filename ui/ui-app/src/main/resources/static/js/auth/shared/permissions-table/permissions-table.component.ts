@@ -2,6 +2,8 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import AccessControlService from "../../../services/AccessControlService";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     templateUrl: "js/auth/shared/permissions-table/permissions-table.html",
@@ -34,7 +36,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
 
     ngOnInit(): void {
         this.accessControlService.getAvailableActions().then((actionSet: any) => {
-            angular.forEach(actionSet.actions, (action: any) => {
+            _.each(actionSet.actions, (action: any) => {
                 var state = this.addAction(action, 0, null);
                 this.roots.push(state);
             });
@@ -54,10 +56,10 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
        * @param {Array.<Action>} target the destination
        */
     addAllowed = (actions: any[], target: any[]) => {
-        angular.forEach(actions, (action) => {
+        _.each(actions, (action) => {
             if (action.$$allowed) {
                 var copy = _.pick(action, "description", "systemName", "title");
-                if (angular.isArray(action.actions)) {
+                if (ObjectUtils.isArray(action.actions)) {
                     copy.actions = [];
                     this.addAllowed(action.actions, copy.actions);
                 }
@@ -79,7 +81,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
         state.$$parent = parent;
         this.available.push(state);
 
-        if (angular.isArray(action.actions)) {
+        if (ObjectUtils.isArray(action.actions)) {
             ++level;
             state.actions = _.map(action.actions,
                 (action) => {
@@ -105,24 +107,24 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
     refresh() {
         // Function to map model of allowed actions
         var mapModel = (actions: any, map: any) => {
-            angular.forEach(actions, (action) => {
+            _.forEach(actions, (action: any) => {
                 map[action.systemName] = true;
-                if (angular.isArray(action.actions)) {
+                if (ObjectUtils.isArray(action.actions)) {
                     mapModel(action.actions, map);
                 }
             });
             return map;
         };
         // Determine if action states need updating
-        if (angular.isDefined(this.model) && !angular.equals(this.model, this.lastModel) && this.available.length > 0) {
+        if (ObjectUtils.isDefined(this.model) && !angular.equals(this.model, this.lastModel) && this.available.length > 0) {
             // Update action states
             var allowed = mapModel(this.model, {});
-            angular.forEach(this.available, (action) => {
-                action.$$allowed = angular.isDefined(allowed[action.systemName]);
+            _.forEach(this.available, (action: any) => {
+                action.$$allowed = ObjectUtils.isDefined(allowed[action.systemName]);
             });
 
             // Save a copy for update detection
-            this.lastModel = angular.copy(this.model);
+            this.lastModel = CloneUtil.deepCopy(this.model);
         }
     };
 
@@ -141,8 +143,8 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
             }
         }
         else { // Update child actions
-            if (angular.isArray(action.actions)) {
-                angular.forEach(action.actions, (child) => {
+            if (ObjectUtils.isArray(action.actions)) {
+                _.forEach(action.actions, (child: any) => {
                     this.setAllowed(child, allowed);
                 });
             }
@@ -154,7 +156,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
      * @param {ActionState} action the action
      */
     toggle = (action: any) => {
-        if (angular.isUndefined(this.readOnly) || !this.readOnly) {
+        if (ObjectUtils.isUndefined(this.readOnly) || !this.readOnly) {
             this.setAllowed(action, !action.$$allowed);
 
             // Update model

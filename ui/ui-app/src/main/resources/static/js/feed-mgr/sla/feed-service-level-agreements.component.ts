@@ -16,6 +16,7 @@ import { PolicyInputFormService } from '../shared/field-policies-angular2/policy
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {Observable} from 'rxjs/Observable';
+import { CloneUtil } from '../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-feed-service-level-agreements',
@@ -339,7 +340,7 @@ export default class FeedServiceLevelAgreements {
         if (this.feed) {
             var arr = this.feed.serviceLevelAgreements;
             if (arr != null && arr != undefined) {
-                this.serviceLevelAgreements = angular.copy(arr);
+                this.serviceLevelAgreements = CloneUtil.deepCopy(arr);
             }
         }
 
@@ -657,7 +658,7 @@ export default class FeedServiceLevelAgreements {
         this.ruleType = ruleType;
         if (this.ruleType != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
-            var newRule = angular.copy(this.ruleType);
+            var newRule = CloneUtil.deepCopy(this.ruleType);
             newRule.mode = 'NEW'
             //update property index
             this.policyInputFormService.updatePropertyIndex(newRule);
@@ -681,7 +682,7 @@ export default class FeedServiceLevelAgreements {
     onAddSlaActionChange() {
         if (this.slaAction != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
-            var newRule = angular.copy(this.slaAction);
+            var newRule = CloneUtil.deepCopy(this.slaAction);
             newRule.mode = 'NEW'
             //update property index
             this.policyInputFormService.updatePropertyIndex(newRule);

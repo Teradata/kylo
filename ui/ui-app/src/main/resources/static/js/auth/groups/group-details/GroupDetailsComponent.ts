@@ -7,6 +7,8 @@ import { Component, ViewContainerRef } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 
 @Component({
@@ -91,7 +93,7 @@ export default class GroupDetailsComponent {
      * @returns {string} the display name
      */
     getUserName = (user: any) => {
-        return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
+        return (ObjectUtils.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
     };
     /**
      * Indicates if the user can be deleted. The main requirement is that the user exists.
@@ -102,10 +104,10 @@ export default class GroupDetailsComponent {
         return (this.model.systemName !== null);
     };
     isgroupNameEmpty = () => {
-        return !angular.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
+        return !ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
     }
     isgroupNameDuplicate = () => {
-        return angular.isString(this.editModel.systemName) && this.groupMap[this.editModel.systemName];
+        return ObjectUtils.isString(this.editModel.systemName) && this.groupMap[this.editModel.systemName];
     }
     isFormValid = () => {
         return (!this.isgroupNameDuplicate() && !this.isgroupNameEmpty());
@@ -123,7 +125,7 @@ export default class GroupDetailsComponent {
      */
     onDelete = () => {
 
-        var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
+        var name = (ObjectUtils.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
         this.UserService.deleteGroup(this.stateService.params.groupId)
             .then(() => {
                 this.snackBar.open("Successfully deleted the group " + name,"OK",{
@@ -146,7 +148,7 @@ export default class GroupDetailsComponent {
     //  * Creates a copy of the user model for editing.
      */
     onEdit () {
-        this.editModel = angular.copy(this.model);
+        this.editModel = CloneUtil.deepCopy(this.model);
     };
 
     onCancelEditPermissions () {
@@ -156,7 +158,7 @@ export default class GroupDetailsComponent {
         * Creates a copy of the permissions for editing.
         */
     onEditPermissions () {
-        this.editActions = angular.copy(this.actions);
+        this.editActions = CloneUtil.deepCopy(this.actions);
     };
     /**
      * Loads the user details.
@@ -171,7 +173,7 @@ export default class GroupDetailsComponent {
             });
 
         // Fetch group details
-        if (angular.isString(this.stateService.params.groupId)) {
+        if (ObjectUtils.isString(this.stateService.params.groupId)) {
             this.UserService.getGroup(this.stateService.params.groupId)
                 .then((group: any) => {
                     this.model = group;
@@ -191,7 +193,7 @@ export default class GroupDetailsComponent {
             this.loading = false;
             this.UserService.getGroups().then((groups: any) => {
                 this.groupMap = {};
-                angular.forEach(groups, (group: any) => {
+                _.each(groups, (group: any) => {
                     this.groupMap[group.systemName] = true;
                 });
             });
@@ -201,7 +203,7 @@ export default class GroupDetailsComponent {
          * Saves the current group.
          */
     onSave () {
-        var model = angular.copy(this.editModel);
+        var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveGroup(model)
             .then(() => {
                 this.model = model;
@@ -212,7 +214,7 @@ export default class GroupDetailsComponent {
     * Saves the current permissions.
     */
     onSavePermissions () {
-        var actions = angular.copy(this.editActions);
+        var actions = CloneUtil.deepCopy(this.editActions);
         this.accessControlService.setAllowedActions(null, null, this.model.systemName, actions)
             .then((actionSet: any) => {
                 this.actions = actionSet.actions;
@@ -224,7 +226,7 @@ export default class GroupDetailsComponent {
      * @param user the user
      */
     onUserClick (user: any) {
-        var safeUserId: any = angular.isString(user.systemName) ? encodeURIComponent(user.systemName) : null;
+        var safeUserId: any = ObjectUtils.isString(user.systemName) ? encodeURIComponent(user.systemName) : null;
         this.stateService.go("user-details", { userId: safeUserId });
     };
 }

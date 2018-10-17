@@ -2,6 +2,7 @@ import * as angular from "angular";
 import { Directive, Input, ElementRef, SimpleChanges, Inject } from '@angular/core';
 import "pascalprecht.translate";
 import { TranslateService } from "@ngx-translate/core";
+import { ObjectUtils } from "../utils/object-utils";
 
 @Directive({
     selector: '[kylo-timer]'
@@ -56,8 +57,8 @@ export class KyloTimerDirective {
     }
 
     ngOnInit(): void {
-        this.truncatedFormat = angular.isDefined(this.truncatedFormat) ? this.truncatedFormat : false;
-        this.addAgoSuffix = angular.isDefined(this.addAgoSuffix) ? this.addAgoSuffix : false;
+        this.truncatedFormat = ObjectUtils.isDefined(this.truncatedFormat) ? this.truncatedFormat : false;
+        this.addAgoSuffix = ObjectUtils.isDefined(this.addAgoSuffix) ? this.addAgoSuffix : false;
 
         this.time = this.startTime;
         this.previousDisplayStr = '';

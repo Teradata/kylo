@@ -6,6 +6,8 @@ import { Component, Inject, ViewContainerRef } from '@angular/core';
 import CategoriesService from '../../services/CategoriesService';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ObjectUtils } from '../../../common/utils/object-utils';
+import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-category-access-control',
@@ -72,7 +74,7 @@ export class CategoryAccessControl {
         });
 
         this.CategoriesService.modelSubject.subscribe((newValue: any) => {
-            this.isNew = !angular.isString(newValue.id)
+            this.isNew = !ObjectUtils.isString(newValue.id)
         });
     }
     constructor(private CategoriesService: CategoriesService,
@@ -87,13 +89,13 @@ export class CategoryAccessControl {
          * Switches to "edit" mode.
          */
     onEdit () {
-        this.editModel = angular.copy(this.model);
+        this.editModel = CloneUtil.deepCopy(this.model);
     };
     /**
          * Saves the category .
          */
     onSave () {
-        var model = angular.copy(this.CategoriesService.model);
+        var model = CloneUtil.deepCopy(this.CategoriesService.model);
         model.roleMemberships = this.editModel.roleMemberships;
         model.feedRoleMemberships = this.editModel.feedRoleMemberships;
         model.owner = this.editModel.owner;

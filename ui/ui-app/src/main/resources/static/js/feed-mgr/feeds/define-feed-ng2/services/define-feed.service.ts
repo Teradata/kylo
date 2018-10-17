@@ -30,6 +30,7 @@ import {FeedConstants} from "../../../services/FeedConstants";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {TranslateService} from "@ngx-translate/core";
 import {TdDialogService} from "@covalent/core/dialogs";
+import { CloneUtil } from "../../../../common/utils/clone-util";
 
 
 export enum TableSchemaUpdateMode {
@@ -336,7 +337,7 @@ export class DefineFeedService {
         let feedCopy :Feed = undefined;
         if(feed != undefined) {
             //copy the feed data for this step
-            feedCopy = angular.copy(feed);
+            feedCopy = CloneUtil.deepCopy(feed);
             //set the steps back to the core steps
             feedCopy.steps = feed.steps;
         }
@@ -486,7 +487,7 @@ export class DefineFeedService {
             let columns: TableColumn[] = dataSet.schema
             if(columns) {
                 columns.forEach(col => {
-                    let def = angular.extend({}, col);
+                    let def = _.extend({}, col);
                     def.derivedDataType = def.dataType;
                     //sample data
                     if (dataSet.preview) {

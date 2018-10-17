@@ -7,6 +7,7 @@ import {HttpClient} from "@angular/common/http";
 import {DefineFeedService} from "../services/define-feed.service";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {FEED_DEFINITION_STATE_NAME} from "../../../model/feed/feed-constants";
+import { ObjectUtils } from '../../../../common/utils/object-utils';
 
 
 @Component({
@@ -212,11 +213,11 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
         ngOnInit() {
 
             this.getRegisteredTemplates().subscribe((response:any) =>{
-                if(angular.isDefined(this.templateName) && this.templateName != ''){
+                if(ObjectUtils.isDefined(this.templateName) && this.templateName != ''){
                     var match = _.find(this.allTemplates,(template:any) => {
                         return template.templateName == this.templateName || template.id == this.templateId;
                     });
-                    if(angular.isDefined(match)) {
+                    if(ObjectUtils.isDefined(match)) {
                         this.selectTemplate(match);
                     }
                 }

@@ -5,7 +5,7 @@ import {HttpClient} from "@angular/common/http";
 import {MatDialog} from "@angular/material/dialog";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {Feed} from "../../model/feed/feed.model";
-
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 @Injectable()
 export class PolicyInputFormService {
@@ -22,8 +22,6 @@ export class PolicyInputFormService {
     constructor(private http: HttpClient, private dialog: MatDialog,private _dialogService: TdDialogService) {
 
     }
-
-
 
     currentFeedValue(feed:Feed) {
         return feed.category.systemName + "." + feed.systemFeedName;
@@ -53,7 +51,7 @@ export class PolicyInputFormService {
         }
 
         var optionsArr:any = [];
-        angular.forEach(options, (opt:any) =>{
+        _.forEach(options, (opt:any) =>{
             opt.groups = this.groupProperties(opt);
             optionsArr.push(opt);
         });
@@ -184,7 +182,7 @@ export class PolicyInputFormService {
     }
     transformChip(chip:any) {
         // If it is an object, it's already a known chip
-        if (angular.isObject(chip)) {
+        if (ObjectUtils.isObject(chip)) {
             return chip;
         }
         // Otherwise, create a new one
@@ -230,9 +228,9 @@ export class PolicyInputFormService {
     }
 
     private createFilterFor(query:any) {
-        var lowercaseQuery = angular.lowercase(query);
+        var lowercaseQuery = query.lowercase();
         return function filterFn(option:any) {
-            return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
+            return (((option.value).lowercase).indexOf(lowercaseQuery) >= 0);
         };
     }
 

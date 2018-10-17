@@ -1,4 +1,4 @@
-import * as angular from "angular";
+import * as _ from "underscore";
 import {Component, Inject} from "@angular/core";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -64,7 +64,7 @@ export class ImputeMissingDialog {
 
         // Generate field list
         this.fieldOptions = [];
-        angular.forEach(data.fields, value => {
+        _.forEach(data.fields, value => {
             self.fieldOptions.push({value: value, viewValue: value});
         });
 

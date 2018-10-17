@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
@@ -9,6 +8,8 @@ import { TdDialogService } from '@covalent/core/dialogs';
 import {IconPickerDialog} from '../../common/icon-picker-dialog/icon-picker-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import { ObjectUtils } from '../../common/utils/object-utils';
+import { CloneUtil } from '../../common/utils/clone-util';
 
 
 
@@ -74,7 +75,7 @@ export class DatasourcesDetailsComponent implements OnInit{
     gettingDataSources : boolean = false;
     ngOnInit() {
         // Load the data source
-        if (angular.isString(this.stateService.params.datasourceId)) {
+        if (ObjectUtils.isString(this.stateService.params.datasourceId)) {
             this.datasourcesService.findById(this.stateService.params.datasourceId)
                 .then((model: any) => {
                     this.model = model;
@@ -146,14 +147,14 @@ export class DatasourcesDetailsComponent implements OnInit{
      * @returns {boolean} {@code true} if the data source is new, or {@code false} otherwise
      */
     isNew () {
-        return (!angular.isString(this.model.id) || this.model.id.length === 0);
+        return (!ObjectUtils.isString(this.model.id) || this.model.id.length === 0);
     };
 
     /**
      * Cancels the current edit operation. If a new data source is being created then redirects to the data sources page.
      */
     onCancel () {
-        if (!angular.isString(this.model.id)) {
+        if (!ObjectUtils.isString(this.model.id)) {
             this.stateService.go("datasources");
         }
     };
@@ -162,7 +163,7 @@ export class DatasourcesDetailsComponent implements OnInit{
      * Deletes the current data source.
      */
     onDelete = () => {
-        if (!angular.isArray(this.model.sourceForFeeds) || this.model.sourceForFeeds.length === 0) {
+        if (!ObjectUtils.isArray(this.model.sourceForFeeds) || this.model.sourceForFeeds.length === 0) {
             this.datasourcesService.deleteById(this.model.id)
                 .then(() => {
                     this.snackBar.open("Successfully deleted the data source " + this.model.name + ".","OK",{
@@ -199,7 +200,7 @@ export class DatasourcesDetailsComponent implements OnInit{
      * Creates a copy of the data source model for editing.
      */
     onEdit () {
-        this.editModel = angular.copy(this.model);
+        this.editModel = CloneUtil.deepCopy(this.model);
 
         if (this.isNew()) {
             this.editModel.hasPasswordChanged = true;
@@ -218,7 +219,7 @@ export class DatasourcesDetailsComponent implements OnInit{
      */
     onAccessControlSave () {
         // Prepare model
-        var model = angular.copy(this.model);
+        var model = CloneUtil.deepCopy(this.model);
         model.roleMemberships = this.editModel.roleMemberships;
         model.owner = this.editModel.owner;
         this.entityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
@@ -242,7 +243,7 @@ export class DatasourcesDetailsComponent implements OnInit{
             return (key !== "owner" && key !== "roleMemberships");
         });
 
-        if (!angular.isString(model.type) || model.type.length === 0) {
+        if (!ObjectUtils.isString(model.type) || model.type.length === 0) {
             var matches = /^(?:jdbc:)?([^:]+):/.exec(model.databaseConnectionUrl);
             model.type = (matches !== null) ? matches[1] : model.databaseDriverClassName;
         }
@@ -299,11 +300,11 @@ export class DatasourcesDetailsComponent implements OnInit{
      * Validates the edit form.
      */
     validate () {
-        if (angular.isDefined(this.editModel.name) && !this.gettingDataSources && this.editModel.name != '') {
-            let isNew = angular.isUndefined(this.model) || angular.isUndefined(this.model.id);
+        if (ObjectUtils.isDefined(this.editModel.name) && !this.gettingDataSources && this.editModel.name != '') {
+            let isNew = ObjectUtils.isUndefined(this.model) || ObjectUtils.isUndefined(this.model.id);
             let unique = true;
             if (isNew || (!isNew && this.model.name.toLowerCase() != this.editModel.name.toLowerCase())) {
-                unique = angular.isUndefined(this.existingDatasourceNames[this.editModel.name.toLowerCase()]);
+                unique = ObjectUtils.isUndefined(this.existingDatasourceNames[this.editModel.name.toLowerCase()]);
             }
             return unique;
         }else {
@@ -312,7 +313,7 @@ export class DatasourcesDetailsComponent implements OnInit{
     };
 
     isDataSourceNameEmpty () {
-        return !angular.isString(this.editModel.name) || this.editModel.name.length === 0;
+        return !ObjectUtils.isString(this.editModel.name) || this.editModel.name.length === 0;
     }
 
     isDataSourceNameDuplicate () {
@@ -321,7 +322,7 @@ export class DatasourcesDetailsComponent implements OnInit{
             this.datasourcesService.findAll()
                 .then((datasources: any) => {
                     this.existingDatasourceNames = {};
-                    angular.forEach(datasources, (datasource) => {
+                    _.forEach(datasources, (datasource: any) => {
                         this.existingDatasourceNames[datasource.name.toLowerCase()] = true;
                     });
                 }).then( () => this.gettingDataSources = false);

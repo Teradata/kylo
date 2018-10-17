@@ -18,6 +18,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {PreviewDatasetCollectionService} from "../../../../catalog/api/services/preview-dataset-collection.service";
 import {Node} from "../../../../catalog/api/models/node";
 import {FileMetadataTransformService} from "../../../../catalog/datasource/preview-schema/service/file-metadata-transform.service";
+import { CloneUtil } from "../../../../../common/utils/clone-util";
 
 @Component({
     selector: "define-feed-source-sample-catalog-dataset",
@@ -80,7 +81,7 @@ export class DefineFeedStepSourceSampleDatasourceComponent  extends DatasourceCo
 
     ngOnInit(){
         if (this.plugin && this.plugin.tabs) {
-            this.tabs = angular.copy(this.plugin.tabs);
+            this.tabs = CloneUtil.deepCopy(this.plugin.tabs);
         }
         // Add system tabs
         this.tabs.push({label: "Preview", sref: ".preview"});
