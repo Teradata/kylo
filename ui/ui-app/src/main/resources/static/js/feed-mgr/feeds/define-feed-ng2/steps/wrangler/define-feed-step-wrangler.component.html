@@ -30,11 +30,18 @@
   </feed-step-readonly-content>
 </define-feed-step-card>
 
-<visual-query-stepper #visualQuery *ngIf="!feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
+<div *ngIf="!allowEdit && !feed.readonly" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center" class="layout-padding-top-20">
+  <ng-md-icon class="tc-grey-500" icon="error" size="96"></ng-md-icon>
+  <h2>{{'WRANGLER.DATASOURCES.ACCESS_DENIED.TITLE' | translate}}</h2>
+  <span>{{'WRANGLER.DATASOURCES.ACCESS_DENIED.MESSAGE' | translate}}</span>
+</div>
+
+<visual-query-stepper #visualQuery *ngIf="allowEdit && !feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
                       [heightOffset]="64" (cancel)="onCancelEdit()" (save)="onSave()">
 </visual-query-stepper>
 
 
 <ng-template #toolbarActionTemplate>
-  <feed-toolbar-actions [(feed)]="feed"(onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false" [showCancelLink]="false"></feed-toolbar-actions>
+  <feed-toolbar-actions [(feed)]="feed"(onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false" [showCancelLink]="!allowEdit">
+  </feed-toolbar-actions>
 </ng-template>

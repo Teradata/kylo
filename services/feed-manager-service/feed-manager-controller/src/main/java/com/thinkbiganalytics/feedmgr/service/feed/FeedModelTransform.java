@@ -44,17 +44,16 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
-import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
-import com.thinkbiganalytics.metadata.api.catalog.DataSource;
-import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
@@ -66,19 +65,21 @@ import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.User;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tools.ant.taskdefs.Exit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,6 +94,8 @@ import javax.inject.Inject;
  * Transforms feeds between Feed Manager and Metadata formats.
  */
 public class FeedModelTransform {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedModelTransform.class);
 
     @Inject
     CategoryProvider categoryProvider;
@@ -490,10 +493,25 @@ public class FeedModelTransform {
         }
         
         List<DataSet> srcDataSets = domain.getSources().stream()
-            .map(src -> src.getDataSet())
+            .map(FeedConnection::getDataSet)
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .map(catalogModelTransform.dataSetToRestModel())
+            .map(dataSet -> {
+                try {
+                    return catalogModelTransform.dataSetToRestModel().apply(dataSet);
+                } catch (final AccessControlException e) {
+                    log.debug("Denied access to data set: {}: {}", domain.getId(), e);
+
+                    final DataSource dataSource = new DataSource();
+                    dataSource.setAllowedActions(new ActionGroup());
+                    dataSource.getAllowedActions().setActions(Collections.emptyList());
+
+                    final DataSet model = new DataSet();
+                    model.setId(domain.getId().toString());
+                    model.setDataSource(dataSource);
+                    return model;
+                }
+            })
             .collect(Collectors.toList());
         feed.setSourceDataSets(srcDataSets);
 
@@ -614,6 +632,26 @@ public class FeedModelTransform {
             return new EntityVersionDifference(fromNoContent, toVer, diff);
         } catch (IOException e) {
             throw new ModelTransformException("Failed to generate entity difference between entity versions " + fromVer.getId() + " and " + toVer.getId());
+        }
+    }
+
+    /**
+     * Updates the data sets of the specified feed.
+     */
+    public void updateDataSets(@Nullable final FeedMetadata feed) {
+        if (feed != null && feed.getSourceDataSets() != null) {
+            feed.setSourceDataSets(
+                feed.getSourceDataSets().stream()
+                    .peek(dataSet -> {
+                        final com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                        final com.thinkbiganalytics.metadata.api.catalog.DataSource dataSource = dataSourceProvider.find(dataSourceId).orElse(null);
+                        if (dataSource == null || !dataSource.getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS)) {
+                            dataSet.setDataSource(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSource());
+                            dataSet.getDataSource().setAllowedActions(new ActionGroup());
+                        }
+                    })
+                    .collect(Collectors.toList())
+            );
         }
     }
 }

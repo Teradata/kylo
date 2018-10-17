@@ -1019,6 +1019,14 @@
             "SelectNewAction": "Select New Action",
             "AddAction": "Add Action"
         }
-    }
+    },
 
+    "WRANGLER": {
+        "DATASOURCES": {
+            "ACCESS_DENIED": {
+                "MESSAGE": "You do not have access to the data sources used by this feed.",
+                "TITLE": "Access Denied"
+            }
+        }
+    }
 }
