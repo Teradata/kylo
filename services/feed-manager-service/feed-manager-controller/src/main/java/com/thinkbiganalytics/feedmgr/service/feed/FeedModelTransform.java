@@ -322,7 +322,9 @@ public class FeedModelTransform {
         result.setSchedule(source.getSchedule());
         result.setTable(source.getTable());
         result.setTableOption(source.getTableOption());
-        result.setSourceDataSets(source.getSourceDataSets());
+        if(source.getSourceDataSets() != null) {
+            result.setSourceDataSets(source.getSourceDataSets());
+        }
         result.setUiState(source.getUiState());
         result.setActive(source.isActive());
         return result;
