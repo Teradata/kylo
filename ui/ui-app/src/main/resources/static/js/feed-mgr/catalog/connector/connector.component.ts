@@ -15,6 +15,7 @@ import {finalize} from 'rxjs/operators/finalize';
 import {map} from "rxjs/operators/map";
 import {tap} from "rxjs/operators/tap";
 import * as _ from "underscore";
+import AccessControlService from "../../../services/AccessControlService";
 import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 
 import {Connector} from '../api/models/connector';
@@ -37,7 +38,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
             if (key === "path") {
                 ds.template.paths.push(control.value);
             } else if (key === "jars") {
-                ds.template.jars = (control.value.length !== 0) ? control.value.split(",") : null;
+                ds.template.jars = (control.value && control.value.length !== 0) ? control.value.split(",") : null;
             } else {
                 ds.template.options[key] = control.value;
             }
@@ -104,6 +105,11 @@ export class ConnectorComponent {
     @Input("connectorPlugin")
     public plugin: ConnectorPlugin;
 
+    /**
+     * Indicates if admin actions are allowed
+     */
+    allowAdmin = false;
+
     form = new FormGroup({});
 
     private titleControl: FormControl;
@@ -166,7 +172,8 @@ export class ConnectorComponent {
                 private loadingService: TdLoadingService,
                 private dialogService: TdDialogService,
                 private translateService: TranslateService,
-                private entityAccessControlService: EntityAccessControlService) {
+                private entityAccessControlService: EntityAccessControlService,
+                private accessControlService: AccessControlService) {
         this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
@@ -180,6 +187,13 @@ export class ConnectorComponent {
     public ngOnInit() {
         this.createControls();
         this.initControls();
+
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                this.allowAdmin = this.accessControlService.hasAction(AccessControlService.DATASOURCE_ADMIN, actionSet.actions)
+                    && this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS, this.datasource,
+                        EntityAccessControlService.entityRoleTypes.DATASOURCE)
+            });
     }
 
     initControls() {
@@ -237,7 +251,7 @@ export class ConnectorComponent {
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
         this.catalogService.createDataSource(ds).pipe(
             concatMap(dataSource => {
-                if (typeof ds.roleMemberships !== "undefined") {
+                if (this.allowAdmin && typeof ds.roleMemberships !== "undefined") {
                     this.entityAccessControlService.updateRoleMembershipsForSave(ds.roleMemberships);
                     return fromPromise(this.entityAccessControlService.saveRoleMemberships("datasource", dataSource.id, ds.roleMemberships))
                         .pipe(map(() => dataSource));

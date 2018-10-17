@@ -217,7 +217,7 @@ export class EntityAccessControlService extends AccessConstants{
                 callbackFn(responses);
             }
             defer.resolve(responses);
-        });
+        }, (err: any) => defer.reject(err));
         return defer.promise;
     }
 
