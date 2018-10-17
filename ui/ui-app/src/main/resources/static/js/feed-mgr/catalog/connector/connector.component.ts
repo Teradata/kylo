@@ -349,7 +349,14 @@ export class ConnectorComponent {
             finalize(() => this.loadingService.resolve(ConnectorComponent.topOfPageLoader))
         ).subscribe(
             () => this.state.go("catalog.datasources", {}, {reload: true}),
-            err => this.showSnackBar('Failed to delete.', err.message)
+            err => {
+                console.error(err);
+                if (err.status == 409) {
+                    this.showSnackBar("Failed to delete. This data source is currently being used by a feed.");
+                } else {
+                    this.showSnackBar('Failed to delete.', err.message);
+                }
+            }
         );
     }
 

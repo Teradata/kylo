@@ -281,8 +281,15 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId);
 
         metadataService.commit(() -> {
-            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID domainId = dataSourceProvider.resolveId(dataSourceId);
-            dataSourceProvider.deleteById(domainId);
+            final com.thinkbiganalytics.metadata.api.catalog.DataSource.ID domainId = dataSourceProvider.resolveId(dataSourceId);
+            final com.thinkbiganalytics.metadata.api.catalog.DataSource dataSource = dataSourceProvider.find(domainId).orElse(null);
+            if (dataSource != null) {
+                if (dataSource.getDataSets().stream().anyMatch(dataSet -> !dataSet.getFeedSources().isEmpty() || !dataSet.getFeedTargets().isEmpty())) {
+                    throw new WebApplicationException(Response.status(Status.CONFLICT).build());
+                } else {
+                    dataSourceProvider.deleteById(domainId);
+                }
+            }
         });
 
         log.exit();
