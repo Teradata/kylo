@@ -84,14 +84,5 @@ export default class BroadcastService {
             }
             subs.unsubscribe();
         });
-    //     const handler: any = this.$rootScope.$on(event, () => {
-    //         try {
-    //             callback();
-    //         } catch (err) {
-    //             console.error("error calling callback for ", event);
-    //         }
-    //         //deregister the listener
-    //         handler();
-    //     });
     }
 }
