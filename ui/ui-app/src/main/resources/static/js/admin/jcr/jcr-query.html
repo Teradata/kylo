@@ -1,9 +1,7 @@
 
-<mat-content class="md-padding">
+<mat-card class="md-padding">
   <mat-tab-group md-dynamic-height md-border-bottom>
-    <mat-tab id="jcr-query">
-      <mat-tab-label>Jcr Query</mat-tab-label>
-      <mat-tab-body>
+    <mat-tab id="jcr-query" label="Jcr Query">
         <div layout-padding>
           <div layout="row" layout-align="space-between">
             <span class="mat-title">Execute Query</span>
@@ -11,31 +9,36 @@
               <mat-input-container *ngIf="previousQueries.length >0">
                 <label>Previous Queries</label>
                 <mat-select [(ngModel)]="previousQuery" (change)="changePreviousQuery()" >
-                  <mat-option *ngFor="let q of previousQueries" [(ngModel)]="sql" ui-codemirror-opts="codemirrorOptions">
+                  <mat-option *ngFor="let q of previousQueries">
+                    {{q }}
                   </mat-option>
                 </mat-select>
               </mat-input-container>
             </div>
         </div>
+        <codemirror [config]="codemirrorOptions" [(ngModel)]="sql"></codemirror>
         <button mat-button class="md-primary md-raised" [disabled]="loading" (click)="executeQuery()">
           Execute Query
         </button>
         <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
         <div class="browse-results" *ngIf="loading == false ">
           <span *ngIf="queryTime != null" class="md-subhead">The query returned {{resultSize}} rows and took: {{queryTime }} </span><!--| timeWithMillis -->
-          <div ui-grid-auto-resize  style="width:100%;height:500px;" ui-grid="gridOptions"></div>
+          <div *ngIf="!loading && queryExecuted" style="width:100%;height:500px;">
+            <td-data-table
+                [data]="tableData"
+                [columns]="gridOptions"
+                [sortable]= "true"
+                [resizableColumns]="true">
+            </td-data-table>
+          </div>
         </div>
           <div layout="column" *ngIf="explainPlan != null">
             <div class="md-subhead">Explain Plan</div>
             <div style="white-space: pre-wrap;">{{explainPlan}}</div>
           </div>
         </div>
-      </mat-tab-body>
     </mat-tab>
-    <mat-tab id="jcr-indexes" >
-      <mat-tab-label>Jcr indexes</mat-tab-label>
-      <mat-tab-body>
-
+    <mat-tab id="jcr-indexes" label="Jcr indexes">
         <div layout="column" layout-padding>
           <div layout="row" layout-align="space-between">
             <div class="mat-title">{{indexes.length}} Existing Indexes</div>
@@ -43,42 +46,30 @@
               Re-index
             </button>
           </div>
-
-
-          <!-- <mat-table-container>
-            <table mat-table md-progress="deferred.promise">
-              <thead md-head md-order="indexTable.sort">
-              <tr md-row>
-                <th md-column name="Name" md-order-by="indexName">Name</th>
-                <th md-column name="Kind" md-order-by="indexKind">Kind</th>
-                <th md-column name="Node Type" md-order-by="nodeType">Node Type</th>
-                <th md-column name="Property Name(s)" md-order-by="propertyName">Property Name</th>
-                <th md-column name="Property Type" md-order-by="propertyTypes">Property Types</th>
-              </tr>
-              </thead>
-              <tbody md-body>
-              <tr md-row
-                  *ngFor="let idx of indexes">
-                <td md-cell>{{idx.indexName}}</td>
-                <td md-cell>{{idx.indexKind}}</td>
-                <td md-cell>{{idx.nodeType}}</td>
-                <td md-cell>{{idx.propertyName}}</td>
-                <td md-cell>{{idx.propertyTypes}}</td>
-                <td md-cell>
-                  <mat-button class="icon-btn md-icon-button auto-height" (click)="unregisterIndex(idx.indexName)">
-                    <mat-icon icon="delete" size="20" style="fill:grey;"></mat-icon>
-                  </mat-button>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </mat-table-container>
-
-          <mat-table-pagination md-limit="indexTable.rowsPerPage" md-page="indexTable.currentPage" md-total="{{indexes.length}}"
-                               md-limit-options="[5,10,20,50]"></mat-table-pagination> -->
-
-
         </div>
+        <filtered-paginated-table-view 
+              [filteredData]="filteredData"
+              [columns]="indexColumns"
+              [clickable]="false"
+              [sortable]="true"
+              [sortOrder]="sortOrder"
+              [sortBy]="sortBy"
+              [firstLast]="false"
+              [pageSize]="pageSize"
+              [filteredTotal]="filteredTotal"
+              [showToolbar]="false"
+              [allowedPageSize]="[5,10,20,50]"
+              (sortChanged)="sort($event)"
+              (pageSizeChanged)="onPageSizeChange($event)"
+          >
+              <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
+                  <div layout="row">
+                    <mat-button class="icon-btn md-icon-button auto-height" (click)="unregisterIndex(row.indexName)">
+                      <mat-icon class="ng-md-icon" size="20" >delete</mat-icon>
+                    </mat-button>
+                  </div>
+              </ng-template>
+          </filtered-paginated-table-view>
 
         <div layout="column">
           <form #indexForm="ngForm" name="indexForm" layout="column">
@@ -124,11 +115,10 @@
 
 
         </div>
-      </mat-tab-body>
     </mat-tab>
 
   </mat-tab-group>
-</mat-content>
+</mat-card>
 
 
 

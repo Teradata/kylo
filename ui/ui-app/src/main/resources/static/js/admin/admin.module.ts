@@ -21,6 +21,10 @@ import { ClusterComponent } from "./cluster/ClusterComponent";
 import { adminStates } from "./admin.states";
 import { MatButtonModule } from "@angular/material/button";
 import {MatTabsModule} from '@angular/material/tabs';
+import {CodemirrorModule} from "ng2-codemirror";
+import { CovalentDataTableModule } from '@covalent/core/data-table';
+import { KyloCommonModule } from "../common/common.module";
+import { MatCardModule } from "@angular/material/card";
 
 @NgModule({ 
     declarations: [ 
@@ -29,6 +33,7 @@ import {MatTabsModule} from '@angular/material/tabs';
     ], 
     imports: [ 
         CommonModule, 
+        KyloCommonModule,
         MatProgressBarModule,
         MatDividerModule,
         MatListModule,
@@ -45,6 +50,9 @@ import {MatTabsModule} from '@angular/material/tabs';
         ReactiveFormsModule,
         MatButtonModule,
         MatTabsModule,
+        MatCardModule,
+        CodemirrorModule,
+        CovalentDataTableModule,
         UIRouterModule.forChild({states: adminStates})
     ],
     providers : [
