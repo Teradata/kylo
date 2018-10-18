@@ -184,7 +184,10 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.tableItems = this.tableControl.valueChanges.pipe(
             filter(value => value != null && value.length >= 2),
             debounceTime(300),
-            switchMap(value => this.queryTablesSearch(value))
+            switchMap(value => {
+                this.selectedTable = value;
+                return this.queryTablesSearch(value)
+            })
         );
     }
 
