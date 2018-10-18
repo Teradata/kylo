@@ -82,7 +82,7 @@
 
         <div class="visual-query-canvas" style="margin-top:8px" mouse-capture [fxHide]="advancedMode == true">
           <mat-divider></mat-divider>
-          <div class="svg-container" browser-height browser-height-scroll-y="false" browser-height-scroll-x="auto" [browser-height-offset]="128">
+          <div class="svg-container" browser-height browser-height-scroll-y="false" browser-height-scroll-x="auto" [browser-height-offset]="(heightOffset || 0) + 136">
             <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
           </div>
         </div>

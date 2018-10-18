@@ -235,7 +235,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
                 private catalogService:CatalogService) {
         // Setup environment
-        //this.heightOffset = $element.attr("height-offset");
         this.sideNavService.hideSideNav();
     }
 
