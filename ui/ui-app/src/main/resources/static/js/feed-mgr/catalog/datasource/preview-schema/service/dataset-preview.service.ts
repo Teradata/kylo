@@ -176,11 +176,10 @@ export class DatasetPreviewService {
             let schema = dbObject.schema ? dbObject.schema : dbObject.catalog;
             let table = dbObject.name
             let key = schema + "." + table;
-            dataSet.items = [key];
+            dataSet.items = [dbObject.qualifiedIdentifier];
             dataSet.displayKey = key;
             dataSet.key = key;
             dataSet.allowsRawView = false;
-            dataSet.updateDisplayKey();
             return dataSet;
         }
         else {
