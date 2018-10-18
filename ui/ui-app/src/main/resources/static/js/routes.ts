@@ -302,7 +302,7 @@ class Route {
                     import(/* webpackChunkName: "ops-mgr.overview.module" */ "./ops-mgr/overview/module")
                         .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "dashboard"));
                 };
-                import(/* webpackChunkName: "feed-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -398,20 +398,11 @@ class Route {
             url: '/service-health',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "opsmgr.service-health.module" */ "./ops-mgr/service-health/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('service-health', transition.params())
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading service-health ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ../ops-mgr/service-health/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "opsmgr.service-health.module" */ "./ops-mgr/service-health/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-health", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
