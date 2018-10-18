@@ -22,6 +22,9 @@ import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class ImportPropertyBuilder {
 
     private ImportComponent importComponent;
@@ -34,6 +37,8 @@ public final class ImportPropertyBuilder {
     private String type;
     private String componentId;
     private boolean valid;
+
+    private Map<String,String> additionalProperties;
 
     private ImportPropertyBuilder() {
     }
@@ -87,6 +92,19 @@ public final class ImportPropertyBuilder {
         return this;
     }
 
+    public ImportPropertyBuilder withAdditionalProperties(Map<String,String> additionalProperties){
+        this.additionalProperties = additionalProperties;
+        return this;
+    }
+
+    public ImportPropertyBuilder putAdditionalProperty(String key, String value){
+        if(this.additionalProperties == null){
+            this.additionalProperties = new HashMap<>();
+        }
+        this.additionalProperties.put(key,value);
+        return this;
+    }
+
     public ImportProperty build() {
         ImportProperty importProperty = new ImportProperty();
         importProperty.setImportComponent(importComponent);
@@ -99,6 +117,7 @@ public final class ImportPropertyBuilder {
         importProperty.setProcessorType(type);
         importProperty.setType(type);
 
+        importProperty.setAdditionalProperties(additionalProperties);
 
         if (StringUtils.isBlank(displayName) && StringUtils.isNotBlank(propertyKey)) {
             displayName = propertyKey;

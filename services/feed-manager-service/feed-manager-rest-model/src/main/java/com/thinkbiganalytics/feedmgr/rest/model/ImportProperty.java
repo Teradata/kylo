@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 
+import java.util.Map;
+
 public class ImportProperty {
 
     private ImportComponent importComponent;
@@ -40,6 +42,8 @@ public class ImportProperty {
     private String description;
     private String type;
     private boolean valid;
+
+    public Map<String,String> additionalProperties;
 
 
     public ImportProperty() {
@@ -154,6 +158,14 @@ public class ImportProperty {
 
     public void setComponentName(String componentName) {
         this.componentName = componentName;
+    }
+
+    public Map<String, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     @Override

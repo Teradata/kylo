@@ -101,12 +101,11 @@
             <ng-container [ngTemplateOutlet]="datasetPropertiesTemplate"
                           [ngTemplateOutletContext]="{$implicit:userDataSetsOption}">
             </ng-container>
-            <!-- dataset properties
+            <!-- datasource properties (legacy feeds) -->
 
-            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
-                          [ngTemplateOutletContext]="{$implicit:templateDataImportOption}">
+            <ng-container [ngTemplateOutlet]="importDataSourcesOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:userDatasourcesOption,displayComponentName:true}">
             </ng-container>
-             -->
 
             <!-- template properties -->
 
@@ -214,6 +213,34 @@
     </form>
   </div>
 
+</ng-template>
+
+
+
+
+
+<ng-template #importDataSourcesOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
+
+<!-- Data source properties required -->
+  <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
+    <form [formGroup]="getNestedFormGroup(importOption)">
+      <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
+
+      <mat-list class="pull-left" >
+        <mat-list-item *ngFor="let prop of importOption.properties">
+          <div matLine *ngIf="displayComponentName">Data Source: {{prop.componentName}}</div>
+          <div matLine>
+
+            <mat-form-field>
+              <mat-select placeholder="Select new data source" [formControlName]="prop.propertyKey">
+                <mat-option [value]="datasource.id" *ngFor="let datasource of availableDatasources">{{datasource.name}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </form>
+</div>
 </ng-template>
 
 

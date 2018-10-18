@@ -18,6 +18,8 @@ import {CatalogService} from "../../../catalog/api/services/catalog.service";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {FormGroupUtil} from "../../../../services/form-group-util";
 import {Category} from "../../../model/category/category.model";
+import {DatasourcesService} from "../../../services/DatasourcesService";
+import {DatasourcesServiceStatic} from "../../../visual-query/wrangler";
 @Component({
     selector: "import-feed",
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/import/import-feed.component.html"
@@ -126,6 +128,12 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     categoryUserFieldsImportOption: Import.ImportComponentOption;
 
     /**
+     * List of available data sources.
+     * @type {Array.<JdbcDatasource>}
+     */
+    availableDatasources: any = [];
+
+    /**
      * The parent form group for validation checks prior to import
      */
     formGroup:FormGroup;
@@ -175,7 +183,10 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
 
 
 
-    constructor(private http:HttpClient,private snackBar:MatSnackBar,private _dialogService:TdDialogService, private catalogService:CatalogService,@Inject("ImportService") private importService:Import.ImportService, @Inject("FileUpload")private fileUploadService:FileUpload) {
+    constructor(private http:HttpClient,private snackBar:MatSnackBar,private _dialogService:TdDialogService, private catalogService:CatalogService,
+                @Inject("ImportService") private importService:Import.ImportService,
+                @Inject("FileUpload")private fileUploadService:FileUpload,
+                @Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
 
         this.formGroup = new FormGroup({});
         this.feedOverwriteFormControl = new FormControl(false);
@@ -189,6 +200,12 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         this.formGroup.addControl("reusableTemplateOverwrite",this.reusableTemplateOverwriteFormControl);
 
         this.initImportOptions();
+
+        // Get the list of data sources
+        this.datasourcesService.findAll()
+            .then((datasources: any) => {
+                this.availableDatasources = datasources;
+            });
     }
 
     private initImportOptions(){
@@ -628,20 +645,40 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 .afterClosed()
                 .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
                 //add these to the canvas
-                let sparkDataSets =response.previews.map(ds => ds.toSparkDataSet())
-                let dataSet = sparkDataSets[0];
+                let preview = response.previews[0];
+                let dataSet =preview.toSparkDataSet();
                 this.catalogService.createDataSet(dataSet).subscribe((ds:SparkDataSet) => {
                     //find or create dataset then
                     console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet)
-                    importProperty.valid = true;
-                    importProperty.displayName = ds.paths[0];
-                    importProperty.componentName = ds.dataSource.title;
-                    importProperty.propertyValue = ds.id;
-                    //update form validity
-                   let property = this.formGroup.get(this.nestedFormGroupControlName(this.userDataSetsOption)).get(importProperty.propertyKey);
-                   if(property) {
-                       property.setValue("true");
-                   }
+                    let valid = true;
+                    let schemaNeeded = "";
+                    //validate schema
+                    if(importProperty.additionalProperties) {
+                        if(importProperty.additionalProperties["schema"]){
+                            const importSchema = importProperty.additionalProperties["schema"];
+                            let previewSchema = preview.schema.map(col => col.name+" "+col.dataType).join(",");
+                            console.log("DOES import ",importSchema+" match "+previewSchema);
+                            if(importSchema != previewSchema){
+                                valid = false
+                                schemaNeeded = importSchema;
+                            }
+
+                        }
+                    }
+                    if(valid) {
+                        importProperty.valid = true;
+                        importProperty.displayName = ds.paths[0];
+                        importProperty.componentName = ds.dataSource.title;
+                        importProperty.propertyValue = ds.id;
+                        //update form validity
+                        let property = this.formGroup.get(this.nestedFormGroupControlName(this.userDataSetsOption)).get(importProperty.propertyKey);
+                        if (property) {
+                            property.setValue("true");
+                        }
+                    }
+                    else {
+                        this._dialogService.openAlert({title:"Schemas don't match", message:"The selected dataset schema doesnt match. Please supply a schema matching: \n "+schemaNeeded});
+                    }
                 })
 
 

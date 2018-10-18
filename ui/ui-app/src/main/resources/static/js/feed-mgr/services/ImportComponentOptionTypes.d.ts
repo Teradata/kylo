@@ -154,6 +154,7 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
          displayName:string;
          type:string;
          valid:boolean;
+         additionalProperties?:any;
      }
 
 
