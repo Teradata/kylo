@@ -90,7 +90,7 @@
               <feed-info-name [feed]="feed"></feed-info-name>
               <mat-divider></mat-divider>
 
-              <feed-info-category [feed]="feed"  ></feed-info-category>
+              <feed-info-category [feed]="feed" [editable]="!feed.hasBeenDeployed()"></feed-info-category>
               <mat-divider></mat-divider>
 
               <feed-info-description [feed]="feed"  ></feed-info-description>
