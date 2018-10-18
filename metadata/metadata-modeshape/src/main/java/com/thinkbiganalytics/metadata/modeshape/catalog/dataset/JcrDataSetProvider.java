@@ -245,6 +245,12 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             return findByParamsHash(hash).orElseGet(() -> create(hash));
         }
 
+        @Override
+        public Optional<DataSet> find() {
+            long hash = generateDataSetHash();
+            return findByParamsHash(hash);
+        }
+
         /**
          * @return a hash code uniquely identifying the underlying data
          */

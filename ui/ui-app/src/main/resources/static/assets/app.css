@@ -308,6 +308,9 @@ md-list md-datepicker .md-button.md-icon-button {
   transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
   color: grey;
 }
+text-hint {
+  font-size: 12px;
+}
 
 /**
   angular material element styles

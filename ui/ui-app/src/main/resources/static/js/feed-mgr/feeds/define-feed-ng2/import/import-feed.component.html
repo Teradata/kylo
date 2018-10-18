@@ -1,0 +1,248 @@
+<td-layout-nav color="none">
+  <div td-toolbar-content>
+    <div>Import a feed</div>
+    <span fxFlex="100"></span>
+  </div>
+
+
+  <mat-card class="feed-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>{{kyloIcons.Feed.importFeed}}</mat-icon>
+        <span translate>views.import_feed.Import_a_feed</span>
+      </mat-card-title>
+      <mat-card-subtitle translate>views.import_feed.Import_a_Feed_Archive</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+      <div fxLayout="column" fxLayoutAlign="start" class="pad-top pad-left">
+
+        <!-- upload widget -->
+
+        <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
+          <file-upload (filesChange)="onFilesChange($event)" [files]="feedFile" placeholder="select or drop feed archive (zip) file" *ngIf="!uploadInProgress"
+                       [renderSubmitButton]="false"></file-upload>
+          <div class="mat-title" *ngIf="uploadInProgress">Uploading feed ...</div>
+        </div>
+
+        <form [formGroup]="formGroup">
+
+          <div fxLayout="column">
+            <div fxFlex="50" class="pad-bottom">
+              <category-autocomplete placeholder="Change the category" hint="Optionally import this feed into a different category" [required]="false" [renderClearButton]="true" #categoryAutoComplete (categorySelected)="onCategorySelected($event)"></category-autocomplete>
+            </div>
+            <!-- validation messages -->
+            <ng-container [ngTemplateOutlet]="importOptionErrorTemplate"
+                          [ngTemplateOutletContext]="{$implicit:feedDataImportOption}">
+            </ng-container>
+
+
+            <!-- feed import options -->
+
+            <div fxLayout="row" class="pad-bottom">
+              <div fxLayout="column" fxFlex="50">
+                <mat-checkbox formControlName="feedOverwrite" aria-label="Overwrite if exists">
+                  {{"views.import_feed.Overwrite_Feed" | translate}}
+                </mat-checkbox>
+                <div class="tc-grey-500 text-hint">
+                  {{"views.import_feed.Overwrite_Feed2" | translate}}
+                </div>
+              </div>
+
+              <div fxLayout="column" fxFlex="50">
+                <mat-checkbox formControlName="disableUponImport" aria-label="Disable upon import">
+                  {{"views.import_feed.Disable_Feed" | translate}}
+                </mat-checkbox>
+                <div class="tc-grey-500 text-hint">
+                  {{"views.import_feed.Disable_Feed2" | translate}}
+                </div>
+              </div>
+            </div>
+
+            <!-- Template validation messages -->
+            <ng-container [ngTemplateOutlet]="importOptionErrorTemplate"
+                          [ngTemplateOutletContext]="{$implicit:templateDataImportOption}">
+            </ng-container>
+
+            <!-- NiFi template validation messages -->
+            <ng-container [ngTemplateOutlet]="importOptionErrorTemplate"
+                          [ngTemplateOutletContext]="{$implicit:nifiTemplateImportOption}">
+            </ng-container>
+
+            <!-- template options -->
+
+            <div fxLayout="row" class="pad-bottom">
+              <div fxLayout="column" fxFlex="50">
+                <mat-checkbox formControlName="templateOverwrite" aria-label="Overwrite if exists">
+                  {{"views.import_feed.Replace_Feed" | translate}}
+                </mat-checkbox>
+                <div class="tc-grey-500 text-hint">
+                  {{"views.import_feed.Replace_Feed2" | translate}}
+                </div>
+              </div>
+
+              <div fxLayout="column" fxFlex="50">
+                <mat-checkbox formControlName="reusableTemplateOverwrite" aria-label="Disable upon import">
+                  {{"views.import_feed.Replace_Reusable" | translate}}
+                </mat-checkbox>
+                <div class="tc-grey-500 text-hint">
+                  {{"views.import_feed.Replace_Reusable2" | translate}}
+                </div>
+              </div>
+            </div>
+            <div class="mat-title" *ngIf="requiredPropertyCount >0"> You have {{requiredPropertyCount}} required properties that need updating</div>
+
+            <!-- Feed properties required -->
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:feedDataImportOption,displayComponentName:true}">
+            </ng-container>
+
+            <!-- dataset properties required -->
+            <ng-container [ngTemplateOutlet]="datasetPropertiesTemplate"
+                          [ngTemplateOutletContext]="{$implicit:userDataSetsOption}">
+            </ng-container>
+            <!-- dataset properties
+
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:templateDataImportOption}">
+            </ng-container>
+             -->
+
+            <!-- template properties -->
+
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:templateDataImportOption,displayComponentName:true}">
+            </ng-container>
+
+            <!-- reusable template properties -->
+
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:reusableTemplateImportOption,displayComponentName:true}">
+            </ng-container>
+
+            <!-- feed user fields properties -->
+
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:feedUserFieldsImportOption,displayComponentName:false}">
+            </ng-container>
+
+            <!-- category user fields properties -->
+
+            <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
+                          [ngTemplateOutletContext]="{$implicit:categoryUserFieldsImportOption,displayCompnentName:false}">
+            </ng-container>
+
+            <div fxLayout="row" class="pad-top">
+              <button mat-raised-button color="accent" (click)="importFeed()"
+                      [disabled]="(uploadInProgress || formGroup.invalid || feedFile == undefined)">
+                {{"views.import_feed.Import_Feed_btn" | translate}}
+              </button>
+              <mat-progress-bar fxFlex mode="determinate" [value]="uploadProgress" *ngIf="uploadInProgress"></mat-progress-bar>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div fxFlex="100" fxLayout="column" fxLayoutAlign="center center">
+        <span fxFlex="25"></span>
+        <div fxFlex="50" fxLayout="column" fxLayoutAlign="center center">
+          <h4 class="mat-title" translate *ngIf="uploadStatusMessages.length >0">views.import_feed.Upload_Progress_Title</h4>
+          <mat-list dense>
+            <mat-list-item *ngFor="let msg of uploadStatusMessages">
+              <mat-icon *ngIf="msg.complete && msg.success">check</mat-icon>
+              <mat-icon *ngIf="msg.complete && !msg.success">error</mat-icon>
+              <h4 matLine>
+                {{msg.message}}
+              </h4>
+            </mat-list-item>
+          </mat-list>
+        </div>
+        <span fxFlex="25"></span>
+      </div>
+
+      <div *ngIf="importResult != null" class="pad-top">
+        <div fxLayout="row">
+          <!-- importResultIconColor -->
+          <ng-md-icon [icon]="importResultIcon"></ng-md-icon>
+          <span class="pad-left">{{message}}</span>
+          <span flex></span>
+        </div>
+
+        <mat-list  class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
+          <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
+            <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">Processor: {{error.processorName}}</h4>
+            <div class="warn">{{error.message}}</div>
+            <mat-divider *ngIf="!$last"></mat-divider>
+          </mat-list-item>
+        </mat-list>
+      </div>
+
+
+    </mat-card-content>
+  </mat-card>
+
+</td-layout-nav>
+
+
+<ng-template #importOptionErrorTemplate let-importOption>
+
+  <mat-list dense *ngIf="importOption.errorMessages && importOption.errorMessages.length >0" class="pull-left">
+    <mat-list-item *ngFor="let msg of importOption.errorMessages">
+      <mat-icon mat-list-icon color="warn">warning</mat-icon>
+      <h4 mat-line>{{msg}}</h4>
+    </mat-list-item>
+  </mat-list>
+
+</ng-template>
+
+<ng-template #importOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
+
+  <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
+    <form [formGroup]="getNestedFormGroup(importOption)">
+      <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
+
+      <mat-list class="pull-left" >
+        <mat-list-item *ngFor="let prop of importOption.properties">
+          <div matLine *ngIf="displayComponentName">{{prop.componentName}}</div>
+          <div matLine>
+            <mat-form-field>
+              <input required matInput [placeholder]="prop.displayName" autocomplete="new-password" [formControlName]="prop.propertyKey">
+            </mat-form-field>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </form>
+  </div>
+
+</ng-template>
+
+
+<ng-template #datasetPropertiesTemplate let-importOption>
+  <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
+    <form [formGroup]="getNestedFormGroup(importOption)">
+      <div class="mat-title"> {{"views.import_feed.dataset-required" | translate}}</div>
+      <div class="subheading-1">{{"views.import_feed.choose-datasets-message" | translate}}</div>
+
+      <ng-container *ngFor="let prop of importOption.properties">
+        <div fxLayout="row">
+          <mat-list class="pull-left">
+            <mat-list-item>
+              <mat-icon mat-list-icon color="warn" *ngIf="!prop.valid">warning</mat-icon>
+              <mat-icon mat-list-icon color="primary" *ngIf="prop.valid">check</mat-icon>
+              <div matLine>DataSet: {{prop.displayName}}</div>
+              <div matLine class="tc-grey-500">Data Source: {{prop.componentName}}</div>
+            <!--  <div matLine>DataSet Id:{{prop.componentId}}</div> -->
+              <input type="hidden" [formControlName]="prop.propertyKey" required>
+            </mat-list-item>
+          </mat-list>
+          <div fxLayoutAlign="center center">
+            <button mat-raised-button color="accent" (click)="updateDataSet(prop)">{{"views.import_feed.update-dataset" | translate}}</button>
+          </div>
+        </div>
+      </ng-container>
+    </form>
+
+
+  </div>
+
+</ng-template>

@@ -125,7 +125,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          * Navigate to the feed import page
          */
         gotoImportFeed(){
-            this.stateService.FeedManager().Feed().navigatetoImportFeed();
+            this.stateService.FeedManager().Feed().navigateToFeedImport();
         }
 
 

@@ -18,6 +18,7 @@ export enum ImportComponentType {
     REUSABLE_TEMPLATE =  Import.ImportComponentType.REUSABLE_TEMPLATE,
     REMOTE_INPUT_PORT =  Import.ImportComponentType.REMOTE_INPUT_PORT,
     USER_DATASOURCES =  Import.ImportComponentType.USER_DATASOURCES,
+    USER_DATA_SETS =  Import.ImportComponentType.USER_DATA_SETS,
     TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION,
     FEED_CATEGORY_USER_FIELDS = Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS,
     FEED_USER_FIELDS = Import.ImportComponentType.FEED_USER_FIELDS
@@ -71,6 +72,10 @@ export class DefaultImportService implements ImportService{
 
     newFeedDataImportOption(): ImportComponentOption {
         return this.newImportComponentOption( Import.ImportComponentType.FEED_DATA);
+    }
+
+    newUserDataSetsImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.USER_DATA_SETS);
     }
 
     newRemoteProcessGroupImportOption(): ImportComponentOption {

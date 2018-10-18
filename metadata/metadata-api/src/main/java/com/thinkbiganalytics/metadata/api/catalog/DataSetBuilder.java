@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.api.catalog;
  */
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Collections the details required to either create a new data set, or to identify
@@ -98,4 +99,11 @@ public interface DataSetBuilder {
      * @return a new or existing data set
      */
     DataSet build();
+
+
+    /**
+     * find an existing dataset
+     * @return
+     */
+    Optional<DataSet> find();
 }

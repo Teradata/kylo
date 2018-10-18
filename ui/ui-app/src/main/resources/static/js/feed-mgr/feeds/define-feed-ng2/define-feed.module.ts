@@ -122,6 +122,7 @@ import {SkipHeaderComponent} from "./shared/skip-header/skip-header.component";
 import {DeployFeedDialogComponent} from "./summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component";
 import {DefineFeedPermissionsDialogComponent} from "./steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component";
 import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
+import {ImportFeedComponent} from "../define-feed-ng2/import/import-feed.component";
 
 @NgModule({
     declarations: [
@@ -181,7 +182,8 @@ import {FeedToolbarActions} from "./shared/feed-toolbar-actions";
         FeedUploadFileDialogComponent,
         SkipHeaderComponent,
         DeployFeedDialogComponent,
-        FeedToolbarActions
+        FeedToolbarActions,
+        ImportFeedComponent
     ],
     entryComponents:[
         NewFeedDialogComponent,

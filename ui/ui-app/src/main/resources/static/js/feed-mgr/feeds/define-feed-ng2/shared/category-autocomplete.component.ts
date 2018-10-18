@@ -1,5 +1,5 @@
 import {EventEmitter, Input, Output,OnDestroy, OnInit,Component, Inject} from "@angular/core";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {Observable} from "rxjs/Observable";
 import {Category} from "../../../model/category/category.model";
 import {MatAutocompleteSelectedEvent} from "@angular/material";
@@ -20,6 +20,21 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
 
     @Input()
     category?:Category;
+
+    @Input()
+    placeholder?:string = "Category"
+
+    @Input()
+    hint?:string
+
+    @Input()
+    renderClearButton?:boolean = false;
+
+
+    @Input()
+    required:boolean = true
+
+    categoryControl:FormControl;
 
     /**
      * Aysnc autocomplete list of categories
@@ -43,9 +58,14 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
         if(this.category) {
             value = this.category
         }
-        let categoryCtrl = new FormControl(value,[Validators.required, CategoryAutocompleteValidators.validateFeedCreatePermissionForCategory]);
-        this.formGroup.registerControl("category",categoryCtrl);
-        this.filteredCategories = categoryCtrl.valueChanges.pipe(
+        let validators : ValidatorFn[] = []
+        if(this.required){
+            validators.push(Validators.required);
+        }
+        validators.push(CategoryAutocompleteValidators.validateFeedCreatePermissionForCategory)
+        this.categoryControl = new FormControl(value,validators);
+        this.formGroup.registerControl("category",this.categoryControl);
+        this.filteredCategories = this.categoryControl.valueChanges.pipe(
             startWith(''),
             flatMap(text => {
                 return fromPromise(this.categoriesService.querySearch(text));
@@ -66,6 +86,11 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
     onCategorySelected(event:MatAutocompleteSelectedEvent){
         let category = <Category> event.option.value;
         this.categorySelected.emit(category);
+    }
+
+    clearCategorySelection(){
+        this.categoryControl.setValue("");
+        this.categorySelected.emit(null);
     }
 
     /**

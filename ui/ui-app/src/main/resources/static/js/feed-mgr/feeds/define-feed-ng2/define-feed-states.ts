@@ -32,6 +32,7 @@ import {Subject} from "rxjs/Subject";
 import {ReplaySubject} from "rxjs/ReplaySubject";
 import {Feed, LoadMode} from "../../model/feed/feed.model";
 import {error} from "ng-packagr/lib/util/log";
+import {ImportFeedComponent} from "../define-feed-ng2/import/import-feed.component";
 
 
 const resolveFeed :any =
@@ -62,7 +63,15 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             displayName: "Define Feed"
         }
     },
-
+    {
+        name: FEED_DEFINITION_STATE_NAME+".import-feed",
+        url: "/import-feed",
+        component:ImportFeedComponent,
+        data: {
+            breadcrumbRoot: true,
+            displayName: "Import Feed"
+        }
+    },
     {
         name: FEED_DEFINITION_STATE_NAME+".select-template",
         url: "/select-template",
