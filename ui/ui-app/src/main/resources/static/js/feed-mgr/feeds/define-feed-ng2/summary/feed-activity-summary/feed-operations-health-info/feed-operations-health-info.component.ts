@@ -152,11 +152,12 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
                 this.startingFeed = true;
 
                 let error = (msg?: string) => {
-                    let errorMessage = msg ? msg : "The feed could not be started.";
+                    let message = msg ? msg : "The feed could not be started.";
+                    let alertTitle = msg? "Started the feed" : "Error starting the feed";
 
                     this._dialogService.openAlert({
-                        title: "Error starting the feed",
-                        message: errorMessage
+                        title: alertTitle,
+                        message: message
                     })
                 }
                 this.opsManagerFeedService.startFeed(this.feed.id).subscribe((response: RestResponseStatus) => {
