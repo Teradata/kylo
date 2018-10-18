@@ -106,8 +106,8 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
 
     @Override
     public void setupAccessControl(Principal owner) {
-        enable(owner, com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, DatasourceAccessControl.EDIT_DETAILS);
+        enable(owner, com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl.EDIT_DETAILS);
 
         super.setupAccessControl(owner);
     }
