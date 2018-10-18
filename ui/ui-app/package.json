@@ -5,8 +5,9 @@
   "description": "kylo",
   "scripts": {
     "build:webpack:dev": "webpack --env.dev --devtool eval --profile --progress",
-    "build:webpack:prod": "webpack --env.production --devtool eval --profile --progress",
+    "build:webpack:prod": "webpack --env.production --devtool source-map --profile --progress",
     "start:webpack:dev": "webpack-dev-server --env.dev --devtool eval --progress --profile",
+    "start:webpack:dev-source-map": "webpack-dev-server --env.dev --devtool source-map --progress --profile",
     "build:lib": "ng-packagr -p src/main/resources/static/lib/feed/package.json",
     "build": "npm run build:webpack:prod",
     "serve": "lite-server -c bs-config.js",

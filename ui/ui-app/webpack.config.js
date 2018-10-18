@@ -15,6 +15,8 @@ const ProgressPlugin = require('webpack/lib/ProgressPlugin');
 const AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 
 const outputDir = path.resolve(__dirname, 'target/classes/static');
+const pluginOutputDir = path.resolve(__dirname, '../../plugins/ui-sqoop-table-data-processor-template/target/classes/static');
+
 const nodeModulesDir = path.resolve(__dirname, 'node_modules');
 const staticDir = path.resolve('./src/main/resources/static');
 const staticJsDir = path.join(staticDir, 'js');
@@ -278,6 +280,7 @@ const webpackConfig = (env) => {
                 ...loginPageDependencies,
                 ...templates,
                 ...wranlgerDependencies,
+                ...pluginDependencies
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -353,8 +356,21 @@ const webpackConfig = (env) => {
     } else {
         config.devServer = devServer;
         config.plugins.push(
+            // new writeFilePlugin(),
             new webpack.NamedModulesPlugin(),
-            new webpack.HotModuleReplacementPlugin()
+            new webpack.HotModuleReplacementPlugin(),
+            new CopyWebpackPlugin([
+                {
+                    context: pluginOutputDir,
+                    from: 'js/plugin/processor-templates/sqoop-table-data/bundles/*',
+                    to: outputDir
+                },
+                {
+                    context: pluginOutputDir,
+                    from: 'js/plugin/processor-templates/sqoop-table-data/*-processor-template-definition.json',
+                    to: outputDir
+                },
+            ])
         );
     }
 
@@ -363,6 +379,19 @@ const webpackConfig = (env) => {
 
 module.exports = webpackConfig;
 
+
+const pluginDependencies = [
+    {
+        context: './src/main/resources/static',
+        from: 'node_modules/**/*',
+        to: '[path][name].[ext]'
+    },
+    {
+        context: './src/main/resources/lib',
+        from: '**/*',
+        to: '[path][name].[ext]'
+    },
+];
 
 const wranlgerDependencies = [
     {
@@ -431,6 +460,11 @@ const templates = [
 ];
 
 const indexPageDependencies = [
+    {
+        context: './src/main/resources/static',
+        from: 'node_modules/systemjs/**/*.js',
+        to: '[path][name].[ext]'
+    },
     {
         context: './src/main/resources/static',
         from: 'js/vendor/ment.io/styles.css',
