@@ -1,37 +1,35 @@
-import {FormGroup} from "@angular/forms";
-import {Component, EventEmitter, Input, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../../model/feed/feed.model";
+import {Component, ViewChild} from "@angular/core";
+
 import {DefineFeedService} from "../../../../services/define-feed.service";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 import {SystemFeedNameComponent} from "../../../../shared/system-feed-name.component";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
 import {FeedItemInfoService} from "../feed-item-info.service";
-import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 @Component({
-    selector:"feed-info-name",
-    templateUrl:"js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component.html"
+    selector: "feed-info-name",
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component.html"
 })
-export class FeedInfoNameComponent  extends AbstractFeedInfoItemComponent {
+export class FeedInfoNameComponent extends AbstractFeedInfoItemComponent {
 
     @ViewChild("systemFeedName")
-    private systemFeedName:SystemFeedNameComponent;
+    private systemFeedName: SystemFeedNameComponent;
 
-
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
-        super(defineFeedService,feedItemInfoService, feedLoadingService)
+    constructor(defineFeedService: DefineFeedService, feedItemInfoService: FeedItemInfoService, feedLoadingService: FeedLoadingService) {
+        super(defineFeedService, feedItemInfoService, feedLoadingService)
     }
 
     save() {
         this.showProgress();
         let values = this.formGroup.value;
         this.feed.feedName = values.feedName;
-        this.feed.systemFeedName = values.systemFeedName;
+        if (values.systemFeedName) {
+            this.feed.systemFeedName = values.systemFeedName;
+        }
         this.saveFeed(this.feed);
     }
 
-
-    cancel(){
+    cancel() {
         this.systemFeedName.resetForm();
     }
-
 }
