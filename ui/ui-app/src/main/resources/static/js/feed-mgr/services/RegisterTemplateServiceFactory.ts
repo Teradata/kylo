@@ -22,6 +22,7 @@ import Processor = Templates.Processor;
 import Property = Templates.Property;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
@@ -31,10 +32,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 private RestUrlService: RestUrlService,
                 private feedPropertyService: DefaultFeedPropertyService,
                 private accessControlService: AccessControlService,
-                private entityAccessControlService: EntityAccessControlService,
-                private feedInputProcessorPropertiesTemplateService: FeedInputProcessorPropertiesTemplateService,
-                private feedDetailsProcessorRenderingHelper: FeedDetailsProcessorRenderingHelper,
                 private _dialogService: TdDialogService,
+                private translateService : TranslateService,
                 private registerTemplatePropertyService :RegisterTemplatePropertyService) {
 
         this.init();
@@ -410,16 +409,12 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     accessDeniedDialog(): void {
         this._dialogService.openAlert({
             disableClose : false,
-            title : "",
-            ariaLabel : "",
+            title : this.translateService.instant("views.main.registerService-accessDenied"),
+            ariaLabel : this.translateService.instant("views.main.registerService-accessDenied2"),
             closeButton : "ok",
-            message : ""
+            message : this.translateService.instant("views.main.registerService-accessDenied3")
         });
-        // .title(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied'))
-        // .textContent(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied2'))
-        // .ariaLabel(this.$injector.get("$filter")('translate')('views.main.registerService-accessDenied3'))
     }
-
 
     /**
      * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}

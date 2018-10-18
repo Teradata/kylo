@@ -18,7 +18,7 @@
   #L%
   -->
 <div flex layout="row">
-  <mat-card flex>
+  <mat-card flex="70">
     <mat-card-title flex layout>
       <div style="white-space:nowrap" class="card-title" flex>{{cardTitle}}</div>
     </mat-card-title>
@@ -237,7 +237,7 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card flex="30" header-css="job-details-header" body-css="job-details-right-body" *ngIf="unableToFindJob == false">
+  <mat-card flex="30" style="height: 100%;" header-css="job-details-header" body-css="job-details-right-body" *ngIf="unableToFindJob == false">
     <mat-card-title flex layout>
       <div style="white-space:nowrap" class="card-title">{{'views.job-details-template.JD' | translate}}</div>
       <span flex></span>
