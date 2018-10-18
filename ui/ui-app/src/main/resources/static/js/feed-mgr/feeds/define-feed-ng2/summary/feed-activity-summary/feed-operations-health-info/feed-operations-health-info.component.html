@@ -26,7 +26,7 @@
         </button>
         <button mat-menu-item *ngIf="accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
           <mat-icon>{{kyloIcons.Feed.Actions.delete}}</mat-icon>
-          <span>{{"views.feed-details.Delete" | translate}}</span>
+          <span>{{"FeedDefinition.Actions.DeleteFeed" | translate}}</span>
         </button>
         <button mat-menu-item [disabled]="!accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>

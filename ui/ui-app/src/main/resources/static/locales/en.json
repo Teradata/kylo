@@ -918,6 +918,18 @@
                  "SLA":{"Name":"SLA"},
                  "Lineage":{"Name":"Lineage"},
                  "Versions":{"Name":"Versions"}
+        },
+        "Actions": {
+            "DeleteFeed": "Delete Feed...",
+            "RemoveDraft": "Remove Draft..."
+        },
+        "Dialogs": {
+          "RemoveDraft": {
+            "Accept": "Yes",
+            "Cancel": "No",
+            "Message": "Are you sure you want to remove the current draft?",
+            "Title": "Confirm Remove Draft"
+          }
         }
     },
     "FeedStats":{
