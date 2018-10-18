@@ -28,6 +28,7 @@ export class CronExpressionPreviewComponent implements OnInit {
 
     ngOnInit() {
         this.control.setAsyncValidators(this.cronExpressionValidator());
+        this.control.updateValueAndValidity(); //updateValueAndValidity so that we get preview of the initial default value
     }
 
     cronExpressionValidator(): AsyncValidatorFn {

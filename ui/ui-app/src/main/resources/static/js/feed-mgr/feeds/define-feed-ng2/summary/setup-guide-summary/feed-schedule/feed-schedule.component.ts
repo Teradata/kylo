@@ -79,6 +79,9 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         this.scheduleForm = new FormGroup({});
        this.allScheduleStrategies = Object.keys(FeedConstants.SCHEDULE_STRATEGIES).map(key => FeedConstants.SCHEDULE_STRATEGIES[key])
 
+        let cronExpressionValue = FeedConstants.DEFAULT_CRON;
+        let cronExpressionControl = new FormControl(cronExpressionValue, [Validators.required]);
+        this.scheduleForm.registerControl("cronExpression", cronExpressionControl);
     }
 
 
@@ -131,7 +134,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
      * register form controls with the feed values
      */
    private registerFormControls(){
-       let cronExpressionValue = FeedConstants.DEFAULT_CRON;
+        let cronExpressionValue = FeedConstants.DEFAULT_CRON;
        let timerAmountValue = 5;
        let timerUnitsValue  = 'min';
 
@@ -148,10 +151,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
             this.scheduleForm.registerControl("scheduleStrategy", scheduleStrategyControl);
         }
 
-       if(!this.checkAndSetValue("cronExpression",cronExpressionValue)) {
-            let cronExpressionControl = new FormControl(cronExpressionValue, [Validators.required]);
-            this.scheduleForm.registerControl("cronExpression", cronExpressionControl);
-        }
+       this.checkAndSetValue("cronExpression",cronExpressionValue);
 
        if(!this.checkAndSetValue("timerAmount",timerAmountValue)) {
             let timerAmountFormControl = new FormControl(timerAmountValue, [

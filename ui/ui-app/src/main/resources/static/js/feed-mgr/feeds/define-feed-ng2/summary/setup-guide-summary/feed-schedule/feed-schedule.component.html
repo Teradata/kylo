@@ -57,17 +57,15 @@
     </mat-select>
   </mat-form-field>
 
-  <div *ngIf="isCronDriven()">
+  <div *ngIf="isCronDriven()" fxLayout="column">
     <mat-form-field>
-      <!-- TODO: Add cron-expression-validator logic -->
       <input matInput placeholder="Cron Expression"
              name="cronExpression"
-             formControlName="cronExpression"
-            >
+             formControlName="cronExpression">
       <mat-error>Cron Expression is required</mat-error>
     </mat-form-field>
+    <cron-expression-preview2 [control]="scheduleForm.controls['cronExpression']" [style.margin-bottom.px]="10"></cron-expression-preview2>
   </div>
-  <!-- TODO: Add cron expression preview logic -->
 
 
   <div *ngIf="isTimerDriven() ||isPrimaryNodeOnly()" layout="row" class="push-bottom-md">
