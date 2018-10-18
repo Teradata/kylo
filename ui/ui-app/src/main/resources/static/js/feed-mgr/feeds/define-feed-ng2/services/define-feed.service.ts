@@ -400,8 +400,11 @@ export class DefineFeedService {
       return  this.currentStepSubject.subscribe(observer);
     }
 
-    subscribeToFeedSaveEvent(observer:PartialObserver<SaveFeedResponse>) :ISubscription{
-        return  this.savedFeedSubject.subscribe(observer);
+    subscribeToFeedSaveEvent(observer: PartialObserver<SaveFeedResponse>): ISubscription {
+        if (this.savedFeedSubject.isStopped) {
+            this.savedFeedSubject = new Subject<SaveFeedResponse>();
+        }
+        return this.savedFeedSubject.subscribe(observer);
     }
 
     subscribeToFeedEditStateChangeEvent(observer:PartialObserver<FeedEditStateChangeEvent>){
