@@ -12,6 +12,7 @@ import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service
 import {DatasetPreviewStepperCanceledEvent, DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {ISubscription} from "rxjs/Subscription";
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
+import {SparkDataSet} from "../../../../model/spark-data-set.model";
 
 
 export class ShowCatalogCanceledEvent{
@@ -33,7 +34,8 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     feed:Feed;
 
     @Output()
-    previewSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
+    sampleSaved:EventEmitter<DatasetPreviewStepperSavedEvent> = new EventEmitter<DatasetPreviewStepperSavedEvent>();
+
 
     /**
      * Flag that is toggled when a user is looking at a feed with a source already defined and they choose to browse the catalog to change the source
@@ -59,6 +61,11 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     feedSavedSubscription:ISubscription;
 
     /**
+     * the datasets already applied to this feed
+     */
+    dataSets:SparkDataSet[];
+
+    /**
      * Should this form show the Skip button to allow the user to bypass the sample selection
      */
     @Input()
@@ -75,12 +82,24 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
 
     ngOnInit(){
 
-
+        this.init();
 
     }
 
     private init(){
         this.feed =this.defineFeedService.getFeed();
+        if(this.feed.sampleDataSet != null && this.feed.sampleDataSet != undefined){
+            this.dataSets = [this.feed.sampleDataSet];
+        }
+        else {
+            //see if the sourceDataSets is populated
+            if(this.feed.sourceDataSets != null && this.feed.sourceDataSets.length >0){
+                this.dataSets = this.feed.sourceDataSets;
+            }
+            else {
+                this.dataSets = [];
+            }
+        }
         if(this.feed.isDataTransformation()){
             this.selectionService.multiSelectionStrategy();
         }
@@ -134,7 +153,10 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     }
 
     onSave(previewEvent:DatasetPreviewStepperSavedEvent) {
-        this.previewSaved.emit(previewEvent)
+        this.sampleSaved.emit(previewEvent)
+        if(previewEvent.previews) {
+            this.dataSets = previewEvent.previews.map(preview => preview.toSparkDataSet());
+        }
     }
 
     onCancel($event:DatasetPreviewStepperCanceledEvent){

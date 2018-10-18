@@ -47,24 +47,6 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     feedDefintionDatasourceState: string = FEED_DEFINITION_SECTION_STATE_NAME + ".datasource"
 
-    /**
-     * Should the catalog browser be rendered
-     */
-    showCatalog: boolean
-
-    /**
-     * When browsing the catalog should the "skip" button appear allowing the user to skip supplying a source sample
-     */
-    showSkipSourceButton:boolean;
-
-    /**
-     * Show the source card with the catalog browser be rendered?
-     * For Data Transformation feeds this will be set to false since the wrangler is responsible for defining the source sample
-     * @type {boolean}
-     */
-    showSourceSample:boolean = true;
-
-
     constructor(defineFeedService: DefineFeedService, stateService: StateService, private selectionService: SelectionService,
                 dialogService: TdDialogService,
                 feedLoadingService: FeedLoadingService,
@@ -96,22 +78,6 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     init() {
         let paths = this.feed.getSourcePaths();
-        //if this was a feed prior to 0.9.2 it will not have any source paths defined.
-        //check the sourceTableSchema and see if that exists
-        let sourceSchemaDefined = this.feed.table.sourceTableSchema && this.feed.table.sourceTableSchema.isDefined();
-        let userAcknowledgedContinueWithoutSource = this.step.getPropertyAsBoolean(SKIP_SOURCE_CATALOG_KEY);
-        //always show the catalog if no paths are available to preview
-        if ( !sourceSchemaDefined && (paths == undefined || paths.length == 0)) {
-            this.showSkipSourceButton = true;
-            this.showCatalog = !userAcknowledgedContinueWithoutSource;
-        }
-        if(this.feed.isDataTransformation()){
-            this.showSourceSample = false;
-            this.showCatalog = false;
-        }
-        else {
-            this.showSourceSample = true;
-        }
 
     }
 
@@ -151,118 +117,7 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
         this.subscribeToFormChanges(this.sourceForm);
     }
 
-    onCatalogCanceled($event:ShowCatalogCanceledEvent){
-        if($event.skip){
-            //mark it in the metadata
-            this.step.addProperty(SKIP_SOURCE_CATALOG_KEY,true);
-        }
-    }
 
-    onSampleSourceSaved(previewEvent: DatasetPreviewStepperSavedEvent) {
-        console.log("SAVE SAMPLE ",previewEvent)
-        let previews: PreviewDataSet[] = previewEvent.previews;
-        if (previews && previews.length) {
-            let feedDataSets = this.feed.sourceDataSets;
-            //check to see if schema differs
-            if (feedDataSets && feedDataSets.length > 0) {
-                let feedDatasetKeys = feedDataSets.map(ds => ds.id).sort().toString();
-                let newDatasetKeys = previews.map(ds => ds.key).sort().toString();
-                if (feedDatasetKeys != "" && feedDatasetKeys != newDatasetKeys) {
-                    //WARN different datasets
-                    this.dialogService.openConfirm({
-                        message: 'The dataset you have selected differs from the one existing on this feed. Switching the source will result in a new target schema.  Are you sure you want to do this?',
-                        disableClose: true,
-                        title: 'Confirm source dataset change',
-                    }).afterClosed().subscribe((accept: boolean) => {
-                        if (accept) {
-                            this._setSourceAndTargetAndSaveFeed(previewEvent);
-                        } else {
-                            // no op
-                        }
-                    });
-                }
-                else {
-                    this._setSourceAndTargetAndSaveFeed(previewEvent);
-                }
-            }
-            else {
-                this._setSourceAndTargetAndSaveFeed(previewEvent);
-            }
-        }
-        else {
-            this._setSourceAndTargetAndSaveFeed(previewEvent)
-        }
-
-
-    }
-
-    private _setSourceAndTargetAndSaveFeed(event: DatasetPreviewStepperSavedEvent) {
-        this.feedLoadingService.registerLoading();
-
-
-        let _save = () => {
-            //TODO validate and mark completion as needed
-
-            this.step.setComplete(true)
-            this.defineFeedService.saveFeed(this.feed).subscribe(result => {
-                this.feedLoadingService.resolveLoading()
-                this.showCatalog = false;
-            }, error1 => {
-                this.step.setComplete(false)
-                this.feedLoadingService.resolveLoading()
-                this.dialogService.openAlert({
-                    message: "There was an error saving the source selection " + error1,
-                    title: "Error saving source selection"
-                });
-            });
-        }
-
-        /**
-         * Save the feed
-         */
-        let saveFeed = () => {
-            if(event.previews[0] instanceof PreviewFileDataSet) {
-
-              this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
-                    console.log("SCHEMA RESPONSE ",response)
-                    this.feed.table.feedFormat = response.hiveFormat;
-                    this.feed.table.structured = response.structured;
-                    this.feed.table.feedTblProperties = response.serdeTableProperties;
-                    _save();
-                });
-            }
-            else {
-            _save();
-            }
-        }
-
-
-
-
-        let previews = event.previews;
-        let singleSelection = event.singleSelection;
-        if (previews && previews.length) {
-            if (singleSelection) {
-                const sourceDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
-                if (sourceDataSet.dataSource && sourceDataSet.dataSource.connector && sourceDataSet.dataSource.connector.pluginId) {
-                    this.catalogService.getConnectorPlugin(sourceDataSet.dataSource.connector.pluginId)
-                        .subscribe(plugin => {
-                            this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin)
-                            saveFeed();
-                        });
-                } else {
-                    this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet);
-                    saveFeed();
-                }
-            }
-        }
-        else {
-            //set the source and target to empty
-            this.feed.setSourceDataSetAndUpdateTarget(null);
-            saveFeed();
-        }
-
-    }
 
     cancelFeedEdit(){
         //reassign the propertiesInitialized flag when canceling edit

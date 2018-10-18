@@ -346,6 +346,13 @@ export class Feed  implements KyloObject{
     sourceDataSets?: SparkDataSet[] = [];
 
     /**
+     * sample Datasets selected for this feed
+     * @type {any[]}
+     */
+    sampleDataSet?: SparkDataSet;
+
+
+    /**
      * is this a streaming feed
      */
     isStream: boolean;
@@ -766,6 +773,24 @@ export class Feed  implements KyloObject{
 
         if (sourceDataSet && sourceDataSet != null) {
             this.sourceDataSets = [sourceDataSet];
+        }
+        this.updateTarget(sourceDataSet)
+    }
+
+    /**
+     * updates the target and or source with the schem provided in the sourceDataSet
+     */
+    setSampleDataSetAndUpdateTarget(sampleDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
+        this.sampleDataSet = sampleDataSet;
+        this.updateTarget(sampleDataSet)
+    }
+
+    /**
+     * updates the target and or source with the schem provided in the sourceDataSet
+     */
+    updateTarget(sourceDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
+
+        if (sourceDataSet && sourceDataSet != null) {
             let dataSet = sourceDataSet
             let sourceColumns: TableColumnDefinition[] = [];
             let targetColumns: TableColumnDefinition[] = [];

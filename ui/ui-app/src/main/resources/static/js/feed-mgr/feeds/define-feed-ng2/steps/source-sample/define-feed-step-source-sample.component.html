@@ -1,6 +1,6 @@
-<ng-container *ngIf="!showCatalog && feed.sourceDataSets && feed.sourceDataSets.length >0 ">
+<ng-container *ngIf="!showCatalog && dataSets && dataSets.length >0 ">
   <mat-list dense>
-    <mat-list-item *ngFor="let dataset of feed.sourceDataSets; let last=last">
+    <mat-list-item *ngFor="let dataset of dataSets; let last=last">
       <h4 mat-line>{{dataset.dataSource.title}}</h4>
       <p mat-line>{{dataset.resolvePath()}}</p>
       <button mat-icon-button color="accent" (click)="browseCatalog()" *ngIf="!feed.readonly && allowEdit" matTooltip="Choose a different sample"><mat-icon>edit</mat-icon></button>
@@ -9,7 +9,7 @@
   </mat-list>
 </ng-container>
 
-  <ng-container *ngIf="!showCatalog && (!feed.sourceDataSets || feed.sourceDataSets.length ==0)">
+  <ng-container *ngIf="!showCatalog && (!dataSets || dataSets.length ==0)">
     <mat-list dense>
       <mat-list-item >
         <h4 mat-line >No sample selected</h4>
