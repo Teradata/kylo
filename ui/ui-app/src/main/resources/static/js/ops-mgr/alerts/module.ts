@@ -27,14 +27,14 @@ class ModuleFactory  {
                 query: null
             },
             resolve: {
-                loadPage: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    return import(/* webpackChunkName: "opsmgr.alerts.controller" */ './module-require')
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.alert-details.controller" */ './AlertDetailsController')
                         .then(mod => {
-                            console.log('imported ops-mgr/alerts/module-require mod', mod);
-                            return $ocLazyLoad.load({name: moduleName})
+                            console.log('imported AlertDetailsController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
-                            throw new Error("Failed to load ops-mgr/alerts/module-require, " + err);
+                            throw new Error("Failed to load AlertDetailsController, " + err);
                         });
                 }]
             },
