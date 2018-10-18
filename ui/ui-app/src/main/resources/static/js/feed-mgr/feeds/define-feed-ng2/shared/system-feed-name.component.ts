@@ -47,14 +47,14 @@ export class SystemFeedNameComponent implements OnInit {
 
         //TODO add in pattern validator, and unique systemFeedName validator
         const systemFeedNameControl = new FormControl(systemFeedName, [Validators.required]);
-        if (this.feed.hasBeenDeployed()) {
+        if (this.feed && this.feed.hasBeenDeployed()) {
             systemFeedNameControl.disable();
         }
         this.formGroup.addControl("systemFeedName", systemFeedNameControl);
     }
 
     resetForm() {
-        this.formGroup.reset({"feedName": this.feed.feedName, "systemFeedName": this.feed.systemFeedName})
+        this.formGroup.reset({"feedName": this.feed ? this.feed.feedName : "", "systemFeedName": this.feed ? this.feed.systemFeedName : ""})
     }
 
     checkRequired(formGroup: FormGroup, controlName: string) {
