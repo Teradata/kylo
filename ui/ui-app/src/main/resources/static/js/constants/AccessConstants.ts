@@ -28,6 +28,11 @@ export default class AccessConstants {
     public static DATASOURCE_ACCESS: string = "accessDatasources";
 
     /**
+     * Allows getting data source details with sensitive info
+     */
+    public static DATASOURCE_ADMIN = "adminDatasources";
+
+    /**
      * Allows access to repository.
      * @type {string}
      */

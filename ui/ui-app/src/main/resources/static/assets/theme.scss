@@ -4,6 +4,8 @@
 @import '../../../../../node_modules/@angular/material/theming';
 @import '../../../../../node_modules/@covalent/core/theming/all-theme';
 
+$font-family-text: Arial, Helvetica, sans-serif;
+
 // Custom typography
 $typography: mat-typography-config(
   $button: mat-typography-level(14px, 14px, 400),
@@ -182,10 +184,10 @@ $background: map-get($theme, background);
 */
 
 .nvd3 text {
-  font-family: $font-family
+  font-family: $font-family-text;
 }
 body {
-  font-family: $font-family
+  font-family: $font-family-text;
 }
 
 

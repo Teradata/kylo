@@ -1,4 +1,5 @@
 import * as _ from "underscore"
+import {ITdDataTableColumnWidth} from "@covalent/core/data-table/data-table.component";
 export interface TableColumn {
     name:string;
     label:string;
@@ -6,6 +7,7 @@ export interface TableColumn {
     uuid?:string;
     numeric?:boolean;
     sortable?:boolean;
+    width?:ITdDataTableColumnWidth | number
 }
 
 

@@ -16,7 +16,7 @@ chartData: any[] = [];
 runningCounts: any[] = [];
 maxDatapoints: number = 20;
 chartOptions: any;
-refreshIntervalTime: any;
+refreshIntervalTime: number=1000;
 
 static readonly $inject = ["$scope","$element","$http","$q","$interval","StateService",
                             "OpsManagerJobService","OpsManagerDashboardService",
@@ -73,7 +73,9 @@ ngOnInit() {
             }
         }
     };
-
+if(this.refreshIntervalTime == undefined) {
+    this.refreshIntervalTime = 1000;
+}
     this.refresh();
     this.setRefreshInterval();
 

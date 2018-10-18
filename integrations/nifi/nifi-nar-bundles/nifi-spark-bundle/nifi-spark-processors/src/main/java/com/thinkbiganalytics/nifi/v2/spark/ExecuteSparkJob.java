@@ -659,7 +659,7 @@ public class ExecuteSparkJob extends BaseProcessor {
     protected Collection<ValidationResult> customValidate(@Nonnull final ValidationContext validationContext) {
         final Set<ValidationResult> results = new HashSet<>();
         final String sparkMaster = validationContext.getProperty(SPARK_MASTER).evaluateAttributeExpressions().getValue().trim().toLowerCase();
-        final String sparkYarnDeployMode = validationContext.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions().getValue();
+        final String sparkDeployMode = validationContext.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions().getValue();
 
         if (validationContext.getProperty(DATASOURCES).isSet() && !validationContext.getProperty(METADATA_SERVICE).isSet()) {
             results.add(new ValidationResult.Builder()
@@ -670,17 +670,21 @@ public class ExecuteSparkJob extends BaseProcessor {
                             .build());
         }
 
-        if (StringUtils.isNotEmpty(sparkYarnDeployMode)) {
-            if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
+        if (StringUtils.isNotEmpty(sparkDeployMode)) {
+            if ((!sparkMaster.contains("local"))
+                && (!sparkMaster.equals("yarn"))
+                && (!sparkMaster.contains("mesos"))
+                && (!sparkMaster.contains("spark"))
+                && (!sparkMaster.contains("k8s"))) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())
                                 .valid(false)
-                                .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
+                                .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark, k8s")
                                 .build());
 
             }
 
-            if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
+            if (sparkMaster.equals("yarn") && (!(sparkDeployMode.equals("client") || sparkDeployMode.equals("cluster")))) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())
                                 .valid(false)
@@ -704,10 +708,10 @@ public class ExecuteSparkJob extends BaseProcessor {
             return this.launcher;
         }
 
-        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode) {
-            if (sparkMaster.equals("yarn") && StringUtils.isNotEmpty(sparkYarnDeployMode)) {
-                launcher.setDeployMode(sparkYarnDeployMode);
-                getLog().info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
+        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkDeployMode) {
+            if (StringUtils.isNotEmpty(sparkDeployMode)) {
+                launcher.setDeployMode(sparkDeployMode);
+                getLog().info("Deploy mode set to: {}", new Object[]{sparkDeployMode});
             }
             return this;
         }

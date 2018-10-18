@@ -8,8 +8,8 @@ import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {VisualQueryStepperComponent} from "../../../../visual-query/visual-query-stepper.component";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
-import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
+import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 
 @Component({
     selector: "define-feed-step-wrangler",
@@ -20,22 +20,32 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
     @Input() stateParams: any;
 
     @ViewChild("toolbarActionTemplate")
-    private toolbarActionTemplate:TemplateRef<any>;
+    private toolbarActionTemplate: TemplateRef<any>;
 
     @ViewChild("visualQuery")
     visualQuery: VisualQueryStepperComponent;
+
+    /**
+     * Indicates if user has access to the data sources required to edit this transformation
+     */
+    allowEdit = false;
 
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private _translateService: TranslateService,
                 private $$angularInjector: Injector, feedLoadingService: FeedLoadingService,
-                dialogService: TdDialogService, feedSideNavService:FeedSideNavService) {
-        super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
+                dialogService: TdDialogService, feedSideNavService: FeedSideNavService) {
+        super(defineFeedService, stateService, feedLoadingService, dialogService, feedSideNavService);
     }
 
     init() {
         super.init();
         this.feed.dataTransformation.datasets = this.feed.sourceDataSets;
+
+        this.allowEdit = (this.feed.sourceDataSets || [])
+            .map(dataSet => dataSet.dataSource != null && (dataSet.dataSource.allowedActions == null
+                || (Array.isArray(dataSet.dataSource.allowedActions.actions) && dataSet.dataSource.allowedActions.actions.length > 0)))
+            .reduce((previous, current) => previous && current, true);
     }
 
     getStepName() {
@@ -53,14 +63,13 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         this.goToSetupGuideSummary();
     }
 
-
-    protected applyUpdatesToFeed():(Observable<any> | boolean | null) {
+    protected applyUpdatesToFeed(): (Observable<any> | boolean | null) {
         super.applyUpdatesToFeed();
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
-        if(this.feed.table.schemaChanged){
+        if (this.feed.table.schemaChanged) {
             this.dialogService.openAlert({
                 title: 'Error saving feed.  Table Schema Changed.',
-                message:'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.'
+                message: 'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.'
             });
             return false;
         }

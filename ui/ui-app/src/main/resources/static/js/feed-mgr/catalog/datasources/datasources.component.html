@@ -3,7 +3,7 @@
     <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
       <span>{{'CATALOG.DATA_SOURCES.TITLE' | translate}}</span>
       <span fxFlex="100%"></span>
-      <button mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
+      <button *ngIf="allowEdit && !readOnly" mat-raised-button class="text-upper" color="accent" uiSref="catalog.connectors">{{'CATALOG.DATA_SOURCES.CREATE' | translate}}</button>
     </mat-toolbar-row>
   </mat-toolbar>
 

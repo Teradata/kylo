@@ -15,6 +15,7 @@ import {finalize} from 'rxjs/operators/finalize';
 import {map} from "rxjs/operators/map";
 import {tap} from "rxjs/operators/tap";
 import * as _ from "underscore";
+import AccessControlService from "../../../services/AccessControlService";
 import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 
 import {Connector} from '../api/models/connector';
@@ -36,6 +37,8 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
+            } else if (key === "jars") {
+                ds.template.jars = (control.value && control.value.length !== 0) ? control.value.split(",") : null;
             } else {
                 ds.template.options[key] = control.value;
             }
@@ -55,8 +58,17 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
     mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
-        ds.template.paths.push(controls.get("path").value);
-        ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
+        controls.forEach((control: FormControl, key: string) => {
+            if (key === "path") {
+                ds.template.paths.push(control.value);
+            } else if (key === "jars") {
+                ds.template.jars = (control.value.length !== 0) ? control.value.split(",") : null;
+            } else if (key === "account-name" || key == "account-key") {
+                ds.template.options["spark.hadoop.fs.azure.account.key." + controls.get("account-name").value] = controls.get("account-key").value;
+            } else {
+                ds.template.options[key] = control.value;
+            }
+        });
     }
 
     mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
@@ -65,6 +77,7 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
             if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
                 const accountName = option.substring("spark.hadoop.fs.azure.account.key.".length);
                 controls.get("account-name").setValue(accountName);
+                controls.get("account-key").setValue(ds.template.options[option]);
             }
         });
     }
@@ -92,6 +105,11 @@ export class ConnectorComponent {
     @Input("connectorPlugin")
     public plugin: ConnectorPlugin;
 
+    /**
+     * Indicates if admin actions are allowed
+     */
+    allowAdmin = false;
+
     form = new FormGroup({});
 
     private titleControl: FormControl;
@@ -99,6 +117,32 @@ export class ConnectorComponent {
     private isLoading: boolean = false;
     private testError: String;
     private testStatus: boolean = false;
+
+    // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
+    private jars = (params: any): ValidatorFn => {
+        return (control: AbstractControl): { [key: string]: any } => {
+            return (control.value as string || "").split(",")
+                .map(value => {
+                    if (value.trim().length > 0) {
+                        try {
+                            const url = new URL(value);
+                            if (params && params.protocol && url.protocol !== params.protocol) {
+                                return 'url-protocol';
+                            }
+                        } catch (e) {
+                            return 'url';
+                        }
+                    }
+                    return null;
+                })
+                .reduce((accumulator, value) => {
+                    if (value !== null) {
+                        accumulator[value] = true;
+                    }
+                    return accumulator;
+                }, {});
+        }
+    };
 
     // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
     private url = (params: any): ValidatorFn => {
@@ -128,7 +172,8 @@ export class ConnectorComponent {
                 private loadingService: TdLoadingService,
                 private dialogService: TdDialogService,
                 private translateService: TranslateService,
-                private entityAccessControlService: EntityAccessControlService) {
+                private entityAccessControlService: EntityAccessControlService,
+                private accessControlService: AccessControlService) {
         this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
@@ -142,6 +187,13 @@ export class ConnectorComponent {
     public ngOnInit() {
         this.createControls();
         this.initControls();
+
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                this.allowAdmin = this.accessControlService.hasAction(AccessControlService.DATASOURCE_ADMIN, actionSet.actions)
+                    && this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS, this.datasource,
+                        EntityAccessControlService.entityRoleTypes.DATASOURCE)
+            });
     }
 
     initControls() {
@@ -199,7 +251,7 @@ export class ConnectorComponent {
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
         this.catalogService.createDataSource(ds).pipe(
             concatMap(dataSource => {
-                if (typeof ds.roleMemberships !== "undefined") {
+                if (this.allowAdmin && typeof ds.roleMemberships !== "undefined") {
                     this.entityAccessControlService.updateRoleMembershipsForSave(ds.roleMemberships);
                     return fromPromise(this.entityAccessControlService.saveRoleMemberships("datasource", dataSource.id, ds.roleMemberships))
                         .pipe(map(() => dataSource));
@@ -297,7 +349,14 @@ export class ConnectorComponent {
             finalize(() => this.loadingService.resolve(ConnectorComponent.topOfPageLoader))
         ).subscribe(
             () => this.state.go("catalog.datasources", {}, {reload: true}),
-            err => this.showSnackBar('Failed to delete.', err.message)
+            err => {
+                console.error(err);
+                if (err.status == 409) {
+                    this.showSnackBar("Failed to delete. This data source is currently being used by a feed.");
+                } else {
+                    this.showSnackBar('Failed to delete.', err.message);
+                }
+            }
         );
     }
 

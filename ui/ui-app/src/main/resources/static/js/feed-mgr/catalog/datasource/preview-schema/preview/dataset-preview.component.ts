@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {ChangeDetectorRef, Component, Input, OnInit} from "@angular/core";
 import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "../preview-dialog/dataset-preview-dialog.component";
 import {FormGroup} from "@angular/forms";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -32,11 +32,11 @@ export class DatasetPreviewComponent implements OnInit{
 
 
 
-    rawReady:boolean;
+    rawReady:boolean = false;
 
     constructor(private _dialogService: TdDialogService,
                 private _loadingService:TdLoadingService,
-                private _datasetPreviewService:DatasetPreviewService){
+                private _datasetPreviewService:DatasetPreviewService) {
 
     }
     ngOnInit(){
@@ -50,24 +50,26 @@ export class DatasetPreviewComponent implements OnInit{
         if($event.tab.textLabel.toLowerCase() == "raw"){
             if(this.dataset.hasRaw()){
                 this.rawReady = true;
+                this.dataset.rawLoading = false;
             }
             if(this.dataset instanceof PreviewFileDataSet) {
-
                 if (!this.dataset.hasRaw() && !this.dataset.hasRawError()) {
                     this._datasetPreviewService.notifyToUpdateView();
-                    this._loadingService.register(DatasetPreviewService.RAW_LOADING)
+                    this.dataset.rawLoading = true;
                     this._datasetPreviewService.previewAsTextOrBinary(<PreviewFileDataSet>this.dataset,false,true).subscribe((ds: PreviewDataSet) => {
-                        this._loadingService.resolve(DatasetPreviewService.RAW_LOADING)
                         this.rawReady = true;
                         this.dataset.rawLoading = false;
                         this._datasetPreviewService.notifyToUpdateView();
                     }, (error1: any) => {
                         this.rawReady = true;
                         this.dataset.rawLoading = false;
-                        this._loadingService.resolve(DatasetPreviewService.RAW_LOADING)
                         this._datasetPreviewService.notifyToUpdateView();
                     });
                 }
+            }else {
+                //we shouldnt get here since only files have the RAW data... but just in case
+                this.dataset.rawLoading = false;
+                this.rawReady = true;
             }
         }
         this._datasetPreviewService.notifyToUpdateView();

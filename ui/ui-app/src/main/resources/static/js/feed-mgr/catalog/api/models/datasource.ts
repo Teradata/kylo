@@ -10,6 +10,8 @@ export class DataSource {
 
     id: string;
 
+    allowedActions?: any;
+
     connector: Connector;
 
     roleMemberships: any;

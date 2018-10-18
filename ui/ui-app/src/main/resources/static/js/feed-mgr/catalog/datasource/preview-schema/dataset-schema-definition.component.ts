@@ -4,7 +4,7 @@ import {TableColumn} from "./model/table-view-model";
 @Component({
     selector:'dataset-schema-definition',
     template:`
-        <dataset-simple-table [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
+        <dataset-simple-table [calcColumnWidth]="false" [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
     `
 
 })

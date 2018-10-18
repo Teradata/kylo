@@ -11,6 +11,7 @@ import {finalize} from 'rxjs/operators/finalize';
 import {tap} from "rxjs/operators/tap";
 
 import AccessControlService from "../../../services/AccessControlService";
+import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";
 
@@ -83,7 +84,7 @@ export class DataSourcesComponent implements OnInit {
                 private dialog: TdDialogService,
                 private loadingService: TdLoadingService,
                 private state: StateService,
-                @Inject("AccessControlService") accessControlService: any,
+                @Inject("AccessControlService") private accessControlService: AccessControlService,
                 private snackBarService: MatSnackBar,
                 private translateService: TranslateService) {
         this.loadingService.create({
@@ -94,7 +95,7 @@ export class DataSourcesComponent implements OnInit {
         });
 
         accessControlService.getUserAllowedActions()
-            .then((actionSet: any) => this.allowEdit = accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions));
+            .then((actionSet: any) => this.allowEdit = accessControlService.hasAction(AccessControlService.DATASOURCE_EDIT, actionSet.actions));
     }
 
 
@@ -128,7 +129,8 @@ export class DataSourcesComponent implements OnInit {
     }
 
     isEditable(datasource: DataSource): boolean {
-        return (!this.readOnly && (datasource.id !== "file-uploads" && datasource.id !== "hive"));
+        return (this.allowEdit && !this.readOnly
+            && this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS, datasource, EntityAccessControlService.entityRoleTypes.DATASOURCE));
     }
 
     /**
@@ -159,7 +161,14 @@ export class DataSourcesComponent implements OnInit {
             finalize(() => this.loadingService.resolve(DataSourcesComponent.topOfPageLoader))
         ).subscribe(
             () => this.state.go("catalog.datasources", {}, {reload: true}),
-            err => this.showSnackBar('Failed to delete.', err.message)
+            err => {
+                console.error(err);
+                if (err.status == 409) {
+                    this.showSnackBar("Failed to delete. This data source is currently being used by a feed.");
+                } else {
+                    this.showSnackBar('Failed to delete.', err.message);
+                }
+            }
         );
     }
 
@@ -172,7 +181,7 @@ export class DataSourcesComponent implements OnInit {
         this.filteredDatasources = filteredConnectors;
     }
 
-    showSnackBar(msg: string, err: string): void {
+    showSnackBar(msg: string, err?: string): void {
         this.snackBarService
             .open(msg + ' ' + (err ? err : ""), 'OK', {duration: 5000});
     }

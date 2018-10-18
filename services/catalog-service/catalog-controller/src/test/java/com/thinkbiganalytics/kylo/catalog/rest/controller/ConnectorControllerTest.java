@@ -21,7 +21,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.metadata.MockMetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -57,10 +59,16 @@ public class ConnectorControllerTest {
     private TestConnector connector;
     
     @Spy
+    private TestConnectorPlugin connectorPlugin;
+    
+    @Spy
+    private ConnectorPluginManager connectorPluginManager = Mockito.mock(ConnectorPluginManager.class);
+    
+    @Spy
     private MetadataAccess metadataService = new MockMetadataAccess();
     
     @Spy
-    private CatalogModelTransform modelTransform = new CatalogModelTransform();
+    private CatalogModelTransform modelTransform = new CatalogModelTransform(null, this.connectorPluginManager, null);
     
     @InjectMocks
     private ConnectorController controller = new ConnectorController() {
@@ -73,6 +81,7 @@ public class ConnectorControllerTest {
     @Before
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(connectorPluginManager.getPlugin(anyString())).thenReturn(Optional.of(this.connectorPlugin));
         Mockito.when(provider.resolveId(Mockito.anyString())).thenReturn(connectorId);
         Mockito.when(connector.getId()).thenReturn(connectorId);
     }

@@ -106,8 +106,8 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
 
     @Override
     public void setupAccessControl(Principal owner) {
-        enable(owner, com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, DatasourceAccessControl.EDIT_DETAILS);
+        enable(owner, com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl.EDIT_DETAILS);
 
         super.setupAccessControl(owner);
     }
@@ -133,15 +133,23 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
             if (action.implies(DatasourceAccessControl.CHANGE_PERMS)) {
                 Collections.addAll(detailPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
                 Collections.addAll(summaryPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
-            } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
+            } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS) || action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
                 detailPrivs.add(Privilege.JCR_ALL); 
-            } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
                 summaryPrivs.add(Privilege.JCR_ALL); 
-            } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS)) {
+            } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS) || action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
                 detailPrivs.add(Privilege.JCR_READ); 
-            } else if (action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
                 summaryPrivs.add(Privilege.JCR_READ); 
             }
+// TODO: Re-enable equivalent below after proper, catalog data source-specific roles and permissions are created.
+//        } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
+//            detailPrivs.add(Privilege.JCR_ALL); 
+//        } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
+//            summaryPrivs.add(Privilege.JCR_ALL); 
+//        } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS)) {
+//            detailPrivs.add(Privilege.JCR_READ); 
+//        } else if (action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
+//            summaryPrivs.add(Privilege.JCR_READ); 
+//        }
         });
         
         JcrAccessControlUtil.setPermissions(this.dataSource.getNode(), principal, summaryPrivs);

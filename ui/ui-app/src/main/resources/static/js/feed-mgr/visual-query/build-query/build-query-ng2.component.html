@@ -50,7 +50,7 @@
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
-              <mat-error *ngIf="databaseConnectionError">Unable to connect to selected data source.</mat-error>
+              <mat-error *ngIf="databaseConnectionError" style="position:absolute;top:42px">Unable to connect to selected data source.</mat-error>
             </div>
           </div>
           <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="selectedTable == null"

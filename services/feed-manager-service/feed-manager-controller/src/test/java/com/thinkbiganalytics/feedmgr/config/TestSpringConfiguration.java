@@ -20,16 +20,16 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
+import static org.mockito.Matchers.anyString;
+
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.common.velocity.service.InMemoryVelocityTemplateProvider;
 import com.thinkbiganalytics.common.velocity.service.VelocityTemplateProvider;
-import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
-import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
@@ -52,7 +52,10 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
+import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -68,6 +71,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
@@ -79,6 +83,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
@@ -104,6 +109,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import java.security.Principal;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.jcr.Credentials;
@@ -391,6 +397,18 @@ public class TestSpringConfiguration {
     @Bean
     CategoryModelTransform categoryModelTransform() {
         return new CategoryModelTransform();
+    }
+    
+    @Bean
+    public ConnectorPluginManager connectorPluginManager() {
+        ConnectorPluginDescriptor descr = new ConnectorPluginDescriptor("dummy", "Dummy Connector", "jdbc");
+        ConnectorPlugin plugin = Mockito.mock(ConnectorPlugin.class);
+        Mockito.when(plugin.getDescriptor()).thenReturn(descr);
+        
+        ConnectorPluginManager mgr = Mockito.mock(ConnectorPluginManager.class);
+        Mockito.when(mgr.getPlugin(anyString())).thenReturn(Optional.of(plugin));
+        
+        return mgr;
     }
     
     @Bean

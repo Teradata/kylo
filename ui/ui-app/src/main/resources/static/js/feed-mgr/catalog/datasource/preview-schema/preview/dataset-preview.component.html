@@ -8,7 +8,7 @@
     <div fxLayout="column">
         <ng-template tdLoading [tdLoadingUntil]="!dataset.previewLoading" tdLoadingStrategy="overlay" tdLoadingType="linear">
       <ng-container *ngIf="dataset.preview && dataset.preview.error == false">
-        <dataset-simple-table  [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" ></dataset-simple-table>
+        <dataset-simple-table [calcColumnWidth]="true" [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows" ></dataset-simple-table>
       </ng-container>
       <div *ngIf="!dataset.preview || dataset.preview.error == true" fxLayout="column">
         <span>There was an error previewing the data</span>
@@ -19,9 +19,9 @@
     </div>
   </mat-tab>
   <mat-tab label="Raw" *ngIf="dataset.allowsRawView">
-    <ng-template tdLoading tdLoading="DatasetPreviewComponent.rawLoading"  tdLoadingStrategy="overlay" tdLoadingType="linear">
+    <ng-template  tdLoading [tdLoadingUntil]="rawReady"  tdLoadingStrategy="overlay" tdLoadingType="linear">
       <div *ngIf="dataset.raw && rawReady">
-        <dataset-simple-table  [(columns)]="dataset.raw.columns" [rows]="dataset.raw.rows" ></dataset-simple-table>
+        <dataset-simple-table [calcColumnWidth]="false" [(columns)]="dataset.raw.columns" [rows]="dataset.raw.rows" ></dataset-simple-table>
       </div>
       <div *ngIf="!dataset.raw || dataset.raw.error == true">
         Unable to view raw data
@@ -29,7 +29,7 @@
     </ng-template>
   </mat-tab>
   <mat-tab label="Schema">
-      <dataset-schema-definition [smallView]="false" [(columns)]="dataset.schema" *ngIf="dataset.schema"></dataset-schema-definition>
+      <dataset-schema-definition  [smallView]="false" [(columns)]="dataset.schema" *ngIf="dataset.schema"></dataset-schema-definition>
 
     <div *ngIf="!dataset.schema">
       Unable to review schema
