@@ -11,13 +11,15 @@
 
   ng-md-icon[icon=fa-file] {
     position: relative;
+    left: 16px;
   }
   ng-md-icon[icon=fa-folder] {
     position: relative;
-    left: -32px;
+    left: -16px;
+    top: -40px;
   }
   p {
-    margin-top: 50px;
+    margin-top: -24px;
     text-align: center;
   }
 }
