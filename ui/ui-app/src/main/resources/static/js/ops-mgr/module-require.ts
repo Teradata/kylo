@@ -22,4 +22,5 @@ angular.module(moduleName).service('OpsManagerChartJobService', downgradeInjecta
 
 angular.module(moduleName).service('OpsManagerFeedService', downgradeInjectable(OpsManagerFeedService));
 
-angular.module(moduleName).service('OpsManagerJobService', downgradeInjectable(OpsManagerJobService));
+const module = angular.module(moduleName).service('OpsManagerJobService', downgradeInjectable(OpsManagerJobService));
+export default module;
