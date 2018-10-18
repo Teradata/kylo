@@ -111,6 +111,8 @@ public class RepositoryMonitor {
                     break;
                 }
             }
+        } catch (InterruptedException e) {
+            log.warn("Terminating repository monitoring {}", e.getMessage());
         } catch (Exception e) {
             log.error("Error occurred monitoring repository changes", e);
         }
