@@ -40,6 +40,8 @@ export interface FeedSchedule {
     schedulingPeriod: string;
     schedulingStrategy: string;
     concurrentTasks: number;
+    preconditions: any[],
+    executionNode: any;
 }
 
 export enum FeedMode {
@@ -213,7 +215,7 @@ export class Feed  implements KyloObject{
     /**
      * The feed schedule
      */
-    schedule: FeedSchedule = {schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1};
+    schedule: FeedSchedule = {schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1, preconditions: null, executionNode: null};
     /**
      * does this feed use a template that requires target table definition
      */

@@ -33,6 +33,7 @@ import {ReplaySubject} from "rxjs/ReplaySubject";
 import {Feed, LoadMode} from "../../model/feed/feed.model";
 import {error} from "ng-packagr/lib/util/log";
 import {ImportFeedComponent} from "../define-feed-ng2/import/import-feed.component";
+import {FeedVersionsComponent} from "./summary/versions/feed-versions.component";
 
 
 const resolveFeed :any =
@@ -441,6 +442,18 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.edit",
         url: "/:slaId",
         component: SlaDetailsComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: (state: StateService) => state.transition.params()
+            }
+        ]
+    },
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".version-history",
+        url: "/:feedId/versions",
+        component: FeedVersionsComponent,
         resolve: [
             {
                 token: 'stateParams',

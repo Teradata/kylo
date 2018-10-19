@@ -1358,6 +1358,10 @@ mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container
   margin: 0px;
 }
 
+.mat-card-14{
+  font-size: 14px;
+}
+
 .mat-icon.mat-green {
   color: #009933;
 }
