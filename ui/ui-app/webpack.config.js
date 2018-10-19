@@ -46,6 +46,11 @@ const devServer = {
     }]
 };
 
+const SourcePlugin =  new webpack.SourceMapDevToolPlugin({
+    filename: "[file].map",
+    exclude: ['entryPolyfills.bundle.js', 'common.js'],
+});
+
 
 const webpackConfig = (env) => {
     const config = {
@@ -280,7 +285,6 @@ const webpackConfig = (env) => {
                 ...loginPageDependencies,
                 ...templates,
                 ...wranlgerDependencies,
-                ...pluginDependencies
             ]),
             new HtmlWebpackPlugin({
                 filename: "index.html",
@@ -294,8 +298,7 @@ const webpackConfig = (env) => {
                 name: "common",
                 filename: "common.js",
                 minChunks: (module) => {
-                    // this assumes your vendor imports exist in the node_modules directory
-                    return module.context && module.context.indexOf("node_modules") !== -1 && module.context.indexOf("vendor") !== -1;
+                    return module.context && (module.context.indexOf("node_modules") !== -1 || module.context.indexOf("bower_components") !== -1 || module.context.indexOf("vendor") !== -1)
                 }
             }),
 
@@ -333,6 +336,7 @@ const webpackConfig = (env) => {
     };
 
     if (env && env.production) {
+        config.devtool = 'source-map';
         config.plugins.push(
             new writeFilePlugin(),
             new CompressionPlugin({
@@ -355,22 +359,15 @@ const webpackConfig = (env) => {
         );
     } else {
         config.devServer = devServer;
+        if (env && env.dev) { //i.e. we dont' want SourcePlugin if env is other than dev env, e.g. if env is dev-tool-cheap
+            config.plugins.push(
+                SourcePlugin //this plugin is faster than devtool=source-map because its excluding node_modules, bower_components and vendor dirs
+            )
+        }
         config.plugins.push(
             // new writeFilePlugin(),
             new webpack.NamedModulesPlugin(),
             new webpack.HotModuleReplacementPlugin(),
-            new CopyWebpackPlugin([
-                {
-                    context: pluginOutputDir,
-                    from: 'js/plugin/processor-templates/sqoop-table-data/bundles/*',
-                    to: outputDir
-                },
-                {
-                    context: pluginOutputDir,
-                    from: 'js/plugin/processor-templates/sqoop-table-data/*-processor-template-definition.json',
-                    to: outputDir
-                },
-            ])
         );
     }
 
@@ -379,19 +376,6 @@ const webpackConfig = (env) => {
 
 module.exports = webpackConfig;
 
-
-const pluginDependencies = [
-    {
-        context: './src/main/resources/static',
-        from: 'node_modules/**/*',
-        to: '[path][name].[ext]'
-    },
-    {
-        context: './src/main/resources/lib',
-        from: '**/*',
-        to: '[path][name].[ext]'
-    },
-];
 
 const wranlgerDependencies = [
     {
