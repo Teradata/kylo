@@ -79,8 +79,34 @@ public interface KyloVersion extends Comparable<KyloVersion> {
      */
     String getDescription();
     
+    /**
+     * @return true if this version is an earlier version than the version specified by the arguments
+     */
+    boolean isBefore(String major, String minor, String point);
+    
+    /**
+     * @return true if this version is an earlier version than the version specified by the arguments
+     */
+    boolean isBefore(String major, String minor, String point, String tag);
+    
+    /**
+     * @return true if this version is a later version than the version specified by the arguments
+     */
+    boolean isAfter(String major, String minor, String point);
+    
+    /**
+     * @return true if this version is a later version than the version specified by the arguments
+     */
+    boolean isAfter(String major, String minor, String point, String tag);
+    
+    /**
+     * @return true if this version matches the arguments
+     */
     boolean matches(String major, String minor, String point);
     
+    /**
+     * @return true if this version matches the arguments
+     */
     boolean matches(String major, String minor, String point, String tag);
 
     /**

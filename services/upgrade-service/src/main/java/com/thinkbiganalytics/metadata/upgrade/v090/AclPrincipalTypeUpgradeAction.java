@@ -56,14 +56,14 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Ensures that all categories have the new, mandatory feedRoleMemberships node.
  */
 @Component("aclPrincipalTypeUpgradeAction090")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class AclPrincipalTypeUpgradeAction implements UpgradeState {
+public class AclPrincipalTypeUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(AclPrincipalTypeUpgradeAction.class);
     

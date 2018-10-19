@@ -33,7 +33,7 @@ import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionPr
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ import javax.inject.Inject;
  */
 @Component("slaUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class SlaDescriptionUpgradeAction implements UpgradeState {
+public class SlaDescriptionUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(SlaDescriptionUpgradeAction.class);
 

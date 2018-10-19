@@ -29,7 +29,7 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import javax.inject.Inject;
  */
 @Component("categoryFeedRolesUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class CategoryFeedRolesUpgradeAction implements UpgradeState {
+public class CategoryFeedRolesUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryFeedRolesUpgradeAction.class);
 

@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.metadata.upgrade.v084;
+package com.thinkbiganalytics.metadata.upgrade.fresh;
+
 /*-
  * #%L
- * kylo-upgrade-service
+ * kylo-operational-metadata-upgrade-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -18,10 +19,9 @@ package com.thinkbiganalytics.metadata.upgrade.v084;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
+import com.thinkbiganalytics.metadata.modeshape.security.AccessControlConfigurator;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
@@ -33,32 +33,34 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-@Component("slaEmailTemplateUpgradeAction084")
-@Order(UpgradeAction.DEFAULT_ORDER + 840)  // Order only relevant during fresh installs
+/**
+ * Initializes and updates the service-level available actions based on the current state of the 
+ * services' actions prototype tree.
+ */
+@Component("servicesSecurityActionFreshInstall")
+@Order(ServicesSecurityInstallAction.ORDER)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeAction {
+public class ServicesSecurityInstallAction implements UpgradeAction {
+
+    private static final Logger log = LoggerFactory.getLogger(ServicesSecurityInstallAction.class);
+    
+    public static final int ORDER = UpgradeAction.LATE_ORDER;
 
     @Inject
-    private ActionsModuleBuilder builder;
-
-    private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementEmailTemplateUpgradeAction.class);
-
-    @Override
-    public boolean isTargetVersion(KyloVersion version) {
-        return version.matches("0.8", "4", "");
-    }
-
+    private AccessControlConfigurator configurator;
+    
     @Override
     public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 
-
-    public void upgradeTo(final KyloVersion startingVersion) {
-           builder.module(AllowedActions.SERVICES)
-            .action(FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE)
-            .add()
-            .build();
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
+     */
+    @Override
+    public void upgradeTo(KyloVersion version) {
+        log.info("Setting up Services permissions for version: " + version);
+        
+        configurator.configureServicesActions();
     }
-
 }

@@ -40,15 +40,15 @@ import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessContro
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Adds the entity-level permissions for the feed manager.
  */
 @Component("feedManagerSecurityUpgradeAction080")
-@Order(800)  // Order only relevant during fresh installs
+@Order(UpgradeAction.DEFAULT_ORDER + 800)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class FeedManagerSecurityUpgradeAction implements UpgradeState {
+public class FeedManagerSecurityUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerSecurityUpgradeAction.class);
 
@@ -62,7 +62,7 @@ public class FeedManagerSecurityUpgradeAction implements UpgradeState {
     }
     
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 
@@ -88,6 +88,7 @@ public class FeedManagerSecurityUpgradeAction implements UpgradeState {
                 .action(FeedAccessControl.EXPORT)
                 .action(FeedAccessControl.ACCESS_OPS)
                 .action(FeedAccessControl.CHANGE_PERMS)
+                .action(FeedAccessControl.START)
                 .add()
             .module(AllowedActions.CATEGORY)
                 .action(CategoryAccessControl.ACCESS_CATEGORY)

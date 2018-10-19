@@ -28,7 +28,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
  */
 @Component("categoryReferenceRemovealUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class CategoryReferenceRemovealUpgradeAction implements UpgradeState {
+public class CategoryReferenceRemovealUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryReferenceRemovealUpgradeAction.class);
     

@@ -30,7 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ import javax.inject.Inject;
  */
 @Component("modelConsolidationUpgradeAction092")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class IconsUpgradeAction implements UpgradeState {
+public class IconsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(IconsUpgradeAction.class);
     

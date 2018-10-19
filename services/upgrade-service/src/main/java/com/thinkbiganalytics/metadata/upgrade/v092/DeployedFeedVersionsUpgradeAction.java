@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +41,11 @@ import javax.inject.Inject;
  * particular feed is the one that is deployed; i.e. which version state was used to update NiFi.
  * <p>
  * With all feeds prior to 0.9.2, the latest feed version is the one that is deployed, and this action
- * initialized the reference to the latest version as the deployed one.
+ * initializes the reference to the latest version as the deployed one.
  */
 @Component("deployedFeedVersionsUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class DeployedFeedVersionsUpgradeAction implements UpgradeState {
+public class DeployedFeedVersionsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(DeployedFeedVersionsUpgradeAction.class);
     
