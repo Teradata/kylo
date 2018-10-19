@@ -668,7 +668,7 @@ export class Feed  implements KyloObject{
 
             //if the sourceSchema is not defined then set it to match the target
             let addSourceSchemaFields: boolean = copy.table.sourceTableSchema.fields.length == 0;
-            let addFeedSchemaFields = copy.isNew() && copy.table.feedTableSchema.fields.length == 0;
+            let addFeedSchemaFields =  copy.table.feedTableSchema.fields.length == 0;
 
 
             /**

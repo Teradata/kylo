@@ -195,12 +195,11 @@ import {SchemaField} from "../schema-field";
            this.fieldPolicies.push(policy);
            newColumn.fieldPolicy = policy;
            policy.field = columnDef;
-           this.sourceTableSchema.fields.push(columnDef);
+           this.sourceTableSchema.fields.push(newColumn.copy());
            if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                this.syncTableFieldPolicyNames();
            }
            return newColumn;
-
        }
 
        undoColumn(index: number):TableColumnDefinition {
