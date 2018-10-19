@@ -115,9 +115,9 @@ public class CatalogFileManagerTest {
         // Test listing files
         final CatalogFileManager fileManager = new MockCatalogFileManager();
         final List<DataSetFile> files = fileManager.listUploads(dataSet);
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", dataSetFolder.toPath().resolve("file1.txt").toUri().toString(), false, 5, "data1")));
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", dataSetFolder.toPath().resolve("file2.txt").toUri().toString(), false, 5, "data2")));
-        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", dataSetFolder.toPath().resolve("file3.txt").toUri().toString(), false, 5, "data3")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", new Path(dataSetFolder.toPath().resolve("file1.txt").toUri()).toString(), false, 5, "data1")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", new Path(dataSetFolder.toPath().resolve("file2.txt").toUri()).toString(), false, 5, "data2")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", new Path(dataSetFolder.toPath().resolve("file3.txt").toUri()).toString(), false, 5, "data3")));
         Assert.assertEquals(3, files.size());
     }
 
