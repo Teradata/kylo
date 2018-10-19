@@ -11,6 +11,7 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
         REUSABLE_TEMPLATE = "REUSABLE_TEMPLATE",
         REMOTE_INPUT_PORT = "REMOTE_INPUT_PORT",
         USER_DATASOURCES = "USER_DATASOURCES",
+        USER_DATA_SETS = "USER_DATA_SETS",
         TEMPLATE_CONNECTION_INFORMATION = "TEMPLATE_CONNECTION_INFORMATION",
         FEED_CATEGORY_USER_FIELDS = "FEED_CATEGORY_USER_FIELDS",
         FEED_USER_FIELDS = "FEED_USER_FIELDS" 
@@ -108,6 +109,8 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
 
         newUserDatasourcesImportOption(): ImportComponentOption;
 
+        newUserDataSetsImportOption(): ImportComponentOption;
+
         newFeedUserFieldsImportOption(): ImportComponentOption;
         
         newFeedCategoryUserFieldsImportOption():ImportComponentOption;
@@ -143,6 +146,13 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
          processorType: string;
          propertyKey: string;
          propertyValue: string;
+
+         componentId:string;
+         componentName:string;
+         displayName:string;
+         type:string;
+         valid:boolean;
+         additionalProperties?:any;
      }
 
 

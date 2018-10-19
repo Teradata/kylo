@@ -20,54 +20,21 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../module-name";;
+import {moduleName} from "../module-name";
+import {FeedNifiErrorUtil} from "./feed-nifi-error-util";
+
+;
 
 export class FeedCreationErrorService {
     constructor (private $mdDialog:any, private $filter:any) {
 
-        function parseNifiFeedForErrors(nifiFeed:any, errorMap:any) {
-            var count = 0;
-
-            if (nifiFeed != null) {
-
-                if (nifiFeed.errorMessages != null && nifiFeed.errorMessages.length > 0) {
-                    angular.forEach(nifiFeed.errorMessages, function (msg:any) {
-                        errorMap['FATAL'].push({category: 'General', message: msg});
-                        count++;
-                    })
-                }
-
-                if (nifiFeed.feedProcessGroup != null) {
-                    angular.forEach(nifiFeed.feedProcessGroup.errors, function (processor:any) {
-                        if (processor.validationErrors) {
-                            angular.forEach(processor.validationErrors, function (error:any) {
-                                var copy:any = {};
-                                angular.extend(copy, error);
-                                angular.extend(copy, processor);
-                                copy.validationErrors = null;
-                                errorMap[error.severity].push(copy);
-                                count++;
-                            });
-                        }
-                    });
-                }
-                if (errorMap['FATAL'].length == 0) {
-                    delete errorMap['FATAL'];
-                }
-                if (errorMap['WARN'].length == 0) {
-                    delete errorMap['WARN'];
-                }
-            }
-            return count;
-
-        }
 
         function buildErrorMapAndSummaryMessage() {
             var count = 0;
             var errorMap:any = {"FATAL": [], "WARN": []};
             if (data.feedError.nifiFeed != null && data.feedError.response.status < 500) {
 
-                count = parseNifiFeedForErrors(data.feedError.nifiFeed, errorMap);
+                count = data.parseNifiFeedForErrors(data.feedError.nifiFeed, errorMap);
                 data.feedError.feedErrorsData = errorMap;
                 data.feedError.feedErrorsCount = count;
 
@@ -134,7 +101,7 @@ export class FeedCreationErrorService {
                 this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
             },
             parseNifiFeedErrors: function (nifiFeed:any, errorMap:any) {
-                return parseNifiFeedForErrors(nifiFeed, errorMap);
+                return FeedNifiErrorUtil.parseNifiFeedForErrors(nifiFeed, errorMap);
             },
             reset: function () {
                 angular.extend(this.feedError, newErrorData());

@@ -114,7 +114,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     }
 
     ngOnInit() {
-
         if(this.feedFilter){
             //remove the feedName column
             let feedName = this.columns.find((col:ITdDataTableColumn) => col.name == "feedName" );
@@ -139,9 +138,12 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         //Setup the Tabs
         var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned'] //, 'Stopped'];
         this.tabs = this.tabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
-
         this.tabMetadata = this.tabService.metadata(this.pageName);
 
+        Object.keys(this.tabs).forEach((key: any) => {
+            if(this.tabs[key].active)
+                this.tabMetadata.selectedIndex = key;
+        });
 
         /**
          * The filter supplied in the page
@@ -154,9 +156,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.updateJobs);
 
         this.loadJobs(true);
-
-
-
 
         // Fetch allowed permissions
         this.accessControlService.getUserAllowedActions()
@@ -234,7 +233,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
             }
             this.clearAllTimeouts();
             var activeTab = this.tabService.getActiveTab(this.pageName);
-
             this.showProgress = true;
             var sortOptions = '';
             var tabTitle = activeTab.title;

@@ -20,21 +20,36 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
+
+import java.util.Map;
+
 public class ImportProperty {
+
+    private ImportComponent importComponent;
 
 
     private String processorName;
     private String processorId;
     private String processorType;
+
+    private String componentName;
+    private String componentId;
     private String propertyKey;
     private String propertyValue;
 
     private String displayName;
     private String description;
+    private String type;
+    private boolean valid;
+
+    public Map<String,String> additionalProperties;
+
 
     public ImportProperty() {
 
     }
+
 
     public ImportProperty(String processorName, String processorId, String propertyKey, String propertyValue, String processorType) {
         this.processorName = processorName;
@@ -102,5 +117,68 @@ public class ImportProperty {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public ImportComponent getImportComponent() {
+        return importComponent;
+    }
+
+    public void setImportComponent(ImportComponent importComponent) {
+        this.importComponent = importComponent;
+    }
+
+    public String getComponentId() {
+        return componentId;
+    }
+
+    public void setComponentId(String componentId) {
+        this.componentId = componentId;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+    public String getComponentName() {
+        return componentName;
+    }
+
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
+    }
+
+    public Map<String, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ImportProperty{");
+        sb.append("importComponent=").append(importComponent);
+        sb.append(", componentId='").append(componentId).append('\'');
+        sb.append(", propertyKey='").append(propertyKey).append('\'');
+        sb.append(", propertyValue='").append(propertyValue).append('\'');
+        sb.append(", displayName='").append(displayName).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", type='").append(type).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

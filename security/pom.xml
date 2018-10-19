@@ -13,7 +13,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>oauth-server</module>
     <module>security-api</module>
     <module>security-auth</module>
     <module>security-auth-simple</module>

@@ -125,6 +125,10 @@ export class StateService {
             this.$state.go(FEED_DEFINITION_SUMMARY_STATE_NAME,{feedId:feedId, refresh:true});
         }
 
+        data.navigateToFeedImport = () => {
+            this.$state.go(FEED_DEFINITION_STATE_NAME+".import-feed");
+        }
+
         data.navigateToEditFeedInStepper = (feedId: any) => {
             this.$state.go('edit-feed', {feedId: feedId});
         }

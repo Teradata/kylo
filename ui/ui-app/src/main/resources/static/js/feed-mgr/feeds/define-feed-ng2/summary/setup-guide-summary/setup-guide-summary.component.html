@@ -6,7 +6,7 @@
       <span class="hint pad-left" *ngIf="feed != undefined">Updated: {{feed.updateDate | date:'MM/dd/yyy HH:mm:ss'}}</span>
     </div>
     <span fxFlex="100"></span>
-    <feed-toolbar-actions [(feed)]="feed" [showEditLink]="showEditLink" [showDeleteLink]="true"></feed-toolbar-actions>
+    <feed-toolbar-actions [(feed)]="feed" [showEditLink]="showEditLink"></feed-toolbar-actions>
   </div>
   <ng-container [ngTemplateOutlet]="summaryTemplate"
                 [ngTemplateOutletContext]="{$implicit:feed}">
@@ -73,9 +73,9 @@
                   <mat-icon>content_copy</mat-icon>
                   <span>Clone</span>
                 </button>
-                <button mat-menu-item *ngIf="feed.accessControl.allowAdmin" (click)="onDelete()">
+                <button *ngIf="feed.accessControl.allowAdmin" mat-menu-item (click)="onDelete()">
                   <mat-icon>delete</mat-icon>
-                  <span>{{"views.feed-details.Delete" | translate}}</span>
+                  <span>{{(feed.isDraft() && feed.hasBeenDeployed() ? "FeedDefinition.Actions.RemoveDraft" : "FeedDefinition.Actions.DeleteFeed") | translate}}</span>
                 </button>
                 <mat-divider *ngIf="showSetPermissions()"></mat-divider>
                 <button *ngIf="showSetPermissions()" mat-menu-item (click)="setPermissions()">
@@ -90,7 +90,7 @@
               <feed-info-name [feed]="feed"></feed-info-name>
               <mat-divider></mat-divider>
 
-              <feed-info-category [feed]="feed"  ></feed-info-category>
+              <feed-info-category [feed]="feed" [editable]="!feed.hasBeenDeployed()"></feed-info-category>
               <mat-divider></mat-divider>
 
               <feed-info-description [feed]="feed"  ></feed-info-description>

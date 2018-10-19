@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportPropertyBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
@@ -100,13 +101,25 @@ public class ImportUtil {
     public static void addToImportOptionsSensitiveProperties(ImportOptions importOptions, List<NifiProperty> sensitiveProperties, ImportComponent component) {
         ImportComponentOption option = importOptions.findImportComponentOption(component);
         if (option.getProperties().isEmpty()) {
-            option.setProperties(sensitiveProperties.stream().map(p -> new ImportProperty(p.getProcessorName(), p.getProcessorId(), p.getKey(), "", p.getProcessorType())).collect(
+            option.setProperties(sensitiveProperties.stream().map(p -> ImportPropertyBuilder.anImportProperty()
+                .withComponentName(p.getProcessorName())
+                .withComponentId(p.getProcessorId())
+                .withPropertyKey(p.getKey())
+                .withPropertyValue("")
+                .withType(p.getProcessorType())
+                .build()).collect(
                 Collectors.toList()));
         } else {
             //only add in those that are unique
             Map<String, ImportProperty> propertyMap = option.getProperties().stream().collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
             sensitiveProperties.stream().filter(nifiProperty -> !propertyMap.containsKey(nifiProperty.getProcessorNameTypeKey())).forEach(p -> {
-                option.getProperties().add(new ImportProperty(p.getProcessorName(), p.getProcessorId(), p.getKey(), "", p.getProcessorType()));
+                option.getProperties().add(
+                    ImportPropertyBuilder.anImportProperty()
+                        .withComponentName(p.getProcessorName())
+                        .withComponentId(p.getProcessorId())
+                        .withPropertyKey(p.getKey())
+                        .withPropertyValue("")
+                        .withType(p.getProcessorType()).build());
             });
         }
     }

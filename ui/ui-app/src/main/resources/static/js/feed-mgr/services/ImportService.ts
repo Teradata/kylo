@@ -53,6 +53,10 @@ export class DefaultImportService implements ImportService{
         return this.newImportComponentOption(ImportComponentType.FEED_DATA);
     }
 
+    newUserDataSetsImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( ImportComponentType.USER_DATA_SETS);
+    }
+
     newRemoteProcessGroupImportOption(): ImportComponentOption {
         let option = this.newImportComponentOption( ImportComponentType.REMOTE_INPUT_PORT);
         option.shouldImport = false;

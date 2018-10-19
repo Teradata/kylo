@@ -40,6 +40,8 @@ export interface FeedSchedule {
     schedulingPeriod: string;
     schedulingStrategy: string;
     concurrentTasks: number;
+    preconditions: any[],
+    executionNode: any;
 }
 
 export enum FeedMode {
@@ -213,7 +215,7 @@ export class Feed  implements KyloObject{
     /**
      * The feed schedule
      */
-    schedule: FeedSchedule = {schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1};
+    schedule: FeedSchedule = {schedulingPeriod: "0 0 12 1/1 * ? *", schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1, preconditions: null, executionNode: null};
     /**
      * does this feed use a template that requires target table definition
      */
@@ -344,6 +346,13 @@ export class Feed  implements KyloObject{
      * @type {any[]}
      */
     sourceDataSets?: SparkDataSet[] = [];
+
+    /**
+     * sample Datasets selected for this feed
+     * @type {any[]}
+     */
+    sampleDataSet?: SparkDataSet;
+
 
     /**
      * is this a streaming feed
@@ -766,6 +775,24 @@ export class Feed  implements KyloObject{
 
         if (sourceDataSet && sourceDataSet != null) {
             this.sourceDataSets = [sourceDataSet];
+        }
+        this.updateTarget(sourceDataSet)
+    }
+
+    /**
+     * updates the target and or source with the schem provided in the sourceDataSet
+     */
+    setSampleDataSetAndUpdateTarget(sampleDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
+        this.sampleDataSet = sampleDataSet;
+        this.updateTarget(sampleDataSet)
+    }
+
+    /**
+     * updates the target and or source with the schem provided in the sourceDataSet
+     */
+    updateTarget(sourceDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
+
+        if (sourceDataSet && sourceDataSet != null) {
             let dataSet = sourceDataSet
             let sourceColumns: TableColumnDefinition[] = [];
             let targetColumns: TableColumnDefinition[] = [];

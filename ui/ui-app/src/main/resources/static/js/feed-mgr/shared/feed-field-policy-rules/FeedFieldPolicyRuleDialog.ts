@@ -437,7 +437,7 @@ class FieldPolicyRuleOptionsFactory {
 
 angular.module(moduleName).service('FieldPolicyRuleOptionsFactory', FieldPolicyRuleOptionsFactory);
 
-class FeedFieldPolicyRuleService {
+export class FeedFieldPolicyRuleService {
     constructor() {
 
     }

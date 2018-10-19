@@ -888,22 +888,22 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         let singleSelection = event.singleSelection;
         if (previews && previews.length) {
             if (singleSelection) {
-                const sourceDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
-                if (sourceDataSet.dataSource && sourceDataSet.dataSource.connector && sourceDataSet.dataSource.connector.pluginId) {
-                    this.catalogService.getConnectorPlugin(sourceDataSet.dataSource.connector.pluginId)
+                const sampleDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
+                if (sampleDataSet.dataSource && sampleDataSet.dataSource.connector && sampleDataSet.dataSource.connector.pluginId) {
+                    this.catalogService.getConnectorPlugin(sampleDataSet.dataSource.connector.pluginId)
                         .subscribe(plugin => {
-                            this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet, undefined, plugin)
+                            this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet, undefined, plugin)
                             applySerdeAndUpdateFormControls();
                         }, (error1:any) =>  this.cd.reattach());
                 } else {
-                    this.feed.setSourceDataSetAndUpdateTarget(sourceDataSet);
+                    this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet);
                     applySerdeAndUpdateFormControls();
                 }
             }
         }
         else {
             //set the source and target to empty
-            this.feed.setSourceDataSetAndUpdateTarget(null);
+            this.feed.setSampleDataSetAndUpdateTarget(null);
             applySerdeAndUpdateFormControls();
         }
 

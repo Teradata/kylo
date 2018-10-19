@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
+import {AfterViewInit, Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {CodemirrorComponent} from "ng2-codemirror";
 import {Subject} from "rxjs/Subject";
@@ -34,7 +34,6 @@ import {ColumnUtil} from "../wrangler/core/column-util";
 import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dialogs/schema-layout-dialog";
 import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
-import {DefineFeedService} from "../../feeds/define-feed-ng2/services/define-feed.service";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 
 declare const CodeMirror: any;
@@ -237,7 +236,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Height offset from the top of the page.
      */
     @Input()
-    heightOffset:any = "0";
+    heightOffset: number;
 
     @Input()
     warnWhenLeaving?: boolean = true;
@@ -267,17 +266,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor($element: ElementRef, private $mdDialog: TdDialogService, @Inject("DomainTypesService") private domainTypesService: DomainTypesService,
+    constructor(private $mdDialog: TdDialogService, @Inject("DomainTypesService") private domainTypesService: DomainTypesService,
                 @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
                 @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
                 @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
                 private wranglerDataService: WranglerDataService) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
-
-
-        // Get height offset attribute
-        this.heightOffset = $element.nativeElement.getAttribute("height-offset") || "0";
     }
 
     ngAfterViewInit(): void {
@@ -448,17 +443,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 // ignore cancel
             });
         }
-    }
-
-    /**
-     * Gets the browser height offset for the element with the specified offset from the top of this component.
-     * Deprecated
-     */
-    getBrowserHeightOffset(elementOffset: number): number {
-        if(isNaN(this.heightOffset)){
-            this.heightOffset = "0";
-        }
-        return (this.heightOffset != null ? parseInt(this.heightOffset) : 0) + elementOffset;
     }
 
     /**

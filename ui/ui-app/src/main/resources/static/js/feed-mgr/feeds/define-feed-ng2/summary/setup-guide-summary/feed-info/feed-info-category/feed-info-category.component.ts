@@ -1,38 +1,36 @@
-import {FormGroup} from "@angular/forms";
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../../model/feed/feed.model";
+import {Component, Input} from "@angular/core";
+
 import {DefineFeedService} from "../../../../services/define-feed.service";
+import {FeedLoadingService} from "../../../../services/feed-loading-service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
 import {FeedItemInfoService} from "../feed-item-info.service";
-import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 @Component({
-    selector:"feed-info-category",
-    templateUrl:"js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-category/feed-info-category.component.html"
+    selector: "feed-info-category",
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-category/feed-info-category.component.html"
 })
-export class FeedInfoCategoryComponent extends AbstractFeedInfoItemComponent  implements OnInit{
+export class FeedInfoCategoryComponent extends AbstractFeedInfoItemComponent {
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
-        super(defineFeedService,feedItemInfoService, feedLoadingService)
+    @Input()
+    editable: boolean;
+
+    constructor(defineFeedService: DefineFeedService, feedItemInfoService: FeedItemInfoService, feedLoadingService: FeedLoadingService) {
+        super(defineFeedService, feedItemInfoService, feedLoadingService)
     }
 
-    ngOnInit(){
-
-    }
-
-    onSaveSuccess(){
+    onSaveSuccess() {
         this.hideProgress();
         this.cancel();
     }
-    save(){
+
+    save() {
         this.showProgress();
         let values = this.formGroup.value;
         this.feed.category = values.category;
         this.saveFeed(this.feed);
     }
 
-    cancel(){
+    cancel() {
         this.formGroup.reset({"category": this.feed.category});
     }
-
 }

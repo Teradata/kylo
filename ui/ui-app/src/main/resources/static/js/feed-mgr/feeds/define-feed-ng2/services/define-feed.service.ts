@@ -1,53 +1,46 @@
-import * as _ from "underscore";
-import {Inject, Injectable, Injector, ViewContainerRef} from "@angular/core";
-import {Feed, FeedMode, FeedTemplateType, LoadMode, FeedAccessControl, StepStateChangeEvent} from "../../../model/feed/feed.model";
-import {Step} from "../../../model/feed/feed-step.model";
-import {Common} from "../../../../common/CommonTypes"
-import { Templates } from "../../../services/TemplateTypes";
-import {Observable} from "rxjs/Observable";
-import {StateRegistry, StateService, Transition} from "@uirouter/angular";
-import {Subject} from "rxjs/Subject";
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
-import {SaveFeedResponse} from "../model/save-feed-response.model";
-import "rxjs/add/observable/empty";
-import "rxjs/add/observable/of";
-import 'rxjs/add/observable/forkJoin'
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import {DatasetChangeEvent, PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
-import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
-import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
-import {EntityAccessControlService} from "../../../shared/entity-access-control/EntityAccessControlService";
-import AccessControlService from "../../../../services/AccessControlService";
-import {RestUrlConstants} from "../../../services/RestUrlConstants";
-import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
-import {UiComponentsService} from "../../../services/UiComponentsService";
-import {FeedService} from "../../../services/FeedService";
-import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
-import {FeedConstants} from "../../../services/FeedConstants";
-import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
-import {TranslateService} from "@ngx-translate/core";
-import {TdDialogService} from "@covalent/core/dialogs";
-import {SelectionService} from "../../../catalog/api/services/selection.service";
+import {Injectable, Injector, ViewContainerRef} from "@angular/core";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {PartialObserver} from "rxjs/Observer";
-import {ISubscription} from "rxjs/Subscription";
-import {SparkDataSet} from "../../../model/spark-data-set.model";
-import {FeedStepBuilderUtil} from "./feed-step-builder-util";
-import {CloneUtil} from "../../../../common/utils/clone-util";
-import {timeout} from 'rxjs/operators/timeout';
-import {TimeoutError} from "rxjs/Rx";
-import {EntityVersion} from "../../../model/entity-version.model";
-import {fromPromise} from "rxjs/observable/fromPromise";
-import {ReplaySubject} from "rxjs/ReplaySubject";
-import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
-import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
-import {Category} from "../../../model/category/category.model";
-import {FeedAccessControlService} from "../services/feed-access-control.service";
-import {ObjectChanged, RestResponseStatus} from "../../../../common/common.model";
+import {TranslateService} from "@ngx-translate/core";
+import {StateService, Transition} from "@uirouter/angular";
+import "rxjs/add/observable/empty";
+import 'rxjs/add/observable/forkJoin'
+import "rxjs/add/observable/of";
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
+import {Observable} from "rxjs/Observable";
+import {PartialObserver} from "rxjs/Observer";
 import {catchError} from "rxjs/operators/catchError";
+import {concatMap} from "rxjs/operators/concatMap";
+import {filter} from "rxjs/operators/filter";
+import {finalize} from "rxjs/operators/finalize";
+import {tap} from "rxjs/operators/tap";
+import {ReplaySubject} from "rxjs/ReplaySubject";
+import {Subject} from "rxjs/Subject";
+import {ISubscription} from "rxjs/Subscription";
+import * as _ from "underscore";
+
+import {ObjectChanged} from "../../../../common/common.model";
+import {Common} from "../../../../common/CommonTypes"
+import {CloneUtil} from "../../../../common/utils/clone-util";
+import AccessControlService from "../../../../services/AccessControlService";
+import {SelectionService} from "../../../catalog/api/services/selection.service";
+import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {Category} from "../../../model/category/category.model";
+import {EntityVersion} from "../../../model/entity-version.model";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {Step} from "../../../model/feed/feed-step.model";
+import {Feed, FeedAccessControl, FeedMode, FeedTemplateType, LoadMode, StepStateChangeEvent} from "../../../model/feed/feed.model";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
+import {FeedService} from "../../../services/FeedService";
+import {RestUrlConstants} from "../../../services/RestUrlConstants";
+import {UiComponentsService} from "../../../services/UiComponentsService";
+import {SaveFeedResponse} from "../model/save-feed-response.model";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
+import {FeedAccessControlService} from "../services/feed-access-control.service";
+import {FeedStepBuilderUtil} from "./feed-step-builder-util";
 
 
 export class FeedEditStateChangeEvent{
@@ -674,18 +667,41 @@ export class DefineFeedService {
         }
     }
 
-    revertDraft(feed:Feed) {
-        feed.validate(false)
-        if(feed.isDraft() && feed.isValid && feed.isComplete()){
-            let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
-            let params :HttpParams = new HttpParams();
-            params = params.append("action","REMOVE")
-            let headers :HttpHeaders = new HttpHeaders();
-            headers = headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-
-            this.http.post(url,null,{ params:params,headers:headers}).subscribe((version:EntityVersion) => {
-                this.openSnackBar("Removed draft "+version.id,5000)
-            });
+    revertDraft(feed: Feed): void {
+        feed.validate(false);
+        if (feed.isDraft() && feed.isValid && feed.isComplete()) {
+            this._translateService.get("FeedDefinition.Dialogs.RemoveDraft").pipe(
+                concatMap(text => {
+                    return this._dialogService.openConfirm({
+                        message: text.Message,
+                        disableClose: true,
+                        title: text.Title,
+                        cancelButton: text.Cancel,
+                        acceptButton: text.Accept,
+                        width: "500px",
+                    }).afterClosed()
+                }),
+                filter((accept: boolean) => accept),
+                tap(() => this._loadingService.register("processingFeed")),
+                concatMap(() => {
+                    let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+                    let params: HttpParams = new HttpParams();
+                    params = params.append("action","REMOVE");
+                    let headers: HttpHeaders = new HttpHeaders();
+                    headers = headers.append("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                    return this.http.post<EntityVersion>(url, null, {params: params, headers: headers});
+                }),
+                finalize(() => this._loadingService.resolve("processingFeed"))
+            ).subscribe(
+                (version: EntityVersion) => {
+                    this.openSnackBar("Removed draft "+version.id, 5000);
+                    this.stateService.go("feed-definition.summary", {feedId: version.entity.id});
+                },
+                error => {
+                    console.log(error);
+                    this.openSnackBar("Failed to remove draft.", 5000);
+                }
+            );
         }
     }
 

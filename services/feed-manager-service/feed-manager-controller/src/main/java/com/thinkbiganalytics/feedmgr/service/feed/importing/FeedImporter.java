@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportPropertyBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -54,9 +55,13 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.Im
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -78,13 +83,16 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -123,7 +131,16 @@ public class FeedImporter {
     private DatasourceProvider datasourceProvider;
 
     @Inject
-    private DataSetProvider dataSetProvider;
+    private ConnectorProvider catalogConnectorProvider;
+
+    @Inject
+    private DataSourceProvider catalogDataSourceProvider;
+
+    @Inject
+    private DataSetProvider catalogDataSetProvider;
+
+    @Inject
+    CatalogModelTransform catalogModelTransform;
     
     /**
      * The {@code Datasource} transformer
@@ -209,6 +226,10 @@ public class FeedImporter {
 
             // Valid data sources
             if (!validateUserDatasources()) {
+                return importFeed;
+            }
+
+            if(!validateUserDataSets()) {
                 return importFeed;
             }
 
@@ -435,7 +456,7 @@ public class FeedImporter {
             componentOption.setProperties(
                 providedDatasources.stream()
                     .filter(datasource -> !availableDatasources.contains(datasource.getId()))
-                    .map(datasource -> new ImportProperty(datasource.getName(), datasource.getId(), null, null, null))
+                    .map(datasource -> ImportPropertyBuilder.anImportProperty().withComponentName(datasource.getName()).withDisplayName(datasource.getName()).withComponentId(datasource.getId()).build())
                     .collect(Collectors.toList())
             );
         }
@@ -461,53 +482,244 @@ public class FeedImporter {
         uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
         return valid;
     }
+
+    /**
+     * Find the systems dataset using the following criteria
+     * 1) find by ID
+     * 2) find DataSource and then by hashing the params of the DataSet
+     * 3) find DataSource and then just by the DataSet Title
+     * @param dataSet
+     * @return
+     */
+    private com.thinkbiganalytics.kylo.catalog.rest.model.DataSet findMatchingDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet){
+      return   metadataAccess.read(() -> {
+            DataSet catalogDataSet = catalogDataSetProvider.find(catalogDataSetProvider.resolveId(dataSet.getId()))
+                .orElseGet(() -> {
+                    //find datasource by id
+                    DataSource dataSource = catalogDataSourceProvider.find(catalogDataSourceProvider.resolveId(dataSet.getDataSource().getId())).orElseGet(() -> {
+                        //find the connector
+                        return catalogConnectorProvider.findByPlugin(dataSet.getDataSource().getConnector().getPluginId())
+                            .map(connector -> catalogDataSourceProvider.findByConnector(connector.getId()).stream()
+                                .filter(ds -> ds.getTitle().equalsIgnoreCase(dataSet.getDataSource().getTitle())).findFirst()).get().orElse(null);
+                    });
+                    //find the datasource
+                    if (dataSource != null) {
+                        return catalogDataSetProvider.build(dataSource.getId())
+                            .title(dataSet.getTitle())
+                            .format(dataSet.getFormat())
+                            .addOptions(dataSet.getOptions())
+                            .addPaths(dataSet.getPaths())
+                            .addFiles(dataSet.getFiles())
+                            .addJars(dataSet.getJars()).find().orElse(catalogDataSetProvider.findByDataSourceAndTitle(dataSource.getId(),dataSet.getTitle()));
+                    }
+                    return null;
+
+                });
+            if(catalogDataSet != null){
+                return catalogModelTransform.dataSetToRestModel().apply(catalogDataSet);
+            }
+            else {
+                return null;
+            }
+        });
+
+    }
+
+    private void replaceMap(Map<String,Object> map,String lookFor, String replace) {
+        for(String key :map.keySet()) {
+            Object value = map.get(key);
+            if (value instanceof String && ((String) value).equalsIgnoreCase(lookFor)) {
+                //REPLACE IT
+                map.put(key,replace);
+                log.info("Replaced {} with {} in Map ", lookFor,replace);
+            } else if (value instanceof List) {
+                List<Object> copiedList = replaceList((List<Object>)value,lookFor,replace);
+                map.put(key,copiedList);
+            } else if (value instanceof Map) {
+                replaceMap((Map<String,Object>) value,lookFor,replace);
+            }
+            else {
+                map.put(key,value);
+            }
+        }
+    }
+
+    private List<Object> replaceList(List<Object> list,String lookFor, String replace) {
+        List<Object> copy = new ArrayList<>();
+
+        for (Object value : list) {
+            if (value instanceof String && ((String) value).equalsIgnoreCase(lookFor)) {
+                //REPLACE IT
+                log.info("Replaced {} with {} in List ", lookFor,replace);
+                copy.add(replace);
+            } else if (value instanceof List) {
+                List<Object> copiedList = replaceList((List<Object>) value, lookFor, replace);
+                copy.add(copiedList);
+
+            } else if (value instanceof Map) {
+                copy.add(value);
+                replaceMap((Map<String, Object>) value, lookFor, replace);
+            } else {
+                copy.add(value);
+            }
+
+        }
+        return copy;
+    }
+
+    private void replaceChartModelReferences(FeedMetadata metadata,Map<String,String>replacements){
+
+        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
+
+            List<Map<String, Object>> nodes = (List<Map<String, Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
+            if (nodes != null) {
+                nodes.stream().forEach((nodeMap) -> {
+                    replacements.entrySet().stream().forEach(entry -> replaceMap(nodeMap, entry.getKey(), entry.getValue()));
+                });
+            }
+
+        }
+
+    }
+
+
     
     /**
      * Validates that user data sets can be imported with provided properties.
      *
      * @return {@code true} if the feed can be imported, or {@code false} otherwise
      */
-    // TODO: This needs to be completed
     private boolean validateUserDataSets() {
-        FeedMetadata metadata = importFeed.getFeedToImport();
-        final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sets.");
-        
-        // Get data sources needing to be created
-        final Set<String> availableDataSets = metadataAccess.read(() -> 
-                dataSetProvider.findAll().stream()
-                     .map(DataSet::getId)
-                     .map(Object::toString)
-                     .collect(Collectors.toSet()));
-        final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATA_SETS);
-        final List<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> providedDataSets = Optional.ofNullable(metadata.getSourceDataSets()).orElse(Collections.emptyList());
-        
-        if (componentOption.getProperties().isEmpty()) {
-            componentOption.setProperties(providedDataSets.stream()
-                                              .filter(datasource -> !availableDataSets.contains(datasource.getId()))
-                                              .map(dataSet -> new ImportProperty(dataSet.getTitle(), dataSet.getId(), null, null, null))
-                                              .collect(Collectors.toList()) );
+        List<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> sourceDataSets = importFeed.getDataSetsToImport();
+
+        if(sourceDataSets != null && !sourceDataSets.isEmpty()) {
+            final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sets.");
+            final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATA_SETS);
+
+            ///Map the orig datasets by their id
+            Map<String, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> origDataSetMap = sourceDataSets.stream().collect(Collectors.toMap(ds -> ds.getId(), ds->ds));
+
+            //create a copy with the map so it can be modified from the user properties
+            Map<String, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> modifiedDataSetMap = sourceDataSets.stream().collect(Collectors.toMap(ds -> ds.getId(), ds->new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(ds)));
+
+            //look at the properties supplied by the user and apply those first
+            List<ImportProperty> properties = componentOption.getProperties();
+            properties.stream().forEach(importProperty -> {
+                if(StringUtils.isNotBlank(importProperty.getPropertyValue())){
+                    com.thinkbiganalytics.kylo.catalog.rest.model.DataSet matchingDataSet = modifiedDataSetMap.get(importProperty.getComponentId());
+                    if(matchingDataSet != null) {
+                        matchingDataSet.setId(importProperty.getPropertyValue());
+                        log.info("Remap dataset old id: {}, new id: {}, details: {} ", importProperty.getComponentId(), importProperty.getPropertyValue(), importProperty);
+                    }
+                }
+            });
+
+            FeedMetadata metadata = importFeed.getFeedToImport();
+            //find the data sets that need importinga
+
+            Map<String,Map<String,String>> datasetAdditionalProperties = new HashMap<>();
+
+            //find schemas associated with data set for data transform feeds
+            if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
+
+                List<Map<String,Object>> nodes = (List<Map<String,Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
+                if(nodes != null) {
+                    nodes.stream().forEach((nodeMap) -> {
+                        Map<String, Object> nodeDataSetMap = ( Map<String, Object> ) nodeMap.get("dataset");
+                        if(nodeDataSetMap != null) {
+                            String dataSetId = (String) nodeDataSetMap.get("id");
+                            List<Map<String,String>> schema = (List<Map<String,String>>) nodeDataSetMap.get("schema");
+                           String schemaString = schema.stream().map(field -> {
+                                Map<String,String> fieldMap = (Map<String,String>)field;
+                                String name = fieldMap.get("name");
+                                String dataType = fieldMap.get("dataType");
+                                return name +" "+dataType;
+                            }).collect(Collectors.joining(","));
+                            //find the property associated with this dataset and add the schema as an additional property
+                            datasetAdditionalProperties.computeIfAbsent(dataSetId,dsId ->new HashMap<String,String>()).put("schema",schemaString);
+                        }
+                    });
+                }
+            }
+
+
+            //create a map of the zip file datasets and the matching system datasets
+            Map<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> importDataSetIdMap = new HashMap<>();
+            //attempt to find the dataset and associate it with the incoming one
+            sourceDataSets.stream().forEach(dataSet -> {
+                com.thinkbiganalytics.kylo.catalog.rest.model.DataSet modifiedDataSet = modifiedDataSetMap.get(dataSet.getId());
+                importDataSetIdMap.put(dataSet, findMatchingDataSet(modifiedDataSet));
+            });
+
+            // the list of properties to be returned to the user to reassign datasets
+            List<ImportProperty> dataSetProperties = new ArrayList<>();
+            boolean valid = true;
+            //for all the values that are null they need to be created, otherwise we have what we need
+            //if the value in the map is null, we need to ask the user to supply a dataset.  Create the ImportProperty and mark as invalid
+            importDataSetIdMap.entrySet().stream().forEach(entry -> {
+                com.thinkbiganalytics.kylo.catalog.rest.model.DataSet incomingDataSet = entry.getKey();
+                com.thinkbiganalytics.kylo.catalog.rest.model.DataSet matchingDataSet = entry.getValue();
+                String datasetPathTitle = incomingDataSet.getPaths().stream().collect(Collectors.joining(","));
+                String title = incomingDataSet.getDataSource().getTitle();
+
+                ImportProperty property = ImportPropertyBuilder.anImportProperty().withComponentName(title)
+                    .withDisplayName(datasetPathTitle)
+                    .withPropertyKey("dataset_" + UUID.randomUUID().toString().replaceAll("-","_"))
+                    .withDescription(datasetPathTitle)
+                    .withComponentId(incomingDataSet.getId())
+                    .withImportComponent(ImportComponent.USER_DATA_SETS)
+                    .asValid(matchingDataSet != null)
+                    .withAdditionalProperties(datasetAdditionalProperties.get(incomingDataSet.getId()))
+                    .build();
+                dataSetProperties.add(property);
+                componentOption.setValidForImport(property.isValid());
+            });
+            componentOption.setProperties(dataSetProperties);
+
+
+
+
+
+
+
+
+            // mark the component as valid only if the dataset properties are all valid
+            componentOption.setValidForImport(dataSetProperties.stream().allMatch(ImportProperty::isValid));
+
+            if (componentOption.isValidForImport()) {
+                //replace the source datasets with the found ones
+                metadata.setSourceDataSets(new ArrayList<>(importDataSetIdMap.values()));
+                Set<String> datasourceIds = new HashSet<>();
+                Map<String,String> chartModelReplacements = new HashMap<>();
+                //replace the Data Transformation dataset references with the new one
+                if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())){
+                    String script = metadata.getDataTransformation().getDataTransformScript();
+                    //iterate through the map of datasets and find/replace the dataset ids and datasource ids with the new ones
+
+                    for(Map.Entry<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> entry:importDataSetIdMap.entrySet()){
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSet incomingDataSet = entry.getKey();
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSet matchingDataSet = entry.getValue();
+                        if(!incomingDataSet.getId().equalsIgnoreCase(matchingDataSet.getId())){
+                         script = script.replaceAll(incomingDataSet.getId(),matchingDataSet.getId());
+                         chartModelReplacements.put(incomingDataSet.getId(),matchingDataSet.getId());
+                         chartModelReplacements.put(incomingDataSet.getDataSource().getId(),matchingDataSet.getDataSource().getId());
+                        }
+                        datasourceIds.add(matchingDataSet.getDataSource().getId());
+
+                        metadata.getDataTransformation().setDatasourceIds(new ArrayList<>(datasourceIds));
+                    }
+                    metadata.getDataTransformation().setDataTransformScript(script);
+                    replaceChartModelReferences(metadata,chartModelReplacements);
+                }
+                statusMessage.update("Validated data sets.", true);
+            } else {
+                statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
+                importFeed.setValid(false);
+            }
+
+            uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
+            return componentOption.isValidForImport();
         }
-        
-        // Update feed with re-mapped data sources
-//        final boolean valid = componentOption.getProperties().stream()
-//                        .allMatch(property -> {
-//                            if (property.getPropertyValue() != null) {
-//                                ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
-//                                return true;
-//                            } else {
-//                                return false;
-//                            }
-//                        });
-//        
-//        if (valid) {
-//            statusMessage.update("Validated data sources.", true);
-//        } else {
-//            statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
-//            importFeed.setValid(false);
-//        }
-        
-        uploadProgressService.completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
-//        return valid;
         return true;
     }
 
@@ -639,12 +851,14 @@ public class FeedImporter {
 
 
     private ImportProperty toImportProperty(UserProperty userProperty) {
-        ImportProperty p = new ImportProperty();
-        p.setDescription(userProperty.getDescription());
-        p.setDisplayName(userProperty.getDisplayName());
-        p.setPropertyKey(userProperty.getSystemName());
-        p.setPropertyValue(userProperty.getValue());
-        return p;
+
+       return  ImportPropertyBuilder.anImportProperty()
+            .withDisplayName(userProperty.getDisplayName())
+            .withPropertyKey(userProperty.getSystemName())
+            .withPropertyValue(userProperty.getValue())
+            .withDescription(userProperty.getDescription())
+            .withImportComponent(ImportComponent.FEED_USER_FIELDS)
+            .build();
     }
 
     private UserProperty toUserProperty(ImportProperty importProperty) {
@@ -789,6 +1003,10 @@ public class FeedImporter {
             if (zipEntry.getName().startsWith(ImportFeed.FEED_JSON_FILE)) {
                 String zipEntryContents = ZipFileUtil.zipEntryToString(buffer, zis, zipEntry);
                 importFeed.setFeedJson(zipEntryContents);
+            }
+            if (zipEntry.getName().startsWith(ImportFeed.FEED_DATASETS_FILE)) {
+                String zipEntryContents = ZipFileUtil.zipEntryToString(buffer, zis, zipEntry);
+                importFeed.setDatasets(zipEntryContents);
             }
         }
         return importFeed;

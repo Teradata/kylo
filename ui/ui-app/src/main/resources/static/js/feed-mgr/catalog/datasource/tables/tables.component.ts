@@ -49,7 +49,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {
-        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema);
+        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema, obj.qualifiedIdentifier);
     }
 
     createRootNode(): Node {
@@ -146,7 +146,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     private createTempPlaceholder(name: string, type: DatabaseObjectType) {
-        return new DatabaseObject(name, type, undefined, undefined);
+        return new DatabaseObject(name, type, undefined, undefined, undefined);
     }
 
 }

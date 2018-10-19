@@ -29,14 +29,15 @@ export class DatabaseObject extends BrowserObject {
     type: DatabaseObjectType;
     catalog: string;
     schema: string;
+    qualifiedIdentifier: string;
 
-    constructor(name: string, type: DatabaseObjectType, catalog: string, schema: string) {
+    constructor(name: string, type: DatabaseObjectType, catalog: string, schema: string, qualifiedIdentifier: string) {
         super();
         this.name = name;
         this.type = type;
         this.catalog = catalog;
         this.schema = schema;
-
+        this.qualifiedIdentifier = qualifiedIdentifier;
     }
 
     canBeParent(): boolean {

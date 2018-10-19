@@ -19,13 +19,18 @@ package com.thinkbiganalytics.feedmgr.service.feed.importing.model;
  * #L%
  */
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 /**
  * Created by sr186054 on 12/13/17.
@@ -33,6 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 public class ImportFeed {
 
     public static final String FEED_JSON_FILE = "feed.json";
+
+    public static final String FEED_DATASETS_FILE = "datasets.json";
     private boolean valid;
 
     private boolean success;
@@ -41,10 +48,14 @@ public class ImportFeed {
     private ImportTemplate template;
     private NifiFeed nifiFeed;
     private String feedJson;
+    private String datasets;
     private ImportFeedOptions importOptions;
 
     @JsonIgnore
     private FeedMetadata feedToImport;
+
+    @JsonIgnore
+    private List<DataSet> dataSetList;
 
     public ImportFeed() {
     }
@@ -134,7 +145,31 @@ public class ImportFeed {
     }
 
     @JsonIgnore
+    public List<DataSet> getDataSetsToImport() {
+        if (dataSetList == null && StringUtils.isNotBlank(datasets)) {
+            dataSetList = ObjectMapperSerializer.deserialize(getDatasets(),  new TypeReference<List<DataSet>>() {
+            });
+        }
+        else {
+            //get it from the feedmetadata?
+            FeedMetadata feedMetadata = getFeedToImport();
+            if(feedMetadata != null && feedMetadata.getSourceDataSets() != null && !feedMetadata.getSourceDataSets().isEmpty()){
+                dataSetList = feedMetadata.getSourceDataSets();
+            }
+        }
+        return dataSetList;
+    }
+
+    @JsonIgnore
     public void setFeedToImport(FeedMetadata feedToImport) {
         this.feedToImport = feedToImport;
+    }
+
+    public String getDatasets() {
+        return datasets;
+    }
+
+    public void setDatasets(String datasets) {
+        this.datasets = datasets;
     }
 }

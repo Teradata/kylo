@@ -54,10 +54,10 @@
     "views.import_feed.Overwrite_Feed2": "Check to replace the feed if it already exists.",
     "views.import_feed.Disable_Feed": "Disable Feed upon import",
     "views.import_feed.Disable_Feed2": "Check to make this feed disabled after importing",
-    "views.ipmort_feed.Replace_Feed": "Replace Feed Template",
-    "views.ipmort_feed.Replace_Feed2": "Replace and re-register the feed template if it already exists",
-    "views.ipmort_feed.Replace_Reusable": "Replace Reusable Template",
-    "views.ipmort_feed.Replace_Reusable2": "Replace and re-initialize the reusable template, if applicable",
+    "views.import_feed.Replace_Feed": "Replace Feed Template",
+    "views.import_feed.Replace_Feed2": "Replace and re-register the feed template if it already exists",
+    "views.import_feed.Replace_Reusable": "Replace Reusable Template",
+    "views.import_feed.Replace_Reusable2": "Replace and re-initialize the reusable template, if applicable",
     "views.import_feed.Change_the_Category": "Change the Category",
     "views.import_feed.Import_Feed_btn": "Import Feed",
     "views.ImportFeedController.error": "Unable to import and register the feed.  Errors were found. Ensure you are trying to upload a valid feed export file and not a template export file. ",
@@ -132,6 +132,7 @@
     "views.define-feed-schedule.EN": "Execution Node",
     "views.define-feed-schedule.AN": "All nodes",
     "views.define-feed-schedule.PN": "Primary node",
+    "views.define-feed-schedule.PC": "Precondition",
     "views.define-feed-schedule.RP": "Run Preconditions",
     "views.define-feed-schedule.SED": "Specify execution dependencies",
     "views.define-feed-schedule.AP": "Add Precondition",
@@ -180,6 +181,7 @@
     "views.feed-definition.FT": "Feed Type",
     "views.feed-definition.FP": "Flow Processing",
     "views.feed-definition.Stream": "Stream",
+    "views.feed-definition.StreamHint": "Kylo will only track key metrics.  Individual jobs and steps will not be tracked.",
     "views.feed-definition.Kwtijas": "Kylo will track individual jobs and steps.",
     "views.feed-definition.Batch": "Batch",
     "views.feed-definition.DN": "Display Name",
@@ -222,6 +224,7 @@
     "views.feed-additional-properties.DO": "Data Owner",
     "views.feed-additional-properties.Tags": "Tags",
     "views.feed-additional-properties.AaT": "Add a Tag",
+    "views.feed-additional-properties.HSG": "Hadoop Security Groups",
     "views.feed-additional-properties.Saving": "Saving...",
     "views.feed-versions-compare.Current": "Current",
     "views.feed-data-policies.Current": "Current",
@@ -229,6 +232,7 @@
     "views.feed-schedule.Schedule": "Schedule",
     "views.feed-schedule.Strategy": "Strategy",
     "views.feed-schedule.Period": "Period",
+    "views.feed-schedule.ExecutionNode": "ExecutionNode",
     "views.feed-schedule.Expression": "Expression",
     "views.feed-schedule.Required": "Required.",
     "views.feed-schedule.RS": "Run Schedule",
@@ -293,6 +297,7 @@
     "views.feed-data-policies.TS&DP": "Table Schema & Data Policies",
     "views.feed-data-policies.SFRF": "Source Feed Record Format",
     "views.feed-data-policies.DTN": "Destination Table Name",
+    "views.feed-data-policies.Schema": "Schema",
     "views.feed-data-policies.FN": "Field Name",
     "views.feed-data-policies.Domain": "Domain",
     "views.feed-data-policies.Type": "Type",
@@ -363,6 +368,9 @@
     "views.feed-data-policies.None": "None",
     "views.feed-data-policies.Reapply": "Reapply",
     "views.feed-data-policies.Saving": "Saving...",
+
+    "views.transform-feed-details.Query": "Query",
+    "views.transform-feed-details.DataTransformations": "Data Transformations",
 
     "views.define-feed-data-processing-field-policy-dialog.ff": "for field",
     "views.define-feed-data-processing-field-policy-dialog.Dpuadtr": "Drag policies up and down to reorder",
@@ -542,12 +550,16 @@
 
     "views.define-table-stepper.Table": "Table",
     "views.define-table-stepper.DP": "Data Processing",
-    "views.ipmort_feed.padding_bottom" : "The following properties need to be supplied before importing this feed:",
+    "views.import_feed.padding_bottom" : "The following properties need to be supplied before importing this feed:",
+    "views.import_feed.dataset-required":"Data set assignment required",
+    "views.import_feed.choose-datasets-message":"This feed uses a data set that has not been created in this system. Reassign data set below",
+    "views.import_feed.update-dataset":"Update Data Set ",
     "views.import_feed.no-catigories" : "No categories matching",
     "views.import_feed.were-found": "were found.",
     "views.import_feed.related-feeds": "Related Feeds",
-    "views.ipmort_feed.data-access-control": "Data access control",
-    "views.ipmort_feed.hadoop-sekyriti": "Hadoop Security Groups",
+    "views.import_feed.data-access-control": "Data access control",
+    "views.import_feed.hadoop-sekyriti": "Hadoop Security Groups",
+    "views.import_feed.Upload_Progress_Title":"Upload Progress",
     "views.define-feed-complete": "Congratulations! Your feed has been successfully created.",
     "views.define-feed-complete2": "You can augment your feed by adding the following enhancements",
     "views.define-feed-complete3": "Add a Service Level Agreement",
@@ -914,6 +926,18 @@
                  "SLA":{"Name":"SLA"},
                  "Lineage":{"Name":"Lineage"},
                  "Versions":{"Name":"Versions"}
+        },
+        "Actions": {
+            "DeleteFeed": "Delete Feed...",
+            "RemoveDraft": "Remove Draft..."
+        },
+        "Dialogs": {
+          "RemoveDraft": {
+            "Accept": "Yes",
+            "Cancel": "No",
+            "Message": "Are you sure you want to remove the current draft?",
+            "Title": "Confirm Remove Draft"
+          }
         }
     },
     "FeedStats":{
@@ -1028,5 +1052,28 @@
                 "TITLE": "Access Denied"
             }
         }
-    }
+    },
+
+    "Versions":{
+        "CompareVersions": "Compare versions",
+        "Current": "Current",
+        "CreatedBy": "Created by ",
+        "On": " on ",
+        "Name": "Feed Version History",
+        "Description": "View version history for this feed",
+        "MaskForSensitiveValue": "*****",
+        "FeedInput": "Feed input",
+        "RestOfFeed": "Rest of feed",
+        "Sections": {
+            "FeedDefinition": "Feed Definition",
+            "DataTransformation": "Data Transformation",
+            "FeedDetails": "Feed Details",
+            "TableSchemaAndDataPolicies": "Table Schema & Data Policies",
+            "Properties": "Properties",
+            "Schedule": "Schedule",
+            "RunPreconditions": "Run Preconditions"
+        }
+    },
+  "utils.singlespace": " ",
+  "utils.notApplicable": "NA"
 }

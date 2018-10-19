@@ -23,6 +23,7 @@ export class KyloIcons {
         runTime:"alarm",
         numberOfFlowsStarted:"star_border",
         numberOfFlowsFinished:"star",
+        importFeed:"file_upload",
         Stats: {
             eventSuccessKpi:'offline_pin',
             eventSuccesUndefinedKpi:'remove',

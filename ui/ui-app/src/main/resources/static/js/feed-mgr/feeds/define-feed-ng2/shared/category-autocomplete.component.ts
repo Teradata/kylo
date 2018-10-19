@@ -1,25 +1,41 @@
-import {EventEmitter, Input, Output,OnDestroy, OnInit,Component, Inject} from "@angular/core";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {Observable} from "rxjs/Observable";
-import {Category} from "../../../model/category/category.model";
+import {Component, EventEmitter, Inject, Input, OnInit, Output} from "@angular/core";
+import {FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {MatAutocompleteSelectedEvent} from "@angular/material";
-import CategoriesService from "../../../services/CategoriesService";
-import {flatMap, startWith} from "rxjs/operators";
+import {Observable} from "rxjs/Observable";
 import {fromPromise} from "rxjs/observable/fromPromise";
+import {mergeMap} from "rxjs/operators/mergeMap";
+import {startWith} from "rxjs/operators/startWith";
+
+import {Category} from "../../../model/category/category.model";
+import CategoriesService from "../../../services/CategoriesService";
 import {CategoryAutocompleteValidators} from "./category-autocomplete.validators";
 
 @Component({
-    selector:"category-autocomplete",
-    styleUrls:["js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.css"],
-    templateUrl:"js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.html"
+    selector: "category-autocomplete",
+    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.css"],
+    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/shared/category-autocomplete.component.html"
 })
-export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
+export class CategoryAutocompleteComponent implements OnInit {
 
     @Input()
-    formGroup:FormGroup
+    formGroup: FormGroup;
 
     @Input()
-    category?:Category;
+    category?: Category;
+
+    @Input()
+    placeholder?: string = "Category";
+
+    @Input()
+    hint?: string;
+
+    @Input()
+    renderClearButton?: boolean = false;
+
+    @Input()
+    required: boolean = true;
+
+    categoryControl: FormControl;
 
     /**
      * Aysnc autocomplete list of categories
@@ -27,32 +43,35 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
     public filteredCategories: Observable<Category[]>;
 
     @Output()
-    categorySelected:EventEmitter<Category> = new EventEmitter<Category>();
+    categorySelected: EventEmitter<Category> = new EventEmitter<Category>();
 
-    constructor(@Inject("CategoriesService")private categoriesService:CategoriesService){
-
-
-
+    constructor(@Inject("CategoriesService") private categoriesService: CategoriesService) {
     }
 
-    ngOnInit(){
-        if(this.formGroup == undefined){
+    ngOnInit() {
+        if (this.formGroup == undefined) {
             this.formGroup = new FormGroup({});
         }
         let value = null;
-        if(this.category) {
+        if (this.category) {
             value = this.category
         }
-        let categoryCtrl = new FormControl(value,[Validators.required, CategoryAutocompleteValidators.validateFeedCreatePermissionForCategory]);
-        this.formGroup.registerControl("category",categoryCtrl);
-        this.filteredCategories = categoryCtrl.valueChanges.pipe(
+        let validators: ValidatorFn[] = [];
+        if (this.required) {
+            validators.push(Validators.required);
+        }
+        validators.push(CategoryAutocompleteValidators.validateFeedCreatePermissionForCategory);
+
+        this.categoryControl = new FormControl(value, validators);
+        this.formGroup.registerControl("category", this.categoryControl);
+
+        this.filteredCategories = this.categoryControl.valueChanges.pipe(
             startWith(''),
-            flatMap(text => {
+            mergeMap(text => {
                 return fromPromise(this.categoriesService.querySearch(text));
             })
         );
     }
-
 
     /**
      * Function for the Autocomplete to display the name of the category object matched
@@ -63,9 +82,14 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
         return category ? category.name : undefined;
     }
 
-    onCategorySelected(event:MatAutocompleteSelectedEvent){
+    onCategorySelected(event: MatAutocompleteSelectedEvent) {
         let category = <Category> event.option.value;
         this.categorySelected.emit(category);
+    }
+
+    clearCategorySelection() {
+        this.categoryControl.setValue("");
+        this.categorySelected.emit(null);
     }
 
     /**
@@ -87,10 +111,4 @@ export class CategoryAutocompleteComponent implements OnInit, OnDestroy{
     checkFeedCreateAccess(formGroup: FormGroup, controlName: string) {
         return formGroup.get(controlName).hasError('noFeedCreatePermissionForCategory');
     }
-
-    ngOnDestroy() {
-
-    }
-
-
 }

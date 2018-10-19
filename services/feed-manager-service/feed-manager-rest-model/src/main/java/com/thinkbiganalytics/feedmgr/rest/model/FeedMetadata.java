@@ -103,6 +103,12 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     private List<DataSet> sourceDataSets;
 
+    /**
+     * the dataset used to create the target schema
+     * this can be null
+     */
+    private DataSet sampleDataSet;
+
     @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private TableSetup table;
 
@@ -570,6 +576,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setUiState(Map<String, Object> uiState) {
         this.uiState = uiState;
+    }
+
+    public DataSet getSampleDataSet() {
+        return sampleDataSet;
+    }
+
+    public void setSampleDataSet(DataSet sampleDataSet) {
+        this.sampleDataSet = sampleDataSet;
     }
 
     @Override

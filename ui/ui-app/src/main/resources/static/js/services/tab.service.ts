@@ -12,7 +12,6 @@ export default class TabService {
 
     }
     registerTabs(pageName: any, tabNamesArray: any, currentTabName: any): any {
-
         if (this.tabs[pageName] === undefined) {
             var tabs: any[] = [];
             this.tabs[pageName] = tabs;

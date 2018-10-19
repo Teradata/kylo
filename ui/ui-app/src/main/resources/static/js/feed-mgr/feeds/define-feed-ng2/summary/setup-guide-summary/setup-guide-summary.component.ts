@@ -131,7 +131,11 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
 
     onDelete(){
         //confirm then delete
-        this.defineFeedService.deleteFeed();
+        if (this.feed.isDraft() && this.feed.hasBeenDeployed()) {
+            this.revertDraft();
+        } else {
+            this.defineFeedService.deleteFeed();
+        }
     }
 
     cloneFeed(){

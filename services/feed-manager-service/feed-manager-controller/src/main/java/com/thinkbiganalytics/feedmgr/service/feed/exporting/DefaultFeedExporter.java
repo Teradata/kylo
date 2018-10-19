@@ -25,6 +25,9 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.exporting.DefaultTemplateExporter;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.feed.export.ExportFeed;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
 import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
@@ -67,6 +70,12 @@ public class DefaultFeedExporter implements FeedExporter {
     @Inject
     private DatasourceProvider datasourceProvider;
 
+    @Inject
+    private DataSetProvider dataSetProvider;
+
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
+
     /**
      * The {@code Datasource} transformer
      */
@@ -94,7 +103,7 @@ public class DefaultFeedExporter implements FeedExporter {
             //feed will not be found when user is allowed to export feeds but has no entity access to feed with feed id
             throw new NotFoundException("Feed not found for id " + feedId);
         }
-
+/*
         final List<Datasource> userDatasources = Optional.ofNullable(feed.getDataTransformation())
             .map(FeedDataTransformation::getDatasourceIds)
             .map(datasourceIds -> metadataAccess.read(
@@ -117,13 +126,28 @@ public class DefaultFeedExporter implements FeedExporter {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
             feed.setUserDatasources(userDatasources);
         }
+        */
+        //export the datasets ???
+        String dataSetJSON = "[]";
+        if(!feed.getSourceDataSets().isEmpty()){
+            //refetch them?
+          List<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSets =  feed.getSourceDataSets().stream().map(dataSet -> {
+              return  metadataAccess.read(() -> {
+                  return dataSetProvider.find(dataSetProvider.resolveId(dataSet.getId()))
+                      .map(ds ->catalogModelTransform.dataSetToRestModel().apply(ds) )
+                      .orElse(null);
+                });
+            }).filter(dataSet -> dataSet  != null).collect(Collectors.toList());
+          dataSetJSON = ObjectMapperSerializer.serialize(dataSets);
+        }
 
         // Add feed json to template zip file
         final ExportTemplate exportTemplate = templateExporter.exportTemplateForFeedExport(feed.getTemplateId());
         final String feedJson = ObjectMapperSerializer.serialize(feed);
 
-        final byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, ImportFeed.FEED_JSON_FILE);
-        return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
+        byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, ImportFeed.FEED_JSON_FILE);
+        final byte[] zipFile2 = ZipFileUtil.addToZip(zipFile, dataSetJSON, ImportFeed.FEED_DATASETS_FILE);
+        return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile2);
     }
 
 }

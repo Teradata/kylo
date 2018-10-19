@@ -1,34 +1,31 @@
+import {Input} from "@angular/core";
 import {FormGroup} from "@angular/forms";
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../model/feed/feed.model";
-import {DefineFeedService} from "../../../services/define-feed.service";
-import {FeedScheduleComponent} from "../feed-schedule/feed-schedule.component";
-import {FeedConstants} from "../../../../../services/FeedConstants";
-import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {Observable} from "rxjs/Observable";
-import {FeedItemInfoService} from "./feed-item-info.service";
-import {TdLoadingService} from "@covalent/core";
+
+import {Feed} from "../../../../../model/feed/feed.model";
+import {SaveFeedResponse} from "../../../model/save-feed-response.model";
+import {DefineFeedService} from "../../../services/define-feed.service";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
+import {FeedItemInfoService} from "./feed-item-info.service";
 
 
 export abstract class AbstractFeedInfoItemComponent {
 
     @Input()
-    editing:boolean;
+    editing: boolean;
 
     @Input()
-    feed:Feed;
+    feed: Feed;
 
+    readonlySchedule: string = '';
 
-    readonlySchedule:string = '';
+    formGroup: FormGroup;
 
-    formGroup:FormGroup;
-
-    protected  constructor(protected defineFeedService:DefineFeedService, protected feedItemInfoService:FeedItemInfoService, private feedLoadingService:FeedLoadingService){
-    this.initForm();
-
+    protected constructor(protected defineFeedService: DefineFeedService, protected feedItemInfoService: FeedItemInfoService, private feedLoadingService: FeedLoadingService) {
+        this.initForm();
     }
-    initForm(){
+
+    initForm() {
         this.formGroup = new FormGroup({})
     }
 
@@ -37,8 +34,8 @@ export abstract class AbstractFeedInfoItemComponent {
      * override and handle the callback
      * @param {SaveFeedResponse} response
      */
-    onSaveSuccess(response:SaveFeedResponse){
-      this.hideProgress();
+    onSaveSuccess(response: SaveFeedResponse) {
+        this.hideProgress();
     }
 
     /**
@@ -46,43 +43,37 @@ export abstract class AbstractFeedInfoItemComponent {
      * Override and handle callback
      * @param {SaveFeedResponse} response
      */
-    onSaveFail(response:SaveFeedResponse){
+    onSaveFail(response: SaveFeedResponse) {
         this.hideProgress();
     }
 
-    showProgress(){
+    showProgress() {
         this.feedLoadingService.registerLoading()
     }
 
-    hideProgress(){
+    hideProgress() {
         this.feedLoadingService.resolveLoading()
     }
-
-
-
 
     /**
      * call the service to save the feed
      * @param {} feed
      */
-    saveFeed(feed:Feed) :Observable<SaveFeedResponse>{
-
+    saveFeed(feed: Feed): Observable<SaveFeedResponse> {
         let observable = this.defineFeedService.saveFeed(feed);
-        observable.subscribe((response:SaveFeedResponse) => {
-            if(response.success) {
-                this.feed = response.feed;
-                this.onSaveSuccess(response);
-                this.editing = false;
-                this.feedItemInfoService.savedFeed(response);
-            }
-            else {
-                this.onSaveFail(response);
-            }
-
-         });
-   return observable;
-
-}
-
-
+        observable.subscribe(
+            (response: SaveFeedResponse) => {
+                if (response.success) {
+                    this.feed = response.feed;
+                    this.onSaveSuccess(response);
+                    this.editing = false;
+                    this.feedItemInfoService.savedFeed(response);
+                } else {
+                    this.onSaveFail(response);
+                }
+            },
+            error => this.onSaveFail(error)
+        );
+        return observable;
+    }
 }
