@@ -176,6 +176,7 @@
     "views.entity-access-control.Save": "Save",
     "views.entity-access-control.Saving": "Saving...",
     "views.entity-access-control.Cancel": "Cancel",
+    "views.entity-access-control.NotEnabled": "Entity access control is not enabled for Kylo.",
     "views.feed-definition.FD": "Feed Definition",
     "views.feed-definition.FN": "Feed Name",
     "views.feed-definition.SN": "System Name",

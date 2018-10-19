@@ -6,8 +6,11 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
-import {Component, ViewChild} from "@angular/core";
+import {Component, Inject, ViewChild} from "@angular/core";
 import {EntityAccessControlComponent} from "../../../../shared/entity-access-control/entity-access-control.component";
+import AccessControlService from "../../../../../services/AccessControlService";
+import {of} from "rxjs/observable/of";
+import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: "define-feed-permissions",
@@ -16,10 +19,14 @@ import {EntityAccessControlComponent} from "../../../../shared/entity-access-con
 })
 export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
 
+    displayEditActions:boolean;
+
     /**
      * The form for this step
      */
     formGroup:FormGroup;
+
+    accessControlService: AccessControlService;
 
     @ViewChild("entityAccessControl")
     private entityAccessControl: EntityAccessControlComponent;
@@ -28,10 +35,23 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
                 stateService: StateService,
                 feedLoadingService:FeedLoadingService,
                 dialogService: TdDialogService,
-                feedSideNavService:FeedSideNavService){
+                feedSideNavService:FeedSideNavService,
+                @Inject("AccessControlService") accessControlService: AccessControlService){
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
+        this.accessControlService = accessControlService;
         this.formGroup = new FormGroup({})
         this.subscribeToFormChanges(this.formGroup);
+
+        this.checkEntityAccess();
+    }
+
+    checkEntityAccess() {
+        let entityAccessControlCheck:Observable<boolean> = of(this.accessControlService.checkEntityAccessControlled());
+        entityAccessControlCheck.subscribe((result: any) => {
+                this.displayEditActions = this.accessControlService.isEntityAccessControlled();
+            }, (err: any) => {
+                console.log("Error checking if entity access control is enabled");
+            });
     }
 
     init() {

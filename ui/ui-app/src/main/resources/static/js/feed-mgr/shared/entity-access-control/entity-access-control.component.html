@@ -1,6 +1,7 @@
 <form [formGroup]="entityAccessControlForm">
-  <div *ngIf="!enabled">
-    <span>Entity access control is not enabled for Kylo.</span>
+  <div *ngIf="!enabled" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>{{"views.entity-access-control.NotEnabled" | translate}}</h2>
   </div>
   <div *ngIf="enabled">
     <div fxLayout="row" class="layout-padding-bottom-15">

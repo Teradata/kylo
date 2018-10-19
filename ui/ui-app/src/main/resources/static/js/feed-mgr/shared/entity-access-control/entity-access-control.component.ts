@@ -86,10 +86,7 @@ export class EntityAccessControlComponent implements OnInit {
             this.allowOwnerChange = true;
         }
 
-        var entityAccessControlCheck:Observable<boolean> = of(this.accessControlService.checkEntityAccessControlled());
-        entityAccessControlCheck.toPromise().then(() => {
-            this.enabled = this.accessControlService.isEntityAccessControlled();
-        });
+        this.checkEntityAccess();
 
         if (_.isUndefined(this.entity[this.roleMembershipsProperty])) {
             this.entity[this.roleMembershipsProperty] = [];
@@ -266,5 +263,14 @@ export class EntityAccessControlComponent implements OnInit {
         //overriding
         this.entityRoleMemberships = this.entity[this.roleMembershipsProperty];
         return fromPromise(this.entityAccessControlService.saveRoleMemberships(this.entityType, this.entity.id, this.entity.roleMemberships));
+    }
+
+    checkEntityAccess() {
+        let entityAccessControlCheck:Observable<boolean> = of(this.accessControlService.checkEntityAccessControlled());
+        entityAccessControlCheck.subscribe((result: any) => {
+            this.enabled = this.accessControlService.isEntityAccessControlled();
+        }, (err: any) => {
+            console.log("Error checking if entity access control is enabled");
+        });
     }
 }
