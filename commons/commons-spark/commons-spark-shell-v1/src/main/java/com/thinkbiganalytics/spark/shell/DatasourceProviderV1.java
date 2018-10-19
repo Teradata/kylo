@@ -29,11 +29,15 @@ import java.util.Collection;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * A data source provider for Spark 1.
  */
 public class DatasourceProviderV1 extends AbstractDatasourceProvider<DataFrame> {
+
+    @Inject
+    CatalogDataSetProvider catalogDataSetProvider;
 
     /**
      * Constructs a {@code DatasourceProviderV1}.
@@ -48,5 +52,10 @@ public class DatasourceProviderV1 extends AbstractDatasourceProvider<DataFrame> 
     @Override
     protected DataFrame readJdbcTable(@Nonnull final String url, @Nonnull final String table, @Nonnull final Properties properties, @Nonnull final SQLContext sqlContext) {
         return sqlContext.read().jdbc(url, table, properties);
+    }
+
+    @Override
+    public CatalogDataSetProvider getCatalogDataSetProvider() {
+        return catalogDataSetProvider;
     }
 }

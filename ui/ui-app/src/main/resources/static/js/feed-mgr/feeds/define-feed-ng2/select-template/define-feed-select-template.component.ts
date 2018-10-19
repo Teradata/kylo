@@ -23,6 +23,7 @@ import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {LocalStorageService} from "../../../../common/local-storage/local-storage.service";
 import {FeedLoadingService} from "../services/feed-loading-service";
 import {finalize} from 'rxjs/operators/finalize';
+import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 
 @Component({
@@ -103,7 +104,8 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
     constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService, private localStorageService:LocalStorageService,
                   private $$angularInjector: Injector,
-                  protected feedLoadingService:FeedLoadingService) {
+                  protected feedLoadingService:FeedLoadingService,
+                  private kyloRouterService:KyloRouterService) {
 
         this.model = new Feed();
         /**
@@ -120,6 +122,13 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
     };
+
+        /**
+         * Go back to prev state
+         */
+        goBack(){
+            this.kyloRouterService.back("feeds");
+        }
 
         /**
          * Navigate to the feed import page

@@ -238,7 +238,7 @@ public class DerivedDatasourceFactory {
             }
 
             // Extract properties from node
-            final DatasourceDefinition datasourceDefinition;
+             DatasourceDefinition datasourceDefinition = null;
             final Map<String, String> properties = new HashMap<>();
 
             if (node.get("datasourceId") == null || ((String) node.get("datasourceId")).equalsIgnoreCase("HIVE")) {
@@ -248,10 +248,12 @@ public class DerivedDatasourceFactory {
                 properties.put(HIVE_TABLE_KEY, StringUtils.trim(StringUtils.substringAfterLast(name, ".")));
             } else {
                 final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve((String) node.get("datasourceId")));
-                datasourceDefinition = jdbcDefinition;
-                properties.put(JDBC_CONNECTION_KEY, datasource.getName());
-                properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
-                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
+               if(datasource != null) {
+                   datasourceDefinition = jdbcDefinition;
+                   properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+                   properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
+                   properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
+               }
 
             }
             if (datasourceDefinition != null) {

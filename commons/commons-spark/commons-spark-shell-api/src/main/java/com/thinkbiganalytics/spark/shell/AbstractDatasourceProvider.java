@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 
@@ -46,6 +48,12 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
     @Nonnull
     private final Map<String, Datasource> datasources;
 
+    private final Map<String,String> legacyDatasourceCatalogDataSetId;
+
+
+    public abstract CatalogDataSetProvider getCatalogDataSetProvider();
+
+
     /**
      * Constructs an {@code AbstractDatasourceProvider} with the specified data sources.
      *
@@ -53,6 +61,7 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
      */
     public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
         this.datasources = new HashMap<>(datasources.size());
+        legacyDatasourceCatalogDataSetId = new HashMap<>();
         for (final Datasource datasource : datasources) {
             this.datasources.put(datasource.getId(), datasource);
         }
@@ -89,10 +98,67 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
         }
     }
 
+
+    @Nonnull
+    public final T getTableFromCatalogDataSource(@Nonnull final String table, @Nonnull final DataSource datasource, @Nonnull final SQLContext sqlContext) {
+        if ("jdbc".equalsIgnoreCase(datasource.getConnector().getPluginId())) {
+            final Properties properties = new Properties();
+            String driver = datasource.getTemplate().getOptions().get("driver");
+            String url = datasource.getTemplate().getOptions().get("url");
+            String jars = datasource.getTemplate().getOptions().get("jars");
+            String user = datasource.getTemplate().getOptions().get("user");
+            String password = datasource.getTemplate().getOptions().get("password");
+            properties.put("driver", driver);
+            if (StringUtils.isNotBlank(user)) {
+                properties.put("user",user);
+            }
+            if (StringUtils.isNotBlank(password)) {
+                properties.put("password",password);
+            }
+            return readJdbcTable(url, table, properties, sqlContext);
+        } else {
+            throw new IllegalArgumentException("Datasource does not provide tables: " + datasource);
+        }
+    }
+
+    /**
+     * the key for the legacyDatasourceCatalogDataSetId map
+     * @param table
+     * @param datasourceId
+     * @return
+     */
+    private String datasourceDataSetMapKey(String table, String datasourceId){
+        return table+"-"+datasourceId;
+    }
+
+    /**
+     * Remap a UserDatasource using a given table and datasource id to a Catalog DataSet
+     * @param table
+     * @param datasourceId
+     * @param catalogDataSetId
+     */
+    public final void remapDatasourceToDataSet(final String table,final String datasourceId, String catalogDataSetId){
+        this.legacyDatasourceCatalogDataSetId.put(datasourceDataSetMapKey(table,datasourceId),catalogDataSetId);
+    }
+
     @Nonnull
     @Override
     public final T getTableFromDatasource(@Nonnull final String table, @Nonnull final String datasourceId, @Nonnull final SQLContext sqlContext) {
-        return getTableFromDatasource(table, findById(datasourceId), sqlContext);
+       String key = datasourceDataSetMapKey(table,datasourceId);
+        if(this.legacyDatasourceCatalogDataSetId.containsKey(key)){
+            DataSet dataSet = this.getCatalogDataSetProvider().findById(key);
+            //now get the DataSource from the dataSet
+            if(dataSet != null) {
+               return (T) getCatalogDataSetProvider().readDataSet(dataSet);
+            //  return getTableFromCatalogDataSource(table, dataSet.getDataSource(),sqlContext);
+            }
+            else {
+                throw new IllegalArgumentException("Unable to get Data Set Datasource from LegacyDatasource for  table:" + table+" and datasouce: "+datasourceId);
+            }
+        }
+        else {
+            return getTableFromDatasource(table, findById(datasourceId), sqlContext);
+        }
     }
 
     /**

@@ -164,6 +164,10 @@ public class ImportProperty {
         return additionalProperties;
     }
 
+    public String getAdditioanlPropertyValue(String additionalPropertyKey){
+        return this.additionalProperties != null ? this.additionalProperties.get(additionalPropertyKey) : null;
+    }
+
     public void setAdditionalProperties(Map<String, String> additionalProperties) {
         this.additionalProperties = additionalProperties;
     }

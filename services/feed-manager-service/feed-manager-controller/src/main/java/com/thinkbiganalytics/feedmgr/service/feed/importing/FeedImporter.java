@@ -46,6 +46,7 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ImportFeedException;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.LegacyDatasource;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.ImportException;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
@@ -84,6 +85,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -433,6 +435,8 @@ public class FeedImporter {
         return valid;
     }
 
+
+
     /**
      * Validates that user data sources can be imported with provided properties.
      *
@@ -449,23 +453,40 @@ public class FeedImporter {
                 .map(Object::toString)
                 .collect(Collectors.toSet())
         );
-        final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATASOURCES);
-        final List<Datasource> providedDatasources = Optional.ofNullable(metadata.getUserDatasources()).orElse(Collections.emptyList());
 
+        final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATASOURCES);
         if (componentOption.getProperties().isEmpty()) {
-            componentOption.setProperties(
-                providedDatasources.stream()
-                    .filter(datasource -> !availableDatasources.contains(datasource.getId()))
-                    .map(datasource -> ImportPropertyBuilder.anImportProperty().withComponentName(datasource.getName()).withDisplayName(datasource.getName()).withComponentId(datasource.getId()).build())
-                    .collect(Collectors.toList())
-            );
+            componentOption.setProperties(FeedImportDatasourceUtil.buildDatasourceAssignmentProperties(metadata, availableDatasources));
         }
 
         // Update feed with re-mapped data sources
+        Map<String,String> chartModelReplacements = new HashMap<>();
+        String sourceDataSetIds = metadata.getSourceDataSetIds();
+        Set<String> datasetIds = StringUtils.isNotBlank(sourceDataSetIds) ? new HashSet<String>(Arrays.asList(sourceDataSetIds)) : new HashSet<String>();
         final boolean valid = componentOption.getProperties().stream()
             .allMatch(property -> {
                 if (property.getPropertyValue() != null) {
-                    ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+                    if(property.getAdditioanlPropertyValue("legacyDataSource") != null  && "true".equalsIgnoreCase(property.getAdditioanlPropertyValue("legacyDataSource"))){
+                        //remap
+                        String table = property.getAdditioanlPropertyValue("table");
+                        String datasourceId = property.getAdditioanlPropertyValue("datasourceId");
+                        String datasetId = property.getPropertyValue();
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet = metadataAccess.read(() -> {
+                           return catalogDataSetProvider.find(catalogDataSetProvider.resolveId(datasetId))
+                               .map(catalogDataSet -> catalogModelTransform.dataSetToRestModel().apply(catalogDataSet)).orElse(null);
+                        });
+                       if(dataSet != null){
+                           FeedImportDatasourceUtil.replaceLegacyDataSourceScript(metadata, table, datasourceId, dataSet);
+                           datasetIds.add(dataSet.getId());
+                           chartModelReplacements.put(datasourceId, dataSet.getDataSource().getId());
+                       }
+                       else {
+                           return false;
+                       }
+                    }
+                    else {
+                        ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+                    }
                     return true;
                 } else {
                     return false;
@@ -473,6 +494,9 @@ public class FeedImporter {
             });
 
         if (valid) {
+            //make the final replacements and add in the sources
+            metadata.setSourceDataSetIds(datasetIds.stream().collect(Collectors.joining(",")));
+            FeedImportDatasourceUtil.replaceChartModelReferences(metadata, chartModelReplacements);
             statusMessage.update("Validated data sources.", true);
         } else {
             statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
@@ -525,62 +549,7 @@ public class FeedImporter {
 
     }
 
-    private void replaceMap(Map<String,Object> map,String lookFor, String replace) {
-        for(String key :map.keySet()) {
-            Object value = map.get(key);
-            if (value instanceof String && ((String) value).equalsIgnoreCase(lookFor)) {
-                //REPLACE IT
-                map.put(key,replace);
-                log.info("Replaced {} with {} in Map ", lookFor,replace);
-            } else if (value instanceof List) {
-                List<Object> copiedList = replaceList((List<Object>)value,lookFor,replace);
-                map.put(key,copiedList);
-            } else if (value instanceof Map) {
-                replaceMap((Map<String,Object>) value,lookFor,replace);
-            }
-            else {
-                map.put(key,value);
-            }
-        }
-    }
 
-    private List<Object> replaceList(List<Object> list,String lookFor, String replace) {
-        List<Object> copy = new ArrayList<>();
-
-        for (Object value : list) {
-            if (value instanceof String && ((String) value).equalsIgnoreCase(lookFor)) {
-                //REPLACE IT
-                log.info("Replaced {} with {} in List ", lookFor,replace);
-                copy.add(replace);
-            } else if (value instanceof List) {
-                List<Object> copiedList = replaceList((List<Object>) value, lookFor, replace);
-                copy.add(copiedList);
-
-            } else if (value instanceof Map) {
-                copy.add(value);
-                replaceMap((Map<String, Object>) value, lookFor, replace);
-            } else {
-                copy.add(value);
-            }
-
-        }
-        return copy;
-    }
-
-    private void replaceChartModelReferences(FeedMetadata metadata,Map<String,String>replacements){
-
-        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
-
-            List<Map<String, Object>> nodes = (List<Map<String, Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
-            if (nodes != null) {
-                nodes.stream().forEach((nodeMap) -> {
-                    replacements.entrySet().stream().forEach(entry -> replaceMap(nodeMap, entry.getKey(), entry.getValue()));
-                });
-            }
-
-        }
-
-    }
 
 
     
@@ -629,14 +598,16 @@ public class FeedImporter {
                         if(nodeDataSetMap != null) {
                             String dataSetId = (String) nodeDataSetMap.get("id");
                             List<Map<String,String>> schema = (List<Map<String,String>>) nodeDataSetMap.get("schema");
-                           String schemaString = schema.stream().map(field -> {
-                                Map<String,String> fieldMap = (Map<String,String>)field;
-                                String name = fieldMap.get("name");
-                                String dataType = fieldMap.get("dataType");
-                                return name +" "+dataType;
-                            }).collect(Collectors.joining(","));
-                            //find the property associated with this dataset and add the schema as an additional property
-                            datasetAdditionalProperties.computeIfAbsent(dataSetId,dsId ->new HashMap<String,String>()).put("schema",schemaString);
+                            if(schema != null) {
+                                String schemaString = schema.stream().map(field -> {
+                                    Map<String, String> fieldMap = (Map<String, String>) field;
+                                    String name = fieldMap.get("name");
+                                    String dataType = fieldMap.get("dataType");
+                                    return name + " " + dataType;
+                                }).collect(Collectors.joining(","));
+                                //find the property associated with this dataset and add the schema as an additional property
+                                datasetAdditionalProperties.computeIfAbsent(dataSetId, dsId -> new HashMap<String, String>()).put("schema", schemaString);
+                            }
                         }
                     });
                 }
@@ -709,7 +680,9 @@ public class FeedImporter {
                         metadata.getDataTransformation().setDatasourceIds(new ArrayList<>(datasourceIds));
                     }
                     metadata.getDataTransformation().setDataTransformScript(script);
-                    replaceChartModelReferences(metadata,chartModelReplacements);
+                    FeedImportDatasourceUtil.replaceChartModelReferences(metadata, chartModelReplacements);
+
+
                 }
                 statusMessage.update("Validated data sets.", true);
             } else {

@@ -1,6 +1,6 @@
 <td-layout-nav color="none">
   <div td-toolbar-content>
-    <div>Import a feed</div>
+    <div translate class="cursor-pointer" (click)="goBack()">views.import_feed.Import_a_feed</div>
     <span fxFlex="100"></span>
   </div>
 
@@ -9,7 +9,7 @@
     <mat-card-header>
       <mat-card-title>
         <mat-icon>{{kyloIcons.Feed.importFeed}}</mat-icon>
-        <span translate>views.import_feed.Import_a_feed</span>
+        <span translate>views.import_feed.Import</span>
       </mat-card-title>
       <mat-card-subtitle translate>views.import_feed.Import_a_Feed_Archive</mat-card-subtitle>
     </mat-card-header>
@@ -29,7 +29,8 @@
 
           <div fxLayout="column">
             <div fxFlex="50" class="pad-bottom">
-              <category-autocomplete placeholder="Change the category" hint="Optionally import this feed into a different category" [required]="false" [renderClearButton]="true" #categoryAutoComplete (categorySelected)="onCategorySelected($event)"></category-autocomplete>
+              <category-autocomplete placeholder="Change the category" hint="Optionally import this feed into a different category" [required]="false" [renderClearButton]="true" #categoryAutoComplete
+                                     (categorySelected)="onCategorySelected($event)"></category-autocomplete>
             </div>
             <!-- validation messages -->
             <ng-container [ngTemplateOutlet]="importOptionErrorTemplate"
@@ -103,7 +104,7 @@
             </ng-container>
             <!-- datasource properties (legacy feeds) -->
 
-            <ng-container [ngTemplateOutlet]="importDataSourcesOptionPropertiesInputTemplate"
+            <ng-container [ngTemplateOutlet]="datasetPropertiesTemplate"
                           [ngTemplateOutletContext]="{$implicit:userDatasourcesOption,displayComponentName:true}">
             </ng-container>
 
@@ -142,7 +143,7 @@
         </form>
       </div>
 
-      <div fxFlex="100" fxLayout="column" fxLayoutAlign="center center">
+      <div fxFlex="100" fxLayout="row" fxLayoutAlign="center center">
         <span fxFlex="25"></span>
         <div fxFlex="50" fxLayout="column" fxLayoutAlign="center center">
           <h4 class="mat-title" translate *ngIf="uploadStatusMessages.length >0">views.import_feed.Upload_Progress_Title</h4>
@@ -159,21 +160,34 @@
         <span fxFlex="25"></span>
       </div>
 
-      <div *ngIf="importResult != null" class="pad-top">
-        <div fxLayout="row">
-          <!-- importResultIconColor -->
-          <ng-md-icon [icon]="importResultIcon"></ng-md-icon>
-          <span class="pad-left">{{message}}</span>
-          <span flex></span>
+      <div *ngIf="importResult != null" class="pad-top" fxLayout="column">
+        <div fxLayout="row" fxLayoutAlign="center center">
+          <span fxFlex="25"></span>
+          <div fxFlex="50" fxLayout="column" fxLayoutAlign="center center">
+            <mat-list dense>
+              <mat-list-item>
+                <ng-md-icon [icon]="importResultIcon"></ng-md-icon>
+                <h4 matLine>{{message}}</h4>
+              </mat-list-item>
+            </mat-list>
+          </div>
+          <span fxFlex="25"></span>
         </div>
 
-        <mat-list  class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
-          <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
-            <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">Processor: {{error.processorName}}</h4>
-            <div class="warn">{{error.message}}</div>
-            <mat-divider *ngIf="!$last"></mat-divider>
-          </mat-list-item>
-        </mat-list>
+        <div fxFlex="100" fxLayout="row" fxLayoutAlign="center center">
+          <span fxFlex="25"></span>
+          <div fxFlex="50" fxLayout="column" fxLayoutAlign="center center">
+
+            <mat-list class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
+              <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
+                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">Processor: {{error.processorName}}</h4>
+                <div class="warn">{{error.message}}</div>
+                <mat-divider *ngIf="!$last"></mat-divider>
+              </mat-list-item>
+            </mat-list>
+          </div>
+          <span fxFlex="25"></span>
+        </div>
       </div>
 
 
@@ -200,7 +214,7 @@
     <form [formGroup]="getNestedFormGroup(importOption)">
       <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
 
-      <mat-list class="pull-left" >
+      <mat-list class="pull-left">
         <mat-list-item *ngFor="let prop of importOption.properties">
           <div matLine *ngIf="displayComponentName">{{prop.componentName}}</div>
           <div matLine>
@@ -216,17 +230,14 @@
 </ng-template>
 
 
-
-
-
 <ng-template #importDataSourcesOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
 
-<!-- Data source properties required -->
+  <!-- Data source properties required -->
   <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
     <form [formGroup]="getNestedFormGroup(importOption)">
       <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
 
-      <mat-list class="pull-left" >
+      <mat-list class="pull-left">
         <mat-list-item *ngFor="let prop of importOption.properties">
           <div matLine *ngIf="displayComponentName">Data Source: {{prop.componentName}}</div>
           <div matLine>
@@ -240,7 +251,7 @@
         </mat-list-item>
       </mat-list>
     </form>
-</div>
+  </div>
 </ng-template>
 
 
@@ -258,12 +269,12 @@
               <mat-icon mat-list-icon color="primary" *ngIf="prop.valid">check</mat-icon>
               <div matLine>DataSet: {{prop.displayName}}</div>
               <div matLine class="tc-grey-500">Data Source: {{prop.componentName}}</div>
-            <!--  <div matLine>DataSet Id:{{prop.componentId}}</div> -->
+              <!--  <div matLine>DataSet Id:{{prop.componentId}}</div> -->
               <input type="hidden" [formControlName]="prop.propertyKey" required>
             </mat-list-item>
           </mat-list>
           <div fxLayoutAlign="center center">
-            <button mat-raised-button color="accent" (click)="updateDataSet(prop)">{{"views.import_feed.update-dataset" | translate}}</button>
+            <button mat-raised-button color="accent" (click)="updateDataSet(prop, importOption)">{{"views.import_feed.update-dataset" | translate}}</button>
           </div>
         </div>
       </ng-container>

@@ -49,12 +49,18 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
     private final Map<String, DataSet> dataSets;
 
     /**
+     * Map of any datasets that got remapped to a different dataframe
+     */
+    private final Map<String,T> remappedDataSets;
+
+    /**
      * Constructs an {@code AbstractDatasourceProvider} with the specified data sources.
      *
      * @param dataSets the data sets
      */
     public AbstractCatalogDataSetProvider(@Nonnull final Collection<DataSet> dataSets) {
         this.dataSets = new HashMap<>(dataSets.size());
+        this.remappedDataSets = new HashMap<>();
         for (final DataSet dataSet : dataSets) {
             this.dataSets.put(dataSet.getId(), dataSet);
         }
@@ -93,8 +99,13 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
     }
 
     public T read(String datasetId) {
-        DataSet dataSet = findById(datasetId);
-        return readDataSet(dataSet);
+        if(remappedDataSets.containsKey(datasetId)){
+            return remappedDataSets.get(datasetId);
+        }
+        else {
+            DataSet dataSet = findById(datasetId);
+            return readDataSet(dataSet);
+        }
     }
 
     /**
@@ -154,5 +165,10 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
         if (src.getPaths() != null) {
             dst.setPaths(src.getPaths());
         }
+    }
+
+    @Override
+    public void remap(String dataSetId, T dataFrame) {
+        this.remappedDataSets.put(dataSetId,dataFrame);
     }
 }

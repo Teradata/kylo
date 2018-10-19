@@ -61,7 +61,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Define Feed"
+            displayName: ""
         }
     },
     {
@@ -70,7 +70,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         component:ImportFeedComponent,
         data: {
             breadcrumbRoot: true,
-            displayName: "Import Feed"
+            displayName: ""
         }
     },
     {

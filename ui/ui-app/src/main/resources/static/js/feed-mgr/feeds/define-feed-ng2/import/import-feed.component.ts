@@ -1,8 +1,7 @@
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {Import} from "../../../services/ImportComponentOptionTypes";
+import {ImportComponentType, ImportComponentOption, ImportService} from "../../../services/ImportComponentOptionTypes";
 import FileUpload from "../../../../services/FileUploadService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
-import {ImportComponentType} from "../../../services/ImportService";
 import {HttpClient} from "@angular/common/http";
 import {KyloIcons} from "../../../../kylo-utils/kylo-icons";
 import {FormControl, FormGroup, NgForm, Validators} from "@angular/forms";
@@ -20,6 +19,8 @@ import {FormGroupUtil} from "../../../../services/form-group-util";
 import {Category} from "../../../model/category/category.model";
 import {DatasourcesService} from "../../../services/DatasourcesService";
 import {DatasourcesServiceStatic} from "../../../visual-query/wrangler";
+import {KyloRouterService} from "../../../../services/kylo-router.service";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 @Component({
     selector: "import-feed",
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/import/import-feed.component.html"
@@ -89,43 +90,43 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
      * All the importOptions that will be uploaded
      * @type {{}}
      */
-    importComponentOptions:{[key:string] :Import.ImportComponentOption} = {};
+    importComponentOptions:{[key:string] :ImportComponentOption} = {};
     /**
      * Feed ImportOptions
      */
-    feedDataImportOption: Import.ImportComponentOption;
+    feedDataImportOption: ImportComponentOption;
     /**
      * Registered Template import options
      */
-    templateDataImportOption: Import.ImportComponentOption;
+    templateDataImportOption: ImportComponentOption;
     /**
      * NiFi template options
      */
-    nifiTemplateImportOption: Import.ImportComponentOption;
+    nifiTemplateImportOption: ImportComponentOption;
     /**
      * Reusable template options
      */
-    reusableTemplateImportOption: Import.ImportComponentOption;
+    reusableTemplateImportOption: ImportComponentOption;
     /**
      * User data sources options
      */
-    userDatasourcesOption: Import.ImportComponentOption;
+    userDatasourcesOption: ImportComponentOption;
 
     /**
      * Feed ImportOptions
      */
-    userDataSetsOption: Import.ImportComponentOption;
+    userDataSetsOption: ImportComponentOption;
 
 
     /**
      * Any required feed fields
      */
-    feedUserFieldsImportOption: Import.ImportComponentOption;
+    feedUserFieldsImportOption: ImportComponentOption;
 
     /**
      * Any Required Category fields
      */
-    categoryUserFieldsImportOption: Import.ImportComponentOption;
+    categoryUserFieldsImportOption: ImportComponentOption;
 
     /**
      * List of available data sources.
@@ -184,9 +185,10 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
 
 
     constructor(private http:HttpClient,private snackBar:MatSnackBar,private _dialogService:TdDialogService, private catalogService:CatalogService,
-                @Inject("ImportService") private importService:Import.ImportService,
+                @Inject("ImportService") private importService:ImportService,
                 @Inject("FileUpload")private fileUploadService:FileUpload,
-                @Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
+                @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
+                private kyloRouterService:KyloRouterService) {
 
         this.formGroup = new FormGroup({});
         this.feedOverwriteFormControl = new FormControl(false);
@@ -259,6 +261,10 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
 
     }
 
+    goBack(){
+        this.kyloRouterService.back("feeds");
+    }
+
     /**
      * callback after a user selects a file from the local file system
      */
@@ -278,6 +284,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             this.resetImportOptions();
             this.errorMap = {};
             this.uploadStatusMessages = []
+            this.message = '';
         }
 
     }
@@ -304,7 +311,6 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         }
     }
 
-
     /**
      * Upload the file and import the feed
      */
@@ -326,7 +332,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         Object.keys(this.importComponentOptions).forEach(key => {
            let option = this.importComponentOptions[key];
            //skip over datasets since those are added/updated with the dialog
-           if(option && option.importComponent != Import.ImportComponentType.USER_DATA_SETS  && option.properties){
+           if(option && option.importComponent != ImportComponentType.USER_DATA_SETS && option.importComponent != ImportComponentType.USER_DATASOURCES  && option.properties){
                let nestedForm = this.formGroup.get(this.nestedFormGroupControlName(option));
                if(nestedForm) {
                    option.properties.forEach(prop => {
@@ -395,11 +401,15 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                     this.message = "Success "+feedName;
 
                     this.resetImportOptions();
+                    this.feedFile = null;
+                    this.fileName = null;
 
                 }
                 else {
                     if (responseData.success) {
                         this.resetImportOptions();
+                        this.feedFile = null;
+                        this.fileName = null;
 
                         this.message = "Successfully imported and registered the feed " + feedName + " but some errors were found. Please review these errors";
                         this.importResultIcon = "warning";
@@ -484,26 +494,26 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         this.additionalInputNeeded = false;
         this.disableFeedUponImport = false;
         this.disableUponImportFormControl.setValue(false);
-        var arr = [this.feedDataImportOption, this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.categoryUserFieldsImportOption, this.feedUserFieldsImportOption, this.userDataSetsOption];
+        var arr = [this.feedDataImportOption, this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.categoryUserFieldsImportOption, this.userDatasourcesOption, this.feedUserFieldsImportOption, this.userDataSetsOption];
         this.updateImportOptions(arr)
 
     }
 
     /**
      * get the name of the nested form group for the supplied import option
-     * @param {Import.ImportComponentOption} option
+     * @param {ImportComponentOption} option
      * @return {string}
      */
-    private nestedFormGroupControlName(option: Import.ImportComponentOption){
+    private nestedFormGroupControlName(option: ImportComponentOption){
         return "form_"+option.importComponent;
     }
 
     /**
      * get the actual form group for the import option
-     * @param {Import.ImportComponentOption} option
+     * @param {ImportComponentOption} option
      * @return {AbstractControl | null}
      */
-    public getNestedFormGroup(option: Import.ImportComponentOption) {
+    public getNestedFormGroup(option: ImportComponentOption) {
         return this.formGroup.get(this.nestedFormGroupControlName(option));
     }
 
@@ -511,7 +521,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
      *
      * @param importOptionsArr array of importOptions
      */
-    private updateImportOptions(importOptionsArr: Import.ImportComponentOption[]): void {
+    private updateImportOptions(importOptionsArr: ImportComponentOption[]): void {
         _.each(importOptionsArr, (option: any) => {
             if (option.userAcknowledged) {
                 option.overwriteSelectValue = "" + option.overwrite;
@@ -545,15 +555,14 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 this.formGroup.removeControl(formName);
             }
 
-            if(option.importComponent === ImportComponentType.USER_DATA_SETS){
+            if(option.importComponent === ImportComponentType.USER_DATA_SETS || option.importComponent === ImportComponentType.USER_DATASOURCES){
                 //user datasets are different than the rest
                 let nestedForm: FormGroup = new FormGroup({})
                 this.formGroup.addControl(formName, nestedForm);
                 if (option.properties && option.properties.length > 0) {
-                    option.properties.forEach((prop:Import.ImportProperty) => {
+                    option.properties.forEach((prop:ImportProperty) => {
                         //control to ensure validity of the dataset
                         //add in the hidden property for the datasets
-
                         nestedForm.addControl(prop.propertyKey, new FormControl("", [Validators.required]));
                     });
                 }
@@ -565,7 +574,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
 
                     let nestedForm: FormGroup = new FormGroup({})
                     this.formGroup.addControl(formName, nestedForm);
-                    option.properties.forEach((prop:Import.ImportProperty) => {
+                    option.properties.forEach((prop:ImportProperty) => {
                         console.log("adding form control ",prop.propertyKey,prop)
                         nestedForm.addControl(prop.propertyKey, new FormControl(prop.propertyValue, [Validators.required]));
                     });
@@ -636,7 +645,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         this.importComponentOptions = _.indexBy(arr, 'importComponent')
     }
 
-    public updateDataSet(importProperty:Import.ImportProperty){
+    public updateDataSet(importProperty:ImportProperty, option:ImportComponentOption){
 
             let data = new DatasetPreviewStepperDialogData(false,"Update");
             let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
@@ -671,7 +680,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                         importProperty.componentName = ds.dataSource.title;
                         importProperty.propertyValue = ds.id;
                         //update form validity
-                        let property = this.formGroup.get(this.nestedFormGroupControlName(this.userDataSetsOption)).get(importProperty.propertyKey);
+                        let property = this.formGroup.get(this.nestedFormGroupControlName(option)).get(importProperty.propertyKey);
                         if (property) {
                             property.setValue("true");
                         }

@@ -57,7 +57,7 @@ export default class RouterBreadcrumbs implements ng.IComponentController {
     }
 
     getDisplayName(state: any) {
-        return state.data.displayName || state.name;
+        return state.data.displayName ; //|| state.name;
     }
 
     isBreadcrumbRoot(state: any){
