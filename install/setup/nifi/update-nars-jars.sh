@@ -1,5 +1,21 @@
 #!/bin/bash
 
+while getopts "f" opt; do
+  case $opt in
+    f) OPT_F=1
+       ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+    *)
+      echo "unrecognized option -$OPTARG"
+      exit 1;
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
 NIFI_HOME=$1
 KYLO_SETUP_FOLDER=$2
 NIFI_USER=$3
@@ -29,6 +45,7 @@ cp $KYLO_SETUP_FOLDER/nifi/kylo-spark-*.jar $NIFI_HOME/data/lib/app
 
 chown -R $NIFI_USER:$NIFI_GROUP $NIFI_HOME/data/lib
 
-${MY_DIR}/create-symbolic-links.sh $NIFI_HOME $NIFI_USER $NIFI_GROUP
+[[ -n "$OPT_F" ]] && OPTS="-f"
+${MY_DIR}/create-symbolic-links.sh $OPTS $NIFI_HOME $NIFI_USER $NIFI_GROUP
 
 echo "Nar files and Jar files have been updated"
