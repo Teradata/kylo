@@ -52,8 +52,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 import java.util.Arrays;
@@ -355,16 +353,13 @@ public class DataSourceController extends AbstractCatalogController {
 
         try {
             log.debug("Listing files at path: {}", path);
-            files = fileManager.listFiles(new URI(path), dataSource);
+            files = fileManager.listFiles(path, dataSource);
         } catch (final AccessDeniedException e) {
             log.debug("Access denied accessing path: {}: {}", path, e, e);
             throw new ForbiddenException(getMessage("catalog.datasource.listFiles.forbidden", path));
         } catch (final CatalogException e) {
             log.debug("Catalog exception when accessing path: {}: {}", path, e, e);
             throw new BadRequestException(getMessage(e));
-        } catch (final URISyntaxException e) {
-            log.debug("Path not a valid URI: {}", path, e);
-            throw new BadRequestException(getMessage("catalog.datasource.listFiles.invalidPath", path));
         } catch (final Exception e) {
             if (log.isErrorEnabled()) {
                 log.error("Failed to list data source files at path " + path + ": " + e, e);

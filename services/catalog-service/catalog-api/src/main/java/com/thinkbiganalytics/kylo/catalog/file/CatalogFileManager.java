@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.FileAlreadyExistsException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
@@ -85,14 +84,14 @@ public interface CatalogFileManager {
     /**
      * Lists the files at the specified URI for the specified data set.
      *
-     * @param uri        directory for listing files
+     * @param path       directory for listing files
      * @param dataSource data source
      * @return files and directories at the URI
      * @throws AccessDeniedException if the URI is not allowed for the data set
      * @throws IOException           if an I/O error occurs when listing files
      */
     @Nonnull
-    List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSource dataSource) throws IOException;
+    List<DataSetFile> listFiles(@Nonnull final String path, @Nonnull final DataSource dataSource) throws IOException;
 
     /**
      * Lists files that have been uploaded for the specified dataset.

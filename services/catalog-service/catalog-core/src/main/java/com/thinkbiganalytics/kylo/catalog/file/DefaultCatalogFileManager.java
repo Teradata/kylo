@@ -46,7 +46,6 @@ import org.springframework.stereotype.Component;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -209,8 +208,8 @@ public class DefaultCatalogFileManager implements CatalogFileManager {
 
     @Nonnull
     @Override
-    public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSource dataSource) throws IOException {
-        final Path path = new Path(uri);
+    public List<DataSetFile> listFiles(@Nonnull final String pathString, @Nonnull final DataSource dataSource) throws IOException {
+        final Path path = new Path(pathString);
         if (pathValidator.isPathAllowed(path, dataSource)) {
             if (fileSystemProviders != null) {
                 for (final FileSystemProvider fileSystemProvider : fileSystemProviders) {
@@ -222,8 +221,8 @@ public class DefaultCatalogFileManager implements CatalogFileManager {
             }
             return isolatedFunction(dataSource, path, fs -> listFiles(fs, path));
         } else {
-            log.info("Datasource {} does not allow access to path: {}", dataSource.getId(), uri);
-            throw new AccessDeniedException("Access to path [{}] is restricted: " + uri);
+            log.info("Datasource {} does not allow access to path: {}", dataSource.getId(), path);
+            throw new AccessDeniedException("Access to path [{}] is restricted: " + path);
         }
     }
 
@@ -311,7 +310,7 @@ public class DefaultCatalogFileManager implements CatalogFileManager {
                 file.setLength(status.getLen());
                 file.setModificationTime(status.getModificationTime());
                 file.setName(status.getPath().getName());
-                file.setPath(status.getPath().toUri().toString());
+                file.setPath(status.getPath().toString());
                 return file;
             })
             .collect(Collectors.toList());
