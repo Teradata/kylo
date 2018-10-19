@@ -61,6 +61,8 @@ export class DataSourcesComponent implements OnInit {
     @Input()
     public displayInCard?: boolean = true;
 
+    public displayHeight?: string = "42vh";
+
     /**
      * Indicates that edit actions are allowed
      */
@@ -101,6 +103,7 @@ export class DataSourcesComponent implements OnInit {
 
     public ngOnInit() {
         this.filter();
+        this.displayHeight = (this.displayInCard ? "70vh" : "42vh");
     }
 
     search(term: string) {

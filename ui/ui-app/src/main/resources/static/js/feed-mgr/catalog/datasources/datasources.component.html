@@ -33,7 +33,7 @@
       <td-search-input placeholder="Search sources" [showUnderline]="false" [debounce]="150" (searchDebounce)="search($event)" fxFlex="100%"></td-search-input>
     </mat-list-item>
     <mat-divider></mat-divider>
-    <td-virtual-scroll-container #virtualScroll style="height:42vh" [data]="filteredDatasources">
+    <td-virtual-scroll-container #virtualScroll [style.height]="displayHeight" [data]="filteredDatasources">
       <ng-template let-datasource="row" let-last="last" tdVirtualScrollRow>
         <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">
           <ng-md-icon mat-list-icon

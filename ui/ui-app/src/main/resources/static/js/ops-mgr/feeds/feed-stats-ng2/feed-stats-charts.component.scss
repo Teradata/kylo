@@ -18,10 +18,12 @@ mat-card {
   font-size:50px;
   height:50px;
   width:50px;
+  color:rgb(52, 131, 186) !important;
 }
 
 .kpi-stat{
-  font: 500 24px/32px;
+  font-weight: bold;
+  font-size: 36px;
   margin: 0 0 16px;
 }
 
