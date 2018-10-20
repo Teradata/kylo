@@ -3,10 +3,20 @@
     <form [formGroup]="form">
       <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"  (processorsChange)="onProcessorsChange($event)"></feed-nifi-properties>
     </form>
+
+    <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+      <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+      <h2>No settings are required</h2>
+    </div>
+
   </feed-step-readonly-content>
   <feed-step-edit-content>
     <form [formGroup]="form">
       <feed-nifi-properties #feedNifiPropertiesComponent [formGroup]="form" [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="!feed.readonly" (processorsChange)="onProcessorsChange($event)" ></feed-nifi-properties>
     </form>
+    <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+      <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+      <h2>No settings are required</h2>
+    </div>
   </feed-step-edit-content>
 </define-feed-step-card>

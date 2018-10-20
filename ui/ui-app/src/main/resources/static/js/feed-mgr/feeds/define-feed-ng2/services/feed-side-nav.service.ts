@@ -192,7 +192,7 @@ export class FeedSideNavService {
         let stepLinks = this.allLinks.filter(link => link.isStepLink());
         stepLinks.forEach(link => this.removeLink(link));
 
-         this.stepLinks = feed.steps.map((step:Step) => {
+         this.stepLinks = feed.steps.filter(step=> !step.hidden).map((step:Step) => {
            let link = FeedLink.newStepLink(step)
             this.allLinks.push(link);
            return link;

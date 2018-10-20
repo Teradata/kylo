@@ -29,6 +29,7 @@ import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/prev
 import {PreviewFileDataSet} from "../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/preview-hive-data-set";
 import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/preview-jdbc-data-set";
+import {FeedStepConstants} from "./feed-step-constants";
 
 
 export interface TableOptions {
@@ -433,6 +434,17 @@ export class Feed  implements KyloObject{
         }
     }
 
+    getCountOfTemplateInputProcessors() :number{
+        return this.registeredTemplate && this.registeredTemplate.inputProcessors ? this.registeredTemplate.inputProcessors.length : 0;
+    }
+
+    renderSourceStep()
+    {
+        let sourceStep = this.getStepBySystemName(FeedStepConstants.STEP_FEED_SOURCE);
+        let render = !this.isDataTransformation() || (this.isDataTransformation() && this.getCountOfTemplateInputProcessors() >1 );
+        return render;
+    }
+
     getFullName(){
         return this.category.systemName+"."+this.systemFeedName;
     }
@@ -542,9 +554,11 @@ export class Feed  implements KyloObject{
         let changes = new StepStateChangeEvent(this);
 
         this.steps.forEach((step: Step) => {
-            valid = valid && step.validate(<Feed>this);
-            if (updateStepState) {
-                step.updateStepState().forEach(step => disabledSteps.push(step));
+            if(!step.hidden) {
+                valid = valid && step.validate(<Feed>this);
+                if (updateStepState) {
+                    step.updateStepState().forEach(step => disabledSteps.push(step));
+                }
             }
         });
         let enabledSteps = this.steps.filter(step => disabledSteps.indexOf(step) == -1);
@@ -598,7 +612,7 @@ export class Feed  implements KyloObject{
      */
     isComplete() {
         let complete = true;
-        this.steps.forEach(step => complete = complete && step.complete);
+        this.steps.filter(step => !step.hidden).forEach(step => complete = complete && step.complete);
         return complete;
     }
 

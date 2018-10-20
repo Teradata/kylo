@@ -41,6 +41,7 @@ import {SaveFeedResponse} from "../model/save-feed-response.model";
 import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
 import {FeedAccessControlService} from "../services/feed-access-control.service";
 import {FeedStepBuilderUtil} from "./feed-step-builder-util";
+import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 
 
 export class FeedEditStateChangeEvent{
@@ -469,14 +470,15 @@ export class DefineFeedService {
      */
     initializeFeedSteps(feed:Feed){
         let templateType = feed.getTemplateType()
-        feed.steps = this.getStepsForTemplate(templateType)
+        //feed.steps = this.getStepsForTemplate(templateType)
+        feed.steps = this.getStepsForFeed(feed)
     }
 
     /**
      * Initialize the Feed Steps based upon the feed template type
      * @param {Feed} feed
      */
-    getStepsForTemplate(templateType:string){
+    getStepsForTemplate(templateType:string, registeredTemplate?:any){
 
         let stepUtil = new FeedStepBuilderUtil(this._translateService);
         if(templateType){
@@ -491,6 +493,36 @@ export class DefineFeedService {
         else {
             return  stepUtil.simpleFeedSteps();
         }
+    }
+
+
+    /**
+     * Initialize the Feed Steps based upon the feed template type
+     * @param {Feed} feed
+     */
+    getStepsForFeed(feed:Feed){
+        let steps:Step[] = [];
+        let templateType = feed.getTemplateType()
+        let stepUtil = new FeedStepBuilderUtil(this._translateService);
+        if(templateType){
+            templateType == FeedTemplateType.SIMPLE_FEED;
+        }
+        if(FeedTemplateType.DEFINE_TABLE == templateType){
+            steps = stepUtil.defineTableFeedSteps();
+        }
+        else if(FeedTemplateType.DATA_TRANSFORMATION == templateType){
+            steps = stepUtil.dataTransformationSteps()
+            steps.filter(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE).forEach(step => {
+                step.hidden = !feed.renderSourceStep();
+                if(step.hidden){
+                    console.log("HIDING Source step for feed ",feed)
+                }
+            });
+        }
+        else {
+             steps =  stepUtil.simpleFeedSteps();
+        }
+        return steps;
     }
 
 
@@ -717,6 +749,7 @@ export class DefineFeedService {
     }
 
 
+
     private _loadFeedVersion(url:string, loadMode:LoadMode,load:boolean = true ){
         let loadFeedSubject = new ReplaySubject<Feed>(1);
         let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
@@ -744,7 +777,8 @@ export class DefineFeedService {
 
 
             //get the steps back from the model
-            let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
+            //let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
+            let defaultSteps = this.getStepsForFeed(feedModel);
             //merge in the saved steps
             let savedStepJSON = feedModel.uiState[Feed.UI_STATE_STEPS_KEY] || "[]";
             let steps :Step[] = JSON.parse(savedStepJSON);

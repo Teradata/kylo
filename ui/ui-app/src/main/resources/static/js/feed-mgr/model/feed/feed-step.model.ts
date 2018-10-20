@@ -39,6 +39,11 @@ export class Step {
     fullscreen:boolean;
     validator: FeedStepValidator
 
+    /**
+     * should we completely remove it from view
+     */
+    hidden:boolean = false;
+
     feedStepRequiredCheck: FeedStepRequiredCheck;
     /**
      * any additional properties to add and persist for this step
@@ -81,6 +86,7 @@ export class Step {
     hasProperty(key:string){
         return this.properties && this.properties[key] !== undefined;
     }
+
 
     getPropertyAsBoolean(key:string):boolean{
       let p = this.getProperty(key);
@@ -128,7 +134,7 @@ export class Step {
     findFirstIncompleteDependentStep(){
         let dependentSteps = this.findDependsUponSteps();
         if (dependentSteps) {
-         let step = dependentSteps.sort((x:Step,y:Step) =>  x.number > y.number ? 1 : 0).find(step => step != undefined &&  step.complete == false);
+         let step = dependentSteps.sort((x:Step,y:Step) =>  x.number > y.number ? 1 : 0).filter(step => !step.hidden).find(step => step != undefined &&  step.complete == false);
          return step != undefined ? step : null
         }
         return null;
@@ -139,17 +145,6 @@ export class Step {
 
     setComplete(complete: boolean) {
         this.complete = complete;
-    }
-
-    isPreviousStepComplete() {
-        let index = this.number - 1;
-        if (index > 0) {
-            let prevStep = this.allSteps[index - 1];
-            return prevStep.complete;
-        }
-        else {
-            return true;
-        }
     }
 
     /**

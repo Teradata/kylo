@@ -328,6 +328,9 @@ public class FeedModelTransform {
         if(source.getSourceDataSets() != null) {
             result.setSourceDataSets(source.getSourceDataSets());
         }
+        if(source.getSampleDataSet() != null) {
+            result.setSampleDataSet(source.getSampleDataSet());
+        }
         result.setUiState(source.getUiState());
         result.setActive(source.isActive());
         return result;

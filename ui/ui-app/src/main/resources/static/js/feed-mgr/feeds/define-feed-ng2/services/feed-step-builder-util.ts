@@ -71,7 +71,7 @@ export class FeedStepBuilderUtil {
 
          return this.add(this.propertiesStep())
              .add(this.permissionStep())
-            // .add(this.sourceStep())
+             .add(this.sourceStep())
              .add(this.wranglerStep())
              .add(this.targetStep())
              .add(this.feedDetailsStep())

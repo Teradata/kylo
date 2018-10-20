@@ -47,6 +47,7 @@ export class StepBuilder {
     feedStepRequiredCheck:FeedStepRequiredCheck;
     feedStepBuilder?:FeedStepBuilder
     fullscreen:boolean;
+    hidden:boolean;
 
     constructor(){
     }
@@ -124,6 +125,10 @@ export class StepBuilder {
         this.fullscreen = fullscreen;
         return this;
     }
+    setHidden(hidden:boolean){
+        this.hidden = hidden;
+        return this;
+    }
 
 
     build() {
@@ -141,7 +146,8 @@ export class StepBuilder {
             dependsUponSteps: this.dependsUponSteps,
             required: this.required,
             icon:this.icon,
-            fullscreen:this.fullscreen
+            fullscreen:this.fullscreen,
+            hidden:this.hidden
         });
         step.allSteps = this.allSteps;
         step.disabled = this.disabled;

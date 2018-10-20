@@ -61,6 +61,8 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     public displayEditActions:boolean = true;
 
+    public noPropertiesExist:boolean = false;
+
     constructor(  defineFeedService:DefineFeedService,  stateService:StateService, private http:HttpClient,
                   private dynamicFormService:DynamicFormService, feedLoadingService:FeedLoadingService,
                   dialogService: TdDialogService, feedSideNavService:FeedSideNavService) {
@@ -85,6 +87,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     onProcessorsChange(event:NiFiPropertiesProcessorsChangeEvent){
         let prevRequiredValue = this.step.required;
+        this.noPropertiesExist = event.noPropertiesExist;
         if(event.noPropertiesExist){
          this.displayEditActions = false;
          // mark this step as being optional
