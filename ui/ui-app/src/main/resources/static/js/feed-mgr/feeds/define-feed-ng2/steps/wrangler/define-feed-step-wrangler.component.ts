@@ -60,6 +60,7 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         //get the old feed
         //
         super.cancelFeedEdit();
+        this.defineFeedService.sideNavStateChanged({opened:true})
         this.goToSetupGuideSummary();
     }
 

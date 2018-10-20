@@ -60,6 +60,10 @@ export enum TableSchemaUpdateMode {
     UPDATE_SOURCE=1, UPDATE_TARGET=2, UPDATE_SOURCE_AND_TARGET=3
 }
 
+export interface DefineFeedContainerSideNavEvent {
+    opened:boolean;
+}
+
 @Injectable()
 export class DefineFeedService {
 
@@ -101,6 +105,8 @@ export class DefineFeedService {
 
     private feedLoadedSubject: Subject<Feed>;
 
+    private defineFeedContainerSideNavState: Subject<DefineFeedContainerSideNavEvent>;
+
     private uiComponentsService :UiComponentsService;
 
 
@@ -125,6 +131,8 @@ export class DefineFeedService {
         this.savedFeedSubject = new Subject<SaveFeedResponse>();
 
         this.feedLoadedSubject = new Subject<Feed>();
+
+        this.defineFeedContainerSideNavState = new Subject<DefineFeedContainerSideNavEvent>();
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
@@ -390,6 +398,10 @@ export class DefineFeedService {
         return this.currentStep;
     }
 
+    subscribeToSideNavChanges(observer:PartialObserver<DefineFeedContainerSideNavEvent>) :ISubscription {
+        return this.defineFeedContainerSideNavState.subscribe(observer);
+    }
+
     subscribeToStepChanges(observer:PartialObserver<Step>) :ISubscription{
       return  this.currentStepSubject.subscribe(observer);
     }
@@ -408,6 +420,10 @@ export class DefineFeedService {
 
     subscribeToFeedLoadedEvent(observer:PartialObserver<Feed>){
         return this.feedLoadedSubject.subscribe(observer);
+    }
+
+    sideNavStateChanged(event:DefineFeedContainerSideNavEvent){
+        this.defineFeedContainerSideNavState.next(event);
     }
 
     onStepStateChangeEvent(stepChanges:StepStateChangeEvent){

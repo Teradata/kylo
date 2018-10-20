@@ -4,7 +4,7 @@
     <feed-definition-side-nav td-sidenav-content [feed]="feed"></feed-definition-side-nav>
     <mat-toolbar >
       <div fxLayout="row" fxLayoutAlign="start center">
-        <span (click)="gotoFeedSummary()" [class.cursor-pointer]="!sideNavOpened" >{{feed.getFeedNameAndVersion()}}</span>
+        <span (click)="gotoSetupGuide()" [class.cursor-pointer]="!sideNavOpened" >{{feed.getFeedNameAndVersion()}}</span>
         <span class="hint pad-left" *ngIf="feed != undefined">Updated: {{feed.updateDate | date:'MM/dd/yyy HH:mm:ss'}}</span>
        </div>
       <span fxFlex="100"></span>
