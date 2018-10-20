@@ -120,14 +120,11 @@ export class NewFeedDialogComponent implements OnInit, OnDestroy{
     populateExistingFeedNames(): Observable<any> {
         if (!this.populatingExistingFeedNames) {
             this.populatingExistingFeedNames = true;
-            return fromPromise(this.feedService.getFeedNames())
+            return fromPromise(this.feedService.getFeedNamesFromJcr())
                 .pipe(map((response: any) => {
                     if (response.data != null) {
-                        _.each(response.data, (value: string, key: any, list: any) => {
-                            //console.log("Found existing category.feed:" + value);
-                            var categoryName = value.substr(0, value.indexOf('.'));
-                            var feedName = value.substr(value.indexOf('.') + 1);
-                            this.existingFeedNames[value] = feedName;
+                        _.each(response.data, (value: any, key: any, list: any) => {
+                            this.existingFeedNames[this.existingFeedNameKey(value.systemCategoryName, value.systemFeedName)] = value.systemFeedName;
                         });
                     }
                     this.populatingExistingFeedNames = false;

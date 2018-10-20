@@ -717,6 +717,23 @@ export class FeedService {
                 promise.then(successFn, errorFn);
                 return promise;
             }
+
+            /**
+             * Call server to return a list of Feed Names (from JCR)
+             * @returns {angular.IHttpPromise<any>}
+             */
+            getFeedNamesFromJcr() {
+                let successFn = (response: any) => {
+                    return response.data;
+                };
+                let errorFn = (err: any) => {
+                    console.log("Error getting list of feed names from JCR " + err);
+                };
+                let promise = this.$http.get(this.RestUrlService.GET_FEED_NAMES_URL);
+                promise.then(successFn, errorFn);
+                return promise;
+            }
+
             /**
              * Call the server to get a list of all the available Preconditions that can be used when saving/scheduling the feed
              * @returns {HttpPromise}
