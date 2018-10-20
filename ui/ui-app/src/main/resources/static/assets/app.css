@@ -1358,6 +1358,11 @@ mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container
   margin: 0px;
 }
 
+mat-icon.kylo-title-icon {
+  vertical-align: bottom;
+}
+
+
 .mat-card-14{
   font-size: 14px;
 }

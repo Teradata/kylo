@@ -32,7 +32,7 @@
   </div>
   <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
     <div fxLayout="column"  *ngIf="favorites.length >0">
-      <h3 class="push-sm pad-none pad-top-sm pad-left-sm" mat-subheader>Favorites</h3>
+      <h3 mat-subheader class="push-sm pad-none pad-top-sm pad-left-sm tc-grey-800">Favorites</h3>
       <ng-container [ngTemplateOutlet]="templateCards"
                     [ngTemplateOutletContext]="{$implicit:favorites, isFavorite:true}">
       </ng-container>
@@ -40,7 +40,7 @@
 
 
     <div fxLayout="column">
-      <h3 mat-subheader class="push-sm pad-none pad-left-sm">All Templates</h3>
+      <h3 mat-subheader class="push-sm pad-none pad-top-sm pad-left-sm tc-grey-800">All Templates</h3>
       <ng-container [ngTemplateOutlet]="templateCards"
                     [ngTemplateOutletContext]="{$implicit:allTemplates, isFavorite:false}">
       </ng-container>
@@ -51,17 +51,17 @@
 </td-layout-nav>
 
 <ng-template #templateCards let-templates let-isFavorite="isFavorite">
-  <div fxLayout="row wrap" tdMediaToggle="gt-xs" [mediaClasses]="['push']">
+  <div fxLayout="row wrap" fxLayoutAlign="start start" tdMediaToggle="gt-xs" [mediaClasses]="['push-left-xxl','push-right-xxl']">
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
-      <div [id]="template.templateName" flex-gt-lg="25" flex-gt-md="33" flex-md="33" flex-sm="50" flex-xs="50">
+      <div [id]="template.templateName">
 
-        <mat-card fxFlex fxLayout="row" class="pad-none cursor-pointer" (click)="selectTemplate(template)" style="width:400px;height:155px;color:#444">
+        <mat-card fxFlex fxLayout="row" class="pad-none cursor-pointer" (click)="selectTemplate(template)" style="width:400px;height:170px">
 
           <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
             <mat-icon style="color:white;font-size:45px" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
           </div>
           <div fxLayout="column" fxFlex>
-            <mat-card-content fxFlex style="max-height:97px">
+            <mat-card-content fxFlex style="max-height:113px">
 
                 <div class="md-title pad-bottom-sm">{{template.templateName}}</div>
                 <div [matTooltip]="template.description"
@@ -71,7 +71,7 @@
 
             </mat-card-content>
             <mat-divider inset></mat-divider>
-            <mat-card-actions fxLayoutAlign="end" style="padding:0px 8px">
+            <mat-card-actions fxLayoutAlign="end" class="tc-grey-700" style="padding:0px 8px">
               <button mat-icon-button (click)="removeFavorite($event,template)" *ngIf="isFavorite">
                 <mat-icon>favorite</mat-icon>
               </button>
@@ -84,9 +84,11 @@
             </mat-card-actions>
           </div>
 
+
         </mat-card>
       </div>
     </ng-template>
+    <div fxFlex=""></div>
   </div>
 </ng-template>
 

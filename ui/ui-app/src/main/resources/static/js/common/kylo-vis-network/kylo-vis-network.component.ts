@@ -50,6 +50,7 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
         // create a network
         this.network.setSize(this.widthPx, this.heightPx);
         this.network.redraw();
+        this.network.fit();
         this.network.on('click', (param:any) => {
             this.onSelect.emit(param);
         });

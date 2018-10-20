@@ -94,7 +94,7 @@ export class FeedJobActivityComponent implements OnInit {
 
 
     onDateSelectionChange($event:MatButtonToggleChange){
-        console.log("changed date ",$event)
+        //console.log("changed date ",$event)
         this.changeDate($event.value)
     }
     changeDate(date: string) {

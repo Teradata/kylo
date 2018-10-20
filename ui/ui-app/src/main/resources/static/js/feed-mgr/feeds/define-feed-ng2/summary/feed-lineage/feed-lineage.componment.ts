@@ -69,7 +69,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         this.StateService = $$angularInjector.get("StateService");
 
         this.options = {
-            height: '100%',
+            height: '80%',
             width: '100%',
             "edges": {
                 "arrowStrikethrough": false,
@@ -88,6 +88,8 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                     sortMethod: 'directed'
                 }
             },
+            autoResize: true,
+            physics:false,
             nodes: {
                 shape: 'box',
                 font: {
@@ -203,7 +205,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     networkView(value: string) {
         this.graphMode = value;
         this.redraw();
-        this.options = {physics: {enabled: true, stabilization: true}};
+        //this.options = {physics: {enabled: false, stabilization: true}};
     }
 
     redraw() {

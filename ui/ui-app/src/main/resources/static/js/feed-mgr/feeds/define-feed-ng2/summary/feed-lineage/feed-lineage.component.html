@@ -1,20 +1,20 @@
 <td-layout-nav color="none">
   <div td-toolbar-content>
-    <div *ngIf="feed != undefined">Feed Lineage - {{feed.feedName}} </div>
+    <div *ngIf="feed != undefined">{{feed.feedName}} </div>
     <span fxFlex="100"></span>
   </div>
       <mat-card class="feed-card" >
        <div fxLayout="row" >
           <div fxLayout="column" class="mat-card-header" fxLayoutAlign="start start" fxFlex="50">
           <mat-card-title>
-            <mat-icon>{{kyloIcons.Links.lineage}}</mat-icon>
+            <mat-icon class="kylo-title-icon">{{kyloIcons.Links.lineage}}</mat-icon>
             <span class="feed-card-header" translate>Lineage.Name</span>
           </mat-card-title>
           <mat-card-subtitle translate>Lineage.Description</mat-card-subtitle>
           </div>
 
           <div fxLayout="row" fxFlex="" fxLayoutAlign="end center" class="pad-right">
-            <mat-button-toggle-group aria-label="Graph mode"
+            <mat-button-toggle-group class="mat-button" aria-label="Graph mode"
                                      #group="matButtonToggleGroup"
                                      (change)="networkView(group.value)"
                                      [value]="graphMode">

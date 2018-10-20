@@ -3,7 +3,7 @@
     <mat-card-header>
       <mat-card-title fxLayout="row" fxLayoutAlign="start center">
         <mat-icon>drag_handle</mat-icon>
-        <span>{{selectedNode.name}}</span>
+        <span class="push-left-sm" style="font-size:14px">{{selectedNode.name}}</span>
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
@@ -11,7 +11,7 @@
         <mat-expansion-panel (opened)="panelOpenState = true"
                              (closed)="panelOpenState = false">
           <mat-expansion-panel-header>
-            <mat-panel-title>
+            <mat-panel-title style="font-size:14px">
               <div *ngIf="selectedNode.type == 'FEED'">{{"views.feed-lineage.Fs" | translate}}</div>
               <div *ngIf="selectedNode.type == 'DATASOURCE'">{{"views.feed-lineage.Ds" | translate}}</div>
               <div *ngIf="selectedNode.type != 'FEED' && selectedNode.type != 'DATASOURCE' ">{{"views.feed-lineage.San" | translate}}</div>

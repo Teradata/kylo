@@ -572,6 +572,7 @@ export class FeedLineageController implements ng.IComponentController {
                                 sortMethod:'directed'
                             }
                         },
+                        physics:false,
                         nodes: {
                             shape: 'box',
                             font: {

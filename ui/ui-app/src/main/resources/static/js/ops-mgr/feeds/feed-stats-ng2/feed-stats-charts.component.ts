@@ -295,19 +295,19 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     eventSuccessKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.eventSuccesUndefinedKpi,
-        color: '#3483BA'
+        color: '#2196f3'
     };
 
     flowRateKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.flowRateKpi,
-        color: '#3483BA'
+        color: '#2196f3'
     };
 
     avgDurationKpi: any = {
         value: 0,
         icon: KyloIcons.Feed.Stats.averageDurationKpi,
-        color: '#3483BA'
+        color: '#2196f3'
     };
 
     /**
@@ -806,14 +806,14 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
     updateSuccessEventsPercentKpi() {
         if (this.summaryStatistics.totalEvents == 0) {
             this.eventSuccessKpi.icon = KyloIcons.Feed.Stats.eventSuccesUndefinedKpi;
-            this.eventSuccessKpi.color = "#1f77b4"
+            this.eventSuccessKpi.color = "#4CAF50"
             this.eventSuccessKpi.value = "--";
         }
         else {
             var failed = this.summaryStatistics.totalEvents > 0 ? (<any>(this.summaryStatistics.failedEvents / this.summaryStatistics.totalEvents)).toFixed(2) * 100 : 0;
             var value = (100 - failed).toFixed(0);
             var icon = KyloIcons.Feed.Stats.eventSuccessKpi;
-            var iconColor = "#3483BA"
+            var iconColor = "#2196f3"
 
             this.eventSuccessKpi.icon = icon;
             this.eventSuccessKpi.color = iconColor;
@@ -878,12 +878,12 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
 
             var chartArr = [];
             chartArr.push({
-                label: this.translate.instant('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item: any) {
+                label: this.translate.instant('view.feed-stats-charts.Completed'), color: '#4CAF50', valueFn: function (item: any) {
                     return item.jobsFinishedPerSecond;
                 }
             });
             chartArr.push({
-                label: this.translate.instant('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item: any) {
+                label: this.translate.instant('view.feed-stats-charts.Started'), area: false, color: "#2196f3", valueFn: function (item: any) {
                     return item.jobsStartedPerSecond;
                 }
             });

@@ -33,7 +33,7 @@
         <mat-card *ngIf="feed.isDraft()" >
           <mat-card-content>
             <div fxFlex="100" fxLayout="row">
-              <mat-icon class="push-top-sm">{{kyloIcons.Links.setupGuide}}</mat-icon>
+              <mat-icon class="push-top-sm push-right-sm">{{kyloIcons.Links.setupGuide}}</mat-icon>
               <span fxFlex="100"  class="push-top-sm" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
               <span fxFlex="100"  class="push-top-sm" *ngIf="feed.isComplete()"> Ready for deployment</span>
               <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>

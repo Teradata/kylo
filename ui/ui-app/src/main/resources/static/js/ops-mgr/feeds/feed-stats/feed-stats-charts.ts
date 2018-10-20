@@ -729,12 +729,12 @@ export default class controller{
 
                 var chartArr = [];
                 chartArr.push({
-                    label: this.$filter('translate')('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item: any) {
+                    label: this.$filter('translate')('view.feed-stats-charts.Completed'), color: '#9c27b0', valueFn: function (item: any) {
                             return item.jobsFinishedPerSecond;
                     }
                 });
                 chartArr.push({
-                    label: this.$filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item: any) {
+                    label: this.$filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#2196f3", valueFn: function (item: any) {
                             return item.jobsStartedPerSecond;
                     }
                 });
