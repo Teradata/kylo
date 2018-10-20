@@ -108,7 +108,7 @@
 
     <!-- dependencies -->
     <automatic-release-repo-promotion>false</automatic-release-repo-promotion>
-    <activemq.version>5.15.0</activemq.version>
+    <activemq.version>5.15.6</activemq.version>
     <avro.version>1.7.7</avro.version>
     <jersey.version>2.22.2</jersey.version>
     <jackson.version>2.9.6</jackson.version>
@@ -159,7 +159,7 @@
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
-    <scala.version>2.10.6</scala.version>
+    <scala.version>2.10.7</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <spark.version>1.6.1</spark.version>
     <spark.binary.version>1.6</spark.binary.version>

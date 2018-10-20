@@ -4,7 +4,7 @@ NIFI_VERSION=1.6.0
 
 cd /opt/kylo/setup
 
-wget https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.tar.gz -P ./activemq
+wget https://archive.apache.org/dist/activemq/5.15.6/apache-activemq-5.15.6-bin.tar.gz -P ./activemq
 
 # Modify to DEB file if necessary
 # wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.deb -P ./elasticsearch/
