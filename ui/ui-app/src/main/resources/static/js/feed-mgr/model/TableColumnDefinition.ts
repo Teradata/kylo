@@ -342,9 +342,10 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     copy() :TableColumnDefinition{
         let policy = this.fieldPolicy;
         this.fieldPolicy = null;
-        let copy :TableColumnDefinition = CloneUtil.deepCopy(this);
+        let copy :TableColumnDefinition = CloneUtil.deepCopyWithoutCircularReferences(this);
         let policyCopy = policy.copy();
         copy.fieldPolicy= policyCopy;
+        this.fieldPolicy = policy;
         return copy;
     }
 

@@ -25,6 +25,10 @@ import {PartialObserver} from "rxjs/Observer";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {SchemaField} from "../schema-field";
+import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
+import {PreviewFileDataSet} from "../../catalog/datasource/preview-schema/model/preview-file-data-set";
+import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/preview-hive-data-set";
+import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/preview-jdbc-data-set";
 
 
 export interface TableOptions {
@@ -402,6 +406,12 @@ export class Feed  implements KyloObject{
                 this.sourceDataSets = this.sourceDataSets.map(ds => new SparkDataSet(ds));
             }
         }
+        if (this.sampleDataSet) {
+            //ensure they are of the right class objects
+            if (this.sampleDataSet) {
+                this.sampleDataSet = new SparkDataSet(this.sampleDataSet);
+            }
+        }
         if (this.uiState == undefined) {
             this.uiState = {}
         }
@@ -663,9 +673,8 @@ export class Feed  implements KyloObject{
 
         copy.originalTableSchema = undefined;
 
-        if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
-            // Set feed
-
+        //only do this if the schema could have changed (i.e. never been deployed)
+        if (!copy.hasBeenDeployed() &&  copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
             //if the sourceSchema is not defined then set it to match the target
             let addSourceSchemaFields: boolean = copy.table.sourceTableSchema.fields.length == 0;
             let addFeedSchemaFields =  copy.table.feedTableSchema.fields.length == 0;
@@ -694,37 +703,50 @@ export class Feed  implements KyloObject{
 
             copy.table.tableSchema.fields.forEach((columnDef: TableColumnDefinition, idx: number) => {
 
-                if (addSourceSchemaFields) {
-                    let sourceField: TableColumnDefinition = columnDef.copy();
+                let sourceField: TableColumnDefinition = columnDef.copy();
+                let feedField: TableColumnDefinition = columnDef.copy();
+
+
                     //set the original names as the source field names
                     sourceField.name = columnDef.origName;
                     sourceField.derivedDataType = columnDef.origDataType;
                     //remove sample
                     sourceField.prepareForSave();
-                    sourceFields.push(sourceField);
-                }
 
-                if (addFeedSchemaFields) {
-                    let feedField: TableColumnDefinition = columnDef.copy();
+
+
                     feedField.prepareForSave();
                     feedFields.push(feedField);
-                    //TODO
                     // structured files must use the original names
-                    // if (copy.table.structured == true) {
-                    //     feedField.name = columnDef.origName;
-                    //     feedField.derivedDataType = columnDef.origDataType;
-                    //  }
-                }
+                     if (copy.table.structured == true) {
+                         feedField.name = columnDef.origName;
+                         feedField.derivedDataType = columnDef.origDataType;
+                      }
+
                 if (!columnDef.deleted) {
+                    //remove sample
                     columnDef.prepareForSave();
                     tableFields.push(columnDef);
 
                     let policy = copy.table.fieldPolicies[idx];
                     if (policy) {
-                        policy.feedFieldName = columnDef.name;
+                        policy.feedFieldName = feedField.name;
                         policy.name = columnDef.name;
                         policy.field = null;
                         newPolicies.push(policy);
+                    }
+                    sourceFields.push(sourceField)
+                    feedFields.push(feedField)
+                }
+                else {
+                    // For files the feed table must contain all the columns from the source even if unused in the target
+                    if (copy.table.method == 'SAMPLE_FILE') {
+                        feedFields.push(feedField);
+                    }
+                    //if we somehow deleted the source incremental field from the target we need to push it back into the source map
+                    if( sourceField.name == copy.table.sourceTableIncrementalDateField) {
+                        feedFields.push(feedField);
+                        sourceFields.push(sourceField);
                     }
                 }
 
@@ -782,9 +804,20 @@ export class Feed  implements KyloObject{
     /**
      * updates the target and or source with the schem provided in the sourceDataSet
      */
-    setSampleDataSetAndUpdateTarget(sampleDataSet: SparkDataSet, mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
+    setSampleDataSetAndUpdateTarget(sampleDataSet: SparkDataSet, previewDataSet: PreviewDataSet,mode: TableSchemaUpdateMode = TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET, connectorPlugin?: ConnectorPlugin) {
         this.sampleDataSet = sampleDataSet;
         this.updateTarget(sampleDataSet)
+        if(previewDataSet){
+            let sampleFile = previewDataSet instanceof PreviewFileDataSet;
+            let table = previewDataSet instanceof  PreviewHiveDataSet || previewDataSet instanceof PreviewJdbcDataSet;
+            if(this.sampleFile) {
+                this.table.method = "SAMPLE_FILE";
+            }
+            else  if(table) {
+                this.table.method = "EXISTING_TABLE";
+            }
+
+        }
     }
 
     /**

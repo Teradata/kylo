@@ -87,7 +87,9 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     }
 
     private init(){
-        this.feed =this.defineFeedService.getFeed();
+        if(this.feed == undefined) {
+            this.feed = this.defineFeedService.getFeed();
+        }
         if(this.feed.sampleDataSet != null && this.feed.sampleDataSet != undefined){
             this.dataSets = [this.feed.sampleDataSet];
         }
@@ -153,10 +155,10 @@ export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
     }
 
     onSave(previewEvent:DatasetPreviewStepperSavedEvent) {
-        this.sampleSaved.emit(previewEvent)
         if(previewEvent.previews) {
             this.dataSets = previewEvent.previews.map(preview => preview.toSparkDataSet());
         }
+        this.sampleSaved.emit(previewEvent)
     }
 
     onCancel($event:DatasetPreviewStepperCanceledEvent){

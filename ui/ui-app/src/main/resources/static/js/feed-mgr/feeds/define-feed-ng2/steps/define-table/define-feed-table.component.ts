@@ -860,6 +860,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.cd.reattach();
         }
 
+
         /**
          * Applies the Serde if necessary and then update the form controls
          */
@@ -878,7 +879,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 _updateFormControls();
             }
         }
-
         // reset the feed fields
         this.selectedColumn = undefined;
         this.tableFormControls.resetFormFields();
@@ -886,24 +886,24 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         let previews = event.previews;
         let singleSelection = event.singleSelection;
-        if (previews && previews.length) {
-            if (singleSelection) {
-                const sampleDataSet = previews.map((ds: PreviewDataSet) => ds.toSparkDataSet())[0];
+        let firstPreview = previews && previews.length >0 ? previews[0] : undefined;
+
+        if (firstPreview && singleSelection) {
+                const sampleDataSet = firstPreview.toSparkDataSet();
                 if (sampleDataSet.dataSource && sampleDataSet.dataSource.connector && sampleDataSet.dataSource.connector.pluginId) {
                     this.catalogService.getConnectorPlugin(sampleDataSet.dataSource.connector.pluginId)
                         .subscribe(plugin => {
-                            this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet, undefined, plugin)
+                            this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet, firstPreview,undefined, plugin)
                             applySerdeAndUpdateFormControls();
                         }, (error1:any) =>  this.cd.reattach());
                 } else {
-                    this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet);
+                    this.feed.setSampleDataSetAndUpdateTarget(sampleDataSet, firstPreview);
                     applySerdeAndUpdateFormControls();
                 }
-            }
         }
         else {
             //set the source and target to empty
-            this.feed.setSampleDataSetAndUpdateTarget(null);
+            this.feed.setSampleDataSetAndUpdateTarget(null, null);
             applySerdeAndUpdateFormControls();
         }
 
