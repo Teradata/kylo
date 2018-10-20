@@ -454,9 +454,11 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         }
 
         var wasRefreshing = this.timeoutMap[instanceId];
-        if (!shouldRefresh) {
-            setTimeout(() => { this.triggerJobActionListener("updateEnd", job); }, 10);
-        }
+
+        // Unnecessary update
+        // if (!shouldRefresh) {
+            //setTimeout(() => { this.triggerJobActionListener("updateEnd", job); }, 10);
+        //}
 
         this.clearRefreshTimeout(instanceId);
 
