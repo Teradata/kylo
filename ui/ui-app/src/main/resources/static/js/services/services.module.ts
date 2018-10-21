@@ -18,6 +18,7 @@ import TabService from "./tab.service";
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
 import {KyloRouterService} from "./kylo-router.service";
 import {FormGroupUtil} from "./form-group-util";
+import {HttpBackendClient} from "./http-backend-client";
 
 @NgModule({
     imports: [
@@ -38,7 +39,8 @@ import {FormGroupUtil} from "./form-group-util";
         TabService,
         TemplateService,
         utilsProvider,
-        FormGroupUtil
+        FormGroupUtil,
+        HttpBackendClient
     ]
 })
 export class KyloServicesModule {
