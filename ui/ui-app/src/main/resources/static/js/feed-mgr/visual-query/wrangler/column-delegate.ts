@@ -477,7 +477,7 @@ export class ColumnDelegate implements IColumnDelegate {
         this.controller.setChainedQuery(chainedOp);
 
         this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Index ' + ColumnUtil.getColumnDisplayName(column)}, true, false)
-            .then(function () {
+            .then( () => {
                 chainedOp.nextStep();
                 this.controller.addFunction(moveFormula, {formula: formula, icon: 'functions', name: 'Move new column next to ' + fieldName});
             })

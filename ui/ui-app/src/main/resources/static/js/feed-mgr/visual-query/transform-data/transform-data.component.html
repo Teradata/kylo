@@ -15,8 +15,8 @@
     <mat-list fxFlex="1 1 auto">
       <ng-template ngFor let-item let-i="index" [ngForOf]="functionHistory">
         <mat-list-item>
-          <ng-md-icon *ngIf="item && !item.icon.startsWith('mdi')" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
-          <i *ngIf="item && item.icon.startsWith('mdi')" [class]="item.icon + ' function-icon material-icons'"></i>
+          <ng-md-icon *ngIf="item && item.icon && !item.icon.startsWith('mdi')" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
+          <i *ngIf="item && item.icon && item.icon.startsWith('mdi')" [class]="item.icon + ' function-icon material-icons'"></i>
           <p [matTooltip]="item.name" fxFlex="1 1 auto">{{item.name}}</p>
           <ng-md-icon (click)="toggleItem(i)" class="grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
           <ng-md-icon (click)="removeItem(i)" class="accent-color" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>

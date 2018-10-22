@@ -15,6 +15,7 @@ import {ColumnController} from "../../wrangler/column-controller";
 import {ColumnDelegate, DataCategory} from "../../wrangler/column-delegate";
 import {ColumnUtil} from "../../wrangler/core/column-util";
 import {StringUtils} from "../../../../common/utils/StringUtils";
+import {HttpBackendClient} from "../../../../services/http-backend-client";
 
 /**
  * Data types supported by Spark and Hive.
@@ -63,7 +64,7 @@ interface ParseDateResponse {
  */
 export class SparkColumnDelegate extends ColumnDelegate {
 
-    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: TdDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpClient,
+    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: TdDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpBackendClient,
                 private RestUrlService: any) {
         super(dataType, controller, $mdDialog, uiGridConstants, dialog);
     }
@@ -95,11 +96,11 @@ export class SparkColumnDelegate extends ColumnDelegate {
         }
         if (dataType === SparkDataType.DOUBLE) {
             const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to double"});
+            this.controller.addFunction(formula, {formula: formula, name: "Cast " + this.displayName + " to double"});
         }
         if (dataType === SparkDataType.INT) {
             const formula = ColumnUtil.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula,  name: "Cast " + this.displayName + " to int"});
+            this.controller.addFunction(formula, {formula: formula, name: "Cast " + this.displayName + " to int"});
         }
         if (dataType === SparkDataType.STRING) {
             return this.castToString();
@@ -118,13 +119,13 @@ export class SparkColumnDelegate extends ColumnDelegate {
             case SparkDataType.INT.value:
                 return [SparkDataType.DATE, SparkDataType.DOUBLE, SparkDataType.FLOAT, SparkDataType.STRING];
             case SparkDataType.FLOAT.value:
-                return [SparkDataType.DATE,  SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.STRING];
+                return [SparkDataType.DATE, SparkDataType.DOUBLE, SparkDataType.INT, SparkDataType.STRING];
             case SparkDataType.DOUBLE.value:
                 return [SparkDataType.DATE, SparkDataType.FLOAT, SparkDataType.INT, SparkDataType.STRING];
             case SparkDataType.DATE.value:
                 return [SparkDataType.STRING, SparkDataType.TIMESTAMP];
             case SparkDataType.STRING.value:
-                return [SparkDataType.BIGINT, SparkDataType.DATE,  SparkDataType.DOUBLE, SparkDataType.FLOAT, SparkDataType.INT, SparkDataType.TIMESTAMP];
+                return [SparkDataType.BIGINT, SparkDataType.DATE, SparkDataType.DOUBLE, SparkDataType.FLOAT, SparkDataType.INT, SparkDataType.TIMESTAMP];
 
             default:
                 return [SparkDataType.STRING];
@@ -272,24 +273,18 @@ export class SparkColumnDelegate extends ColumnDelegate {
             this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
         } else if (this.dataCategory === DataCategory.STRING) {
             // If ISO date then just convert it. Otherwise, prompt.
-            if (Date.parse(sampleValue) != undefined) {
-                var script = `${this.fieldName}.cast("timestamp")`;
+            this.dialog.openDateFormat({
+                message: "Enter the pattern for parsing this column as a timestamp:",
+                pattern: "yyyy-MM-dd HH:mm:ss",
+                patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
+                title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                type: DateFormatType.STRING
+            }).subscribe(response => {
+                const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").cast('timestamp').as(\"" + StringUtils.quote(this.displayName) + "\")";
                 const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
-            } else {
-                this.dialog.openDateFormat({
-                    message: "Enter the pattern for parsing this column as a timestamp:",
-                    pattern: "yyyy-MM-dd HH:mm:ss",
-                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                    preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
-                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                    type: DateFormatType.STRING
-                }).subscribe(response => {
-                    const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
-                    const formula = ColumnUtil.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
-                    this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
-                });
-            }
+            });
         }
     }
 
