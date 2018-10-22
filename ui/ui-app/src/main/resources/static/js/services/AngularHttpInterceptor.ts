@@ -121,6 +121,8 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
             }
         } else if (data['handledException'] == undefined || (data['handledException'] != undefined && data['handledException'] == false)) {
             let message = "An error occurred ";
+            console.log(data);
+            let detailedMessage = data['message']? data['message'] : data['errorMessages'][0];
             let rejectionMessage = data['message'];
             if (rejectionMessage == undefined || rejectionMessage == '') {
                 rejectionMessage = 'OtherError';
@@ -128,7 +130,7 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
                 // Don't notify for messages from wrangler. These are handled.
                 return;
             }
-            this.errorWithGroupKey("Error", message, rejectionMessage, data["message"]);
+            this.errorWithGroupKey("Error", message, rejectionMessage, detailedMessage);
         }
     }
 

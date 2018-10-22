@@ -322,7 +322,7 @@ public class FeedRestController {
             log.error("Failed to create a new feed.", e);
 
             // Create an error message
-            String msg = (e.getMessage() != null) ? "Error saving Feed " + e.getMessage() : "An unknown error occurred while saving the feed.";
+            String msg = (e.getMessage() != null) ? "Error creating Feed: " + e.getMessage() : "An unknown error occurred while saving the feed.";
             if (e.getCause() instanceof JDBCException) {
                 msg += ". " + ((JDBCException) e).getSQLException();
             }
@@ -744,7 +744,7 @@ public class FeedRestController {
             log.error("Failed to create a new feed.", e);
             
             // Create an error message
-            String msg = (e.getMessage() != null) ? "Error saving Feed " + e.getMessage() : "An unknown error occurred while saving the feed.";
+            String msg = (e.getMessage() != null) ? "Error creating Feed: " + e.getMessage() : "An unknown error occurred while saving the feed.";
             if (e.getCause() instanceof JDBCException) {
                 msg += ". " + ((JDBCException) e).getSQLException();
             }
@@ -788,7 +788,7 @@ public class FeedRestController {
             log.error("Failed to create a new feed.", e);
 
             // Create an error message
-            String msg = (e.getMessage() != null) ? "Error saving Feed " + e.getMessage() : "An unknown error occurred while saving the feed.";
+            String msg = (e.getMessage() != null) ? "Error creating Feed: " + e.getMessage() : "An unknown error occurred while saving the feed.";
             if (e.getCause() instanceof JDBCException) {
                 msg += ". " + ((JDBCException) e).getSQLException();
             }

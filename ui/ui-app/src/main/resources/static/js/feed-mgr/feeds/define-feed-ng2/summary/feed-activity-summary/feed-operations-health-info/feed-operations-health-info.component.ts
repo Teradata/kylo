@@ -164,7 +164,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
                     this.startingFeed = false;
                     if (response.status == RestResponseStatusType.SUCCESS) {
                         let msg = response.message ? response.message : "Feed started";
-                        this.opsManagerFeedService.openSnackBar(msg, 5000)
+                        this.opsManagerFeedService.openSnackBar('Riaz'+msg, 5000)
                     }
                     else {
                         error(response.message)

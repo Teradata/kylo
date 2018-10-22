@@ -31,11 +31,14 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.entity.TemplateEntity;
 import org.apache.nifi.web.api.entity.TemplatesEntity;
 import org.glassfish.jersey.media.multipart.MultiPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
@@ -44,6 +47,8 @@ import javax.ws.rs.NotFoundException;
  * Implements a {@link NiFiTemplatesRestClient} for communicating with NiFi v1.0.
  */
 public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
+
+    private static final Logger log = LoggerFactory.getLogger(NiFiTemplatesRestClientV1.class);
 
     /**
      * Base path for template requests
@@ -102,10 +107,18 @@ public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
     @Nonnull
     @Override
     public Set<TemplateDTO> findAll() {
-        return client.get("/flow/templates", null, TemplatesEntity.class)
-            .getTemplates().stream()
-            .map(TemplateEntity::getTemplate)
+        return getNifiTemplates().map(TemplateEntity::getTemplate)
             .collect(Collectors.toSet());
+    }
+
+    private Stream<TemplateEntity> getNifiTemplates(){
+        try{
+            return client.get("/flow/templates", null, TemplatesEntity.class)
+                    .getTemplates().stream();
+        }catch(Exception e){
+            log.error("Error retrieving template from NiFi. Make sure NiFi is up and running.", e);
+            throw new RuntimeException("Error retrieving template from NiFi. Make sure NiFi is up and running.");
+        }
     }
 
     @Nonnull
