@@ -18,7 +18,6 @@ addons:
     - rpm
 
 install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
-script: mvn clean install -B -V -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
 script:
   - |
     if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
@@ -30,7 +29,7 @@ script:
         -Dsonar.github.oauth=${GITHUB_TOKEN} \
         -Dsonar.host.url=https://sonarqube.com/
     else
-      mvn clean install -B -V
+      mvn clean install -B -V -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
     fi
 
 # Cache .m2 directory for next run
