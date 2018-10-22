@@ -143,7 +143,7 @@ public class DataSetUtil {
             }
         }
         if (src.getPaths() != null) {
-            dst.setPaths(src.getPaths());
+            dst.setPaths(new ArrayList<>(src.getPaths()));
         }
     }
 
