@@ -1,18 +1,16 @@
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
-import { DefaultPaginationDataService } from '../../../services/PaginationDataService';
-import { DefaultTableOptionsService } from '../../../services/TableOptionsService';
 import AddButtonService from '../../../services/AddButtonService';
 import { Component } from '@angular/core';
 import StateService from '../../../services/StateService';
-import { TdDataTableSortingOrder, ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService } from '@covalent/core/data-table';
-import { IPageChangeEvent } from '@covalent/core/paging';
+import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
+import { BaseFilteredPaginatedTableView } from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 
 @Component({
     selector: 'sla-email-templates-controller',
     templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html'
 })
-export class SlaEmailTemplates {
+export class SlaEmailTemplates extends BaseFilteredPaginatedTableView{
 
     /**
     * Indicates if templates are allowed to be edited.
@@ -29,16 +27,6 @@ export class SlaEmailTemplates {
     paginationData: any;
     paginationId: string = 'sla-email-templates';
     
-    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Descending;
-    sortBy: string = 'name';
-
-    pageSize: number = 2;
-    fromRow: number = 1;
-    searchTerm: string = '';
-
-    filteredData: any[];
-    filteredTotal: number = 0;
-
     currentPage: number = 1;
 
     columns: ITdDataTableColumn[] = [
@@ -70,12 +58,12 @@ export class SlaEmailTemplates {
     }
 
     constructor(private accessControlService: AccessControlService,
-                private paginationDataService: DefaultPaginationDataService,
-                private tableOptionsService: DefaultTableOptionsService,
                 private addButtonService: AddButtonService,
                 private StateService: StateService,
                 private slaEmailTemplateService: SlaEmailTemplateService,
-                private _dataTableService: TdDataTableService) {}
+                _dataTableService: TdDataTableService) {
+                    super(_dataTableService);
+                }
 
     /**
      * Displays the details of the specified template.
@@ -99,9 +87,9 @@ export class SlaEmailTemplates {
             this.loading = false;
             this.templates = response;
 
-            this.filteredData = this.templates;
-            this.filteredTotal = this.templates.length;
-            this.filter();
+            super.setSortBy('name');
+            super.setDataAndColumnSchema(this.templates,this.columns);
+            super.filter();
         }
         var errorFn = (err: any) => {
             this.loading = false;
@@ -109,39 +97,5 @@ export class SlaEmailTemplates {
         var promise = this.slaEmailTemplateService.getExistingTemplates();
         promise.then(successFn, errorFn);
         return promise;
-    }
-
-    search(searchTerm: string): void {
-        this.searchTerm = searchTerm;
-        this.filter();
-    }
-
-    filter(): void {
-        let newData: any[] = this.templates;
-        let excludedColumns: string[] = this.columns
-            .filter((column: ITdDataTableColumn) => {
-                return ((column.filter === undefined && column.hidden === true) ||
-                    (column.filter !== undefined && column.filter === false));
-            }).map((column: ITdDataTableColumn) => {
-                return column.name;
-            });
-        newData = this._dataTableService.filterData(newData, this.searchTerm, true, excludedColumns);
-        this.filteredTotal = newData.length;
-        newData = this._dataTableService.sortData(newData, this.sortBy, this.sortOrder);
-        newData = this._dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
-        this.filteredData = newData;
-    }
-
-    onPaginationChange(pagingEvent: IPageChangeEvent): void {
-        this.fromRow = pagingEvent.fromRow;
-        this.currentPage = pagingEvent.page;
-        this.pageSize = pagingEvent.pageSize;
-        this.filter();
-    }
-
-    onSortOrderChange(sortEvent: ITdDataTableSortChangeEvent): void {
-        this.sortBy = sortEvent.name;
-        this.sortOrder = sortEvent.order;
-        this.filter();
     }
 }

@@ -17,7 +17,31 @@
   limitations under the License.
   #L%
   -->
-<mat-card flex style="max-width: 980px; width: 980px;">
+  <filtered-paginated-table-view *ngIf="!loading"
+    [cardTitle]="cardTitle"
+    [filteredData]="filteredData"
+    [columns]="columns"
+    [clickable]="true"
+    [sortable]="true"
+    [sortOrder]="sortOrder"
+    [sortBy]="sortBy"
+    [firstLast]="false"
+    [pageSize]="pageSize"
+    [filteredTotal]="filteredTotal"
+    [allowedPageSize]="[5,10,20,50]"
+    (rowClick)="editTemplate($event.row)"
+    (sortChange)="onSortOrderChange($event)"
+    (searchDebounced)="search($event)"
+    (pageSizeChanged)="onPageSizeChange($event)"
+>
+    <ng-template tdDataTableTemplate="default" let-value="value" let-row="row" let-column="column">
+      <div layout="row">
+          <mat-icon class="ng-md-icon primary-color-1" *ngIf ="value" >check_box</mat-icon>
+          <mat-icon class="ng-md-icon primary-color-1" *ngIf ="!value" >check_box_outline_blank</mat-icon>
+      </div>
+    </ng-template>
+</filtered-paginated-table-view>
+<mat-card flex style="max-width: 980px; width: 980px;" *ngIf="loading">
   <mat-card-title class="filter-header" style="font-size:smaller;">
       <mat-toolbar style="display:flex">
         <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
@@ -26,42 +50,9 @@
       </mat-toolbar>
   </mat-card-title>
   <mat-card-content>
-    <div *ngIf="loading">
+    <div>
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       <span class="md-body-2 layout-padding-left">Loading templates</span>
     </div>
-    <div>
-
-    <td-data-table
-        [data]="filteredData"
-        [columns]="columns"
-        [sortable]="true"
-        [sortBy]="sortBy"
-        [sortOrder]="sortOrder"
-        (sortChange)="onSortOrderChange($event)"
-        [clickable]="true"
-        (rowClick)="editTemplate($event.row)">
-
-        <ng-template tdDataTableTemplate="default" let-value="value" let-row="row" let-column="column">
-          <div layout="row">
-              <mat-icon class="ng-md-icon primary-color-1" *ngIf ="value" >check_box</mat-icon>
-              <mat-icon class="ng-md-icon primary-color-1" *ngIf ="!value" >check_box_outline_blank</mat-icon>
-          </div>
-        </ng-template>
-
-      </td-data-table>
-    
-      <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="filteredTotal" (change)="onPaginationChange($event)">
-          <span hide-xs>Rows per page:</span>
-          <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
-            <mat-option *ngFor="let size of ['5', '10', '20', '50']" [value]="size">
-              {{size}}
-            </mat-option>
-          </mat-select>
-          {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
-      </td-paging-bar>
-
-    </div>
-
   </mat-card-content>
 </mat-card>

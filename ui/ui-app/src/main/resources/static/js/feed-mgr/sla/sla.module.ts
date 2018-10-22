@@ -56,6 +56,7 @@ import { PolicyInputFormController } from "../shared/policy-input-form/policy-in
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import * as angular from "angular";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 
 @NgModule({
     declarations: [
@@ -102,6 +103,7 @@ import * as angular from "angular";
         MatMenuModule,
         MatInputModule,
         MatSelectModule,
+        MatProgressBarModule,
         MatProgressSpinnerModule,
         MatGridListModule,
         MatDialogModule,
