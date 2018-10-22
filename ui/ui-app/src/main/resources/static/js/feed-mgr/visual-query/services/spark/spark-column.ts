@@ -64,7 +64,7 @@ interface ParseDateResponse {
  */
 export class SparkColumnDelegate extends ColumnDelegate {
 
-    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: TdDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpBackendClient,
+    constructor(private column: any, dataType: string, controller: ColumnController, $mdDialog: TdDialogService, uiGridConstants: any, dialog: DialogService, private http: HttpClient,
                 private RestUrlService: any) {
         super(dataType, controller, $mdDialog, uiGridConstants, dialog);
     }

@@ -35,6 +35,7 @@ import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
+import {HttpBackendClient} from "../../../../services/http-backend-client";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -54,7 +55,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     constructor(private $http: HttpClient, dialog: TdDialogService, @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, @Inject("HiveService") private HiveService: HiveService,
                 @Inject("RestUrlService") private RestUrlService: RestUrlService, @Inject("VisualQueryService") private VisualQueryService: VisualQueryService, private $$angularInjector: Injector,
-                @Inject("DatasourcesService") datasourcesService: any, @Inject("uiGridConstants") uiGridConstants: any) {
+                @Inject("DatasourcesService") datasourcesService: any, @Inject("uiGridConstants") uiGridConstants: any, private httpBackendClient:HttpBackendClient) {
         super(dialog, datasourcesService, uiGridConstants, $$angularInjector);
 
         // Ensure Kylo Spark Shell is running
@@ -106,7 +107,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * Creates a column delegate of the specified data type.
      */
     createColumnDelegate(dataType: string, controller: ColumnController, column: any): ColumnDelegate {
-        return new SparkColumnDelegate(column, dataType, controller, this.dialog, this.uiGridConstants, this.wranglerDialog, this.$$angularInjector.get(HttpClient), this.RestUrlService);
+        return new SparkColumnDelegate(column, dataType, controller, this.dialog, this.uiGridConstants, this.wranglerDialog, this.httpBackendClient, this.RestUrlService);
     }
 
     /**
