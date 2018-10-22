@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from 'underscore';
 import StateService from "../../../services/StateService";
 import TabService from "../../services/TabService";

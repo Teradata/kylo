@@ -7,7 +7,6 @@ import { CloneUtil } from "../../../common/utils/clone-util";
 import { ObjectUtils } from "../../../common/utils/object-utils";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { TdDialogService } from "@covalent/core/dialogs";
-// const moduleName = require('feed-mgr/categories/module-name');
 
 @Component({
     selector: 'thinkbig-category-feed-properties',

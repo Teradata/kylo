@@ -4,7 +4,6 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
-import * as angular from 'angular';
 import * as _ from "underscore";
 
 import AccessControlService from '../../../../services/AccessControlService';

@@ -1,5 +1,5 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
+import * as $ from "jquery";
 import { Injectable, Inject } from '@angular/core';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 
@@ -213,7 +213,7 @@ export class PolicyInputFormService {
         if (!validForm && showErrorDialog) {
             this.$injector.get("$mdDialog").show(
                 this.$injector.get("$mdDialog").alert()
-                    .parent(angular.element(document.body))
+                    .parent($(document.body))
                     .clickOutsideToClose(true)
                     .title('Input Errors')
                     .textContent('Some of the form fields are invalid.  Please fix all validation errors prior to saving')

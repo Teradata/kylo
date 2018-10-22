@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import { Component, Input, Output, EventEmitter, ElementRef, SimpleChanges } from '@angular/core';
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import * as $ from "jquery";

@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { Component, Inject, Input } from '@angular/core';

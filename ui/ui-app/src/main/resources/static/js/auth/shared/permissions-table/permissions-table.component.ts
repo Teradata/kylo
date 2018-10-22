@@ -116,7 +116,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
             return map;
         };
         // Determine if action states need updating
-        if (ObjectUtils.isDefined(this.model) && !angular.equals(this.model, this.lastModel) && this.available.length > 0) {
+        if (ObjectUtils.isDefined(this.model) && !_.isEqual(this.model, this.lastModel) && this.available.length > 0) {
             // Update action states
             var allowed = mapModel(this.model, {});
             _.forEach(this.available, (action: any) => {

@@ -1,5 +1,3 @@
-import * as angular from "angular";
-import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";

@@ -4,6 +4,7 @@ import CategoriesService from '../services/CategoriesService';
 import AccessControlService from '../../services/AccessControlService';
 import AddButtonService from '../../services/AddButtonService';
 import StateService from '../../services/StateService';
+import { TdDataTableService } from '@covalent/core/data-table';
 
 @Component({
     selector: 'categories-controller',
@@ -41,6 +42,7 @@ export class CategoriesComponent{
     * @type {Array.<Object>}
     */
     categories: any = [];
+    filteredCategories: any = [];
     /**
     * Indicates that the category data is being loaded.
     * @type {boolean}
@@ -72,6 +74,7 @@ export class CategoriesComponent{
         this.categoriesService.reload().subscribe(categories => {
             this.loading = false;
             this.categories = categories;
+            this.filter();
         });
     }
 
@@ -87,6 +90,7 @@ export class CategoriesComponent{
     constructor(private accessControlService: AccessControlService, 
                 private addButtonService: AddButtonService, 
                 private stateService: StateService,
+                private dataTable: TdDataTableService,
                 private categoriesService: CategoriesService) {}
     /**
     * Navigates to the details page for the specified category.
@@ -96,6 +100,17 @@ export class CategoriesComponent{
     editCategory(category: any) {
         this.stateService.FeedManager().Category().navigateToCategoryDetails(category.id);
     };
+
+    search(term: string) {
+        this.searchQuery = term;
+        this.filter();
+    }
+
+    filter() {
+        let filteredCategoryTypes = this.dataTable.filterData(this.categories, this.searchQuery, true);
+        filteredCategoryTypes = this.dataTable.sortData(filteredCategoryTypes, "name");
+        this.filteredCategories = filteredCategoryTypes;
+    }
 
 }
 

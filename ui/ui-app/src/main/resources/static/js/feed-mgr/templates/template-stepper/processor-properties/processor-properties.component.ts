@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import * as $ from "jquery";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';

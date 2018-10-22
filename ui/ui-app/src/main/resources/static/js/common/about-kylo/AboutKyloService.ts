@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import {moduleName} from "../module-name";
 import {Component, Inject, Input, Injectable} from "@angular/core";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';

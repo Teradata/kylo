@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import ChartJobStatusService from "../../services/ChartJobStatusService";
 import { HttpClient } from "@angular/common/http";

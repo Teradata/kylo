@@ -1,5 +1,4 @@
 import {Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
-import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 import * as $ from "jquery";
 

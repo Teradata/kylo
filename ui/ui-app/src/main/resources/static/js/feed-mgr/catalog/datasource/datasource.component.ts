@@ -1,5 +1,3 @@
-import * as angular from "angular";
-
 import {Component, Injector, Input, OnDestroy, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 

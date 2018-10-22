@@ -1,4 +1,4 @@
-import * as angular from 'angular';
+import * as $ from 'jquery';
 import * as _ from 'underscore';
 import AccessConstants from "../constants/AccessConstants";
 import "pascalprecht.translate";
@@ -158,17 +158,17 @@ export class SideNavComponent {
 
     collapse() {
         this.collapsed = true;
-        angular.element('div.mat-sidenav').css('overflow','hidden')
-        angular.element('div.mat-sidenav > .sidenav-content').css('overflow','hidden')
-        angular.element('div.mat-sidenav').addClass('collapsed');
+        $('div.mat-sidenav').css('overflow','hidden')
+        $('div.mat-sidenav > .sidenav-content').css('overflow','hidden')
+        $('div.mat-sidenav').addClass('collapsed');
         this.updateMenuText();
     }
 
     expand() {
         this.collapsed = false;
-        angular.element('div.mat-sidenav').css('overflow','auto')
-        angular.element('div.mat-sidenav > .sidenav-content').css('overflow','auto')
-        angular.element('div.mat-sidenav').removeClass('collapsed');
+        $('div.mat-sidenav').css('overflow','auto')
+        $('div.mat-sidenav > .sidenav-content').css('overflow','auto')
+        $('div.mat-sidenav').removeClass('collapsed');
         this.updateMenuText();
     }
 

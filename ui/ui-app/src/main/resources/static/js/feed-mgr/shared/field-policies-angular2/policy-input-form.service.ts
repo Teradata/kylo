@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import {Injectable} from "@angular/core";
 import {HttpClient} from "@angular/common/http";

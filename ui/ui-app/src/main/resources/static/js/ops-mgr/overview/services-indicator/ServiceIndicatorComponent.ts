@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import "pascalprecht.translate";
 import * as _ from 'underscore';
 import * as moment from "moment";

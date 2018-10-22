@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import UserService from "../../services/UserService";
 import AccessControlService from "../../../services/AccessControlService";
@@ -78,7 +77,6 @@ export default class GroupDetailsComponent {
         this.onLoad();
     }
     constructor(
-        //private $transition$: Transition,
         private accessControlService: AccessControlService,
         private UserService: UserService,
         private stateService: StateService,
@@ -200,8 +198,8 @@ export default class GroupDetailsComponent {
         }
     };
     /**
-         * Saves the current group.
-         */
+     * Saves the current group.
+     */
     onSave () {
         var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveGroup(model)

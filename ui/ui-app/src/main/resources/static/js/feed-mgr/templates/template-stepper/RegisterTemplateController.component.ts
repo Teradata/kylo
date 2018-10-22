@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import BroadcastService from '../../../services/broadcast-service';

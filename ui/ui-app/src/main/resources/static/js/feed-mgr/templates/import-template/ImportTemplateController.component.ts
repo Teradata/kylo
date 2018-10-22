@@ -2,7 +2,6 @@ import {HttpClient} from "@angular/common/http";
 import {Component, Inject} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {StateService} from "@uirouter/angular";
-import * as angular from "angular";
 import "rxjs/add/operator/timeout";
 import * as _ from "underscore";
 

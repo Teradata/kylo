@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';

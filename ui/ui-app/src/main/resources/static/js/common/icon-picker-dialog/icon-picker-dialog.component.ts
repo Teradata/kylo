@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import {Component, Input, Output, Inject, ElementRef} from "@angular/core";

@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";

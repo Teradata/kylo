@@ -4,24 +4,20 @@
             <div layout="column" class="layout-max-width">
                 <div style="width:100%" class="" layout="row" layout-align="center start">
                     <mat-content flex layout="row" class="md-kylo-theme" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
-                        <!-- <span style="width:40px;max-width:40px;"></span> -->
-                        <mat-form-field class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;padding: 0 40px 0 40px">
-                            <input matInput [(ngModel)]="searchQuery" placeholder='{{"views.categories.FC" | translate}}'>
-                        </mat-form-field>
-                        <!-- <span style="width:40px;max-width:40px;"></span> -->
+                        <td-search-box style="width: 100%; background-color: white; padding-right: 5px;" [(ngModel)]="searchQuery" [showUnderline]="true" placeholder='{{"views.categories.FC" | translate}}' alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
                     </mat-content>
                 </div>
             </div>
         </div>
         <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">  <!-- | orderBy:'name' | filter: searchQuery track by $index.--> 
-            <mat-card *ngFor="let category of categories" style="width:400px;max-width:400px;max-height:121px;height:121px" flex="initial" flex-gt-md="initial" flex-gt-sm="50"
+            <mat-card *ngFor="let category of filteredCategories" style="width:400px;max-width:400px;max-height:121px;height:121px" flex="initial" flex-gt-md="initial" flex-gt-sm="50"
                     (click)="editCategory(category)">
                 <mat-card-title layout-align="space-between center">
                         <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{category.name}}</span>
                         <ng-md-icon icon="{{category.icon}}" size="40" [ngStyle]="getIconColorStyle(category.iconColor)" style="margin-right:5px;" class="md-media-xs"></ng-md-icon>
                 </mat-card-title>
-                <mat-card-content>  <!--  | characters:100 -->
-                    <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{category.description}}</div>
+                <mat-card-content>
+                    <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{category.description | truncate: 100}}</div>
                 </mat-card-content>
             </mat-card>
         </div>

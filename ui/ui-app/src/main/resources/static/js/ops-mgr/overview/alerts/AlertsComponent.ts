@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import StateService from "../../../services/StateService";
 import AlertsServiceV2 from "../../services/AlertsServiceV2";
 import { Component, Input } from "@angular/core";

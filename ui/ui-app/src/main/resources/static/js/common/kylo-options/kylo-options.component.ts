@@ -1,5 +1,4 @@
 import {Component, ElementRef} from "@angular/core";
-import * as angular from "angular";
 import {moduleName} from "../module-name";
 import { AboutKyloService } from "../about-kylo/AboutKyloService";
 import { HttpClient } from '@angular/common/http';

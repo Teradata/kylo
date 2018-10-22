@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import {Component, Input, Output, EventEmitter, ElementRef} from "@angular/core";
 import * as $ from "jquery";

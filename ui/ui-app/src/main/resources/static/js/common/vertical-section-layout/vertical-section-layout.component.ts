@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import {Component, EventEmitter, Input,Output} from "@angular/core";
 
 @Component({

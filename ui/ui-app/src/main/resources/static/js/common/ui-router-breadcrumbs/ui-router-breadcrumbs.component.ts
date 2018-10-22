@@ -1,5 +1,4 @@
 import {Component, Input} from "@angular/core";
-import * as angular from "angular";
 import {moduleName} from "../module-name";
 import "@uirouter/angularjs";
 import * as _ from 'underscore';

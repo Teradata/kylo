@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import "pascalprecht.translate";
 import { Component, Input } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
